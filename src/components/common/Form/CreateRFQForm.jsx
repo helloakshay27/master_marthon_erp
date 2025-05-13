@@ -347,7 +347,7 @@ export default function CreateRFQForm({
               location: material.location, // Map location correctly
               rate: material.rate,
               amount: material.amount,
-              type: material.material_type || "N/A", // Map type correctly
+              type: material.material_type || "-", // Map type correctly
               sub_section_id: material.sub_section_id,
               section_id: material.inventory_type_id || material.section_id,
               inventory_type_id: material.inventory_type_id,
@@ -648,7 +648,7 @@ export default function CreateRFQForm({
     }
 
     updatedSections[sectionIndex].sectionData[rowIndex].type =
-      selectedMaterial.type || "N/A";
+      selectedMaterial.type || "-";
     updatedSections[sectionIndex].sectionData[rowIndex].inventory_id =
       selectedMaterial.label;
     // console.log("updatedSections", updatedSections);

@@ -131,7 +131,7 @@ export default function BulkCounterOfferModalTwo({
   // const eventId = bidCounterData?.event?.id;
   // const bidId = bidCounterData?.bid_materials?.map((item) => item?.bid_id)?.[0];
 
-  // const eventId = bidCounterData?.event?.id || "N/A";
+  // const eventId = bidCounterData?.event?.id || "-";
 
   const handleOpenOtherChargesModal = () => {
     setShowOtherChargesModal(true);
@@ -139,12 +139,12 @@ export default function BulkCounterOfferModalTwo({
   const handleCloseOtherChargesModal = () => setShowOtherChargesModal(false);
 
   const eventId2 = Array.isArray(bidCounterData?.event_materials)
-    ? bidCounterData.event_materials[0]?.id || "N/A"
-    : "N/A";
+    ? bidCounterData.event_materials[0]?.id || "-"
+    : "-";
 
   const bidId = Array.isArray(bidCounterData?.event_materials)
-    ? bidCounterData.event_materials[0]?.bid_materials?.[0]?.bid_id || "N/A"
-    : "N/A";
+    ? bidCounterData.event_materials[0]?.bid_materials?.[0]?.bid_id || "-"
+    : "-";
 
   // console.log("bidCounterData", bidCounterData);
 

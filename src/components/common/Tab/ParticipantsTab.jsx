@@ -162,7 +162,7 @@ export default function ParticipantsTab({ id }) {
           name: newVendor.full_name,
           phone: newVendor.mobile,
           email: newVendor.email,
-          organisation: newVendor.organization_name || "N/A",
+          organisation: newVendor.organization_name || "-",
         };
 
         setVendorData((prev) => [...prev, formattedVendor]);
@@ -292,12 +292,12 @@ export default function ParticipantsTab({ id }) {
       const formattedData = vendors
         .map((vendor) => ({
           id: vendor.id,
-          name: vendor.full_name || vendor.organization_name || "N/A",
-          email: vendor.email || "N/A",
-          organisation: vendor.organization_name || "N/A",
-          phone: vendor.contact_number || vendor.mobile || "N/A",
-          city: vendor.city_id || "N/A",
-          tags: vendor.tags || "N/A",
+          name: vendor.full_name || vendor.organization_name || "-",
+          email: vendor.email || "-",
+          organisation: vendor.organization_name || "-",
+          phone: vendor.contact_number || vendor.mobile || "-",
+          city: vendor.city_id || "-",
+          tags: vendor.tags || "-",
         }))
         .filter(
           (vendor) =>
@@ -596,7 +596,7 @@ export default function ParticipantsTab({ id }) {
                       <td style={{ textAlign: "left" }}>{vendor.phone}</td>
                       <td style={{ textAlign: "left" }}>{vendor.email}</td>
                       <td style={{ textAlign: "left" }}>
-                        {vendor.organisation || "N/A"}
+                        {vendor.organisation || "-"}
                       </td>
                     </tr>
                   ))}
