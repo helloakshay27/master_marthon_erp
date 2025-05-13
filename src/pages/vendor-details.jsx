@@ -860,7 +860,8 @@ export default function VendorDetails() {
 
     const freightData = processFreightData(currentBid);
     setFreightData(freightData);
-
+    console.log("current:-",currentBid);
+    
     const previousData = currentBid.bid_materials.map((material) => ({
       bidId: material.bid_id,
       eventMaterialId: material.event_material_id,
@@ -887,9 +888,12 @@ export default function VendorDetails() {
       pmsColour: material.event_material.pms_colour_name,
       genericInfo: material.event_material.generic_info_name,
       extra_data: material.extra_data || {}, // Include extra_data
-    }));
-
+      addition_bid_material_tax_details: material.addition_bid_material_tax_details || [],
+    deduction_bid_material_tax_details: material.deduction_bid_material_tax_details || [],
+  }));
+    console.log(previousData, "previousData");
     setData(previousData);
+    console.log("data in api:-", data)
     setGrossTotal(currentBid.gross_total);
     setCounterData(currentBid.counter_bids?.length || 0);
     setCounterId(currentBid.counter_bids?.[currentIndex]?.id || null);
@@ -2148,86 +2152,90 @@ export default function VendorDetails() {
   const mergedColumns = [...defaultColumns, ...bidTemplate];
 
   useEffect(() => {
-    if (!effectRan.current) {
-      effectRan.current = true;
+  if (data.length > 0) {
+    const updatedTaxRateData = data.map((selectedRow, index) => {
+      // Use existing tax details from data unless updated in taxRateData
+      const existingRow = taxRateData[index] || {};
+      const quantityAvail =
+        parseFloat(selectedRow.quantityAvail || 0) > 0
+          ? parseFloat(selectedRow.quantityAvail)
+          : parseFloat(selectedRow.quantity || 0);
 
-      if (data.length > 0) {
-        const updatedTaxRateData = data.map((selectedRow, index) => {
-          // Your existing logic for updating taxRateData
-          const existingRow = taxRateData[index] || {};
-          const quantityAvail =
-            parseFloat(selectedRow.quantityAvail || 0) > 0
-              ? parseFloat(selectedRow.quantityAvail)
-              : parseFloat(selectedRow.quantity || 0);
+      const price = parseFloat(selectedRow.price || 0);
+      const discount = parseFloat(selectedRow.discount || 0);
+      const total = price * quantityAvail;
+      const discountAmount = (total * discount) / 100;
+      const afterDiscountValue = total - discountAmount;
 
-          const price = parseFloat(selectedRow.price || 0);
-          const discount = parseFloat(selectedRow.discount || 0);
-          const total = price * quantityAvail;
-          const discountAmount = (total * discount) / 100;
-          const afterDiscountValue = total - discountAmount;
+      // Use addition and deduction tax details from `data` unless updated in `taxRateData`
+      const additionTaxDetails = (
+        taxRateData[index]?.addition_bid_material_tax_details ||
+        selectedRow.addition_bid_material_tax_details ||
+        []
+      ).map((tax) => {
+        const taxPercentage = parseFloat(tax.taxChargePerUom || 0);
+        const amount = tax.inclusive
+          ? 0
+          : ((taxPercentage / 100) * afterDiscountValue).toFixed(2);
+        return { ...tax, amount };
+      });
 
-          const additionTaxDetails = (
-            taxRateData[index]?.addition_bid_material_tax_details || []
-          ).map((tax) => {
-            const taxPercentage = parseFloat(tax.taxChargePerUom || 0);
-            const amount = tax.inclusive
-              ? 0
-              : ((taxPercentage / 100) * afterDiscountValue).toFixed(2);
-            return { ...tax, amount };
-          });
+      const deductionTaxDetails = (
+        taxRateData[index]?.deduction_bid_material_tax_details ||
+        selectedRow.deduction_bid_material_tax_details ||
+        []
+      ).map((tax) => {
+        const taxPercentage = parseFloat(tax.taxChargePerUom || 0);
+        const amount = tax.inclusive
+          ? 0
+          : ((taxPercentage / 100) * afterDiscountValue).toFixed(2);
+        return { ...tax, amount };
+      });
 
-          const deductionTaxDetails = (
-            taxRateData[index]?.deduction_bid_material_tax_details || []
-          ).map((tax) => {
-            const taxPercentage = parseFloat(tax.taxChargePerUom || 0);
-            const amount = tax.inclusive
-              ? 0
-              : ((taxPercentage / 100) * afterDiscountValue).toFixed(2);
-            return { ...tax, amount };
-          });
+      const additionTaxTotal = additionTaxDetails.reduce(
+        (sum, tax) => sum + parseFloat(tax.amount || 0),
+        0
+      );
+      const deductionTaxTotal = deductionTaxDetails.reduce(
+        (sum, tax) => sum + parseFloat(tax.amount || 0),
+        0
+      );
+      const netCost = afterDiscountValue + additionTaxTotal - deductionTaxTotal;
 
-          const additionTaxTotal = additionTaxDetails.reduce(
-            (sum, tax) => sum + parseFloat(tax.amount || 0),
-            0
-          );
-          const deductionTaxTotal = deductionTaxDetails.reduce(
-            (sum, tax) => sum + parseFloat(tax.amount || 0),
-            0
-          );
-          const netCost =
-            afterDiscountValue + additionTaxTotal - deductionTaxTotal;
+      return {
+        ...existingRow,
+        material: selectedRow.section || "",
+        ratePerNos: selectedRow.price || "",
+        totalPoQty: quantityAvail.toString(),
+        discount: selectedRow.discount || "",
+        materialCost: selectedRow.price || "",
+        discountRate: discountAmount.toFixed(2),
+        afterDiscountValue: afterDiscountValue.toFixed(2),
+        remark: selectedRow.vendorRemark || "",
+        addition_bid_material_tax_details: additionTaxDetails,
+        deduction_bid_material_tax_details: deductionTaxDetails,
+        netCost: netCost.toFixed(2),
+      };
+    });
 
-          return {
-            ...existingRow,
-            material: selectedRow.section || "",
-            ratePerNos: selectedRow.price || "",
-            totalPoQty: quantityAvail.toString(),
-            discount: selectedRow.discount || "",
-            materialCost: selectedRow.price || "",
-            discountRate: discountAmount.toFixed(2),
-            afterDiscountValue: afterDiscountValue.toFixed(2),
-            remark: selectedRow.vendorRemark || "",
-            addition_bid_material_tax_details: additionTaxDetails,
-            deduction_bid_material_tax_details: deductionTaxDetails,
-            netCost: netCost.toFixed(2),
-          };
-        });
+    setTaxRateData(updatedTaxRateData);
 
-        setTaxRateData(updatedTaxRateData);
+    const updatedData = data.map((row, index) => ({
+      ...row,
+      addition_bid_material_tax_details:
+        updatedTaxRateData[index]?.addition_bid_material_tax_details ||
+        row.addition_bid_material_tax_details ||
+        [],
+      deduction_bid_material_tax_details:
+        updatedTaxRateData[index]?.deduction_bid_material_tax_details ||
+        row.deduction_bid_material_tax_details ||
+        [],
+    }));
+    setData(updatedData);
 
-        const updatedData = data.map((row, index) => ({
-          ...row,
-          addition_bid_material_tax_details:
-            updatedTaxRateData[index]?.addition_bid_material_tax_details || [],
-          deduction_bid_material_tax_details:
-            updatedTaxRateData[index]?.deduction_bid_material_tax_details || [],
-        }));
-        setData(updatedData);
-
-        originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
-      }
-    }
-  }, [data]);
+    originalTaxRateDataRef.current = structuredClone(updatedTaxRateData);
+  }
+}, [data, taxRateData]);
 
   const handleOpenModal = (rowIndex) => {
     if (taxRateData.length === 0) {
@@ -3276,7 +3284,7 @@ export default function VendorDetails() {
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      {console.log(data1.event_schedule)}
+                                      {/* {console.log(data1.event_schedule)} */}
                                       <tr>
                                         <td
                                           className="text-start"
