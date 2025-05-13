@@ -219,50 +219,53 @@ export default function adminList() {
         }),
       };
 
-      const liveEventsUrl = `${baseURL}rfq/events/live_events`;
-      const pastEventsUrl = `${baseURL}rfq/events/past_events`;
-      const allEventsUrl = `${baseURL}rfq/events`;
+      let eventsUrl;
 
-      // Fetch all events concurrently
-      const [liveResponse, historyResponse, allResponse] = await Promise.all([
-        axios.get(liveEventsUrl, {
-          params: {
-            token: token,
-            page: page,
-            ...queryFilters,
-          },
-        }),
-        axios.get(pastEventsUrl, {
-          params: {
-            token: token,
-            page: page,
-            ...queryFilters,
-          },
-        }),
-        axios.get(allEventsUrl, {
-          params: {
-            token: token,
-            page: page,
-            ...queryFilters,
-          },
-        }),
-      ]);
+      switch (activeTab) {
+        case "live":
+          eventsUrl = `${baseURL}rfq/events/live_events`;
+          break;
+        case "history":
+          eventsUrl = `${baseURL}rfq/events/past_events`;
+          break;
+        case "all":
+          eventsUrl = `${baseURL}rfq/events`;
+          break;
+        default:
+          eventsUrl = `${baseURL}rfq/events`;
+      }
 
-      // Update state with the fetched data
-      setLiveEvents({
-        events: liveResponse.data.events || [],
-        pagination: liveResponse.data.pagination || {},
+      const response = await axios.get(eventsUrl, {
+        params: {
+          token: token,
+          page: page,
+          ...queryFilters,
+        },
       });
 
-      setHistoryEvents({
-        events: historyResponse.data.events || [],
-        pagination: historyResponse.data.pagination || {},
-      });
-
-      setAllEventsData({
-        events: allResponse.data.events || [],
-        pagination: allResponse.data.pagination || {},
-      });
+      // Update state based on activeTab
+      switch (activeTab) {
+        case "live":
+          setLiveEvents({
+            events: response.data.events || [],
+            pagination: response.data.pagination || {},
+          });
+          break;
+        case "history":
+          setHistoryEvents({
+            events: response.data.events || [],
+            pagination: response.data.pagination || {},
+          });
+          break;
+        case "all":
+          setAllEventsData({
+            events: response.data.events || [],
+            pagination: response.data.pagination || {},
+          });
+          break;
+        default:
+          break;
+      }
     } catch (error) {
       console.error("Error fetching event data:", error);
       setError(error.response?.data?.message || "Failed to fetch events");
@@ -619,8 +622,8 @@ export default function adminList() {
                               value={
                                 filters.title_in
                                   ? filterOptions.event_titles.find(
-                                      (opt) => opt.value === filters.title_in
-                                    )
+                                    (opt) => opt.value === filters.title_in
+                                  )
                                   : null
                               }
                               placeholder="Select title"
@@ -652,9 +655,9 @@ export default function adminList() {
                               value={
                                 filters.event_no_cont
                                   ? filterOptions.event_numbers.find(
-                                      (opt) =>
-                                        opt.value === filters.event_no_cont
-                                    )
+                                    (opt) =>
+                                      opt.value === filters.event_no_cont
+                                  )
                                   : null
                               }
                               placeholder="Select No"
@@ -684,8 +687,8 @@ export default function adminList() {
                               value={
                                 filters.status_in
                                   ? filterOptions.statuses.find(
-                                      (opt) => opt.value === filters.status_in
-                                    )
+                                    (opt) => opt.value === filters.status_in
+                                  )
                                   : null
                               }
                               placeholder="Select Status"
@@ -718,9 +721,9 @@ export default function adminList() {
                               value={
                                 filters.created_by_id_in
                                   ? filterOptions.creaters.find(
-                                      (opt) =>
-                                        opt.value === filters.created_by_id_in
-                                    )
+                                    (opt) =>
+                                      opt.value === filters.created_by_id_in
+                                  )
                                   : null
                               }
                               placeholder="Select Creator"
@@ -756,11 +759,11 @@ export default function adminList() {
                               value={
                                 filters.event_type_detail_event_type_eq
                                   ? {
-                                      value:
-                                        filters.event_type_detail_event_type_eq,
-                                      label:
-                                        filters.event_type_detail_event_type_eq,
-                                    }
+                                    value:
+                                      filters.event_type_detail_event_type_eq,
+                                    label:
+                                      filters.event_type_detail_event_type_eq,
+                                  }
                                   : null
                               }
                               placeholder="Select Type"
@@ -1023,9 +1026,8 @@ export default function adminList() {
                       <ul className="pagination justify-content-center d-flex">
                         {/* First Button */}
                         <li
-                          className={`page-item ${
-                            pagination.current_page === 1 ? "disabled" : ""
-                          }`}
+                          className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -1037,9 +1039,8 @@ export default function adminList() {
 
                         {/* Previous Button */}
                         <li
-                          className={`page-item ${
-                            pagination.current_page === 1 ? "disabled" : ""
-                          }`}
+                          className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -1056,11 +1057,10 @@ export default function adminList() {
                         {pageNumbers.map((pageNumber) => (
                           <li
                             key={pageNumber}
-                            className={`page-item ${
-                              pagination.current_page === pageNumber
+                            className={`page-item ${pagination.current_page === pageNumber
                                 ? "active"
                                 : ""
-                            }`}
+                              }`}
                           >
                             <button
                               className="page-link"
@@ -1073,11 +1073,10 @@ export default function adminList() {
 
                         {/* Next Button */}
                         <li
-                          className={`page-item ${
-                            pagination.current_page === pagination.total_pages
+                          className={`page-item ${pagination.current_page === pagination.total_pages
                               ? "disabled"
                               : ""
-                          }`}
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -1094,11 +1093,10 @@ export default function adminList() {
 
                         {/* Last Button */}
                         <li
-                          className={`page-item ${
-                            pagination.current_page === pagination.total_pages
+                          className={`page-item ${pagination.current_page === pagination.total_pages
                               ? "disabled"
                               : ""
-                          }`}
+                            }`}
                         >
                           <button
                             className="page-link"

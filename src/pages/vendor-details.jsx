@@ -1840,11 +1840,14 @@ export default function VendorDetails() {
         const calculateOrderDuration = (start, end) => {
           if (!start || !end) return "_";
           const durationMs = end - start;
-          const hours = Math.floor(durationMs / (1000 * 60 * 60));
+          const days = Math.floor(durationMs / (1000 * 60 * 60 * 24));
+          const hours = Math.floor(
+            (durationMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+          );
           const minutes = Math.floor(
             (durationMs % (1000 * 60 * 60)) / (1000 * 60)
           );
-          return `${hours} Hours ${minutes} Minutes`;
+          return `${days} Days ${hours} Hours ${minutes} Minutes`;
         };
 
         const newOrderConfig = [
@@ -3260,7 +3263,6 @@ export default function VendorDetails() {
                                   <table className="w-100 table">
                                     <thead>
                                       <tr>
-                                        <th className="text-start">Sr. No.</th>
                                         <th className="text-start">
                                           Stage Title
                                         </th>
@@ -3274,13 +3276,8 @@ export default function VendorDetails() {
                                       </tr>
                                     </thead>
                                     <tbody>
+                                      {console.log(data1.event_schedule)}
                                       <tr>
-                                        <td
-                                          className="text-start"
-                                          // style={{ color: "#777777" }}
-                                        >
-                                          1
-                                        </td>
                                         <td
                                           className="text-start"
                                           // style={{ color: "#777777" }}
@@ -3289,37 +3286,40 @@ export default function VendorDetails() {
                                         </td>
                                         <td
                                           className="text-start"
+                                          style={{
+                                            textTransform: "capitalize",
+                                          }}
                                           // style={{ color: "#777777" }}
                                         >
                                           {data1.status}
                                         </td>
-                                        <td
-                                          className="text-start"
-                                          // style={{ color: "#777777" }}
-                                        >
-                                          {data1.event_schedule?.start_time ? (
-                                            <FormatDate
-                                              timestamp={
-                                                data1.event_schedule?.start_time
-                                              }
-                                            />
-                                          ) : (
-                                            "-"
-                                          )}
+                                        <td className="text-start">
+                                          {data1.event_schedule?.start_time
+                                            ? new Date(
+                                                data1.event_schedule.start_time
+                                              ).toLocaleString("en-US", {
+                                                day: "2-digit",
+                                                month: "short",
+                                                year: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: true,
+                                              })
+                                            : "-"}
                                         </td>
-                                        <td
-                                          className="text-start"
-                                          // style={{ color: "#777777" }}
-                                        >
-                                          {data1.event_schedule?.end_time ? (
-                                            <FormatDate
-                                              timestamp={
-                                                data1.event_schedule?.end_time
-                                              }
-                                            />
-                                          ) : (
-                                            "-"
-                                          )}
+                                        <td className="text-start">
+                                          {data1.event_schedule?.end_time
+                                            ? new Date(
+                                                data1.event_schedule.end_time
+                                              ).toLocaleString("en-US", {
+                                                day: "2-digit",
+                                                month: "short",
+                                                year: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: true,
+                                              })
+                                            : "-"}
                                         </td>
                                       </tr>
                                     </tbody>
@@ -3734,8 +3734,8 @@ export default function VendorDetails() {
                             >
                               <div className="card card-body rounded-3 p-4">
                                 {/* Document Details Table */}
-                                <div className="tbl-container mt-3">
-                                  <table className="w-100 table">
+                                {data1.attachments?.length > 0 ? (
+                                  <div className="tbl-container mt-3">
                                     <thead>
                                       <tr>
                                         <th className="text-start">Sr No</th>
@@ -3798,8 +3798,12 @@ export default function VendorDetails() {
                                         </tr>
                                       )}
                                     </tbody>
-                                  </table>
-                                </div>
+                                  </div>
+                                ) : (
+                                  <p className="text-center mt-4">
+                                    No attachments available for this event.
+                                  </p>
+                                )}
                               </div>
                             </div>
                           )}
