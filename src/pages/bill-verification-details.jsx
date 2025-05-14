@@ -10,9 +10,11 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { DownloadIcon } from "../components";
 import { baseURL } from "../confi/apiDomain";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const BillVerificationDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false); // Add loading state
   const [billDetails, setBillDetails] = useState(null);
   const [attachModal, setattachModal] = useState(false);
@@ -243,6 +245,7 @@ const BillVerificationDetails = () => {
       if (response.data) {
         alert("Bill entry updated successfully");
         setLoading(false);
+        navigate("/bill-verification-list"); 
         // Reset form
       }
     } catch (error) {
