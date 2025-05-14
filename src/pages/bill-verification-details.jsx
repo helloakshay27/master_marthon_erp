@@ -2,7 +2,7 @@ import React from 'react'
 import { Modal } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import SingleSelector from '../components/base/Select/SingleSelector';
 import {
   Table
@@ -14,47 +14,47 @@ import { DownloadIcon } from "../components";
 import { baseURL } from '../confi/apiDomain';
 
 const BillVerificationDetails = () => {
-   const { id } = useParams();
-   const [loading, setLoading] = useState(false); // Add loading state
-   const [billDetails, setBillDetails] = useState(null);
+  const { id } = useParams();
+  const [loading, setLoading] = useState(false); // Add loading state
+  const [billDetails, setBillDetails] = useState(null);
   const [attachModal, setattachModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
-    const [documents, setDocuments] = useState([]);
-    const [newDocument, setNewDocument] = useState({
-      document_type: "",
-      attachments: [],
-    });
-  
+  const [documents, setDocuments] = useState([]);
+  const [newDocument, setNewDocument] = useState({
+    document_type: "",
+    attachments: [],
+  });
+
 
   const openattachModal = () => setattachModal(true);
   const closeattachModal = () => setattachModal(false);
-   const [remarkModal, setremarkModal] = useState(false);
-    // const [attachModal, setattachModal] = useState(false);
-  
-    const openremarkModal = () => setremarkModal(true);
-    const closeremarkModal = () => setremarkModal(false);
+  const [remarkModal, setremarkModal] = useState(false);
+  // const [attachModal, setattachModal] = useState(false);
+
+  const openremarkModal = () => setremarkModal(true);
+  const closeremarkModal = () => setremarkModal(false);
   const [viewDocumentModal, setviewDocumentModal] = useState(false);
 
-    const openviewDocumentModal = () => setviewDocumentModal(true);
-    const closeviewDocumentModal = () => setviewDocumentModal(false);
+  const openviewDocumentModal = () => setviewDocumentModal(true);
+  const closeviewDocumentModal = () => setviewDocumentModal(false);
 
-    const [status, setStatus] = useState(""); // Assuming boqDetails.status is initially available
+  const [status, setStatus] = useState(""); // Assuming boqDetails.status is initially available
 
-    useEffect(() => {
-      // Fetch data from the API
-      axios
-        .get(`https://marathon.lockated.com/bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-        .then((response) => {
-          setBillDetails(response.data);
-          setStatus(response.data.status)
-          if (response.data.documents) {
-            setDocuments(response.data.documents);
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching bill details:", error);
-        });
-    }, [id]);
+  useEffect(() => {
+    // Fetch data from the API
+    axios
+      .get(`${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      .then((response) => {
+        setBillDetails(response.data);
+        setStatus(response.data.status)
+        if (response.data.documents) {
+          setDocuments(response.data.documents);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching bill details:", error);
+      });
+  }, [id]);
 
   const statusOptions = [
     {
@@ -83,20 +83,57 @@ const BillVerificationDetails = () => {
     },
   ];
 
+
+  // Add handleDownload function
+  const handleDownload = async (blobId) => {
+    try {
+      const response = await axios.get(
+        `${baseURL}bill_entries/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${blobId}`,
+        {
+          responseType: "blob", // Important for handling binary data
+        }
+      );
+
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+
+      // Create a temporary link element
+      const link = document.createElement("a");
+      link.href = url;
+
+      // Get filename from response headers or use a default
+      const filename =
+        response.headers["content-disposition"]?.split("filename=")[1] ||
+        "document.pdf";
+      link.setAttribute("download", filename);
+
+      // Append to body, click and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up the URL
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading document:", error);
+      alert("Failed to download document. Please try again.");
+    }
+  };
+
   if (!billDetails) {
     return <div className="loader-container">
-    <div className="lds-ring">
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-    </div>
-    <p>loading..</p>
-  </div>;
+      <div className="lds-ring">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      <p>loading..</p>
+    </div>;
   }
 
   const handleStatusChange = (selectedOption) => {
@@ -106,7 +143,7 @@ const BillVerificationDetails = () => {
   };
 
   // const [viewDocumentModal, setviewDocumentModal] = useState(false);
-    
+
 
   const handleAttachDocument = () => {
     if (newDocument.document_type && newDocument.attachments.length > 0) {
@@ -162,245 +199,245 @@ const BillVerificationDetails = () => {
       setviewDocumentModal(true);
     }
   };
-console.log("status:",status)
+  console.log("status:", status)
 
-const payload = {
-  bill_entry: {
-    status: status||"",
-    documents: documents.map((doc) => ({
-      document_type: doc.document_type,
-      attachments: doc.attachments.map((attachment) => ({
-        filename: attachment.filename,
-        content_type: attachment.content_type,
-        content: attachment.content,
+  const payload = {
+    bill_entry: {
+      status: status || "",
+      documents: documents.map((doc) => ({
+        document_type: doc.document_type,
+        attachments: doc.attachments.map((attachment) => ({
+          filename: attachment.filename,
+          content_type: attachment.content_type,
+          content: attachment.content,
+        })),
       })),
-    })),
-  },
-};
-console.log("payload update:",payload)
-   const handleUpdateBillEntry = async () => {
-      try {
-        // Validate required fields
-        setLoading(true);
-  
-        // Create payload
-        const payload = {
-          bill_entry: {
-            status: status||"",
-            documents: documents.map((doc) => ({
-              document_type: doc.document_type,
-              attachments: doc.attachments.map((attachment) => ({
-                filename: attachment.filename,
-                content_type: attachment.content_type,
-                content: attachment.content,
-              })),
+    },
+  };
+  console.log("payload update:", payload)
+  const handleUpdateBillEntry = async () => {
+    try {
+      // Validate required fields
+      setLoading(true);
+
+      // Create payload
+      const payload = {
+        bill_entry: {
+          status: status || "",
+          documents: documents.map((doc) => ({
+            document_type: doc.document_type,
+            attachments: doc.attachments.map((attachment) => ({
+              filename: attachment.filename,
+              content_type: attachment.content_type,
+              content: attachment.content,
             })),
-          },
-        };
-  
-        // Make API call
-        const response = await axios.patch(
-          `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-          payload
-        );
-  
-        if (response.data) {
-          alert("Bill entry updated successfully");
-          setLoading(false); 
-          // Reset form
-        }
-      } catch (error) {
-        console.error("Error creating bill entry:", error);
-        alert("Failed to update bill entry. Please try again.");
-      }finally {
-        setLoading(false); // Set loading to false after the API call
+          })),
+        },
+      };
+
+      // Make API call
+      const response = await axios.patch(
+        `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        payload
+      );
+
+      if (response.data) {
+        alert("Bill entry updated successfully");
+        setLoading(false);
+        // Reset form
       }
-    };
+    } catch (error) {
+      console.error("Error creating bill entry:", error);
+      alert("Failed to update bill entry. Please try again.");
+    } finally {
+      setLoading(false); // Set loading to false after the API call
+    }
+  };
   return (
- <>
-  <div className="website-content overflow-auto">
-  <div className="module-data-section ms-2 mt-3 ">
-    <a href="">
-      Home &gt; Billing &gt; Bill Verification List &gt; Update Bill Information
-      (Details)
-    </a>
-    <h5 className="mt-3">Update Bill Information (Details)</h5>
-    <div className="row my-4 align-items-center container-fluid mb-5">
-      <div className="col-md-12 ">
-        <div className="card p-3">
-          <div className="details_page">
-            <div className="row px-3">
-              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                <div className="col-6 ">
-                  <label>Company</label>
+    <>
+      <div className="website-content overflow-auto">
+        <div className="module-data-section ms-2 mt-3 ">
+          <a href="">
+            Home &gt; Billing &gt; Bill Verification List &gt; Update Bill Information
+            (Details)
+          </a>
+          <h5 className="mt-3">Update Bill Information (Details)</h5>
+          <div className="row my-4 align-items-center container-fluid mb-5">
+            <div className="col-md-12 ">
+              <div className="card p-3">
+                <div className="details_page">
+                  <div className="row px-3">
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Company</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {billDetails?.company_name || ""}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Project</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {billDetails?.project_name || ""}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Sub Project</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {billDetails?.site_name || ""}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Vendor Name</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {billDetails?.pms_supplier || ""}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>PO Number</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {billDetails?.po_number || ""}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Bill Number</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {billDetails?.bill_no || ""}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Acceptance Date</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Bill Date</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {billDetails?.bill_date || ""}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Created On</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Mode of Submission</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Bill Amount</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {billDetails?.bill_amount || ""}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Bill Due date</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {billDetails?.bill_date || ""}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Vendor Remark</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {billDetails?.vendor_remark || ""}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="col-6">
-                  <label className="text">
-                    <span className="me-3">
-                      <span className="text-dark">:</span>
-                    </span>
-                    {billDetails?.company_name || ""}
-                  </label>
-                </div>
-              </div>
-              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                <div className="col-6 ">
-                  <label>Project</label>
-                </div>
-                <div className="col-6">
-                  <label className="text">
-                    <span className="me-3">
-                      <span className="text-dark">:</span>
-                    </span>
-                    {billDetails?.project_name || ""}
-                  </label>
-                </div>
-              </div>
-              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                <div className="col-6 ">
-                  <label>Sub Project</label>
-                </div>
-                <div className="col-6">
-                  <label className="text">
-                    <span className="me-3">
-                      <span className="text-dark">:</span>
-                    </span>
-                    {billDetails?.site_name || ""}
-                  </label>
-                </div>
-              </div>
-              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                <div className="col-6 ">
-                  <label>Vendor Name</label>
-                </div>
-                <div className="col-6">
-                  <label className="text">
-                    <span className="me-3">
-                      <span className="text-dark">:</span>
-                    </span>
-                    {billDetails?.pms_supplier || ""}
-                  </label>
-                </div>
-              </div>
-              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                <div className="col-6 ">
-                  <label>PO Number</label>
-                </div>
-                <div className="col-6">
-                  <label className="text">
-                    <span className="me-3">
-                      <span className="text-dark">:</span>
-                    </span>
-                    {billDetails?.po_number || ""}
-                  </label>
-                </div>
-              </div>
-              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                <div className="col-6 ">
-                  <label>Bill Number</label>
-                </div>
-                <div className="col-6">
-                  <label className="text">
-                    <span className="me-3">
-                      <span className="text-dark">:</span>
-                    </span>
-                    {billDetails?.bill_no || ""}
-                  </label>
-                </div>
-              </div>
-              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                <div className="col-6 ">
-                  <label>Acceptance Date</label>
-                </div>
-                <div className="col-6">
-                  <label className="text">
-                    <span className="me-3">
-                      <span className="text-dark">:</span>
-                    </span>
-                    
-                  </label>
-                </div>
-              </div>
-              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                <div className="col-6 ">
-                  <label>Bill Date</label>
-                </div>
-                <div className="col-6">
-                  <label className="text">
-                    <span className="me-3">
-                      <span className="text-dark">:</span>
-                    </span>
-                    {billDetails?.bill_date || ""}
-                  </label>
-                </div>
-              </div>
-              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                <div className="col-6 ">
-                  <label>Created On</label>
-                </div>
-                <div className="col-6">
-                  <label className="text">
-                    <span className="me-3">
-                      <span className="text-dark">:</span>
-                    </span>
-                    
-                  </label>
-                </div>
-              </div>
-              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                <div className="col-6 ">
-                  <label>Mode of Submission</label>
-                </div>
-                <div className="col-6">
-                  <label className="text">
-                    <span className="me-3">
-                      <span className="text-dark">:</span>
-                    </span>
-                    
-                  </label>
-                </div>
-              </div>
-              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                <div className="col-6 ">
-                  <label>Bill Amount</label>
-                </div>
-                <div className="col-6">
-                  <label className="text">
-                    <span className="me-3">
-                      <span className="text-dark">:</span>
-                    </span>
-                    {billDetails?.bill_amount || ""}
-                  </label>
-                </div>
-              </div>
-              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                <div className="col-6 ">
-                  <label>Bill Due date</label>
-                </div>
-                <div className="col-6">
-                  <label className="text">
-                    <span className="me-3">
-                      <span className="text-dark">:</span>
-                    </span>
-                    {billDetails?.bill_date || ""}
-                  </label>
-                </div>
-              </div>
-              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                <div className="col-6 ">
-                  <label>Vendor Remark</label>
-                </div>
-                <div className="col-6">
-                  <label className="text">
-                    <span className="me-3">
-                      <span className="text-dark">:</span>
-                    </span>
-                    {billDetails?.vendor_remark || ""}
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
 
                 <div className="d-flex justify-content-between mt-5 ">
                   <h5 className=" ">Supporting Documents</h5>
@@ -476,36 +513,36 @@ console.log("payload update:",payload)
                     </tbody>
                   </table>
                 </div>
-        </div>
-        
-        <div className="row">
-          <div className="col-md-12">
-            <div className="form-group">
-              <label>Remark</label>
-              <textarea
-                className="form-control"
-                rows={3}
-                placeholder="Enter ..."
-                defaultValue={""}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="form-group">
-              <label>Comments</label>
-              <textarea
-                className="form-control"
-                rows={2}
-                placeholder="Enter ..."
-                defaultValue={""}
-              />
-            </div>
-          </div>
-        </div>
-      
-           {/* <div className="row mt-4 justify-content-end align-items-center mx-2">
+              </div>
+
+              <div className="row">
+                <div className="col-md-12">
+                  <div className="form-group">
+                    <label>Remark</label>
+                    <textarea
+                      className="form-control"
+                      rows={3}
+                      placeholder="Enter ..."
+                      defaultValue={""}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="row mt-3">
+                <div className="col-md-12">
+                  <div className="form-group">
+                    <label>Comments</label>
+                    <textarea
+                      className="form-control"
+                      rows={2}
+                      placeholder="Enter ..."
+                      defaultValue={""}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* <div className="row mt-4 justify-content-end align-items-center mx-2">
                         <div className="col-md-3">
                           <div className="form-group d-flex gap-3 align-items-center mx-3">
                             <label
@@ -525,62 +562,62 @@ console.log("payload update:",payload)
                           </div>
                         </div>
                       </div> */}
-        
-                      <div className="row mt-4 justify-content-end align-items-center mx-2">
-                        <div className="col-md-3">
-                          <div className="form-group d-flex gap-3 align-items-center mx-3">
-                            <label style={{ fontSize: "0.95rem", color: "black" }}>
-                              Status
-                            </label>
-                            <SingleSelector
-                              options={statusOptions}
-                              onChange={handleStatusChange}
-                              value={statusOptions.find((option) => option.value === status)} // Set "Draft" as the selected status
-                              placeholder="Select Status"
-                              // isClearable={false}
-                              // isDisabled={true} // Disable the selector
-                              classNamePrefix="react-select"
-                            />
-                          </div>
-                        </div>
-                      </div>
-        <div className="row mt-2 justify-content-end">
-          <div className="col-md-2">
-            <button className="purple-btn2 w-100" onClick={handleUpdateBillEntry}>Submit</button>
-          </div>
-          <div className="col-md-2">
-            <button className="purple-btn1 w-100">Cancel</button>
-          </div>
-        </div>
-        {/* <h5 className=" mt-3">Audit Log</h5>
+
+              <div className="row mt-4 justify-content-end align-items-center mx-2">
+                <div className="col-md-3">
+                  <div className="form-group d-flex gap-3 align-items-center mx-3">
+                    <label style={{ fontSize: "0.95rem", color: "black" }}>
+                      Status
+                    </label>
+                    <SingleSelector
+                      options={statusOptions}
+                      onChange={handleStatusChange}
+                      value={statusOptions.find((option) => option.value === status)} // Set "Draft" as the selected status
+                      placeholder="Select Status"
+                      // isClearable={false}
+                      // isDisabled={true} // Disable the selector
+                      classNamePrefix="react-select"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="row mt-2 justify-content-end">
+                <div className="col-md-2">
+                  <button className="purple-btn2 w-100" onClick={handleUpdateBillEntry}>Submit</button>
+                </div>
+                <div className="col-md-2">
+                  <button className="purple-btn1 w-100">Cancel</button>
+                </div>
+              </div>
+              {/* <h5 className=" mt-3">Audit Log</h5>
         <div className=" mb-5">
             <div className="mx-0">
                                                     <Table columns={auditLogColumns} data={auditLogData} />
                                                   </div>
         </div> */}
 
-        <div className=" mb-5">
-                    <h5>Audit Log</h5>
-                    <div className="mx-0">
+              <div className=" mb-5">
+                <h5>Audit Log</h5>
+                <div className="mx-0">
 
-                      <div className="tbl-container mt-1">
-                        <table className="w-100">
-                          <thead>
-                            <tr>
-                              <th>Sr.No.</th>
-                              <th>Created By</th>
-                              {/* <th>Date</th> */}
-                              <th>Status</th>
-                              <th>Remark</th>
-                              <th>Comment</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {billDetails?.status_logs?.map((log, index) => (
-                              <tr key={log.id}>
-                                <td className="text-start">{index + 1}</td>
-                                <td className="text-start">{log.created_by_name || ""}</td>
-                                {/* <td className="text-start">
+                  <div className="tbl-container mt-1">
+                    <table className="w-100">
+                      <thead>
+                        <tr>
+                          <th>Sr.No.</th>
+                          <th>Created By</th>
+                          {/* <th>Date</th> */}
+                          <th>Status</th>
+                          <th>Remark</th>
+                          <th>Comment</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {billDetails?.status_logs?.map((log, index) => (
+                          <tr key={log.id}>
+                            <td className="text-start">{index + 1}</td>
+                            <td className="text-start">{log.created_by_name || ""}</td>
+                            {/* <td className="text-start">
                                   {log.created_at
                                     ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
                                       day: "2-digit",
@@ -594,23 +631,23 @@ console.log("payload update:",payload)
                                     })}`
                                     : ""}
                                 </td> */}
-                                <td className="text-start">{log.status ? log.status.charAt(0).toUpperCase() + log.status.slice(1) : ""}</td>
-                                <td className="text-start">{log.remarks || ""}</td>
-                                <td className="text-start">{""}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-
-                    </div>
+                            <td className="text-start">{log.status ? log.status.charAt(0).toUpperCase() + log.status.slice(1) : ""}</td>
+                            <td className="text-start">{log.remarks || ""}</td>
+                            <td className="text-start">{""}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</div>
- {/* Loader */}
-{/* {loading && (
+      {/* Loader */}
+      {/* {loading && (
 <div id="full-screen-loader" className="full-screen-loader">
 <div className="loader-container">
   <img
@@ -624,94 +661,94 @@ console.log("payload update:",payload)
       )} */}
 
 
-{loading && (
-                      <div className="loader-container">
-                        <div className="lds-ring">
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                        </div>
-                        <p>Updating...</p>
-                      </div>
-                    )}
+      {loading && (
+        <div className="loader-container">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>Updating...</p>
+        </div>
+      )}
 
-{/* attach document */}
+      {/* attach document */}
 
 
-       
 
-              <Modal
-                    centered
-                    size="l"
-                    show={attachModal}
-                    onHide={closeattachModal}
-                    backdrop="true"
-                    keyboard={true}
-                    className="modal-centered-custom"
-                  >
-                    <Modal.Header closeButton>
-                      <h5>Attach Other Document</h5>
-                    </Modal.Header>
-                    <Modal.Body>
-                      <div className="row">
-                        <div className="col-md-12">
-                          <div className="form-group">
-                            <label>Name of the Document</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={newDocument.document_type}
-                              onChange={(e) =>
-                                setNewDocument((prev) => ({
-                                  ...prev,
-                                  document_type: e.target.value,
-                                }))
-                              }
-                              placeholder="Enter document name"
-                            />
-                          </div>
-                        </div>
-                        <div className="col-md-12 mt-2">
-                          <div className="form-group">
-                            <label>Upload File</label>
-                            <input
-                              type="file"
-                              className="form-control"
-                              onChange={handleFileUpload}
-                              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <div className="row mt-2 justify-content-center">
-                        <div className="col-md-4">
-                          <button
-                            className="purple-btn2 w-100"
-                            onClick={handleAttachDocument}
-                            disabled={
-                              !newDocument.document_type ||
-                              newDocument.attachments.length === 0
-                            }
-                          >
-                            Attach
-                          </button>
-                        </div>
-                        <div className="col-md-4">
-                          <button className="purple-btn1 w-100" onClick={closeattachModal}>
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    </Modal.Body>
-                  </Modal>
-{/* attach document */}
 
- {/* remark modal */}
+      <Modal
+        centered
+        size="l"
+        show={attachModal}
+        onHide={closeattachModal}
+        backdrop="true"
+        keyboard={true}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Attach Other Document</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row">
+            <div className="col-md-12">
+              <div className="form-group">
+                <label>Name of the Document</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={newDocument.document_type}
+                  onChange={(e) =>
+                    setNewDocument((prev) => ({
+                      ...prev,
+                      document_type: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter document name"
+                />
+              </div>
+            </div>
+            <div className="col-md-12 mt-2">
+              <div className="form-group">
+                <label>Upload File</label>
+                <input
+                  type="file"
+                  className="form-control"
+                  onChange={handleFileUpload}
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-4">
+              <button
+                className="purple-btn2 w-100"
+                onClick={handleAttachDocument}
+                disabled={
+                  !newDocument.document_type ||
+                  newDocument.attachments.length === 0
+                }
+              >
+                Attach
+              </button>
+            </div>
+            <div className="col-md-4">
+              <button className="purple-btn1 w-100" onClick={closeattachModal}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+      {/* attach document */}
+
+      {/* remark modal */}
       <Modal
         centered
         size="l"
@@ -738,151 +775,141 @@ console.log("payload update:",payload)
         </Modal.Body>
       </Modal>
       {/* remark modal */}
-{/* view documents */}
-       
+      {/* view documents */}
 
-              <Modal
-                    centered
-                    size="lg"
-                    show={viewDocumentModal}
-                    onHide={() => {
-                      setviewDocumentModal(false);
-                      setSelectedDocument(null);
-                    }}
-                    backdrop="true"
-                    keyboard={true}
-                    className="modal-centered-custom"
+
+      <Modal
+        centered
+        size="lg"
+        show={viewDocumentModal}
+        onHide={() => {
+          setviewDocumentModal(false);
+          setSelectedDocument(null);
+        }}
+        backdrop="true"
+        keyboard={true}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Document Attachment</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div>
+            <div className="d-flex justify-content-between mt-3 me-2">
+              <h5>Latest Documents</h5>
+              <div className="card-tools d-flex">
+                <button
+                  className="purple-btn2 rounded-3"
+                  onClick={() => {
+                    setviewDocumentModal(false);
+                    setNewDocument((prev) => ({
+                      ...prev,
+                      document_type: selectedDocument?.document_type,
+                    }));
+                    openattachModal();
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width={20}
+                    height={20}
+                    fill="currentColor"
+                    className="bi bi-plus"
+                    viewBox="0 0 16 16"
                   >
-                    <Modal.Header closeButton>
-                      <h5>Document Attachment</h5>
-                    </Modal.Header>
-                    <Modal.Body>
-                      <div>
-                        <div className="d-flex justify-content-between mt-3 me-2">
-                          <h5>Latest Documents</h5>
-                          <div className="card-tools d-flex">
-                            <button
-                              className="purple-btn2 rounded-3"
-                              onClick={() => {
-                                setviewDocumentModal(false);
-                                setNewDocument((prev) => ({
-                                  ...prev,
-                                  document_type: selectedDocument?.document_type,
-                                }));
-                                openattachModal();
-                              }}
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width={20}
-                                height={20}
-                                fill="currentColor"
-                                className="bi bi-plus"
-                                viewBox="0 0 16 16"
-                              >
-                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                              </svg>
-                              <span>Attach</span>
-                            </button>
-                          </div>
-                        </div>
-                        <div className="tbl-container px-0">
-                          <table className="w-100">
-                            <thead>
-                              <tr>
-                                <th>Sr.No.</th>
-                                <th>Document Name</th>
-                                <th>Attachment Name</th>
-                                <th>Upload Date</th>
-                                <th>Uploaded By</th>
-                                <th>Action</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {selectedDocument?.attachments.map((attachment, index) => (
-                                <tr key={index}>
-                                  <td>{index + 1}</td>
-                                  <td>{selectedDocument.document_type}</td>
-                                  <td>{attachment.filename}</td>
-                                  <td>{new Date().toLocaleDateString()}</td>
-                                  <td></td>
-                                  <td>
-                                    <button
-                                      className="border-0 bg-transparent"
-                                      onClick={() => {
-                                        const link = document.createElement("a");
-                                        link.href = `data:${attachment.content_type};base64,${attachment.content}`;
-                                        link.download = attachment.filename;
-                                        link.click();
-                                      }}
-                                    >
-                                      <DownloadIcon />
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                        <div className="mt-3 me-2">
-                          <h5>Document Attachment History</h5>
-                        </div>
-                        <div className="tbl-container px-0">
-                          <table className="w-100">
-                            <thead>
-                              <tr>
-                                <th>Sr.No.</th>
-                                <th>Document Name</th>
-                                <th>Attachment Name</th>
-                                <th>Upload Date</th>
-                                <th>Uploaded By</th>
-                                <th>Action</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {selectedDocument?.attachments.map((attachment, index) => (
-                                <tr key={index}>
-                                  <td>{index + 1}</td>
-                                  <td>{selectedDocument.document_type}</td>
-                                  <td>{attachment.filename}</td>
-                                  <td>{new Date().toLocaleDateString()}</td>
-                                  <td></td>
-                                  <td>
-                                    <button
-                                      className="border-0 bg-transparent"
-                                      onClick={() => {
-                                        const link = document.createElement("a");
-                                        link.href = `data:${attachment.content_type};base64,${attachment.content}`;
-                                        link.download = attachment.filename;
-                                        link.click();
-                                      }}
-                                    >
-                                      <DownloadIcon />
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                      <div className="row mt-2 justify-content-center">
-                        <div className="col-md-3">
-                          <button
-                            className="purple-btn1 w-100"
-                            onClick={() => {
-                              setviewDocumentModal(false);
-                              setSelectedDocument(null);
-                            }}
-                          >
-                            Close
-                          </button>
-                        </div>
-                      </div>
-                    </Modal.Body>
-                  </Modal>
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                  </svg>
+                  <span>Attach</span>
+                </button>
+              </div>
+            </div>
+            <div className="tbl-container px-0">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr.No.</th>
+                    <th>Document Name</th>
+                    <th>Attachment Name</th>
+                    <th>Upload Date</th>
+                    <th>Uploaded By</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedDocument?.attachments.map((attachment, index) => (
+                    <tr key={index}>
+                      <td>{index + 1}</td>
+                      <td>{selectedDocument.document_type}</td>
+                      <td>{attachment.filename}</td>
+                      <td>{new Date().toLocaleDateString()}</td>
+                      <td></td>
+                      <td>
+                        <button
+                          className="btn btn-link p-0 text-decoration-underline"
+                          onClick={() => handleDownload(attachment.blob_id)}
+                        >
+                          <DownloadIcon />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-3 me-2">
+              <h5>Document Attachment History</h5>
+            </div>
+            <div className="tbl-container px-0">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr.No.</th>
+                    <th>Document Name</th>
+                    <th>Attachment Name</th>
+                    <th>Upload Date</th>
+                    <th>Uploaded By</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedDocument?.attachments.map((attachment, index) => (
+                    <tr key={index}>
+                      <td>{index + 1}</td>
+                      <td>{selectedDocument.document_type}</td>
+                      <td>{attachment.filename}</td>
+                      <td>{new Date().toLocaleDateString()}</td>
+                      <td></td>
+                      <td>
+                        <button
+                          className="btn btn-link p-0 text-decoration-underline"
+                          onClick={() => handleDownload(attachment.blob_id)}
+                        >
+                          <DownloadIcon />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-3">
+              <button
+                className="purple-btn1 w-100"
+                onClick={() => {
+                  setviewDocumentModal(false);
+                  setSelectedDocument(null);
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
 
- </>
+    </>
   )
 }
 
