@@ -377,7 +377,7 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
             <div className="row">
               <h5 className="text-center">Search Asset</h5>
            
-              <div className="col-md-4 mt-3">
+              <div className="col-md-6 mt-3">
                 <div className="form-group">
                   <label className="po-fontBold">Asset Type*</label>
                   <MultiSelector
@@ -390,7 +390,7 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
                   {errorMessage && <div className="error-message" style={{ color: 'red' }}>{errorMessage}</div>}
                 </div>
               </div>
-              <div className="col-md-4 mt-3">
+              {/* <div className="col-md-4 mt-3">
                 <div className="form-group">
                   <label className="po-fontBold">Asset Sub Type</label>
                   <MultiSelector
@@ -400,8 +400,8 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
                    placeholder={`Select Asset Sub Type`} // Dynamic placeholder
                   />
                 </div>
-              </div>
-              <div className="col-md-4 mt-3">
+              </div> */}
+              <div className="col-md-6 mt-3">
                 <div className="form-group">
                   <label className="po-fontBold">Asset</label>
                   <MultiSelector

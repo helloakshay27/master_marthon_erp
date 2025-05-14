@@ -673,20 +673,10 @@ const BillEntryList = () => {
                           <td className="text-start">
                             {entry.uam_number || "-"}
                           </td>
-                          {/* <td className="text-start">
-                            {entry.po_number || "-"}
-                          </td> */}
-
                           <td className="text-start">
-                            {/* PO No. column with redirect */}
-                            {entry.po_number && entry.id ? (
-                              <Link to={`/bill-entry-details/${entry.id}`}>
-                                {entry.po_number}
-                              </Link>
-                            ) : (
-                              "-"
-                            )}
+                            {entry.po_number || "-"}
                           </td>
+
                           <td className="text-start">
                             {entry.created_at
                               ? new Date(entry.created_at).toLocaleDateString()
@@ -697,7 +687,17 @@ const BillEntryList = () => {
                               ? new Date(entry.accepted_at).toLocaleDateString()
                               : "-"}
                           </td>
-                          <td className="text-start">{entry.bill_no || "-"}</td>
+                          {/* <td className="text-start">{entry.bill_no || "-"}</td> */}
+                          <td className="text-start">
+                            {/* PO No. column with redirect */}
+                            {entry.bill_no && entry.id ? (
+                              <Link to={`/bill-entry-details/${entry.id}`}>
+                                {entry.bill_no}
+                              </Link>
+                            ) : (
+                              "-"
+                            )}
+                          </td>
                           <td className="text-start">
                             {entry.bill_date || "-"}
                           </td>

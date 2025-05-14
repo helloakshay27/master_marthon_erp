@@ -688,6 +688,14 @@ const BillBookingCreate = () => {
       return;
     }
 
+    // Invoice amount check
+    const invoiceAmount = parseFloat(formData.invoiceAmount) || 0;
+    const payableAmount = parseFloat(calculateAmountPayable()) || 0;
+    if (invoiceAmount > payableAmount) {
+      alert("Invoice Amount should not be greater than Payable Amount.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const payload = {
@@ -967,6 +975,19 @@ const BillBookingCreate = () => {
 
     fetchCreditAndDebitNotes();
   }, [selectedPO]);
+
+  // Add these helper functions above your return statement
+
+  const calculateTotalAmount = () =>
+    selectedGRNs.reduce(
+      (acc, grn) => acc + (parseFloat(grn.all_inc_tax) || 0),
+      0
+    );
+
+  const calculateAmountPayable = () =>
+    calculateTotalAmount() +
+    parseFloat(otherAdditions || 0) -
+    parseFloat(otherDeductions || 0);
 
   return (
     <>
@@ -1678,6 +1699,40 @@ const BillBookingCreate = () => {
                   </div>
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
+                      <label>Debit Note Adjustment</label>
+
+                      <input
+                        className="form-control"
+                        type="number"
+                        // value={otherAdditions}
+                        // onChange={(e) => setOtherAdditions(e.target.value)}
+                        placeholder="Enter other addition amount"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Total Amount</label>
+
+                      <input
+                        className="form-control"
+                        type="number"
+                        value={selectedGRNs.reduce(
+                          (acc, grn) =>
+                            acc + (parseFloat(grn.all_inc_tax) || 0),
+                          0
+                        )}
+                        //  value={calculateTotalAmount()}
+
+                        readOnly
+                        placeholder="Enter other addition amount"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
                       <label>Retention Percentage</label>
                       <input
                         className="form-control"
@@ -1710,6 +1765,37 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
+
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label> Amount Payable</label>
+
+                      <input
+                        className="form-control"
+                        type="number"
+                        // value={otherAdditions}
+                        // onChange={(e) => setOtherAdditions(e.target.value)}
+                        value={calculateAmountPayable()}
+                        readOnly
+                        placeholder="Enter other addition amount"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Round Of Amount</label>
+
+                      <input
+                        className="form-control"
+                        type="number"
+                        // value={otherAdditions}
+                        // onChange={(e) => setOtherAdditions(e.target.value)}
+                        placeholder="Enter other addition amount"
+                      />
+                    </div>
+                  </div>
+
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Favouring / Payee</label>
@@ -2309,7 +2395,7 @@ const BillBookingCreate = () => {
       {/*  */}
       <Modal
         centered
-        size="lg"
+        size="xl"
         show={selectGRNModal}
         onHide={closeSelectGRNModal}
         backdrop="static"
@@ -2363,7 +2449,7 @@ const BillBookingCreate = () => {
       {/*  */}
       <Modal
         centered
-        size="lg"
+        size="xl"
         show={attachThreeModal}
         onHide={closeAttachThreeModal}
         backdrop="static"
