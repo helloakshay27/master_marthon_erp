@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import SingleSelector from "../components/base/Select/SingleSelector";
+import MultiSelector from "../components/base/Select/MultiSelector";
 
 const BillEntryCreateVendorPage = () => {
   const [attachModal, setattachModal] = useState(false);
@@ -22,7 +23,6 @@ const BillEntryCreateVendorPage = () => {
   const openattachModal = () => setattachModal(true);
   const closeattachModal = () => setattachModal(false);
 
-  
   const [selectPOModal, setselectPOModal] = useState(false);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [selectedPO, setSelectedPO] = useState(null);
@@ -44,7 +44,7 @@ const BillEntryCreateVendorPage = () => {
   const [companies, setCompanies] = useState([]);
   const [selectedPOs, setSelectedPOs] = useState([]);
   const [poTypes, setPoTypes] = useState([
-    { value: "", label: "All" },
+    { value: "", label: "Select Po Type" },
     { value: "Domestic", label: "Domestic" },
     { value: "ROPO", label: "ROPO" },
     { value: "Import", label: "Import" },
@@ -82,6 +82,8 @@ const BillEntryCreateVendorPage = () => {
       [name]: value,
     }));
   };
+  const [poOptions, setPoOptions] = useState([]);
+  const [selectedPONumbers, setSelectedPONumbers] = useState([]);
 
   const handlePOSelect = (po) => {
     setSelectedPO(po);
@@ -137,6 +139,23 @@ const BillEntryCreateVendorPage = () => {
       setSelectedPOs([]);
     }
   };
+  useEffect(() => {
+    const fetchPONumbers = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}purchase_orders/grn_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        const poNumbers = response.data.purchase_orders.map((po) => ({
+          value: po.id,
+          label: po.po_number,
+        }));
+        setPoOptions(poNumbers);
+      } catch (error) {
+        console.error("Error fetching PO numbers:", error);
+      }
+    };
+    fetchPONumbers();
+  }, []);
 
   // Fetch initial PO data when component mounts
   useEffect(() => {
@@ -176,15 +195,34 @@ const BillEntryCreateVendorPage = () => {
       if (filters?.selectedPOIds?.length > 0) {
         url += `&q[id_in]=${filters.selectedPOIds.join(",")}`;
       }
+      if (filters?.poType && filters.poType !== "") {
+        url += `&q[po_type_eq]=${filters.poType}`;
+      }
 
       // Always add pagination parameters
       url += `&page=${filters.page || 1}`;
       url += `&per_page=${filters.pageSize || 5}`;
 
       const response = await axios.get(url);
-      setPurchaseOrders(response.data.purchase_orders);
+      if (response?.data?.purchase_orders) {
+        // Calculate the starting serial number for the current page
+        const startSerialNumber =
+          ((filters.page || 1) - 1) * (filters.pageSize || 5) + 1;
 
-      if (response.data.pagination) {
+        // Map the purchase orders with correct serial numbers
+        const purchaseOrdersWithSerial = response.data.purchase_orders.map(
+          (po, index) => ({
+            ...po,
+            serialNumber: startSerialNumber + index,
+          })
+        );
+
+        setPurchaseOrders(purchaseOrdersWithSerial);
+      } else {
+        setPurchaseOrders([]);
+      }
+
+      if (response?.data?.pagination) {
         setPagination({
           current_page: parseInt(response.data.pagination.current_page) || 1,
           next_page: parseInt(response.data.pagination.next_page) || null,
@@ -197,6 +235,7 @@ const BillEntryCreateVendorPage = () => {
     } catch (err) {
       setError("Failed to fetch purchase orders");
       console.error("Error fetching purchase orders:", err);
+      setPurchaseOrders([]);
     } finally {
       setLoading(false);
     }
@@ -208,12 +247,18 @@ const BillEntryCreateVendorPage = () => {
       current_page: 1,
     }));
 
+    const updatedFilterParams = {
+      ...filterParams,
+      selectedPOIds: selectedPONumbers?.map((po) => po?.value) || [],
+      poType: filterParams.poType || "",
+    };
+
     fetchPurchaseOrders(
-      selectedCompany?.value,
-      selectedProject?.value,
-      selectedSite?.value,
+      selectedCompany?.value || null,
+      selectedProject?.value || null,
+      selectedSite?.value || null,
       {
-        ...filterParams,
+        ...updatedFilterParams,
         page: 1,
         pageSize: pageSize,
       }
@@ -227,10 +272,13 @@ const BillEntryCreateVendorPage = () => {
       poType: "",
       poNumber: "",
       selectedPOIds: [],
+      projectId: "",
+      siteId: "",
     });
     setSelectedCompany(null);
     setSelectedProject(null);
     setSelectedSite(null);
+    setSelectedPONumbers([]);
     setProjects([]);
     setSites([]);
     setPagination((prev) => ({
@@ -264,9 +312,9 @@ const BillEntryCreateVendorPage = () => {
     }));
 
     fetchPurchaseOrders(
-      selectedCompany?.value,
-      selectedProject?.value,
-      selectedSite?.value,
+      selectedCompany?.value || null,
+      selectedProject?.value || null,
+      selectedSite?.value || null,
       {
         ...filterParams,
         page: page,
@@ -462,15 +510,16 @@ const BillEntryCreateVendorPage = () => {
 
   const handleBillEntrySubmit = async () => {
     try {
+      setLoading(true);
       // Validate required fields
       if (!selectedPO?.id) {
         alert("Please select a Purchase Order");
         return;
       }
-      if (!formData.bill_no) {
-        alert("Please enter Bill Number");
-        return;
-      }
+      // if (!formData.bill_no) {
+      //   alert("Please enter Bill Number");
+      //   return;
+      // }
       if (!formData.bill_date) {
         alert("Please enter Bill Date");
         return;
@@ -512,6 +561,7 @@ const BillEntryCreateVendorPage = () => {
 
       if (response.data) {
         alert("Bill entry created successfully");
+        setLoading(false);
         // Reset form
         setFormData({
           bill_no: "",
@@ -525,7 +575,17 @@ const BillEntryCreateVendorPage = () => {
     } catch (error) {
       console.error("Error creating bill entry:", error);
       alert("Failed to create bill entry. Please try again.");
+    } finally {
+      setLoading(false); // Set loading to false after the API call
     }
+  };
+
+  const handlePOTypeChange = (selected) => {
+    if (!selected) return;
+    setFilterParams((prev) => ({
+      ...prev,
+      poType: selected.value || "",
+    }));
   };
 
   return (
@@ -602,7 +662,7 @@ const BillEntryCreateVendorPage = () => {
                       Select
                     </p>
                   </div>
-                  <div className="col-md-3 ">
+                  {/* <div className="col-md-3 ">
                     <div className="form-group">
                       <label>Bill Number</label>
                       <input
@@ -614,7 +674,7 @@ const BillEntryCreateVendorPage = () => {
                         placeholder=""
                       />
                     </div>
-                  </div>
+                  </div> */}
                   <div className="col-md-3 ">
                     <div className="form-group">
                       <label>Bill Date</label>
@@ -642,14 +702,14 @@ const BillEntryCreateVendorPage = () => {
                       />
                     </div>
                   </div>
-                </div>
-                <div className="row">
-                  <div className="col-md-3 mt-2">
+
+                  {/* <div className="row"> */}
+                  <div className="col-md-3 ">
                     <div className="form-group">
                       <label>Vendor Remark</label>
                       <textarea
                         className="form-control"
-                        rows={2}
+                        rows={1}
                         name="vendor_remark"
                         value={formData.vendor_remark}
                         onChange={handleInputChange}
@@ -664,7 +724,7 @@ const BillEntryCreateVendorPage = () => {
                       <label>Remark</label>
                       <textarea
                         className="form-control"
-                        rows={2}
+                        rows={1}
                         placeholder="Enter ..."
                         defaultValue={""}
                       />
@@ -677,11 +737,12 @@ const BillEntryCreateVendorPage = () => {
                       <label>Comments</label>
                       <textarea
                         className="form-control"
-                        rows={2}
+                        rows={1}
                         placeholder="Enter ..."
                         defaultValue={""}
                       />
                     </div>
+                    {/* </div> */}
                     {/* </div> */}
                   </div>
                 </div>
@@ -704,7 +765,7 @@ const BillEntryCreateVendorPage = () => {
                         data-bs-target="#RevisionModal"
                         onClick={openattachModal}
                       >
-                        Attach Other
+                        Attach Document
                       </button>
                     </div>
                   </div>
@@ -733,7 +794,12 @@ const BillEntryCreateVendorPage = () => {
                             <td className="text-start">{doc.document_type}</td>
                             <td
                               className="text-start"
-                              style={{ cursor: "pointer" }}
+                              // style={{ cursor: "pointer" }}
+                              style={{
+                                color: "#8b0203",
+                                textDecoration: "underline",
+                                cursor: "pointer",
+                              }}
                               onClick={() =>
                                 handleDocumentCountClick(doc.document_type)
                               }
@@ -751,7 +817,7 @@ const BillEntryCreateVendorPage = () => {
                                   openattachModal();
                                 }}
                               >
-                                Attach
+                                Attach Another Document
                               </button>
                             </td>
                           </tr>
@@ -761,6 +827,22 @@ const BillEntryCreateVendorPage = () => {
                   </table>
                 </div>
                 <div className="row mt-2 justify-content-center">
+                  {loading && (
+                    <div className="loader-container">
+                      <div className="lds-ring">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                      </div>
+                      <p>loading..</p>
+                    </div>
+                  )}
+
                   <div className="col-md-2">
                     <button
                       className="purple-btn2 w-100"
@@ -792,6 +874,22 @@ const BillEntryCreateVendorPage = () => {
           </div>
         </div>
       </div>
+
+      {loading && (
+        <div className="loader-container">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>Updating...</p>
+        </div>
+      )}
 
       <Modal
         centered
@@ -847,7 +945,7 @@ const BillEntryCreateVendorPage = () => {
                     <th>Attachment Name</th>
                     <th>Upload Date</th>
                     <th>Uploaded By</th>
-                    <th>Action</th>
+                    {/* <th>Action</th> */}
                   </tr>
                 </thead>
                 <tbody>
@@ -858,7 +956,7 @@ const BillEntryCreateVendorPage = () => {
                       <td>{attachment.filename}</td>
                       <td>{new Date().toLocaleDateString()}</td>
                       <td>vendor user</td>
-                      <td>
+                      {/* <td>
                         <button
                           className="border-0 bg-transparent"
                           onClick={() => {
@@ -870,7 +968,7 @@ const BillEntryCreateVendorPage = () => {
                         >
                           <DownloadIcon />
                         </button>
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>
@@ -888,7 +986,7 @@ const BillEntryCreateVendorPage = () => {
                     <th>Attachment Name</th>
                     <th>Upload Date</th>
                     <th>Uploaded By</th>
-                    <th>Action</th>
+                    {/* <th>Action</th> */}
                   </tr>
                 </thead>
                 <tbody>
@@ -899,7 +997,7 @@ const BillEntryCreateVendorPage = () => {
                       <td>{attachment.filename}</td>
                       <td>{new Date().toLocaleDateString()}</td>
                       <td>vendor user</td>
-                      <td>
+                      {/* <td>
                         <button
                           className="border-0 bg-transparent"
                           onClick={() => {
@@ -911,7 +1009,7 @@ const BillEntryCreateVendorPage = () => {
                         >
                           <DownloadIcon />
                         </button>
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>
@@ -1087,15 +1185,10 @@ const BillEntryCreateVendorPage = () => {
                   options={poTypes}
                   value={
                     poTypes.find(
-                      (type) => type.value === filterParams.poType
+                      (type) => type?.value === filterParams?.poType
                     ) || poTypes[0]
                   }
-                  onChange={(selected) =>
-                    setFilterParams((prev) => ({
-                      ...prev,
-                      poType: selected.value,
-                    }))
-                  }
+                  onChange={handlePOTypeChange}
                   placeholder="Select PO Type"
                 />
               </div>
@@ -1103,17 +1196,12 @@ const BillEntryCreateVendorPage = () => {
             <div className="col-md-4">
               <div className="form-group">
                 <label>PO Number</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={filterParams.poNumber}
-                  onChange={(e) =>
-                    setFilterParams((prev) => ({
-                      ...prev,
-                      poNumber: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter PO Number"
+                <MultiSelector
+                  options={poOptions}
+                  value={selectedPONumbers}
+                  onChange={(selected) => setSelectedPONumbers(selected)}
+                  placeholder="Select PO Numbers"
+                  isMulti={true}
                 />
               </div>
             </div>
@@ -1191,7 +1279,8 @@ const BillEntryCreateVendorPage = () => {
                               onChange={() => handleCheckboxChange(po.id)}
                             />
                           </td>
-                          <td className="text-start">{index + 1}</td>
+                          {/* <td className="text-start">{index + 1}</td> */}
+                          <td className="text-start">{po.serialNumber}</td>
                           <td className="text-start">{po.po_number}</td>
                           <td className="text-start">{po.po_date}</td>
                           <td className="text-start">{po.total_value}</td>

@@ -8,6 +8,7 @@ import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { useNavigate } from "react-router-dom";
+import MultiSelector from "../components/base/Select/MultiSelector";
 
 const BillEntryListSubPage = () => {
   const [selectPOModal, setselectPOModal] = useState(false);
@@ -31,8 +32,8 @@ const BillEntryListSubPage = () => {
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [companies, setCompanies] = useState([]);
   const [selectedPOs, setSelectedPOs] = useState([]);
-  const [poTypes, setPoTypes] = useState([
-    { value: "", label: "All" },
+  const [poTypes] = useState([
+    { value: "", label: "Select PO Type" },
     { value: "Domestic", label: "Domestic" },
     { value: "ROPO", label: "ROPO" },
     { value: "Import", label: "Import" },
@@ -58,7 +59,11 @@ const BillEntryListSubPage = () => {
     per_page: 5,
   });
 
+  const [poOptions, setPoOptions] = useState([]);
+  const [selectedPONumbers, setSelectedPONumbers] = useState([]);
+
   const handlePOSelect = (po) => {
+    if (!po) return;
     setSelectedPO(po);
     setFilterParams((prev) => ({
       ...prev,
@@ -70,13 +75,13 @@ const BillEntryListSubPage = () => {
       // Update PO Date
       const poDateInput = document.querySelector('input[name="po_date"]');
       if (poDateInput) {
-        poDateInput.value = po.po_date;
+        poDateInput.value = po.po_date || "";
       }
 
       // Update PO Value
       const poValueInput = document.querySelector('input[name="po_value"]');
       if (poValueInput) {
-        poValueInput.value = po.total_value;
+        poValueInput.value = po.total_value || "";
       }
 
       // Update GSTIN Number
@@ -96,7 +101,9 @@ const BillEntryListSubPage = () => {
   };
 
   const handleCheckboxChange = (poId) => {
+    if (!poId) return;
     setSelectedPOs((prev) => {
+      if (!prev) return [poId];
       if (prev.includes(poId)) {
         return prev.filter((id) => id !== poId);
       } else {
@@ -106,8 +113,9 @@ const BillEntryListSubPage = () => {
   };
 
   const handleSelectAll = (event) => {
+    if (!event || !event.target) return;
     if (event.target.checked) {
-      setSelectedPOs(purchaseOrders.map((po) => po.id));
+      setSelectedPOs(purchaseOrders?.map((po) => po?.id) || []);
     } else {
       setSelectedPOs([]);
     }
@@ -119,6 +127,25 @@ const BillEntryListSubPage = () => {
       page: 1,
       pageSize: pageSize,
     });
+  }, []);
+
+  // Add this useEffect to fetch PO numbers when component mounts
+  useEffect(() => {
+    const fetchPONumbers = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}purchase_orders/grn_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        const poNumbers = response.data.purchase_orders.map((po) => ({
+          value: po.id,
+          label: po.po_number,
+        }));
+        setPoOptions(poNumbers);
+      } catch (error) {
+        console.error("Error fetching PO numbers:", error);
+      }
+    };
+    fetchPONumbers();
   }, []);
 
   const fetchPurchaseOrders = async (
@@ -151,15 +178,34 @@ const BillEntryListSubPage = () => {
       if (filters?.selectedPOIds?.length > 0) {
         url += `&q[id_in]=${filters.selectedPOIds.join(",")}`;
       }
+      if (filters?.poType && filters.poType !== "") {
+        url += `&q[po_type_eq]=${filters.poType}`;
+      }
 
       // Always add pagination parameters
       url += `&page=${filters.page || 1}`;
       url += `&per_page=${filters.pageSize || 5}`;
 
       const response = await axios.get(url);
-      setPurchaseOrders(response.data.purchase_orders);
+      if (response?.data?.purchase_orders) {
+        // Calculate the starting serial number for the current page
+        const startSerialNumber =
+          ((filters.page || 1) - 1) * (filters.pageSize || 5) + 1;
 
-      if (response.data.pagination) {
+        // Map the purchase orders with correct serial numbers
+        const purchaseOrdersWithSerial = response.data.purchase_orders.map(
+          (po, index) => ({
+            ...po,
+            serialNumber: startSerialNumber + index,
+          })
+        );
+
+        setPurchaseOrders(purchaseOrdersWithSerial);
+      } else {
+        setPurchaseOrders([]);
+      }
+
+      if (response?.data?.pagination) {
         setPagination({
           current_page: parseInt(response.data.pagination.current_page) || 1,
           next_page: parseInt(response.data.pagination.next_page) || null,
@@ -172,6 +218,7 @@ const BillEntryListSubPage = () => {
     } catch (err) {
       setError("Failed to fetch purchase orders");
       console.error("Error fetching purchase orders:", err);
+      setPurchaseOrders([]);
     } finally {
       setLoading(false);
     }
@@ -183,12 +230,18 @@ const BillEntryListSubPage = () => {
       current_page: 1,
     }));
 
+    const updatedFilterParams = {
+      ...filterParams,
+      selectedPOIds: selectedPONumbers?.map((po) => po?.value) || [],
+      poType: filterParams.poType || "",
+    };
+
     fetchPurchaseOrders(
-      selectedCompany?.value,
-      selectedProject?.value,
-      selectedSite?.value,
+      selectedCompany?.value || null,
+      selectedProject?.value || null,
+      selectedSite?.value || null,
       {
-        ...filterParams,
+        ...updatedFilterParams,
         page: 1,
         pageSize: pageSize,
       }
@@ -202,10 +255,13 @@ const BillEntryListSubPage = () => {
       poType: "",
       poNumber: "",
       selectedPOIds: [],
+      projectId: "",
+      siteId: "",
     });
     setSelectedCompany(null);
     setSelectedProject(null);
     setSelectedSite(null);
+    setSelectedPONumbers([]);
     setProjects([]);
     setSites([]);
     setPagination((prev) => ({
@@ -262,30 +318,55 @@ const BillEntryListSubPage = () => {
 
   // tax table functionality
 
-  const handleProjectChange = (value) => {
-    setSelectedProject(value);
+  const handleProjectChange = (selectedOption) => {
+    if (!selectedOption) {
+      setSelectedProject(null);
+      setSelectedSite(null);
+      setSites([]);
+      return;
+    }
+
+    setSelectedProject(selectedOption);
     setSelectedSite(null);
-    setSites(
-      value?.sites?.map((site) => ({
-        value: site.id,
-        label: site.name,
-      })) || []
-    );
+
+    if (selectedCompany?.value) {
+      const selectedCompanyData = companies.find(
+        (company) => company?.id === selectedCompany.value
+      );
+      const selectedProjectData = selectedCompanyData?.projects?.find(
+        (project) => project?.id === selectedOption.value
+      );
+
+      setSites(
+        selectedProjectData?.pms_sites?.map((site) => ({
+          value: site?.id || "",
+          label: site?.name || "",
+        })) || []
+      );
+    }
   };
 
-  const handleSiteChange = (value) => {
-    setSelectedSite(value);
+  const handleSiteChange = (selectedOption) => {
+    setSelectedSite(selectedOption || null);
   };
 
   const handleCompanyChange = (selectedOption) => {
+    if (!selectedOption) {
+      setSelectedCompany(null);
+      setSelectedProject(null);
+      setSelectedSite(null);
+      setProjects([]);
+      setSites([]);
+      return;
+    }
+
     setSelectedCompany(selectedOption);
     setSelectedProject(null);
     setSelectedSite(null);
     setProjects(
-      selectedOption?.projects?.map((project) => ({
-        value: project.id,
-        label: project.name,
-        sites: project.pms_sites,
+      selectedOption?.projects?.map((prj) => ({
+        value: prj?.id || "",
+        label: prj?.name || "",
       })) || []
     );
     setSites([]);
@@ -453,6 +534,7 @@ const BillEntryListSubPage = () => {
   };
 
   const handleBillEntrySubmit = async () => {
+    setLoading(true);
     if (!selectedPO) {
       alert("Please select a Purchase Order.");
       return;
@@ -508,6 +590,7 @@ const BillEntryListSubPage = () => {
       // Navigate("/bill-entry-list")
       if (response.data) {
         alert("Bill entry created successfully!");
+        setLoading(false);
         navigate("/bill-entry-list"); // Redirect to bill-booking-list
         // Reset form or redirect as needed
       }
@@ -515,8 +598,29 @@ const BillEntryListSubPage = () => {
     } catch (error) {
       console.error("Error submitting bill entry:", error);
       alert("Failed to submit bill entry. Please try again.");
+    } finally {
+      setLoading(false); // Set loading to false after the API call
     }
   };
+
+  // Update effect to handle null selectedPONumbers
+  useEffect(() => {
+    if (!selectedPONumbers) return;
+    setFilterParams((prev) => ({
+      ...prev,
+      selectedPOIds: selectedPONumbers.map((po) => po?.value || ""),
+    }));
+  }, [selectedPONumbers]);
+
+  // Update PO Type selector change handler
+  const handlePOTypeChange = (selected) => {
+    if (!selected) return;
+    setFilterParams((prev) => ({
+      ...prev,
+      poType: selected.value || "",
+    }));
+  };
+
   return (
     <div className="website-content">
       <div className="module-data-section ms-2 mt-1">
@@ -745,6 +849,22 @@ const BillEntryListSubPage = () => {
           </div>
         </div>
       </div>
+
+      {loading && (
+        <div className="loader-container">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>loading...</p>
+        </div>
+      )}
 
       <Modal
         centered
@@ -1038,15 +1158,10 @@ const BillEntryListSubPage = () => {
                   options={poTypes}
                   value={
                     poTypes.find(
-                      (type) => type.value === filterParams.poType
+                      (type) => type?.value === filterParams?.poType
                     ) || poTypes[0]
                   }
-                  onChange={(selected) =>
-                    setFilterParams((prev) => ({
-                      ...prev,
-                      poType: selected.value,
-                    }))
-                  }
+                  onChange={handlePOTypeChange}
                   placeholder="Select PO Type"
                 />
               </div>
@@ -1054,17 +1169,12 @@ const BillEntryListSubPage = () => {
             <div className="col-md-4">
               <div className="form-group">
                 <label>PO Number</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={filterParams.poNumber}
-                  onChange={(e) =>
-                    setFilterParams((prev) => ({
-                      ...prev,
-                      poNumber: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter PO Number"
+                <MultiSelector
+                  options={poOptions}
+                  value={selectedPONumbers}
+                  onChange={(selected) => setSelectedPONumbers(selected)}
+                  placeholder="Select PO Numbers"
+                  isMulti={true}
                 />
               </div>
             </div>
@@ -1116,7 +1226,7 @@ const BillEntryListSubPage = () => {
                         </td>
                       </tr>
                     ) : (
-                      purchaseOrders.map((po, index) => (
+                      purchaseOrders.map((po) => (
                         <tr key={po.id}>
                           <td className="text-start">
                             <input
@@ -1125,7 +1235,7 @@ const BillEntryListSubPage = () => {
                               onChange={() => handleCheckboxChange(po.id)}
                             />
                           </td>
-                          <td className="text-start">{index + 1}</td>
+                          <td className="text-start">{po.serialNumber}</td>
                           <td className="text-start">{po.po_number}</td>
                           <td className="text-start">{po.po_date}</td>
                           <td className="text-start">{po.total_value}</td>

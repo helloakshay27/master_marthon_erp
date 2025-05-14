@@ -237,6 +237,64 @@ const BillEntryList = () => {
     setSelectedSite(selectedOption);
   };
 
+  const [activeTab, setActiveTab] = useState("list");
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    fetchTabData(tab, 1); // Always go to first page on tab change
+  };
+  const [allBillCount, setAllBillCount] = useState(0); // <-- Add this
+
+  // Fetch total bill count only once, on mount
+  useEffect(() => {
+    const fetchAllBillCount = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}bill_entries?page=1&per_page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        setAllBillCount(response.data.meta.total_count || 0);
+      } catch (error) {
+        setAllBillCount(0);
+      }
+    };
+    fetchAllBillCount();
+  }, []);
+
+  const fetchTabData = (tab, page) => {
+    setLoading(true);
+    let statusQuery = "";
+    if (tab === "open") statusQuery = "&q[status_eq]=open";
+    if (tab === "online") statusQuery = "&q[status_eq]=online";
+    if (tab === "offline") statusQuery = "&q[status_eq]=offline";
+
+    axios
+      .get(
+        `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${statusQuery}`
+      )
+      .then((response) => {
+        const transformedData = response.data.bill_entries.map(
+          (entry, index) => ({
+            id: entry.id,
+            srNo: (page - 1) * pageSize + index + 1,
+            ...entry,
+          })
+        );
+        setBillEntries(transformedData);
+        setMeta(response.data.meta);
+        setTotalPages(response.data.meta.total_pages);
+        setTotalEntries(response.data.meta.total_count);
+        setCurrentPage(page);
+      })
+      .catch((error) => {
+        console.error("Error fetching tab data:", error);
+      })
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    fetchTabData(activeTab, currentPage);
+    // eslint-disable-next-line
+  }, [activeTab, currentPage, pageSize]);
+
   // Fetch filtered data
   const fetchFilteredData = () => {
     const companyId = selectedCompany?.value || "";
@@ -293,16 +351,30 @@ const BillEntryList = () => {
         console.error("Error resetting data:", error);
       });
   };
+  const [searchInput, setSearchInput] = useState("");
+
+  // Handle search button click
+  const handleSearch = () => {
+    setSearchKeyword(searchInput);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  // Handle cross button click
+  const handleClearSearch = () => {
+    setSearchInput("");
+    setSearchKeyword("");
+    setCurrentPage(1); // Reset to first page
+  };
 
   // Fetch bill entries
   const fetchData = async (page) => {
     const search = searchKeyword || "";
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[invoice_number_or_einvoice_or_inventory_date_or_invoice_amount_or_other_deductions_or_total_value_or_status_or_total_amount_or_company_company_name_or_pms_site_name_or_project_name_or_supplier_first_name_or_supplier_last_name_or_bill_purchase_orders_purchase_order_po_number_eq]=${search}`
-      );
 
+      const response = await axios.get(
+        `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_cont]=${search}`
+      );
       const transformedData = response.data.bill_entries.map(
         (entry, index) => ({
           id: entry.id,
@@ -377,41 +449,58 @@ display:none !important;
               <div className="row separteinto6 justify-content-center">
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button active"
-                    data-tab="total"
+                    className={`content-box tab-button ${
+                      activeTab === "list" ? "active" : ""
+                    }`}
+                    data-tab="list"
+                    onClick={() => handleTabChange("list")}
                   >
                     <h4 className="content-box-title fw-semibold">Bill List</h4>
-                    <p className="content-box-sub">{totalEntries}</p>
-                  </div>
-                </div>
-                <div className="col-md-2 text-center">
-                  <div className="content-box tab-button" data-tab="draft">
-                    <h4 className="content-box-title fw-semibold">
-                      Open Bills
-                    </h4>
-                    <p className="content-box-sub">{meta?.open || 0}</p>
+                    <p className="content-box-sub">{allBillCount}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button"
-                    data-tab="pending-approval"
+                    className={`content-box tab-button ${
+                      activeTab === "open" ? "active" : ""
+                    }`}
+                    data-tab="open"
+                    onClick={() => handleTabChange("open")}
+                  >
+                    <h4 className="content-box-title fw-semibold">
+                      Open Bills
+                    </h4>
+                    <p className="content-box-sub">{meta?.draft_count || 0}</p>
+                  </div>
+                </div>
+                <div className="col-md-2 text-center">
+                  <div
+                    className={`content-box tab-button ${
+                      activeTab === "online" ? "active" : ""
+                    }`}
+                    data-tab="online"
+                    onClick={() => handleTabChange("online")}
                   >
                     <h4 className="content-box-title fw-semibold">
                       Online Bills
                     </h4>
-                    <p className="content-box-sub">{meta?.online || 0}</p>
+                    <p className="content-box-sub">{meta?.online_count || 0}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button"
-                    data-tab="self-overdue"
+                    className={`content-box tab-button ${
+                      activeTab === "offline" ? "active" : ""
+                    }`}
+                    data-tab="offline"
+                    onClick={() => handleTabChange("offline")}
                   >
                     <h4 className="content-box-title fw-semibold">
                       Offline Bills
                     </h4>
-                    <p className="content-box-sub">{meta?.offline || 0}</p>
+                    <p className="content-box-sub">
+                      {meta?.offline_count || 0}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -513,37 +602,59 @@ display:none !important;
 
             <div className="d-flex mt-3 align-items-end px-3">
               <div className="col-md-6">
-                <form>
-                  <div className="input-group">
-                    <input
-                      type="search"
-                      className="form-control tbl-search"
-                      placeholder="Type your keywords here"
-                      value={searchKeyword}
-                      onChange={(e) => setSearchKeyword(e.target.value)}
-                    />
-                    <div className="input-group-append">
-                      <button type="submit" className="btn btn-md btn-default">
+                <div className="input-group">
+                  <input
+                    type="search"
+                    className="form-control tbl-search"
+                    placeholder="Type your keywords here"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                  />
+                  <div className="input-group-append">
+                    {searchInput && (
+                      <button
+                        type="button"
+                        className="btn btn-md btn-default"
+                        onClick={handleClearSearch}
+                      >
                         <svg
-                          width={16}
-                          height={16}
+                          width="16"
+                          height="16"
                           viewBox="0 0 16 16"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
                         >
                           <path
-                            d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
-                            fill="#8B0203"
-                          />
-                          <path
-                            d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
+                            d="M8 1.33334C4.32 1.33334 1.33333 4.32001 1.33333 8.00001C1.33333 11.68 4.32 14.6667 8 14.6667C11.68 14.6667 14.6667 11.68 14.6667 8.00001C14.6667 4.32001 11.68 1.33334 8 1.33334ZM10.6667 10.6667L8 8.00001L5.33333 10.6667L5.33333 5.33334L8 8.00001L10.6667 5.33334V10.6667Z"
                             fill="#8B0203"
                           />
                         </svg>
                       </button>
-                    </div>
+                    )}
+                    <button
+                      type="submit"
+                      className="btn btn-md btn-default"
+                      onClick={handleSearch}
+                    >
+                      <svg
+                        width={16}
+                        height={16}
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
+                          fill="#8B0203"
+                        />
+                        <path
+                          d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
+                          fill="#8B0203"
+                        />
+                      </svg>
+                    </button>
                   </div>
-                </form>
+                </div>
               </div>
               <div className="col-md-6">
                 <div className="row justify-content-end">
@@ -551,19 +662,19 @@ display:none !important;
                     <div className="row justify-content-center px-3">
                       <div className="col-md-3">
                         {/* <button
-                          className="btn btn-md"
+                            className="btn btn-md"
                           onClick={handleModalShow}
-                        >
-                          <FilterIcon />
+                          >
+                            <FilterIcon />
                         </button> */}
                       </div>
                       <div className="col-md-3">
                         {/* <button
-                          id="downloadButton"
-                          type="submit"
-                          className="btn btn-md"
-                        >
-                          <DownloadIcon />
+                            id="downloadButton"
+                            type="submit"
+                            className="btn btn-md"
+                          >
+                            <DownloadIcon />
                         </button> */}
                       </div>
                       <div className="col-md-3">
