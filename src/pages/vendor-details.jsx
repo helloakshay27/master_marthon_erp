@@ -4598,9 +4598,9 @@ export default function VendorDetails() {
                                   previousData[rowIndex]?.price || cell; // Fallback to `cell` if `previousData` is undefined
                                 const updatedPrice =
                                   updatedData[rowIndex]?.price || previousPrice; // Use `updatedPrice` if available
-
-                                const showArrow =
+                                  const showArrow =
                                   counterData && previousPrice !== updatedPrice; // Show arrow if `counterData` exists and prices differ
+                                  console.log("counterData",counterData, "previous",previousPrice, "updated",updatedPrice, "showArrow",showArrow)
 
                                 return showArrow ? (
                                   <div
