@@ -68,7 +68,12 @@ const ErpStockRegister13B = () => {
 
   // Calculate displayed rows for the current page
   const startEntry = (page - 1) * pageSize + 1;
-  const endEntry = Math.min(page * pageSize, filteredData.length);
+  const endEntry = Math.min(
+    pagination.current_page * pageSize,
+    pagination.total_count
+  )
+
+
 
   const allColumns = [
     { field: "srNo", headerName: "Sr. No.", width: 100 },
