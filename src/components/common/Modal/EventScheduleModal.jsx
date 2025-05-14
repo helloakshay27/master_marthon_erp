@@ -140,29 +140,33 @@ const EventScheduleModal = ({
   };
 
   const handleSaveScheduleFun = () => {
-    const currentTime = new Date();
-    const startTime = isLater
-      ? `${laterDate}T${laterTime}:00Z`
-      : existingData?.start_time || currentTime.toISOString();
+  const currentTime = new Date();
+  const startTime = isLater
+    ? `${laterDate}T${laterTime}:00Z`
+    : `${new Date().toISOString().split("T")[0]}T${new Date()
+        .toTimeString()
+        .split(" ")[0]
+        .substring(0, 5)}:00Z`; // Use the latest current time if not scheduled for later
+      console.log("startTime", startTime);
+      
+  const endTimeFormatted =
+    endDate && endTime
+      ? `${endDate}T${endTime}:00Z`
+      : ""; // Ensure it uses the latest updated values
 
-    const endTimeFormatted =
-      endDate && endTime
-        ? `${endDate}T${endTime}:00Z`
-        : existingData?.end_time || "";
+  const evaluationTimeFormatted =
+    evaluationDurationVal && customEvaluationDuration
+      ? `${evaluationDurationVal} ${customEvaluationDuration}`
+      : "Mins Mins"; // Use the latest evaluation duration values
 
-    const evaluationTimeFormatted =
-      evaluationDurationVal && customEvaluationDuration
-        ? `${evaluationDurationVal} ${customEvaluationDuration}`
-        : existingData?.evaluation_time || "Mins Mins";
-
-    const data = {
-      start_time: startTime,
-      end_time_duration: endTimeFormatted,
-      evaluation_time: evaluationTimeFormatted,
-    };
-
-    handleSaveSchedule(data);
+  const data = {
+    start_time: startTime,
+    end_time_duration: endTimeFormatted,
+    evaluation_time: evaluationTimeFormatted,
   };
+
+  handleSaveSchedule(data);
+};
 
   return (
     <DynamicModalBox

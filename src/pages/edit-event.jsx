@@ -187,7 +187,7 @@ export default function EditEvent() {
       return localDate;
     };
 
-    const startDateTime = formatDateTime(data.start_time);
+    const startDateTime = formatDateTime(adjustTimeZone(data.start_time));
     const endDateTime = formatDateTime(adjustTimeZone(data.end_time_duration));
 
     const scheduleText = `${startDateTime} to ${endDateTime}`;
