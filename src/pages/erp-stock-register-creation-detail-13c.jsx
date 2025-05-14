@@ -200,7 +200,11 @@ const ErpStockRegisterCreationDetail13C = () => {
                                     {data?.stock_details.map((item, id) => (
                                       <tr key={id}>
                                         <td>{id + 1}</td>
-                                        <td>{item?.created_at}</td>
+                                        <td>
+                                          {new Date(item?.created_at).toLocaleDateString(
+                                            "en-GB"
+                                          )}
+                                        </td>
                                         <td>{item?.mor}</td>
                                         <td>{item?.supplier || "-"}</td>
                                         <td>{item?.resource_number}</td>
@@ -209,7 +213,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                         <td>{item?.received_qty || "-"}</td>
                                         <td>{item?.issued_qty || "-"}</td>
                                         <td>{item?.returned_qty || "-"}</td>
-                                        <td>{item?.balanced_qty || "-"}</td>
+                                        <td></td>
                                         <td>-</td>
                                       </tr>
                                     ))}

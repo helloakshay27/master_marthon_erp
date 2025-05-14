@@ -7,12 +7,14 @@ import { useEffect } from "react";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import SingleSelector from "../components/base/Select/SingleSelector";
+import { useNavigate } from "react-router-dom";
 
 const BillEntryListSubPage = () => {
   const [selectPOModal, setselectPOModal] = useState(false);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [selectedPO, setSelectedPO] = useState(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const openSelectPOModal = () => {
     setselectPOModal(true);
   };
@@ -502,7 +504,13 @@ const BillEntryListSubPage = () => {
         `${baseURL}bill_entries?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         payload
       );
-      alert("Bill entry submitted successfully!");
+      // alert("Bill entry submitted successfully!");
+      // Navigate("/bill-entry-list")
+      if (response.data) {
+        alert("Bill entry created successfully!");
+        navigate("/bill-entry-list"); // Redirect to bill-booking-list
+        // Reset form or redirect as needed
+      }
       console.log("Response:", response.data);
     } catch (error) {
       console.error("Error submitting bill entry:", error);
@@ -782,7 +790,7 @@ const BillEntryListSubPage = () => {
                     <th>Attachment Name</th>
                     <th>Upload Date</th>
                     <th>Uploaded By</th>
-                    <th>Action</th>
+                    {/* <th>Action</th> */}
                   </tr>
                 </thead>
                 <tbody>
@@ -793,7 +801,7 @@ const BillEntryListSubPage = () => {
                       <td>{attachment.filename}</td>
                       <td>{new Date().toLocaleDateString()}</td>
                       <td>vendor user</td>
-                      <td>
+                      {/* <td>
                         <button
                           className="border-0 bg-transparent"
                           onClick={() => {
@@ -805,7 +813,7 @@ const BillEntryListSubPage = () => {
                         >
                           <DownloadIcon />
                         </button>
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>
@@ -823,7 +831,7 @@ const BillEntryListSubPage = () => {
                     <th>Attachment Name</th>
                     <th>Upload Date</th>
                     <th>Uploaded By</th>
-                    <th>Action</th>
+                    {/* <th>Action</th> */}
                   </tr>
                 </thead>
                 <tbody>
@@ -834,7 +842,7 @@ const BillEntryListSubPage = () => {
                       <td>{attachment.filename}</td>
                       <td>{new Date().toLocaleDateString()}</td>
                       <td>vendor user</td>
-                      <td>
+                      {/* <td>
                         <button
                           className="border-0 bg-transparent"
                           onClick={() => {
@@ -846,7 +854,7 @@ const BillEntryListSubPage = () => {
                         >
                           <DownloadIcon />
                         </button>
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>

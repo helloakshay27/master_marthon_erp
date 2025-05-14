@@ -1,20 +1,20 @@
-import React from 'react'
+import React from "react";
 import { Modal } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import { useState, useEffect } from "react";
-import SingleSelector from '../components/base/Select/SingleSelector';
-import {
-  Table
-} from "../components";
+import SingleSelector from "../components/base/Select/SingleSelector";
+import { Table } from "../components";
 import { auditLogColumns, auditLogData } from "../constant/data";
-import { useParams } from "react-router-dom"
-import axios from 'axios';
+import { useParams } from "react-router-dom";
+import axios from "axios";
 import { DownloadIcon } from "../components";
-import { baseURL } from '../confi/apiDomain';
+import { baseURL } from "../confi/apiDomain";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const BillVerificationDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false); // Add loading state
   const [billDetails, setBillDetails] = useState(null);
   const [attachModal, setattachModal] = useState(false);
@@ -24,7 +24,6 @@ const BillVerificationDetails = () => {
     document_type: "",
     attachments: [],
   });
-
 
   const openattachModal = () => setattachModal(true);
   const closeattachModal = () => setattachModal(false);
@@ -43,10 +42,12 @@ const BillVerificationDetails = () => {
   useEffect(() => {
     // Fetch data from the API
     axios
-      .get(`${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      .get(
+        `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      )
       .then((response) => {
         setBillDetails(response.data);
-        setStatus(response.data.status)
+        setStatus(response.data.status);
         if (response.data.documents) {
           setDocuments(response.data.documents);
         }
@@ -82,7 +83,6 @@ const BillVerificationDetails = () => {
       value: "approved",
     },
   ];
-
 
   // Add handleDownload function
   const handleDownload = async (blobId) => {
@@ -121,19 +121,21 @@ const BillVerificationDetails = () => {
   };
 
   if (!billDetails) {
-    return <div className="loader-container">
-      <div className="lds-ring">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
+    return (
+      <div className="loader-container">
+        <div className="lds-ring">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <p>loading..</p>
       </div>
-      <p>loading..</p>
-    </div>;
+    );
   }
 
   const handleStatusChange = (selectedOption) => {
@@ -143,7 +145,6 @@ const BillVerificationDetails = () => {
   };
 
   // const [viewDocumentModal, setviewDocumentModal] = useState(false);
-
 
   const handleAttachDocument = () => {
     if (newDocument.document_type && newDocument.attachments.length > 0) {
@@ -199,7 +200,7 @@ const BillVerificationDetails = () => {
       setviewDocumentModal(true);
     }
   };
-  console.log("status:", status)
+  console.log("status:", status);
 
   const payload = {
     bill_entry: {
@@ -214,7 +215,7 @@ const BillVerificationDetails = () => {
       })),
     },
   };
-  console.log("payload update:", payload)
+  console.log("payload update:", payload);
   const handleUpdateBillEntry = async () => {
     try {
       // Validate required fields
@@ -244,6 +245,7 @@ const BillVerificationDetails = () => {
       if (response.data) {
         alert("Bill entry updated successfully");
         setLoading(false);
+        navigate("/bill-verification-list"); 
         // Reset form
       }
     } catch (error) {
@@ -258,8 +260,8 @@ const BillVerificationDetails = () => {
       <div className="website-content overflow-auto">
         <div className="module-data-section ms-2 mt-3 ">
           <a href="">
-            Home &gt; Billing &gt; Bill Verification List &gt; Update Bill Information
-            (Details)
+            Home &gt; Billing &gt; Bill Verification List &gt; Update Bill
+            Information (Details)
           </a>
           <h5 className="mt-3">Update Bill Information (Details)</h5>
           <div className="row my-4 align-items-center container-fluid mb-5">
@@ -354,7 +356,6 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-
                         </label>
                       </div>
                     </div>
@@ -380,7 +381,6 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-
                         </label>
                       </div>
                     </div>
@@ -393,7 +393,6 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-
                         </label>
                       </div>
                     </div>
@@ -572,7 +571,9 @@ const BillVerificationDetails = () => {
                     <SingleSelector
                       options={statusOptions}
                       onChange={handleStatusChange}
-                      value={statusOptions.find((option) => option.value === status)} // Set "Draft" as the selected status
+                      value={statusOptions.find(
+                        (option) => option.value === status
+                      )} // Set "Draft" as the selected status
                       placeholder="Select Status"
                       // isClearable={false}
                       // isDisabled={true} // Disable the selector
@@ -583,7 +584,12 @@ const BillVerificationDetails = () => {
               </div>
               <div className="row mt-2 justify-content-end">
                 <div className="col-md-2">
-                  <button className="purple-btn2 w-100" onClick={handleUpdateBillEntry}>Submit</button>
+                  <button
+                    className="purple-btn2 w-100"
+                    onClick={handleUpdateBillEntry}
+                  >
+                    Submit
+                  </button>
                 </div>
                 <div className="col-md-2">
                   <button className="purple-btn1 w-100">Cancel</button>
@@ -599,7 +605,6 @@ const BillVerificationDetails = () => {
               <div className=" mb-5">
                 <h5>Audit Log</h5>
                 <div className="mx-0">
-
                   <div className="tbl-container mt-1">
                     <table className="w-100">
                       <thead>
@@ -616,7 +621,9 @@ const BillVerificationDetails = () => {
                         {billDetails?.status_logs?.map((log, index) => (
                           <tr key={log.id}>
                             <td className="text-start">{index + 1}</td>
-                            <td className="text-start">{log.created_by_name || ""}</td>
+                            <td className="text-start">
+                              {log.created_by_name || ""}
+                            </td>
                             {/* <td className="text-start">
                                   {log.created_at
                                     ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
@@ -631,7 +638,12 @@ const BillVerificationDetails = () => {
                                     })}`
                                     : ""}
                                 </td> */}
-                            <td className="text-start">{log.status ? log.status.charAt(0).toUpperCase() + log.status.slice(1) : ""}</td>
+                            <td className="text-start">
+                              {log.status
+                                ? log.status.charAt(0).toUpperCase() +
+                                  log.status.slice(1)
+                                : ""}
+                            </td>
                             <td className="text-start">{log.remarks || ""}</td>
                             <td className="text-start">{""}</td>
                           </tr>
@@ -639,7 +651,6 @@ const BillVerificationDetails = () => {
                       </tbody>
                     </table>
                   </div>
-
                 </div>
               </div>
             </div>
@@ -660,7 +671,6 @@ const BillVerificationDetails = () => {
 </div>
       )} */}
 
-
       {loading && (
         <div className="loader-container">
           <div className="lds-ring">
@@ -678,9 +688,6 @@ const BillVerificationDetails = () => {
       )}
 
       {/* attach document */}
-
-
-
 
       <Modal
         centered
@@ -777,7 +784,6 @@ const BillVerificationDetails = () => {
       {/* remark modal */}
       {/* view documents */}
 
-
       <Modal
         centered
         size="lg"
@@ -844,12 +850,21 @@ const BillVerificationDetails = () => {
                       <td>{new Date().toLocaleDateString()}</td>
                       <td></td>
                       <td>
-                        <button
+                        {/* <button
                           className="btn btn-link p-0 text-decoration-underline"
                           onClick={() => handleDownload(attachment.blob_id)}
                         >
                           <DownloadIcon />
-                        </button>
+                        </button> */}
+                        <a
+                          href={
+                            // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                            `${baseURL}bill_entries/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
+                          }
+                          download={attachment.filename}
+                        >
+                          <DownloadIcon />
+                        </a>
                       </td>
                     </tr>
                   ))}
@@ -879,14 +894,26 @@ const BillVerificationDetails = () => {
                       <td>{attachment.filename}</td>
                       <td>{new Date().toLocaleDateString()}</td>
                       <td></td>
-                      <td>
-                        <button
+                      {/* <td> */}
+                      {/* <button
                           className="btn btn-link p-0 text-decoration-underline"
                           onClick={() => handleDownload(attachment.blob_id)}
                         >
                           <DownloadIcon />
-                        </button>
+                        </button> */}
+
+                      <td >
+                        <a
+                          href={
+                            // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                            `${baseURL}bill_entries/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
+                          }
+                          download={attachment.filename}
+                        >
+                          <DownloadIcon />
+                        </a>
                       </td>
+                      {/* </td> */}
                     </tr>
                   ))}
                 </tbody>
@@ -908,9 +935,8 @@ const BillVerificationDetails = () => {
           </div>
         </Modal.Body>
       </Modal>
-
     </>
-  )
-}
+  );
+};
 
-export default BillVerificationDetails
+export default BillVerificationDetails;
