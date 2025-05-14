@@ -63,25 +63,29 @@ const BillVerificationDetails = () => {
       value: "",
     },
     {
-      label: "Draft",
-      value: "draft",
+      label: "Open",
+      value: "open",
     },
     {
       label: "Verified",
       value: "verified",
     },
     {
-      label: "Submited",
-      value: "submited",
+      label: "All",
+      value: "all",
     },
-    {
-      label: "Proceed",
-      value: "proceed",
-    },
-    {
-      label: "Approved",
-      value: "approved",
-    },
+    // {
+    //   label: "Submited",
+    //   value: "submited",
+    // },
+    // {
+    //   label: "Proceed",
+    //   value: "proceed",
+    // },
+    // {
+    //   label: "Approved",
+    //   value: "approved",
+    // },
   ];
 
   // Add handleDownload function
