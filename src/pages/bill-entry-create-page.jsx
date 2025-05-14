@@ -484,7 +484,7 @@ const BillEntryListSubPage = () => {
         bill_no: formData.bill_no,
         bill_date: formData.bill_date,
         bill_amount: parseFloat(formData.bill_amount),
-        status: "draft",
+        status: "open",
         vendor_remark: formData.vendor_remark,
         documents: documents.map((doc) => ({
           document_type: doc.document_type,

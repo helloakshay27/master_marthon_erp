@@ -60,7 +60,7 @@ const BillVerificationList = () => {
       setBillEntries(response.data.bill_entries);
       setMeta(response.data.meta)
       setTotalPages(response.data.meta.total_pages); // Set total pages
-          setTotalEntries(response.data.meta.total_count);
+      setTotalEntries(response.data.meta.total_count);
     } catch (err) {
       setError("Failed to fetch bill entries");
       console.error("Error fetching bill entries:", err);
@@ -68,47 +68,47 @@ const BillVerificationList = () => {
       setLoading(false);
     }
   };
-   // Fetch credit notes data
-    const [totalEntries, setTotalEntries] = useState(0);
+  // Fetch credit notes data
+  const [totalEntries, setTotalEntries] = useState(0);
 
   useEffect(() => {
-    
+
     fetchBillEntries(currentPage);
   }, [currentPage]);
 
-   // Handle page change
-   const handlePageChange = (pageNumber) => {
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
     }
   };
 
   //company quick filter 
-  
-    const [companies, setCompanies] = useState([]);
-    const [projects, setProjects] = useState([]);
-    const [selectedCompany, setSelectedCompany] = useState(null);
-    const [selectedProject, setSelectedProject] = useState(null);
-    const [selectedSite, setSelectedSite] = useState(null);
-    // const [selectedWing, setSelectedWing] = useState(null);
-    const [siteOptions, setSiteOptions] = useState([]);
-    // const [wingsOptions, setWingsOptions] = useState([]);
-  
-    // Fetch company data on component mount
-    useEffect(() => {
-      axios
-        .get(
-          `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-        )
-        .then((response) => {
-          setCompanies(response.data.companies);
-        })
-        .catch((error) => {
-          console.error("Error fetching company data:", error);
-        });
-    }, []);
 
-    // Handle company selection
+  const [companies, setCompanies] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedSite, setSelectedSite] = useState(null);
+  // const [selectedWing, setSelectedWing] = useState(null);
+  const [siteOptions, setSiteOptions] = useState([]);
+  // const [wingsOptions, setWingsOptions] = useState([]);
+
+  // Fetch company data on component mount
+  useEffect(() => {
+    axios
+      .get(
+        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      )
+      .then((response) => {
+        setCompanies(response.data.companies);
+      })
+      .catch((error) => {
+        console.error("Error fetching company data:", error);
+      });
+  }, []);
+
+  // Handle company selection
   const handleCompanyChange = (selectedOption) => {
     setSelectedCompany(selectedOption); // Set selected company
     setSelectedProject(null); // Reset project selection
@@ -127,8 +127,8 @@ const BillVerificationList = () => {
       );
     }
   };
-   // Handle project selection
-   const handleProjectChange = (selectedOption) => {
+  // Handle project selection
+  const handleProjectChange = (selectedOption) => {
     setSelectedProject(selectedOption);
     setSelectedSite(null); // Reset site selection
 
@@ -152,57 +152,57 @@ const BillVerificationList = () => {
   };
 
   // Handle site selection
-    const handleSiteChange = (selectedOption) => {
-      setSelectedSite(selectedOption);
-    };
-  
-    // Map companies to options for the dropdown
-    const companyOptions = companies.map((company) => ({
-      value: company.id,
-      label: company.company_name,
-    }));
-    // filter
-    const fetchFilteredData = () => {
-      const companyId = selectedCompany?.value || "";
-      const projectId = selectedProject?.value || "";
-      const siteId = selectedSite?.value || "";
-      const search = searchKeyword || "";
-      console.log("ids filter:", companyId, projectId, siteId)
-      const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[purchase_order_company_id_eq]=${companyId}&q[purchase_order_project_id_eq]=${projectId}&q[purchase_order_site_id_eq]=${siteId}`;
-  
-      console.log("url:",url)
-      axios
-        .get(url)
-        .then((response) => {
-          setBillEntries(response.data.bill_entries);
-          setTotalPages(response.data.meta.total_pages); // Set total pages
-          setTotalEntries(response.data.meta.total_count);
-          setMeta(response.data.meta)
-        })
-        .catch((error) => {
-          console.error("Error fetching filtered data:", error);
-        });
-    };
-    const handleReset = () => {
-      // Clear selected filters
-      setSelectedCompany(null);
-      setSelectedProject(null);
-      setSelectedSite(null);
-  
-      // Fetch unfiltered data
-      axios
-        .get(`${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-        .then((response) => {
-          setBillEntries(response.data.bill_entries);
-          setTotalPages(response.data.meta.total_pages); // Set total pages
-          setTotalEntries(response.data.meta.total_count);
-          setMeta(response.data.meta)
-        })
-        .catch((error) => {
-          console.error("Error resetting data:", error);
-        });
-    };
-  
+  const handleSiteChange = (selectedOption) => {
+    setSelectedSite(selectedOption);
+  };
+
+  // Map companies to options for the dropdown
+  const companyOptions = companies.map((company) => ({
+    value: company.id,
+    label: company.company_name,
+  }));
+  // filter
+  const fetchFilteredData = () => {
+    const companyId = selectedCompany?.value || "";
+    const projectId = selectedProject?.value || "";
+    const siteId = selectedSite?.value || "";
+    const search = searchKeyword || "";
+    console.log("ids filter:", companyId, projectId, siteId)
+    const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[purchase_order_company_id_eq]=${companyId}&q[purchase_order_project_id_eq]=${projectId}&q[purchase_order_site_id_eq]=${siteId}`;
+
+    console.log("url:", url)
+    axios
+      .get(url)
+      .then((response) => {
+        setBillEntries(response.data.bill_entries);
+        setTotalPages(response.data.meta.total_pages); // Set total pages
+        setTotalEntries(response.data.meta.total_count);
+        setMeta(response.data.meta)
+      })
+      .catch((error) => {
+        console.error("Error fetching filtered data:", error);
+      });
+  };
+  const handleReset = () => {
+    // Clear selected filters
+    setSelectedCompany(null);
+    setSelectedProject(null);
+    setSelectedSite(null);
+
+    // Fetch unfiltered data
+    axios
+      .get(`${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      .then((response) => {
+        setBillEntries(response.data.bill_entries);
+        setTotalPages(response.data.meta.total_pages); // Set total pages
+        setTotalEntries(response.data.meta.total_count);
+        setMeta(response.data.meta)
+      })
+      .catch((error) => {
+        console.error("Error resetting data:", error);
+      });
+  };
+
 
   // if (loading) {
   //   return <p>Loading...</p>;
@@ -212,6 +212,139 @@ const BillVerificationList = () => {
   //   return <p>{error}</p>;
   // }
 
+  //  bulk action 
+  //bulkaction options 
+  const options = [
+    {
+      label: 'Select Status',
+      value: '',
+    },
+    {
+      label: 'Draft',
+      value: 'draft',
+    },
+    {
+      label: 'Verified',
+      value: 'verified',
+    },
+    {
+      label: 'Submited',
+      value: 'submited',
+    },
+    {
+      label: 'Proceed',
+      value: 'proceed',
+    },
+    {
+      label: 'Approved',
+      value: 'approved',
+    },
+
+  ];
+
+  const [fromStatus, setFromStatus] = useState("");
+  const [toStatus, setToStatus] = useState("");
+  const [remark, setRemark] = useState("");
+
+  // Handle input changes
+  const handleStatusChange = (selectedOption) => {
+    // const { name, value } = e.target;
+    // if (name === "fromStatus") {
+    //   setFromStatus(selectedOption.value);
+    // } else if (name === "toStatus") {
+    //   setToStatus(selectedOption.value);
+    // }
+
+    setFromStatus(selectedOption.value);
+  };
+
+  // Handle status change for 'To Status'
+  const handleToStatusChange = (selectedOption) => {
+    setToStatus(selectedOption.value);
+  };
+
+
+  const handleRemarkChange = (e) => {
+    setRemark(e.target.value);
+  };
+
+  const [selectedBoqDetails, setSelectedBoqDetails] = useState("");
+
+  const handleSubmit = () => {
+    // e.preventDefault();
+
+    if (!fromStatus || !toStatus) {
+      alert("Please select both 'From Status' and 'To Status'.");
+      return;
+    }
+
+    // Prepare data to send
+    const data = {
+      bill_entrie_ids: selectedBoqDetails,
+      // from_status: fromStatus,
+      to_status: toStatus,
+      comments: remark,
+    };
+    console.log("data for bulk action", data)
+
+    // Send data to API using axios
+    axios
+      .patch(
+        `${baseURL}bill_entries/update_bulk_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        data
+      )
+      .then((response) => {
+        console.log('Success:', response.data);
+        alert('Status updated successfully ....')
+        // Handle success (e.g., show a success message, update UI, etc.)
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        // Handle error (e.g., show an error message)
+      });
+  };
+
+  // Fetch the data when 'fromStatus' changes
+  useEffect(() => {
+    if (fromStatus) { // Only fetch data if a status is selected
+      setLoading(true); // Show loading state while fetching
+      axios
+        .get(`${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[status_eq]=${fromStatus}`)
+        .then((response) => {
+          // setBillData(response.data.bill_bookings); // Set fetched data
+          setBillEntries(response.data.bill_entries);
+          setMeta(response.data.meta)
+          setTotalPages(response.data.meta.total_pages); // Reset total pages
+          setTotalEntries(response.data.meta.total_count); // Reset total entries
+        })
+        .catch((error) => {
+          console.error("Error resetting data:", error);
+        })
+        .finally(() => {
+          setLoading(false); // Stop loading when request is complete
+        });
+    }
+  }, [fromStatus]);  // This will run every time 'fromStatus' changes
+
+
+
+  // State to track selected bill detail IDs
+  const handleCheckboxChange = (boqDetailId) => {
+    setSelectedBoqDetails((prevSelected) => {
+      const selectedArray = prevSelected ? prevSelected.split(",").map(Number) : [];
+      if (selectedArray.includes(boqDetailId)) {
+        // If already selected, remove it from the string
+        const updatedArray = selectedArray.filter((id) => id !== boqDetailId);
+        return updatedArray.join(",");
+      } else {
+        // If not selected, add it to the string
+        const updatedArray = [...selectedArray, boqDetailId];
+        return updatedArray.join(",");
+      }
+    });
+  };
+
+  console.log("selected bill id array :", selectedBoqDetails)
 
   return (
     <>
@@ -314,73 +447,73 @@ const BillVerificationList = () => {
           <div className="tab-content1 active mb-5" id="total-content">
             {/* Total Content Here */}
             <div className="card mt-3 pb-4">
-              
-                 <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
-                              <div className="row">
-                                <div className="col-md-3">
-                                  <div className="form-group">
-                                    <label>Company</label>
-              
-                                    <SingleSelector
-                                      options={companyOptions}
-                                      onChange={handleCompanyChange}
-                                      value={selectedCompany}
-                                      placeholder={`Select Company`}
-                                    />
-                                    {/* {validationErrors.company && (
+
+              <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
+                <div className="row">
+                  <div className="col-md-3">
+                    <div className="form-group">
+                      <label>Company</label>
+
+                      <SingleSelector
+                        options={companyOptions}
+                        onChange={handleCompanyChange}
+                        value={selectedCompany}
+                        placeholder={`Select Company`}
+                      />
+                      {/* {validationErrors.company && (
                                       <span className="text-danger">{validationErrors.company}</span>
                                     )} */}
-                                  </div>
-                                </div>
-                                <div className="col-md-3">
-                                  <div className="form-group">
-                                    <label>Project</label>
-              
-                                    <SingleSelector
-                                      options={projects}
-                                      onChange={handleProjectChange}
-                                      value={selectedProject}
-                                      placeholder={`Select Project`}
-                                    />
-                                    {/* {validationErrors.project && (
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="form-group">
+                      <label>Project</label>
+
+                      <SingleSelector
+                        options={projects}
+                        onChange={handleProjectChange}
+                        value={selectedProject}
+                        placeholder={`Select Project`}
+                      />
+                      {/* {validationErrors.project && (
                                       <span className="text-danger">{validationErrors.project}</span>
                                     )} */}
-                                  </div>
-                                </div>
-                                <div className="col-md-3">
-                                  <div className="form-group">
-                                    <label>Sub-Project</label>
-                                    {/* Pass static data as options */}
-                                    <SingleSelector
-                                      options={siteOptions}
-                                      onChange={handleSiteChange}
-                                      value={selectedSite}
-                                      placeholder={`Select Sub-project`} // Dynamic placeholder
-                                    />
-                                    {/* {validationErrors.site && (
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="form-group">
+                      <label>Sub-Project</label>
+                      {/* Pass static data as options */}
+                      <SingleSelector
+                        options={siteOptions}
+                        onChange={handleSiteChange}
+                        value={selectedSite}
+                        placeholder={`Select Sub-project`} // Dynamic placeholder
+                      />
+                      {/* {validationErrors.site && (
                                       <span className="text-danger">{validationErrors.site}</span>
                                     )} */}
-                                  </div>
-                                </div>
-                                <div className="col-md-1 mt-4 d-flex justify-content-center">
-                                  <button
-                                    className="purple-btn2"
-                                    onClick={fetchFilteredData}
-              
-                                  >
-                                    Go
-                                  </button>
-                                </div>
-                                <div className="col-md-1 mt-4 d-flex justify-content-center">
-                                  <button
-                                    className="purple-btn2"
-                                    onClick={handleReset}
-                                  >
-                                    Reset
-                                  </button>
-                                </div>
-                              </div>
-                            </CollapsibleCard>
+                    </div>
+                  </div>
+                  <div className="col-md-1 mt-4 d-flex justify-content-center">
+                    <button
+                      className="purple-btn2"
+                      onClick={fetchFilteredData}
+
+                    >
+                      Go
+                    </button>
+                  </div>
+                  <div className="col-md-1 mt-4 d-flex justify-content-center">
+                    <button
+                      className="purple-btn2"
+                      onClick={handleReset}
+                    >
+                      Reset
+                    </button>
+                  </div>
+                </div>
+              </CollapsibleCard>
 
               <CollapsibleCard title="Bulk Action" isInitiallyCollapsed={true}>
                 <div className="card-body mt-0 pt-0">
@@ -389,17 +522,24 @@ const BillVerificationList = () => {
                       <div className="form-group">
                         <label>From Status</label>
                         <SingleSelector
-                          options={companyOptions}
-                          selectedValue={selectedValue}
-                          onChange={handleChange}
+
+                          options={options}
+                          // value={options.value}
+                          value={options.find(option => option.value === fromStatus)}
+                          onChange={handleStatusChange}
+                          placeholder={`Select Status`} // Dynamic placeholder
+                          classNamePrefix="react-select"
                         />
                       </div>
                       <div className="form-group mt-3">
                         <label>To Status</label>
                         <SingleSelector
-                          options={companyOptions}
-                          selectedValue={selectedValue} // Passing selected value to SingleSelector
-                          onChange={handleChange} // Handle change event
+                          options={options}
+                          // value={options.value}
+                          onChange={handleToStatusChange}
+                          value={options.find(option => option.value === toStatus)}
+                          placeholder={`Select Status`} // Dynamic placeholder
+                          classNamePrefix="react-select"
                         />
                       </div>
                     </div>
@@ -410,7 +550,9 @@ const BillVerificationList = () => {
                           className="form-control"
                           rows={4}
                           placeholder="Enter ..."
-                          defaultValue={""}
+                          // defaultValue={""}
+                          value={remark}
+                          onChange={handleRemarkChange}
                         />
                       </div>
                     </div>
@@ -418,7 +560,7 @@ const BillVerificationList = () => {
                       <button
                         className="purple-btn2 m-0"
                         style={{ color: "white" }}
-                        onClick={() => (window.location.href = "#")}
+                        onClick={handleSubmit}
                       >
                         Submit
                       </button>
@@ -536,7 +678,14 @@ const BillVerificationList = () => {
                     {billEntries.map((entry, index) => (
                       <tr key={entry.id}>
                         <td className="text-start">
-                          <input type="checkbox" />
+                          {/* <input type="checkbox" 
+                          /> */}
+                          <input
+                            className="ms-1 me-1 mb-1"
+                            type="checkbox"
+                            checked={selectedBoqDetails.includes(entry.id)} // Check if this ID is selected
+                            onChange={() => handleCheckboxChange(entry.id)} // Handle checkbox change
+                          />
                         </td>
                         <td className="text-start boq-id-link">
                           <Link
@@ -653,20 +802,20 @@ const BillVerificationList = () => {
       </div>
 
       {loading && (
-                      <div className="loader-container">
-                        <div className="lds-ring">
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                        </div>
-                        <p>Loading...</p>
-                      </div>
-                    )}
+        <div className="loader-container">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>Loading...</p>
+        </div>
+      )}
 
       {/* modal start */}
       <Modal
