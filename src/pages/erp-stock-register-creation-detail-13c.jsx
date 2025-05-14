@@ -20,7 +20,7 @@ const ErpStockRegisterCreationDetail13C = () => {
       const token = urlParams.get("token");
 
       const response = await fetch(
-        `${baseURL}/mor_inventories/${id}.json?token=${token}`
+        `${baseURL}/stock_details/${id}.json?token=${token}`
       );
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
@@ -57,8 +57,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                       <div>
                         <h5>Material Details</h5>
                       </div>
-                      <div className="row mt-4">  
-                        
+                      <div className="row mt-4">
                         <div className="col-lg-12 col-md-6 col-sm-12 row px-2 mt-1">
                           <div className="col-3 ms-2">
                             <label>Material </label>
@@ -71,7 +70,6 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                         </div>
 
-                       
                         <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                           <div className="col-6 ">
                             <label>Material / Asset </label>
@@ -89,46 +87,12 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:</span>-
-                             
+                              <span className="me-3">:</span>
+                              {data?.store || "-"}
                             </label>
                           </div>
                         </div>
-                      
-                       
-                        {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                          <div className="col-6 ">
-                            <label>Material Sub-Type</label>
-                          </div>
-                          <div className="col-6">
-                            <label className="text">
-                              <span className="me-3">:</span>
-                              PO/SRPL/NXZPh2/18254
-                            </label>
-                          </div>
-                        </div> */}
-                      
-                        {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                          <div className="col-6 ">
-                            <label>Material Description </label>
-                          </div>
-                          <div className="col-6">
-                            <label className="text">
-                              <span className="me-3">:</span>
-                              {data?.material_description}
-                            </label>
-                          </div>
-                        </div> */}
-                        {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                          <div className="col-6 ">
-                            <label>Specification</label>
-                          </div>
-                          <div className="col-6">
-                            <label className="text">
-                              <span className="me-3">:</span>LANDMARK REALTY
-                            </label>
-                          </div>
-                        </div> */}
+
                         <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                           <div className="col-6 ">
                             <label>UOM</label>
@@ -136,7 +100,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           <div className="col-6">
                             <label className="text">
                               <span className="me-3">:</span>
-                              {data?.uom}
+                              {data?.uom || "-"}
                             </label>
                           </div>
                         </div>
@@ -166,7 +130,8 @@ const ErpStockRegisterCreationDetail13C = () => {
                           </div>
                           <div className="col-6">
                             <label className="text">
-                              <span className="me-3">:</span>-
+                              <span className="me-3">:</span>
+                              {data?.deadstock_qty || "-"}
                             </label>
                           </div>
                         </div>
@@ -183,8 +148,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                 className="nav-link active"
                                 id="nav-home-tab"
                                 data-bs-toggle="tab"
-                                data-bs-target="#Available-Details
-                                    "
+                                data-bs-target="#Available-Details"
                                 type="button"
                                 role="tab"
                                 aria-controls="nav-home"
@@ -196,8 +160,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                 className="nav-link"
                                 id="nav-profile-tab"
                                 data-bs-toggle="tab"
-                                data-bs-target="#Rejected-Details
-                                    "
+                                data-bs-target="#Rejected-Details"
                                 type="button"
                                 role="tab"
                                 aria-controls="nav-profile"
@@ -229,32 +192,32 @@ const ErpStockRegisterCreationDetail13C = () => {
                                       <th>Received Qty</th>
                                       <th>Issued Qty</th>
                                       <th>Return Qty</th>
-                                      <th> Current Stock</th>
-
+                                      <th>Current Stock</th>
                                       <th>Remark</th>
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {data?.stock_details.map((item, id) => {
-                                      return (
-                                        <tr key={id}>
-                                          <td>{id + 1}</td>
-                                          <td>{item?.created_at}</td>
-                                          <td>{item?.mor}</td>
-                                          <td />
-                                          <td>{item?.resource_number}</td>
-                                          <td>{item?.status}</td>
-                                          <td></td>
-                                          <td>{item?.received_qty}</td>
-                                          <td>{item?.issued_qty}</td>
-                                          <td></td>
-                                          <td />
-                                        </tr>
-                                      );
-                                    })}
+                                    {data?.stock_details.map((item, id) => (
+                                      <tr key={id}>
+                                        <td>{id + 1}</td>
+                                        <td>{item?.created_at}</td>
+                                        <td>{item?.mor}</td>
+                                        <td>{item?.supplier || "-"}</td>
+                                        <td>{item?.resource_number}</td>
+                                        <td>{item?.status}</td>
+                                        <td>{item?.uom || "-"}</td>
+                                        <td>{item?.received_qty || "-"}</td>
+                                        <td>{item?.issued_qty || "-"}</td>
+                                        <td>{item?.returned_qty || "-"}</td>
+                                        <td>{item?.balanced_qty || "-"}</td>
+                                        <td>-</td>
+                                      </tr>
+                                    ))}
                                     <tr>
                                       <td></td>
-                                      <td> <strong> Balanced Qty</strong></td>
+                                      <td>
+                                        <strong>Balanced Qty</strong>
+                                      </td>
                                       <td></td>
                                       <td></td>
                                       <td></td>
@@ -263,9 +226,9 @@ const ErpStockRegisterCreationDetail13C = () => {
                                       <td></td>
                                       <td></td>
                                       <td></td>
-
-                                      <td> <strong>{data?.stock_as_on}</strong> </td>{" "}
-                                      {/* Display stock_as_on only once */}
+                                      <td>
+                                        <strong>{data?.stock_as_on}</strong>
+                                      </td>
                                       <td></td>
                                     </tr>
                                   </tbody>
@@ -306,10 +269,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                           style={{ width: "100%" }}
                                           fdprocessedid="622i99"
                                         >
-                                          <option selected="selected">
-                                            
-                                          </option>
-                                         
+                                          <option selected="selected"></option>
                                         </select>
                                       </td>
                                       <td></td>
