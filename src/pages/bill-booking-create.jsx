@@ -399,6 +399,8 @@ const BillBookingCreate = () => {
             gstin: data.gstin || "",
             pan: data.pan_no || "",
             pms_supplier_id: data.pms_supplier_id || null, // <-- Add this line
+            invoiceAmount: data.bill_amount || "", // <-- Add this line
+            totalAmount: data.bill_amount || "", // <-- Add this line
           }));
           setSupplierName(data.pms_supplier || "");
 
@@ -984,8 +986,12 @@ const BillBookingCreate = () => {
       0
     );
 
+  // const calculateAmountPayable = () =>
+  //   calculateTotalAmount() +
+  //   parseFloat(otherAdditions || 0) -
+  //   parseFloat(otherDeductions || 0);
   const calculateAmountPayable = () =>
-    calculateTotalAmount() +
+    parseFloat(formData.totalAmount || 0) +
     parseFloat(otherAdditions || 0) -
     parseFloat(otherDeductions || 0);
 
@@ -1190,6 +1196,7 @@ const BillBookingCreate = () => {
                           setFormData((prev) => ({
                             ...prev,
                             invoiceAmount: e.target.value,
+                            totalAmount: e.target.value, // Keep in sync
                           }))
                         }
                       />
@@ -1718,14 +1725,20 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="number"
-                        value={selectedGRNs.reduce(
-                          (acc, grn) =>
-                            acc + (parseFloat(grn.all_inc_tax) || 0),
-                          0
-                        )}
-                        //  value={calculateTotalAmount()}
-
-                        readOnly
+                        // value={selectedGRNs.reduce(
+                        //   (acc, grn) =>
+                        //     acc + (parseFloat(grn.all_inc_tax) || 0),
+                        //   0
+                        // )}
+                        // //  value={calculateTotalAmount()}
+                        value={formData.totalAmount}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            totalAmount: e.target.value,
+                            invoiceAmount: e.target.value, // keep in sync
+                          }))
+                        }
                         placeholder="Enter other addition amount"
                       />
                     </div>
@@ -2449,7 +2462,7 @@ const BillBookingCreate = () => {
       {/*  */}
       <Modal
         centered
-        size="xl"
+        size="lg"
         show={attachThreeModal}
         onHide={closeAttachThreeModal}
         backdrop="static"
