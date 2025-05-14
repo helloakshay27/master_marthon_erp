@@ -638,7 +638,7 @@ const BOQDetailsPageMaster = () => {
               </div>
 
               <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                <div className="col-6">
+                {/* <div className="col-6">
                   <label>Remark</label>
                 </div>
                 <div className="col-6">
@@ -646,7 +646,7 @@ const BOQDetailsPageMaster = () => {
                     <span className="me-3" style={{ color: "black" }}>:</span>
                     <span className="me-3"> </span>
                   </label>
-                </div>
+                </div> */}
               </div>
 
               <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">

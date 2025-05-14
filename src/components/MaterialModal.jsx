@@ -234,7 +234,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
           <div className="row">
             <h5 className="text-center">Search Material</h5>
 
-            <div className="col-md-4 mt-3">
+            <div className="col-md-6 mt-3">
               <div className="form-group">
                 <label className="po-fontBold">Material Type*</label>
                 <MultiSelector
@@ -247,7 +247,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
                  {errorMessage && <div className="error-message" style={{ color: 'red' }}>{errorMessage}</div>}
               </div>
             </div>
-            <div className="col-md-4 mt-3">
+            {/* <div className="col-md-4 mt-3">
               <div className="form-group">
                 <label className="po-fontBold">Material Sub Type</label>
                 <MultiSelector
@@ -257,8 +257,8 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
                   placeholder={`Select Material Sub Type`} // Dynamic placeholder
                 />
               </div>
-            </div>
-            <div className="col-md-4 mt-3">
+            </div> */}
+            <div className="col-md-6 mt-3">
               <div className="form-group">
                 <label className="po-fontBold">Material</label>
                 <MultiSelector
