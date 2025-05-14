@@ -27,6 +27,8 @@ export default function VendorDetails() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [bids, setBids] = useState([]); // State to store the bids
   const [isBid, setIsBid] = useState(false);
+  const [allBids, setAllBids] = useState([]);
+  const [bidDataReady, setBidDataReady] = useState(false); // Optional loading check
   const [submitted, setSubmitted] = useState(false); // Track bid creation status
   const [linkedData, setLinkedData] = useState({});
   const [realisedGstVal, setRealisedGstVal] = useState(0);
@@ -739,10 +741,12 @@ export default function VendorDetails() {
         })
       );
 
-      // Set the additional columns in state
+      // Step 3: Set the additional columns in state
       setAdditionalColumns(additionalColumns);
 
       if (!revisedBid) {
+        setAdditionalColumns(additionalColumns);
+
         const processedData = eventMaterials.map((item) => {
           const flatExtraData = Object.entries(item.extra_data || {}).reduce(
             (acc, [key, valObj]) => {
@@ -783,19 +787,113 @@ export default function VendorDetails() {
           return rowData;
         });
 
+        const extra_data = {
+          "Payment Terms": {
+            value: "",
+            readonly: false,
+          },
+          "Warranty Clause": {
+            value: "",
+            readonly: false,
+          },
+          "Loading/Unloading": {
+            value: "",
+            readonly: false,
+          },
+        };
+        const extra_charges = {
+          freight_charge_amount: {
+            value: "",
+            readonly: false,
+          },
+          gst_on_freight: {
+            value: "",
+            readonly: false,
+          },
+          other_charge_amount: {
+            value: "",
+            readonly: false,
+          },
+          gst_on_other_charge: {
+            value: "",
+            readonly: false,
+          },
+          handling_charge_amount: {
+            value: "",
+            readonly: false,
+          },
+          gst_on_handling_charge: {
+            value: "",
+            readonly: false,
+          },
+          realised_freight_charge_amount: {
+            value: "",
+            readonly: false,
+          },
+          realised_other_charge_amount: {
+            value: "",
+            readonly: false,
+          },
+          realised_handling_charge_amount: {
+            value: "",
+            readonly: false,
+          },
+        };
+
+        const formattedData = Object.entries(extra_data).map(
+          ([fieldName, fieldData]) => ({
+            label: fieldName || "",
+            value: { firstBid: fieldData.value || "", counterBid: "" },
+            isRequired: false, // or true, if you have that info elsewhere
+            isReadOnly: fieldData.readonly,
+            fieldOwner: null, // or fetch from another object if needed
+          })
+        );
+        const formattedCharges = Object.entries(extra_charges).map(
+          ([fieldName, fieldData]) => ({
+            label: fieldName || "",
+            value: fieldData || "",
+            isRequired: false, // or true, if you have that info elsewhere
+            isReadOnly: fieldData.readonly,
+            fieldOwner: null, // or fetch from another object if needed
+          })
+        );
+
+        setChargesData(formattedCharges);
+
+        setBidTemplate(formattedData);
+
         setData(processedData);
       } else {
         // Step 2: Fetch the bid data if `revised_bid` is true
         const bidResponse = await axios.get(
           `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
         );
+        setCounterData(
+          bidResponse.data?.bids[currentIndex]?.counter_bids.length
+        );
+        setCounterId(
+          bidResponse.data?.bids[currentIndex]?.counter_bids[currentIndex]?.id
+        );
+        setBidIds(bidResponse.data.bids[currentIndex].id);
 
-        const bids = bidResponse.data.bids;
-        setBids(bids); // Store all bids in state
+        // const bids = bidResponse.data.bids;
+        const bids = bidResponse.data.bids || [];
+        setBids(bids);
+        setAllBids(bids);
+        setBidDataReady(true); // Indicate data has been fetched
 
-        // Set initial data for the first bid
+        setGrossTotal(bidResponse.data.bids[currentIndex].gross_total);
+
+        // console.log("bids", bids);
+
+        // Process only the first element of the bids array
         if (bids.length > 0) {
-          updateDataForCurrentIndex(bids, 0); // Initialize with the first bid
+          setCounterData(bids[0]?.counter_bids?.length || 0);
+          setCounterId(bids[0]?.counter_bids?.[0]?.id || "");
+          setBidIds(bids.map((b) => b.id));
+        } else {
+          // console.log("No bids available");
         }
       }
     } catch (error) {
@@ -803,66 +901,91 @@ export default function VendorDetails() {
     }
   };
 
-  // Function to update data based on the current index
-  const updateDataForCurrentIndex = (bids, index) => {
-    const currentBid = bids[index];
+  useEffect(() => {
+    fetchEventData();
+  }, [eventId]);
 
-    if (!currentBid) return;
+  useEffect(() => {
+    if (!bidDataReady || allBids.length === 0) return;
 
-    const processFreightData = (bid) => {
-      const counterBid = bid.counter_bids?.[currentIndex]; // Check if counter bid exists
+    const bid = allBids[currentIndex];
+    if (!bid) return;
 
-      // Process data with both first bid and counter bid
-      return [
-        {
-          label: "Freight Charge",
-          value: {
-            firstBid: bid.freight_charge_amount || "",
-            counterBid: counterBid?.freight_charge_amount || "",
-          },
-        },
-        {
-          label: "GST on Freight",
-          value: {
-            firstBid: bid.gst_on_freight || "",
-            counterBid: counterBid?.gst_on_freight || "",
-          },
-        },
-        {
-          label: "Realised Freight",
-          value: {
-            firstBid: bid.realised_freight_charge_amount || "",
-            counterBid: counterBid?.realised_freight_charge_amount || "",
-          },
-        },
-        {
-          label: "Warranty Clause *",
-          value: {
-            firstBid: bid.warranty_clause || "",
-            counterBid: counterBid?.warranty_clause || "",
-          },
-        },
-        {
-          label: "Payment Terms *",
-          value: {
-            firstBid: bid.payment_terms || "",
-            counterBid: counterBid?.payment_terms || "",
-          },
-        },
-        {
-          label: "Loading / Unloading *",
-          value: {
-            firstBid: bid.loading_unloading_clause || "",
-            counterBid: counterBid?.loading_unloading_clause || "",
-          },
-        },
-      ];
-    };
+    const counterBid = bid.counter_bids?.[currentIndex];
 
-    const freightData = processFreightData(currentBid);
+    setCounterData(bid.counter_bids?.length || 0);
+    setCounterId(counterBid?.id || "");
+    setGrossTotal(bid.gross_total || "");
+
+    // Process freightData
+    const freightData = [
+      {
+        label: "Freight Charge",
+        value: {
+          firstBid: bid.freight_charge_amount || "",
+          counterBid: counterBid?.freight_charge_amount || "",
+        },
+      },
+      {
+        label: "GST on Freight",
+        value: {
+          firstBid: bid.gst_on_freight || "",
+          counterBid: counterBid?.gst_on_freight || "",
+        },
+      },
+      {
+        label: "Realised Freight",
+        value: {
+          firstBid: bid.realised_freight_charge_amount || "",
+          counterBid: counterBid?.realised_freight_charge_amount || "",
+        },
+      },
+      {
+        label: "Warranty Clause *",
+        value: {
+          firstBid: bid.warranty_clause || "",
+          counterBid: counterBid?.warranty_clause || "",
+        },
+      },
+      {
+        label: "Payment Terms *",
+        value: {
+          firstBid: bid.payment_terms || "",
+          counterBid: counterBid?.payment_terms || "",
+        },
+      },
+      {
+        label: "Loading / Unloading *",
+        value: {
+          firstBid: bid.loading_unloading_clause || "",
+          counterBid: counterBid?.loading_unloading_clause || "",
+        },
+      },
+    ];
     setFreightData(freightData);
 
-    const previousData = currentBid.bid_materials.map((material) => ({
+    const firstMaterial = bid.bid_materials[0];
+    setExtraData({
+      additionTaxCharges: firstMaterial?.extra?.addition_tax_charges || [],
+      deductionTax: firstMaterial?.extra?.deduction_tax || [],
+    });
+
+    const formattedData = Object.entries(bid.extra_data || {}).map(
+      ([fieldName, fieldData]) => ({
+        label: fieldName,
+        value: { firstBid: fieldData.value || "", counterBid: "" },
+        isRequired: false,
+        isReadOnly: fieldData.readonly,
+        fieldOwner: null,
+      })
+    );
+    setBidTemplate(formattedData);
+
+    // Charges Data
+    setChargesData(bid.charges_with_taxes || []);
+
+    // PreviousData (first bid materials)
+    const previousData = bid.bid_materials.map((material) => ({
       bidId: material.bid_id,
       eventMaterialId: material.event_material_id,
       descriptionOfItem: material.material_name,
@@ -887,30 +1010,63 @@ export default function VendorDetails() {
       pmsBrand: material.event_material.pms_brand_name,
       pmsColour: material.event_material.pms_colour_name,
       genericInfo: material.event_material.generic_info_name,
-      extra_data: material.extra_data || {}, // Include extra_data
+      extra_data: material.extra_data || {},
+      newField: formattedData || "",
       addition_bid_material_tax_details:
-        material.addition_bid_material_tax_details || [],
+        material.addition_bid_material_tax_details,
       deduction_bid_material_tax_details:
-        material.deduction_bid_material_tax_details || [],
+        material.deduction_bid_material_tax_details,
     }));
-    setData(previousData);
-    setGrossTotal(currentBid.gross_total);
-    setCounterData(currentBid.counter_bids?.length || 0);
-    setCounterId(currentBid.counter_bids?.[currentIndex]?.id || null);
-    setBidIds(currentBid.id);
-  };
+    setPreviousData(previousData);
 
-  // Effect to fetch data only once
-  useEffect(() => {
-    fetchEventData();
-  }, [eventId]);
+    // UpdatedData (counter bid materials)
+    const updatedData = bid.bid_materials
+      .map((material) => {
+        const counterMaterial = material.counter_bid_materials?.[currentIndex];
+        return counterMaterial
+          ? {
+              bidId: counterMaterial.counter_bid_id,
+              eventMaterialId: counterMaterial.event_material_id,
+              descriptionOfItem: counterMaterial.material_name,
+              varient: material.material_type,
+              quantity: material.event_material.quantity,
+              quantityAvail: counterMaterial.quantity_available,
+              price: counterMaterial.price,
+              section: material.event_material.material_type,
+              subSection: material.event_material.inventory_sub_type,
+              discount: counterMaterial.discount,
+              realisedDiscount: counterMaterial.realised_discount,
+              gst: counterMaterial.gst,
+              realisedGst: counterMaterial.realised_gst,
+              unit: material.unit,
+              total: counterMaterial.total_amount,
+              location: material.event_material.location,
+              vendorRemark: counterMaterial.vendor_remark,
+              landedAmount: counterMaterial.landed_amount,
+              pmsBrand: material.pms_brand_name,
+              pmsColour: material.pms_colour_name,
+              genericInfo: material.generic_info_name,
+              extra_data: material.event_material.extra_data || {},
+              deduction_bid_material_tax_details:
+                counterMaterial.deduction_bid_material_tax_details,
+              addition_bid_material_tax_details:
+                counterMaterial.addition_bid_material_tax_details,
+            }
+          : null;
+      })
+      .filter(Boolean);
+    setUpdatedData(updatedData);
 
-  // Effect to update data when currentIndex changes
-  useEffect(() => {
-    if (bids.length > 0) {
-      updateDataForCurrentIndex(bids, currentIndex);
-    }
-  }, [currentIndex, bids]);
+    // Set final data
+    setData(updatedData.length > 0 ? updatedData : previousData);
+  }, [currentIndex, allBids, bidDataReady]); // ✅ Reacts only to index change, uses local data
+
+  // // Effect to update data when currentIndex changes
+  // useEffect(() => {
+  //   if (bids.length > 0) {
+  //     updateDataForCurrentIndex(bids, currentIndex);
+  //   }
+  // }, [currentIndex, bids]);
 
   // Get the freight charge value as a string (if available, otherwise default to "0")
   const freightChargeRaw = String(
@@ -4598,9 +4754,18 @@ export default function VendorDetails() {
                                   previousData[rowIndex]?.price || cell; // Fallback to `cell` if `previousData` is undefined
                                 const updatedPrice =
                                   updatedData[rowIndex]?.price || previousPrice; // Use `updatedPrice` if available
-                                  const showArrow =
+                                const showArrow =
                                   counterData && previousPrice !== updatedPrice; // Show arrow if `counterData` exists and prices differ
-                                  console.log("counterData",counterData, "previous",previousPrice, "updated",updatedPrice, "showArrow",showArrow)
+                                console.log(
+                                  "counterData",
+                                  counterData,
+                                  "previous",
+                                  previousPrice,
+                                  "updated",
+                                  updatedPrice,
+                                  "showArrow",
+                                  showArrow
+                                );
 
                                 return showArrow ? (
                                   <div
