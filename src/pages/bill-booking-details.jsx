@@ -295,6 +295,7 @@ const BillBookingDetails = () => {
 
   // Add handleDownload function
   const handleDownload = async (blobId) => {
+    
     try {
       const response = await axios.get(
         `${baseURL}bill_bookings/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${blobId}`,
