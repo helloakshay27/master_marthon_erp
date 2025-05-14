@@ -563,7 +563,7 @@ const BillEntryListSubPage = () => {
                     Select
                   </p>
                 </div>
-                <div className="col-md-3 ">
+                {/* <div className="col-md-3 ">
                   <div className="form-group">
                     <label>Bill Number</label>
                     <input
@@ -576,7 +576,7 @@ const BillEntryListSubPage = () => {
                       disabled
                     />
                   </div>
-                </div>
+                </div> */}
                 <div className="col-md-3 ">
                   <div className="form-group">
                     <label>Bill Date</label>
@@ -591,7 +591,7 @@ const BillEntryListSubPage = () => {
                   </div>
                 </div>
 
-                <div className="col-md-3 mt-4 ">
+                <div className="col-md-3 ">
                   <div className="form-group">
                     <label>Bill Amount</label>
                     <input
@@ -606,7 +606,7 @@ const BillEntryListSubPage = () => {
                 </div>
 
                 {/* <div className="row"> */}
-                <div className="col-md-3 mt-4">
+                <div className="col-md-3 mt-2">
                   <div className="form-group">
                     <label>Vendor Remark</label>
                     <textarea
@@ -621,7 +621,7 @@ const BillEntryListSubPage = () => {
                 </div>
                 {/* </div> */}
                 {/* <div className="row"> */}
-                <div className="col-md-3 mt-4">
+                <div className="col-md-3 mt-2">
                   <div className="form-group">
                     <label>Remark</label>
                     <textarea
@@ -634,7 +634,7 @@ const BillEntryListSubPage = () => {
                   {/* </div> */}
                 </div>
                 {/* <div className="row"> */}
-                <div className="col-md-3 mt-4">
+                <div className="col-md-3 mt-2">
                   <div className="form-group">
                     <label>Comments</label>
                     <textarea
@@ -658,7 +658,7 @@ const BillEntryListSubPage = () => {
                       data-bs-target="#RevisionModal"
                       onClick={openattachModal}
                     >
-                      Attach Other
+                      Attach Document
                     </button>
                   </div>
                 </div>
@@ -687,7 +687,12 @@ const BillEntryListSubPage = () => {
                           <td className="text-start">{doc.document_type}</td>
                           <td
                             className="text-start"
-                            style={{ cursor: "pointer" }}
+                            // style={{ cursor: "pointer" }}
+                            style={{
+                              color: "#8b0203",
+                              textDecoration: "underline",
+                              cursor: "pointer",
+                            }}
                             onClick={() =>
                               handleDocumentCountClick(doc.document_type)
                             }
@@ -697,6 +702,11 @@ const BillEntryListSubPage = () => {
                           <td className="text-start">
                             <button
                               className="text-decoration-underline border-0 bg-transparent"
+                              style={{
+                                color: "#8b0203",
+                                textDecoration: "underline",
+                                cursor: "pointer",
+                              }}
                               onClick={() => {
                                 setNewDocument((prev) => ({
                                   ...prev,
@@ -705,7 +715,7 @@ const BillEntryListSubPage = () => {
                                 openattachModal();
                               }}
                             >
-                              Attach
+                              Attach Another Document
                             </button>
                           </td>
                         </tr>
