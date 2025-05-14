@@ -251,7 +251,7 @@ const ErpStockRegister13B = () => {
         const token = urlParams.get("token");
 
         const response = await fetch(
-          `${baseURL}/mor_inventories/stock_data.json?token=${token}&search=${encodeURIComponent(
+          `${baseURL}/stock_details.json?token=${token}&search=${encodeURIComponent(
             searchTerm
           )}&q[company_id]=${selectedCompany}&q[project_id]=${selectedProject}&q[sub_project_id]=${selectedSubProject}&q[generic_info_id]=${selectedIds.genericInfos
           }&q[material_type_id]=${selectedIds.materialTypes
@@ -266,6 +266,7 @@ const ErpStockRegister13B = () => {
         }
 
         const result = await response.json();
+        console.log(result);
         const transformedData = result?.mor_inventories.map((item, index) => {
           const materialUrl =
             item.id && token
@@ -281,12 +282,11 @@ const ErpStockRegister13B = () => {
             lastReceived: item.last_received_on || "-",
             total_received: item.total_received || "-",
             total_issued: item.total_issued || "-",
-            deadstockQty: item.deadstockQty || "-",
+            deadstockQty: item.deadstock_qty || "-", // Corrected key
             stock_as_on: item.stock_as_on || "-",
             stockStatus: item.stock_details?.[0]?.status || "-",
-            theftMissing:
-              item.theftMissing !== undefined ? item.theftMissing : "-",
-            uom_name: item.uom_name || "-",
+            theftMissing: item.missing_qty !== undefined ? item.missing_qty : "-", // Corrected key
+            uom_name: item.uom || "-",
             mor:
               item.stock_details?.map((stock) => stock.mor).join(", ") || "-",
             grn_number:
@@ -301,6 +301,7 @@ const ErpStockRegister13B = () => {
                 receivedQty: stock.received_qty || "-",
                 issuedQty: stock.issued_qty || "-",
                 returnedQty: stock.returned_qty || "-",
+                balancedQty: stock.balanced_qty || "-", // Added balancedQty
               })) || [],
           };
         });
