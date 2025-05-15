@@ -1592,6 +1592,7 @@ const DebitNoteCreate = () => {
                                 </button>
                               ),
                             }))}
+                            isAccordion={false} 
                           />
                         </div>
                       </div>

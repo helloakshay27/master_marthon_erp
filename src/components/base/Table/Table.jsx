@@ -13,6 +13,7 @@ const transposeData = (data, columns) => {
 export default function Table({
   columns,
   data = [], // Ensure data is always an array
+  isAccordion = true,
   onActionClick = null,
   serializedData = [],
   showCheckbox = false,
@@ -435,6 +436,7 @@ export default function Table({
                           <span>
                             {(currentPage - 1) * pageSize + rowIndex + 1}
                           </span>
+                          {isAccordion && (
                           <button
                             className="purple-btn2 d-flex align-items-center"
                             style={{
@@ -449,6 +451,7 @@ export default function Table({
                               isCollapsed={openAccordionIndex !== rowIndex}
                             />
                           </button>
+                            )}
                         </div>
                       ) : (
                         cellContent
