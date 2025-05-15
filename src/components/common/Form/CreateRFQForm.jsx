@@ -27,6 +27,8 @@ export default function CreateRFQForm({
       sectionId: Date.now(),
     },
   ]);
+  const [deletedBlobIds, setDeletedBlobIds] = useState([]);
+  const [attachmentsData, setAttachmentsData] = useState([]);
   const [sectionOptions, setSectionOptions] = useState([]);
   const [subSectionOptions, setSubSectionOptions] = useState([]);
   const [locationOptions, setLocationOptions] = useState([]);
@@ -361,6 +363,7 @@ export default function CreateRFQForm({
               pms_colour_id: material.pms_colour_id,
               generic_info_id: material.generic_info_id,
               _destroy: false,
+              attachments: material.attachments || null, // Ensure attachments are included unless explicitly removed
             })),
           };
         }
@@ -488,7 +491,6 @@ export default function CreateRFQForm({
       updateBidTemplateFields(updatedBidTemplateFields);
     }
   }, [templateData]);
-  console.log("data", data);
 
   const handleUnitChange = (selected, rowIndex, sectionIndex) => {
     // console.log("handleUnitChange called with:", {
@@ -551,6 +553,7 @@ export default function CreateRFQForm({
       pms_brand_id: null,
       pms_colour_id: null, // Default PMS color
       generic_info_id: null, // Default generic info
+      attachments: null, // Default attachments
     };
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData = [
@@ -586,6 +589,7 @@ export default function CreateRFQForm({
         pms_brand_id: row.pms_brand_id || null,
         pms_colour_id: row.pms_colour_id || null,
         generic_info_id: row.generic_info_id || null,
+        attachments: row.attachments || null, // Ensure attachments are included unless explicitly removed
         ...additionalFields.reduce((acc, field) => {
           acc[field.field_name] = row[field.field_name] || null;
           return acc;
@@ -923,6 +927,7 @@ export default function CreateRFQForm({
           pms_brand_id: row.pms_brand_id || null, // Always use pms_brand_id
           pms_colour_id: row.pms_colour_id || null, // Always use pms_colour_id
           generic_info_id: row.generic_info_id || null,
+          attachments: row.attachments || null, // Ensure attachments are included unless explicitly removed
           ...additionalFields.reduce((acc, field) => {
             acc[field.field_name] = row[field.field_name] || null; // Add dynamic fields
             return acc;
@@ -1532,7 +1537,7 @@ export default function CreateRFQForm({
                     </div>
                   </div>
                   <Table
-                  style={{ maxHeight: "100% !important"}}
+                    style={{ maxHeight: "100% !important" }}
                     columns={renderTableColumns()}
                     isMinWidth={true}
                     data={section?.sectionData?.filter((row) => !row._destroy)}
@@ -1549,7 +1554,7 @@ export default function CreateRFQForm({
                                 item.inventory_id === row.inventory_id
                             )
                       );
-                      console.log("matchedData", matchedData, row);
+                      // console.log("matchedData", matchedData, row);
 
                       // Extract delivery_schedules, mor_inventory_specifications, and attachments
                       const deliverySchedules = matchedData.flatMap(
@@ -1558,9 +1563,40 @@ export default function CreateRFQForm({
                       const morInventorySpecifications = matchedData.flatMap(
                         (item) => item.mor_inventory_specifications || []
                       );
-                      const attachments = matchedData.flatMap(
-                        (item) => item.attachments || []
-                      );
+                      const attachmentsData = matchedData.flatMap((item) =>
+  (item.attachments || []).filter(
+    (attachment) => !deletedBlobIds.includes(attachment.blob_id)
+  )
+);
+
+
+
+                     const handleDeleteAttachment = (blobId, index) => {
+                      setDeletedBlobIds((prev) => [...prev, blobId]);
+
+  const updatedSections = sections.map((section) => ({
+    ...section,
+    sectionData: section.sectionData.map((row) => {
+      return {
+        ...row,
+        attachments: [{ id: blobId }] || row.attachment || null // Or keep existing attachments unchanged
+      };
+    }),
+  }));
+
+  setSections(updatedSections);
+
+  const updatedData = updatedSections.flatMap((section) =>
+    section.sectionData.map((row) => ({
+      ...row,
+      attachments: row.attachments || [],
+    }))
+  );
+
+  setData(updatedData);
+
+};
+
 
                       return (
                         <div
@@ -1584,8 +1620,12 @@ export default function CreateRFQForm({
                               <table className="table table-bordered">
                                 <thead>
                                   <tr>
-                                    <th style={{textAlign: "center"}}>Expected Date</th>
-                                    <th style={{textAlign: "center"}}>Expected Quantity</th>
+                                    <th style={{ textAlign: "center" }}>
+                                      Expected Date
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      Expected Quantity
+                                    </th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1605,8 +1645,12 @@ export default function CreateRFQForm({
                               <table className="table table-bordered">
                                 <thead>
                                   <tr>
-                                    <th style={{textAlign: "center"}}>Field</th>
-                                    <th style={{textAlign: "center"}}>Specification</th>
+                                    <th style={{ textAlign: "center" }}>
+                                      Field
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      Specification
+                                    </th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1622,21 +1666,31 @@ export default function CreateRFQForm({
                               </table>
                             </div>
                           )}
-                          {attachments.length > 0 && (
+                          {attachmentsData.length > 0 && (
                             <div>
                               <h5 className=" ">Attachments</h5>
                               <table className="table table-bordered">
                                 <thead>
-                                  <tr >
-                                    <th style={{textAlign: "center"}}>Filename</th>
-                                    <th style={{textAlign: "center"}}>Action</th>
+                                  <tr>
+                                    <th style={{ textAlign: "center" }}>
+                                      Filename
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      Action
+                                    </th>
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {attachments.map((attachment, index) => (
+                                  {attachmentsData.map((attachment, index) => (
                                     <tr key={index}>
                                       <td>{attachment.filename}</td>
-                                      <td style={{ display: "flex", gap: "10px", justifyContent:'center', width:'100%' }}
+                                      <td
+                                        style={{
+                                          display: "flex",
+                                          gap: "10px",
+                                          justifyContent: "center",
+                                          width: "100%",
+                                        }}
                                       >
                                         <a
                                           href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
@@ -1664,18 +1718,13 @@ export default function CreateRFQForm({
                                             </g>
                                           </svg>
                                         </a>
-                                        {/* <button
+                                        <button
                                           className="purple-btn2"
-                                          onClick={() =>
-                                            handleDeleteAttachment(
-                                              attachment.blob_id,
-                                              index
-                                            )
-                                          }
-                                          style={{ marginLeft: "10px" }}
+                                            onClick={() => handleDeleteAttachment(attachment.blob_id, index)}
+  style={{ marginLeft: "10px" }}
                                         >
                                           Delete
-                                        </button> */}
+                                        </button>
                                       </td>
                                     </tr>
                                   ))}
@@ -1686,6 +1735,7 @@ export default function CreateRFQForm({
                         </div>
                       );
                     }}
+                    
                     customRender={{
                       srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
 
@@ -1920,6 +1970,7 @@ export default function CreateRFQForm({
                         />
                       ),
                     }}
+                    isAccordion={true}
                     onRowSelect={undefined}
                     handleCheckboxChange={undefined}
                     resetSelectedRows={undefined}
