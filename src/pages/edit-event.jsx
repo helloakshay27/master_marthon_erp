@@ -1400,39 +1400,6 @@ export default function EditEvent() {
                 isMor={false}
               />
               <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
-                <h5 className=" ">Dynamic Details</h5>
-              </div>
-              <div>
-                <table className="tbl-container w-100">
-                  <thead>
-                    <tr>
-                      {specificationColumns.map((col, index) => (
-                        <th
-                          key={index}
-                          style={{ textAlign: "center !important" }}
-                        >
-                          {col.label}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {specificationData?.map((row, rowIndex) => (
-                      <tr key={rowIndex}>
-                        {specificationColumns.map((col, colIndex) => (
-                          <td
-                            key={colIndex}
-                            style={{ textAlign: "center !important" }}
-                          >
-                            {row[col.key]}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
                 <h5 className=" ">
                   Select Vendors{" "}
                   <span style={{ color: "red", fontSize: "16px" }}>*</span>

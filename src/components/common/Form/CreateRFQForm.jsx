@@ -5,7 +5,7 @@ import { baseURL } from "../../../confi/apiDomain";
 import ShortTable from "../../base/Table/ShortTable";
 import axios from "axios";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
-import { set } from "lodash";
+import { max, set } from "lodash";
 
 export default function CreateRFQForm({
   data,
@@ -1532,6 +1532,7 @@ export default function CreateRFQForm({
                     </div>
                   </div>
                   <Table
+                  style={{ maxHeight: "100% !important"}}
                     columns={renderTableColumns()}
                     isMinWidth={true}
                     data={section?.sectionData?.filter((row) => !row._destroy)}
@@ -1563,19 +1564,28 @@ export default function CreateRFQForm({
 
                       return (
                         <div
-                          style={{ width: "85vw", marginLeft: "20px" }}
+                          style={{
+                            width: "85vw",
+                            marginLeft: "20px",
+                            position: "sticky",
+                            left: 0,
+                            zIndex: 1,
+                            backgroundColor: "white",
+                            padding: "40px",
+                            border: "1px solid #ddd",
+                          }}
                           className="card card-body"
                         >
                           {/* <h5>Accordion Content for Row {rowIndex + 1}</h5>
                           <p>Details: {JSON.stringify(row)}</p> */}
                           {deliverySchedules.length > 0 && (
                             <div>
-                              <h6>Delivery Schedules:</h6>
+                              <h5 className=" ">Delivery Schedules</h5>
                               <table className="table table-bordered">
                                 <thead>
                                   <tr>
-                                    <th>Expected Date</th>
-                                    <th>Expected Quantity</th>
+                                    <th style={{textAlign: "center"}}>Expected Date</th>
+                                    <th style={{textAlign: "center"}}>Expected Quantity</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1591,12 +1601,12 @@ export default function CreateRFQForm({
                           )}
                           {morInventorySpecifications.length > 0 && (
                             <div>
-                              <h6>MOR Inventory Specifications:</h6>
+                              <h5 className=" ">Dynamic Details</h5>
                               <table className="table table-bordered">
                                 <thead>
                                   <tr>
-                                    <th>Field</th>
-                                    <th>Specification</th>
+                                    <th style={{textAlign: "center"}}>Field</th>
+                                    <th style={{textAlign: "center"}}>Specification</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1614,29 +1624,61 @@ export default function CreateRFQForm({
                           )}
                           {attachments.length > 0 && (
                             <div>
-                              <h6>Attachments:</h6>
+                              <h5 className=" ">Attachments</h5>
                               <table className="table table-bordered">
                                 <thead>
-                                  <tr>
-                                    <th>Filename</th>
-                                    <th>Action</th>
+                                  <tr >
+                                    <th style={{textAlign: "center"}}>Filename</th>
+                                    <th style={{textAlign: "center"}}>Action</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {attachments.map((attachment, index) => (
-        <tr key={index}>
-          <td>{attachment.filename}</td>
-          <td>
-            <a
-              href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
-              download={attachment.filename}
-              className="btn btn-primary btn-sm"
-            >
-              Download
-            </a>
-          </td>
-        </tr>
-      ))}
+                                    <tr key={index}>
+                                      <td>{attachment.filename}</td>
+                                      <td style={{ display: "flex", gap: "10px", justifyContent:'center', width:'100%' }}
+                                      >
+                                        <a
+                                          href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                          download={attachment.filename}
+                                          className="purple-btn2"
+                                          style={{
+                                            width: "40px",
+                                            height: "40px",
+                                            padding: "0",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                          }}
+                                        >
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 16 16"
+                                            style={{ fill: "black" }}
+                                          >
+                                            <g fill="white">
+                                              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                                              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                                            </g>
+                                          </svg>
+                                        </a>
+                                        <button
+                                          className="purple-btn2"
+                                          onClick={() =>
+                                            handleDeleteAttachment(
+                                              attachment.blob_id,
+                                              index
+                                            )
+                                          }
+                                          style={{ marginLeft: "10px" }}
+                                        >
+                                          Delete
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  ))}
                                 </tbody>
                               </table>
                             </div>
@@ -1907,9 +1949,9 @@ export default function CreateRFQForm({
               </div>
             ))
           )}
-          {deliveryData?.length > 0 && (
+          {/* {deliveryData?.length > 0 && (
             <Table columns={deliveryColumns} data={deliveryData} />
-          )}
+          )} */}
           <button className="purple-btn2" onClick={handleAddSection}>
             <span className="material-symbols-outlined align-text-top">
               add{" "}

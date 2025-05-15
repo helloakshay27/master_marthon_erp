@@ -459,16 +459,6 @@ export default function Table({
                     </td>
                   );
                 })}
-                {/* {accordionRender && (
-                  <td>
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => toggleAccordion(rowIndex)}
-                    >
-                      Toggle Accordion
-                    </button>
-                  </td>
-                )} */}
                 {actionIcon && onActionClick && (
                   <td>
                     <button
