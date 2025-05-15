@@ -17,7 +17,7 @@ export default function CreateRFQForm({
   updateSelectedTemplate, // Rename this prop
   updateBidTemplateFields, // Rename this prop
   updateAdditionalFields, // Rename this prop
-  isMor
+  isMor,
 }) {
   const [materials, setMaterials] = useState([]);
   const [sections, setSections] = useState([
@@ -148,7 +148,7 @@ export default function CreateRFQForm({
 
   const handleTemplateChange = async (event) => {
     // console.log("event :-----",event);
-    
+
     setSelectedTemplate(event);
     updateSelectedTemplate(event); // Update the parent component's state
 
@@ -179,7 +179,9 @@ export default function CreateRFQForm({
           ...defaultShortTableRows,
           ...prevFields.filter(
             (field) =>
-              !defaultShortTableRows.some((defaultRow) => defaultRow.label === field.label)
+              !defaultShortTableRows.some(
+                (defaultRow) => defaultRow.label === field.label
+              )
           ),
         ]);
 
@@ -340,7 +342,8 @@ export default function CreateRFQForm({
             materialType,
             sectionData: materialsArray.map((material) => ({
               id: material.id,
-              descriptionOfItem: material.inventory_name || material.descriptionOfItem,
+              descriptionOfItem:
+                material.inventory_name || material.descriptionOfItem,
               inventory_id: material.inventory_id,
               quantity: material.quantity,
               unit: material.uom_short_name || material.unit, // Map unit correctly
@@ -447,7 +450,6 @@ export default function CreateRFQForm({
     setData(sections.flatMap((section) => section.sectionData));
   }, [sections]);
   // console.log(existingData, "existingData");
-  
 
   useEffect(() => {
     // Ensure all field_name keys from additionalFields are included in sectionData
@@ -861,7 +863,6 @@ export default function CreateRFQForm({
     updateAdditionalFields(updatedAdditionalFields);
     setShowAddColumnModal(false);
     // console.log("New field data:", newFieldData, updatedAdditionalFields, newField, "newField");
-    
   };
 
   const deliveryColumns = [
@@ -901,7 +902,8 @@ export default function CreateRFQForm({
 
     const handleFieldChange = (value) => {
       const updatedSections = [...sections];
-      updatedSections[sectionIndex].sectionData[rowIndex][field.field_name] = value;
+      updatedSections[sectionIndex].sectionData[rowIndex][field.field_name] =
+        value;
 
       // Update parent data with all attributes, including dynamic fields
       const updatedData = updatedSections.flatMap((section) =>
@@ -959,7 +961,6 @@ export default function CreateRFQForm({
           value={fieldValue}
           onChange={(value) => handleFieldChange(value)}
         />
-        
       );
     }
 
@@ -1012,13 +1013,14 @@ export default function CreateRFQForm({
         {/* {console.log("field:----", field)} */}
         {field.field_owner === "Admin" && (
           <>
-          <input
-            className="form-control rounded-2"
-            type={field.field_type === "integer" ? "number" : "text"}
-            min='0'
-            value={fieldValue}
-            onChange={(e) => handleFieldChange(e.target.value)}
-          /></>
+            <input
+              className="form-control rounded-2"
+              type={field.field_type === "integer" ? "number" : "text"}
+              min="0"
+              value={fieldValue}
+              onChange={(e) => handleFieldChange(e.target.value)}
+            />
+          </>
         )}
         <div>
           <button
@@ -1087,13 +1089,13 @@ export default function CreateRFQForm({
         <SelectBox
           options={locationOptions}
           defaultValue={
-            locationOptions.find((option) => option.label === fieldValue)?.value || fieldValue
+            locationOptions.find((option) => option.label === fieldValue)
+              ?.value || fieldValue
           }
           onChange={(value) =>
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
           }
         />
-
       );
     }
 
@@ -1102,7 +1104,8 @@ export default function CreateRFQForm({
         <SelectBox
           options={brandOptions}
           defaultValue={
-            brandOptions.find((option) => option.value === Number(fieldValue))?.value
+            brandOptions.find((option) => option.value === Number(fieldValue))
+              ?.value
           }
           onChange={(value) =>
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
@@ -1144,7 +1147,10 @@ export default function CreateRFQForm({
           value={fieldValue}
           onWheel={(e) => e.target.blur()}
           onKeyDown={(e) => {
-            if (!/^\d$/.test(e.key) && !["Backspace", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)) {
+            if (
+              !/^\d$/.test(e.key) &&
+              !["Backspace", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)
+            ) {
               e.preventDefault();
             }
           }}
@@ -1156,36 +1162,51 @@ export default function CreateRFQForm({
     }
 
     if (fieldName === "rate") {
-  return (
-    <input
-      className="form-control"
-      type="text"
-      inputMode="decimal"
-      value={fieldValue}
-      onWheel={(e) => e.target.blur()}
-      onKeyDown={(e) => {
-        if (
-          !/^\d$/.test(e.key) &&
-          !["Backspace", "ArrowLeft", "ArrowRight", "Tab", ".", "Delete"].includes(e.key)
-        ) {
-          e.preventDefault();
-        }
-      }}
-      onChange={(e) => {
-        let value = e.target.value;
+      return (
+        <input
+          className="form-control"
+          type="text"
+          inputMode="decimal"
+          value={fieldValue}
+          onWheel={(e) => e.target.blur()}
+          onKeyDown={(e) => {
+            if (
+              !/^\d$/.test(e.key) &&
+              ![
+                "Backspace",
+                "ArrowLeft",
+                "ArrowRight",
+                "Tab",
+                ".",
+                "Delete",
+              ].includes(e.key)
+            ) {
+              e.preventDefault();
+            }
+          }}
+          onChange={(e) => {
+            let value = e.target.value;
 
-        // Allow only numbers and a single decimal point
-        if (/^\d*\.?\d{0,2}$/.test(value)) {
-          handleInputChange(value, rowIndex, fieldName, sectionIndex);
+            // Allow only numbers and a single decimal point
+            if (/^\d*\.?\d{0,2}$/.test(value)) {
+              handleInputChange(value, rowIndex, fieldName, sectionIndex);
 
-          const rate = parseFloat(value) || 0;
-          const quantity = parseFloat(sections[sectionIndex]?.sectionData[rowIndex]?.quantity || 0) || 0;
-          handleInputChange((rate * quantity).toFixed(2), rowIndex, "amount", sectionIndex);
-        }
-      }}
-    />
-  );
-}
+              const rate = parseFloat(value) || 0;
+              const quantity =
+                parseFloat(
+                  sections[sectionIndex]?.sectionData[rowIndex]?.quantity || 0
+                ) || 0;
+              handleInputChange(
+                (rate * quantity).toFixed(2),
+                rowIndex,
+                "amount",
+                sectionIndex
+              );
+            }
+          }}
+        />
+      );
+    }
 
     if (fieldName === "amount") {
       return (
@@ -1288,36 +1309,37 @@ export default function CreateRFQForm({
           </h3>
         </div>
         <div className="d-flex justify-content-between px-3 py-3">
-          <div className="d-flex w-100 gap-3" >
-
-          <div className="col-md-3">
-            <SelectBox
-              label={"Select Template"}
-              options={templateOptions}
-              onChange={handleTemplateChange}
-              defaultValue={selectedTemplate} // Set value instead of defaultValue
-            />
-          </div>
-          {isMorChecked && (
+          <div className="d-flex w-100 gap-3">
             <div className="col-md-3">
               <SelectBox
-                label={"Select MOR"}
-                options={morOptions}
-                onChange={(value) => setSelectedMor(value)}
-                defaultValue={selectedMor}
+                label={"Select Template"}
+                options={templateOptions}
+                onChange={handleTemplateChange}
+                defaultValue={selectedTemplate} // Set value instead of defaultValue
               />
             </div>
-          )}
+            {isMorChecked && (
+              <div className="col-md-3">
+                <SelectBox
+                  label={"Select MOR"}
+                  options={morOptions}
+                  onChange={(value) => setSelectedMor(value)}
+                  defaultValue={selectedMor}
+                />
+              </div>
+            )}
 
-          {isMor && <div className="col-md-2 d-flex align-items-center">
-            <input
-              type="checkbox"
-              className="form-check-input me-2"
-              checked={isMorChecked}
-              onChange={(e) => handleMorCheckboxChange(e.target.checked)}
-            />
-            <label className="form-check-label">Is MOR</label>
-          </div>}
+            {isMor && (
+              <div className="col-md-2 d-flex align-items-center">
+                <input
+                  type="checkbox"
+                  className="form-check-input me-2"
+                  checked={isMorChecked}
+                  onChange={(e) => handleMorCheckboxChange(e.target.checked)}
+                />
+                <label className="form-check-label">Is MOR</label>
+              </div>
+            )}
           </div>
           <button className="purple-btn2" onClick={handleAddColumn}>
             <span className="material-symbols-outlined align-text-top">
@@ -1330,7 +1352,9 @@ export default function CreateRFQForm({
           {isMorChecked && selectedMor ? (
             <div className="mt-4">
               <Table
-                columns={renderTableColumns().filter((col) => col.key !== "actions")} // Exclude "actions" column
+                columns={renderTableColumns().filter(
+                  (col) => col.key !== "actions"
+                )} // Exclude "actions" column
                 data={sections.flatMap((section) => section.sectionData)}
                 isMinWidth={true}
                 customRender={{
@@ -1426,27 +1450,33 @@ export default function CreateRFQForm({
                 }}
               />
               <div className="d-flex justify-content-end">
-                  <ShortTable
-                    data={
-                      Array.isArray(bidTemplateFields) ? bidTemplateFields : []
-                    }
-                    editable={true}
-                    onValueChange={handleShortTableChange}
-                    onInputClick={handleEditShortTableRow}
-                    onDeleteClick={(index) => {
-                      const updatedFields = bidTemplateFields.filter(
-                        (_, i) => i !== index
-                      );
-                      setBidTemplateFields(updatedFields);
-                      updateBidTemplateFields(updatedFields);
-                    }}
-                  />
-                </div>
-
+                <ShortTable
+                  data={
+                    Array.isArray(bidTemplateFields) ? bidTemplateFields : []
+                  }
+                  editable={true}
+                  onValueChange={handleShortTableChange}
+                  onInputClick={handleEditShortTableRow}
+                  onDeleteClick={(index) => {
+                    const updatedFields = bidTemplateFields.filter(
+                      (_, i) => i !== index
+                    );
+                    setBidTemplateFields(updatedFields);
+                    updateBidTemplateFields(updatedFields);
+                  }}
+                />
+              </div>
             </div>
           ) : (
             sections.map((section, sectionIndex) => (
-              <div key={section.sectionId} className="card p-4 mb-4">
+              <div key={section.sectionId} className="card">
+                <div className="card-header3">
+          <h3 className="card-title">
+            Material (1 of 1)
+          </h3>
+        </div>
+                <div className="p-4 mb-4">
+
                 <div className="row mt-4">
                   <div className="col-md-8 col-sm-12 d-flex gap-3">
                     <div className="flex-grow-1">
@@ -1457,7 +1487,8 @@ export default function CreateRFQForm({
                           section?.sectionData?.some((row) => row?._destroy)
                             ? "Select Material Type"
                             : sectionOptions?.find(
-                                (option) => option.label === section?.materialType
+                                (option) =>
+                                  option.label === section?.materialType
                               )?.value || "Select Material Type"
                         }
                         onChange={(selected) =>
@@ -1505,8 +1536,16 @@ export default function CreateRFQForm({
                   columns={renderTableColumns()}
                   isMinWidth={true}
                   data={section?.sectionData?.filter((row) => !row._destroy)}
+                  accordionRender={(row, rowIndex) => (
+                    <div>
+
+                      <h5>Accordion Content for Row {rowIndex + 1}</h5>
+                      <p>Details: {JSON.stringify(row)}</p>
+                    </div>
+                  )}
                   customRender={{
                     srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
+
                     descriptionOfItem: (cell, rowIndex) => {
                       return (
                         <SelectBox
@@ -1590,12 +1629,12 @@ export default function CreateRFQForm({
                         placeholder="Enter Quantity"
                         onKeyDown={(e) => {
                           if (
-                            e.key === "e" || 
-                            e.key === "E" || 
-                            e.key === "+" || 
-                            e.key === "-" || 
-                            e.key === "." || 
-                            e.key === "," || 
+                            e.key === "e" ||
+                            e.key === "E" ||
+                            e.key === "+" ||
+                            e.key === "-" ||
+                            e.key === "." ||
+                            e.key === "," ||
                             e.key === " " // Add any other characters you want to restrict
                           ) {
                             e.preventDefault();
@@ -1603,14 +1642,13 @@ export default function CreateRFQForm({
                         }}
                         onChange={(e) => {
                           const value = e.target.value.replace(/\D/g, "");
-                          if(/^\d*$/.test(value)){
-
+                          if (/^\d*$/.test(value)) {
                             handleInputChange(
                               e.target.value,
                               rowIndex,
                               "quantity",
                               sectionIndex
-                            )
+                            );
                           }
                         }}
                       />
@@ -1623,12 +1661,12 @@ export default function CreateRFQForm({
                         value={cell}
                         onKeyDown={(e) => {
                           if (
-                            e.key === "e" || 
-                            e.key === "E" || 
-                            e.key === "+" || 
-                            e.key === "-" || 
-                            e.key === "." || 
-                            e.key === "," || 
+                            e.key === "e" ||
+                            e.key === "E" ||
+                            e.key === "+" ||
+                            e.key === "-" ||
+                            e.key === "." ||
+                            e.key === "," ||
                             e.key === " " // Add any other characters you want to restrict
                           ) {
                             e.preventDefault();
@@ -1636,14 +1674,15 @@ export default function CreateRFQForm({
                         }}
                         onChange={(e) => {
                           const value = e.target.value;
-    // Allow only positive numbers
-    if (/^\d*$/.test(value)) {
-                          handleInputChange(
-                            value,
-                            rowIndex,
-                            "rate",
-                            sectionIndex
-                          )}
+                          // Allow only positive numbers
+                          if (/^\d*$/.test(value)) {
+                            handleInputChange(
+                              value,
+                              rowIndex,
+                              "rate",
+                              sectionIndex
+                            );
+                          }
                         }}
                         placeholder="Enter Rate"
                       />
@@ -1695,7 +1734,9 @@ export default function CreateRFQForm({
                     pms_colour_id: (cell, rowIndex) => (
                       <SelectBox
                         options={pmsColours}
-                        defaultValue={section?.sectionData[rowIndex].pms_colour_id}
+                        defaultValue={
+                          section?.sectionData[rowIndex].pms_colour_id
+                        }
                         onChange={(value) =>
                           handleInputChange(
                             value,
@@ -1704,12 +1745,14 @@ export default function CreateRFQForm({
                             sectionIndex
                           )
                         }
-                        />
+                      />
                     ),
                     generic_info_id: (cell, rowIndex) => (
                       <SelectBox
                         options={genericInfoOptions}
-                        defaultValue={section?.sectionData[rowIndex]?.generic_info_id || ""}
+                        defaultValue={
+                          section?.sectionData[rowIndex]?.generic_info_id || ""
+                        }
                         onChange={(value) =>
                           handleInputChange(
                             value,
@@ -1743,6 +1786,7 @@ export default function CreateRFQForm({
                       updateBidTemplateFields(updatedFields);
                     }}
                   />
+                </div>
                 </div>
               </div>
             ))
@@ -1917,7 +1961,7 @@ export default function CreateRFQForm({
         footerButtons={[
           {
             label: "Add Column",
-            onClick:handleAddColumnSubmit,
+            onClick: handleAddColumnSubmit,
           },
         ]}
       >
