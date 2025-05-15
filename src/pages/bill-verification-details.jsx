@@ -15,6 +15,10 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate
 const BillVerificationDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [remark, setRemark] = useState(""); // State to store the remark
+  const [showValidation, setShowValidation] = useState(false); // State to control validation message
+
+
   const [loading, setLoading] = useState(false); // Add loading state
   const [billDetails, setBillDetails] = useState(null);
   const [attachModal, setattachModal] = useState(false);
@@ -63,25 +67,29 @@ const BillVerificationDetails = () => {
       value: "",
     },
     {
-      label: "Draft",
-      value: "draft",
+      label: "Open",
+      value: "open",
     },
     {
       label: "Verified",
       value: "verified",
     },
     {
-      label: "Submited",
-      value: "submited",
+      label: "All",
+      value: "all",
     },
-    {
-      label: "Proceed",
-      value: "proceed",
-    },
-    {
-      label: "Approved",
-      value: "approved",
-    },
+    // {
+    //   label: "Submited",
+    //   value: "submited",
+    // },
+    // {
+    //   label: "Proceed",
+    //   value: "proceed",
+    // },
+    // {
+    //   label: "Approved",
+    //   value: "approved",
+    // },
   ];
 
   // Add handleDownload function
@@ -255,6 +263,36 @@ const BillVerificationDetails = () => {
       setLoading(false); // Set loading to false after the API call
     }
   };
+
+const handleSubmitRemark = async () => {
+  try {
+    if (!remark.trim()) {
+      // alert("Please enter a remark before submitting.");
+      setShowValidation(true); 
+      return;
+    }
+
+    setLoading(true); // Show loader while submitting
+    const response = await axios.post(
+      `${baseURL}bill_entries/${id}/request_for_revision?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+      {
+        remarks: remark, // Send the remark in the request body
+      }
+    );
+
+    if (response.status === 200) {
+      alert("Remark submitted successfully.");
+      setRemark(""); // Clear the remark input
+      closeremarkModal(); // Close the modal
+      setLoading(true);
+    }
+  } catch (error) {
+    console.error("Error submitting remark:", error);
+    alert("Failed to submit remark. Please try again.");
+  } finally {
+    setLoading(false); // Hide loader after submission
+  }
+};
   return (
     <>
       <div className="website-content overflow-auto">
@@ -456,7 +494,8 @@ const BillVerificationDetails = () => {
                         data-bs-target="#RevisionModal"
                         onClick={openattachModal}
                       >
-                        Attach Other
+                        {/* Attach Other */}
+                        Attach Document
                       </button>
                     </div>
                   </div>
@@ -495,6 +534,11 @@ const BillVerificationDetails = () => {
                             <td className="text-start">
                               <button
                                 className="text-decoration-underline border-0 bg-transparent"
+                                style={{
+                                  color: "#8b0203",
+                                  textDecoration: "underline",
+                                  cursor: "pointer",
+                                }}
                                 onClick={() => {
                                   setNewDocument((prev) => ({
                                     ...prev,
@@ -503,7 +547,7 @@ const BillVerificationDetails = () => {
                                   openattachModal();
                                 }}
                               >
-                                Attach
+                                Attach Another Document
                               </button>
                             </td>
                           </tr>
@@ -776,9 +820,32 @@ const BillVerificationDetails = () => {
                 rows={3}
                 placeholder="Enter ..."
                 defaultValue={""}
+                value={remark} // Controlled input
+                onChange={(e) => setRemark(e.target.value)} // Update state
               />
+               {showValidation && !remark.trim() && (
+          <small className="text-danger">Remark is required.</small>
+        )}
             </div>
           </div>
+          <div className="row mt-3 justify-content-center">
+      <div className="col-md-4">
+        <button
+          className="purple-btn2 w-100"
+          onClick={handleSubmitRemark} // Call the submit function
+        >
+          Submit
+        </button>
+      </div>
+      <div className="col-md-4">
+        <button
+          className="purple-btn1 w-100"
+          onClick={closeremarkModal}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
         </Modal.Body>
       </Modal>
       {/* remark modal */}

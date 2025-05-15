@@ -226,8 +226,8 @@ const DebitNoteList = () => {
       value: 'verified',
     },
     {
-      label: 'Submited',
-      value: 'submited',
+      label: 'Submitted',
+      value: 'submitted',
     },
     {
       label: 'Proceed',
@@ -375,7 +375,27 @@ const DebitNoteList = () => {
           console.error("Error fetching filtered data:", error);
         });
     };
-  if (loading) return <div>Loading...</div>;
+
+     const fetchSearchResults = async () => {
+          try {
+            setLoading(true);
+            const response = await axios.get(
+              `${baseURL}debit_notes?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_ord
+    er_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_cont]=${searchKeyword}`
+            );
+            setDebitNotes(response.data.debit_notes);
+            // setBillEntries(response.data.bill_entries);
+            setMeta(response.data.meta);
+            setTotalPages(response.data.meta.total_pages);
+            setTotalEntries(response.data.meta.total_count);
+          } catch (err) {
+            setError("Failed to fetch search results");
+            console.error("Error fetching search results:", err);
+          } finally {
+            setLoading(false);
+          }
+        };
+  // if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
   return (
     <>
@@ -603,13 +623,15 @@ const DebitNoteList = () => {
                       <input
                         type="search"
                         id="searchInput"
-                        // value={searchKeyword}
-                        // onChange={(e) => setSearchKeyword(e.target.value)} // <- Add this line
+                        value={searchKeyword}
+                        onChange={(e) => setSearchKeyword(e.target.value)} // <- Add this line
                         className="form-control tbl-search"
                         placeholder="Type your keywords here"
                       />
                       <div className="input-group-append">
-                        <button type="button" className="btn btn-md btn-default">
+                        <button type="button" className="btn btn-md btn-default"
+                        onClick={() => fetchSearchResults()} 
+                        >
                           <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203" />
                             <path d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z" fill="#8B0203" />
@@ -745,7 +767,17 @@ const DebitNoteList = () => {
                           <td className="text-start">{note.gstin || "-"}</td>
                           <td className="text-start">{note.pan_no || "-"}</td>
                           <td className="text-start">{note.debit_note_amount || "-"}</td>
-                          <td className="text-start"></td>
+                          <td className="text-start">
+                          {/* {note.taxes_and_charges &&
+                                note.taxes_and_charges
+                                  .filter((tax) => !tax.addition)
+                                  .reduce(
+                                    (total, tax) =>
+                                      total + (parseFloat(tax.amount) || 0),
+                                    0
+                                  )
+                                  .toFixed(2)} */}
+                          </td>
                           <td className="text-start"></td>
                           <td className="text-start"></td>
                           <td className="text-start">{note.status || "-"}</td>
@@ -833,6 +865,22 @@ const DebitNoteList = () => {
           </div>
         </div>
       </div>
+      {loading && (
+        <div className="loader-container">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>Loading...</p>
+        </div>
+      )}
+
 
       {/* modal start */}
       <Modal

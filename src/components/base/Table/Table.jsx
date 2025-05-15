@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import DropdownCollapseIcon from "../../common/Icon/DropdownCollapseIcon";
 
 // Utility to transpose data for horizontal alignment
 const transposeData = (data, columns) => {
@@ -29,11 +30,17 @@ export default function Table({
   enableOverflowScroll = false,
   enableHoverEffect = false, // Add new prop
   isMinWidth = false, // Add new prop
+  accordionRender = null,
   ...rest
 }) {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [loadedSerializedData, setLoadedSerializedData] = useState([]);
+  const [openAccordionIndex, setOpenAccordionIndex] = useState(null);
+
+  const toggleAccordion = (index) => {
+    setOpenAccordionIndex(openAccordionIndex === index ? null : index);
+  };
 
   useEffect(() => {
     if (isSelectCheckboxes) {
@@ -59,7 +66,6 @@ export default function Table({
   }, [resetSelectedRows, onResetComplete]);
 
   useEffect(() => {
-
     // Process serializedData only when it stabilizes
     const processSerializedData = () => {
       if (serializedData.length > 0) {
@@ -204,11 +210,15 @@ export default function Table({
                     </td>
                     {row.values.map((value, valueIndex) => {
                       // Handle serializedData as an array of arrays
-                      const serializedEntries = Array.isArray(loadedSerializedData[valueIndex])
+                      const serializedEntries = Array.isArray(
+                        loadedSerializedData[valueIndex]
+                      )
                         ? loadedSerializedData[valueIndex]
                         : [loadedSerializedData[valueIndex] || {}];
 
-                      const serializedCharges = serializedEntries.map((entry) => entry.charges || {});
+                      const serializedCharges = serializedEntries.map(
+                        (entry) => entry.charges || {}
+                      );
                       const serializedBidMaterials = serializedEntries.flatMap(
                         (entry) => entry.bid_materials || [] // Handle all bid_materials, not just the first one
                       );
@@ -227,12 +237,15 @@ export default function Table({
                       // Fetch serialized value based on key mapping
                       const serializedValue = serializedEntries
                         .map((entry, index) =>
-                          serializedCharges[index][columns[rowIndex]?.key] !== undefined
+                          serializedCharges[index][columns[rowIndex]?.key] !==
+                          undefined
                             ? serializedCharges[index][columns[rowIndex]?.key]
                             : keyMapping[columns[rowIndex]?.key]
                             ? serializedBidMaterials.find(
                                 (material) =>
-                                  material[keyMapping[columns[rowIndex]?.key]] !== undefined
+                                  material[
+                                    keyMapping[columns[rowIndex]?.key]
+                                  ] !== undefined
                               )?.[keyMapping[columns[rowIndex]?.key]]
                             : serializedBidMaterials.find(
                                 (material) =>
@@ -241,7 +254,8 @@ export default function Table({
                         )
                         .filter((val) => val !== "")[0]; // Use the first non-empty value
 
-                      const adjustedSerializedValue = serializedValue || originalValue;
+                      const adjustedSerializedValue =
+                        serializedValue || originalValue;
 
                       const shouldCompare = [
                         "freight_charge_amount",
@@ -260,7 +274,7 @@ export default function Table({
                         "totalAmount",
                         "price",
                         "discount",
-                        "realised_tax_amount"
+                        "realised_tax_amount",
                       ].includes(columns[rowIndex]?.key);
 
                       return (
@@ -297,27 +311,38 @@ export default function Table({
                               : "transparent")
                           }
                         >
-                          {customRender[columns[rowIndex]?.key]
-                            ? customRender[columns[rowIndex]?.key](
-                                value,
-                                valueIndex,
-                                data[valueIndex]
-                              )
-                            : shouldCompare && adjustedSerializedValue ? (
-                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                  {serializedValue && (
-                                    <span style={{ textDecoration: "line-through", color: "red" }}>
-                                      {serializedValue}
-                                    </span>
-                                  )}
-                                  {serializedValue && (
-                                    <span style={{ margin: "0 5px" }}>→</span>
-                                  )}
-                                  <span>{originalValue}</span>
-                                </div>
-                              ) : (
-                                value
+                          {customRender[columns[rowIndex]?.key] ? (
+                            customRender[columns[rowIndex]?.key](
+                              value,
+                              valueIndex,
+                              data[valueIndex]
+                            )
+                          ) : shouldCompare && adjustedSerializedValue ? (
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                              }}
+                            >
+                              {serializedValue && (
+                                <span
+                                  style={{
+                                    textDecoration: "line-through",
+                                    color: "red",
+                                  }}
+                                >
+                                  {serializedValue}
+                                </span>
                               )}
+                              {serializedValue && (
+                                <span style={{ margin: "0 5px" }}>→</span>
+                              )}
+                              <span>{originalValue}</span>
+                            </div>
+                          ) : (
+                            value
+                          )}
                         </td>
                       );
                     })}
@@ -368,72 +393,117 @@ export default function Table({
         </thead>
         <tbody>
           {data.map((row, rowIndex) => (
-            <tr key={rowIndex}>
-              {showCheckbox && (
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={selectedRows.some(
-                      (selectedRow) => selectedRow.id === row.id
-                    )}
-                    onChange={() => handleRowSelection(rowIndex)}
-                  />
-                </td>
-              )}
-              {columns.map((col, cellIndex) => {
-                const cell =
-                  col.key === "srNo"
-                    ? (currentPage - 1) * pageSize + rowIndex + 1
-                    : row[col.key];
-                const cellContent = customRender[col.key]
-                  ? customRender[col.key](cell, rowIndex, row)
-                  : cell;
-
-                return (
-                  <td
-                    key={cellIndex}
-                    style={{
-                      textAlign: "left",
-                      whiteSpace: enableOverflowScroll ? "nowrap" : "normal",
-                      overflow: enableOverflowScroll ? "hidden" : "visible",
-                      textOverflow: enableOverflowScroll ? "ellipsis" : "clip",
-                      width: col.key === "srNo" ? "100px !important" : "70px", // Set width for srNo column
-                      minWidth:
-                        isMinWidth && col.key !== "srNo" ? "300px" : "70px", // Set minimum width if minWidth prop is true
-                    }}
-                  >
-                    {cellContent}
+            <>
+              <tr key={rowIndex}>
+                {showCheckbox && (
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.some(
+                        (selectedRow) => selectedRow.id === row.id
+                      )}
+                      onChange={() => handleRowSelection(rowIndex)}
+                    />
                   </td>
-                );
-              })}
-              {actionIcon && onActionClick && (
-                <td>
-                  <button
-                    className="p-2 bg-white border"
-                    style={{
-                      color: "#8b0203",
-                      backgroundColor: "transparent", // Remove background
-                      border: "none", // Remove border
-                      padding: "0", // Optional: Adjust padding
-                      cursor: "pointer", // Ensure pointer cursor for interactivity
-                    }}
-                    onClick={() => onActionClick(row)} // Pass the row data
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      className="bi bi-eye"
-                      viewBox="0 0 16 16"
+                )}
+                {columns.map((col, cellIndex) => {
+                  const cell =
+                    col.key === "srNo"
+                      ? (currentPage - 1) * pageSize + rowIndex + 1
+                      : row[col.key];
+                  const cellContent = customRender[col.key]
+                    ? customRender[col.key](cell, rowIndex, row)
+                    : cell;
+
+                  return (
+                    <td
+                      key={cellIndex}
+                      style={{
+                        textAlign: "left",
+                        whiteSpace: enableOverflowScroll ? "nowrap" : "normal",
+                        overflow: enableOverflowScroll ? "hidden" : "visible",
+                        textOverflow: enableOverflowScroll
+                          ? "ellipsis"
+                          : "clip",
+                        width: col.key === "srNo" ? "100px !important" : "70px", // Set width for srNo column
+                        minWidth:
+                          isMinWidth && col.key !== "srNo" ? "300px" : "70px", // Set minimum width if minWidth prop is true
+                      }}
                     >
-                      <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                      <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                    </svg>
-                  </button>
-                </td>
+                      {col.key === "srNo" ? (
+                        <div className="d-flex align-items-center gap-2">
+                          <span>
+                            {(currentPage - 1) * pageSize + rowIndex + 1}
+                          </span>
+                          <button
+                            className="purple-btn2 d-flex align-items-center"
+                            style={{
+                              borderRadius: "50%", // Fully rounded border
+                              width: "32px", // Equal width
+                              height: "32px", // Equal height
+                              padding: "0", // Remove padding for a perfect circle
+                            }}
+                            onClick={() => toggleAccordion(rowIndex)}
+                          >
+                            <DropdownCollapseIcon
+                              isCollapsed={openAccordionIndex !== rowIndex}
+                            />
+                          </button>
+                        </div>
+                      ) : (
+                        cellContent
+                      )}
+                    </td>
+                  );
+                })}
+                {/* {accordionRender && (
+                  <td>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => toggleAccordion(rowIndex)}
+                    >
+                      Toggle Accordion
+                    </button>
+                  </td>
+                )} */}
+                {actionIcon && onActionClick && (
+                  <td>
+                    <button
+                      className="p-2 bg-white border"
+                      style={{
+                        color: "#8b0203",
+                        backgroundColor: "transparent", // Remove background
+                        border: "none", // Remove border
+                        padding: "0", // Optional: Adjust padding
+                        cursor: "pointer", // Ensure pointer cursor for interactivity
+                      }}
+                      onClick={() => onActionClick(row)} // Pass the row data
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        className="bi bi-eye"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
+                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
+                      </svg>
+                    </button>
+                  </td>
+                )}
+              </tr>
+              {openAccordionIndex === rowIndex && accordionRender && (
+                <tr>
+                  <td colSpan={columns.length + 1}>
+                    <div style={{ textAlign: "left" }}>
+                      {accordionRender(row, rowIndex)}
+                    </div>
+                  </td>
+                </tr>
               )}
-            </tr>
+            </>
           ))}
         </tbody>
       </table>

@@ -3,7 +3,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import { useState, useEffect } from "react";
 import { Modal, Button } from "react-bootstrap";
-import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+import { DataGrid } from "@mui/x-data-grid";
+import { Stack, Typography, Pagination } from "@mui/material";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { DownloadIcon, FilterIcon, StarIcon, SettingIcon } from "../components";
 import axios from "axios";
@@ -19,9 +20,14 @@ const BillEntryList = () => {
   const [meta, setMeta] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 10;
+  const [pageSize, setPageSize] = useState(10);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [totalEntries, setTotalEntries] = useState(0);
+  const [showOnlyPinned, setShowOnlyPinned] = useState(false);
+  const [pinnedRows, setPinnedRows] = useState([]);
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [settingShow, setSettingShow] = useState(false);
+  const [show, setShow] = useState(false);
 
   // Company, Project, Site states
   const [companies, setCompanies] = useState([]);
@@ -31,62 +37,145 @@ const BillEntryList = () => {
   const [selectedSite, setSelectedSite] = useState(null);
   const [siteOptions, setSiteOptions] = useState([]);
 
-  // Bulk Action states
-  const [fromStatus, setFromStatus] = useState("");
-  const [toStatus, setToStatus] = useState("");
-  const [remark, setRemark] = useState("");
-  const [selectedBillDetails, setSelectedBillDetails] = useState("");
-  const navigate = useNavigate();
+  const [columnVisibility, setColumnVisibility] = useState({
+    srNo: true,
+    mode_of_submission: true,
+    company_name: true,
+    project_name: true,
+    site_name: true,
+    pms_supplier: true,
+    uam_number: true,
+    po_number: true,
+    created_at: true,
+    accepted_at: true,
+    bill_no: true,
+    bill_date: true,
+    bill_amount: true,
+    bill_copies: true,
+    due: true,
+    due_date: true,
+    certificate_no: true,
+    payable_amount: true,
+    paid: true,
+    balance: true,
+    status: true,
+    overdue: true,
+    assign_to: true,
+    tat: true,
+  });
 
-  // Status options for bulk action
-  const statusOptions = [
-    { label: "Select Status", value: "" },
-    { label: "Draft", value: "draft" },
-    { label: "Verified", value: "verified" },
-    { label: "Submitted", value: "submitted" },
-    { label: "Proceed", value: "proceed" },
-    { label: "Approved", value: "approved" },
+  const allColumns = [
+    {
+      field: "srNo",
+      headerName: "Sr. No.",
+      width: 100,
+      // renderCell: (params) => {
+      //   // params.api.getRowIndex(params.id) gives the index in the current page
+      //   // currentPage is 1-based, pageSize is your page size
+      //   return (
+      //     (currentPage - 1) * pageSize + params.api.getRowIndex(params.id) + 1
+      //   );
+      // },
+    },
+    {
+      field: "mode_of_submission",
+      headerName: "Mode of Submission",
+      width: 150,
+    },
+    { field: "company_name", headerName: "Company", width: 150 },
+    { field: "project_name", headerName: "Project", width: 150 },
+    { field: "site_name", headerName: "Sub Project", width: 150 },
+    { field: "pms_supplier", headerName: "Vendor Name", width: 150 },
+    { field: "uam_number", headerName: "UAM No.", width: 150 },
+    { field: "po_number", headerName: "PO No.", width: 150 },
+    {
+      field: "created_at",
+      headerName: "Created On",
+      width: 150,
+      valueFormatter: (params) => {
+        if (!params || !params.value) return "-";
+        try {
+          return new Date(params.value).toLocaleDateString();
+        } catch (error) {
+          return "-";
+        }
+      },
+    },
+    {
+      field: "accepted_at",
+      headerName: "Accepted On",
+      width: 150,
+      valueFormatter: (params) => {
+        if (!params || !params.value) return "-";
+        try {
+          return new Date(params.value).toLocaleDateString();
+        } catch (error) {
+          return "-";
+        }
+      },
+    },
+    {
+      field: "bill_no",
+      headerName: "Bill No.",
+      width: 150,
+      renderCell: (params) =>
+        params.value && params.row.id ? (
+          <Link to={`/bill-entry-details/${params.row.id}`}>
+            {params.value}
+          </Link>
+        ) : (
+          "-"
+        ),
+    },
+    { field: "bill_date", headerName: "Bill Date", width: 150 },
+    { field: "bill_amount", headerName: "Bill Amount", width: 150 },
+    { field: "bill_copies", headerName: "Bill Copies", width: 150 },
+    { field: "due", headerName: "Due", width: 150 },
+    { field: "due_date", headerName: "Due Date", width: 150 },
+    { field: "certificate_no", headerName: "Certificate No.", width: 150 },
+    { field: "payable_amount", headerName: "Payable Amount", width: 150 },
+    { field: "paid", headerName: "Paid", width: 150 },
+    { field: "balance", headerName: "Balance", width: 150 },
+    { field: "status", headerName: "Status", width: 150 },
+    { field: "overdue", headerName: "Overdue", width: 150 },
+    { field: "assign_to", headerName: "Assign to", width: 150 },
+    { field: "tat", headerName: "TAT", width: 150 },
   ];
 
-  // Add modal states
-  const [filterModal, setFilterModal] = useState(false);
-  const [layoutModal, setLayoutModal] = useState(false);
+  const columns = allColumns.filter((col) => columnVisibility[col.field]);
 
-  // Add modal handlers
-  const openFilterModal = () => setFilterModal(true);
-  const closeFilterModal = () => setFilterModal(false);
-  const openLayoutModal = () => setLayoutModal(true);
-  const closeLayoutModal = () => setLayoutModal(false);
+  const handleSettingClose = () => setSettingShow(false);
+  const handleClose = () => setShow(false);
+  const handleSettingModalShow = () => setSettingShow(true);
+  const handleModalShow = () => setShow(true);
 
-  // Add handleChange function
-  const handleChange = (selectedOption) => {
-    setSelectedValue(selectedOption);
+  const handleToggleColumn = (field) => {
+    setColumnVisibility((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
-  // Fetch bill entries
-  const fetchData = async (page) => {
-    const search = searchKeyword || "";
-    try {
-      setLoading(true);
-      const response = await axios.get(
-        `${baseURL}bill_entries?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[invoice_number_or_einvoice_or_inventory_date_or_invoice_amount_or_other_deductions_or_total_value_or_status_or_total_amount_or_company_company_name_or_pms_site_name_or_project_name_or_supplier_first_name_or_supplier_last_name_or_bill_purchase_orders_purchase_order_po_number_eq]=${search}`
-      );
-      setBillEntries(response.data.bill_entries || []);
-      setMeta(response.data.meta);
-      setTotalPages(response.data.meta.total_pages);
-      setTotalEntries(response.data.meta.total_count);
-    } catch (error) {
-      console.error("Error fetching bill entries:", error);
-      setError("Failed to fetch bill entries");
-    } finally {
-      setLoading(false);
-    }
+  const handleShowAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
   };
 
-  // Fetch data on component mount and when page/search changes
-  useEffect(() => {
-    fetchData(currentPage);
-  }, [currentPage, searchKeyword]);
+  const handleHideAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = false;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+
+  const handleResetColumns = () => {
+    const defaultVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(defaultVisibility);
+  };
 
   // Fetch companies on component mount
   useEffect(() => {
@@ -116,7 +205,7 @@ const BillEntryList = () => {
         selectedCompanyData?.projects.map((prj) => ({
           value: prj.id,
           label: prj.name,
-        }))
+        })) || []
       );
     }
   };
@@ -148,18 +237,63 @@ const BillEntryList = () => {
     setSelectedSite(selectedOption);
   };
 
-  // Map companies to options
-  const companyOptions = companies.map((company) => ({
-    value: company.id,
-    label: company.company_name,
-  }));
+  const [activeTab, setActiveTab] = useState("list");
 
-  // Handle page change
-  const handlePageChange = (pageNumber) => {
-    if (pageNumber > 0 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-    }
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    fetchTabData(tab, 1); // Always go to first page on tab change
   };
+  const [allBillCount, setAllBillCount] = useState(0); // <-- Add this
+
+  // Fetch total bill count only once, on mount
+  useEffect(() => {
+    const fetchAllBillCount = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}bill_entries?page=1&per_page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        setAllBillCount(response.data.meta.total_count || 0);
+      } catch (error) {
+        setAllBillCount(0);
+      }
+    };
+    fetchAllBillCount();
+  }, []);
+
+  const fetchTabData = (tab, page) => {
+    setLoading(true);
+    let statusQuery = "";
+    if (tab === "open") statusQuery = "&q[status_eq]=open";
+    if (tab === "online") statusQuery = "&q[status_eq]=online";
+    if (tab === "offline") statusQuery = "&q[status_eq]=offline";
+
+    axios
+      .get(
+        `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${statusQuery}`
+      )
+      .then((response) => {
+        const transformedData = response.data.bill_entries.map(
+          (entry, index) => ({
+            id: entry.id,
+            srNo: (page - 1) * pageSize + index + 1,
+            ...entry,
+          })
+        );
+        setBillEntries(transformedData);
+        setMeta(response.data.meta);
+        setTotalPages(response.data.meta.total_pages);
+        setTotalEntries(response.data.meta.total_count);
+        setCurrentPage(page);
+      })
+      .catch((error) => {
+        console.error("Error fetching tab data:", error);
+      })
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => {
+    fetchTabData(activeTab, currentPage);
+    // eslint-disable-next-line
+  }, [activeTab, currentPage, pageSize]);
 
   // Fetch filtered data
   const fetchFilteredData = () => {
@@ -168,12 +302,19 @@ const BillEntryList = () => {
     const siteId = selectedSite?.value || "";
     const search = searchKeyword || "";
 
-    const url = `${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
+    const url = `${baseURL}bill_entries?page=1&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
 
     axios
       .get(url)
       .then((response) => {
-        setBillEntries(response.data.bill_entries);
+        const transformedData = response.data.bill_entries.map(
+          (entry, index) => ({
+            id: entry.id,
+            srNo: (currentPage - 1) * pageSize + index + 1, // Use currentPage here
+            ...entry,
+          })
+        );
+        setBillEntries(transformedData);
         setTotalPages(response.data.meta.total_pages);
         setTotalEntries(response.data.meta.total_count);
       })
@@ -187,13 +328,21 @@ const BillEntryList = () => {
     setSelectedCompany(null);
     setSelectedProject(null);
     setSelectedSite(null);
+    setSearchKeyword("");
 
     axios
       .get(
-        `${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}bill_entries?page=1&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       )
       .then((response) => {
-        setBillEntries(response.data.bill_entries);
+        const transformedData = response.data.bill_entries.map(
+          (entry, index) => ({
+            id: entry.id,
+            srNo: index + 1,
+            ...entry,
+          })
+        );
+        setBillEntries(transformedData);
         setMeta(response.data.meta);
         setTotalPages(response.data.meta.total_pages);
         setTotalEntries(response.data.meta.total_count);
@@ -202,692 +351,523 @@ const BillEntryList = () => {
         console.error("Error resetting data:", error);
       });
   };
+  const [searchInput, setSearchInput] = useState("");
 
-  // Handle bulk action status changes
-  const handleStatusChange = (selectedOption) => {
-    setFromStatus(selectedOption.value);
+  // Handle search button click
+  const handleSearch = () => {
+    setSearchKeyword(searchInput);
+    setCurrentPage(1); // Reset to first page when searching
   };
 
-  const handleToStatusChange = (selectedOption) => {
-    setToStatus(selectedOption.value);
+  // Handle cross button click
+  const handleClearSearch = () => {
+    setSearchInput("");
+    setSearchKeyword("");
+    setCurrentPage(1); // Reset to first page
   };
 
-  const handleRemarkChange = (e) => {
-    setRemark(e.target.value);
+  // Fetch bill entries
+  const fetchData = async (page) => {
+    const search = searchKeyword || "";
+    try {
+      setLoading(true);
+
+      const response = await axios.get(
+        `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_cont]=${search}`
+      );
+      const transformedData = response.data.bill_entries.map(
+        (entry, index) => ({
+          id: entry.id,
+          srNo: (page - 1) * pageSize + index + 1, // <-- This line is key!
+          ...entry,
+        })
+      );
+
+      setBillEntries(transformedData);
+      setMeta(response.data.meta);
+      setTotalPages(response.data.meta.total_pages);
+      setTotalEntries(response.data.meta.total_count);
+    } catch (error) {
+      console.error("Error fetching bill entries:", error);
+      setError("Failed to fetch bill entries");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Handle bulk action submit
-  const handleSubmit = () => {
-    if (!fromStatus || !toStatus) {
-      alert("Please select both 'From Status' and 'To Status'.");
-      return;
+  useEffect(() => {
+    fetchData(currentPage);
+  }, [currentPage, searchKeyword]);
+
+  const getTransformedRows = () => {
+    let rowsToShow = showOnlyPinned
+      ? billEntries.filter((row) => pinnedRows.includes(row.id))
+      : billEntries;
+
+    const normalizedSearchTerm = searchKeyword.trim().toLowerCase();
+    if (normalizedSearchTerm) {
+      rowsToShow = rowsToShow.filter((item) =>
+        Object.values(item).some(
+          (value) =>
+            value && String(value).toLowerCase().includes(normalizedSearchTerm)
+        )
+      );
     }
 
-    const data = {
-      bill_entry_ids: selectedBillDetails,
-      to_status: toStatus,
-      comments: remark,
-    };
-
-    axios
-      .patch(
-        `${baseURL}bill_entries/update_bulk_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-        data
-      )
-      .then((response) => {
-        console.log("Success:", response.data);
-        alert("Status updated successfully");
-        fetchData(currentPage); // Refresh the data
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+    return rowsToShow;
   };
 
-  // Handle checkbox selection
-  const handleCheckboxChange = (billDetailId) => {
-    setSelectedBillDetails((prevSelected) => {
-      const selectedArray = prevSelected
-        ? prevSelected.split(",").map(Number)
-        : [];
-      if (selectedArray.includes(billDetailId)) {
-        const updatedArray = selectedArray.filter((id) => id !== billDetailId);
-        return updatedArray.join(",");
-      } else {
-        const updatedArray = [...selectedArray, billDetailId];
-        return updatedArray.join(",");
-      }
-    });
-  };
+  // Calculate displayed rows for the current page
+  const startEntry = (currentPage - 1) * pageSize + 1;
+  const endEntry = Math.min(currentPage * pageSize, totalEntries);
 
   return (
     <>
+      <style type="text/css">
+        {`
+
+.tbl-container {
+
+height: 350px !important;
+
+}
+.css-5n0k77:last-child{
+display:none !important;
+}
+
+
+
+`}
+      </style>
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">Home &gt; Billing &gt; MOR &gt; Bill Entry List</a>
           <h5 className="mt-4 fw-bold">Bill Entry List</h5>
-          <div className="mor-tabs mt-4">
-            <ul
-              className="nav nav-pills mb-3 justify-content-center"
-              id="pills-tab"
-              role="tablist"
-            >
-              <li className="nav-item" role="presentation">
-                <button
-                  className="nav-link"
-                  data-bs-toggle="pill"
-                  data-bs-target="#create-mor"
-                  type="button"
-                  role="tab"
-                  aria-controls="create-mor"
-                  aria-selected="false"
-                >
-                  Material
-                </button>
-              </li>
-              <li className="nav-item" role="presentation">
-                <button
-                  className="nav-link"
-                  data-bs-toggle="pill"
-                  data-bs-target="#mor-approval-create"
-                  type="button"
-                  role="tab"
-                  aria-controls="mor-approval-create"
-                  aria-selected="true"
-                >
-                  Service
-                </button>
-              </li>
-              <li className="nav-item" role="presentation">
-                <button
-                  className="nav-link"
-                  id="pills-contact-tab"
-                  data-bs-toggle="pill"
-                  data-bs-target="#pills-contact"
-                  type="button"
-                  role="tab"
-                  aria-controls="pills-contact"
-                  aria-selected="false"
-                >
-                  Misc.
-                </button>
-              </li>
-              <li className="nav-item" role="presentation" />
-            </ul>
-          </div>
+
           <div className="material-boxes mt-3">
             <div className="container-fluid">
               <div className="row separteinto6 justify-content-center">
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button active"
-                    data-tab="total"
+                    className={`content-box tab-button ${
+                      activeTab === "list" ? "active" : ""
+                    }`}
+                    data-tab="list"
+                    onClick={() => handleTabChange("list")}
                   >
                     <h4 className="content-box-title fw-semibold">Bill List</h4>
-                    <p className="content-box-sub">{totalEntries}</p>
-                  </div>
-                </div>
-                <div className="col-md-2 text-center">
-                  <div className="content-box tab-button" data-tab="draft">
-                    <h4 className="content-box-title fw-semibold">
-                      Open Bills
-                    </h4>
-                    <p className="content-box-sub">{meta?.open || 0}</p>
+                    <p className="content-box-sub">{allBillCount}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button"
-                    data-tab="pending-approval"
+                    className={`content-box tab-button ${
+                      activeTab === "open" ? "active" : ""
+                    }`}
+                    data-tab="open"
+                    onClick={() => handleTabChange("open")}
+                  >
+                    <h4 className="content-box-title fw-semibold">
+                      Open Bills
+                    </h4>
+                    <p className="content-box-sub">{meta?.draft_count || 0}</p>
+                  </div>
+                </div>
+                <div className="col-md-2 text-center">
+                  <div
+                    className={`content-box tab-button ${
+                      activeTab === "online" ? "active" : ""
+                    }`}
+                    data-tab="online"
+                    onClick={() => handleTabChange("online")}
                   >
                     <h4 className="content-box-title fw-semibold">
                       Online Bills
                     </h4>
-                    <p className="content-box-sub">{meta?.online || 0}</p>
+                    <p className="content-box-sub">{meta?.online_count || 0}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button"
-                    data-tab="self-overdue"
+                    className={`content-box tab-button ${
+                      activeTab === "offline" ? "active" : ""
+                    }`}
+                    data-tab="offline"
+                    onClick={() => handleTabChange("offline")}
                   >
                     <h4 className="content-box-title fw-semibold">
                       Offline Bills
                     </h4>
-                    <p className="content-box-sub">{meta?.offline || 0}</p>
+                    <p className="content-box-sub">
+                      {meta?.offline_count || 0}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div className="tab-content1 active" id="total-content">
-            {/* Total Content Here */}
-            <div className="card mt-3 pb-4">
-              <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
-                <div className="row">
-                  <div className="col-md-3">
-                    <div className="form-group">
-                      <label>Company</label>
-                      <SingleSelector
-                        options={companyOptions}
-                        onChange={handleCompanyChange}
-                        value={selectedCompany}
-                        placeholder="Select Company"
+
+          <div className="card mt-3 pb-4">
+            <div className="card mx-3 mt-3">
+              <div className="card-header3">
+                <h3 className="card-title">Quick Filter</h3>
+                <div className="card-tools">
+                  <button
+                    type="button"
+                    className="btn btn-tool"
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                  >
+                    <svg
+                      width={32}
+                      height={32}
+                      viewBox="0 0 32 32"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle cx={16} cy={16} r={16} fill="#8B0203" />
+                      <path
+                        d={
+                          isCollapsed
+                            ? "M16 24L9.0718 12L22.9282 12L16 24Z"
+                            : "M16 8L22.9282 20L9.0718 20L16 8Z"
+                        }
+                        fill="white"
                       />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {!isCollapsed && (
+                <div className="card-body pt-0 mt-0">
+                  <div className="row my-2 align-items-end">
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Company</label>
+                        <SingleSelector
+                          options={companies.map((c) => ({
+                            value: c.id,
+                            label: c.company_name,
+                          }))}
+                          onChange={handleCompanyChange}
+                          value={selectedCompany}
+                          placeholder="Select Company"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="col-md-3">
-                    <div className="form-group">
-                      <label>Project</label>
-                      <SingleSelector
-                        options={projects}
-                        onChange={handleProjectChange}
-                        value={selectedProject}
-                        placeholder="Select Project"
-                      />
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Project</label>
+                        <SingleSelector
+                          options={projects}
+                          onChange={handleProjectChange}
+                          value={selectedProject}
+                          placeholder="Select Project"
+                          isDisabled={!selectedCompany}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="col-md-3">
-                    <div className="form-group">
-                      <label>Sub-Project</label>
-                      <SingleSelector
-                        options={siteOptions}
-                        onChange={handleSiteChange}
-                        value={selectedSite}
-                        placeholder="Select Sub-project"
-                      />
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Sub-project</label>
+                        <SingleSelector
+                          options={siteOptions}
+                          onChange={handleSiteChange}
+                          value={selectedSite}
+                          placeholder="Select Sub-project"
+                          isDisabled={!selectedProject}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="col-md-1 mt-4 d-flex justify-content-center">
-                    <button className="purple-btn2" onClick={fetchFilteredData}>
-                      Go
-                    </button>
-                  </div>
-                  <div className="col-md-1 mt-4 d-flex justify-content-center">
-                    <button className="purple-btn2" onClick={handleReset}>
-                      Reset
-                    </button>
+                    <div className="col-md-2">
+                      <button
+                        className="purple-btn2 m-0"
+                        onClick={fetchFilteredData}
+                      >
+                        Go
+                      </button>
+
+                      {/* <div className="col-md-2"> */}
+                      <button
+                        className="purple-btn2 ms-2"
+                        onClick={handleReset}
+                      >
+                        Reset
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </CollapsibleCard>
-              <div className="card mx-3 mt-2">
-                <div className="card-header3">
-                  <h3 className="card-title">Bulk Action</h3>
-                  <div className="card-tools">
+              )}
+            </div>
+
+            <div className="d-flex mt-3 align-items-end px-3">
+              <div className="col-md-6">
+                <div className="input-group">
+                  <input
+                    type="search"
+                    className="form-control tbl-search"
+                    placeholder="Type your keywords here"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                  />
+                  <div className="input-group-append">
+                    {searchInput && (
+                      <button
+                        type="button"
+                        className="btn btn-md btn-default"
+                        onClick={handleClearSearch}
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M8 1.33334C4.32 1.33334 1.33333 4.32001 1.33333 8.00001C1.33333 11.68 4.32 14.6667 8 14.6667C11.68 14.6667 14.6667 11.68 14.6667 8.00001C14.6667 4.32001 11.68 1.33334 8 1.33334ZM10.6667 10.6667L8 8.00001L5.33333 10.6667L5.33333 5.33334L8 8.00001L10.6667 5.33334V10.6667Z"
+                            fill="#8B0203"
+                          />
+                        </svg>
+                      </button>
+                    )}
                     <button
-                      type="button"
-                      className="btn btn-tool"
-                      data-card-widget="collapse"
+                      type="submit"
+                      className="btn btn-md btn-default"
+                      onClick={handleSearch}
                     >
                       <svg
-                        width={32}
-                        height={32}
-                        viewBox="0 0 32 32"
+                        width={16}
+                        height={16}
+                        viewBox="0 0 16 16"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                       >
-                        <circle cx={16} cy={16} r={16} fill="#8B0203" />
                         <path
-                          d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                          fill="white"
+                          d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
+                          fill="#8B0203"
+                        />
+                        <path
+                          d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
+                          fill="#8B0203"
                         />
                       </svg>
                     </button>
                   </div>
                 </div>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleSubmit();
-                  }}
-                >
-                  <div className="card-body mt-0 pt-0">
-                    <div className="row align-items-center">
-                      <div className="col-md-4">
-                        <div className="form-group">
-                          <label>From Status</label>
-                          <SingleSelector
-                            options={statusOptions}
-                            value={statusOptions.find(
-                              (option) => option.value === fromStatus
-                            )}
-                            onChange={handleStatusChange}
-                            placeholder="Select Status"
-                          />
-                        </div>
-                        <div className="form-group mt-3">
-                          <label>To Status</label>
-                          <SingleSelector
-                            options={statusOptions}
-                            value={statusOptions.find(
-                              (option) => option.value === toStatus
-                            )}
-                            onChange={handleToStatusChange}
-                            placeholder="Select Status"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-4">
-                        <div className="form-group">
-                          <label>Remark</label>
-                          <textarea
-                            className="form-control"
-                            rows={4}
-                            placeholder="Enter ..."
-                            value={remark}
-                            onChange={handleRemarkChange}
-                          />
-                        </div>
-                      </div>
-                      <div className="offset-md-1 col-md-2">
-                        <button type="submit" className="purple-btn2 m-0">
-                          Submit
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </form>
               </div>
-              <div className="row mt-2">
-                <div className="col-md-5 ms-3">
-                  <form>
-                    <div className="input-group">
-                      <input
-                        type="search"
-                        className="form-control tbl-search"
-                        placeholder="Type your keywords here"
-                        value={searchKeyword}
-                        onChange={(e) => setSearchKeyword(e.target.value)}
-                      />
-                      <div className="input-group-append">
-                        <button
-                          type="submit"
-                          className="btn btn-md btn-default"
-                        >
-                          <svg
-                            width={16}
-                            height={16}
-                            viewBox="0 0 16 16"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
-                              fill="#8B0203"
-                            />
-                            <path
-                              d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
-                              fill="#8B0203"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-                <div className=" col md-3 d-flex justify-content-end me-4">
-                  <button
-                    className="purple-btn2 m-0 p-1 px-3"
-                    onClick={() => navigate("/bill-entry-list-sub-page")}
-                  >
-                    <div style={{ color: "white" }}>
-                      <span className="material-symbols-outlined align-text-top me-2">
-                        add{" "}
-                      </span>
-                      Add
-                    </div>
-                  </button>
-                </div>
-                {/* <div className="col-md-6">
-                  <div className="row justify-content-end">
-                    <div className="col-md-5">
-                      <div className="row justify-content-end px-3">
-                        <div className="col-md-3">
-                          <button
+              <div className="col-md-6">
+                <div className="row justify-content-end">
+                  <div className="col-md-5">
+                    <div className="row justify-content-center px-3">
+                      <div className="col-md-3">
+                        {/* <button
                             className="btn btn-md"
-                            data-bs-toggle="modal"
-                            data-bs-target="#sidebarModal"
+                          onClick={handleModalShow}
                           >
                             <FilterIcon />
-                          </button>
-                        </div>
-                        <div className="col-md-3">
-                          <button type="submit" className="btn btn-md">
-                            <StarIcon />
-                          </button>
-                        </div>
-                        <div className="col-md-3">
-                          <button
+                        </button> */}
+                      </div>
+                      <div className="col-md-3">
+                        {/* <button
                             id="downloadButton"
                             type="submit"
                             className="btn btn-md"
                           >
                             <DownloadIcon />
-                          </button>
-                        </div>
-                        <div className="col-md-3">
-                          <button
-                            type="submit"
-                            className="btn btn-md"
-                            data-bs-toggle="modal"
-                            data-bs-target="#settings"
-                          >
-                            <SettingIcon />
-                          </button>
-                        </div>
+                        </button> */}
+                      </div>
+                      <div className="col-md-3">
+                        <button
+                          type="submit"
+                          className="btn btn-md"
+                          onClick={handleSettingModalShow}
+                        >
+                          <SettingIcon />
+                        </button>
                       </div>
                     </div>
-                    <div className="col-md-4"></div>
                   </div>
-                </div> */}
-              </div>
-
-              <div className="tbl-container mx-3 mt-3" style={{ width: "98%" }}>
-                <table
-                  style={{
-                    width: "max-content",
-                    maxHeight: "max-content",
-                    height: "auto",
-                  }}
-                >
-                  <thead>
-                    <tr>
-                      <th className="text-start">
-                        <input type="checkbox" />
-                      </th>
-                      <th className="text-start">Sr.No.</th>
-
-                      <th className="text-start">Mode of Submission</th>
-                      <th className="text-start">Company</th>
-                      <th className="text-start">Project</th>
-                      <th className="text-start">Sub Project</th>
-                      <th className="text-start">Vendor Name</th>
-                      <th className="text-start">UAM No.</th>
-                      <th className="text-start">PO No.</th>
-                      <th className="text-start">Created On</th>
-                      <th className="text-start">Accepted On</th>
-                      <th className="text-start">Bill No.</th>
-                      <th className="text-start">Bill Date</th>
-                      <th className="text-start">Bill Amount</th>
-                      <th className="text-start">Bill Copies</th>
-                      <th className="text-start">Due</th>
-                      <th className="text-start">Due Date</th>
-                      <th className="text-start">Certificate No.</th>
-                      <th className="text-start">Payable Amount</th>
-                      <th className="text-start">Paid</th>
-                      <th className="text-start">Balance</th>
-                      <th className="text-start">Status</th>
-                      <th className="text-start">Overdue</th>
-                      <th className="text-start">Assign to</th>
-                      <th className="text-start">TAT</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loading ? (
-                      <tr>
-                        <td colSpan="26" className="text-center">
-                          Loading...
-                        </td>
-                      </tr>
-                    ) : error ? (
-                      <tr>
-                        <td colSpan="26" className="text-center text-danger">
-                          {error}
-                        </td>
-                      </tr>
-                    ) : billEntries.length === 0 ? (
-                      <tr>
-                        <td colSpan="26" className="text-center">
-                          No bill entries found
-                        </td>
-                      </tr>
-                    ) : (
-                      billEntries.map((entry, index) => (
-                        <tr key={entry.id}>
-                          <td className="text-start">
-                            <input
-                              type="checkbox"
-                              onChange={() => handleCheckboxChange(entry.id)}
-                              checked={selectedBillDetails
-                                .split(",")
-                                .includes(entry.id.toString())}
-                            />
-                          </td>
-                          <td className="text-start">{index + 1}</td>
-                          {/* <td className="text-start">{entry.id || "-"}</td> */}
-                          <td className="text-start">
-                            {entry.mode_of_submission || "-"}
-                          </td>
-                          <td className="text-start">
-                            {entry.company_name || "-"}
-                          </td>
-                          <td className="text-start">
-                            {entry.project_name || "-"}
-                          </td>
-                          <td className="text-start">
-                            {entry.site_name || "-"}
-                          </td>
-                          <td className="text-start">
-                            {entry.pms_supplier || "-"}
-                          </td>
-                          <td className="text-start">
-                            {entry.uam_number || "-"}
-                          </td>
-                          <td className="text-start">
-                            {entry.po_number || "-"}
-                          </td>
-
-                          <td className="text-start">
-                            {entry.created_at
-                              ? new Date(entry.created_at).toLocaleDateString()
-                              : "-"}
-                          </td>
-                          <td className="text-start">
-                            {entry.accepted_at
-                              ? new Date(entry.accepted_at).toLocaleDateString()
-                              : "-"}
-                          </td>
-                          {/* <td className="text-start">{entry.bill_no || "-"}</td> */}
-                          <td className="text-start">
-                            {/* PO No. column with redirect */}
-                            {entry.bill_no && entry.id ? (
-                              <Link to={`/bill-entry-details/${entry.id}`}>
-                                {entry.bill_no}
-                              </Link>
-                            ) : (
-                              "-"
-                            )}
-                          </td>
-                          <td className="text-start">
-                            {entry.bill_date || "-"}
-                          </td>
-                          <td className="text-start">
-                            {entry.bill_amount || "-"}
-                          </td>
-                          <td className="text-start">
-                            {entry.bill_copies || "-"}
-                          </td>
-                          <td className="text-start">{entry.due || "-"}</td>
-                          <td className="text-start">
-                            {entry.due_date || "-"}
-                          </td>
-                          <td className="text-start">
-                            {entry.certificate_no || "-"}
-                          </td>
-                          <td className="text-start">
-                            {entry.payable_amount || "-"}
-                          </td>
-                          <td className="text-start">{entry.paid || "-"}</td>
-                          <td className="text-start">{entry.balance || "-"}</td>
-                          <td className="text-start">{entry.status || "-"}</td>
-                          <td className="text-start">{entry.overdue || "-"}</td>
-                          <td className="text-start">
-                            {entry.assign_to || "-"}
-                          </td>
-                          <td className="text-start">{entry.tat || "-"}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Add pagination */}
-              <div className="d-flex justify-content-between align-items-center px-3 mt-2">
-                <ul className="pagination justify-content-center d-flex">
-                  <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(1)}
-                      disabled={currentPage === 1}
-                    >
-                      First
-                    </button>
-                  </li>
-                  <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
-                      Prev
-                    </button>
-                  </li>
-
-                  {Array.from({ length: totalPages }, (_, index) => (
-                    <li
-                      key={index + 1}
-                      className={`page-item ${
-                        currentPage === index + 1 ? "active" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(index + 1)}
-                      >
-                        {index + 1}
-                      </button>
-                    </li>
-                  ))}
-
-                  <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                    </button>
-                  </li>
-                  <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(totalPages)}
-                      disabled={currentPage === totalPages}
-                    >
-                      Last
-                    </button>
-                  </li>
-                </ul>
-                <div>
-                  Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                  {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
-                  {totalEntries} entries
                 </div>
               </div>
             </div>
+
+            <div
+              className="tbl-container px-1 mt-3"
+              style={{
+                width: "100%",
+                height: "400px",
+                boxShadow: "unset",
+                overflow: "auto",
+              }}
+            >
+              <DataGrid
+                rows={getTransformedRows()}
+                columns={columns}
+                pageSize={pageSize}
+                autoHeight={false}
+                getRowId={(row) => row.id}
+                loading={loading}
+                disableSelectionOnClick
+                components={{
+                  ColumnMenu: () => null,
+                }}
+                sx={{
+                  "& .MuiDataGrid-columnHeaders": {
+                    backgroundColor: "#f8f9fa",
+                    color: "#000",
+                    fontWeight: "bold",
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 1,
+                  },
+                  "& .MuiDataGrid-cell": {
+                    borderColor: "#dee2e6",
+                  },
+                  "& .MuiDataGrid-columnHeader": {
+                    borderColor: "#dee2e6",
+                  },
+                  // "& .MuiDataGrid-virtualScroller": {
+                  //   overflowX: "auto",
+                  //   overflowY: "auto",
+                  // },
+                  // "& .MuiDataGrid-virtualScrollerContent": {
+                  //   minWidth: "100%",
+                  // },
+                  // "& .MuiDataGrid-virtualScrollerRenderZone": {
+                  //   position: "relative",
+                  // },
+                  // "& .MuiDataGrid-main": {
+                  //   overflow: "visible",
+                  // },
+                }}
+              />
+            </div>
+
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              padding={2}
+            >
+              <Pagination
+                count={totalPages}
+                page={currentPage}
+                onChange={(event, value) => setCurrentPage(value)}
+                siblingCount={1}
+                boundaryCount={1}
+                color="primary"
+                showFirstButton
+                showLastButton
+                disabled={totalPages <= 1}
+              />
+
+              <Typography variant="body2">
+                Showing {startEntry} to {endEntry} of {totalEntries} entries
+              </Typography>
+            </Stack>
           </div>
-          <div className="tab-content1" id="draft-content"></div>
         </div>
       </div>
 
-      {/* Add back the modals */}
+      {/* Settings Modal */}
       <Modal
-        centered
-        size="lg"
-        show={filterModal}
-        onHide={closeFilterModal}
-        backdrop="static"
-        keyboard={true}
-        className="modal-centered-custom"
+        show={settingShow}
+        onHide={handleSettingClose}
+        dialogClassName="modal-right"
+        className="setting-modal"
+        backdrop={true}
       >
-        <Modal.Header closeButton>
-          <Modal.Title>Filter</Modal.Title>
-        </Modal.Header>
-        <div
-          className="modal-body"
-          style={{ maxHeight: "400px", overflowY: "auto" }}
-        >
-          <div className="row">
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Mode of Submission</label>
-                <SingleSelector
-                  options={companyOptions}
-                  selectedValue={selectedValue}
-                  onChange={handleChange}
-                />
+        <Modal.Header>
+          <div className="container-fluid p-0">
+            <div className="border-0 d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <button
+                  type="button"
+                  className="btn"
+                  aria-label="Close"
+                  onClick={handleSettingClose}
+                >
+                  <svg
+                    width="10"
+                    height="16"
+                    viewBox="0 0 10 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M8 2L2 8L8 14"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
               </div>
+              <Button
+                style={{ textDecoration: "underline" }}
+                variant="alert"
+                onClick={handleResetColumns}
+              >
+                Reset
+              </Button>
             </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Company</label>
-                <SingleSelector
-                  options={companyOptions}
-                  selectedValue={selectedValue}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Project</label>
-                <SingleSelector
-                  options={companyOptions}
-                  selectedValue={selectedValue}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            {/* ... rest of your filter modal content ... */}
           </div>
-        </div>
-        <div className="modal-footer modal-footer-k justify-content-center">
-          <button className="purple-btn2" onClick={closeFilterModal}>
-            Close
-          </button>
-        </div>
-      </Modal>
-
-      <Modal
-        centered
-        size="sm"
-        show={layoutModal}
-        onHide={closeLayoutModal}
-        backdrop="static"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Layout</Modal.Title>
         </Modal.Header>
-        <Modal.Body>{/* ... your layout modal content ... */}</Modal.Body>
+
+        <Modal.Body style={{ height: "400px", overflowY: "auto" }}>
+          {allColumns
+            .filter(
+              (column) => column.field !== "srNo" && column.field !== "Star"
+            )
+            .map((column) => (
+              <div
+                className="row justify-content-between align-items-center mt-2"
+                key={column.field}
+              >
+                <div className="col-md-6">
+                  <button type="submit" className="btn btn-md">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                    </svg>
+                  </button>
+                  <label>{column.headerName}</label>
+                </div>
+                <div className="col-md-4">
+                  <div className="form-check form-switch mt-1">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={columnVisibility[column.field]}
+                      onChange={() => handleToggleColumn(column.field)}
+                      role="switch"
+                      id={`flexSwitchCheckDefault-${column.field}`}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="primary" onClick={handleShowAll}>
+            Show All
+          </Button>
+          <Button variant="danger" onClick={handleHideAll}>
+            Hide All
+          </Button>
+        </Modal.Footer>
       </Modal>
     </>
   );

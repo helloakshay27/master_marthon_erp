@@ -314,6 +314,7 @@ const BillBookingCreate = () => {
   // Add New Row
 
   // Add new state variables for API data
+  const today = new Date().toISOString().split("T")[0];
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -321,6 +322,24 @@ const BillBookingCreate = () => {
   const [selectedPO, setSelectedPO] = useState(null);
   const [selectedGRN, setSelectedGRN] = useState(null);
   const [selectedGRNs, setSelectedGRNs] = useState([]);
+
+  // Add this at the top with other state declarations
+  const getFormattedDate = () => {
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, "0");
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const year = today.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  // Add this useEffect to ensure date is set and maintained
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      invoiceDate: getFormattedDate(),
+    }));
+  }, []); // Empty dependency array means this runs once on mount
+
   const [formData, setFormData] = useState({
     poNumber: "",
     poDate: "",
@@ -328,7 +347,7 @@ const BillBookingCreate = () => {
     gstin: "",
     pan: "",
     invoiceNumber: "",
-    invoiceDate: "",
+    invoiceDate: getFormattedDate(), // Initial date
     invoiceAmount: "",
     baseCost: "",
     netTaxes: "",
@@ -512,6 +531,20 @@ const BillBookingCreate = () => {
       }
     });
   };
+  const areAllGRNsSelected =
+    selectedPO &&
+    Array.isArray(selectedPO.grn_materials) &&
+    selectedPO.grn_materials.length > 0 &&
+    selectedGRNs.length === selectedPO.grn_materials.length;
+
+  // Handler for header checkbox
+  const handleSelectAllGRNs = (e) => {
+    if (e.target.checked) {
+      setSelectedGRNs(selectedPO.grn_materials);
+    } else {
+      setSelectedGRNs([]);
+    }
+  };
 
   // Handle GRN submission
   const handleGRNSubmit = () => {
@@ -529,7 +562,11 @@ const BillBookingCreate = () => {
           <thead>
             <tr>
               <th>
-                <input type="checkbox" />
+                <input
+                  type="checkbox"
+                  checked={areAllGRNsSelected}
+                  onChange={handleSelectAllGRNs}
+                />
               </th>
               <th>Material Name</th>
               <th>Material GRN Amount</th>
@@ -679,26 +716,35 @@ const BillBookingCreate = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
+    setLoading(true);
     if (
       !selectedCompany ||
       !selectedProject ||
       !selectedSite ||
       !selectedPO ||
-      selectedGRNs.length === 0
+      selectedGRNs.length === 0 ||
+      !formData.invoiceNumber || // Invoice Number mandatory
+      !formData.invoiceAmount // Invoice Amount mandatory
     ) {
       alert("Please fill in all required fields");
       return;
     }
 
     // Invoice amount check
+    const baseCost = getSelectedGRNsBaseCost();
+    const allInclusiveCost = getSelectedGRNsAllIncTax();
+    const otherDeduction = parseFloat(otherDeductions) || 0;
+    const otherAddition = parseFloat(otherAdditions) || 0;
+    const totalAmount = parseFloat(calculateTotalAmount()) || 0;
     const invoiceAmount = parseFloat(formData.invoiceAmount) || 0;
     const payableAmount = parseFloat(calculateAmountPayable()) || 0;
-    if (invoiceAmount > payableAmount) {
-      alert("Invoice Amount should not be greater than Payable Amount.");
+    const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
+
+    if (invoiceAmount < payableAmount) {
+      alert("Invoice Amount should not be less than Payable Amount.");
       return;
     }
 
-    setIsSubmitting(true);
     try {
       const payload = {
         bill_booking: {
@@ -712,17 +758,20 @@ const BillBookingCreate = () => {
           invoice_amount: parseFloat(formData.invoiceAmount),
           type_of_certificate: formData.typeOfCertificate,
           department_id: formData.departmentId,
-          other_deductions: parseFloat(otherDeductions) || 0,
+          // other_deductions: parseFloat(otherDeductions) || 0,
+          base_cost: baseCost,
+          all_inclusive_cost: allInclusiveCost,
+          other_deduction: otherDeduction,
+          other_addition: otherAddition,
+          total_amount: totalAmount,
           other_deduction_remarks: formData.otherDeductionRemarks,
-          other_additions: parseFloat(otherAdditions) || 0,
+          // other_additions: parseFloat(otherAdditions) || 0,
           other_addition_remarks: formData.otherAdditionRemarks,
           retention_per: parseFloat(formData.retentionPercentage) || 0,
-          retention_amount: parseFloat(formData.retentionAmount) || 0,
+          retention_amount: retentionAmount,
           total_value: taxDeductionData.total_material_cost,
-          total_amount: taxDeductionData.total_material_cost,
-          payable_amount:
-            taxDeductionData.total_material_cost -
-            taxDeductionData.total_deduction_cost,
+          // total_amount: taxDeductionData.total_material_cost,
+          payable_amount: payableAmount,
           remark: formData.remark || "",
           status: "draft", // Changed to hardcoded "draft"
           po_type: "domestic",
@@ -755,6 +804,7 @@ const BillBookingCreate = () => {
 
       if (response.data) {
         alert("Bill booking created successfully!");
+        setLoading(false);
         navigate("/bill-booking-list"); // Redirect to bill-booking-list
         // Reset form or redirect as needed
       }
@@ -762,7 +812,7 @@ const BillBookingCreate = () => {
       console.error("Error creating bill booking:", error);
       alert("Failed to create bill booking. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
@@ -990,10 +1040,90 @@ const BillBookingCreate = () => {
   //   calculateTotalAmount() +
   //   parseFloat(otherAdditions || 0) -
   //   parseFloat(otherDeductions || 0);
-  const calculateAmountPayable = () =>
-    parseFloat(formData.totalAmount || 0) +
-    parseFloat(otherAdditions || 0) -
-    parseFloat(otherDeductions || 0);
+  // ...existing code...
+
+  const calculateAmountPayable = () => {
+    const totalAmount = parseFloat(calculateTotalAmount()) || 0;
+    const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
+    const otherDed = parseFloat(otherDeductions) || 0;
+    const otherAdd = parseFloat(otherAdditions) || 0;
+    return (totalAmount - retentionAmount - otherDed + otherAdd).toFixed(2);
+  };
+
+  // ...existing code...
+
+  // 1. Add a function to calculate updated values based on rows
+  const calculateUpdatedGRNValues = () => {
+    let netCharges = 0;
+    let netTaxes = 0;
+    let baseCost = parseFloat(selectedGRN?.base_cost) || 0;
+
+    rows.forEach((row) => {
+      if (["Handling Charges", "Other charges", "Freight"].includes(row.type)) {
+        netCharges += parseFloat(row.amount) || 0;
+      }
+      if (["IGST", "SGST", "CGST"].includes(row.type)) {
+        netTaxes += parseFloat(row.amount) || 0;
+      }
+    });
+
+    // All Inclusive Cost = base cost + net charges + net taxes
+    const allIncTax = baseCost + netCharges + netTaxes;
+
+    return {
+      net_charges: netCharges.toFixed(2),
+      net_taxes: netTaxes.toFixed(2),
+      all_inc_tax: allIncTax.toFixed(2),
+    };
+  };
+
+  // 2. Add a handler for submitting the Tax & Charges modal
+  // ...existing code...
+
+  const handleTaxChargesSubmit = () => {
+    if (!selectedGRN) return;
+
+    const updatedValues = calculateUpdatedGRNValues();
+    const updatedGRN = {
+      ...selectedGRN,
+      base_cost: selectedGRN.base_cost, // or the new value if edited
+      net_charges: updatedValues.net_charges,
+      net_taxes: updatedValues.net_taxes,
+      all_inc_tax: updatedValues.all_inc_tax,
+      tax_charge_rows: rows,
+    };
+    setSelectedGRNs((prev) =>
+      prev.map((grn) => (grn.id === selectedGRN.id ? updatedGRN : grn))
+    );
+    setSelectedGRN(updatedGRN);
+
+    // Close both modals
+    setattachThreeModal(false); // Close Tax & Charges modal
+    closeSelectGRNModal(); // Close GRN Information modal
+  };
+
+  // ...existing code...
+
+  const getSelectedGRNsBaseCost = () =>
+    selectedGRNs.reduce(
+      (sum, grn) => sum + (parseFloat(grn.base_cost) || 0),
+      0
+    );
+
+  const getSelectedGRNsAllIncTax = () =>
+    selectedGRNs.reduce(
+      (sum, grn) => sum + (parseFloat(grn.all_inc_tax) || 0),
+      0
+    );
+
+  // ...existing code...
+
+  // Helper to calculate retention amount
+  const calculateRetentionAmount = () => {
+    const percentage = parseFloat(formData.retentionPercentage) || 0;
+    const totalAmount = parseFloat(calculateTotalAmount()) || 0;
+    return ((percentage / 100) * totalAmount).toFixed(2);
+  };
 
   return (
     <>
@@ -1085,6 +1215,7 @@ const BillBookingCreate = () => {
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>PO Type</label>
+                      <span> *</span>
                       <SingleSelector
                         options={poTypeOptions}
                         className="form-control form-select"
@@ -1145,6 +1276,7 @@ const BillBookingCreate = () => {
                   <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>Invoice Number</label>
+                      <span> *</span>
                       <input
                         className="form-control"
                         type="text"
@@ -1174,21 +1306,17 @@ const BillBookingCreate = () => {
                       <label>Invoice Date</label>
                       <input
                         className="form-control"
-                        type="date"
-                        value={formData.invoiceDate}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            invoiceDate: e.target.value,
-                          }))
-                        }
+                        type="text"
+                        value={formData.invoiceDate || getFormattedDate()} // Fallback to current date if empty
+                        readOnly
                       />
                     </div>
                   </div>
                   <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>Invoice Amount</label>
-                      <input
+                      <span> *</span>
+                      {/* <input
                         className="form-control"
                         type="number"
                         value={formData.invoiceAmount}
@@ -1196,9 +1324,31 @@ const BillBookingCreate = () => {
                           setFormData((prev) => ({
                             ...prev,
                             invoiceAmount: e.target.value,
-                            totalAmount: e.target.value, // Keep in sync
+                            // totalAmount: e.target.value, // Keep in sync
                           }))
                         }
+                      /> */}
+                      <input
+                        className="form-control"
+                        type="number"
+                        value={formData.invoiceAmount}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setFormData((prev) => ({
+                            ...prev,
+                            invoiceAmount: value,
+                          }));
+                          // Live validation (optional)
+                          const invoice = parseFloat(value) || 0;
+                          const payable =
+                            parseFloat(calculateAmountPayable()) || 0;
+                          if (invoice < payable) {
+                            // Optionally show a warning here
+                            // e.g. setInvoiceError("Invoice Amount should not be less than Payable Amount.");
+                          } else {
+                            // setInvoiceError("");
+                          }
+                        }}
                       />
                     </div>
                   </div>
@@ -1245,9 +1395,27 @@ const BillBookingCreate = () => {
                     <div className="form-group">
                       <label>Type of Certificate</label>
                       <SingleSelector
-                        options={companyOptions}
+                        options={[
+                          { value: "Regular", label: "Regular" },
+                          { value: "Retention", label: "Retention" },
+                        ]}
                         className="form-control form-select"
-                      ></SingleSelector>
+                        value={
+                          formData.typeOfCertificate
+                            ? {
+                                value: formData.typeOfCertificate,
+                                label: formData.typeOfCertificate,
+                              }
+                            : null
+                        }
+                        onChange={(selected) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            typeOfCertificate: selected ? selected.value : "",
+                          }))
+                        }
+                        placeholder="Select Type"
+                      />
                     </div>
                   </div>
                 </div>
@@ -1310,7 +1478,7 @@ const BillBookingCreate = () => {
                           <td className="text-start">{grn.all_inc_tax}</td>
                         </tr>
                       ))}
-                      <tr>
+                      {/* <tr>
                         <th className="text-start">Total</th>
                         <td />
                         <td className="text-start">
@@ -1355,7 +1523,7 @@ const BillBookingCreate = () => {
                             0
                           )}
                         </td>
-                      </tr>
+                      </tr> */}
                     </tbody>
                   </table>
                 </div>
@@ -1518,10 +1686,10 @@ const BillBookingCreate = () => {
                     </tbody>
                   </table>
                 </div>
-                <div className="d-flex justify-content-between mt-3 me-2">
+                {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Advance Adjusted:</h5>
-                </div>
-                <div className="tbl-container mx-3 mt-3">
+                </div> */}
+                {/* <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -1582,7 +1750,7 @@ const BillBookingCreate = () => {
                       </tr>
                     </tbody>
                   </table>
-                </div>
+                </div> */}
                 {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Retention Details:</h5>
                 </div>
@@ -1610,6 +1778,46 @@ const BillBookingCreate = () => {
                 <div className="row">
                   <div className="col-md-4">
                     <div className="form-group">
+                      <label>Base Cost</label>
+                      <input
+                        className="form-control"
+                        type="number"
+                        // value={formData.currentAdvanceDeduction}
+                        // onChange={(e) =>
+                        //   setFormData((prev) => ({
+                        //     ...prev,
+                        //     currentAdvanceDeduction: e.target.value,
+                        //   }))
+                        // }  base cost should be grn seleted base cost
+                        // placeholder="Enter advance deduction amount"
+                        value={getSelectedGRNsBaseCost()}
+                        disabled
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label>All Inclusive Cost</label>
+                      <input
+                        className="form-control"
+                        type="number"
+                        value={getSelectedGRNsAllIncTax()}
+                        // value={formData.currentAdvanceDeduction}
+                        // onChange={(e) =>
+                        //   setFormData((prev) => ({
+                        //     ...prev,
+                        //     currentAdvanceDeduction: e.target.value,
+                        //   }))
+                        // all inclusive cost should be grn seleted all inclusive cost
+                        // }
+                        placeholder="Enter advance deduction amount"
+                        disabled
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-md-4">
+                    <div className="form-group">
                       <label>Total advance deduction amount</label>
                       <input
                         className="form-control"
@@ -1622,6 +1830,7 @@ const BillBookingCreate = () => {
                           }))
                         }
                         placeholder="Enter advance deduction amount"
+                        disabled
                       />
                     </div>
                   </div>
@@ -1714,6 +1923,7 @@ const BillBookingCreate = () => {
                         // value={otherAdditions}
                         // onChange={(e) => setOtherAdditions(e.target.value)}
                         placeholder="Enter other addition amount"
+                        disabled
                       />
                     </div>
                   </div>
@@ -1730,15 +1940,15 @@ const BillBookingCreate = () => {
                         //     acc + (parseFloat(grn.all_inc_tax) || 0),
                         //   0
                         // )}
-                        // //  value={calculateTotalAmount()}
-                        value={formData.totalAmount}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            totalAmount: e.target.value,
-                            invoiceAmount: e.target.value, // keep in sync
-                          }))
-                        }
+                        value={calculateTotalAmount()}
+                        // value={formData.totalAmount}
+                        // onChange={(e) =>
+                        //   setFormData((prev) => ({
+                        //     ...prev,
+                        //     totalAmount: e.target.value,
+                        //     invoiceAmount: e.target.value, // keep in sync
+                        //   }))
+                        // }
                         placeholder="Enter other addition amount"
                       />
                     </div>
@@ -1767,14 +1977,8 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="number"
-                        value={formData.retentionAmount}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            retentionAmount: e.target.value,
-                          }))
-                        }
-                        placeholder="Enter retention amount"
+                        value={calculateRetentionAmount()}
+                        disabled
                       />
                     </div>
                   </div>
@@ -1791,6 +1995,7 @@ const BillBookingCreate = () => {
                         value={calculateAmountPayable()}
                         readOnly
                         placeholder="Enter other addition amount"
+                        // amount payable should be total amount - retention amount
                       />
                     </div>
                   </div>
@@ -2251,7 +2456,7 @@ const BillBookingCreate = () => {
                       { label: "Sr No", key: "srNo" },
                       { label: "Upload File", key: "upload" },
                       { label: "Action", key: "action" },
-                      { label: "view", key: "view" },
+                      // { label: "view", key: "view" },
                     ]}
                     data={documentRows.map((row, index) => ({
                       srNo: index + 1,
@@ -2402,6 +2607,21 @@ const BillBookingCreate = () => {
           </div>
         </div>
       </div>
+      {loading && (
+        <div className="loader-container">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>loading...</p>
+        </div>
+      )}
 
       {/* modal */}
       {/* 
@@ -2490,8 +2710,18 @@ const BillBookingCreate = () => {
                   <td className="text-start" />
                   <td className="text-start" />
                   <td className="text-start">
-                    {" "}
-                    {selectedGRN?.base_cost || ""}
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={selectedGRN?.base_cost}
+                      onChange={(e) => {
+                        const newBaseCost = parseFloat(e.target.value) || 0;
+                        setSelectedGRN((prev) => ({
+                          ...prev,
+                          base_cost: newBaseCost,
+                        }));
+                      }}
+                    />
                   </td>
                   <td />
                 </tr>
@@ -2865,6 +3095,17 @@ const BillBookingCreate = () => {
                 </tr>
               </tbody>
             </table>
+            <div className="d-flex justify-content-center mt-3">
+              <button
+                className="purple-btn2"
+                // onClick={handleSubmit}
+                // disabled={isSubmitting}
+                onClick={handleTaxChargesSubmit}
+              >
+                {/* {isSubmitting ? "Submitting..." : "Submit"} */}
+                Submitt
+              </button>
+            </div>
           </div>
         </Modal.Body>
       </Modal>
