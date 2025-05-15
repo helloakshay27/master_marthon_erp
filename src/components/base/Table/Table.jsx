@@ -13,7 +13,7 @@ const transposeData = (data, columns) => {
 export default function Table({
   columns,
   data = [], // Ensure data is always an array
-  isAccordion = true,
+  isAccordion = false,
   onActionClick = null,
   serializedData = [],
   showCheckbox = false,

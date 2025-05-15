@@ -67,6 +67,7 @@ export default function EditEvent() {
       location: [],
       rate: 0,
       amount: 0,
+      attachments: [],
     },
   ]);
 
@@ -828,6 +829,7 @@ export default function EditEvent() {
                 "pms_brand_id",
                 "generic_info_id",
                 "pms_colour_id",
+                "attachments", // Exclude attachments from dynamic fields
               ].includes(key)
             ) {
               acc[key] = material[key] || null;
@@ -850,6 +852,7 @@ export default function EditEvent() {
             pms_brand_id: material.pms_brand_id || null,
             pms_colour_id: material.pms_colour_id || null,
             generic_info_id: material.generic_info_id || null,
+            attachments: material.attachments || [], // Include attachments
             _destroy: material._destroy || false,
             ...dynamicFields,
           };
@@ -918,7 +921,8 @@ export default function EditEvent() {
           body: JSON.stringify(eventData),
         }
       );
-
+      console.log("eventData:--",eventData);
+      
       if (response.ok) {
         const data = await response.json();
         toast.success("Event updated successfully!", { autoClose: 1000 });
