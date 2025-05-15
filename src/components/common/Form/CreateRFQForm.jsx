@@ -1664,7 +1664,7 @@ export default function CreateRFQForm({
                                             </g>
                                           </svg>
                                         </a>
-                                        <button
+                                        {/* <button
                                           className="purple-btn2"
                                           onClick={() =>
                                             handleDeleteAttachment(
@@ -1675,7 +1675,7 @@ export default function CreateRFQForm({
                                           style={{ marginLeft: "10px" }}
                                         >
                                           Delete
-                                        </button>
+                                        </button> */}
                                       </td>
                                     </tr>
                                   ))}
