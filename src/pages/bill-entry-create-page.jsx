@@ -569,6 +569,7 @@ const BillEntryListSubPage = () => {
         bill_date: formData.bill_date,
         bill_amount: parseFloat(formData.bill_amount),
         status: "open",
+        mode_of_submission:"Ofline",
         vendor_remark: formData.vendor_remark,
         documents: documents.map((doc) => ({
           document_type: doc.document_type,
@@ -720,6 +721,7 @@ const BillEntryListSubPage = () => {
                       value={formData.vendor_remark}
                       onChange={handleInputChange}
                       placeholder="Enter ..."
+                      disabled
                     />
                   </div>
                 </div>

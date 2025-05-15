@@ -541,6 +541,7 @@ const BillEntryCreateVendorPage = () => {
           bill_date: formData.bill_date,
           bill_amount: parseFloat(formData.bill_amount),
           status: "draft",
+          mode_of_submission: "Online",
           vendor_remark: formData.vendor_remark,
           documents: documents.map((doc) => ({
             document_type: doc.document_type,
@@ -727,6 +728,7 @@ const BillEntryCreateVendorPage = () => {
                         rows={1}
                         placeholder="Enter ..."
                         defaultValue={""}
+                        disabled
                       />
                     </div>
                     {/* </div> */}

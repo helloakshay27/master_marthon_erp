@@ -2504,6 +2504,7 @@ const BillBookingCreate = () => {
                         </button>
                       ),
                     }))}
+                    isAccordion={false}
                   />
                 </div>
               </div>
