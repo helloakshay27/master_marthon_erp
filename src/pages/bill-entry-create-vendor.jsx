@@ -946,7 +946,7 @@ const BillEntryCreateVendorPage = () => {
                     <th>Document Name</th>
                     <th>Attachment Name</th>
                     <th>Upload Date</th>
-                    <th>Uploaded By</th>
+                    {/* <th>Uploaded By</th> */}
                     {/* <th>Action</th> */}
                   </tr>
                 </thead>
@@ -957,7 +957,7 @@ const BillEntryCreateVendorPage = () => {
                       <td>{selectedDocument.document_type}</td>
                       <td>{attachment.filename}</td>
                       <td>{new Date().toLocaleDateString()}</td>
-                      <td>vendor user</td>
+                      {/* <td>vendor user</td> */}
                       {/* <td>
                         <button
                           className="border-0 bg-transparent"

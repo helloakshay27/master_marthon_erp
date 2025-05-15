@@ -265,8 +265,9 @@ const BillEntryVendorList = () => {
     setLoading(true);
     let statusQuery = "";
     if (tab === "open") statusQuery = "&q[status_eq]=open";
-    if (tab === "online") statusQuery = "&q[status_eq]=online";
-    if (tab === "offline") statusQuery = "&q[status_eq]=offline";
+    // if (tab === "online") statusQuery = "&q[status_eq]=online";
+    if (tab === "requested for revision count")
+      statusQuery = "&q[status_eq]=requested for revision count";
 
     axios
       .get(
@@ -477,18 +478,24 @@ display:none !important;
                 <div className="col-md-2 text-center">
                   <div
                     className={`content-box tab-button ${
-                      activeTab === "online" ? "active" : ""
+                      activeTab === "requested for revision count"
+                        ? "active"
+                        : ""
                     }`}
-                    data-tab="online"
-                    onClick={() => handleTabChange("online")}
+                    data-tab="requested for revision count"
+                    onClick={() =>
+                      handleTabChange("requested for revision count")
+                    }
                   >
                     <h4 className="content-box-title fw-semibold">
-                      Online Bills
+                      Request For Resubmission
                     </h4>
-                    <p className="content-box-sub">{meta?.online_count || 0}</p>
+                    <p className="content-box-sub">
+                      {meta?.requested_for_revision_count || 0}
+                    </p>
                   </div>
                 </div>
-                <div className="col-md-2 text-center">
+                {/* <div className="col-md-2 text-center">
                   <div
                     className={`content-box tab-button ${
                       activeTab === "offline" ? "active" : ""
@@ -503,7 +510,7 @@ display:none !important;
                       {meta?.offline_count || 0}
                     </p>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

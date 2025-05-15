@@ -397,6 +397,9 @@ const BillBookingCreate = () => {
   const [displayCompany, setDisplayCompany] = useState("");
   const [displayProject, setDisplayProject] = useState("");
   const [displaySite, setDisplaySite] = useState("");
+  const [displayCompanyId, setDisplayCompanyId] = useState(null);
+  const [displayProjectId, setDisplayProjectId] = useState(null);
+  const [displaySiteId, setDisplaySiteId] = useState(null);
   // ...existing code...
 
   useEffect(() => {
@@ -447,6 +450,9 @@ const BillBookingCreate = () => {
           setDisplayCompany(data.company_name || "");
           setDisplayProject(data.project_name || "");
           setDisplaySite(data.site_name || "");
+          setDisplayCompanyId(data.company_id || null);
+          setDisplayProjectId(data.project_id || null);
+          setDisplaySiteId(data.site_id || null);
 
           // Fetch PO GRN details using purchase_order.id
           if (data.purchase_order?.id) {
@@ -741,11 +747,10 @@ const BillBookingCreate = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-    setLoading(true);
     if (
-      !selectedCompany ||
-      !selectedProject ||
-      !selectedSite ||
+      // !selectedCompany ||
+      // !selectedProject ||
+      // !selectedSite ||
       !selectedPO ||
       selectedGRNs.length === 0 ||
       !formData.invoiceNumber || // Invoice Number mandatory
@@ -769,13 +774,17 @@ const BillBookingCreate = () => {
       alert("Invoice Amount should not be less than Payable Amount.");
       return;
     }
+    setLoading(true);
 
     try {
       const payload = {
         bill_booking: {
-          company_id: selectedCompany?.value || null,
-          site_id: selectedSite?.value || null,
-          project_id: selectedProject?.value || null,
+          // company_id: selectedCompany?.value || null,
+          // site_id: selectedSite?.value || null,
+          // project_id: selectedProject?.value || null,
+          company_id: displayCompanyId,
+          site_id: displaySiteId,
+          project_id: displayProjectId,
           pms_supplier_id: formData.pms_supplier_id || null,
           invoice_number: formData.invoiceNumber,
           einvoice: selectedEInvoice?.value === "yes",
@@ -800,7 +809,7 @@ const BillBookingCreate = () => {
           remark: formData.remark || "",
           status: "draft", // Changed to hardcoded "draft"
           po_type: "domestic",
-          payee_name: formData.payeeName,
+          payee_name: formData.pms_supplier_id || null,
           payment_mode: formData.paymentMode,
           payment_due_date: formData.paymentDueDate,
           created_by_id: 1,
@@ -830,7 +839,7 @@ const BillBookingCreate = () => {
       if (response.data) {
         alert("Bill booking created successfully!");
         setLoading(false);
-        navigate("/bill-booking-list"); // Redirect to bill-booking-list
+        // navigate("/bill-booking-list"); // Redirect to bill-booking-list
         // Reset form or redirect as needed
       }
     } catch (error) {
@@ -2623,9 +2632,9 @@ const BillBookingCreate = () => {
                   <button
                     className="purple-btn2 w-100"
                     onClick={handleSubmit}
-                    disabled={isSubmitting}
+                    // disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Submitting..." : "Submit"}
+                    Submit
                   </button>
                 </div>
                 <div className="col-md-2">
@@ -2715,7 +2724,7 @@ const BillBookingCreate = () => {
       {/*  */}
       <Modal
         centered
-        size="lg"
+        size="xl"
         show={attachThreeModal}
         onHide={closeAttachThreeModal}
         backdrop="static"
