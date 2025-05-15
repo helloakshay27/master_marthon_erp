@@ -304,7 +304,7 @@ const BillEntryVendorList = () => {
     const siteId = selectedSite?.value || "";
     const search = searchKeyword || "";
 
-    const url = `${baseURL}bill_entries?page=1&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_cont]=${projectId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_cont]=${siteId}`;
+    const url = `${baseURL}bill_entries?page=1&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${companyId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${projectId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_cont]=${siteId}`;
 
     axios
       .get(url)
@@ -375,7 +375,10 @@ const BillEntryVendorList = () => {
       setLoading(true);
 
       const response = await axios.get(
-        `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_cont]=${search}`
+        `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_ord
+er_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inve
+ntories_mor_inventory_material_order_request_company_id_cont]
+        =${search}`
       );
       const transformedData = response.data.bill_entries.map(
         (entry, index) => ({
@@ -619,26 +622,32 @@ display:none !important;
                     onChange={(e) => setSearchInput(e.target.value)}
                   />
                   <div className="input-group-append">
+                    {/* {searchInput && (
+                                 <button
+                                   type="button"
+                                   className="btn btn-md btn-default"
+                                   onClick={handleClearSearch}
+                                 >
+                                    ✕ {/* Cross icon */}
+                    {/* </button> */}
                     {searchInput && (
                       <button
                         type="button"
                         className="btn btn-md btn-default"
+                        // onClick={() => {
+                        //   setSearchTerm(""); // Clear the search term
+                        //   fetchData();
+                        //   // activeTab,
+                        //   // filters,
+                        //   // pagination.current_page,
+                        //   // "" // Fetch data without search
+                        // }}
                         onClick={handleClearSearch}
                       >
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 16 16"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M8 1.33334C4.32 1.33334 1.33333 4.32001 1.33333 8.00001C1.33333 11.68 4.32 14.6667 8 14.6667C11.68 14.6667 14.6667 11.68 14.6667 8.00001C14.6667 4.32001 11.68 1.33334 8 1.33334ZM10.6667 10.6667L8 8.00001L5.33333 10.6667L5.33333 5.33334L8 8.00001L10.6667 5.33334V10.6667Z"
-                            fill="#8B0203"
-                          />
-                        </svg>
+                        ✕ {/* Cross icon */}
                       </button>
                     )}
+                    {/* )} */}
                     <button
                       type="submit"
                       className="btn btn-md btn-default"
@@ -674,7 +683,7 @@ display:none !important;
                 </button>
                 <button
                   className="purple-btn2"
-                  onClick={() => navigate("/bill-entry-vendor-create")}
+                  onClick={() => navigate("/bill-entry-list-sub-page")}
                 >
                   <span> + Add</span>
                 </button>
