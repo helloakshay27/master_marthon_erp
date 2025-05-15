@@ -226,8 +226,8 @@ const DebitNoteList = () => {
       value: 'verified',
     },
     {
-      label: 'Submited',
-      value: 'submited',
+      label: 'Submitted',
+      value: 'submitted',
     },
     {
       label: 'Proceed',
