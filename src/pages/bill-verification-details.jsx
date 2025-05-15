@@ -494,7 +494,8 @@ const handleSubmitRemark = async () => {
                         data-bs-target="#RevisionModal"
                         onClick={openattachModal}
                       >
-                        Attach Other
+                        {/* Attach Other */}
+                        Attach Document
                       </button>
                     </div>
                   </div>
@@ -533,6 +534,11 @@ const handleSubmitRemark = async () => {
                             <td className="text-start">
                               <button
                                 className="text-decoration-underline border-0 bg-transparent"
+                                style={{
+                                  color: "#8b0203",
+                                  textDecoration: "underline",
+                                  cursor: "pointer",
+                                }}
                                 onClick={() => {
                                   setNewDocument((prev) => ({
                                     ...prev,
@@ -541,7 +547,7 @@ const handleSubmitRemark = async () => {
                                   openattachModal();
                                 }}
                               >
-                                Attach
+                                Attach Another Document
                               </button>
                             </td>
                           </tr>
