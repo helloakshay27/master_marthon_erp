@@ -801,7 +801,7 @@ const PoAdvanceNoteList = () => {
                           </td> */}
 
                           <td className="text-start">
-                            <Link to={`/po-advance-note-payment/${note.id}`}>
+                            <Link to={`/po-advance-note-details/${note.id}`}>
                               {note.advance_number || "-"}
                             </Link>
                           </td>

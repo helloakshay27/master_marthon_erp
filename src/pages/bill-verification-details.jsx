@@ -74,10 +74,10 @@ const BillVerificationDetails = () => {
       label: "Verified",
       value: "verified",
     },
-    {
-      label: "All",
-      value: "all",
-    },
+    // {
+    //   label: "All",
+    //   value: "all",
+    // },
     // {
     //   label: "Submited",
     //   value: "submited",

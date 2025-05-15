@@ -374,8 +374,7 @@ const CreditNoteList = () => {
             try {
               setLoading(true);
               const response = await axios.get(
-                `${baseURL}credit_notes?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_ord
-      er_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_cont]=${searchKeyword}`
+                `${baseURL}credit_notes?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[credit_note_no_or_credit_note_date_or_credit_note_amount_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_purchase_order_supplier_full_name_cont]=${searchKeyword}`
               );
               setCreditNotes(response.data.credit_notes);
               setMeta(response.data.meta);

@@ -250,10 +250,10 @@ const BillVerificationList = () => {
       label: "Verified",
       value: "verified",
     },
-    {
-      label: "All",
-      value: "all",
-    },
+    // {
+    //   label: "All",
+    //   value: "all",
+    // },
 
   ];
 
@@ -800,7 +800,11 @@ er_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_com
                         <td className="text-start"></td>
                         <td className="text-start">
                           {/* {entry.status} */}
-                          {entry.status.charAt(0).toUpperCase() + entry.status.slice(1)}
+                          {/* {entry.status.charAt(0).toUpperCase() + entry.status.slice(1)} */}
+                          {entry.status
+    .split("_") // Split the string by underscores
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize each word
+    .join(" ")}
                         </td>
                         <td className="text-start"></td>
                         <td className="text-start" > </td>

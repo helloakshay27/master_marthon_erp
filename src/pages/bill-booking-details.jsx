@@ -664,10 +664,10 @@ const BillBookingDetails = () => {
                     </tbody>
                   </table>
                 </div>
-                <div className="d-flex justify-content-between mt-3 me-2">
+                {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Pending Advances (&gt; 60 days)</h5>
-                </div>
-                <div className="tbl-container mx-3 mt-3">
+                </div> */}
+                {/* <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -694,7 +694,7 @@ const BillBookingDetails = () => {
                       </tr>
                     </tbody>
                   </table>
-                </div>
+                </div> */}
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Tax Deduction</h5>
                 </div>
@@ -773,6 +773,8 @@ const BillBookingDetails = () => {
                     </tbody>
                   </table>
                 </div>
+
+             
                 {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Advance Adjusted</h5>
                 </div> */}
@@ -798,10 +800,10 @@ const BillBookingDetails = () => {
                     </tbody>
                   </table>
                 </div> */}
-                <div className="d-flex justify-content-between mt-3 me-2">
+                {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Advance Details</h5>
-                </div>
-                <div className="tbl-container mx-3 mt-3">
+                </div> */}
+                {/* <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -837,7 +839,7 @@ const BillBookingDetails = () => {
                       </tr>
                     </tbody>
                   </table>
-                </div>
+                </div> */}
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Advance Deductions</h5>
                 </div>

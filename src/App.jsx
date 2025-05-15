@@ -87,6 +87,7 @@ import BoqAmendSub from "./pages/boq-amend-sub";
 import CounterOffer from "./pages/counter-offer";
 import BillVerificationEdit from "./pages/bill-verification-edit";
 import BillEntryCreateVendorPage from "./pages/bill-entry-create-vendor";
+import BillEntryVendorList from "./pages/bill-entry-vendor-list";
 
 function App() {
   return (
@@ -95,23 +96,26 @@ function App() {
         <Routes>
           <Route path="/" element={<Members />} />
           <Route path="/bill-entry-list" element={<BillEntryList />} />
-            <Route
-              path="/bill-entry-list-sub-page"
-              element={<BillEntryListSubPage />}
-            />
-            <Route
-              path="/bill-entry-details/:id"
-              element={<BillEntryDetails />}
-            />
           <Route
-              path="/bill-verification-details/:id"
-              element={<BillVerificationDetails />}
-            />
-          
-            <Route
-              path="/bill-verification-list"
-              element={<BillVerificationList />}
-            />
+            path="/bill-entry-vendor-list"
+            element={<BillEntryVendorList />}
+          />
+          <Route
+            path="/bill-entry-list-sub-page"
+            element={<BillEntryListSubPage />}
+          />
+          <Route
+            path="/bill-entry-details/:id"
+            element={<BillEntryDetails />}
+          />
+          <Route
+            path="/bill-verification-details/:id"
+            element={<BillVerificationDetails />}
+          />
+          <Route
+            path="/bill-verification-list"
+            element={<BillVerificationList />}
+          />
           <Route path="/bill-booking-create" element={<BillBookingCreate />} />
           <Route
             path="/bill-booking-details/:id"
@@ -136,7 +140,7 @@ function App() {
           />
           <Route path="/debit-note-list" element={<DebitNoteList />} />
           <Route
-            path="/po-advance-note-details"
+            path="/po-advance-note-details/:id"
             element={<POAdvanceNoteDetails />}
           />
           <Route
@@ -283,9 +287,9 @@ function App() {
               path="/bill-booking-details"
               element={<BillBookingDetails />}
             />
-            
+
             <Route path="/bill-booking-list" element={<BillBookingList />} />
-          
+
             <Route
               path="/bill-booking-create"
               element={<BillBookingCreate />}
@@ -300,7 +304,6 @@ function App() {
               path="/bill-verification-create"
               element={<BillVerificationCreate />}
             />
-           
 
             <Route
               path="/stock_register_detail/:id"
@@ -395,7 +398,7 @@ function App() {
               path="/bill-verification-create"
               element={<BillVerificationCreate />}
             />
-          
+
             <Route
               path="/bill-verification-list"
               element={<BillVerificationList />}

@@ -350,6 +350,11 @@ function Members() {
                   <Link to="/bill-entry-list">Bill Entry List</Link>
                 </li>
                 <li>
+                  <Link to="/bill-entry-vendor-list">
+                    Bill Entry Vendor List
+                  </Link>
+                </li>
+                <li>
                   <Link to="/bill-entry-list-sub-page">
                     Bill Entry create Page
                   </Link>
@@ -368,7 +373,7 @@ function Members() {
                     Bill Verification Create
                   </Link>
                 </li> */}
-                 <li>
+                <li>
                   <Link to="bill-verification-list">
                     Bill Verification List
                   </Link>
@@ -378,7 +383,7 @@ function Members() {
                     Bill Verification details
                   </Link>
                 </li>
-               
+
                 {/* <li>
                   <Link to="/bill-verification-edit">
                     Bill Verification Edit
@@ -426,7 +431,7 @@ function Members() {
                 </li>
                 <h5>___PO Advance___</h5>
                 <li>
-                  <Link to="/po-advance-note-details">
+                  <Link to="/po-advance-note-details/:id">
                     PO Advance Note Details
                   </Link>
                 </li>

@@ -853,9 +853,9 @@ input[type="checkbox"] {
 }
 /* css  */
 
-.tbl-container table {
+/* .tbl-container table {
   width: max-content;
-}
+} */
 
 .tbl-container tr {
   border-bottom: 1px solid #f6eff4 !important;
@@ -2309,10 +2309,10 @@ nav button.nav-link {
   top: 70%;
 }
 
-td {
+/* td {
   max-width: max-content;
   min-width: min-content;
-}
+} */
 
 .flat-unit .flats-container {
   display: grid;
@@ -3271,9 +3271,9 @@ input[type="checkbox"].violet-check {
     padding: 20px !important;
   }
 
-  .tbl-container .w-100 {
+  /* .tbl-container .w-100 {
     width: max-content !important;
-  }
+  } */
 
   .report-counts > div {
     width: 40%;
@@ -6069,9 +6069,9 @@ input[type="checkbox"] {
   border-left: 1px solid gray;
 }
 
-.tbl-container table {
+/* .tbl-container table {
   width: max-content;
-}
+} */
 
 .tbl-container tr {
   border-bottom: 1px solid #f6eff4 !important;
@@ -7516,10 +7516,10 @@ nav button.nav-link {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e") !important;
 }
 
-td {
+/* td {
   max-width: max-content;
   min-width: min-content;
-}
+} */
 
 .flat-unit .flats-container {
   display: grid;
@@ -8479,9 +8479,9 @@ input[type="checkbox"].violet-check {
     padding: 20px !important;
   }
 
-  .tbl-container .w-100 {
+  /* .tbl-container .w-100 {
     width: max-content !important;
-  }
+  } */
 
   .report-counts > div {
     width: 40%;
@@ -11247,16 +11247,16 @@ option {
 .viewBy-tHead-heading-img {
   margin-right: 4px;
 }
-table {
+/* table {
   width: max-content !important;
-}
+} */
 .table > thead {
   z-index: 1111;
 }
-table th,
+/* table th,
 table td {
   width: max-content;
-}
+} */
 table.table {
   width: 100% !important;
 }
@@ -13784,10 +13784,6 @@ input[type="checkbox"] {
   border-left: 1px solid gray;
 }
 
-.tbl-container table {
-  width: max-content;
-}
-
 .tbl-container tr {
   border-bottom: 1px solid #dee2e6 !important;
 }
@@ -13895,7 +13891,7 @@ input[type="checkbox"] {
 .tbl-container {
   box-shadow: 0px 2.8828866481781006px 7.687697887420654px 0px #0000003D;
   overflow-y: auto !important;
-  max-height: 300px !important;
+  max-height: 300px;
   margin: 10px 0;
   height: auto !important;
 }
@@ -16375,9 +16371,9 @@ input[type="checkbox"].violet-check {
     padding: 20px !important;
   }
 
-  .tbl-container .w-100 {
+  /* .tbl-container .w-100 {
     width: max-content !important;
-  }
+  } */
 
   .report-counts>div {
     width: 40%;

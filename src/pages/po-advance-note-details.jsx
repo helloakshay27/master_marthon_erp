@@ -7,13 +7,17 @@ import { Table } from "../components";
 import { auditLogColumns, auditLogData } from "../constant/data";
 import { DownloadIcon } from "../components";
 import SingleSelector from "../components/base/Select/SingleSelector";
+import { useParams } from "react-router-dom";
 
 import { useEffect } from "react";
 import axios from "axios";
 
 const POAdvanceNoteDetails = () => {
+  const { id } = useParams();
+
   const [showRows, setShowRows] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   // tax table functionality
 
@@ -42,9 +46,9 @@ const POAdvanceNoteDetails = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/advance_notes"
+          `https://marathon.lockated.com/advance_notes/${id}`
         );
-        const data = response.data.advance_notes[0]; // Assuming you want the first item
+        const data = response.data; // Assuming you want the first item
         setAdvanceNote(data);
       } catch (err) {
         setError("Failed to fetch data");
