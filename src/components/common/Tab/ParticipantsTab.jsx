@@ -166,6 +166,7 @@ export default function ParticipantsTab({ id }) {
         };
 
         setVendorData((prev) => [...prev, formattedVendor]);
+        setFilteredData((prev) => [...prev, formattedVendor]);
 
         toast.success("Vendor invited successfully!", {
           autoClose: 1000,
@@ -197,8 +198,8 @@ export default function ParticipantsTab({ id }) {
     setResetSelectedRows(true);
   };
 
-  console.log("totalParticipantPages", totalParticipantPages);
-  console.log("currentParticipantPage", currentParticipantPage);
+  // console.log("totalParticipantPages", totalParticipantPages);
+  // console.log("currentParticipantPage", currentParticipantPage);
   
 
   useEffect(() => {
@@ -243,12 +244,13 @@ export default function ParticipantsTab({ id }) {
     setFilteredData(
       Array.isArray(participants?.event_vendors)
         ? participants.event_vendors.map((vendor) => {
-            const { organization_name, contact_number, email } =
+            const { full_name, organization_name, mobile, email } =
               vendor.pms_supplier || {};
             return {
-              name: organization_name || "_",
-              phone: contact_number || "_",
+              name: full_name || "_",
+              phone: mobile || "_",
               email: email || "_",
+              organisation: organization_name || "_",
             };
           })
         : []
@@ -585,8 +587,11 @@ export default function ParticipantsTab({ id }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTableData.map((vendor, index) => (
+                  {filteredData.map((vendor, index) => (
+                    
                     <tr key={vendor.key}>
+                      {console.log("vendor",vendor)
+                      }
                       <td style={{ textAlign: "left" }}>
                         {(currentParticipantPage - 1) * participantPageSize +
                           index +

@@ -3732,109 +3732,203 @@ export default function VendorDetails() {
                             >
                               <div className="card card-body rounded-3 p-4 ">
                                 {/* Table Section */}
-                                <div className="tbl-container mt-3">
-                                  <table className="w-100 table">
-                                    <thead>
-                                      <tr>
-                                        {/* Render existing columns */}
-                                        <th className="text-start">Sr.No.</th>
-                                        <th className="text-start">
-                                          Material Type
-                                        </th>
-                                        <th className="text-start">
-                                          Material Sub Type
-                                        </th>
-                                        <th className="text-start">
-                                          Material Name
-                                        </th>
-                                        <th className="text-start">Quantity</th>
-                                        <th className="text-start">UOM</th>
-                                        <th className="text-start">Location</th>
-                                        <th className="text-start">Rate</th>
-                                        <th className="text-start">Amount</th>
-                                        <th className="text-start">Brand</th>
-                                        <th className="text-start">Colour</th>
-                                        <th className="text-start">
-                                          Generic Info
-                                        </th>
+                                <Table
+                                  columns={[
+                                    { key: "srNo", label: "Sr.No." },
+                                    {
+                                      key: "material_type",
+                                      label: "Material Type",
+                                    },
+                                    {
+                                      key: "inventory_sub_type",
+                                      label: "Material Sub Type",
+                                    },
+                                    {
+                                      key: "inventory_name",
+                                      label: "Material Name",
+                                    },
+                                    { key: "quantity", label: "Quantity" },
+                                    { key: "uom_name", label: "UOM" },
+                                    { key: "location", label: "Location" },
+                                    { key: "rate", label: "Rate" },
+                                    { key: "amount", label: "Amount" },
+                                    { key: "pms_brand_name", label: "Brand" },
+                                    { key: "pms_colour_name", label: "Colour" },
+                                    {
+                                      key: "generic_info_name",
+                                      label: "Generic Info",
+                                    },
+                                    ...(data1.event_materials[0]?.extra_data
+                                      ? Object.keys(
+                                          data1.event_materials[0].extra_data
+                                        ).map((key) => ({
+                                          key,
+                                          label: key
+                                            .replace(/_/g, " ")
+                                            .toUpperCase(),
+                                        }))
+                                      : []),
+                                  ]}
+                                  data={data1.event_materials.map(
+                                    (item, index) => ({
+                                      ...item,
+                                      srNo: index + 1,
+                                    })
+                                  )}
+                                  isAccordion={true}
+                                  enableHoverEffect={true}
+                                  isMinWidth={true}
+                                  accordionRender={() => {
+  // Filter matched data based on material type and inventory name
+  const matchedData = Object.values(data1?.grouped_event_materials || {})
+    .flatMap((group) =>
+      Object.values(group)
+        .flat()
+    );
 
-                                        {/* Dynamically render extra_data columns */}
-                                        {data1.event_materials[0]?.extra_data &&
-                                          Object.keys(
-                                            data1.event_materials[0].extra_data
-                                          ).map((key) => (
-                                            <th
-                                              key={key}
-                                              className="text-start"
-                                            >
-                                              {key
-                                                .replace(/_/g, " ")
-                                                .toUpperCase()}
-                                            </th>
-                                          ))}
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {data1.event_materials.map(
-                                        (data, index) => (
-                                          <tr key={data.id}>
-                                            {/* Render existing data */}
-                                            <td className="text-start">
-                                              {index + 1}
-                                            </td>
-                                            <td className="text-start">
-                                              {data.material_type}
-                                            </td>
-                                            <td className="text-start">
-                                              {data.inventory_sub_type}
-                                            </td>
-                                            <td className="text-start">
-                                              {data.inventory_name}
-                                            </td>
-                                            <td className="text-start">
-                                              {data.quantity}
-                                            </td>
-                                            <td className="text-start">
-                                              {data.uom_name}
-                                            </td>
-                                            <td className="text-start">
-                                              {data.location}
-                                            </td>
-                                            <td className="text-start">
-                                              {data.rate}
-                                            </td>
-                                            <td className="text-start">
-                                              {data.amount}
-                                            </td>
-                                            <td className="text-start">
-                                              {data.pms_brand_name || "-"}
-                                            </td>
-                                            <td className="text-start">
-                                              {data.pms_colour_name || "-"}
-                                            </td>
-                                            <td className="text-start">
-                                              {data.generic_info_name || "-"}
-                                            </td>
+  // Extract delivery schedules, specifications, and attachments
+  const deliverySchedules = matchedData.flatMap(
+    (item) => item.delivery_schedules || []
+  );
+  const morInventorySpecifications = matchedData.flatMap(
+    (item) => item.mor_inventory_specifications || []
+  );
+  const attachmentsData = matchedData.flatMap((item) => item.attachments || []);
 
-                                            {/* Dynamically render extra_data values */}
-                                            {data.extra_data &&
-                                              Object.keys(data.extra_data).map(
-                                                (key) => (
-                                                  <td
-                                                    key={key}
-                                                    className="text-start"
-                                                  >
-                                                    {data.extra_data[key]
-                                                      ?.value || "-"}
-                                                  </td>
-                                                )
-                                              )}
-                                          </tr>
-                                        )
-                                      )}
-                                    </tbody>
-                                  </table>
-                                </div>
+  return (
+    <div
+      style={{
+        width: "75vw",
+        marginLeft: "20px",
+        position: "sticky",
+        left: 0,
+        zIndex: 1,
+        backgroundColor: "white",
+        padding: "40px",
+        border: "1px solid #ddd",
+      }}
+      className="card card-body"
+    >
+      {/* Delivery Schedules */}
+      {deliverySchedules.length > 0 && (
+        <div>
+          <h5 className=" ">Delivery Schedules</h5>
+          <table className="table table-bordered">
+            <thead>
+              <tr>
+                <th style={{ textAlign: "center" }}>Expected Date</th>
+                <th style={{ textAlign: "center" }}>Expected Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              {deliverySchedules.map((schedule, index) => (
+                <tr key={index}>
+                  <td>{schedule.expected_date}</td>
+                  <td>{schedule.expected_quantity}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Dynamic Details */}
+      {morInventorySpecifications.length > 0 && (
+        <div>
+          <h5 className=" ">Dynamic Details</h5>
+          <table className="table table-bordered">
+            <thead>
+              <tr>
+                <th style={{ textAlign: "center" }}>Field</th>
+                <th style={{ textAlign: "center" }}>Specification</th>
+              </tr>
+            </thead>
+            <tbody>
+              {morInventorySpecifications.map((spec, index) => (
+                <tr key={index}>
+                  <td>{spec.field}</td>
+                  <td>{spec.specification || "N/A"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Attachments */}
+      {attachmentsData.length > 0 && (
+        <div>
+          <h5 className=" ">Attachments</h5>
+          <table className="table table-bordered">
+            <thead>
+              <tr>
+                <th style={{ textAlign: "center" }}>Filename</th>
+                <th style={{ textAlign: "center" }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attachmentsData.map((attachment, index) => (
+                <tr key={index}>
+                  <td>{attachment.filename}</td>
+                  <td
+                    style={{
+                      display: "flex",
+                      gap: "10px",
+                      justifyContent: "center",
+                      width: "100%",
+                    }}
+                  >
+                    <a
+                      href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                      download={attachment.filename}
+                      className="purple-btn2"
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        padding: "0",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        style={{ fill: "black" }}
+                      >
+                        <g fill="white">
+                          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                          <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                        </g>
+                      </svg>
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}}
+                                  customRender={{
+                                    pms_brand_name: (value) => value || "-",
+                                    pms_colour_name: (value) => value || "-",
+                                    generic_info_name: (value) => value || "-",
+                                    ...(data1.event_materials[0]?.extra_data
+                                      ? Object.keys(
+                                          data1.event_materials[0].extra_data
+                                        ).reduce((acc, key) => {
+                                          acc[key] = (value) =>
+                                            value?.value || "-";
+                                          return acc;
+                                        }, {})
+                                      : {}),
+                                  }}
+                                />
                               </div>
                             </div>
                           )}
@@ -4756,16 +4850,6 @@ export default function VendorDetails() {
                                   updatedData[rowIndex]?.price || previousPrice; // Use `updatedPrice` if available
                                 const showArrow =
                                   counterData && previousPrice !== updatedPrice; // Show arrow if `counterData` exists and prices differ
-                                console.log(
-                                  "counterData",
-                                  counterData,
-                                  "previous",
-                                  previousPrice,
-                                  "updated",
-                                  updatedPrice,
-                                  "showArrow",
-                                  showArrow
-                                );
 
                                 return showArrow ? (
                                   <div
