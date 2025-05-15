@@ -395,7 +395,7 @@ const DebitNoteList = () => {
             setLoading(false);
           }
         };
-  if (loading) return <div>Loading...</div>;
+  // if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
   return (
     <>
@@ -865,6 +865,22 @@ const DebitNoteList = () => {
           </div>
         </div>
       </div>
+      {loading && (
+        <div className="loader-container">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>Loading...</p>
+        </div>
+      )}
+
 
       {/* modal start */}
       <Modal

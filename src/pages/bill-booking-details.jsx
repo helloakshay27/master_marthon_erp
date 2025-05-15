@@ -207,8 +207,8 @@ const BillBookingDetails = () => {
       value: "verified",
     },
     {
-      label: "Submited",
-      value: "submited",
+      label: "Submitted",
+      value: "submitted",
     },
     {
       label: "Proceed",
@@ -277,6 +277,7 @@ const BillBookingDetails = () => {
       if (response.status === 200) {
         console.log("Status updated successfully:", response.data);
         setRemark("");
+        setLoading(true);
         // alert('Status updated successfully');
         // Handle success (e.g., update the UI, reset fields, etc.)
         toast.success("Status updated successfully!");
@@ -330,9 +331,9 @@ const BillBookingDetails = () => {
     }
   };
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
+  // if (loading) {
+  //   return <p>Loading...</p>;
+  // }
 
   if (error) {
     return <p>{error}</p>;
@@ -1366,6 +1367,21 @@ const BillBookingDetails = () => {
           </div>
         </div>
       </div>
+      {loading && (
+        <div className="loader-container">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>Updating...</p>
+        </div>
+      )}
       <Modal
         centered
         size="lg"

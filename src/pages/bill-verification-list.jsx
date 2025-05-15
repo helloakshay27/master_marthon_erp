@@ -221,25 +221,38 @@ const BillVerificationList = () => {
       label: 'Select Status',
       value: '',
     },
+    // {
+    //   label: 'Draft',
+    //   value: 'draft',
+    // },
+    // {
+    //   label: 'Verified',
+    //   value: 'verified',
+    // },
+    // {
+    //   label: 'Submitted',
+    //   value: 'submitted',
+    // },
+    // {
+    //   label: 'Proceed',
+    //   value: 'proceed',
+    // },
+    // {
+    //   label: 'Approved',
+    //   value: 'approved',
+    // },
+
     {
-      label: 'Draft',
-      value: 'draft',
+      label: "Open",
+      value: "open",
     },
     {
-      label: 'Verified',
-      value: 'verified',
+      label: "Verified",
+      value: "verified",
     },
     {
-      label: 'Submitted',
-      value: 'submitted',
-    },
-    {
-      label: 'Proceed',
-      value: 'proceed',
-    },
-    {
-      label: 'Approved',
-      value: 'approved',
+      label: "All",
+      value: "all",
     },
 
   ];

@@ -817,6 +817,21 @@ const CreditNoteDetails = () => {
           </div>
         </div>
       </div>
+      {loading && (
+        <div className="loader-container">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>Loading...</p>
+        </div>
+      )}
     </>
   );
 };

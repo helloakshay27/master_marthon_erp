@@ -91,6 +91,7 @@ const DebitNoteCreate = () => {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [selectedPO, setSelectedPO] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loading2, setLoading2] = useState(false);
 
   const taxesRowDropdown = () => {
     settaxesRowDetails(!taxesRowDetails);
@@ -790,6 +791,7 @@ const DebitNoteCreate = () => {
   console.log("payload:", payload)
 
   const handleSubmit = async () => {
+    setLoading2(true)
     const payload = {
       debit_note: {
         company_id: selectedCompany?.value || "",
@@ -837,11 +839,16 @@ const DebitNoteCreate = () => {
         payload
       );
       console.log("Response:", response.data);
+      setLoading2(false)
       alert("debit Note submitted successfully!");
       navigate("/debit-note-list"); // Navigate to the list page
+
     } catch (error) {
+      setLoading2(false)
       console.error("Error submitting Credit Note:", error);
       alert("Failed to submit debit Note. Please try again.");
+    }finally{
+      setLoading2(false)
     }
   };
 
@@ -1680,6 +1687,21 @@ const DebitNoteCreate = () => {
           </div>
         </div>
       </div>
+      {loading2 && (
+        <div className="loader-container">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>Submitting...</p>
+        </div>
+      )}
 
       {/*  */}
       <Modal
@@ -2330,11 +2352,12 @@ const DebitNoteCreate = () => {
                   <thead>
                     <tr>
                       <th className="text-start">
-                        <input
+                        {/* <input
                           type="checkbox"
                           checked={selectedPOs.length === purchaseOrders.length}
                           onChange={handleSelectAll}
-                        />
+                        /> */}
+                        Sr.No.
                       </th>
                       <th className="text-start">PO Number</th>
                       <th className="text-start">PO Date</th>
@@ -2357,14 +2380,15 @@ const DebitNoteCreate = () => {
                         </td>
                       </tr>
                     ) : (
-                      purchaseOrders.map((po) => (
+                      purchaseOrders.map((po,index) => (
                         <tr key={po.id}>
                           <td className="text-start">
-                            <input
+                            {/* <input
                               type="checkbox"
                               checked={selectedPOs.includes(po.id)}
                               onChange={() => handleCheckboxChange(po.id)}
-                            />
+                            /> */}
+                            {index+1}
                           </td>
                           <td className="text-start">{po.po_number}</td>
                           <td className="text-start">{po.po_date}</td>

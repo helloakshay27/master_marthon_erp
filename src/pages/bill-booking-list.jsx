@@ -28,14 +28,15 @@ const BillBookingList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10; // Items per page
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [activeTab, setActiveTab] = useState("total"); // State to track the active tab
   // Fetch data from API
   // useEffect(() => {
   const fetchData = async (page) => {
-    const search = searchKeyword||"";
+    // const search = searchKeyword||"";
     try {
       setLoading(true); // Start loading
       const response = await axios.get(
-        `${baseURL}bill_bookings?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[invoice_number_or_einvoice_or_inventory_date_or_invoice_amount_or_other_deductions_or_total_value_or_status_or_total_amount_or_company_company_name_or_pms_site_name_or_project_name_or_supplier_first_name_or_supplier_last_name_or_bill_purchase_orders_purchase_order_po_number_eq]=${search}`
+        `${baseURL}bill_bookings?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
       setBillData(response.data.bill_bookings); // Set fetched data
       setMeta(response.data.meta)
@@ -56,7 +57,7 @@ const BillBookingList = () => {
   // Fetch data on component mount and when the page changes
   useEffect(() => {
     fetchData(currentPage);
-  }, [currentPage,searchKeyword]);
+  }, [currentPage]);
   // Handle page change
   const handlePageChange = (pageNumber) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
@@ -228,8 +229,8 @@ const BillBookingList = () => {
       value: 'verified',
     },
     {
-      label: 'Submited',
-      value: 'submited',
+      label: 'Submitted',
+      value: 'submitted',
     },
     {
       label: 'Proceed',
@@ -347,6 +348,45 @@ const BillBookingList = () => {
 
   console.log("selected bill id array :", selectedBoqDetails)
 
+   //card filter
+    const fetchFilteredData2 = (status) => {
+      const url = `${baseURL}bill_bookings?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${
+        status ? `&q[status_eq]=${status}` : ""
+      }`;
+    
+      axios
+        .get(url)
+        .then((response) => {
+          setBillData(response.data.bill_bookings);
+          // setCreditNotes(response.data.credit_notes);
+          setTotalPages(response.data.meta.total_pages); // Set total pages
+          setTotalEntries(response.data.meta.total_count);
+          setMeta(response.data.meta);
+        })
+        .catch((error) => {
+          console.error("Error fetching filtered data:", error);
+        });
+    };
+  
+     const fetchSearchResults = async () => {
+              try {
+                // setLoading(true);
+                const response = await axios.get(
+                  `${baseURL}bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[invoice_number_or_einvoice_or_inventory_date_or_invoice_amount_or_other_deductions_or_total_value_or_status_or_total_amount_or_company_company_name_or_pms_site_name_or_project_name_or_supplier_first_name_or_supplier_last_name_or_bill_purchase_orders_purchase_order_po_number_eq]=${searchKeyword}`
+                );
+                setBillData(response.data.bill_bookings);
+                // setCreditNotes(response.data.credit_notes);
+                setMeta(response.data.meta);
+                setTotalPages(response.data.meta.total_pages);
+                setTotalEntries(response.data.meta.total_count);
+              } catch (err) {
+                setError("Failed to fetch search results");
+                console.error("Error fetching search results:", err);
+              } finally {
+                // setLoading(false);
+              }
+            };
+  
 
   return (
     <>
@@ -359,8 +399,12 @@ const BillBookingList = () => {
               <div className="row separteinto7 justify-content-center">
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button active"
+                    // className="content-box tab-button active"
                     data-tab="total"
+                    className={`content-box tab-button ${activeTab === "total" ? "active" : ""}`}
+                    onClick={() => {
+                      setActiveTab("total")
+                      fetchFilteredData2("")}}
                   >
                     <h4 className="content-box-title fw-semibold">Bill List</h4>
                     <p className="content-box-sub">{meta?.total_count}</p>
@@ -368,7 +412,14 @@ const BillBookingList = () => {
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div className="content-box tab-button" data-tab="draft">
+                  <div 
+                  // className="content-box tab-button" 
+                  data-tab="draft"
+                  className={`content-box tab-button ${activeTab === "draft" ? "active" : ""}`}
+                  onClick={() => {
+                    setActiveTab("draft")
+                    fetchFilteredData2("draft")}}
+                  >
                     <h4 className="content-box-title fw-semibold">
                       Draft
                     </h4>
@@ -376,7 +427,14 @@ const BillBookingList = () => {
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div className="content-box tab-button" data-tab="draft">
+                  <div 
+                  // className="content-box tab-button" 
+                  data-tab="verified"
+                  className={`content-box tab-button ${activeTab === "verified" ? "active" : ""}`}
+                  onClick={() => {
+                    setActiveTab("verified")
+                    fetchFilteredData2("verified")}}
+                  >
                     <h4 className="content-box-title fw-semibold">
                       Verified Bills
                     </h4>
@@ -385,8 +443,12 @@ const BillBookingList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button"
-                    data-tab="pending-approval"
+                    // className="content-box tab-button"
+                    data-tab="submitted"
+                    className={`content-box tab-button ${activeTab === "submitted" ? "active" : ""}`}
+                    onClick={() => {
+                      setActiveTab("submitted")
+                      fetchFilteredData2("submitted")}}
                   >
                     <h4 className="content-box-title fw-semibold">Submit</h4>
                     <p className="content-box-sub">{meta?.submited_count}</p>
@@ -394,8 +456,12 @@ const BillBookingList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button"
-                    data-tab="self-overdue"
+                    // className="content-box tab-button"
+                    data-tab="approved"
+                    className={`content-box tab-button ${activeTab === "approved" ? "active" : ""}`}
+                    onClick={() => {
+                      setActiveTab("approved")
+                      fetchFilteredData2("approved")}}
                   >
                     <h4 className="content-box-title fw-semibold">Approved</h4>
                     <p className="content-box-sub">{meta?.approved_count}</p>
@@ -403,8 +469,12 @@ const BillBookingList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button"
-                    data-tab="self-overdue"
+                    // className="content-box tab-button"
+                    data-tab="proceed"
+                    className={`content-box tab-button ${activeTab === "proceed" ? "active" : ""}`}
+                    onClick={() => {
+                      setActiveTab("proceed")
+                      fetchFilteredData2("")}}
                   >
                     <h4 className="content-box-title fw-semibold">Proceed</h4>
                     <p className="content-box-sub">{meta?.proceed_count}</p>
@@ -581,7 +651,9 @@ const BillBookingList = () => {
                         placeholder="Type your keywords here"
                       />
                       <div className="input-group-append">
-                        <button type="button" className="btn btn-md btn-default">
+                        <button type="button" className="btn btn-md btn-default"
+                         onClick={() => fetchSearchResults()} 
+                        >
                           <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203" />
                             <path d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z" fill="#8B0203" />
@@ -632,7 +704,7 @@ const BillBookingList = () => {
                   </div>
                 </div>
               </div>
-              {!loading && !error && (
+              
                 <div className="tbl-container mx-3 mt-3" style={{ width: "98%" }}>
                   <table
                     style={{
@@ -755,7 +827,7 @@ const BillBookingList = () => {
                     </tbody>
                   </table>
                 </div>
-              )}
+            
               <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                 <ul className="pagination justify-content-center d-flex">
                   <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
@@ -827,6 +899,21 @@ const BillBookingList = () => {
           <div className="tab-content1" id="draft-content"></div>
         </div>
       </div>
+      {loading && (
+        <div className="loader-container">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>Loading...</p>
+        </div>
+      )}
 
       {/* modal start */}
       <Modal
