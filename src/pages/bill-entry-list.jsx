@@ -657,32 +657,20 @@ display:none !important;
                   </div>
                 </div>
               </div>
-              <div className="col-md-5">
-                <div className="row justify-content-end">
-                  <div className="col-md-5">
-                    <div className="row justify-content-end ">
-                      <div className="col-md-4 mt-4">
-                        <button
-                          type="submit"
-                          className="btn btn-md"
-                          onClick={handleSettingModalShow}
-                        >
-                          <SettingIcon />
-                        </button>
-                      </div>
-
-                      <div className="col-md-4 mt-4 ms-4">
-                        <button
-                          className="purple-btn2"
-                          onClick={() => navigate("/bill-entry-list-sub-page")}
-                        >
-                          <span> +Add</span>
-                        </button>
-                      </div>
-                      {/* </div> */}
-                    </div>
-                  </div>
-                </div>
+              <div className="col-md-5 d-flex justify-content-end align-items-center gap-5 mt-4">
+                <button
+                  type="button"
+                  className="btn btn-md"
+                  onClick={handleSettingModalShow}
+                >
+                  <SettingIcon />
+                </button>
+                <button
+                  className="purple-btn2"
+                  onClick={() => navigate("/bill-entry-list-sub-page")}
+                >
+                  <span> + Add</span>
+                </button>
               </div>
             </div>
 
