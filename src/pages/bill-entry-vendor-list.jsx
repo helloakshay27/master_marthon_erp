@@ -12,7 +12,7 @@ import { baseURL } from "../confi/apiDomain";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
-const BillEntryList = () => {
+const BillEntryVendorList = () => {
   const [selectedValue, setSelectedValue] = useState("");
   const [billEntries, setBillEntries] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -667,7 +667,7 @@ display:none !important;
                 </button>
                 <button
                   className="purple-btn2"
-                  onClick={() => navigate("/bill-entry-list-sub-page")}
+                  onClick={() => navigate("/bill-entry-vendor-create")}
                 >
                   <span> + Add</span>
                 </button>
@@ -855,4 +855,4 @@ display:none !important;
   );
 };
 
-export default BillEntryList;
+export default BillEntryVendorList;

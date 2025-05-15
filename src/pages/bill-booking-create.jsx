@@ -323,6 +323,24 @@ const BillBookingCreate = () => {
   const [selectedGRN, setSelectedGRN] = useState(null);
   const [selectedGRNs, setSelectedGRNs] = useState([]);
 
+  // Add this array at the top of your component
+  const paymentModeOptions = [
+    { value: "Bank Advice", label: "Bank Advice" },
+    { value: "Cash", label: "Cash" },
+    { value: "Cheque Local", label: "Cheque Local" },
+    { value: "Cheque OutStation", label: "Cheque OutStation" },
+    { value: "CreditCard", label: "CreditCard" },
+    { value: "Demand Draft", label: "Demand Draft" },
+    { value: "Direct Remittance", label: "Direct Remittance" },
+    { value: "Interest Waive off", label: "Interest Waive off" },
+    {
+      value: "Online Payment from Portal/App",
+      label: "Online Payment from Portal/App",
+    },
+    { value: "Others", label: "Others" },
+    { value: "TDS", label: "TDS" },
+  ];
+
   // Add this at the top with other state declarations
   const getFormattedDate = () => {
     const today = new Date();
@@ -376,6 +394,9 @@ const BillBookingCreate = () => {
   const [selectedBillEntry, setSelectedBillEntry] = useState(null);
   // ...existing code...
   const [supplierName, setSupplierName] = useState("");
+  const [displayCompany, setDisplayCompany] = useState("");
+  const [displayProject, setDisplayProject] = useState("");
+  const [displaySite, setDisplaySite] = useState("");
   // ...existing code...
 
   useEffect(() => {
@@ -421,7 +442,11 @@ const BillBookingCreate = () => {
             invoiceAmount: data.bill_amount || "", // <-- Add this line
             totalAmount: data.bill_amount || "", // <-- Add this line
           }));
+
           setSupplierName(data.pms_supplier || "");
+          setDisplayCompany(data.company_name || "");
+          setDisplayProject(data.project_name || "");
+          setDisplaySite(data.site_name || "");
 
           // Fetch PO GRN details using purchase_order.id
           if (data.purchase_order?.id) {
@@ -981,23 +1006,23 @@ const BillBookingCreate = () => {
 
   const [pendingAdvances, setPendingAdvances] = useState([]);
 
-  useEffect(() => {
-    const fetchPendingAdvances = async () => {
-      if (selectedPO?.id) {
-        try {
-          const response = await axios.get(
-            `${baseURL}advance_notes?q[purchase_order__id_eq]=${selectedPO.id}`
-          );
-          setPendingAdvances(response.data.advance_notes || []);
-        } catch (error) {
-          console.error("Error fetching pending advances:", error);
-          setPendingAdvances([]);
-        }
-      }
-    };
+  // useEffect(() => {
+  //   const fetchPendingAdvances = async () => {
+  //     if (selectedPO?.id) {
+  //       try {
+  //         const response = await axios.get(
+  //           `${baseURL}advance_notes?q[purchase_order__id_eq]=${selectedPO.id}`
+  //         );
+  //         setPendingAdvances(response.data.advance_notes || []);
+  //       } catch (error) {
+  //         console.error("Error fetching pending advances:", error);
+  //         setPendingAdvances([]);
+  //       }
+  //     }
+  //   };
 
-    fetchPendingAdvances();
-  }, [selectedPO]);
+  //   fetchPendingAdvances();
+  // }, [selectedPO]);
 
   const [creditNotes, setCreditNotes] = useState([]);
   const [debitNotes, setDebitNotes] = useState([]);
@@ -1139,11 +1164,11 @@ const BillBookingCreate = () => {
                     <div className="form-group">
                       <label>Company</label>
                       <span> *</span>
-                      <SingleSelector
-                        options={companyOptions}
-                        className="form-control form-select"
-                        value={selectedCompany}
-                        onChange={handleCompanyChange}
+                      <input
+                        className="form-control"
+                        type="text"
+                        value={displayCompany}
+                        disabled
                       />
                     </div>
                   </div>
@@ -1152,11 +1177,11 @@ const BillBookingCreate = () => {
                     <label htmlFor="event-no-select">Project</label>
                     <span> *</span>
                     <div className="form-group">
-                      <SingleSelector
-                        options={projects}
-                        onChange={handleProjectChange}
-                        value={selectedProject}
-                        placeholder={`Select Project`} // Dynamic placeholder
+                      <input
+                        className="form-control"
+                        type="text"
+                        value={displayProject}
+                        disabled
                       />
                     </div>
                   </div>
@@ -1165,11 +1190,11 @@ const BillBookingCreate = () => {
                     <label htmlFor="event-no-select"> SubProject</label>
                     <span> *</span>
                     <div className="form-group">
-                      <SingleSelector
-                        options={siteOptions}
-                        onChange={handleSiteChange}
-                        value={selectedSite}
-                        placeholder={`Select Sub-project`} // Dynamic placeholder
+                      <input
+                        className="form-control"
+                        type="text"
+                        value={displaySite}
+                        disabled
                       />
                     </div>
                   </div>
@@ -2020,34 +2045,41 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="text"
-                        value={formData.payeeName}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            payeeName: e.target.value,
-                          }))
-                        }
+                        // value={formData.payeeName}
+                        // onChange={(e) =>
+                        //   setFormData((prev) => ({
+                        //     ...prev,
+                        //     payeeName: e.target.value,
+                        //   }))
+                        value={supplierName}
+                        disabled
                         placeholder="Enter payee name"
                       />
                     </div>
                   </div>
+
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Payment Mode</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        value={formData.paymentMode}
-                        onChange={(e) =>
+                      <SingleSelector
+                        options={paymentModeOptions}
+                        className="form-control form-select"
+                        value={
+                          paymentModeOptions.find(
+                            (opt) => opt.value === formData.paymentMode
+                          ) || null
+                        }
+                        onChange={(selected) =>
                           setFormData((prev) => ({
                             ...prev,
-                            paymentMode: e.target.value,
+                            paymentMode: selected ? selected.value : "",
                           }))
                         }
-                        placeholder="Enter payment mode"
+                        placeholder="Select Payment Mode"
                       />
                     </div>
                   </div>
+
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Payment Due Date</label>

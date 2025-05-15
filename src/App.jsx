@@ -87,6 +87,7 @@ import BoqAmendSub from "./pages/boq-amend-sub";
 import CounterOffer from "./pages/counter-offer";
 import BillVerificationEdit from "./pages/bill-verification-edit";
 import BillEntryCreateVendorPage from "./pages/bill-entry-create-vendor";
+import BillEntryVendorList from "./pages/bill-entry-vendor-list";
 
 function App() {
   return (
@@ -95,6 +96,10 @@ function App() {
         <Routes>
           <Route path="/" element={<Members />} />
           <Route path="/bill-entry-list" element={<BillEntryList />} />
+          <Route
+            path="/bill-entry-vendor-list"
+            element={<BillEntryVendorList />}
+          />
           <Route
             path="/bill-entry-list-sub-page"
             element={<BillEntryListSubPage />}

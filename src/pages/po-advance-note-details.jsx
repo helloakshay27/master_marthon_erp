@@ -17,6 +17,7 @@ const POAdvanceNoteDetails = () => {
 
   const [showRows, setShowRows] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   // tax table functionality
 
@@ -47,7 +48,7 @@ const POAdvanceNoteDetails = () => {
         const response = await axios.get(
           `https://marathon.lockated.com/advance_notes/${id}`
         );
-        const data = response.data.advance_notes[0]; // Assuming you want the first item
+        const data = response.data; // Assuming you want the first item
         setAdvanceNote(data);
       } catch (err) {
         setError("Failed to fetch data");
