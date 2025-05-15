@@ -579,7 +579,8 @@ export default function OverviewTab({
                       item.attachments 
                     );
                     return (
-                      <>
+                      attachmentsData.length > 0 || morInventorySpecifications.length > 0 || deliverySchedules.length > 0 ? 
+                      (<>
                         <div
                           style={{
                             width: "75vw",
@@ -707,7 +708,25 @@ export default function OverviewTab({
                             </div>
                           )}
                         </div>
-                      </>
+                      </>) : (
+                        <div
+                                          style={{
+                                            width: "75vw",
+                                            marginLeft: "20px",
+                                            position: "sticky",
+                                            left: 0,
+                                            zIndex: 1,
+                                            backgroundColor: "white",
+                                            padding: "40px",
+                                            border: "1px solid #ddd",
+                                          }}
+                                          className="card card-body"
+                                        >
+                                          <p className="text-center">
+                                            No additional details available.
+                                          </p>
+                                        </div>
+                      )
                     );
                   }}
                 />
