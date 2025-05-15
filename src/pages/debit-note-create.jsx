@@ -1641,9 +1641,9 @@ const DebitNoteCreate = () => {
                   </div>
                 </div>
                 <div className="row mt-2 justify-content-end w-100">
-                  <div className="col-md-2">
+                  {/* <div className="col-md-2">
                     <button className="purple-btn2 w-100">Print</button>
-                  </div>
+                  </div> */}
                   <div className="col-md-2">
                     <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
                   </div>
@@ -1651,14 +1651,14 @@ const DebitNoteCreate = () => {
                     <button className="purple-btn1 w-100">Cancel</button>
                   </div>
                 </div>
-                <div className="row mt-2 w-100">
+                {/* <div className="row mt-2 w-100">
                   <div className="col-12 px-4">
                     <h5>Audit Log</h5>
                     <div className="mx-0">
                       <Table columns={auditLogColumns} data={auditLogData} />
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

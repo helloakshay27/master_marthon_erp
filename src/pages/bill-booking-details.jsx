@@ -295,7 +295,7 @@ const BillBookingDetails = () => {
 
   // Add handleDownload function
   const handleDownload = async (blobId) => {
-    
+
     try {
       const response = await axios.get(
         `${baseURL}bill_bookings/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${blobId}`,
@@ -481,12 +481,12 @@ const BillBookingDetails = () => {
                           </span>
                           {details?.inventory_date
                             ? new Date(
-                                details.inventory_date
-                              ).toLocaleDateString("en-GB", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                              })
+                              details.inventory_date
+                            ).toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            })
                             : ""}
                         </label>
                       </div>
@@ -772,10 +772,10 @@ const BillBookingDetails = () => {
                     </tbody>
                   </table>
                 </div>
-                <div className="d-flex justify-content-between mt-3 me-2">
+                {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Advance Adjusted</h5>
-                </div>
-                <div className="tbl-container mx-3 mt-3">
+                </div> */}
+                {/* <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -796,7 +796,7 @@ const BillBookingDetails = () => {
                       </tr>
                     </tbody>
                   </table>
-                </div>
+                </div> */}
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Advance Details</h5>
                 </div>
@@ -1009,12 +1009,12 @@ const BillBookingDetails = () => {
                           </span>
                           {details?.payment_due_date
                             ? new Date(
-                                details.payment_due_date
-                              ).toLocaleDateString("en-GB", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                              })
+                              details.payment_due_date
+                            ).toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            })
                             : ""}
                         </label>
                       </div>
@@ -1083,10 +1083,10 @@ const BillBookingDetails = () => {
                     </div>
                   </div>
                 </div>
-                <div className="d-flex justify-content-between mt-3 me-2">
+                {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Advance Adjusted</h5>
-                </div>
-                <div className="tbl-container mx-3 mt-3">
+                </div> */}
+                {/* <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -1123,7 +1123,7 @@ const BillBookingDetails = () => {
                       </tr>
                     </tbody>
                   </table>
-                </div>
+                </div> */}
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Payment Details</h5>
                 </div>
@@ -1159,10 +1159,10 @@ const BillBookingDetails = () => {
                     </tbody>
                   </table>
                 </div>
-                <div className="d-flex justify-content-between mt-3 me-2">
+                {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Debit Note</h5>
-                </div>
-                <div className="tbl-container mx-3 mt-3">
+                </div> */}
+                {/* <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -1199,7 +1199,7 @@ const BillBookingDetails = () => {
                       </tr>
                     </tbody>
                   </table>
-                </div>
+                </div> */}
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Document Attachment</h5>
                 </div>
@@ -1231,17 +1231,27 @@ const BillBookingDetails = () => {
                           <td className="text-start">
                             {attachment.created_at
                               ? new Date(
-                                  attachment.created_at
-                                ).toLocaleDateString()
+                                attachment.created_at
+                              ).toLocaleDateString()
                               : ""}
                           </td>
                           <td className="text-start">
-                            <button
+                            {/* <button
                               className="btn btn-link p-0 text-decoration-underline"
                               onClick={() => handleDownload(attachment.blob_id)}
                             >
                               <DownloadIcon />
-                            </button>
+                            </button> */}
+
+                            <a
+                              href={
+                                // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                `${baseURL}bill_bookings/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
+                              }
+                              download={attachment.filename}
+                            >
+                              <DownloadIcon />
+                            </a>
                           </td>
                         </tr>
                       ))}
@@ -1327,27 +1337,27 @@ const BillBookingDetails = () => {
                     </thead>
                     <tbody>
                       {details?.status_logs?.map((log, index) => (
-        <tr key={log.id}>
-          <td>{index + 1}</td>
-          <td>{ ""}</td>
-          <td>    
-                 {log.created_at
-              ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  // second: "2-digit",
-                  hour12: true,
-                })}`
-              : ""}
-          </td>
-          <td>{log.status ? log.status.charAt(0).toUpperCase() + log.status.slice(1) : ""}</td>
-          <td>{log.remarks || ""}</td>
-        </tr>
-      ))}
+                        <tr key={log.id}>
+                          <td>{index + 1}</td>
+                          <td>{""}</td>
+                          <td>
+                            {log.created_at
+                              ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                // second: "2-digit",
+                                hour12: true,
+                              })}`
+                              : ""}
+                          </td>
+                          <td>{log.status ? log.status.charAt(0).toUpperCase() + log.status.slice(1) : ""}</td>
+                          <td>{log.remarks || ""}</td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -1382,7 +1392,7 @@ const BillBookingDetails = () => {
                   data-bs-dismiss="modal"
                   data-bs-target="#secModal"
                   fdprocessedid="xn3e6n"
-                  // onClick={openAttachTwoModal}
+                // onClick={openAttachTwoModal}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

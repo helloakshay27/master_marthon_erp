@@ -9,6 +9,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { baseURL } from "../confi/apiDomain";
+import { DownloadIcon } from "../components";
 const CreditNoteDetails = () => {
   const { id } = useParams();
   const [showRows, setShowRows] = useState(false);
@@ -477,143 +478,143 @@ const CreditNoteDetails = () => {
 
 
                         <div className="tbl-container mt-3">
-  <table className="w-100">
-    <thead>
-      <tr>
-        <th className="text-start">Tax / Charge Type</th>
-        <th className="text-start">Tax / Charges per UOM (INR)</th>
-        <th className="text-start">Inclusive / Exclusive</th>
-        <th className="text-start">Amount</th>
-        <th className="text-start">Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {/* Static Rows */}
-      <tr>
-        <th className="text-start">Total Base Cost</th>
-        <td className="text-start" />
-        <td className="text-start" />
-        <td className="text-start">{creditNoteData.credit_note_amount}</td>
-        <td />
-      </tr>
+                          <table className="w-100">
+                            <thead>
+                              <tr>
+                                <th className="text-start">Tax / Charge Type</th>
+                                <th className="text-start">Tax / Charges per UOM (INR)</th>
+                                <th className="text-start">Inclusive / Exclusive</th>
+                                <th className="text-start">Amount</th>
+                                <th className="text-start">Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {/* Static Rows */}
+                              <tr>
+                                <th className="text-start">Total Base Cost</th>
+                                <td className="text-start" />
+                                <td className="text-start" />
+                                <td className="text-start">{creditNoteData.credit_note_amount}</td>
+                                <td />
+                              </tr>
 
-      {/* Addition Tax & Charges */}
-      <tr>
-        <th className="text-start">Addition Tax & Charges</th>
-        <td className="text-start" />
-        <td className="text-start" />
-        <td className="text-start" />
-        <td />
-      </tr>
-      {creditNoteData.taxes_and_charges
-        .filter((tax) => tax.addition) // Filter for addition: true
-        .map((tax) => (
-          <tr key={tax.id}>
-            <td className="text-start">{tax.tax_name}</td>
-            <td className="text-start">{tax.percentage}%</td>
-            <td className="text-start">
-              {/* {tax.inclusive ? "Inclusive" : "Exclusive"} */}
-              <input
-          type="checkbox"
-          checked={tax.inclusive} // Set checkbox checked based on `inclusive`
-          disabled={tax.inclusive} // Disable checkbox if `inclusive` is true
-        />
-            </td>
-            <td className="text-start">{tax.amount}</td>
-            <td />
-          </tr>
-        ))}
+                              {/* Addition Tax & Charges */}
+                              <tr>
+                                <th className="text-start">Addition Tax & Charges</th>
+                                <td className="text-start" />
+                                <td className="text-start" />
+                                <td className="text-start" />
+                                <td />
+                              </tr>
+                              {creditNoteData.taxes_and_charges
+                                .filter((tax) => tax.addition) // Filter for addition: true
+                                .map((tax) => (
+                                  <tr key={tax.id}>
+                                    <td className="text-start">{tax.tax_name}</td>
+                                    <td className="text-start">{tax.percentage}%</td>
+                                    <td className="text-start">
+                                      {/* {tax.inclusive ? "Inclusive" : "Exclusive"} */}
+                                      <input
+                                        type="checkbox"
+                                        checked={tax.inclusive} // Set checkbox checked based on `inclusive`
+                                        disabled={tax.inclusive} // Disable checkbox if `inclusive` is true
+                                      />
+                                    </td>
+                                    <td className="text-start">{tax.amount}</td>
+                                    <td />
+                                  </tr>
+                                ))}
 
-      {/* Sub Total A */}
-      <tr>
-        <th className="text-start">Sub Total A (Addition)</th>
-        <td className="text-start" />
-        <td className="" />
-        <td className="text-start">
-          {creditNoteData.taxes_and_charges
-            .filter((tax) => tax.addition)
-            .reduce((total, tax) => total + parseFloat(tax.amount), 0)
-            .toFixed(2)}
-        </td>
-        <td />
-      </tr>
+                              {/* Sub Total A */}
+                              <tr>
+                                <th className="text-start">Sub Total A (Addition)</th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start">
+                                  {creditNoteData.taxes_and_charges
+                                    .filter((tax) => tax.addition)
+                                    .reduce((total, tax) => total + parseFloat(tax.amount), 0)
+                                    .toFixed(2)}
+                                </td>
+                                <td />
+                              </tr>
 
-      {/* Gross Amount */}
-      <tr>
-        <th className="text-start">Gross Amount</th>
-        <td className="text-start" />
-        <td className="" />
-        <td className="text-start">
-{(
-  creditNoteData.taxes_and_charges
-    .filter((tax) => tax.addition)
-    .reduce((total, tax) => total + parseFloat(tax.amount), 0) +
-  parseFloat(creditNoteData.credit_note_amount || 0)
-).toFixed(2)}
-        </td>
-        <td />
-      </tr>
+                              {/* Gross Amount */}
+                              <tr>
+                                <th className="text-start">Gross Amount</th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start">
+                                  {(
+                                    creditNoteData.taxes_and_charges
+                                      .filter((tax) => tax.addition)
+                                      .reduce((total, tax) => total + parseFloat(tax.amount), 0) +
+                                    parseFloat(creditNoteData.credit_note_amount || 0)
+                                  ).toFixed(2)}
+                                </td>
+                                <td />
+                              </tr>
 
-      {/* Deduction Tax */}
-      <tr>
-        <th className="text-start">Deduction Tax</th>
-        <td className="text-start" />
-        <td className="text-start" />
-        <td className="text-start" />
-        <td />
-      </tr>
-      {creditNoteData.taxes_and_charges
-        .filter((tax) => !tax.addition) // Filter for addition: false
-        .map((tax) => (
-          <tr key={tax.id}>
-            <td className="text-start">{tax.tax_name}</td>
-            <td className="text-start">{tax.percentage}%</td>
-            <td className="text-start">
-              {/* {tax.inclusive ? "Inclusive" : "Exclusive"} */}
-              <input
-          type="checkbox"
-          checked={tax.inclusive} // Set checkbox checked based on `inclusive`
-          disabled={tax.inclusive} // Disable checkbox if `inclusive` is true
-        />
-            </td>
-            <td className="text-start">{tax.amount}</td>
-            <td />
-          </tr>
-        ))}
+                              {/* Deduction Tax */}
+                              <tr>
+                                <th className="text-start">Deduction Tax</th>
+                                <td className="text-start" />
+                                <td className="text-start" />
+                                <td className="text-start" />
+                                <td />
+                              </tr>
+                              {creditNoteData.taxes_and_charges
+                                .filter((tax) => !tax.addition) // Filter for addition: false
+                                .map((tax) => (
+                                  <tr key={tax.id}>
+                                    <td className="text-start">{tax.tax_name}</td>
+                                    <td className="text-start">{tax.percentage}%</td>
+                                    <td className="text-start">
+                                      {/* {tax.inclusive ? "Inclusive" : "Exclusive"} */}
+                                      <input
+                                        type="checkbox"
+                                        checked={tax.inclusive} // Set checkbox checked based on `inclusive`
+                                        disabled={tax.inclusive} // Disable checkbox if `inclusive` is true
+                                      />
+                                    </td>
+                                    <td className="text-start">{tax.amount}</td>
+                                    <td />
+                                  </tr>
+                                ))}
 
-      {/* Sub Total B */}
-      <tr>
-        <th className="text-start">Sub Total B (Deductions)</th>
-        <td className="text-start" />
-        <td className="" />
-        <td className="text-start">
-          {creditNoteData.taxes_and_charges
-            .filter((tax) => !tax.addition)
-            .reduce((total, tax) => total + parseFloat(tax.amount), 0)
-            .toFixed(2)}
-        </td>
-        <td />
-      </tr>
+                              {/* Sub Total B */}
+                              <tr>
+                                <th className="text-start">Sub Total B (Deductions)</th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start">
+                                  {creditNoteData.taxes_and_charges
+                                    .filter((tax) => !tax.addition)
+                                    .reduce((total, tax) => total + parseFloat(tax.amount), 0)
+                                    .toFixed(2)}
+                                </td>
+                                <td />
+                              </tr>
 
-      {/* Gross Amount */}
-      <tr>
-        <th className="text-start">Payable Amount</th>
-        <td className="text-start" />
-        <td className="" />
-        <td className="text-start">
-          {(
-            creditNoteData.taxes_and_charges.reduce(
-              (total, tax) =>
-                total + (tax.addition ? parseFloat(tax.amount) : -parseFloat(tax.amount)),
-              0
-            ) + creditNoteData.credit_note_amount
-          ).toFixed(2)}
-        </td>
-        <td />
-      </tr>
-    </tbody>
-  </table>
-</div>
+                              {/* Gross Amount */}
+                              <tr>
+                                <th className="text-start">Payable Amount</th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start">
+                                  {(
+                                    creditNoteData.taxes_and_charges.reduce(
+                                      (total, tax) =>
+                                        total + (tax.addition ? parseFloat(tax.amount) : -parseFloat(tax.amount)),
+                                      0
+                                    ) + creditNoteData.credit_note_amount
+                                  ).toFixed(2)}
+                                </td>
+                                <td />
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
                         <div className="d-flex justify-content-between mt-3 me-2">
                           <h5 className=" ">Document Attachment</h5>
                         </div>
@@ -653,12 +654,21 @@ const CreditNoteDetails = () => {
                                         ).toLocaleDateString()}
                                       </td>
                                       <td className="text-decoration-underline cursor-pointer">
-                                        <a
+                                        {/* <a
                                           href={`https://marathon.lockated.com/attachments/${attachment.id}`}
                                           target="_blank"
                                           rel="noopener noreferrer"
                                         >
                                           View
+                                        </a> */}
+                                        <a
+                                          href={
+                                            // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                            `${baseURL}credit_notes/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
+                                          }
+                                          download={attachment.filename}
+                                        >
+                                          <DownloadIcon />
                                         </a>
                                       </td>
                                     </tr>
@@ -730,9 +740,9 @@ const CreditNoteDetails = () => {
                   </div>
                 </div>
                 <div className="row mt-2 justify-content-end w-100">
-                  <div className="col-md-2">
+                  {/* <div className="col-md-2">
                     <button className="purple-btn2 w-100">Print</button>
-                  </div>
+                  </div> */}
                   <div className="col-md-2">
                     <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
                   </div>

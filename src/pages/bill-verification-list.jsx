@@ -14,6 +14,8 @@ import { baseURL } from "../confi/apiDomain";
 const BillVerificationList = () => {
   const navigate = useNavigate();
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
+  const [activeTab, setActiveTab] = useState("total"); // State to track the active tab
+  
 
   // Static data for SingleSelector (this will be replaced by API data later)
   // const companyOptions = [
@@ -228,8 +230,8 @@ const BillVerificationList = () => {
       value: 'verified',
     },
     {
-      label: 'Submited',
-      value: 'submited',
+      label: 'Submitted',
+      value: 'submitted',
     },
     {
       label: 'Proceed',
@@ -345,6 +347,45 @@ const BillVerificationList = () => {
   };
 
   console.log("selected bill id array :", selectedBoqDetails)
+  
+
+  //card filter
+    const fetchFilteredData2 = (status) => {
+      const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${
+        status ? `&q[status_eq]=${status}` : ""
+      }`;
+    
+      axios
+        .get(url)
+        .then((response) => {
+          setBillEntries(response.data.bill_entries);
+          setTotalPages(response.data.meta.total_pages); // Set total pages
+          setTotalEntries(response.data.meta.total_count);
+          setMeta(response.data.meta);
+        })
+        .catch((error) => {
+          console.error("Error fetching filtered data:", error);
+        });
+    };
+
+    const fetchSearchResults = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_ord
+er_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_cont]=${searchKeyword}`
+        );
+        setBillEntries(response.data.bill_entries);
+        setMeta(response.data.meta);
+        setTotalPages(response.data.meta.total_pages);
+        setTotalEntries(response.data.meta.total_count);
+      } catch (err) {
+        setError("Failed to fetch search results");
+        console.error("Error fetching search results:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   return (
     <>
@@ -352,7 +393,7 @@ const BillVerificationList = () => {
         <div className="module-data-section p-4">
           <a href="">Home &gt; Billing &gt; MOR &gt; Bill Verification</a>
           <h5 className="mt-4 fw-bold">Bill Verification</h5>
-          <div className="mor-tabs mt-4">
+          {/* <div className="mor-tabs mt-4">
             <ul
               className="nav nav-pills mb-3 justify-content-center"
               id="pills-tab"
@@ -400,45 +441,66 @@ const BillVerificationList = () => {
               </li>
               <li className="nav-item" role="presentation" />
             </ul>
-          </div>
+          </div> */}
           <div className="material-boxes mt-3">
             <div className="container-fluid">
               <div className="row separteinto6 justify-content-center">
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button active"
+                    // className="content-box tab-button active"
                     data-tab="total"
+                    className={`content-box tab-button ${activeTab === "total" ? "active" : ""}`}
+                    onClick={() => {
+                      setActiveTab("total")
+                      fetchFilteredData2("")}} // Fetch all data (no status filter)
                   >
                     <h4 className="content-box-title fw-semibold">Bill List</h4>
                     <p className="content-box-sub">{meta?.total_count}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div className="content-box tab-button" data-tab="draft">
+                  <div 
+                  // className="content-box tab-button" 
+                  data-tab="open"
+                    className={`content-box tab-button ${activeTab === "open" ? "active" : ""}`}
+                    onClick={() => {
+                      setActiveTab("open")
+                      fetchFilteredData2("open")}}
+                  >
                     <h4 className="content-box-title fw-semibold">
                       Open Bills
                     </h4>
-                    <p className="content-box-sub">{"0"}</p>
+                    <p className="content-box-sub">
+                    {/* {meta?.total_count} */}
+                      {"0"}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button"
+                    // className="content-box tab-button"
                     data-tab="pending-approval"
+                    className={`content-box tab-button ${activeTab === "recieved_for_verification" ? "active" : ""}`}
+                    onClick={() => {
+                      setActiveTab("recieved_for_verification")
+                      fetchFilteredData2("recieved_for_verification")}}
                   >
                     <h4 className="content-box-title fw-semibold">
                       Received for Verification
                     </h4>
-                    <p className="content-box-sub">0</p>
+                    <p className="content-box-sub">{meta?.recieved_for_verification_count}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button"
+                    // className="content-box tab-button"
                     data-tab="self-overdue"
+                    className={`content-box tab-button ${activeTab === "verified" ? "active" : ""}`}
+                    onClick={() => {
+                      setActiveTab("verified")
+                      fetchFilteredData2("verified")}}
                   >
                     <h4 className="content-box-title fw-semibold">Verified</h4>
-                    <p className="content-box-sub">0</p>
+                    <p className="content-box-sub">{meta?.verified_count}</p>
                   </div>
                 </div>
               </div>
@@ -577,13 +639,15 @@ const BillVerificationList = () => {
                       <input
                         type="search"
                         id="searchInput"
-                        // value={searchKeyword}
-                        // onChange={(e) => setSearchKeyword(e.target.value)} // <- Add this line
+                        value={searchKeyword}
+                        onChange={(e) => setSearchKeyword(e.target.value)} // <- Add this line
                         className="form-control tbl-search"
                         placeholder="Type your keywords here"
                       />
                       <div className="input-group-append">
-                        <button type="button" className="btn btn-md btn-default">
+                        <button type="button" className="btn btn-md btn-default"
+                        onClick={() => fetchSearchResults()} // Call the search function
+                        >
                           <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203" />
                             <path d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z" fill="#8B0203" />
