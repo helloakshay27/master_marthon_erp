@@ -36,6 +36,7 @@ const BillEntryList = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [selectedSite, setSelectedSite] = useState(null);
   const [siteOptions, setSiteOptions] = useState([]);
+  const navigate = useNavigate();
 
   const [columnVisibility, setColumnVisibility] = useState({
     srNo: true,
@@ -656,28 +657,11 @@ display:none !important;
                   </div>
                 </div>
               </div>
-              <div className="col-md-6">
+              <div className="col-md-5">
                 <div className="row justify-content-end">
                   <div className="col-md-5">
-                    <div className="row justify-content-center px-3">
-                      <div className="col-md-3">
-                        {/* <button
-                            className="btn btn-md"
-                          onClick={handleModalShow}
-                          >
-                            <FilterIcon />
-                        </button> */}
-                      </div>
-                      <div className="col-md-3">
-                        {/* <button
-                            id="downloadButton"
-                            type="submit"
-                            className="btn btn-md"
-                          >
-                            <DownloadIcon />
-                        </button> */}
-                      </div>
-                      <div className="col-md-3">
+                    <div className="row justify-content-end ">
+                      <div className="col-md-4 mt-4">
                         <button
                           type="submit"
                           className="btn btn-md"
@@ -686,6 +670,16 @@ display:none !important;
                           <SettingIcon />
                         </button>
                       </div>
+
+                      <div className="col-md-4 mt-4 ms-4">
+                        <button
+                          className="purple-btn2"
+                          onClick={() => navigate("/bill-entry-list-sub-page")}
+                        >
+                          <span> +Add</span>
+                        </button>
+                      </div>
+                      {/* </div> */}
                     </div>
                   </div>
                 </div>

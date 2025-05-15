@@ -1554,6 +1554,7 @@ const calculatePayableAmount = () => {
                                   </button>
                                 ),
                               }))}
+                              isAccordion={false} 
                             />
                           </div>
                         </div>

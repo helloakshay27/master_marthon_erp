@@ -47,6 +47,7 @@ export default function EditEvent() {
   const [start_time, setStart_time] = useState("");
   const [evaluation_time, setEvaluation_time] = useState("");
   const [inventoryTypeId, setInventoryTypeId] = useState([]);
+  const [groupedData, setGroupedData] = useState([]);
   const [isInvite, setIsInvite] = useState(false);
   const [dynamicExtensionConfigurations, setDynamicExtensionConfigurations] =
     useState({
@@ -310,7 +311,6 @@ export default function EditEvent() {
   const [totalPages, setTotalPages] = useState(1); // Default total pages
   const pageSize = 100; // Number of items per page
   const pageRange = 6; // Number of pages to display in the pagination
-  console.log("tableData", tableData);
 
   const [isSaving, setIsSaving] = useState(false);
   const [eventStatus, setEventStatus] = useState("pending");
@@ -455,6 +455,9 @@ export default function EditEvent() {
       setEnd_time(eventDetails?.event_schedule?.end_time);
       setEvaluation_time(eventDetails?.event_schedule?.evaluation_time);
       setStatusLogData(eventDetails?.status_logs);
+      setGroupedData(
+        eventDetails?.grouped_event_materials
+      )
       setMaterialFormData(
         eventDetails?.event_materials?.map((material) => {
           const dynamicFields = Object.keys(material).reduce((acc, key) => {
@@ -1245,7 +1248,7 @@ export default function EditEvent() {
   // console.log("inventoryTypeId", inventoryTypeId);
 
   useEffect(() => {
-    console.log("inventoryTypeId changed:", inventoryTypeId); // Debugging line
+    // console.log("inventoryTypeId changed:", inventoryTypeId); // Debugging line
 
     const fetchMaterialTypes = async () => {
       try {
@@ -1386,6 +1389,7 @@ export default function EditEvent() {
               <CreateRFQForm
                 data={materialFormData}
                 setData={setMaterialFormData}
+                eventId={eventDetails?.id}
                 isService={isService}
                 templateData={eventDetails?.applied_event_template}
                 existingData={eventDetails?.grouped_event_materials}
@@ -1968,7 +1972,7 @@ export default function EditEvent() {
                       />
                     </div>
                   </div>
-                  {console.log("filteredTableData", filteredTableData)}
+                  {/* {console.log("filteredTableData", filteredTableData)} */}
 
                   <div className="d-flex flex-column justify-content-center align-items-center h-100">
                     {filteredTableData.length > 0 ? (
