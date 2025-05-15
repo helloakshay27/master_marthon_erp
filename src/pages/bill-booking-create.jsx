@@ -218,98 +218,7 @@ const BillBookingCreate = () => {
 
   // company project subproject api
 
-  const [companies, setCompanies] = useState([]);
-  const companyOptions = companies.map((company) => ({
-    value: company.id,
-    label: company.company_name,
-  }));
-
-  const [projects, setProjects] = useState([]);
-  const [selectedCompany, setSelectedCompany] = useState(null);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [selectedSite, setSelectedSite] = useState(null);
-  // const [selectedWing, setSelectedWing] = useState(null);
-  const [siteOptions, setSiteOptions] = useState([]);
-  // const [wingsOptions, setWingsOptions] = useState([]);
-
-  // Fetch company data on component mount
-  useEffect(() => {
-    axios
-      .get(
-        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      )
-      .then((response) => {
-        setCompanies(response.data.companies);
-        // setData(response.data); // Set the data from the API to state
-        setLoading(false); // Update the loading state
-      })
-      .catch((error) => {
-        console.error("Error fetching company data:", error);
-        setLoading(false);
-      });
-  }, []);
-
-  // Handle company selection
-  const handleCompanyChange = (selectedOption) => {
-    setSelectedCompany(selectedOption); // Set selected company
-    setSelectedProject(null); // Reset project selection
-    setSelectedSite(null); // Reset site selection
-    setProjects([]); // Reset projects
-    setSiteOptions([]); // Reset site options
-
-    // Reset selected PO and related form data
-
-    if (selectedOption) {
-      // Find the selected company from the list
-      const selectedCompanyData = companies.find(
-        (company) => company.id === selectedOption.value
-      );
-      setProjects(
-        selectedCompanyData?.projects.map((prj) => ({
-          value: prj.id,
-          label: prj.name,
-        }))
-      );
-    }
-  };
-
-  //   console.log("selected company:",selectedCompany)
-  //   console.log("selected  prj...",projects)
-
-  // Handle project selection
-  const handleProjectChange = (selectedOption) => {
-    setSelectedProject(selectedOption);
-    setSelectedSite(null); // Reset site selection
-    // setSelectedWing(null); // Reset wing selection
-    setSiteOptions([]); // Reset site options
-    // setWingsOptions([]); // Reset wings options
-
-    if (selectedOption) {
-      // Find the selected project from the list of projects of the selected company
-      const selectedCompanyData = companies.find(
-        (company) => company.id === selectedCompany.value
-      );
-      const selectedProjectData = selectedCompanyData?.projects.find(
-        (project) => project.id === selectedOption.value
-      );
-
-      // Set site options based on selected project
-      setSiteOptions(
-        selectedProjectData?.pms_sites.map((site) => ({
-          value: site.id,
-          label: site.name,
-        })) || []
-      );
-    }
-  };
-
-  //   console.log("selected prj:",selectedProject)
-  //   console.log("selected sub prj...",siteOptions)
-
-  // Handle site selection
-  const handleSiteChange = (selectedOption) => {
-    setSelectedSite(selectedOption);
-  };
+  
 
   // Add New Row
 
@@ -397,6 +306,9 @@ const BillBookingCreate = () => {
   const [displayCompany, setDisplayCompany] = useState("");
   const [displayProject, setDisplayProject] = useState("");
   const [displaySite, setDisplaySite] = useState("");
+  const [displayCompanyId, setDisplayCompanyId] = useState(null);
+  const [displayProjectId, setDisplayProjectId] = useState(null);
+  const [displaySiteId, setDisplaySiteId] = useState(null);
   // ...existing code...
 
   useEffect(() => {
@@ -447,6 +359,9 @@ const BillBookingCreate = () => {
           setDisplayCompany(data.company_name || "");
           setDisplayProject(data.project_name || "");
           setDisplaySite(data.site_name || "");
+          setDisplayCompanyId(data.company_id || null);
+          setDisplayProjectId(data.project_id || null);
+          setDisplaySiteId(data.site_id || null);
 
           // Fetch PO GRN details using purchase_order.id
           if (data.purchase_order?.id) {
@@ -741,11 +656,10 @@ const BillBookingCreate = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-    setLoading(true);
     if (
-      !selectedCompany ||
-      !selectedProject ||
-      !selectedSite ||
+      // !selectedCompany ||
+      // !selectedProject ||
+      // !selectedSite ||
       !selectedPO ||
       selectedGRNs.length === 0 ||
       !formData.invoiceNumber || // Invoice Number mandatory
@@ -769,13 +683,17 @@ const BillBookingCreate = () => {
       alert("Invoice Amount should not be less than Payable Amount.");
       return;
     }
+    setLoading(true);
 
     try {
       const payload = {
         bill_booking: {
-          company_id: selectedCompany?.value || null,
-          site_id: selectedSite?.value || null,
-          project_id: selectedProject?.value || null,
+          // company_id: selectedCompany?.value || null,
+          // site_id: selectedSite?.value || null,
+          // project_id: selectedProject?.value || null,
+          company_id: displayCompanyId,
+          site_id: displaySiteId,
+          project_id: displayProjectId,
           pms_supplier_id: formData.pms_supplier_id || null,
           invoice_number: formData.invoiceNumber,
           einvoice: selectedEInvoice?.value === "yes",
@@ -800,7 +718,7 @@ const BillBookingCreate = () => {
           remark: formData.remark || "",
           status: "draft", // Changed to hardcoded "draft"
           po_type: "domestic",
-          payee_name: formData.payeeName,
+          payee_name: formData.pms_supplier_id || null,
           payment_mode: formData.paymentMode,
           payment_due_date: formData.paymentDueDate,
           created_by_id: 1,
@@ -830,7 +748,7 @@ const BillBookingCreate = () => {
       if (response.data) {
         alert("Bill booking created successfully!");
         setLoading(false);
-        navigate("/bill-booking-list"); // Redirect to bill-booking-list
+        // navigate("/bill-booking-list"); // Redirect to bill-booking-list
         // Reset form or redirect as needed
       }
     } catch (error) {
@@ -2623,9 +2541,9 @@ const BillBookingCreate = () => {
                   <button
                     className="purple-btn2 w-100"
                     onClick={handleSubmit}
-                    disabled={isSubmitting}
+                    // disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Submitting..." : "Submit"}
+                    Submit
                   </button>
                 </div>
                 <div className="col-md-2">
@@ -2715,7 +2633,7 @@ const BillBookingCreate = () => {
       {/*  */}
       <Modal
         centered
-        size="lg"
+        size="xl"
         show={attachThreeModal}
         onHide={closeAttachThreeModal}
         backdrop="static"

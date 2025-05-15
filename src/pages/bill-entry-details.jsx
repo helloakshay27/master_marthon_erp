@@ -4,12 +4,55 @@ import { auditLogColumns, auditLogData } from "../constant/data";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import SingleSelector from "../components/base/Select/SingleSelector";
+import { baseURL } from "../confi/apiDomain";
+import { useNavigate } from "react-router-dom";
 
 // Then use id in your API URL
 
 const BillEntryDetails = () => {
   const [billDetails, setBillDetails] = useState(null);
   const { id } = useParams();
+  const [status, setStatus] = useState(""); // A
+  const [loading, setLoading] = useState(false); // Add loading state
+  const navigate = useNavigate();
+
+  const statusOptions = [
+    {
+      label: "Select Status",
+      value: "",
+    },
+    {
+      label: "Open",
+      value: "open",
+    },
+    // {
+    //   label: "Verified",
+    //   value: "verified",
+    // },
+    // {
+    //   label: "All",
+    //   value: "all",
+    // },
+    {
+      label: "Submited",
+      value: "submited",
+    },
+    // {
+    //   label: "Proceed",
+    //   value: "proceed",
+    // },
+    // {
+    //   label: "Approved",
+    //   value: "approved",
+    // },
+  ];
+
+  const handleStatusChange = (selectedOption) => {
+    // setStatus(e.target.value);
+    setStatus(selectedOption.value);
+    // handleStatusChange(selectedOption); // Handle status change
+  };
 
   useEffect(() => {
     const fetchBillDetails = async () => {
@@ -25,6 +68,35 @@ const BillEntryDetails = () => {
     };
     fetchBillDetails();
   }, [id]);
+
+  const handleUpdateBillEntry = async () => {
+    try {
+      setLoading(true);
+      const payload = {
+        bill_entry: {
+          status: status || "",
+        },
+      };
+
+      const response = await axios.patch(
+        `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        payload
+      );
+
+      if (response.data) {
+        alert("Bill entry updated successfully");
+        // Make sure to import navigate from react-router-dom
+        navigate("/bill-entry-list");
+      } else {
+        throw new Error("No response data received");
+      }
+    } catch (error) {
+      console.error("Error updating bill entry:", error);
+      alert("Failed to update bill entry. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -131,51 +203,40 @@ const BillEntryDetails = () => {
                   </div>
                 </div>
               </div>
-              <div className="d-flex justify-content-end align-items-center gap-3 mt-2">
-                <p className="mb-0">Assigned To user</p>
-                <select
-                  className="form-select purple-btn2"
-                  style={{ width: "150px" }}
-                  // value={formData.status || "draft"}
-                  // onChange={(e) =>
-                  //   setFormData((prev) => ({
-                  //     ...prev,
-                  //     status: e.target.value,
-                  //   }))
-                  // }
-                >
-                  <option value="draft">Draft</option>
-                  <option value="verified">Verified</option>
-                  <option value="approved">Approved</option>
-                  <option value="submitted">Submitted</option>
-                  <option value="proceed">Proceed</option>
-                </select>
+              <div className="row mt-4 justify-content-end align-items-center mx-2">
+                <div className="col-md-3">
+                  <div className="form-group d-flex gap-3 align-items-center mx-3">
+                    <label style={{ fontSize: "0.95rem", color: "black" }}>
+                      Status
+                    </label>
+                    <SingleSelector
+                      options={statusOptions}
+                      onChange={handleStatusChange}
+                      value={statusOptions.find(
+                        (option) => option.value === status
+                      )} // Set "Draft" as the selected status
+                      placeholder="Select Status"
+                      // isClearable={false}
+                      // isDisabled={true} // Disable the selector
+                      classNamePrefix="react-select"
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="d-flex justify-content-end align-items-center">
-                <p className="mb-0">Status</p>
-                <select
-                  className="form-select purple-btn2"
-                  style={{ width: "150px" }}
-                  // value={formData.status || "draft"}
-                  // onChange={(e) =>
-                  //   setFormData((prev) => ({
-                  //     ...prev,
-                  //     status: e.target.value,
-                  //   }))
-                  // }
-                >
-                  {/* <select
-                  className="form-select"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                > */}
-                  <option value="draft">Draft</option>
-                  <option value="verified">Verified</option>
-                  <option value="approved">Approved</option>
-                  <option value="submitted">Submitted</option>
-                  <option value="proceed">Proceed</option>
-                </select>
+              <div className="row mt-2 justify-content-end">
+                <div className="col-md-2">
+                  <button
+                    className="purple-btn2 w-100"
+                    onClick={handleUpdateBillEntry}
+                  >
+                    Submit
+                  </button>
+                </div>
+                <div className="col-md-2">
+                  <button className="purple-btn1 w-100">Cancel</button>
+                </div>
               </div>
+
               <h5 className=" mt-3">Audit Log</h5>
               <div className="mx-0">
                 <Table columns={auditLogColumns} data={auditLogData} />

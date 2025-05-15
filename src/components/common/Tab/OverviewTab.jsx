@@ -150,24 +150,25 @@ export default function OverviewTab({
     const startTime = new Date(start);
     const endTime = end ? new Date(end) : null; // Handle undefined endTime
 
-    console.log("Start Time:", startTime);
-    console.log("End Time:", endTime);
-
     // Validate startTime and endTime
     if (isNaN(startTime.getTime()) || !endTime || isNaN(endTime.getTime())) {
-        return "Invalid duration: Invalid date format";
+      return "Invalid duration: Invalid date format";
     }
 
     // Check if endTime is earlier than startTime
     if (endTime < startTime) {
-        console.warn("End time is earlier than start time. Please check the data source.");
-        return "Invalid duration: End time is earlier than start time";
+      console.warn(
+        "End time is earlier than start time. Please check the data source."
+      );
+      return "Invalid duration: End time is earlier than start time";
     }
 
     const durationInMs = endTime - startTime;
 
     const days = Math.floor(durationInMs / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((durationInMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const hours = Math.floor(
+      (durationInMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+    );
     const minutes = Math.floor((durationInMs % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((durationInMs % (1000 * 60)) / 1000);
 
@@ -178,7 +179,7 @@ export default function OverviewTab({
     if (minutes > 0) parts.push(`${minutes}m`);
 
     return parts.length > 0 ? parts.join(" ") : "0s";
-};
+  };
 
   const startTime = overviewData?.event_schedule?.start_time;
 
@@ -263,6 +264,7 @@ export default function OverviewTab({
   };
 
   const columns = [
+    { label: "Sr No", key: "srNo" }, // Add serial number column
     { label: "Material Type ", key: "sectionName" },
     { label: "Sub Material Type ", key: "subSectionName" },
     { label: "Material Name", key: "inventoryName" },
@@ -542,7 +544,192 @@ export default function OverviewTab({
           {productOpen && (
             <div id="product-sheet" className="mx-5">
               <div className="card card-body p-4 rounded-3">
-                <Table columns={columns} data={overviewDatas} />
+                <Table
+                  columns={columns}
+                  data={overviewDatas}
+                  isAccordion={true}
+                  accordionRender={(overviewDatas) => {
+                    // console.log("overviewDatas", overviewDatas);
+                    // console.log(
+                    //   "overviewData",
+                    //   overviewData?.grouped_event_materials
+                    // );
+
+                    const matchedData = Object.values(
+                      overviewData?.grouped_event_materials
+                    ).flatMap((group) =>
+                      Object.values(group)
+                        .flat()
+                        .filter(
+                          (item) =>
+                            item.material_type === overviewDatas.sectionName &&
+                            item.inventory_name === overviewDatas.inventoryName
+                        )
+                    );
+                    console.log("matchedData:-",matchedData);
+                    
+
+                    const deliverySchedules = matchedData.flatMap(
+                      (item) => item.delivery_schedules || []
+                    );
+                    const morInventorySpecifications = matchedData.flatMap(
+                      (item) => item.mor_inventory_specifications || []
+                    );
+                    const attachmentsData = matchedData.flatMap((item) =>
+                      item.attachments 
+                    );
+                    return (
+                      attachmentsData.length > 0 || morInventorySpecifications.length > 0 || deliverySchedules.length > 0 ? 
+                      (<>
+                        <div
+                          style={{
+                            width: "75vw",
+                            marginLeft: "20px",
+                            position: "sticky",
+                            left: 0,
+                            zIndex: 1,
+                            backgroundColor: "white",
+                            padding: "40px",
+                            border: "1px solid #ddd",
+                          }}
+                          className="card card-body"
+                        >
+                          {/* <h5>Accordion Content for Row {rowIndex + 1}</h5>
+                                              <p>Details: {JSON.stringify(row)}</p> */}
+                          {deliverySchedules.length > 0 && (
+                            <div>
+                              <h5 className=" ">Delivery Schedules</h5>
+                              <table className="table table-bordered">
+                                <thead>
+                                  <tr>
+                                    <th style={{ textAlign: "center" }}>
+                                      Expected Date
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      Expected Quantity
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {deliverySchedules.map((schedule, index) => (
+                                    <tr key={index}>
+                                      <td>{schedule.expected_date}</td>
+                                      <td>{schedule.expected_quantity}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                          {morInventorySpecifications.length > 0 && (
+                            <div>
+                              <h5 className=" ">Dynamic Details</h5>
+                              <table className="table table-bordered">
+                                <thead>
+                                  <tr>
+                                    <th style={{ textAlign: "center" }}>
+                                      Field
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      Specification
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {morInventorySpecifications.map(
+                                    (spec, index) => (
+                                      <tr key={index}>
+                                        <td>{spec.field}</td>
+                                        <td>{spec.specification || "N/A"}</td>
+                                      </tr>
+                                    )
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                          {attachmentsData.length > 0 && (
+                            <div>
+                              <h5 className=" ">Attachments</h5>
+                              <table className="table table-bordered">
+                                <thead>
+                                  <tr>
+                                    <th style={{ textAlign: "center" }}>
+                                      Filename
+                                    </th>
+                                    <th style={{ textAlign: "center" }}>
+                                      Action
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {attachmentsData.map((attachment, index) => (
+                                    <tr key={index}>
+                                      <td>{attachment.filename}</td>
+                                      <td
+                                        style={{
+                                          display: "flex",
+                                          gap: "10px",
+                                          justifyContent: "center",
+                                          width: "100%",
+                                        }}
+                                      >
+                                        <a
+                                          href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                          download={attachment.filename}
+                                          className="purple-btn2"
+                                          style={{
+                                            width: "40px",
+                                            height: "40px",
+                                            padding: "0",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                          }}
+                                        >
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 16 16"
+                                            style={{ fill: "black" }}
+                                          >
+                                            <g fill="white">
+                                              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                                              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                                            </g>
+                                          </svg>
+                                        </a>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      </>) : (
+                        <div
+                                          style={{
+                                            width: "75vw",
+                                            marginLeft: "20px",
+                                            position: "sticky",
+                                            left: 0,
+                                            zIndex: 1,
+                                            backgroundColor: "white",
+                                            padding: "40px",
+                                            border: "1px solid #ddd",
+                                          }}
+                                          className="card card-body"
+                                        >
+                                          <p className="text-center">
+                                            No additional details available.
+                                          </p>
+                                        </div>
+                      )
+                    );
+                  }}
+                />
               </div>
             </div>
           )}
@@ -675,11 +862,15 @@ export default function OverviewTab({
               <div className="card card-body d-flex p-4">
                 <div className="d-flex">
                   <p>Event Title : </p>{" "}
-                  <p style={{marginLeft:'5px'}}>{`${overviewData.event_no}  ${overviewData.event_title}`}</p>
+                  <p
+                    style={{ marginLeft: "5px" }}
+                  >{`${overviewData.event_no}  ${overviewData.event_title}`}</p>
                 </div>
                 <div className="d-flex">
                   <p>Event Description :</p>{" "}
-                  <p style={{marginLeft:'5px'}}>{overviewData.event_description}</p>
+                  <p style={{ marginLeft: "5px" }}>
+                    {overviewData.event_description}
+                  </p>
                 </div>
               </div>
             </div>

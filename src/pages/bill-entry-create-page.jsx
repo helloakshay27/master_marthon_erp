@@ -569,7 +569,7 @@ const BillEntryListSubPage = () => {
         bill_date: formData.bill_date,
         bill_amount: parseFloat(formData.bill_amount),
         status: "open",
-        mode_of_submission:"Ofline",
+        mode_of_submission: "Offline",
         vendor_remark: formData.vendor_remark,
         documents: documents.map((doc) => ({
           document_type: doc.document_type,
@@ -921,7 +921,7 @@ const BillEntryListSubPage = () => {
                     <th>Document Name</th>
                     <th>Attachment Name</th>
                     <th>Upload Date</th>
-                    <th>Uploaded By</th>
+                    {/* <th>Uploaded By</th> */}
                     {/* <th>Action</th> */}
                   </tr>
                 </thead>
@@ -973,7 +973,7 @@ const BillEntryListSubPage = () => {
                       <td>{selectedDocument.document_type}</td>
                       <td>{attachment.filename}</td>
                       <td>{new Date().toLocaleDateString()}</td>
-                      <td>vendor user</td>
+                      {/* <td>vendor user</td> */}
                       {/* <td>
                         <button
                           className="border-0 bg-transparent"

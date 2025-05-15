@@ -143,6 +143,8 @@ const PoAdvanceNoteList = () => {
     proceed_count: 0,
   });
 
+  const [searchInput, setSearchInput] = useState("");
+
   // Fetch advance notes data with filters
   const fetchTableData = async (filters = {}) => {
     setLoading(true);
@@ -162,6 +164,13 @@ const PoAdvanceNoteList = () => {
 
       if (filters.status) {
         url += `&q[status_eq]=${filters.status}`;
+      }
+
+      if (filters.search && filters.search.trim() !== "") {
+        url += `&q[company_id_or_project_id_or_purchase_order_id_or_advance_number_or_certificate_number_or_invoice_date_or_advance_percentage_or_advance_amount_or_net_payable_or_payment_
+mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
+          filters.search.trim()
+        )}`;
       }
 
       const response = await axios.get(url);
@@ -225,6 +234,17 @@ const PoAdvanceNoteList = () => {
   const handleContentBoxClick = (status) => {
     setSelectedTab(status || "total"); // Update selected tab
     fetchTableData({ status });
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    fetchTableData({
+      companyId: selectedCompany?.value,
+      projectId: selectedProject?.value,
+      siteId: selectedSite?.value,
+      status: selectedTab !== "total" ? selectedTab : undefined,
+      search: searchInput,
+    });
   };
 
   // Map companies to options for the dropdown
@@ -625,38 +645,67 @@ const PoAdvanceNoteList = () => {
 
               <div className="row mt-2">
                 <div className="col-md-5 ms-3">
-                  <form>
-                    <div className="input-group">
-                      <input
-                        type="search"
-                        className="form-control tbl-search"
-                        placeholder="Type your keywords here"
-                      />
+                  <div className="input-group">
+                    <input
+                      type="search"
+                      className="form-control tbl-search"
+                      placeholder="Type your keywords here"
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                    />
+
+                    <div className="input-group-append">
+                      <button
+                        type="submit"
+                        className="btn btn-md btn-default"
+                        onClick={handleSearchSubmit}
+                      >
+                        <svg
+                          width={16}
+                          height={16}
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
+                            fill="#8B0203"
+                          />
+                          <path
+                            d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
+                            fill="#8B0203"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                    {searchInput && (
                       <div className="input-group-append">
                         <button
-                          type="submit"
+                          type="button"
                           className="btn btn-md btn-default"
+                          onClick={() => {
+                            setSearchInput("");
+                            fetchTableData(); // Reload data without search filter
+                          }}
                         >
                           <svg
-                            width={16}
-                            height={16}
-                            viewBox="0 0 16 16"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 14 14"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
                           >
                             <path
-                              d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
-                              fill="#8B0203"
-                            />
-                            <path
-                              d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
-                              fill="#8B0203"
+                              d="M13 1L1 13M1 1L13 13"
+                              stroke="#8B0203"
+                              strokeWidth="2"
+                              strokeLinecap="round"
                             />
                           </svg>
                         </button>
                       </div>
-                    </div>
-                  </form>
+                    )}
+                  </div>
                 </div>
               </div>
               {/* <div className="row mt-5 justify-content-center px-4">
