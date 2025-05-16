@@ -170,7 +170,7 @@ const BillVerificationList = () => {
     const siteId = selectedSite?.value || "";
     const search = searchKeyword || "";
     console.log("ids filter:", companyId, projectId, siteId)
-    const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[purchase_order_company_id_eq]=${companyId}&q[purchase_order_project_id_eq]=${projectId}&q[purchase_order_site_id_eq]=${siteId}`;
+    const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${companyId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${projectId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_cont]=${siteId}`;
 
     console.log("url:", url)
     axios
@@ -385,8 +385,7 @@ const BillVerificationList = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_ord
-er_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_cont]=${searchKeyword}`
+        `${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_cont]=${searchKeyword}`
         );
         setBillEntries(response.data.bill_entries);
         setMeta(response.data.meta);

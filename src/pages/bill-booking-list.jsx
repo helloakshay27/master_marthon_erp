@@ -73,7 +73,7 @@ const BillBookingList = () => {
   // const [selectedWing, setSelectedWing] = useState(null);
   const [siteOptions, setSiteOptions] = useState([]);
   // const [wingsOptions, setWingsOptions] = useState([]);
-  
+
 
   // Fetch company data on component mount
   useEffect(() => {
@@ -177,7 +177,7 @@ const BillBookingList = () => {
     const companyId = selectedCompany?.value || "";
     const projectId = selectedProject?.value || "";
     const siteId = selectedSite?.value || "";
-    const search = searchKeyword||"";
+    const search = searchKeyword || "";
     console.log("ids filter:", companyId, projectId, siteId)
     const url = `${baseURL}bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
 
@@ -240,7 +240,7 @@ const BillBookingList = () => {
       label: 'Approved',
       value: 'approved',
     },
-   
+
   ];
 
   const [fromStatus, setFromStatus] = useState("");
@@ -307,11 +307,11 @@ const BillBookingList = () => {
       });
   };
 
-   // Fetch the data when 'fromStatus' changes
-    useEffect(() => {
-      if (fromStatus) { // Only fetch data if a status is selected
-        setLoading(true); // Show loading state while fetching
-        axios
+  // Fetch the data when 'fromStatus' changes
+  useEffect(() => {
+    if (fromStatus) { // Only fetch data if a status is selected
+      setLoading(true); // Show loading state while fetching
+      axios
         .get(`${baseURL}bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[status_eq]=${fromStatus}`)
         .then((response) => {
           setBillData(response.data.bill_bookings); // Set fetched data
@@ -322,11 +322,11 @@ const BillBookingList = () => {
         .catch((error) => {
           console.error("Error resetting data:", error);
         })
-          .finally(() => {
-            setLoading(false); // Stop loading when request is complete
-          });
-      }
-    }, [fromStatus]);  // This will run every time 'fromStatus' changes
+        .finally(() => {
+          setLoading(false); // Stop loading when request is complete
+        });
+    }
+  }, [fromStatus]);  // This will run every time 'fromStatus' changes
 
 
 
@@ -348,45 +348,44 @@ const BillBookingList = () => {
 
   console.log("selected bill id array :", selectedBoqDetails)
 
-   //card filter
-    const fetchFilteredData2 = (status) => {
-      const url = `${baseURL}bill_bookings?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${
-        status ? `&q[status_eq]=${status}` : ""
+  //card filter
+  const fetchFilteredData2 = (status) => {
+    const url = `${baseURL}bill_bookings?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${status ? `&q[status_eq]=${status}` : ""
       }`;
-    
-      axios
-        .get(url)
-        .then((response) => {
-          setBillData(response.data.bill_bookings);
-          // setCreditNotes(response.data.credit_notes);
-          setTotalPages(response.data.meta.total_pages); // Set total pages
-          setTotalEntries(response.data.meta.total_count);
-          setMeta(response.data.meta);
-        })
-        .catch((error) => {
-          console.error("Error fetching filtered data:", error);
-        });
-    };
-  
-     const fetchSearchResults = async () => {
-              try {
-                // setLoading(true);
-                const response = await axios.get(
-                  `${baseURL}bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[invoice_number_or_einvoice_or_inventory_date_or_invoice_amount_or_other_deductions_or_total_value_or_status_or_total_amount_or_company_company_name_or_pms_site_name_or_project_name_or_supplier_first_name_or_supplier_last_name_or_bill_purchase_orders_purchase_order_po_number_eq]=${searchKeyword}`
-                );
-                setBillData(response.data.bill_bookings);
-                // setCreditNotes(response.data.credit_notes);
-                setMeta(response.data.meta);
-                setTotalPages(response.data.meta.total_pages);
-                setTotalEntries(response.data.meta.total_count);
-              } catch (err) {
-                setError("Failed to fetch search results");
-                console.error("Error fetching search results:", err);
-              } finally {
-                // setLoading(false);
-              }
-            };
-  
+
+    axios
+      .get(url)
+      .then((response) => {
+        setBillData(response.data.bill_bookings);
+        // setCreditNotes(response.data.credit_notes);
+        setTotalPages(response.data.meta.total_pages); // Set total pages
+        setTotalEntries(response.data.meta.total_count);
+        setMeta(response.data.meta);
+      })
+      .catch((error) => {
+        console.error("Error fetching filtered data:", error);
+      });
+  };
+
+  const fetchSearchResults = async () => {
+    try {
+      // setLoading(true);
+      const response = await axios.get(
+        `${baseURL}bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_or_project_id_or_site_id_or_pms_supplier_id_or_invoice_number_or_einvoice_or_inventory_date_or_invoice_amount_or_type_of_certificate_or_department_id_or_other_deductions_or_other_deduction_remarks_or_other_additions_or_other_addition_remarks_or_retention_per_or_retention_amount_or_total_value_or_status_or_payee_name_or_payment_mode_or_payment_due_date_or_created_by_id_or_created_at_or_updated_at_or_total_amount_or_payable_amount_or_remark_or_base_cost_or_all_inclusive_cost_or_other_deduction_or_po_type_cont]=${searchKeyword}`
+      );
+      setBillData(response.data.bill_bookings);
+      // setCreditNotes(response.data.credit_notes);
+      setMeta(response.data.meta);
+      setTotalPages(response.data.meta.total_pages);
+      setTotalEntries(response.data.meta.total_count);
+    } catch (err) {
+      setError("Failed to fetch search results");
+      console.error("Error fetching search results:", err);
+    } finally {
+      // setLoading(false);
+    }
+  };
+
 
   return (
     <>
@@ -403,8 +402,11 @@ const BillBookingList = () => {
                     data-tab="total"
                     className={`content-box tab-button ${activeTab === "total" ? "active" : ""}`}
                     onClick={() => {
-                      setActiveTab("total")
-                      fetchFilteredData2("")}}
+                      if (activeTab !== "total") {
+                        setActiveTab("total")
+                        fetchFilteredData2("")
+                      }
+                    }}
                   >
                     <h4 className="content-box-title fw-semibold">Bill List</h4>
                     <p className="content-box-sub">{meta?.total_count}</p>
@@ -412,13 +414,16 @@ const BillBookingList = () => {
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div 
-                  // className="content-box tab-button" 
-                  data-tab="draft"
-                  className={`content-box tab-button ${activeTab === "draft" ? "active" : ""}`}
-                  onClick={() => {
-                    setActiveTab("draft")
-                    fetchFilteredData2("draft")}}
+                  <div
+                    // className="content-box tab-button" 
+                    data-tab="draft"
+                    className={`content-box tab-button ${activeTab === "draft" ? "active" : ""}`}
+                    onClick={() => {
+                      if (activeTab !== "draft") {
+                        setActiveTab("draft")
+                        fetchFilteredData2("draft")
+                      }
+                    }}
                   >
                     <h4 className="content-box-title fw-semibold">
                       Draft
@@ -427,13 +432,14 @@ const BillBookingList = () => {
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div 
-                  // className="content-box tab-button" 
-                  data-tab="verified"
-                  className={`content-box tab-button ${activeTab === "verified" ? "active" : ""}`}
-                  onClick={() => {
-                    setActiveTab("verified")
-                    fetchFilteredData2("verified")}}
+                  <div
+                    // className="content-box tab-button" 
+                    data-tab="verified"
+                    className={`content-box tab-button ${activeTab === "verified" ? "active" : ""}`}
+                    onClick={() => {
+                      setActiveTab("verified")
+                      fetchFilteredData2("verified")
+                    }}
                   >
                     <h4 className="content-box-title fw-semibold">
                       Verified Bills
@@ -448,7 +454,8 @@ const BillBookingList = () => {
                     className={`content-box tab-button ${activeTab === "submitted" ? "active" : ""}`}
                     onClick={() => {
                       setActiveTab("submitted")
-                      fetchFilteredData2("submitted")}}
+                      fetchFilteredData2("submitted")
+                    }}
                   >
                     <h4 className="content-box-title fw-semibold">Submit</h4>
                     <p className="content-box-sub">{meta?.submited_count}</p>
@@ -461,7 +468,8 @@ const BillBookingList = () => {
                     className={`content-box tab-button ${activeTab === "approved" ? "active" : ""}`}
                     onClick={() => {
                       setActiveTab("approved")
-                      fetchFilteredData2("approved")}}
+                      fetchFilteredData2("approved")
+                    }}
                   >
                     <h4 className="content-box-title fw-semibold">Approved</h4>
                     <p className="content-box-sub">{meta?.approved_count}</p>
@@ -474,7 +482,8 @@ const BillBookingList = () => {
                     className={`content-box tab-button ${activeTab === "proceed" ? "active" : ""}`}
                     onClick={() => {
                       setActiveTab("proceed")
-                      fetchFilteredData2("")}}
+                      fetchFilteredData2("")
+                    }}
                   >
                     <h4 className="content-box-title fw-semibold">Proceed</h4>
                     <p className="content-box-sub">{meta?.proceed_count}</p>
@@ -491,7 +500,7 @@ const BillBookingList = () => {
                   <div className="col-md-3">
                     <div className="form-group">
                       <label>
-                        Company 
+                        Company
                       </label>
 
                       <SingleSelector
@@ -525,7 +534,7 @@ const BillBookingList = () => {
                   <div className="col-md-3">
                     <div className="form-group">
                       <label>
-                        Sub-Project 
+                        Sub-Project
                       </label>
                       {/* Pass static data as options */}
                       <SingleSelector
@@ -652,7 +661,7 @@ const BillBookingList = () => {
                       />
                       <div className="input-group-append">
                         <button type="button" className="btn btn-md btn-default"
-                         onClick={() => fetchSearchResults()} 
+                          onClick={() => fetchSearchResults()}
                         >
                           <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203" />
@@ -704,130 +713,130 @@ const BillBookingList = () => {
                   </div>
                 </div>
               </div>
-              
-                <div className="tbl-container mx-3 mt-3" style={{ width: "98%" }}>
-                  <table
-                    style={{
-                      width: "max-content",
-                      maxHeight: "max-content",
-                      height: "auto",
-                    }}
-                  >
-                    <thead>
-                      <tr>
-                        <th className="text-start">
-                          <input type="checkbox" />
-                        </th>
-                        <th className="text-start">Sr.No.</th>
-                        <th className="text-start">Bill No.</th>
-                        <th className="text-start">Mode of Submission</th>
-                        <th className="text-start">Company</th>
-                        <th className="text-start">Project</th>
-                        <th className="text-start">Sub Project</th>
-                        <th className="text-start">Vendor Name</th>
-                        <th className="text-start">UAM No.</th>
-                        <th className="text-start">PO No.</th>
-                        <th className="text-start">Created On</th>
-                        <th className="text-start">Accepted On</th>
-                        <th className="text-start">Bill Date</th>
-                        <th className="text-start">Bill Amount</th>
-                        <th className="text-start">Bill Copies</th>
-                        <th className="text-start">Due</th>
-                        <th className="text-start">Due Date</th>
-                        <th className="text-start">Certificate No.</th>
-                        <th className="text-start">Advance adjust amount</th>
-                        <th className="text-start">Payable Amount</th>
-                        <th className="text-start">Paid</th>
-                        <th className="text-start">Balance</th>
-                        <th className="text-start">Status</th>
-                        <th className="text-start">Overdue</th>
-                        <th className="text-start">Assign to</th>
-                        <th className="text-start">TAT</th>
-                      </tr>
-                    </thead>
-                    <tbody>
 
-                      {billData.length > 0 ? (
-                        billData.map((bill, index) => (
-                          <tr key={bill.id}>
-                            <td className="text-start">
-                              <input
-                                className="ms-1 me-1 mb-1"
-                                type="checkbox"
-                                checked={selectedBoqDetails.includes(bill.id)} // Check if this ID is selected
-                                onChange={() => handleCheckboxChange(bill.id)} // Handle checkbox change
-                              />
-                            </td>
-                            <td className="text-start">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                            <td className="text-start boq-id-link">
-                              <Link
-                                to={`/bill-booking-details/${bill.id}`}
-                                className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
-                                {bill.invoice_number}
-                              </Link>
-                            </td>
-                            <td className="text-start">{""}</td>
-                            <td className="text-start">{bill.company_name}</td>
-                            <td className="text-start">{bill.project_name}</td>
-                            <td className="text-start">{bill.site_name || ""}</td>
-                            <td className="text-start">{bill.pms_supplier || ""}</td>
-                            <td className="text-start">{""}</td>
-                            <td className="text-start">{bill.po_number || ""}</td>
-                            <td className="text-start">
-                              {bill.created_at ? new Date(bill.created_at).toLocaleDateString("en-GB", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                              }) : ""}
-                            </td>
-                            <td className="text-start">
-                              {/* {bill.accepted_on ? new Date(bill.accepted_on).toLocaleDateString() : ""} */}
-                            </td>
+              <div className="tbl-container mx-3 mt-3" style={{ width: "98%" }}>
+                <table
+                  style={{
+                    width: "max-content",
+                    maxHeight: "max-content",
+                    height: "auto",
+                  }}
+                >
+                  <thead>
+                    <tr>
+                      <th className="text-start">
+                        <input type="checkbox" />
+                      </th>
+                      <th className="text-start">Sr.No.</th>
+                      <th className="text-start">Bill No.</th>
+                      <th className="text-start">Mode of Submission</th>
+                      <th className="text-start">Company</th>
+                      <th className="text-start">Project</th>
+                      <th className="text-start">Sub Project</th>
+                      <th className="text-start">Vendor Name</th>
+                      <th className="text-start">UAM No.</th>
+                      <th className="text-start">PO No.</th>
+                      <th className="text-start">Created On</th>
+                      <th className="text-start">Accepted On</th>
+                      <th className="text-start">Bill Date</th>
+                      <th className="text-start">Bill Amount</th>
+                      <th className="text-start">Bill Copies</th>
+                      <th className="text-start">Due</th>
+                      <th className="text-start">Due Date</th>
+                      <th className="text-start">Certificate No.</th>
+                      <th className="text-start">Advance adjust amount</th>
+                      <th className="text-start">Payable Amount</th>
+                      <th className="text-start">Paid</th>
+                      <th className="text-start">Balance</th>
+                      <th className="text-start">Status</th>
+                      <th className="text-start">Overdue</th>
+                      <th className="text-start">Assign to</th>
+                      <th className="text-start">TAT</th>
+                    </tr>
+                  </thead>
+                  <tbody>
 
-                            <td className="text-start">
-                              {bill.inventory_date ? new Date(bill.inventory_date).toLocaleDateString(
-                                "en-GB", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                              }) : ""}
-                            </td>
-                            <td className="text-start">{bill.total_amount || ""}</td>
-                            <td className="text-start">{""}</td>
-                            <td className="text-start">{""}</td>
-                            <td className="text-start">
-                              {bill.payment_due_date ? new Date(bill.payment_due_date).toLocaleDateString(
-                                "en-GB", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                              }
-                              ) : ""}
-                            </td>
-                            <td className="text-start">{""}</td>
-                            <td className="text-start">{""}</td>
-                            <td className="text-start">{bill.payable_amount || ""}</td>
-                            <td className="text-start">{""}</td>
-                            <td className="text-start">{""}</td>
-                            <td className="text-start">{bill.status
-                              ? bill.status.charAt(0).toUpperCase() + bill.status.slice(1)
-                              : ""}</td>
-                            <td className="text-start">{""}</td>
-                            <td className="text-start">{""}</td>
-                            <td className="text-start">{""}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="28" className="text-center">
-                            No data available
+                    {billData.length > 0 ? (
+                      billData.map((bill, index) => (
+                        <tr key={bill.id}>
+                          <td className="text-start">
+                            <input
+                              className="ms-1 me-1 mb-1"
+                              type="checkbox"
+                              checked={selectedBoqDetails.includes(bill.id)} // Check if this ID is selected
+                              onChange={() => handleCheckboxChange(bill.id)} // Handle checkbox change
+                            />
                           </td>
+                          <td className="text-start">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                          <td className="text-start boq-id-link">
+                            <Link
+                              to={`/bill-booking-details/${bill.id}`}
+                              className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+                              {bill.invoice_number}
+                            </Link>
+                          </td>
+                          <td className="text-start">{""}</td>
+                          <td className="text-start">{bill.company_name}</td>
+                          <td className="text-start">{bill.project_name}</td>
+                          <td className="text-start">{bill.site_name || ""}</td>
+                          <td className="text-start">{bill.pms_supplier || ""}</td>
+                          <td className="text-start">{""}</td>
+                          <td className="text-start">{bill.po_number || ""}</td>
+                          <td className="text-start">
+                            {bill.created_at ? new Date(bill.created_at).toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            }) : ""}
+                          </td>
+                          <td className="text-start">
+                            {/* {bill.accepted_on ? new Date(bill.accepted_on).toLocaleDateString() : ""} */}
+                          </td>
+
+                          <td className="text-start">
+                            {bill.inventory_date ? new Date(bill.inventory_date).toLocaleDateString(
+                              "en-GB", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            }) : ""}
+                          </td>
+                          <td className="text-start">{bill.total_amount || ""}</td>
+                          <td className="text-start">{""}</td>
+                          <td className="text-start">{""}</td>
+                          <td className="text-start">
+                            {bill.payment_due_date ? new Date(bill.payment_due_date).toLocaleDateString(
+                              "en-GB", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            }
+                            ) : ""}
+                          </td>
+                          <td className="text-start">{""}</td>
+                          <td className="text-start">{""}</td>
+                          <td className="text-start">{bill.payable_amount || ""}</td>
+                          <td className="text-start">{""}</td>
+                          <td className="text-start">{""}</td>
+                          <td className="text-start">{bill.status
+                            ? bill.status.charAt(0).toUpperCase() + bill.status.slice(1)
+                            : ""}</td>
+                          <td className="text-start">{""}</td>
+                          <td className="text-start">{""}</td>
+                          <td className="text-start">{""}</td>
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-            
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="28" className="text-center">
+                          No data available
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
               <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                 <ul className="pagination justify-content-center d-flex">
                   <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
