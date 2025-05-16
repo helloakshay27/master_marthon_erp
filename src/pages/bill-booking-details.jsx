@@ -845,6 +845,32 @@ const BillBookingDetails = () => {
                 </div>
                 <div className="details_page">
                   <div className="row px-3">
+                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Base Cost</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {details?.base_cost}
+                        </label>
+                      </div>
+                    </div>
+                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>All Inclusive Cost</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {details?.all_inclusive_cost}
+                        </label>
+                      </div>
+                    </div>
                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Other Deduction</label>
