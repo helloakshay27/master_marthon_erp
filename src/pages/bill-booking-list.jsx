@@ -360,7 +360,7 @@ const BillBookingList = () => {
         // setCreditNotes(response.data.credit_notes);
         setTotalPages(response.data.meta.total_pages); // Set total pages
         setTotalEntries(response.data.meta.total_count);
-        setMeta(response.data.meta);
+        // setMeta(response.data.meta);
       })
       .catch((error) => {
         console.error("Error fetching filtered data:", error);
@@ -482,7 +482,7 @@ const BillBookingList = () => {
                     className={`content-box tab-button ${activeTab === "proceed" ? "active" : ""}`}
                     onClick={() => {
                       setActiveTab("proceed")
-                      fetchFilteredData2("")
+                      fetchFilteredData2("proceed")
                     }}
                   >
                     <h4 className="content-box-title fw-semibold">Proceed</h4>
