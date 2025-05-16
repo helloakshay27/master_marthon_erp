@@ -729,7 +729,7 @@ const BillBookingList = () => {
                       </th>
                       <th className="text-start">Sr.No.</th>
                       <th className="text-start">Bill No.</th>
-                      <th className="text-start">Mode of Submission</th>
+                      {/* <th className="text-start">Mode of Submission</th> */}
                       <th className="text-start">Company</th>
                       <th className="text-start">Project</th>
                       <th className="text-start">Sub Project</th>
@@ -775,7 +775,7 @@ const BillBookingList = () => {
                               {bill.invoice_number}
                             </Link>
                           </td>
-                          <td className="text-start">{""}</td>
+                          {/* <td className="text-start">{""}</td> */}
                           <td className="text-start">{bill.company_name}</td>
                           <td className="text-start">{bill.project_name}</td>
                           <td className="text-start">{bill.site_name || ""}</td>

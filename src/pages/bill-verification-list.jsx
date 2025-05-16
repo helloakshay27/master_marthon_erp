@@ -725,7 +725,7 @@ const BillVerificationList = () => {
                       </th>
                       <th className="text-start">Sr.No.</th>
                       {/* <th className="text-start">ID</th> */}
-                      <th className="text-start">Mode of Submission</th>
+                      {/* <th className="text-start">Mode of Submission</th> */}
                       <th className="text-start">Company</th>
                       <th className="text-start">Project</th>
                       <th className="text-start">Sub Project</th>
@@ -772,7 +772,7 @@ const BillVerificationList = () => {
                           </Link>
                         </td>
                         {/* <td className="text-start" /> */}
-                        <td className="text-start"></td>
+                        {/* <td className="text-start"></td> */}
                         <td className="text-start">{entry.company_name}</td>
                         <td className="text-start">{entry.project_name || ""}</td>
                         <td className="text-start">{entry.site_name || ""}</td>
