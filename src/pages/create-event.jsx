@@ -18,6 +18,8 @@ import "react-toastify/dist/ReactToastify.css";
 export default function CreateEvent() {
   const fileInputRef = useRef(null);
   const myRef = useRef(null); // Ensure this is defined at the top
+    const [searchTerm, setSearchTerm] = useState("");
+  const [filteredTableData, setFilteredTableData] = useState([]);
   const [eventTypeModal, setEventTypeModal] = useState(false);
   const [isService, setIsService] = useState(false);
   const [inviteModal, setInviteModal] = useState(false);
@@ -184,7 +186,7 @@ export default function CreateEvent() {
       return date;
     };
 
-    const startDateTime = formatDateTime(data.start_time);
+    const startDateTime = formatDateTime(adjustTimeZone(data.start_time));
     const endDateTime = formatDateTime(adjustTimeZone(data.end_time_duration));
 
     const scheduleText = `${startDateTime} to ${endDateTime}`;
@@ -679,8 +681,6 @@ export default function CreateEvent() {
     }
   };
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredTableData, setFilteredTableData] = useState([]);
 
   useEffect(() => {
     fetchData();

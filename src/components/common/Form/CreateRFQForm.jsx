@@ -1540,6 +1540,7 @@ export default function CreateRFQForm({
                     style={{ maxHeight: "100% !important" }}
                     columns={renderTableColumns()}
                     isMinWidth={true}
+                    isAccordion={eventId}
                     data={section?.sectionData?.filter((row) => !row._destroy)}
                     accordionRender={(row, rowIndex) => {
                       // console.log(groupedData,row);
@@ -1564,41 +1565,41 @@ export default function CreateRFQForm({
                         (item) => item.mor_inventory_specifications || []
                       );
                       const attachmentsData = matchedData.flatMap((item) =>
-  (item.attachments || []).filter(
-    (attachment) => !deletedBlobIds.includes(attachment.blob_id)
-  )
-);
+                        (item.attachments || []).filter(
+                          (attachment) =>
+                            !deletedBlobIds.includes(attachment.blob_id)
+                        )
+                      );
 
+                      const handleDeleteAttachment = (blobId, index) => {
+                        setDeletedBlobIds((prev) => [...prev, blobId]);
 
+                        const updatedSections = sections.map((section) => ({
+                          ...section,
+                          sectionData: section.sectionData.map((row) => {
+                            return {
+                              ...row,
+                              attachments:
+                                [{ id: blobId }] || row.attachment || null, // Or keep existing attachments unchanged
+                            };
+                          }),
+                        }));
 
-                     const handleDeleteAttachment = (blobId, index) => {
-                      setDeletedBlobIds((prev) => [...prev, blobId]);
+                        setSections(updatedSections);
 
-  const updatedSections = sections.map((section) => ({
-    ...section,
-    sectionData: section.sectionData.map((row) => {
-      return {
-        ...row,
-        attachments: [{ id: blobId }] || row.attachment || null // Or keep existing attachments unchanged
-      };
-    }),
-  }));
+                        const updatedData = updatedSections.flatMap((section) =>
+                          section.sectionData.map((row) => ({
+                            ...row,
+                            attachments: row.attachments || [],
+                          }))
+                        );
 
-  setSections(updatedSections);
+                        setData(updatedData);
+                      };
 
-  const updatedData = updatedSections.flatMap((section) =>
-    section.sectionData.map((row) => ({
-      ...row,
-      attachments: row.attachments || [],
-    }))
-  );
-
-  setData(updatedData);
-
-};
-
-
-                      return (
+                      return attachmentsData.length > 0 ||
+                        morInventorySpecifications.length > 0 ||
+                        deliverySchedules.length > 0 ? (
                         <div
                           style={{
                             width: "85vw",
@@ -1720,8 +1721,13 @@ export default function CreateRFQForm({
                                         </a>
                                         <button
                                           className="purple-btn2"
-                                            onClick={() => handleDeleteAttachment(attachment.blob_id, index)}
-  style={{ marginLeft: "10px" }}
+                                          onClick={() =>
+                                            handleDeleteAttachment(
+                                              attachment.blob_id,
+                                              index
+                                            )
+                                          }
+                                          style={{ marginLeft: "10px" }}
                                         >
                                           Delete
                                         </button>
@@ -1733,9 +1739,26 @@ export default function CreateRFQForm({
                             </div>
                           )}
                         </div>
+                      ) : (
+                        <div
+                          style={{
+                            width: "75vw",
+                            marginLeft: "20px",
+                            position: "sticky",
+                            left: 0,
+                            zIndex: 1,
+                            backgroundColor: "white",
+                            padding: "40px",
+                            border: "1px solid #ddd",
+                          }}
+                          className="card card-body"
+                        >
+                          <p className="text-center">
+                            No additional details available.
+                          </p>
+                        </div>
                       );
                     }}
-                    
                     customRender={{
                       srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
 
@@ -1970,7 +1993,6 @@ export default function CreateRFQForm({
                         />
                       ),
                     }}
-                    isAccordion={true}
                     onRowSelect={undefined}
                     handleCheckboxChange={undefined}
                     resetSelectedRows={undefined}
