@@ -42,6 +42,9 @@ const BillVerificationDetails = () => {
   const closeviewDocumentModal = () => setviewDocumentModal(false);
 
   const [status, setStatus] = useState(""); // Assuming boqDetails.status is initially available
+  const [editableBillNo, setEditableBillNo] = useState("");
+  const [editableBillDate, setEditableBillDate] = useState("");
+  const [editableBillAmount, setEditableBillAmount] = useState("");
 
   useEffect(() => {
     // Fetch data from the API
@@ -60,6 +63,14 @@ const BillVerificationDetails = () => {
         console.error("Error fetching bill details:", error);
       });
   }, [id]);
+
+  useEffect(() => {
+    if (billDetails) {
+      setEditableBillNo(billDetails.bill_no || "");
+      setEditableBillDate(billDetails.bill_date || "");
+      setEditableBillAmount(billDetails.bill_amount || "");
+    }
+  }, [billDetails]);
 
   const statusOptions = [
     {
@@ -213,6 +224,9 @@ const BillVerificationDetails = () => {
   const payload = {
     bill_entry: {
       status: status || "",
+      bill_no: editableBillNo,
+      bill_date: editableBillDate,
+      bill_amount: editableBillAmount,
       documents: documents.map((doc) => ({
         document_type: doc.document_type,
         attachments: doc.attachments.map((attachment) => ({
@@ -233,6 +247,9 @@ const BillVerificationDetails = () => {
       const payload = {
         bill_entry: {
           status: status || "",
+          bill_no: editableBillNo,
+          bill_date: editableBillDate,
+          bill_amount: editableBillAmount,
           documents: documents.map((doc) => ({
             document_type: doc.document_type,
             attachments: doc.attachments.map((attachment) => ({
@@ -253,7 +270,7 @@ const BillVerificationDetails = () => {
       if (response.data) {
         alert("Bill entry updated successfully");
         setLoading(false);
-        navigate("/bill-verification-list"); 
+        navigate("/bill-verification-list");
         // Reset form
       }
     } catch (error) {
@@ -264,35 +281,35 @@ const BillVerificationDetails = () => {
     }
   };
 
-const handleSubmitRemark = async () => {
-  try {
-    if (!remark.trim()) {
-      // alert("Please enter a remark before submitting.");
-      setShowValidation(true); 
-      return;
-    }
-
-    setLoading(true); // Show loader while submitting
-    const response = await axios.post(
-      `${baseURL}bill_entries/${id}/request_for_revision?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-      {
-        remarks: remark, // Send the remark in the request body
+  const handleSubmitRemark = async () => {
+    try {
+      if (!remark.trim()) {
+        // alert("Please enter a remark before submitting.");
+        setShowValidation(true);
+        return;
       }
-    );
 
-    if (response.status === 200) {
-      alert("Remark submitted successfully.");
-      setRemark(""); // Clear the remark input
-      closeremarkModal(); // Close the modal
-      setLoading(true);
+      setLoading(true); // Show loader while submitting
+      const response = await axios.post(
+        `${baseURL}bill_entries/${id}/request_for_revision?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        {
+          remarks: remark, // Send the remark in the request body
+        }
+      );
+
+      if (response.status === 200) {
+        alert("Remark submitted successfully.");
+        setRemark(""); // Clear the remark input
+        closeremarkModal(); // Close the modal
+        setLoading(true);
+      }
+    } catch (error) {
+      console.error("Error submitting remark:", error);
+      alert("Failed to submit remark. Please try again.");
+    } finally {
+      setLoading(false); // Hide loader after submission
     }
-  } catch (error) {
-    console.error("Error submitting remark:", error);
-    alert("Failed to submit remark. Please try again.");
-  } finally {
-    setLoading(false); // Hide loader after submission
-  }
-};
+  };
   return (
     <>
       <div className="website-content overflow-auto">
@@ -372,7 +389,7 @@ const handleSubmitRemark = async () => {
                         </label>
                       </div>
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                    {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Bill Number</label>
                       </div>
@@ -384,7 +401,7 @@ const handleSubmitRemark = async () => {
                           {billDetails?.bill_no || ""}
                         </label>
                       </div>
-                    </div>
+                    </div> */}
                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Acceptance Date</label>
@@ -397,7 +414,7 @@ const handleSubmitRemark = async () => {
                         </label>
                       </div>
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                    {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Bill Date</label>
                       </div>
@@ -409,7 +426,7 @@ const handleSubmitRemark = async () => {
                           {billDetails?.bill_date || ""}
                         </label>
                       </div>
-                    </div>
+                    </div> */}
                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Created On</label>
@@ -431,10 +448,11 @@ const handleSubmitRemark = async () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
+                          {billDetails?.mode_of_submission || ""}
                         </label>
                       </div>
                     </div>
-                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                    {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Bill Amount</label>
                       </div>
@@ -446,7 +464,7 @@ const handleSubmitRemark = async () => {
                           {billDetails?.bill_amount || ""}
                         </label>
                       </div>
-                    </div>
+                    </div> */}
                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Bill Due date</label>
@@ -475,6 +493,50 @@ const handleSubmitRemark = async () => {
                     </div>
                   </div>
                 </div>
+                <div className="row mt-4">
+                  <div className="col-md-12 mt-2">
+                    <div className="card p-3">
+                      <div className="row mb-3">
+                        <div className="col-md-4">
+                          <div className="form-group mb-0">
+                            <label>Bill Number</label>
+                            <input
+                              className="form-control"
+                              type="text"
+                              placeholder="Default input"
+                              value={editableBillNo}
+                              onChange={e => setEditableBillNo(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                        <div className="col-md-4">
+                          <div className="form-group mb-0">
+                            <label>Bill Date</label>
+                            <input
+                              className="form-control"
+                              type="date"
+                              placeholder="Default input"
+                              value={editableBillDate}
+                              onChange={e => setEditableBillDate(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                        <div className="col-md-4">
+                          <div className="form-group mb-0">
+                            <label>Bill Amount</label>
+                            <input
+                              className="form-control"
+                              type="text"
+                              placeholder="Default input"
+                              value={editableBillAmount}
+                              onChange={e => setEditableBillAmount(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 <div className="d-flex justify-content-between mt-5 ">
                   <h5 className=" ">Supporting Documents</h5>
@@ -494,8 +556,17 @@ const handleSubmitRemark = async () => {
                         data-bs-target="#RevisionModal"
                         onClick={openattachModal}
                       >
-                        {/* Attach Other */}
-                        Attach Document
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          fill="white"
+                          className="bi bi-plus"
+                          viewBox="0 0 16 16"
+                        >
+                          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                        </svg>
+                        <span> Attach Document</span>
                       </button>
                     </div>
                   </div>
@@ -507,7 +578,7 @@ const handleSubmitRemark = async () => {
                         <th className="text-start">Sr. No.</th>
                         <th className="text-start">Document Name</th>
                         <th className="text-start">No. of Documents</th>
-                        <th className="text-start">Action</th>
+                        <th className="text-start">Attach Copy</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -523,7 +594,7 @@ const handleSubmitRemark = async () => {
                             <td className="text-start">{index + 1}</td>
                             <td className="text-start">{doc.document_type}</td>
                             <td
-                              className="text-start"
+                              className="text-start boq-id-link"
                               style={{ cursor: "pointer" }}
                               onClick={() =>
                                 handleDocumentCountClick(doc.document_type)
@@ -533,12 +604,12 @@ const handleSubmitRemark = async () => {
                             </td>
                             <td className="text-start">
                               <button
-                                className="text-decoration-underline border-0 bg-transparent"
-                                style={{
-                                  color: "#8b0203",
-                                  textDecoration: "underline",
-                                  cursor: "pointer",
-                                }}
+                                className="purple-btn2"
+                                // style={{
+                                //   color: "#8b0203",
+                                //   textDecoration: "underline",
+                                //   cursor: "pointer",
+                                // }}
                                 onClick={() => {
                                   setNewDocument((prev) => ({
                                     ...prev,
@@ -547,7 +618,17 @@ const handleSubmitRemark = async () => {
                                   openattachModal();
                                 }}
                               >
-                                Attach Another Document
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="20"
+                                  height="20"
+                                  fill="white"
+                                  className="bi bi-plus"
+                                  viewBox="0 0 16 16"
+                                >
+                                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                </svg>
+                                <span>Attach</span>
                               </button>
                             </td>
                           </tr>
@@ -685,7 +766,7 @@ const handleSubmitRemark = async () => {
                             <td className="text-start">
                               {log.status
                                 ? log.status.charAt(0).toUpperCase() +
-                                  log.status.slice(1)
+                                log.status.slice(1)
                                 : ""}
                             </td>
                             <td className="text-start">{log.remarks || ""}</td>
@@ -823,29 +904,29 @@ const handleSubmitRemark = async () => {
                 value={remark} // Controlled input
                 onChange={(e) => setRemark(e.target.value)} // Update state
               />
-               {showValidation && !remark.trim() && (
-          <small className="text-danger">Remark is required.</small>
-        )}
+              {showValidation && !remark.trim() && (
+                <small className="text-danger">Remark is required.</small>
+              )}
             </div>
           </div>
           <div className="row mt-3 justify-content-center">
-      <div className="col-md-4">
-        <button
-          className="purple-btn2 w-100"
-          onClick={handleSubmitRemark} // Call the submit function
-        >
-          Submit
-        </button>
-      </div>
-      <div className="col-md-4">
-        <button
-          className="purple-btn1 w-100"
-          onClick={closeremarkModal}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
+            <div className="col-md-4">
+              <button
+                className="purple-btn2 w-100"
+                onClick={handleSubmitRemark} // Call the submit function
+              >
+                Submit
+              </button>
+            </div>
+            <div className="col-md-4">
+              <button
+                className="purple-btn1 w-100"
+                onClick={closeremarkModal}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </Modal.Body>
       </Modal>
       {/* remark modal */}

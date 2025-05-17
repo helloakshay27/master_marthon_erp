@@ -88,6 +88,7 @@ import CounterOffer from "./pages/counter-offer";
 import BillVerificationEdit from "./pages/bill-verification-edit";
 import BillEntryCreateVendorPage from "./pages/bill-entry-create-vendor";
 import BillEntryVendorList from "./pages/bill-entry-vendor-list";
+import TestTable from "./pages/testTable";
 
 function App() {
   return (
@@ -458,6 +459,11 @@ function App() {
           <Route
             path="/add-work-sub-category"
             element={<AddWorkSubCategory />}
+          />
+          {/* ... */}
+          <Route
+            path="/test-table"
+            element={<TestTable/>}
           />
         </Routes>
       </div>
