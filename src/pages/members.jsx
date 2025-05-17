@@ -419,9 +419,9 @@ function Members() {
                 <li>
                   <Link to="/credit-note-list">Credit Note List</Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link to="/test-table">Test Table</Link>
-                </li>
+                </li> */}
                 <h5>___Debit Note___</h5>
                 <li>
                   <Link to="/debit-note-create">Debit Note Create</Link>
