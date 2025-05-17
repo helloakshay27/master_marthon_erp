@@ -6,6 +6,7 @@ import ShortTable from "../../base/Table/ShortTable";
 import axios from "axios";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import { max, set } from "lodash";
+import DropdownCollapseIcon from "../Icon/DropdownCollapseIcon";
 
 export default function CreateRFQForm({
   data,
@@ -27,6 +28,10 @@ export default function CreateRFQForm({
       sectionId: Date.now(),
     },
   ]);
+  const [openSectionIndexes, setOpenSectionIndexes] = useState({});
+  const [openDeliveryRows, setOpenDeliveryRows] = useState({});
+  const [openDynamicRows, setOpenDynamicRows] = useState({});
+  const [openAttachmentsRows, setOpenAttachmentsRows] = useState({});
   const [deletedBlobIds, setDeletedBlobIds] = useState([]);
   const [attachmentsData, setAttachmentsData] = useState([]);
   const [sectionOptions, setSectionOptions] = useState([]);
@@ -86,6 +91,13 @@ export default function CreateRFQForm({
   const [selectedMor, setSelectedMor] = useState(""); // State for selected MOR
   const [morMaterialData, setMorMaterialData] = useState([]); // State for MOR material data
   const [isMorChecked, setIsMorChecked] = useState(false); // State for checkbox
+
+  const handleToggleSection = (sectionIndex) => {
+    setOpenSectionIndexes((prev) => ({
+      ...prev,
+      [sectionIndex]: !prev[sectionIndex],
+    }));
+  };
 
   const fetchMorOptions = async () => {
     try {
@@ -1476,549 +1488,737 @@ export default function CreateRFQForm({
             </div>
           ) : (
             sections.map((section, sectionIndex) => (
-              <div key={section.sectionId} className="card">
-                <div className="card-header3">
-                  <h3 className="card-title">Material (1 of 1)</h3>
+              <div key={section.sectionId} className="card pb-3" >
+                <div className="d-flex justify-content-between align-items-center">
+                  <div className="card-header3" style={{ width:'200px'}}>
+                  <h3 className="card-title">{`Material (${ sectionIndex + 1 } of ${sections.length})`}</h3>
                 </div>
-                <div className="p-4 mb-4">
-                  <div className="row mt-4">
-                    <div className="col-md-8 col-sm-12 d-flex gap-3">
-                      <div className="flex-grow-1">
-                        <SelectBox
-                          label={"Select Material Type"}
-                          options={sectionOptions}
-                          defaultValue={
-                            section?.sectionData?.some((row) => row?._destroy)
-                              ? "Select Material Type"
-                              : sectionOptions?.find(
-                                  (option) =>
-                                    option.label === section?.materialType
-                                )?.value || "Select Material Type"
-                          }
-                          onChange={(selected) =>
-                            handleSectionChange(selected, sectionIndex)
-                          }
-                        />
+                <button
+                    className="purple-btn2 d-flex align-items-center"
+                    style={{
+                      borderRadius: "50%",
+                      width: "32px",
+                      height: "32px",
+                      padding: "0",
+                      background: "transparent",
+                      border: "none",
+                    }}
+                    tabIndex={-1}
+                    type="button"
+                    onClick={() => handleToggleSection(sectionIndex)}
+                  >
+                    <DropdownCollapseIcon
+                      isCollapsed={!openSectionIndexes[sectionIndex]}
+                    />
+                  </button>
+                </div>
+                
+                {openSectionIndexes[sectionIndex] && (
+                  <div className="p-4 mb-4">
+                    <div className="row mt-4">
+                      <div className="col-md-8 col-sm-12 d-flex gap-3">
+                        <div className="flex-grow-1">
+                          <SelectBox
+                            label={"Select Material Type"}
+                            options={sectionOptions}
+                            defaultValue={
+                              section?.sectionData?.some((row) => row?._destroy)
+                                ? "Select Material Type"
+                                : sectionOptions?.find(
+                                    (option) =>
+                                      option.label === section?.materialType
+                                  )?.value || "Select Material Type"
+                            }
+                            onChange={(selected) =>
+                              handleSectionChange(selected, sectionIndex)
+                            }
+                          />
+                        </div>
+                        <div className="flex-grow-1">
+                          <SelectBox
+                            label={"Select Sub Material Type"}
+                            options={subSectionOptions}
+                            defaultValue={
+                              subSectionOptions?.find(
+                                (option) => option.value === subTypeId
+                              )?.value || ""
+                            }
+                            onChange={(selected) =>
+                              handleSubSectionChange(selected, sectionIndex)
+                            }
+                          />
+                        </div>
                       </div>
-                      <div className="flex-grow-1">
-                        <SelectBox
-                          label={"Select Sub Material Type"}
-                          options={subSectionOptions}
-                          defaultValue={
-                            subSectionOptions?.find(
-                              (option) => option.value === subTypeId
-                            )?.value || ""
-                          }
-                          onChange={(selected) =>
-                            handleSubSectionChange(selected, sectionIndex)
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-4 col-sm-12 d-flex gap-3 py-3 justify-content-end">
-                      <button
-                        className="purple-btn2"
-                        onClick={() => handleAddRow(sectionIndex)}
-                      >
-                        <span className="material-symbols-outlined align-text-top">
-                          add{" "}
-                        </span>
-                        <span>Add Row</span>
-                      </button>
-
-                      {sectionIndex > 0 && (
+                      <div className="col-md-4 col-sm-12 d-flex gap-3 py-3 justify-content-end">
                         <button
                           className="purple-btn2"
-                          onClick={() => handleRemoveSection(sectionIndex)}
+                          onClick={() => handleAddRow(sectionIndex)}
                         >
-                          Remove Section
+                          <span className="material-symbols-outlined align-text-top">
+                            add{" "}
+                          </span>
+                          <span>Add Row</span>
                         </button>
-                      )}
+
+                        {sectionIndex > 0 && (
+                          <button
+                            className="purple-btn2"
+                            onClick={() => handleRemoveSection(sectionIndex)}
+                          >
+                            Remove Section
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <Table
-                    style={{ maxHeight: "100% !important" }}
-                    columns={renderTableColumns()}
-                    isMinWidth={true}
-                    isAccordion={eventId}
-                    data={section?.sectionData?.filter((row) => !row._destroy)}
-                    accordionRender={(row, rowIndex) => {
-                      // console.log(groupedData,row);
+                    <Table
+                      style={{ maxHeight: "none" }}
+                      columns={renderTableColumns()}
+                      isMinWidth={true}
+                      isAccordion={eventId}
+                      data={section?.sectionData?.filter(
+                        (row) => !row._destroy
+                      )}
+                      accordionRender={(row, rowIndex) => {
+                        const matchedData = Object.values(existingData).flatMap(
+                          (group) =>
+                            Object.values(group)
+                              .flat()
+                              .filter(
+                                (item) =>
+                                  item.id === row.id &&
+                                  item.inventory_id === row.inventory_id
+                              )
+                        );
 
-                      const matchedData = Object.values(existingData).flatMap(
-                        (group) =>
-                          Object.values(group)
-                            .flat()
-                            .filter(
-                              (item) =>
-                                item.id === row.id &&
-                                item.inventory_id === row.inventory_id
-                            )
-                      );
-                      // console.log("matchedData", matchedData, row);
+                        const deliverySchedules = matchedData.flatMap(
+                          (item) => item.delivery_schedules || []
+                        );
+                        const morInventorySpecifications = matchedData.flatMap(
+                          (item) => item.mor_inventory_specifications || []
+                        );
+                        const attachmentsData = matchedData.flatMap((item) =>
+                          (item.attachments || []).filter(
+                            (attachment) =>
+                              !deletedBlobIds.includes(attachment.blob_id)
+                          )
+                        );
 
-                      // Extract delivery_schedules, mor_inventory_specifications, and attachments
-                      const deliverySchedules = matchedData.flatMap(
-                        (item) => item.delivery_schedules || []
-                      );
-                      const morInventorySpecifications = matchedData.flatMap(
-                        (item) => item.mor_inventory_specifications || []
-                      );
-                      const attachmentsData = matchedData.flatMap((item) =>
-                        (item.attachments || []).filter(
-                          (attachment) =>
-                            !deletedBlobIds.includes(attachment.blob_id)
-                        )
-                      );
+                        const rowKey = `${row.id}_${row.inventory_id}`;
 
-                      const handleDeleteAttachment = (blobId, index) => {
-                        setDeletedBlobIds((prev) => [...prev, blobId]);
+                        const handleToggle = (type) => {
+                          if (type === "delivery") {
+                            setOpenDeliveryRows((prev) => ({
+                              ...prev,
+                              [rowKey]: !prev[rowKey],
+                            }));
+                          } else if (type === "dynamic") {
+                            setOpenDynamicRows((prev) => ({
+                              ...prev,
+                              [rowKey]: !prev[rowKey],
+                            }));
+                          } else if (type === "attachments") {
+                            setOpenAttachmentsRows((prev) => ({
+                              ...prev,
+                              [rowKey]: !prev[rowKey],
+                            }));
+                          }
+                        };
 
-                        const updatedSections = sections.map((section) => ({
-                          ...section,
-                          sectionData: section.sectionData.map((row) => {
-                            return {
+                        const handleDeleteAttachment = (blobId, index) => {
+                          setDeletedBlobIds((prev) => [...prev, blobId]);
+                          const updatedSections = sections.map((section) => ({
+                            ...section,
+                            sectionData: section.sectionData.map((row) => ({
                               ...row,
                               attachments:
-                                [{ id: blobId }] || row.attachment || null, // Or keep existing attachments unchanged
-                            };
-                          }),
-                        }));
+                                [{ id: blobId }] || row.attachment || null,
+                            })),
+                          }));
+                          setSections(updatedSections);
+                          const updatedData = updatedSections.flatMap(
+                            (section) =>
+                              section.sectionData.map((row) => ({
+                                ...row,
+                                attachments: row.attachments || [],
+                              }))
+                          );
+                          setData(updatedData);
+                        };
 
-                        setSections(updatedSections);
-
-                        const updatedData = updatedSections.flatMap((section) =>
-                          section.sectionData.map((row) => ({
-                            ...row,
-                            attachments: row.attachments || [],
-                          }))
-                        );
-
-                        setData(updatedData);
-                      };
-
-                      return attachmentsData.length > 0 ||
-                        morInventorySpecifications.length > 0 ||
-                        deliverySchedules.length > 0 ? (
-                        <div
-                          style={{
-                            width: "85vw",
-                            marginLeft: "20px",
-                            position: "sticky",
-                            left: 0,
-                            zIndex: 1,
-                            backgroundColor: "white",
-                            padding: "40px",
-                            border: "1px solid #ddd",
-                          }}
-                          className="card card-body"
-                        >
-                          {/* <h5>Accordion Content for Row {rowIndex + 1}</h5>
-                          <p>Details: {JSON.stringify(row)}</p> */}
-                          {deliverySchedules.length > 0 && (
-                            <div>
-                              <h5 className=" ">Delivery Schedules</h5>
-                              <table className="table table-bordered">
-                                <thead>
-                                  <tr>
-                                    <th style={{ textAlign: "center" }}>
-                                      Expected Date
-                                    </th>
-                                    <th style={{ textAlign: "center" }}>
-                                      Expected Quantity
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {deliverySchedules.map((schedule, index) => (
-                                    <tr key={index}>
-                                      <td>{schedule.expected_date}</td>
-                                      <td>{schedule.expected_quantity}</td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
+                        if (
+                          attachmentsData.length === 0 &&
+                          morInventorySpecifications.length === 0 &&
+                          deliverySchedules.length === 0
+                        ) {
+                          return (
+                            <div
+                              style={{
+                                width: "75vw",
+                                marginLeft: "20px",
+                                position: "sticky",
+                                left: 0,
+                                zIndex: 1,
+                                backgroundColor: "white",
+                                padding: "40px",
+                                border: "1px solid #ddd",
+                              }}
+                              className="card card-body"
+                            >
+                              <p className="text-center">
+                                No additional details available.
+                              </p>
                             </div>
-                          )}
-                          {morInventorySpecifications.length > 0 && (
-                            <div>
-                              <h5 className=" ">Dynamic Details</h5>
-                              <table className="table table-bordered">
-                                <thead>
-                                  <tr>
-                                    <th style={{ textAlign: "center" }}>
-                                      Field
-                                    </th>
-                                    <th style={{ textAlign: "center" }}>
-                                      Specification
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {morInventorySpecifications.map(
-                                    (spec, index) => (
-                                      <tr key={index}>
-                                        <td>{spec.field}</td>
-                                        <td>{spec.specification || "N/A"}</td>
-                                      </tr>
-                                    )
-                                  )}
-                                </tbody>
-                              </table>
-                            </div>
-                          )}
-                          {attachmentsData.length > 0 && (
-                            <div>
-                              <h5 className=" ">Attachments</h5>
-                              <table className="table table-bordered">
-                                <thead>
-                                  <tr>
-                                    <th style={{ textAlign: "center" }}>
-                                      Filename
-                                    </th>
-                                    <th style={{ textAlign: "center" }}>
-                                      Action
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {attachmentsData.map((attachment, index) => (
-                                    <tr key={index}>
-                                      <td>{attachment.filename}</td>
-                                      <td
-                                        style={{
-                                          display: "flex",
-                                          gap: "10px",
-                                          justifyContent: "center",
-                                          width: "100%",
-                                        }}
-                                      >
-                                        <a
-                                          href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
-                                          download={attachment.filename}
-                                          className="purple-btn2"
-                                          style={{
-                                            width: "40px",
-                                            height: "40px",
-                                            padding: "0",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                          }}
-                                        >
-                                          <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="16"
-                                            height="16"
-                                            viewBox="0 0 16 16"
-                                            style={{ fill: "black" }}
-                                          >
-                                            <g fill="white">
-                                              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
-                                              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
-                                            </g>
-                                          </svg>
-                                        </a>
-                                        <button
-                                          className="purple-btn2"
-                                          onClick={() =>
-                                            handleDeleteAttachment(
-                                              attachment.blob_id,
-                                              index
-                                            )
-                                          }
-                                          style={{ marginLeft: "10px" }}
-                                        >
-                                          Delete
-                                        </button>
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div
-                          style={{
-                            width: "75vw",
-                            marginLeft: "20px",
-                            position: "sticky",
-                            left: 0,
-                            zIndex: 1,
-                            backgroundColor: "white",
-                            padding: "40px",
-                            border: "1px solid #ddd",
-                          }}
-                          className="card card-body"
-                        >
-                          <p className="text-center">
-                            No additional details available.
-                          </p>
-                        </div>
-                      );
-                    }}
-                    customRender={{
-                      srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
+                          );
+                        }
 
-                      descriptionOfItem: (cell, rowIndex) => {
                         return (
-                          <SelectBox
-                            options={materials} // Ensure materials is an array of objects with `label` and `value`
-                            onChange={(value) =>
-                              handleDescriptionOfItemChange(
-                                value,
-                                rowIndex,
-                                sectionIndex
-                              )
-                            }
-                            value={
-                              section?.sectionData[rowIndex]
-                                ?.descriptionOfItem || ""
-                            }
-                          />
+                          <div
+                            style={{
+                              width: "85vw",
+                              marginLeft: "20px",
+                              position: "sticky",
+                              left: 0,
+                              zIndex: 1,
+                              backgroundColor: "white",
+                              padding: "0",
+                            }}
+                          >
+                            {/* Delivery Schedules Accordion */}
+                            {deliverySchedules.length > 0 && (
+                              <div className="mb-3 card card-body p-0">
+                                <div
+                                  style={{
+                                    cursor: "pointer",
+                                    padding: "12px 20px",
+                                    background: "#f8f9fa",
+                                    borderBottom: "1px solid #eee",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                  }}
+                                  onClick={() => handleToggle("delivery")}
+                                >
+                                  <span
+                                    style={{
+                                      fontWeight: 600,
+                                      fontSize: "16px",
+                                    }}
+                                  >
+                                    Delivery Schedules
+                                  </span>
+                                  <button
+                                    className="purple-btn2 d-flex align-items-center"
+                                    style={{
+                                      borderRadius: "50%",
+                                      width: "32px",
+                                      height: "32px",
+                                      padding: "0",
+                                      background: "transparent",
+                                      border: "none",
+                                    }}
+                                    tabIndex={-1}
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleToggle("delivery");
+                                    }}
+                                  >
+                                    <DropdownCollapseIcon
+                                      isCollapsed={!openDeliveryRows[rowKey]}
+                                    />
+                                  </button>
+                                </div>
+                                {openDeliveryRows[rowKey] && (
+                                  <div style={{ padding: "24px" }}>
+                                    <table className="table table-bordered">
+                                      <thead>
+                                        <tr>
+                                          <th style={{ textAlign: "center" }}>
+                                            Expected Date
+                                          </th>
+                                          <th style={{ textAlign: "center" }}>
+                                            Expected Quantity
+                                          </th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {deliverySchedules.map(
+                                          (schedule, index) => (
+                                            <tr key={index}>
+                                              <td>{schedule.expected_date}</td>
+                                              <td>
+                                                {schedule.expected_quantity}
+                                              </td>
+                                            </tr>
+                                          )
+                                        )}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Dynamic Details Accordion */}
+                            {morInventorySpecifications.length > 0 && (
+                              <div className="mb-3 card card-body p-0">
+                                <div
+                                  style={{
+                                    cursor: "pointer",
+                                    padding: "12px 20px",
+                                    background: "#f8f9fa",
+                                    borderBottom: "1px solid #eee",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                  }}
+                                  onClick={() => handleToggle("dynamic")}
+                                >
+                                  <span
+                                    style={{
+                                      fontWeight: 600,
+                                      fontSize: "16px",
+                                    }}
+                                  >
+                                    Dynamic Details
+                                  </span>
+                                  <button
+                                    className="purple-btn2 d-flex align-items-center"
+                                    style={{
+                                      borderRadius: "50%",
+                                      width: "32px",
+                                      height: "32px",
+                                      padding: "0",
+                                      background: "transparent",
+                                      border: "none",
+                                    }}
+                                    tabIndex={-1}
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleToggle("dynamic");
+                                    }}
+                                  >
+                                    <DropdownCollapseIcon
+                                      isCollapsed={!openDynamicRows[rowKey]}
+                                    />
+                                  </button>
+                                </div>
+                                {openDynamicRows[rowKey] && (
+                                  <div style={{ padding: "24px" }}>
+                                    <table className="table table-bordered">
+                                      <thead>
+                                        <tr>
+                                          <th style={{ textAlign: "center" }}>
+                                            Field
+                                          </th>
+                                          <th style={{ textAlign: "center" }}>
+                                            Specification
+                                          </th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {morInventorySpecifications.map(
+                                          (spec, index) => (
+                                            <tr key={index}>
+                                              <td>{spec.field}</td>
+                                              <td>
+                                                {spec.specification || "N/A"}
+                                              </td>
+                                            </tr>
+                                          )
+                                        )}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Attachments Accordion */}
+                            {attachmentsData.length > 0 && (
+                              <div className="mb-3 card card-body p-0">
+                                <div
+                                  style={{
+                                    cursor: "pointer",
+                                    padding: "12px 20px",
+                                    background: "#f8f9fa",
+                                    borderBottom: "1px solid #eee",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                  }}
+                                  onClick={() => handleToggle("attachments")}
+                                >
+                                  <span
+                                    style={{
+                                      fontWeight: 600,
+                                      fontSize: "16px",
+                                    }}
+                                  >
+                                    Attachments
+                                  </span>
+                                  <button
+                                    className="purple-btn2 d-flex align-items-center"
+                                    style={{
+                                      borderRadius: "50%",
+                                      width: "32px",
+                                      height: "32px",
+                                      padding: "0",
+                                      background: "transparent",
+                                      border: "none",
+                                    }}
+                                    tabIndex={-1}
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleToggle("attachments");
+                                    }}
+                                  >
+                                    <DropdownCollapseIcon
+                                      isCollapsed={!openAttachmentsRows[rowKey]}
+                                    />
+                                  </button>
+                                </div>
+                                {openAttachmentsRows[rowKey] && (
+                                  <div style={{ padding: "24px" }}>
+                                    <table className="table table-bordered">
+                                      <thead>
+                                        <tr>
+                                          <th style={{ textAlign: "center" }}>
+                                            Filename
+                                          </th>
+                                          <th style={{ textAlign: "center" }}>
+                                            Action
+                                          </th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {attachmentsData.map(
+                                          (attachment, index) => (
+                                            <tr key={index}>
+                                              <td>{attachment.filename}</td>
+                                              <td
+                                                style={{
+                                                  display: "flex",
+                                                  gap: "10px",
+                                                  justifyContent: "center",
+                                                  width: "100%",
+                                                }}
+                                              >
+                                                <a
+                                                  href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                                  download={attachment.filename}
+                                                  className="purple-btn2"
+                                                  style={{
+                                                    width: "40px",
+                                                    height: "40px",
+                                                    padding: "0",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                  }}
+                                                >
+                                                  <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="16"
+                                                    height="16"
+                                                    viewBox="0 0 16 16"
+                                                    style={{ fill: "black" }}
+                                                  >
+                                                    <g fill="white">
+                                                      <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                                                      <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                                                    </g>
+                                                  </svg>
+                                                </a>
+                                                <button
+                                                  className="purple-btn2"
+                                                  onClick={() =>
+                                                    handleDeleteAttachment(
+                                                      attachment.blob_id,
+                                                      index
+                                                    )
+                                                  }
+                                                  style={{ marginLeft: "10px" }}
+                                                >
+                                                  Delete
+                                                </button>
+                                              </td>
+                                            </tr>
+                                          )
+                                        )}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         );
-                      },
-                      unit: (cell, rowIndex) => {
-                        return (
-                          <SelectBox
-                            options={uomOptions} // Ensure uomOptions is an array of objects with `label` and `value`
-                            onChange={(value) =>
-                              handleUnitChange(value, rowIndex, sectionIndex)
-                            }
-                            value={section?.sectionData[rowIndex]?.unit || ""}
-                          />
-                        );
-                      },
-                      location: (cell, rowIndex) => {
-                        return (
-                          <SelectBox
-                            options={locationOptions} // Ensure locationOptions is an array of objects with `label` and `value`
-                            onChange={(value) =>
-                              handleLocationChange(
-                                value,
-                                rowIndex,
-                                sectionIndex
-                              )
-                            }
-                            value={
-                              section?.sectionData[rowIndex]?.location || ""
-                            }
-                          />
-                        );
-                      },
-                      pms_brand_id: (cell, rowIndex) => {
-                        return (
-                          <SelectBox
-                            options={brandOptions} // Ensure brandOptions is an array of objects with `label` and `value`
-                            onChange={(value) =>
-                              handleInputChange(
-                                value,
-                                rowIndex,
-                                "pms_brand_id",
-                                sectionIndex
-                              )
-                            }
-                            value={
-                              section?.sectionData[rowIndex]?.pms_brand_id || "" // Use pms_brand_id from existing data
-                            }
-                          />
-                        );
-                      },
-                      type: (cell, rowIndex) => (
-                        <input
-                          className="form-control"
-                          type="text"
-                          value={cell}
-                          onChange={(e) =>
-                            handleInputChange(
-                              e.target.value,
-                              rowIndex,
-                              "type",
-                              sectionIndex
-                            )
-                          }
-                        />
-                      ),
-                      quantity: (cell, rowIndex) => (
-                        <input
-                          className="form-control"
-                          type="number"
-                          min="0"
-                          value={cell}
-                          inputMode="numeric"
-                          placeholder="Enter Quantity"
-                          onKeyDown={(e) => {
-                            if (
-                              e.key === "e" ||
-                              e.key === "E" ||
-                              e.key === "+" ||
-                              e.key === "-" ||
-                              e.key === "." ||
-                              e.key === "," ||
-                              e.key === " " // Add any other characters you want to restrict
-                            ) {
-                              e.preventDefault();
-                            }
-                          }}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, "");
-                            if (/^\d*$/.test(value)) {
+                      }}
+                      customRender={{
+                        srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
+
+                        descriptionOfItem: (cell, rowIndex) => {
+                          return (
+                            <SelectBox
+                              options={materials} // Ensure materials is an array of objects with `label` and `value`
+                              onChange={(value) =>
+                                handleDescriptionOfItemChange(
+                                  value,
+                                  rowIndex,
+                                  sectionIndex
+                                )
+                              }
+                              value={
+                                section?.sectionData[rowIndex]
+                                  ?.descriptionOfItem || ""
+                              }
+                            />
+                          );
+                        },
+                        unit: (cell, rowIndex) => {
+                          return (
+                            <SelectBox
+                              options={uomOptions} // Ensure uomOptions is an array of objects with `label` and `value`
+                              onChange={(value) =>
+                                handleUnitChange(value, rowIndex, sectionIndex)
+                              }
+                              value={section?.sectionData[rowIndex]?.unit || ""}
+                            />
+                          );
+                        },
+                        location: (cell, rowIndex) => {
+                          return (
+                            <SelectBox
+                              options={locationOptions} // Ensure locationOptions is an array of objects with `label` and `value`
+                              onChange={(value) =>
+                                handleLocationChange(
+                                  value,
+                                  rowIndex,
+                                  sectionIndex
+                                )
+                              }
+                              value={
+                                section?.sectionData[rowIndex]?.location || ""
+                              }
+                            />
+                          );
+                        },
+                        pms_brand_id: (cell, rowIndex) => {
+                          return (
+                            <SelectBox
+                              options={brandOptions} // Ensure brandOptions is an array of objects with `label` and `value`
+                              onChange={(value) =>
+                                handleInputChange(
+                                  value,
+                                  rowIndex,
+                                  "pms_brand_id",
+                                  sectionIndex
+                                )
+                              }
+                              value={
+                                section?.sectionData[rowIndex]?.pms_brand_id ||
+                                "" // Use pms_brand_id from existing data
+                              }
+                            />
+                          );
+                        },
+                        type: (cell, rowIndex) => (
+                          <input
+                            className="form-control"
+                            type="text"
+                            value={cell}
+                            onChange={(e) =>
                               handleInputChange(
                                 e.target.value,
                                 rowIndex,
-                                "quantity",
+                                "type",
+                                sectionIndex
+                              )
+                            }
+                          />
+                        ),
+                        quantity: (cell, rowIndex) => (
+                          <input
+                            className="form-control"
+                            type="number"
+                            min="0"
+                            value={cell}
+                            inputMode="numeric"
+                            placeholder="Enter Quantity"
+                            onKeyDown={(e) => {
+                              if (
+                                e.key === "e" ||
+                                e.key === "E" ||
+                                e.key === "+" ||
+                                e.key === "-" ||
+                                e.key === "." ||
+                                e.key === "," ||
+                                e.key === " " // Add any other characters you want to restrict
+                              ) {
+                                e.preventDefault();
+                              }
+                            }}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, "");
+                              if (/^\d*$/.test(value)) {
+                                handleInputChange(
+                                  e.target.value,
+                                  rowIndex,
+                                  "quantity",
+                                  sectionIndex
+                                );
+                              }
+                            }}
+                          />
+                        ),
+                        rate: (cell, rowIndex) => (
+                          <input
+                            className="form-control"
+                            type="number"
+                            min="0"
+                            value={cell}
+                            onKeyDown={(e) => {
+                              if (
+                                e.key === "e" ||
+                                e.key === "E" ||
+                                e.key === "+" ||
+                                e.key === "-" ||
+                                e.key === "." ||
+                                e.key === "," ||
+                                e.key === " " // Add any other characters you want to restrict
+                              ) {
+                                e.preventDefault();
+                              }
+                            }}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              // Allow only positive numbers
+                              if (/^\d*$/.test(value)) {
+                                handleInputChange(
+                                  value,
+                                  rowIndex,
+                                  "rate",
+                                  sectionIndex
+                                );
+                              }
+                            }}
+                            placeholder="Enter Rate"
+                          />
+                        ),
+                        amount: (cell, rowIndex) => (
+                          <input
+                            className="form-control"
+                            type="number"
+                            min="0"
+                            value={cell}
+                            onChange={(e) =>
+                              handleInputChange(
+                                e.target.value,
+                                rowIndex,
+                                "amount",
+                                sectionIndex
+                              )
+                            }
+                            placeholder="Enter Amount"
+                            disabled
+                          />
+                        ),
+                        actions: (_, rowIndex) => (
+                          <button
+                            className="btn btn-danger"
+                            onClick={() =>
+                              handleRemoveRow(rowIndex, sectionIndex)
+                            }
+                          >
+                            Remove
+                          </button>
+                        ),
+                        ...additionalFields.reduce((acc, field) => {
+                          acc[field.field_name] = (cell, rowIndex) =>
+                            renderAdminFields(field, rowIndex, sectionIndex);
+                          return acc;
+                        }, {}),
+                        ...Object.keys(
+                          sections[sectionIndex]?.sectionData[0] || {}
+                        ).reduce((acc, fieldName) => {
+                          if (
+                            !additionalFields.some(
+                              (field) => field.field_name === fieldName
+                            )
+                          ) {
+                            acc[fieldName] = (cell, rowIndex) =>
+                              renderGenericField(
+                                fieldName,
+                                rowIndex,
                                 sectionIndex
                               );
+                          }
+                          return acc;
+                        }, {}),
+                        pms_colour_id: (cell, rowIndex) => (
+                          <SelectBox
+                            options={pmsColours}
+                            defaultValue={
+                              section?.sectionData[rowIndex].pms_colour_id
                             }
-                          }}
-                        />
-                      ),
-                      rate: (cell, rowIndex) => (
-                        <input
-                          className="form-control"
-                          type="number"
-                          min="0"
-                          value={cell}
-                          onKeyDown={(e) => {
-                            if (
-                              e.key === "e" ||
-                              e.key === "E" ||
-                              e.key === "+" ||
-                              e.key === "-" ||
-                              e.key === "." ||
-                              e.key === "," ||
-                              e.key === " " // Add any other characters you want to restrict
-                            ) {
-                              e.preventDefault();
-                            }
-                          }}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            // Allow only positive numbers
-                            if (/^\d*$/.test(value)) {
+                            onChange={(value) =>
                               handleInputChange(
                                 value,
                                 rowIndex,
-                                "rate",
+                                "pms_colour_id",
                                 sectionIndex
-                              );
+                              )
                             }
-                          }}
-                          placeholder="Enter Rate"
-                        />
-                      ),
-                      amount: (cell, rowIndex) => (
-                        <input
-                          className="form-control"
-                          type="number"
-                          min="0"
-                          value={cell}
-                          onChange={(e) =>
-                            handleInputChange(
-                              e.target.value,
-                              rowIndex,
-                              "amount",
-                              sectionIndex
-                            )
-                          }
-                          placeholder="Enter Amount"
-                          disabled
-                        />
-                      ),
-                      actions: (_, rowIndex) => (
-                        <button
-                          className="btn btn-danger"
-                          onClick={() =>
-                            handleRemoveRow(rowIndex, sectionIndex)
-                          }
-                        >
-                          Remove
-                        </button>
-                      ),
-                      ...additionalFields.reduce((acc, field) => {
-                        acc[field.field_name] = (cell, rowIndex) =>
-                          renderAdminFields(field, rowIndex, sectionIndex);
-                        return acc;
-                      }, {}),
-                      ...Object.keys(
-                        sections[sectionIndex]?.sectionData[0] || {}
-                      ).reduce((acc, fieldName) => {
-                        if (
-                          !additionalFields.some(
-                            (field) => field.field_name === fieldName
-                          )
-                        ) {
-                          acc[fieldName] = (cell, rowIndex) =>
-                            renderGenericField(
-                              fieldName,
-                              rowIndex,
-                              sectionIndex
-                            );
-                        }
-                        return acc;
-                      }, {}),
-                      pms_colour_id: (cell, rowIndex) => (
-                        <SelectBox
-                          options={pmsColours}
-                          defaultValue={
-                            section?.sectionData[rowIndex].pms_colour_id
-                          }
-                          onChange={(value) =>
-                            handleInputChange(
-                              value,
-                              rowIndex,
-                              "pms_colour_id",
-                              sectionIndex
-                            )
-                          }
-                        />
-                      ),
-                      generic_info_id: (cell, rowIndex) => (
-                        <SelectBox
-                          options={genericInfoOptions}
-                          defaultValue={
-                            section?.sectionData[rowIndex]?.generic_info_id ||
-                            ""
-                          }
-                          onChange={(value) =>
-                            handleInputChange(
-                              value,
-                              rowIndex,
-                              "generic_info_id",
-                              sectionIndex
-                            )
-                          }
-                        />
-                      ),
-                    }}
-                    onRowSelect={undefined}
-                    handleCheckboxChange={undefined}
-                    resetSelectedRows={undefined}
-                    onResetComplete={undefined}
-                  />
-
-                  <div className="d-flex justify-content-end">
-                    <ShortTable
-                      data={
-                        Array.isArray(bidTemplateFields)
-                          ? bidTemplateFields
-                          : []
-                      }
-                      editable={true}
-                      onValueChange={handleShortTableChange}
-                      onInputClick={handleEditShortTableRow}
-                      onDeleteClick={(index) => {
-                        const updatedFields = bidTemplateFields.filter(
-                          (_, i) => i !== index
-                        );
-                        setBidTemplateFields(updatedFields);
-                        updateBidTemplateFields(updatedFields);
+                          />
+                        ),
+                        generic_info_id: (cell, rowIndex) => (
+                          <SelectBox
+                            options={genericInfoOptions}
+                            defaultValue={
+                              section?.sectionData[rowIndex]?.generic_info_id ||
+                              ""
+                            }
+                            onChange={(value) =>
+                              handleInputChange(
+                                value,
+                                rowIndex,
+                                "generic_info_id",
+                                sectionIndex
+                              )
+                            }
+                          />
+                        ),
                       }}
+                      onRowSelect={undefined}
+                      handleCheckboxChange={undefined}
+                      resetSelectedRows={undefined}
+                      onResetComplete={undefined}
                     />
+
+                    <div className="d-flex justify-content-end">
+                      <ShortTable
+                        data={
+                          Array.isArray(bidTemplateFields)
+                            ? bidTemplateFields
+                            : []
+                        }
+                        editable={true}
+                        onValueChange={handleShortTableChange}
+                        onInputClick={handleEditShortTableRow}
+                        onDeleteClick={(index) => {
+                          const updatedFields = bidTemplateFields.filter(
+                            (_, i) => i !== index
+                          );
+                          setBidTemplateFields(updatedFields);
+                          updateBidTemplateFields(updatedFields);
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             ))
           )}

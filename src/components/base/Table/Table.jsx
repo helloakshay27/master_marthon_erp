@@ -360,7 +360,6 @@ export default function Table({
     <div
       className="tbl-container px-0 mt-3"
       {...rest}
-      style={{ maxHeight: "300px" }}
     >
       <table className="w-100">
         <thead>

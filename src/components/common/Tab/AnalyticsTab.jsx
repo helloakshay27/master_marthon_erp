@@ -117,8 +117,7 @@ export default function AnalyticsTab({ eventId }) {
       </div>
 
       {/* Quotes and Timing Section */}
-      <div className="d-flex justify-content-between mb-4">
-        {/* Quote Section */}
+      {/* <div className="d-flex justify-content-between mb-4">
         <div className="quote d-flex justify-content-between flex-grow-1">
           <div>
             <label className="d-block fw-semibold">Initial Quote</label>
@@ -134,7 +133,6 @@ export default function AnalyticsTab({ eventId }) {
           </div>
         </div>
 
-        {/* Time Section */}
         <div className="time ms-4 flex-grow-1">
           <div>
             <label className="d-block fw-semibold">Start Time</label>
@@ -145,7 +143,7 @@ export default function AnalyticsTab({ eventId }) {
             <p className="text-muted">03:35 PM Apr 06, 24</p>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Chart Container */}
       <div id="container" className="mt-4 card p-4 pt-5 h-100 rounded-3">
