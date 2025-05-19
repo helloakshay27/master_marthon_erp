@@ -12,6 +12,9 @@ import DataTable from "datatables.net-react";
 import DT from "datatables.net-dt";
 DataTable.use(DT);
 import { DataGrid } from "@mui/x-data-grid";
+import { Popper } from "@mui/material";
+import { createPortal } from "react-dom";
+import Tooltip from "../components/common/Tooltip/Tooltip";
 
 import {
   LayoutModal,
@@ -112,14 +115,116 @@ export default function adminList() {
       headerName: "Sr.No.",
       width: 80,
     },
-    { field: "event_title", headerName: "Mor no", width: 180,
-      renderCell: (params) => {
-        return(
-        params.row.event_title ? params.row.event_title : "-"
-      )}
-     }, // Uncomment if needed
+    {
+  field: "event_title",
+  headerName: "Mor no",
+  width: 180,
+  renderCell: (params) => {
+    const mors = params.row.mors || [];
+    const morNos =
+      mors.length > 0
+        ? mors.map((mor) => mor.mor_no || "-").join(", ")
+        : "No MORs";
+
+    return (
+      <div
+        className="tooltip-container"
+        style={{ position: "relative", display: "flex", alignItems: "center", gap: "4px" }}
+      >
+        <span>{params.row.event_title || "-"}</span>
+        <div style={{ position: "relative", display: "inline-block" }}>
+          {/* Info icon */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            fill="currentColor"
+            viewBox="0 0 16 16"
+            style={{ color: "#d10000", cursor: "pointer" }}
+          >
+            <path d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16z" />
+            <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .877-.252 1.02-.797l.088-.416c.066-.308.118-.438.288-.469l.45-.083.082-.38-2.29-.287zm-1.812-2.29c-.282 0-.506.224-.506.5s.224.5.506.5.506-.224.506-.5-.224-.5-.506-.5z" />
+          </svg>
+
+          {/* Tooltip box */}
+          <div
+            className="tooltip-content"
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "calc(100% + 68px)",
+              transform: "translateY(-50%)",
+              background: "linear-gradient(to bottom, white, #f0f0f0)",
+              color: "#000",
+              fontSize: "11px",
+              borderRadius: "8px",
+              border: "1px solid #f3f3f3",
+              borderBottom: "4px solid #8b0203",
+              whiteSpace: "normal",
+              zIndex: 1000,
+              boxShadow: "0 3px 6px rgba(0, 0, 0, 0.1)",
+              opacity: 1,
+              visibility: "hidden",
+              transition: "opacity 0.2s ease",
+              minWidth: "max-content",
+              padding: "0",
+              overflow: "hidden",
+              display: "flex",
+              alignItems: "center",
+              height: "auto",
+            }}
+          >
+            {/* Arrow */}
+            <div
+              style={{
+                position: "absolute",
+                left: "-8px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: 0,
+                height: 0,
+                borderTop: "7px solid transparent",
+                borderBottom: "7px solid transparent",
+                borderRight: "8px solid #f0f0f0",
+                zIndex: 1001,
+              }}
+            />
+            <span
+              style={{
+                padding: "0px 10px",
+                margin: 0,
+                height: "40px",
+                display: "block",
+                width: "100%",
+                textAlign: "left",
+                wordBreak: "break-word",
+                whiteSpace: "pre-line",
+              }}
+            >
+              {morNos}vjhbjknhnjknjk
+            </span>
+          </div>
+        </div>
+
+        {/* Hover handler */}
+        <style>{`
+          .tooltip-container:hover .tooltip-content {
+            opacity: 1 !important;
+            visibility: visible !important;
+          }
+        `}</style>
+      </div>
+    );
+  },
+}
+,
     { field: "event_no", headerName: "Event No", width: 120 },
-    { field: "bid_placed", headerName: "Bid Placed", width: 110, renderCell: (params) => (params.value ? "Yes" : "No") },
+    {
+      field: "bid_placed",
+      headerName: "Bid Placed",
+      width: 110,
+      renderCell: (params) => (params.value ? "Yes" : "No"),
+    },
     {
       field: "start_time",
       headerName: "Start Time",
@@ -147,9 +252,18 @@ export default function adminList() {
       headerName: "Created At",
       width: 140,
       renderCell: (params) =>
-        params.row.created_at ? <FormatDate timestamp={params.row.created_at} /> : "-",
+        params.row.created_at ? (
+          <FormatDate timestamp={params.row.created_at} />
+        ) : (
+          "-"
+        ),
     },
-    { field: "created_by", headerName: "Created By", width: 120, renderCell: (params) => params.value || "-" },
+    {
+      field: "created_by",
+      headerName: "Created By",
+      width: 120,
+      renderCell: (params) => params.value || "-",
+    },
     {
       field: "event_type",
       headerName: "Event Type",
@@ -171,7 +285,10 @@ export default function adminList() {
       headerName: "Status",
       width: 110,
       renderCell: (params) =>
-        params.row.status ? params.row.status.charAt(0).toUpperCase() + params.row.status.slice(1) : "-",
+        params.row.status
+          ? params.row.status.charAt(0).toUpperCase() +
+            params.row.status.slice(1)
+          : "-",
     },
     {
       field: "action",
@@ -182,7 +299,9 @@ export default function adminList() {
       renderCell: (params) => (
         <button
           className="btn"
-          onClick={() => navigate(`/erp-rfq-detail-price-trends4h/${params.row.id}`)}
+          onClick={() =>
+            navigate(`/erp-rfq-detail-price-trends4h/${params.row.id}`)
+          }
           title="View"
         >
           <svg
@@ -231,11 +350,16 @@ export default function adminList() {
   ];
 
   console.log("Events to Display:", eventsToDisplay);
-  
 
   const dataGridRows = eventsToDisplay.map((event, index) => ({
     id: event.id,
-    srNo: (Number.isInteger(pagination?.current_page) ? pagination.current_page - 1 : 0) * pageSize + index + 1,
+    srNo:
+      (Number.isInteger(pagination?.current_page)
+        ? pagination.current_page - 1
+        : 0) *
+        pageSize +
+      index +
+      1,
     event_no: event.event_no,
     bid_placed: event.bid_placed,
     event_schedule: event.event_schedule,
@@ -366,22 +490,18 @@ export default function adminList() {
     fetchFilterOptions();
   }, []);
 
-
   const fetchEventCounts = async () => {
     setLoading(true); // Start loader
     try {
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
 
-      const response = await axios.get(
-        `${baseURL}rfq/events/event_counts`,
-        {
-          params: {
-            page: 1,
-            token: token,
-          },
-        }
-      );
+      const response = await axios.get(`${baseURL}rfq/events/event_counts`, {
+        params: {
+          page: 1,
+          token: token,
+        },
+      });
 
       // Assuming the response contains counts for all, live, and history events
       setCounts(
@@ -837,8 +957,8 @@ export default function adminList() {
                               value={
                                 filters.title_in
                                   ? filterOptions.event_titles.find(
-                                    (opt) => opt.value === filters.title_in
-                                  )
+                                      (opt) => opt.value === filters.title_in
+                                    )
                                   : null
                               }
                               placeholder="Select title"
@@ -870,9 +990,9 @@ export default function adminList() {
                               value={
                                 filters.event_no_cont
                                   ? filterOptions.event_numbers.find(
-                                    (opt) =>
-                                      opt.value === filters.event_no_cont
-                                  )
+                                      (opt) =>
+                                        opt.value === filters.event_no_cont
+                                    )
                                   : null
                               }
                               placeholder="Select No"
@@ -902,8 +1022,8 @@ export default function adminList() {
                               value={
                                 filters.status_in
                                   ? filterOptions.statuses.find(
-                                    (opt) => opt.value === filters.status_in
-                                  )
+                                      (opt) => opt.value === filters.status_in
+                                    )
                                   : null
                               }
                               placeholder="Select Status"
@@ -936,9 +1056,9 @@ export default function adminList() {
                               value={
                                 filters.created_by_id_in
                                   ? filterOptions.creaters.find(
-                                    (opt) =>
-                                      opt.value === filters.created_by_id_in
-                                  )
+                                      (opt) =>
+                                        opt.value === filters.created_by_id_in
+                                    )
                                   : null
                               }
                               placeholder="Select Creator"
@@ -974,11 +1094,11 @@ export default function adminList() {
                               value={
                                 filters.event_type_detail_event_type_eq
                                   ? {
-                                    value:
-                                      filters.event_type_detail_event_type_eq,
-                                    label:
-                                      filters.event_type_detail_event_type_eq,
-                                  }
+                                      value:
+                                        filters.event_type_detail_event_type_eq,
+                                      label:
+                                        filters.event_type_detail_event_type_eq,
+                                    }
                                   : null
                               }
                               placeholder="Select Type"
@@ -1115,50 +1235,68 @@ export default function adminList() {
                         </div>
                       </div>
                     </div>
-                    <div className="tbl-container mt-3 px-3" style={{maxHeight:'none'}}>
-                       <DataGrid
-  rows={getTransformedRows()}
-  columns={dataGridColumns}
-  pageSize={pageSize}
-  rowCount={Number.isInteger(pagination?.total_count) ? pagination.total_count : 0}
-  paginationMode="server"
-  page={Number.isInteger(pagination?.current_page) && pagination.current_page > 0 ? pagination.current_page - 1 : 0}
-  onPageChange={(params) => handlePageChange(params + 1)}
-  loading={loading}
-  disableSelectionOnClick
-  getRowId={(row) => row.id}
-  sx={{
-    "& .MuiDataGrid-columnHeaders": {
-      backgroundColor: "#f8f9fa",
-      color: "#000",
-      fontWeight: "bold",
-      position: "sticky",
-      top: 0,
-      zIndex: 1,
-    },
-    "& .MuiDataGrid-cell": {
-      borderColor: "#dee2e6",
-    },
-    "& .MuiDataGrid-columnHeader": {
-      borderColor: "#dee2e6",
-    },
-  }}
-  components={{
-    ColumnMenu: () => null,
-    NoRowsOverlay: () => (
-      <div style={{ padding: "2rem", textAlign: "center" }}>
-        No events found.
-      </div>
-    ),
-  }}
-/>
+                    <div
+                      className="tbl-container mt-3 px-3"
+                      style={{ maxHeight: "none" }}
+                    >
+                      <DataGrid
+                        rows={getTransformedRows()}
+                        columns={dataGridColumns}
+                        pageSize={pageSize}
+                        rowCount={
+                          Number.isInteger(pagination?.total_count)
+                            ? pagination.total_count
+                            : 0
+                        }
+                        paginationMode="server"
+                        page={
+                          Number.isInteger(pagination?.current_page) &&
+                          pagination.current_page > 0
+                            ? pagination.current_page - 1
+                            : 0
+                        }
+                        onPageChange={(params) => handlePageChange(params + 1)}
+                        loading={loading}
+                        disableSelectionOnClick
+                        getRowId={(row) => row.id}
+                        sx={{
+                          "& .MuiDataGrid-columnHeaders": {
+                            backgroundColor: "#f8f9fa",
+                            color: "#000",
+                            fontWeight: "bold",
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 1,
+                          },
+                          "& .MuiDataGrid-cell": {
+                            borderColor: "#dee2e6",
+                          },
+                          "& .MuiDataGrid-columnHeader": {
+                            borderColor: "#dee2e6",
+                          },
+                        }}
+                        components={{
+                          ColumnMenu: () => null,
+                          NoRowsOverlay: () => (
+                            <div
+                              style={{ padding: "2rem", textAlign: "center" }}
+                            >
+                              No events found.
+                            </div>
+                          ),
+                        }}
+                      />
                     </div>
                     <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                       <ul className="pagination justify-content-center d-flex">
                         {/* First Button */}
                         <li
-                          className={`page-item ${Number.isInteger(pagination?.current_page) && pagination.current_page === 1 ? "disabled" : ""
-                            }`}
+                          className={`page-item ${
+                            Number.isInteger(pagination?.current_page) &&
+                            pagination.current_page === 1
+                              ? "disabled"
+                              : ""
+                          }`}
                         >
                           <button
                             className="page-link"
@@ -1170,15 +1308,26 @@ export default function adminList() {
 
                         {/* Previous Button */}
                         <li
-                          className={`page-item ${Number.isInteger(pagination?.current_page) && pagination.current_page === 1 ? "disabled" : ""
-                            }`}
+                          className={`page-item ${
+                            Number.isInteger(pagination?.current_page) &&
+                            pagination.current_page === 1
+                              ? "disabled"
+                              : ""
+                          }`}
                         >
                           <button
                             className="page-link"
                             onClick={() =>
-                              handlePageChange((Number.isInteger(pagination?.current_page) ? pagination.current_page : 1) - 1)
+                              handlePageChange(
+                                (Number.isInteger(pagination?.current_page)
+                                  ? pagination.current_page
+                                  : 1) - 1
+                              )
                             }
-                            disabled={Number.isInteger(pagination?.current_page) && pagination.current_page === 1}
+                            disabled={
+                              Number.isInteger(pagination?.current_page) &&
+                              pagination.current_page === 1
+                            }
                           >
                             Prev
                           </button>
@@ -1188,10 +1337,12 @@ export default function adminList() {
                         {pageNumbers.map((pageNumber) => (
                           <li
                             key={pageNumber}
-                            className={`page-item ${Number.isInteger(pagination?.current_page) && pagination.current_page === pageNumber
+                            className={`page-item ${
+                              Number.isInteger(pagination?.current_page) &&
+                              pagination.current_page === pageNumber
                                 ? "active"
                                 : ""
-                              }`}
+                            }`}
                           >
                             <button
                               className="page-link"
@@ -1204,15 +1355,22 @@ export default function adminList() {
 
                         {/* Next Button */}
                         <li
-                          className={`page-item ${Number.isInteger(pagination?.current_page) && Number.isInteger(pagination?.total_pages) && pagination.current_page === pagination.total_pages
+                          className={`page-item ${
+                            Number.isInteger(pagination?.current_page) &&
+                            Number.isInteger(pagination?.total_pages) &&
+                            pagination.current_page === pagination.total_pages
                               ? "disabled"
                               : ""
-                            }`}
+                          }`}
                         >
                           <button
                             className="page-link"
                             onClick={() =>
-                              handlePageChange((Number.isInteger(pagination?.current_page) ? pagination.current_page : 1) + 1)
+                              handlePageChange(
+                                (Number.isInteger(pagination?.current_page)
+                                  ? pagination.current_page
+                                  : 1) + 1
+                              )
                             }
                             disabled={
                               Number.isInteger(pagination?.current_page) &&
@@ -1226,15 +1384,22 @@ export default function adminList() {
 
                         {/* Last Button */}
                         <li
-                          className={`page-item ${Number.isInteger(pagination?.current_page) && Number.isInteger(pagination?.total_pages) && pagination.current_page === pagination.total_pages
+                          className={`page-item ${
+                            Number.isInteger(pagination?.current_page) &&
+                            Number.isInteger(pagination?.total_pages) &&
+                            pagination.current_page === pagination.total_pages
                               ? "disabled"
                               : ""
-                            }`}
+                          }`}
                         >
                           <button
                             className="page-link"
                             onClick={() =>
-                              handlePageChange(Number.isInteger(pagination?.total_pages) ? pagination.total_pages : 1)
+                              handlePageChange(
+                                Number.isInteger(pagination?.total_pages)
+                                  ? pagination.total_pages
+                                  : 1
+                              )
                             }
                             disabled={
                               Number.isInteger(pagination?.current_page) &&
@@ -1252,15 +1417,30 @@ export default function adminList() {
                         <p>
                           Showing{" "}
                           {Math.min(
-                            ((Number.isInteger(pagination?.current_page) ? pagination.current_page : 1) - 1) * pageSize + 1 || 1,
-                            Number.isInteger(pagination?.total_count) ? pagination.total_count : 0
+                            ((Number.isInteger(pagination?.current_page)
+                              ? pagination.current_page
+                              : 1) -
+                              1) *
+                              pageSize +
+                              1 || 1,
+                            Number.isInteger(pagination?.total_count)
+                              ? pagination.total_count
+                              : 0
                           )}{" "}
                           to{" "}
                           {Math.min(
-                            (Number.isInteger(pagination?.current_page) ? pagination.current_page : 1) * pageSize,
-                            Number.isInteger(pagination?.total_count) ? pagination.total_count : 0
+                            (Number.isInteger(pagination?.current_page)
+                              ? pagination.current_page
+                              : 1) * pageSize,
+                            Number.isInteger(pagination?.total_count)
+                              ? pagination.total_count
+                              : 0
                           )}{" "}
-                          of {Number.isInteger(pagination?.total_count) ? pagination.total_count : 0} entries
+                          of{" "}
+                          {Number.isInteger(pagination?.total_count)
+                            ? pagination.total_count
+                            : 0}{" "}
+                          entries
                         </p>
                       </div>
                     </div>
