@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import Select from "react-select";
@@ -38,7 +38,8 @@ export default function VendorListPage() {
   const [settingShow, setSettingShow] = useState(false);
   const [show, setShow] = useState(false);
   const location = useLocation();
-
+    const containerRef = useRef(null);
+    const [containerWidth, setContainerWidth] = useState(0);
   const [activeTab, setActiveTab] = useState("live");
   const [liveEvents, setLiveEvents] = useState({ events: [], pagination: {} });
   const [historyEvents, setHistoryEvents] = useState({
@@ -722,6 +723,31 @@ export default function VendorListPage() {
     setVendorId(newVendorId);
   };
 
+  useEffect(() => {
+      if (!containerRef.current) return;
+  
+      const updateWidth = () => {
+        setContainerWidth(containerRef.current.offsetWidth);
+      };
+  
+      updateWidth();
+      window.addEventListener("resize", updateWidth);
+      return () => window.removeEventListener("resize", updateWidth);
+    }, []);
+  
+    // Calculate column widths evenly
+    const fixedColumns = React.useMemo(() => {
+      const visibleCols = columns.filter((col) => !col.hide && col.field);
+      const colCount = visibleCols.length || 1;
+      const equalWidth = containerWidth / colCount;
+  
+      return visibleCols.map((col) => ({
+        ...col,
+        width: equalWidth,
+        flex: undefined, // disable flex to prevent it from overriding width
+      }));
+    }, [columns, containerWidth]);
+
   return (
     <>
       {/* Add global style for text ellipsis in DataGrid cells */}
@@ -1159,15 +1185,7 @@ export default function VendorListPage() {
                         <div className="row justify-content-end">
                           <div className="col-md-5">
                             <div className="row justify-content-end px-3">
-                              <div className="col-md-3">
-                                <button
-                                  style={{ color: " #8b0203" }}
-                                  className="btn btn-md"
-                                  onClick={handleModalShow}
-                                >
-                                  <FilterIcon />
-                                </button>
-                              </div>
+                              
                               {/* <div className="col-md-3">
                                   <button
                                     style={{ color: "#de7008" }}
@@ -1187,7 +1205,16 @@ export default function VendorListPage() {
                                     <DownloadIcon />
                                   </button>
                                 </div> */}
-                              <div className="col-md-3">
+                                <div className="col-md-2">
+                                <button
+                                  style={{ color: " #8b0203" }}
+                                  className="btn btn-md"
+                                  onClick={handleModalShow}
+                                >
+                                  <FilterIcon />
+                                </button>
+                              </div>
+                              <div className="col-md-2">
                                 <button
                                   style={{ color: "#8b0203" }}
                                   type="button"
@@ -1202,7 +1229,7 @@ export default function VendorListPage() {
                               </div>
                             </div>
                           </div>
-                          <div className="col-md-4">
+                          {/* <div className="col-md-4"> */}
                             {/* <button
                               className="purple-btn2"
                               onClick={() => navigate("/create-event")}
@@ -1212,14 +1239,16 @@ export default function VendorListPage() {
                               </span>
                               New Event
                             </button> */}
-                          </div>
+                          {/* </div> */}
                         </div>
                       </div>
                     </div>
-                    <div className="tbl-container mt-3 px-3">
+              <div
+      ref={containerRef}
+      style={{ width: "100%", height: "600px", display: "flex", flexDirection: "column", padding:'20px' }}>
                       <DataGrid
                         rows={dataGridRows}
-                        columns={columns}
+                        columns={fixedColumns}
                         pagination
                         pageSize={pageSize}
                         rowHeight={60}
@@ -1254,6 +1283,15 @@ export default function VendorListPage() {
                           "& .MuiDataGrid-columnHeader": {
                             borderColor: "#dee2e6",
                           },
+                          "& .MuiDataGrid-virtualScroller": {
+            overflowY: "auto",
+          },
+          "& .MuiDataGrid-virtualScrollerContent": {
+            minWidth: `${containerWidth}px !important`,
+          },
+          "& .MuiDataGrid-footerContainer": {
+            borderTop: "1px solid #dee2e6",
+          },
                         }}
                         components={{
                           ColumnMenu: () => null,

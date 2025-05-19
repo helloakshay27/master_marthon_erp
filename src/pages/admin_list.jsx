@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import Select from "react-select";
@@ -43,6 +43,8 @@ export default function adminList() {
   const location = useLocation();
   const [suggestions, setSuggestions] = useState([]);
   const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
+  const containerRef = useRef(null);
+  const [containerWidth, setContainerWidth] = useState(0);
 
   const [activeTab, setActiveTab] = useState("all");
   const [liveEvents, setLiveEvents] = useState({ events: [], pagination: {} });
@@ -108,19 +110,19 @@ export default function adminList() {
       field: "srNo",
       headerName: "Sr.No.",
       width: 80,
-    hide: !columnVisibility.srNo,
-    // renderCell: (params, id) => {
-    // return (
-    //   <div display="flex" alignItems="center" gap={1}>
-    //     {console.log('ID:', id, params)
-    //     }
-    //     <p variant="body2">
-    //       {id + 1}
-    //     </p>
-    //   </div>
-    // )
-    // }
-  },
+      hide: !columnVisibility.srNo,
+      // renderCell: (params, id) => {
+      // return (
+      //   <div display="flex" alignItems="center" gap={1}>
+      //     {console.log('ID:', id, params)
+      //     }
+      //     <p variant="body2">
+      //       {id + 1}
+      //     </p>
+      //   </div>
+      // )
+      // }
+    },
     {
       field: "event_title",
       headerName: "Mor no",
@@ -135,13 +137,25 @@ export default function adminList() {
         return (
           <div
             className="tooltip-container"
-            style={{ position: "relative", display: "flex", alignItems: "center", gap: "4px" }}
+            style={{
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
           >
             <div style={{ position: "relative", display: "inline-block" }}>
               {/* Info icon */}
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#8b0203" className="bi bi-info-circle" viewBox="0 0 16 16">
-                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="#8b0203"
+                className="bi bi-info-circle"
+                viewBox="0 0 16 16"
+              >
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
               </svg>
               {/* Tooltip box */}
               <div
@@ -341,7 +355,6 @@ export default function adminList() {
     },
   ];
 
-
   // Filter columns based on visibility
   const columns = allColumns.filter((col) => columnVisibility[col.field]);
 
@@ -370,6 +383,37 @@ export default function adminList() {
     }, {});
     setColumnVisibility(defaultVisibility);
   };
+
+
+//   const fixedColumns = allColumns.filter(col => !col.hide && col.field).map(col => ({
+//   ...col,
+//   width: col.width || 200,  // Set default width if missing
+// }));
+
+ useEffect(() => {
+    if (!containerRef.current) return;
+
+    const updateWidth = () => {
+      setContainerWidth(containerRef.current.offsetWidth);
+    };
+
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, []);
+
+  // Calculate column widths evenly
+  const fixedColumns = React.useMemo(() => {
+    const visibleCols = columns.filter((col) => !col.hide && col.field);
+    const colCount = visibleCols.length || 1;
+    const equalWidth = containerWidth / colCount;
+
+    return visibleCols.map((col) => ({
+      ...col,
+      width: equalWidth,
+      flex: undefined, // disable flex to prevent it from overriding width
+    }));
+  }, [columns, containerWidth]);
 
   // Keep only one getFilteredData function
   const getFilteredData = () => {
@@ -1229,10 +1273,10 @@ export default function adminList() {
                       </div>
 
                       <div className="col-md-6">
-                        <div className="row justify-content-end">
+                        <div className="row justify-content-end align-items-center">
                           <div className="col-md-5">
-                            <div className="row justify-content-end px-3">
-                              <div className="col-md-3">
+                            <div className="row justify-content-end align-items-center px-3">
+                              <div className="col-md-2">
                                 <button
                                   style={{ color: "#8b0203" }}
                                   className="btn btn-md"
@@ -1242,14 +1286,17 @@ export default function adminList() {
                                 </button>
                               </div>
                               {/* Add settings button here */}
-                              <div className="col-md-3">
+                              <div className="col-md-2">
                                 <button
                                   style={{ color: "#8b0203" }}
                                   type="button"
                                   className="btn btn-md"
                                   onClick={handleSettingModalShow}
                                 >
-                                  <SettingIcon color={"#8b0203"} style={{ width: "23px", height: "23px" }} />
+                                  <SettingIcon
+                                    color={"#8b0203"}
+                                    style={{ width: "23px", height: "23px" }}
+                                  />
                                 </button>
                               </div>
                               {/* <div className="col-md-3">
@@ -1288,60 +1335,59 @@ export default function adminList() {
                       </div>
                     </div>
                     <div
-                      className="tbl-container mt-3 px-3"
-                      style={{ maxHeight: "none" }}
-                    >
-                      <DataGrid
+      ref={containerRef}
+      style={{ width: "100%", height: "600px", display: "flex", flexDirection: "column", padding:'20px' }}
+    >
+      <DataGrid
         rows={dataGridRows}
-        columns={columns}
-        pagination
+        columns={fixedColumns}
         pageSize={pageSize}
-        rowHeight={60}
-                        // rows={getTransformedRows()}
-                        rowCount={
-                          Number.isInteger(pagination?.total_count)
-                            ? pagination.total_count
-                            : 0
-                        }
-                        paginationMode="server"
-                        page={
-                          Number.isInteger(pagination?.current_page) &&
-                          pagination.current_page > 0
-                            ? pagination.current_page - 1
-                            : 0
-                        }
-                        onPageChange={(params) => handlePageChange(params + 1)}
-                        loading={loading}
-                        disableSelectionOnClick
-                        getRowId={(row) => row.id}
-                        sx={{
-                          "& .MuiDataGrid-columnHeaders": {
-                            backgroundColor: "#f8f9fa",
-                            color: "#000",
-                            fontWeight: "bold",
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 1,
-                          },
-                          "& .MuiDataGrid-cell": {
-                            borderColor: "#dee2e6",
-                          },
-                          "& .MuiDataGrid-columnHeader": {
-                            borderColor: "#dee2e6",
-                          },
-                        }}
-                        components={{
-                          ColumnMenu: () => null,
-                          NoRowsOverlay: () => (
-                            <div
-                              style={{ padding: "2rem", textAlign: "center" }}
-                            >
-                              No events found.
-                            </div>
-                          ),
-                        }}
-                      />
-                    </div>
+        rowCount={Number.isInteger(pagination?.total_count) ? pagination.total_count : 0}
+        paginationMode="server"
+        page={Number.isInteger(pagination?.current_page) && pagination.current_page > 0 ? pagination.current_page - 1 : 0}
+        onPageChange={(page) => handlePageChange(page + 1)}
+        loading={loading}
+        disableSelectionOnClick
+        disableColumnMenu
+        disableExtendRowFullWidth
+        columnBuffer={0}
+        getRowId={(row) => row.id}
+        sx={{
+          flexGrow: 1,
+          width: "100%",
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: "#f8f9fa",
+            color: "#000",
+            fontWeight: "bold",
+            position: "sticky",
+            top: 0,
+            zIndex: 1,
+          },
+          "& .MuiDataGrid-cell": {
+            borderColor: "#dee2e6",
+          },
+          "& .MuiDataGrid-columnHeader": {
+            borderColor: "#dee2e6",
+          },
+          "& .MuiDataGrid-virtualScroller": {
+            overflowY: "auto",
+          },
+          "& .MuiDataGrid-virtualScrollerContent": {
+            minWidth: `${containerWidth}px !important`,
+          },
+          "& .MuiDataGrid-footerContainer": {
+            borderTop: "1px solid #dee2e6",
+          },
+        }}
+        components={{
+          NoRowsOverlay: () => (
+            <div style={{ padding: "2rem", textAlign: "center" }}>
+              No events found.
+            </div>
+          ),
+        }}
+      />
+    </div>
                     <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                       <ul className="pagination justify-content-center d-flex">
                         {/* First Button */}
