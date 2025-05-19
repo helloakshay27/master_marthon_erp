@@ -131,20 +131,13 @@ export default function adminList() {
         className="tooltip-container"
         style={{ position: "relative", display: "flex", alignItems: "center", gap: "4px" }}
       >
-        <span>{params.row.event_title || "-"}</span>
         <div style={{ position: "relative", display: "inline-block" }}>
           {/* Info icon */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            fill="currentColor"
-            viewBox="0 0 16 16"
-            style={{ color: "#d10000", cursor: "pointer" }}
-          >
-            <path d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16z" />
-            <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .877-.252 1.02-.797l.088-.416c.066-.308.118-.438.288-.469l.45-.083.082-.38-2.29-.287zm-1.812-2.29c-.282 0-.506.224-.506.5s.224.5.506.5.506-.224.506-.5-.224-.5-.506-.5z" />
-          </svg>
+         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#8b0203" class="bi bi-info-circle" viewBox="0 0 16 16">
+  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+  <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+</svg>
+
 
           {/* Tooltip box */}
           <div
@@ -165,7 +158,7 @@ export default function adminList() {
               boxShadow: "0 3px 6px rgba(0, 0, 0, 0.1)",
               opacity: 1,
               visibility: "hidden",
-              transition: "opacity 0.2s ease",
+              transition: "opacity 1s ease",
               minWidth: "max-content",
               padding: "0",
               overflow: "hidden",
@@ -199,9 +192,11 @@ export default function adminList() {
                 textAlign: "left",
                 wordBreak: "break-word",
                 whiteSpace: "pre-line",
+                color: "#000", // Make "No MORs" text lighter
+                fontStyle: morNos === "No MORs" ? "italic" : "normal", // Optional: italic for "No MORs"
               }}
             >
-              {morNos}vjhbjknhnjknjk
+              {morNos}
             </span>
           </div>
         </div>
