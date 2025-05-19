@@ -531,7 +531,18 @@ const TestTable = () => {
         { field: "company_name", headerName: "Company", width: 150 },
         { field: "project_name", headerName: "Project", width: 150 },
         { field: "site_name", headerName: "Sub Project", width: 150 },
-        { field: "credit_note_no", headerName: "Credit Note No.", width: 150 },
+        { field: "credit_note_no", headerName: "Credit Note No.", width: 150,
+             renderCell: (params) =>
+                    params.value && params.row.id ? (
+                      <Link to={`/credit-note-details/${params.row.id}`}
+                       
+                      >
+                        <span className="boq-id-link">{params.value}</span>
+                      </Link>
+                    ) : (
+                      "-"
+                    ),
+         },
         { field: "credit_note_date", headerName: "Date", width: 150 },
         { field: "credit_note_type", headerName: "Credit Note Type", width: 150 },
         {
@@ -645,15 +656,15 @@ const TestTable = () => {
             ? creditNotes.filter((row) => pinnedRows.includes(row.id))
             : creditNotes;
 
-        const normalizedSearchTerm = searchKeyword.trim().toLowerCase();
-        if (normalizedSearchTerm) {
-            rowsToShow = rowsToShow.filter((item) =>
-                Object.values(item).some(
-                    (value) =>
-                        value && String(value).toLowerCase().includes(normalizedSearchTerm)
-                )
-            );
-        }
+        // const normalizedSearchTerm = searchKeyword.trim().toLowerCase();
+        // if (normalizedSearchTerm) {
+        //     rowsToShow = rowsToShow.filter((item) =>
+        //         Object.values(item).some(
+        //             (value) =>
+        //                 value && String(value).toLowerCase().includes(normalizedSearchTerm)
+        //         )
+        //     );
+        // }
 
         return rowsToShow;
     };
@@ -903,7 +914,11 @@ const TestTable = () => {
                                             />
                                             <div className="input-group-append">
                                                 <button type="button" className="btn btn-md btn-default"
-                                                    onClick={() => fetchSearchResults()}
+                                                    // onClick={() => fetchSearchResults()}
+                                                    onClick={() => {
+                                                        //   setSearchKeyword(searchInput); // Set the main search keyword
+                                                        fetchSearchResults();          // Trigger search
+                                                    }}
                                                 >
                                                     <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                         <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203" />
@@ -971,7 +986,7 @@ const TestTable = () => {
                             mt-3 mx-3"
                                 style={{
                                     //   width: "100%",
-                                    //   height: "400px",
+                                    //   height: "430px",
                                     //   boxShadow: "unset",
                                     overflowY: "hidden",
                                 }}
@@ -1027,12 +1042,25 @@ const TestTable = () => {
                                     columns={columns}
                                     pageSize={pageSize}
                                     autoHeight={false}
-                                    getRowId={(row) => row.id}
+                                    // getRowId={(row) => row.id}
+                                    getRowId={(row) => {
+                                        //   console.log("Row ID:", row.id);
+                                        return row.id;
+                                    }}
                                     loading={loading}
                                     disableSelectionOnClick
-                                    //   checkboxSelection // <-- enables checkboxes and select all
-                                    //   selectionModel={selectedBoqDetails}
+                                    checkboxSelection // <-- enables checkboxes and select all
+                                    selectionModel={selectedBoqDetails}
                                     //   onSelectionModelChange={(ids) => setSelectedBoqDetails(ids)}
+                                    onSelectionModelChange={(ids) => {
+                                        setSelectedBoqDetails(ids.map(String));
+                                        console.log("Selected Row IDs:", ids); // This will log the selected row ids array
+                                    }}
+
+                                    onRowSelectionModelChange={(ids) => {
+                                        setSelectedBoqDetails(ids);
+                                        console.log("Selected Row IDs: 2", ids);
+                                    }}
                                     components={{
                                         ColumnMenu: () => null,
                                     }}
@@ -1051,15 +1079,27 @@ const TestTable = () => {
                                         "& .MuiDataGrid-columnHeader": {
                                             borderColor: "#dee2e6",
                                         },
+                                        // Red color for checked checkboxes
+                                        "& .MuiCheckbox-root.Mui-checked .MuiSvgIcon-root": {
+                                            color: "#8b0203",
+                                        },
+                                        // Black for header (select all) checkbox, even when checked
+                                        "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root": {
+                                            color: "#fff",
+                                        },
+                                        // Make checkboxes smaller
+                                        "& .MuiCheckbox-root .MuiSvgIcon-root": {
+                                            fontSize: "1.1rem", // adjust as needed (default is 1.5rem)
+                                        },
                                     }}
                                 />
-                                <Stack
+                                {/* <Stack
                                     direction="row"
                                     alignItems="center"
                                     justifyContent="space-between"
                                     padding={2}
-                                >
-                                    <Pagination
+                                > */}
+                                    {/* <Pagination
                                         count={totalPages}
                                         page={currentPage}
                                         onChange={(event, value) => setCurrentPage(value)}
@@ -1073,8 +1113,8 @@ const TestTable = () => {
 
                                     <Typography variant="body2">
                                         Showing {startEntry} to {endEntry} of {totalEntries} entries
-                                    </Typography>
-                                </Stack>
+                                    </Typography> */}
+                                {/* </Stack> */}
 
                             </div>
 
@@ -1259,12 +1299,12 @@ const TestTable = () => {
                 </Modal.Body>
 
                 <Modal.Footer>
-                    <Button variant="primary" onClick={handleShowAll}>
+                    <button  className="purple-btn2" onClick={handleShowAll}>
                         Show All
-                    </Button>
-                    <Button variant="danger" onClick={handleHideAll}>
+                    </button>
+                    <button className="purple-btn1" onClick={handleHideAll}>
                         Hide All
-                    </Button>
+                    </button>
                 </Modal.Footer>
             </Modal>
 
