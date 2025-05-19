@@ -111,9 +111,13 @@ export default function adminList() {
       field: "srNo",
       headerName: "Sr.No.",
       width: 80,
-      // No valueGetter needed, just use the srNo field
     },
-    // { field: "event_title", headerName: "Event Title", width: 180 }, // Uncomment if needed
+    { field: "event_title", headerName: "Mor no", width: 180,
+      renderCell: (params) => {
+        return(
+        params.row.event_title ? params.row.event_title : "-"
+      )}
+     }, // Uncomment if needed
     { field: "event_no", headerName: "Event No", width: 120 },
     { field: "bid_placed", headerName: "Bid Placed", width: 110, renderCell: (params) => (params.value ? "Yes" : "No") },
     {
@@ -146,15 +150,15 @@ export default function adminList() {
         params.row.created_at ? <FormatDate timestamp={params.row.created_at} /> : "N/A",
     },
     { field: "created_by", headerName: "Created By", width: 120, renderCell: (params) => params.value || "N/A" },
-    // {
-    //   field: "event_type",
-    //   headerName: "Event Type",
-    //   width: 120,
-    //   renderCell: (params) =>
-    //     params.row.event_type_detail?.event_type
-    //       ? params.row.event_type_detail.event_type.toUpperCase()
-    //       : "N/A",
-    // },
+    {
+      field: "event_type",
+      headerName: "Event Type",
+      width: 120,
+      renderCell: (params) =>
+        params.row.event_type_detail?.event_type
+          ? params.row.event_type_detail.event_type.toUpperCase()
+          : "N/A",
+    },
     {
       field: "event_configuration",
       headerName: "Event Configuration",
@@ -226,6 +230,9 @@ export default function adminList() {
     },
   ];
 
+  console.log("Events to Display:", eventsToDisplay);
+  
+
   const dataGridRows = eventsToDisplay.map((event, index) => ({
     id: event.id,
     srNo: (Number.isInteger(pagination?.current_page) ? pagination.current_page - 1 : 0) * pageSize + index + 1,
@@ -235,17 +242,13 @@ export default function adminList() {
     created_at: event.created_at,
     created_by: event.created_by,
     event_type_detail: event.event_type_detail,
+    event_title: event?.event_title,
     status: event.status,
     // Add any other fields you need for columns
   }));
 
   const getTransformedRows = () => {
     let rowsToShow = dataGridRows;
-
-    // Example: If you want to filter only pinned rows (add your own logic if needed)
-    // if (showOnlyPinned) {
-    //   rowsToShow = rowsToShow.filter((row) => pinnedRows.includes(row.id));
-    // }
 
     const normalizedSearchTerm = searchQuery.trim().toLowerCase();
     if (normalizedSearchTerm) {

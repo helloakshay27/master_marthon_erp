@@ -1491,7 +1491,7 @@ export default function CreateRFQForm({
               <div key={section.sectionId} className="card pb-3" >
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="card-header3" style={{ width:'200px'}}>
-                  <h3 className="card-title">{`Material (${ sectionIndex + 1 } of ${sections.length})`}</h3>
+                  <h3 className="card-title">{`Material Type (${ sectionIndex + 1 } of ${sections.length})`}</h3>
                 </div>
                 <button
                     className="purple-btn2 d-flex align-items-center"

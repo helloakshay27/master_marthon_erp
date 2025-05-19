@@ -18,7 +18,7 @@ import "react-toastify/dist/ReactToastify.css";
 export default function CreateEvent() {
   const fileInputRef = useRef(null);
   const myRef = useRef(null); // Ensure this is defined at the top
-    const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [filteredTableData, setFilteredTableData] = useState([]);
   const [eventTypeModal, setEventTypeModal] = useState(false);
   const [isService, setIsService] = useState(false);
@@ -90,7 +90,6 @@ export default function CreateEvent() {
     company: "",
     organization: "",
   });
-
   const [companyList, setCompanyList] = useState([]);
 
   useEffect(() => {
@@ -491,8 +490,6 @@ export default function CreateEvent() {
 
   const scrollToTop = () => {
     if (myRef.current) {
-      console.log("scrolling to top", myRef.current);
-
       myRef.current.scrollIntoView({ behavior: "smooth", top: 0 });
     }
   };
@@ -657,14 +654,85 @@ export default function CreateEvent() {
         }
       );
       if (response.ok) {
-        toast.success("Event created successfully!", {
-          autoClose: 1000, // Duration for the toast to disappear (in ms)
-        });
-        setTimeout(() => {
-          navigate(
-            "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-          );
-        }, 500);
+        const responseData = await response.json(); // Parse the response to get event details
+        console.log("Response data:", responseData);
+
+        toast(
+  ({ closeToast }) => (
+    <div
+      style={{
+        minWidth: 620,
+        padding: "12px 18px",
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 12,
+      }}
+    >
+      <div style={{ marginTop: 2 }}>
+        <span
+          style={{
+            display: "inline-block",
+            width: 32,
+            height: 32,
+            background: "#d1fae5",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <svg
+            width="20"
+            height="20"
+            fill="none"
+            viewBox="0 0 20 20"
+            style={{ color: "#22c55e" }}
+          >
+            <circle cx="10" cy="10" r="10" fill="#22c55e" opacity="0.15" />
+            <path
+              d="M6 10.5l3 3 5-5"
+              stroke="#22c55e"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
+          </svg>
+        </span>
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontWeight: 600, color: "#22c55e", fontSize: 18, marginBottom: 4 }}>
+          Success
+        </div>
+        <div style={{ fontWeight: 500, color: "#222" }}>
+          Event Successfully created: "{responseData?.event_title}"
+          <br />
+          (Event No: {responseData?.event_no})
+        </div>
+        <button
+          className="btn btn-success btn-sm mt-3"
+          style={{ minWidth: 60 }}
+          onClick={() => {
+            closeToast();
+            navigate(
+              "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+            );
+          }}
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  ),
+  {
+    position: "top-right",
+    autoClose: false,
+    closeOnClick: false,
+    closeButton: false,
+    draggable: false,
+    style: { background: "#fff", border: "1px solid #d1fae5", boxShadow: "0 2px 8px #0001" },
+  }
+);
       } else {
         const errorData = await response.json();
         console.error("Error response data:", errorData);
@@ -673,14 +741,13 @@ export default function CreateEvent() {
     } catch (error) {
       console.error("Error creating event:", error);
       toast.error("Failed to create event.", {
-        autoClose: 1000, // Duration for the toast to disappear (in ms)
+        autoClose: 1000,
       });
     } finally {
       setSubmitted(false);
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     fetchData();
@@ -801,7 +868,7 @@ export default function CreateEvent() {
           }),
         }
       );
-      console.log("response:--", response);
+      // console.log("response:--", response);
 
       if (response.ok) {
         const newVendor = await response.json();
@@ -889,7 +956,7 @@ export default function CreateEvent() {
     return errors;
   };
 
-  console.log("inviteVendorData", inviteVendorData.company);
+  // console.log("inviteVendorData", inviteVendorData.company);
 
   const handleInviteVendorChange = (e) => {
     const { name, value } = e.target;
@@ -1044,12 +1111,6 @@ export default function CreateEvent() {
                 updateAdditionalFields={setAdditionalFields}
                 isMor={true}
               />
-              {console.log(
-                "selectedTemplate",
-                selectedTemplate,
-                bidTemplateFields,
-                additionalFields
-              )}
               <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
                 <h5 className=" ">
                   Select Vendors{" "}
@@ -1132,8 +1193,7 @@ export default function CreateEvent() {
                             No vendors selected
                           </td>
                         </tr>
-                      )
-                      }
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -1660,7 +1720,9 @@ export default function CreateEvent() {
                 <>
                   <form className="p-2">
                     <div className="form-group mb-3">
-                      <label className="po-fontBold">POC - Full Name <span style={{ color: "red" }}>*</span> </label>
+                      <label className="po-fontBold">
+                        POC - Full Name <span style={{ color: "red" }}>*</span>{" "}
+                      </label>
                       <input
                         className="form-control"
                         type="text"
@@ -1671,7 +1733,9 @@ export default function CreateEvent() {
                       />
                     </div>
                     <div className="form-group mb-3">
-                      <label className="po-fontBold">Email <span style={{ color: "red" }}>*</span></label>
+                      <label className="po-fontBold">
+                        Email <span style={{ color: "red" }}>*</span>
+                      </label>
                       <input
                         className="form-control"
                         type="email"
@@ -1682,7 +1746,9 @@ export default function CreateEvent() {
                       />
                     </div>
                     <div className="form-group mb-3">
-                      <label className="po-fontBold">Phone Number <span style={{ color: "red" }}>*</span></label>
+                      <label className="po-fontBold">
+                        Phone Number <span style={{ color: "red" }}>*</span>
+                      </label>
                       <input
                         className="form-control"
                         type="text"
@@ -1733,7 +1799,9 @@ export default function CreateEvent() {
                       />
                     </div>
                     <div className="form-group mb-3">
-                      <label className="po-fontBold">Company <span style={{ color: "red" }}>*</span></label>
+                      <label className="po-fontBold">
+                        Company <span style={{ color: "red" }}>*</span>
+                      </label>
                       <SelectBox
                         options={companyList}
                         value={companyList.find(
@@ -1749,7 +1817,9 @@ export default function CreateEvent() {
                       />
                     </div>
                     <div className="form-group mb-3">
-                      <label className="po-fontBold">Organization <span style={{ color: "red" }}>*</span></label>
+                      <label className="po-fontBold">
+                        Organization <span style={{ color: "red" }}>*</span>
+                      </label>
                       <input
                         className="form-control"
                         type="text"
@@ -1760,8 +1830,18 @@ export default function CreateEvent() {
                       />
                     </div>
                     <div className="d-flex justify-content-center mt-2">
-                        <button className="purple-btn1" onClick={handleInviteModalClose}>Close</button>
-                        <button className="purple-btn2" onClick={handleInviteVendor}>Save Changes</button>
+                      <button
+                        className="purple-btn1"
+                        onClick={handleInviteModalClose}
+                      >
+                        Close
+                      </button>
+                      <button
+                        className="purple-btn2"
+                        onClick={handleInviteVendor}
+                      >
+                        Save Changes
+                      </button>
                     </div>
                   </form>
                 </>
