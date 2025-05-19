@@ -31,6 +31,7 @@ import Sidebar from "../components/Sidebar";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import { eventProjectColumns } from "../constant/data";
 import FormatDate from "../components/FormatDate";
+import FormatDateTime from "../components/FormatDateTime";
 
 export default function VendorListPage() {
   const [settingShow, setSettingShow] = useState(false);
@@ -536,7 +537,7 @@ export default function VendorListPage() {
     { label: "End Time", key: "end_time" },
 
     { label: "Created At", key: "created_at" },
-    { label: "Created By", key: "created_by" },
+    // { label: "Created By", key: "created_by" },
     { label: "Event Type", key: "event_type" },
     { label: "Event Configuration", key: "event_configuration" },
     { label: "Status", key: "status" },
@@ -1040,7 +1041,7 @@ export default function VendorListPage() {
                                 <td>{event.event_no || "N/A"}</td>
                                 <td>
                                   {event.event_schedule?.start_time ? (
-                                    <FormatDate
+                                    <FormatDateTime
                                       timestamp={event.event_schedule?.start_time}
                                     />
                                   ) : (
@@ -1050,7 +1051,7 @@ export default function VendorListPage() {
 
                                 <td>
                                   {event.event_schedule?.end_time ? (
-                                    <FormatDate
+                                    <FormatDateTime
                                       timestamp={event.event_schedule?.end_time}
                                     />
                                   ) : (
@@ -1064,7 +1065,7 @@ export default function VendorListPage() {
                                     "N/A"
                                   )}
                                 </td>
-                                <td>{event.created_by || "N/A"}</td>
+                                {/* <td>{event.created_by || "N/A"}</td> */}
                                 <td style={{textTransform:'capitalize'}}>
                                   {event.event_type_detail?.event_type || "N/A"}
                                 </td>

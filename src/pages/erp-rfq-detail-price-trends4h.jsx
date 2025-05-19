@@ -376,11 +376,6 @@ export default function ErpRfqDetailPriceTrends4h() {
                     <span>{remainingTime > 0 ? "Upcoming" : "Expired"}</span>
                   </div>
                 </div>
-                <div className="d-flex align-items-center align-bottom">
-                  <button className="buyEvent-mainBtn download-reportBtn">
-                    Download Report
-                  </button>
-                </div>
               </div>
               <div className="d-flex align-items-center justify-content-between eventList-child2">
                 <div className="m-2">

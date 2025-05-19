@@ -367,7 +367,7 @@ const DebitNoteList = () => {
         .get(url)
         .then((response) => {
           setDebitNotes(response.data.debit_notes);
-          setMeta(response.data.meta)
+          // setMeta(response.data.meta)
           setTotalPages(response.data.meta.total_pages); // Set total pages
           setTotalEntries(response.data.meta.total_count);
         })

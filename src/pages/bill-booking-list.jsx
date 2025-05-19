@@ -360,7 +360,7 @@ const BillBookingList = () => {
         // setCreditNotes(response.data.credit_notes);
         setTotalPages(response.data.meta.total_pages); // Set total pages
         setTotalEntries(response.data.meta.total_count);
-        setMeta(response.data.meta);
+        // setMeta(response.data.meta);
       })
       .catch((error) => {
         console.error("Error fetching filtered data:", error);
@@ -482,7 +482,7 @@ const BillBookingList = () => {
                     className={`content-box tab-button ${activeTab === "proceed" ? "active" : ""}`}
                     onClick={() => {
                       setActiveTab("proceed")
-                      fetchFilteredData2("")
+                      fetchFilteredData2("proceed")
                     }}
                   >
                     <h4 className="content-box-title fw-semibold">Proceed</h4>
@@ -729,7 +729,7 @@ const BillBookingList = () => {
                       </th>
                       <th className="text-start">Sr.No.</th>
                       <th className="text-start">Bill No.</th>
-                      {/* <th className="text-start">Mode of Submission</th> */}
+                      <th className="text-start">Mode of Submission</th>
                       <th className="text-start">Company</th>
                       <th className="text-start">Project</th>
                       <th className="text-start">Sub Project</th>
@@ -775,7 +775,7 @@ const BillBookingList = () => {
                               {bill.invoice_number}
                             </Link>
                           </td>
-                          {/* <td className="text-start">{""}</td> */}
+                          <td className="text-start">{bill.mode_of_submission}</td>
                           <td className="text-start">{bill.company_name}</td>
                           <td className="text-start">{bill.project_name}</td>
                           <td className="text-start">{bill.site_name || ""}</td>

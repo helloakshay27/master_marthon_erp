@@ -11,6 +11,7 @@ import { useParams, useLocation } from "react-router-dom";
 import DataTable from "datatables.net-react";
 import DT from "datatables.net-dt";
 DataTable.use(DT);
+import { DataGrid } from "@mui/x-data-grid";
 
 import {
   LayoutModal,
@@ -31,6 +32,7 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import { eventProjectColumns } from "../constant/data";
 import FormatDate from "../components/FormatDate";
 import { baseURL } from "../confi/apiDomain";
+import FormatDateTime from "../components/FormatDateTime";
 
 export default function adminList() {
   const [settingShow, setSettingShow] = useState(false);
@@ -81,6 +83,182 @@ export default function adminList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [vendorId, setVendorId] = useState("");
   const [vendorOptions, setVendorOptions] = useState([]);
+
+  // Keep only one getFilteredData function
+  const getFilteredData = () => {
+    switch (activeTab) {
+      case "live":
+        return { events: liveEvents.events, pagination: liveEvents.pagination };
+      case "history":
+        return {
+          events: historyEvents.events,
+          pagination: historyEvents.pagination,
+        };
+      case "all":
+        return {
+          events: allEventsData.events,
+          pagination: allEventsData.pagination,
+        };
+      default:
+        return { events: [], pagination: {} };
+    }
+  };
+
+  const { events: eventsToDisplay, pagination } = getFilteredData(); // Destructure to get events and pagination
+
+  const dataGridColumns = [
+    {
+      field: "srNo",
+      headerName: "Sr.No.",
+      width: 80,
+      // No valueGetter needed, just use the srNo field
+    },
+    // { field: "event_title", headerName: "Event Title", width: 180 }, // Uncomment if needed
+    { field: "event_no", headerName: "Event No", width: 120 },
+    { field: "bid_placed", headerName: "Bid Placed", width: 110, renderCell: (params) => (params.value ? "Yes" : "No") },
+    {
+      field: "start_time",
+      headerName: "Start Time",
+      width: 160,
+      renderCell: (params) =>
+        params.row.event_schedule?.start_time ? (
+          <FormatDateTime timestamp={params.row.event_schedule.start_time} />
+        ) : (
+          "N/A"
+        ),
+    },
+    {
+      field: "end_time",
+      headerName: "End Time",
+      width: 160,
+      renderCell: (params) =>
+        params.row.event_schedule?.end_time ? (
+          <FormatDateTime timestamp={params.row.event_schedule.end_time} />
+        ) : (
+          "N/A"
+        ),
+    },
+    {
+      field: "created_at",
+      headerName: "Created At",
+      width: 140,
+      renderCell: (params) =>
+        params.row.created_at ? <FormatDate timestamp={params.row.created_at} /> : "N/A",
+    },
+    { field: "created_by", headerName: "Created By", width: 120, renderCell: (params) => params.value || "N/A" },
+    // {
+    //   field: "event_type",
+    //   headerName: "Event Type",
+    //   width: 120,
+    //   renderCell: (params) =>
+    //     params.row.event_type_detail?.event_type
+    //       ? params.row.event_type_detail.event_type.toUpperCase()
+    //       : "N/A",
+    // },
+    {
+      field: "event_configuration",
+      headerName: "Event Configuration",
+      width: 160,
+      renderCell: (params) =>
+        params.row.event_type_detail?.event_configuration || "N/A",
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 110,
+      renderCell: (params) =>
+        params.row.status ? params.row.status.charAt(0).toUpperCase() + params.row.status.slice(1) : "N/A",
+    },
+    {
+      field: "action",
+      headerName: "Action",
+      width: 80,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <button
+          className="btn"
+          onClick={() => navigate(`/erp-rfq-detail-price-trends4h/${params.row.id}`)}
+          title="View"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            className="bi bi-eye"
+            viewBox="0 0 16 16"
+          >
+            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"></path>
+            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
+          </svg>
+        </button>
+      ),
+    },
+    {
+      field: "edit",
+      headerName: "Edit",
+      width: 80,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <button
+          className="btn"
+          onClick={() => navigate(`/edit-event/${params.row.id}`)}
+          title="Edit"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            className="bi bi-pencil-square"
+            viewBox="0 0 16 16"
+          >
+            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+            <path
+              fillRule="evenodd"
+              d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+            />
+          </svg>
+        </button>
+      ),
+    },
+  ];
+
+  const dataGridRows = eventsToDisplay.map((event, index) => ({
+    id: event.id,
+    srNo: (Number.isInteger(pagination?.current_page) ? pagination.current_page - 1 : 0) * pageSize + index + 1,
+    event_no: event.event_no,
+    bid_placed: event.bid_placed,
+    event_schedule: event.event_schedule,
+    created_at: event.created_at,
+    created_by: event.created_by,
+    event_type_detail: event.event_type_detail,
+    status: event.status,
+    // Add any other fields you need for columns
+  }));
+
+  const getTransformedRows = () => {
+    let rowsToShow = dataGridRows;
+
+    // Example: If you want to filter only pinned rows (add your own logic if needed)
+    // if (showOnlyPinned) {
+    //   rowsToShow = rowsToShow.filter((row) => pinnedRows.includes(row.id));
+    // }
+
+    const normalizedSearchTerm = searchQuery.trim().toLowerCase();
+    if (normalizedSearchTerm) {
+      rowsToShow = rowsToShow.filter((item) =>
+        Object.values(item).some(
+          (value) =>
+            value && String(value).toLowerCase().includes(normalizedSearchTerm)
+        )
+      );
+    }
+
+    return rowsToShow;
+  };
 
   const navigate = useNavigate();
 
@@ -319,26 +497,26 @@ export default function adminList() {
     }
   };
 
-  const getFilteredData = () => {
-    switch (activeTab) {
-      case "live":
-        return { events: liveEvents.events, pagination: liveEvents.pagination };
-      case "history":
-        return {
-          events: historyEvents.events,
-          pagination: historyEvents.pagination,
-        };
-      case "all":
-        return {
-          events: allEventsData.events,
-          pagination: allEventsData.pagination,
-        };
-      default:
-        return { events: [], pagination: {} };
-    }
-  };
+  // const getFilteredData = () => {
+  //   switch (activeTab) {
+  //     case "live":
+  //       return { events: liveEvents.events, pagination: liveEvents.pagination };
+  //     case "history":
+  //       return {
+  //         events: historyEvents.events,
+  //         pagination: historyEvents.pagination,
+  //       };
+  //     case "all":
+  //       return {
+  //         events: allEventsData.events,
+  //         pagination: allEventsData.pagination,
+  //       };
+  //     default:
+  //       return { events: [], pagination: {} };
+  //   }
+  // };
 
-  const { events: eventsToDisplay, pagination } = getFilteredData(); // Destructure to get events and pagination
+  // const { events: eventsToDisplay, pagination } = getFilteredData(); // Destructure to get events and pagination
 
   // Memoize getPageRange to avoid recomputation
   const getPageRange = useMemo(() => {
@@ -504,8 +682,9 @@ export default function adminList() {
 
   const eventProjectColumns = [
     { label: "Sr.No.", key: "srNo" },
-    { label: "Event Title", key: "event_title" },
+    // { label: "Event Title", key: "event_title" },
     { label: "Event No", key: "event_no" },
+    // { label: "MOR No", key: "mor_no" },
     { label: "Bid Placed", key: "bid_placed" },
     { label: "Start Time", key: "start_time" },
     { label: "End Time", key: "end_time" },
@@ -517,9 +696,6 @@ export default function adminList() {
     { label: "Action", key: "action" },
     { label: "Edit", key: "edit" },
   ];
-
-  // Lazy load Modal component
-  const LazyModal = React.lazy(() => import("react-bootstrap/Modal"));
 
   return (
     <>
@@ -935,133 +1111,49 @@ export default function adminList() {
                         </div>
                       </div>
                     </div>
-                    <div className="tbl-container mt-3 px-3">
-                      <table className="w-100">
-                        <thead>
-                          <tr>
-                            {eventProjectColumns.map((column) => (
-                              <th key={column.key}>{column.label}</th>
-                            ))}
-                          </tr>
-                        </thead>
-
-                        <tbody>
-                          {eventsToDisplay.length === 0 ? (
-                            <tr>
-                              <td colSpan="9">No events found.</td>
-                            </tr>
-                          ) : (
-                            eventsToDisplay.map((event, index) => (
-                              <tr
-                                key={index}
-                                style={{
-                                  backgroundColor:
-                                    index % 2 === 0 ? "#f8f9fa" : "#fff",
-                                }}
-                              >
-                                <td>
-                                  {(pagination.current_page - 1) * 10 +
-                                    index +
-                                    1}
-                                </td>
-                                <td>{event.event_title || "N/A"}</td>
-                                <td>{event.event_no || "N/A"}</td>
-                                <td>{event.bid_placed ? "Yes" : "No"}</td>
-                                <td>
-                                  {event.event_schedule?.start_time ? (
-                                    <FormatDate
-                                      timestamp={
-                                        event.event_schedule?.start_time
-                                      }
-                                    />
-                                  ) : (
-                                    "N/A"
-                                  )}
-                                </td>
-
-                                <td>
-                                  {event.event_schedule?.end_time ? (
-                                    <FormatDate
-                                      timestamp={event.event_schedule?.end_time}
-                                    />
-                                  ) : (
-                                    "N/A"
-                                  )}
-                                </td>
-                                <td>
-                                  {event.created_at ? (
-                                    <FormatDate timestamp={event.created_at} />
-                                  ) : (
-                                    "N/A"
-                                  )}
-                                </td>
-                                <td>{event.created_by || "N/A"}</td>
-                                <td style={{ textTransform: "uppercase" }}>
-                                  {event.event_type_detail?.event_type || "N/A"}
-                                </td>
-                                <td>
-                                  {event.event_type_detail
-                                    ?.event_configuration || "N/A"}
-                                </td>
-                                <td style={{ textTransform: "capitalize" }}>
-                                  {event.status || "N/A"}
-                                </td>
-                                <td>
-                                  <button
-                                    className="btn"
-                                    onClick={() =>
-                                      navigate(
-                                        `/erp-rfq-detail-price-trends4h/${event.id}`
-                                      )
-                                    }
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      fill="currentColor"
-                                      class="bi bi-eye"
-                                      viewBox="0 0 16 16"
-                                    >
-                                      <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"></path>
-                                      <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                    </svg>{" "}
-                                  </button>
-                                </td>
-                                <td>
-                                  <button
-                                    className="btn"
-                                    onClick={() =>
-                                      navigate(`/edit-event/${event.id}`)
-                                    }
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      fill="currentColor"
-                                      className="bi bi-pencil-square"
-                                      viewBox="0 0 16 16"
-                                    >
-                                      <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                                      <path
-                                        fillRule="evenodd"
-                                        d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
-                                      />
-                                    </svg>
-                                  </button>
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
+                    <div className="tbl-container mt-3 px-3" style={{maxHeight:'none'}}>
+                       <DataGrid
+  rows={getTransformedRows()}
+  columns={dataGridColumns}
+  pageSize={pageSize}
+  rowCount={Number.isInteger(pagination?.total_count) ? pagination.total_count : 0}
+  paginationMode="server"
+  page={Number.isInteger(pagination?.current_page) && pagination.current_page > 0 ? pagination.current_page - 1 : 0}
+  onPageChange={(params) => handlePageChange(params + 1)}
+  loading={loading}
+  disableSelectionOnClick
+  getRowId={(row) => row.id}
+  sx={{
+    "& .MuiDataGrid-columnHeaders": {
+      backgroundColor: "#f8f9fa",
+      color: "#000",
+      fontWeight: "bold",
+      position: "sticky",
+      top: 0,
+      zIndex: 1,
+    },
+    "& .MuiDataGrid-cell": {
+      borderColor: "#dee2e6",
+    },
+    "& .MuiDataGrid-columnHeader": {
+      borderColor: "#dee2e6",
+    },
+  }}
+  components={{
+    ColumnMenu: () => null,
+    NoRowsOverlay: () => (
+      <div style={{ padding: "2rem", textAlign: "center" }}>
+        No events found.
+      </div>
+    ),
+  }}
+/>
                     </div>
                     <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                       <ul className="pagination justify-content-center d-flex">
                         {/* First Button */}
                         <li
-                          className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
+                          className={`page-item ${Number.isInteger(pagination?.current_page) && pagination.current_page === 1 ? "disabled" : ""
                             }`}
                         >
                           <button
@@ -1074,15 +1166,15 @@ export default function adminList() {
 
                         {/* Previous Button */}
                         <li
-                          className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
+                          className={`page-item ${Number.isInteger(pagination?.current_page) && pagination.current_page === 1 ? "disabled" : ""
                             }`}
                         >
                           <button
                             className="page-link"
                             onClick={() =>
-                              handlePageChange(pagination.current_page - 1)
+                              handlePageChange((Number.isInteger(pagination?.current_page) ? pagination.current_page : 1) - 1)
                             }
-                            disabled={pagination.current_page === 1}
+                            disabled={Number.isInteger(pagination?.current_page) && pagination.current_page === 1}
                           >
                             Prev
                           </button>
@@ -1092,7 +1184,7 @@ export default function adminList() {
                         {pageNumbers.map((pageNumber) => (
                           <li
                             key={pageNumber}
-                            className={`page-item ${pagination.current_page === pageNumber
+                            className={`page-item ${Number.isInteger(pagination?.current_page) && pagination.current_page === pageNumber
                                 ? "active"
                                 : ""
                               }`}
@@ -1108,7 +1200,7 @@ export default function adminList() {
 
                         {/* Next Button */}
                         <li
-                          className={`page-item ${pagination.current_page === pagination.total_pages
+                          className={`page-item ${Number.isInteger(pagination?.current_page) && Number.isInteger(pagination?.total_pages) && pagination.current_page === pagination.total_pages
                               ? "disabled"
                               : ""
                             }`}
@@ -1116,9 +1208,11 @@ export default function adminList() {
                           <button
                             className="page-link"
                             onClick={() =>
-                              handlePageChange(pagination.current_page + 1)
+                              handlePageChange((Number.isInteger(pagination?.current_page) ? pagination.current_page : 1) + 1)
                             }
                             disabled={
+                              Number.isInteger(pagination?.current_page) &&
+                              Number.isInteger(pagination?.total_pages) &&
                               pagination.current_page === pagination.total_pages
                             }
                           >
@@ -1128,7 +1222,7 @@ export default function adminList() {
 
                         {/* Last Button */}
                         <li
-                          className={`page-item ${pagination.current_page === pagination.total_pages
+                          className={`page-item ${Number.isInteger(pagination?.current_page) && Number.isInteger(pagination?.total_pages) && pagination.current_page === pagination.total_pages
                               ? "disabled"
                               : ""
                             }`}
@@ -1136,9 +1230,11 @@ export default function adminList() {
                           <button
                             className="page-link"
                             onClick={() =>
-                              handlePageChange(pagination.total_pages)
+                              handlePageChange(Number.isInteger(pagination?.total_pages) ? pagination.total_pages : 1)
                             }
                             disabled={
+                              Number.isInteger(pagination?.current_page) &&
+                              Number.isInteger(pagination?.total_pages) &&
                               pagination.current_page === pagination.total_pages
                             }
                           >
@@ -1152,15 +1248,15 @@ export default function adminList() {
                         <p>
                           Showing{" "}
                           {Math.min(
-                            (pagination.current_page - 1) * pageSize + 1 || 1,
-                            pagination.total_count
+                            ((Number.isInteger(pagination?.current_page) ? pagination.current_page : 1) - 1) * pageSize + 1 || 1,
+                            Number.isInteger(pagination?.total_count) ? pagination.total_count : 0
                           )}{" "}
                           to{" "}
                           {Math.min(
-                            pagination.current_page * pageSize,
-                            pagination.total_count
+                            (Number.isInteger(pagination?.current_page) ? pagination.current_page : 1) * pageSize,
+                            Number.isInteger(pagination?.total_count) ? pagination.total_count : 0
                           )}{" "}
-                          of {pagination.total_count} entries
+                          of {Number.isInteger(pagination?.total_count) ? pagination.total_count : 0} entries
                         </p>
                       </div>
                     </div>
@@ -1171,7 +1267,7 @@ export default function adminList() {
               <LayoutModal show={settingShow} onHide={handleSettingClose} />
 
               <React.Suspense fallback={<div>Loading...</div>}>
-                <LazyModal
+                <Modal
                   show={show}
                   onHide={handleClose}
                   dialogClassName="modal-right"
@@ -1352,7 +1448,7 @@ export default function adminList() {
                       </button>
                     </div>
                   </form>
-                </LazyModal>
+                </Modal>
               </React.Suspense>
             </div>
           </div>
