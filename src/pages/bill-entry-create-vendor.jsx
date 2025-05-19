@@ -14,7 +14,7 @@ const BillEntryCreateVendorPage = () => {
   const [attachModal, setattachModal] = useState(false);
   const [viewDocumentModal, setviewDocumentModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
-  const [documents, setDocuments] = useState([]);
+  // const [documents, setDocuments] = useState([]);
   const [newDocument, setNewDocument] = useState({
     document_type: "",
     attachments: [],
@@ -453,35 +453,6 @@ const BillEntryCreateVendorPage = () => {
     return `Showing ${start} to ${end} of ${pagination.total_count} entries`;
   };
 
-  const handleAttachDocument = () => {
-    if (newDocument.document_type && newDocument.attachments.length > 0) {
-      // Check if document type already exists
-      const existingDocIndex = documents.findIndex(
-        (doc) => doc.document_type === newDocument.document_type
-      );
-
-      if (existingDocIndex !== -1) {
-        // If document type exists, append new attachments
-        const updatedDocuments = [...documents];
-        updatedDocuments[existingDocIndex].attachments = [
-          ...updatedDocuments[existingDocIndex].attachments,
-          ...newDocument.attachments,
-        ];
-        setDocuments(updatedDocuments);
-      } else {
-        // If document type doesn't exist, add new document
-        setDocuments((prev) => [...prev, newDocument]);
-      }
-
-      // Reset new document state
-      setNewDocument({
-        document_type: "",
-        attachments: [],
-      });
-      closeattachModal();
-    }
-  };
-
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     const reader = new FileReader();
@@ -505,6 +476,76 @@ const BillEntryCreateVendorPage = () => {
     if (doc) {
       setSelectedDocument(doc);
       setviewDocumentModal(true);
+    }
+  };
+
+  const initialDocumentTypes = [
+    { id: 1, name: "Tax Invoice", count: 0 },
+    {
+      id: 2,
+      name: "Site acknowledged challan / Challan cum Invoice",
+      count: 0,
+    },
+    { id: 3, name: "Weighment slips", count: 0 },
+    { id: 4, name: "Lorry receipt", count: 0 },
+    { id: 5, name: "E Way bill", count: 0 },
+    { id: 6, name: "E Invoice", count: 0 },
+    { id: 7, name: "Warranty", count: 0 },
+    { id: 8, name: "MTC", count: 0 },
+  ];
+
+  const [documents, setDocuments] = useState(
+    initialDocumentTypes.map((doc) => ({
+      document_type: doc.name,
+      attachments: [],
+      isDefault: true, // Add flag to identify default documents
+    }))
+  );
+
+  // Add this at the top of your component
+
+  const handleAttachDocument = () => {
+    if (newDocument.document_type && newDocument.attachments.length > 0) {
+      setDocuments((prevDocs) => {
+        // Check if document type already exists
+        const existingDoc = prevDocs.find(
+          (doc) =>
+            doc.document_type.toLowerCase() ===
+            newDocument.document_type.toLowerCase()
+        );
+
+        if (existingDoc) {
+          // Update existing document
+          return prevDocs.map((doc) => {
+            if (
+              doc.document_type.toLowerCase() ===
+              newDocument.document_type.toLowerCase()
+            ) {
+              return {
+                ...doc,
+                attachments: [...doc.attachments, ...newDocument.attachments],
+              };
+            }
+            return doc;
+          });
+        } else {
+          // Add new document type
+          return [
+            ...prevDocs,
+            {
+              document_type: newDocument.document_type,
+              attachments: [...newDocument.attachments],
+              isDefault: false,
+            },
+          ];
+        }
+      });
+
+      setNewDocument({
+        document_type: "",
+        attachments: [],
+      });
+      closeattachModal();
     }
   };
 
@@ -572,6 +613,8 @@ const BillEntryCreateVendorPage = () => {
         });
         setSelectedPO(null);
         setDocuments([]);
+        navigate("/bill-entry-vendor-list"); // Redirect to bill-booking-list
+        // Reset form or redirect as needed
       }
     } catch (error) {
       console.error("Error creating bill entry:", error);
@@ -663,7 +706,7 @@ const BillEntryCreateVendorPage = () => {
                       Select
                     </p>
                   </div>
-                  {/* <div className="col-md-3 ">
+                  <div className="col-md-3  mt-2">
                     <div className="form-group">
                       <label>Bill Number</label>
                       <input
@@ -675,8 +718,49 @@ const BillEntryCreateVendorPage = () => {
                         placeholder=""
                       />
                     </div>
-                  </div> */}
+                  </div>
+
+                  <div className="col-md-3">
+                    <div className="form-group">
+                      <label>PO Value</label>
+                      <input
+                        className="form-control"
+                        type="number"
+                        value={selectedPO?.total_value || ""}
+                        disabled
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="form-group">
+                      <label>GSTIN</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        // value={formData.gstin}
+                        value={selectedPO?.gstin || ""}
+                        disabled
+                        readOnly
+                      />
+                    </div>
+                  </div>
+
                   <div className="col-md-3 ">
+                    <div className="form-group">
+                      <label>PAN</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        // value={formData.pan}
+                        value={selectedPO?.pan || ""}
+                        disabled
+                        readOnly
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-md-3 mt-2">
                     <div className="form-group">
                       <label>Bill Date</label>
                       <input
@@ -690,7 +774,7 @@ const BillEntryCreateVendorPage = () => {
                     </div>
                   </div>
 
-                  <div className="col-md-3 ">
+                  <div className="col-md-3 mt-2">
                     <div className="form-group">
                       <label>Bill Amount</label>
                       <input
@@ -705,7 +789,7 @@ const BillEntryCreateVendorPage = () => {
                   </div>
 
                   {/* <div className="row"> */}
-                  <div className="col-md-3 ">
+                  <div className="col-md-3 mt-2 ">
                     <div className="form-group">
                       <label>Vendor Remark</label>
                       <textarea
@@ -767,7 +851,7 @@ const BillEntryCreateVendorPage = () => {
                         data-bs-target="#RevisionModal"
                         onClick={openattachModal}
                       >
-                        Attach Document
+                        + Attach Document
                       </button>
                     </div>
                   </div>
@@ -779,52 +863,48 @@ const BillEntryCreateVendorPage = () => {
                         <th className="text-start">Sr. No.</th>
                         <th className="text-start">Document Name</th>
                         <th className="text-start">No. of Documents</th>
-                        <th className="text-start">Action</th>
+                        <th className="text-start">Attach Copy</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {documents.length === 0 ? (
-                        <tr>
-                          <td colSpan="4" className="text-center">
-                            No documents added yet
+                      {documents.map((doc, index) => (
+                        <tr key={index}>
+                          <td className="text-start">{index + 1}</td>
+                          <td className="text-start">{doc.document_type}</td>
+                          <td
+                            className="text-start"
+                            style={{
+                              color: "#8b0203",
+                              textDecoration: "underline",
+                              cursor: "pointer",
+                            }}
+                            onClick={() =>
+                              handleDocumentCountClick(doc.document_type)
+                            }
+                          >
+                            {doc.attachments.length}
                           </td>
-                        </tr>
-                      ) : (
-                        documents.map((doc, index) => (
-                          <tr key={index}>
-                            <td className="text-start">{index + 1}</td>
-                            <td className="text-start">{doc.document_type}</td>
-                            <td
-                              className="text-start"
-                              // style={{ cursor: "pointer" }}
+                          <td className="text-start">
+                            <button
+                              className="text-decoration-underline border-0 bg-transparent"
                               style={{
                                 color: "#8b0203",
                                 textDecoration: "underline",
                                 cursor: "pointer",
                               }}
-                              onClick={() =>
-                                handleDocumentCountClick(doc.document_type)
-                              }
+                              onClick={() => {
+                                setNewDocument((prev) => ({
+                                  ...prev,
+                                  document_type: doc.document_type,
+                                }));
+                                openattachModal();
+                              }}
                             >
-                              {doc.attachments.length}
-                            </td>
-                            <td className="text-start">
-                              <button
-                                className="text-decoration-underline border-0 bg-transparent"
-                                onClick={() => {
-                                  setNewDocument((prev) => ({
-                                    ...prev,
-                                    document_type: doc.document_type,
-                                  }));
-                                  openattachModal();
-                                }}
-                              >
-                                Attach Another Document
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
+                              + Attach
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -987,7 +1067,7 @@ const BillEntryCreateVendorPage = () => {
                     <th>Document Name</th>
                     <th>Attachment Name</th>
                     <th>Upload Date</th>
-                    <th>Uploaded By</th>
+                    {/* <th>Uploaded By</th> */}
                     {/* <th>Action</th> */}
                   </tr>
                 </thead>
@@ -998,7 +1078,7 @@ const BillEntryCreateVendorPage = () => {
                       <td>{selectedDocument.document_type}</td>
                       <td>{attachment.filename}</td>
                       <td>{new Date().toLocaleDateString()}</td>
-                      <td>vendor user</td>
+                      {/* <td>vendor user</td> */}
                       {/* <td>
                         <button
                           className="border-0 bg-transparent"

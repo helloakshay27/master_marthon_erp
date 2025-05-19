@@ -427,7 +427,7 @@ ntories_mor_inventory_material_order_request_company_id_cont]
 
   return (
     <>
-      <style type="text/css">
+      {/* <style type="text/css">
         {`
 
 .tbl-container {
@@ -442,7 +442,7 @@ display:none !important;
 
 
 `}
-      </style>
+      </style> */}
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">Home &gt; Billing &gt; MOR &gt; Bill Entry List</a>
@@ -684,12 +684,12 @@ display:none !important;
             </div>
 
             <div
-              className="tbl-container px-1 mt-3"
+              className=" mx-1 mt-3"
               style={{
-                width: "100%",
-                height: "400px",
-                boxShadow: "unset",
-                overflow: "auto",
+                // width: "100%",
+                // height: "400px",
+                // boxShadow: "unset",
+                overflowY: "auto",
               }}
             >
               <DataGrid

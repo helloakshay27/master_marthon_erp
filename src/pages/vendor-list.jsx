@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import Select from "react-select";
@@ -32,6 +32,7 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import { eventProjectColumns } from "../constant/data";
 import FormatDate from "../components/FormatDate";
 import FormatDateTime from "../components/FormatDateTime";
+import { DataGrid } from "@mui/x-data-grid";
 
 export default function VendorListPage() {
   const [settingShow, setSettingShow] = useState(false);
@@ -185,15 +186,12 @@ export default function VendorListPage() {
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
 
-      const response = await axios.get(
-        `${baseURL}rfq/events/event_counts`,
-        {
-          params: {
-            page: 1,
-            token: token,
-          },
-        }
-      );
+      const response = await axios.get(`${baseURL}rfq/events/event_counts`, {
+        params: {
+          page: 1,
+          token: token,
+        },
+      });
 
       // Assuming the response contains counts for all, live, and history events
       setCounts(
@@ -314,7 +312,7 @@ export default function VendorListPage() {
         //     pagination: response.data.pagination || {},
         //   });
         //   break;
-          
+
         default:
           break;
       }
@@ -528,31 +526,214 @@ export default function VendorListPage() {
     vendorDetails();
   }, []);
 
-  const eventProjectColumns = [
-    { label: "Sr.No.", key: "srNo" },
-    // { label: "Event Title", key: "event_title" },
-    { label: "Event No", key: "event_no" },
-    { label: "Start Time", key: "start_time" },
+  // 1. Column visibility state and helpers (like admin_list)
+  const [columnVisibility, setColumnVisibility] = useState({
+    srNo: true,
+    event_no: true,
+    start_time: true,
+    end_time: true,
+    created_at: true,
+    event_type: true,
+    status: true,
+    action: true,
+  });
 
-    { label: "End Time", key: "end_time" },
-
-    { label: "Created At", key: "created_at" },
-    // { label: "Created By", key: "created_by" },
-    { label: "Event Type", key: "event_type" },
-    // { label: "Event Configuration", key: "event_configuration" },
-    { label: "Status", key: "status" },
-    { label: "Action" },
+  // 2. All columns definition (with ellipsis for each cell)
+  const allColumns = [
+    {
+      field: "srNo",
+      headerName: "Sr.No.",
+      width: 80,
+      renderCell: (params) => (
+        <div
+          style={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            width: "100%",
+          }}
+        >
+          {params.row.srNo}
+        </div>
+      ),
+    },
+    {
+      field: "event_no",
+      headerName: "Event No",
+      width: 120,
+      renderCell: (params) => (
+        <div
+          style={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            width: "100%",
+          }}
+        >
+          {params.row.event_no || "N/A"}
+        </div>
+      ),
+    },
+    {
+      field: "start_time",
+      headerName: "Start Time",
+      width: 160,
+      renderCell: (params) =>
+        params.row.event_schedule?.start_time ? (
+          <FormatDateTime timestamp={params.row.event_schedule.start_time} />
+        ) : (
+          <span style={{ color: "#aaa" }}>N/A</span>
+        ),
+    },
+    {
+      field: "end_time",
+      headerName: "End Time",
+      width: 160,
+      renderCell: (params) =>
+        params.row.event_schedule?.end_time ? (
+          <FormatDateTime timestamp={params.row.event_schedule.end_time} />
+        ) : (
+          <span style={{ color: "#aaa" }}>N/A</span>
+        ),
+    },
+    {
+      field: "created_at",
+      headerName: "Created At",
+      width: 140,
+      renderCell: (params) =>
+        params.row.created_at ? (
+          <FormatDate timestamp={params.row.created_at} />
+        ) : (
+          <span style={{ color: "#aaa" }}>N/A</span>
+        ),
+    },
+    {
+      field: "event_type",
+      headerName: "Event Type",
+      width: 120,
+      renderCell: (params) => (
+        <div
+          style={{
+            textTransform: "capitalize",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            width: "100%",
+          }}
+        >
+          {params.row.event_type_with_configuration || "N/A"}
+        </div>
+      ),
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 110,
+      renderCell: (params) => (
+        <div
+          style={{
+            textTransform: "capitalize",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            width: "100%",
+          }}
+        >
+          {params.row.status || "N/A"}
+        </div>
+      ),
+    },
+    {
+      field: "action",
+      headerName: "Action",
+      width: 80,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <button
+          className="btn"
+          onClick={() => navigate(`/user-list/${params.row.id}`)}
+          title="View"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            className="bi bi-eye"
+            viewBox="0 0 16 16"
+          >
+            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"></path>
+            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
+          </svg>
+        </button>
+      ),
+    },
   ];
 
-  const selectedVendor = vendorList.find((option) => option.value === vendorId);
+  // 3. Filter columns based on visibility
+  const columns = allColumns.filter((col) => columnVisibility[col.field]);
 
+  // 4. Settings modal handlers
+  const handleToggleColumn = (field) => {
+    setColumnVisibility((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
+  const handleShowAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+  const handleHideAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = false;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+  const handleResetColumns = () => {
+    const defaultVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(defaultVisibility);
+  };
+
+  // 5. Prepare DataGrid rows
+  const dataGridRows = eventsToDisplay.map((event, index) => ({
+    ...event,
+    id: event.id,
+    srNo:
+      (Number.isInteger(pagination?.current_page)
+        ? pagination.current_page - 1
+        : 0) *
+        pageSize +
+      index +
+      1,
+  }));
+
+  console.log("dataGridRows:-",dataGridRows);
+  
+
+  // Add this function to fix the error
   const handleSelectChange = (event) => {
-    const newVendorId = event.target.value || ""; // Get the selected value
+    const newVendorId = event.target.value || "";
     setVendorId(newVendorId);
   };
 
   return (
     <>
+      {/* Add global style for text ellipsis in DataGrid cells */}
+      <style>
+        {`
+          .MuiDataGrid-cell {
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+          }
+        `}
+      </style>
       <div className="main-content">
         <div className="website-content overflow-auto">
           <div className="module-data-section p-0">
@@ -603,7 +784,6 @@ export default function VendorListPage() {
                   <p>loading..</p>
                 </div>
               ) : (
-
                 <div className="container-fluid">
                   {/* <div className="row separteinto5 justify-content-left">
                     <div className="col-md-2 text-center">
@@ -672,7 +852,6 @@ export default function VendorListPage() {
                       </div>
                     </div>
                   </div> */}
-
                   <div className="row separteinto5 justify-content-center">
                     <div className="col-md-2 text-center">
                       <div
@@ -763,7 +942,6 @@ export default function VendorListPage() {
                       </div>
                     </div> */}
                   </div>
-
                   <div className="card mt-4 pb-4">
                     <CollapsibleCard title="Quick Filter">
                       <form onSubmit={handleSubmit}>
@@ -795,8 +973,8 @@ export default function VendorListPage() {
                               value={
                                 filters.title_in
                                   ? filterOptions.event_titles.find(
-                                    (opt) => opt.value === filters.title_in
-                                  )
+                                      (opt) => opt.value === filters.title_in
+                                    )
                                   : null
                               }
                               placeholder="Select Title"
@@ -805,14 +983,19 @@ export default function VendorListPage() {
                               menuPlacement="auto"
                               menuPortalTarget={document.body} // Fixes overlapping issue
                               styles={{
-                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                menuPortal: (base) => ({
+                                  ...base,
+                                  zIndex: 9999,
+                                }),
                               }}
                             />
                           </div>
 
                           {/* Event Number */}
                           <div className="col-md-2">
-                            <label htmlFor="event-no-select">Event Number</label>
+                            <label htmlFor="event-no-select">
+                              Event Number
+                            </label>
                             <Select
                               id="event-no-select"
                               options={filterOptions.event_numbers}
@@ -825,8 +1008,9 @@ export default function VendorListPage() {
                               value={
                                 filters.event_no_cont
                                   ? filterOptions.event_numbers.find(
-                                    (opt) => opt.value === filters.event_no_cont
-                                  )
+                                      (opt) =>
+                                        opt.value === filters.event_no_cont
+                                    )
                                   : null
                               }
                               placeholder="Select No"
@@ -835,7 +1019,10 @@ export default function VendorListPage() {
                               menuPlacement="auto"
                               menuPortalTarget={document.body} // Fixes overlapping issue
                               styles={{
-                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                menuPortal: (base) => ({
+                                  ...base,
+                                  zIndex: 9999,
+                                }),
                               }}
                             />
                           </div>
@@ -855,8 +1042,8 @@ export default function VendorListPage() {
                               value={
                                 filters.status_in
                                   ? filterOptions.statuses.find(
-                                    (opt) => opt.value === filters.status_in
-                                  )
+                                      (opt) => opt.value === filters.status_in
+                                    )
                                   : null
                               }
                               placeholder="Select Status"
@@ -865,14 +1052,19 @@ export default function VendorListPage() {
                               menuPlacement="auto"
                               menuPortalTarget={document.body} // Fixes overlapping issue
                               styles={{
-                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                menuPortal: (base) => ({
+                                  ...base,
+                                  zIndex: 9999,
+                                }),
                               }}
                             />
                           </div>
 
                           {/* Created By */}
                           <div className="col-md-2">
-                            <label htmlFor="created-by-select">Created By</label>
+                            <label htmlFor="created-by-select">
+                              Created By
+                            </label>
                             <Select
                               id="created-by-select"
                               options={filterOptions.creaters}
@@ -885,9 +1077,9 @@ export default function VendorListPage() {
                               value={
                                 filters.created_by_id_in
                                   ? filterOptions.creaters.find(
-                                    (opt) =>
-                                      opt.value === filters.created_by_id_in
-                                  )
+                                      (opt) =>
+                                        opt.value === filters.created_by_id_in
+                                    )
                                   : null
                               }
                               placeholder="Select Creator"
@@ -896,11 +1088,17 @@ export default function VendorListPage() {
                               menuPlacement="auto"
                               menuPortalTarget={document.body} // Fixes overlapping issue
                               styles={{
-                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                menuPortal: (base) => ({
+                                  ...base,
+                                  zIndex: 9999,
+                                }),
                               }}
                             />
                           </div>
-                          <button type="submit" className="col-md-1 purple-btn2">
+                          <button
+                            type="submit"
+                            className="col-md-1 purple-btn2"
+                          >
                             Go{" "}
                           </button>
                         </div>
@@ -943,7 +1141,9 @@ export default function VendorListPage() {
                               <li
                                 key={suggestion.id} // Use unique identifier if available
                                 className="suggestion-item"
-                                onClick={() => handleSuggestionClick(suggestion)}
+                                onClick={() =>
+                                  handleSuggestionClick(suggestion)
+                                }
                               >
                                 {suggestion.event_title}{" "}
                                 {/* Display event title */}
@@ -987,19 +1187,19 @@ export default function VendorListPage() {
                                     <DownloadIcon />
                                   </button>
                                 </div> */}
-                              {/* <div className="col-md-3">
-                                  <button
-                                    style={{ color: "#de7008" }}
-                                    type="submit"
-                                    className="btn btn-md"
-                                    onClick={handleSettingModalShow}
-                                  >
-                                    <SettingIcon
-                                      color={"#de7008"}
-                                      style={{ width: "23px", height: "23px" }}
-                                    />
-                                  </button>
-                                </div> */}
+                              <div className="col-md-3">
+                                <button
+                                  style={{ color: "#8b0203" }}
+                                  type="button"
+                                  className="btn btn-md"
+                                  onClick={handleSettingModalShow}
+                                >
+                                  <SettingIcon
+                                    color={"#8b0203"}
+                                    style={{ width: "23px", height: "23px" }}
+                                  />
+                                </button>
+                              </div>
                             </div>
                           </div>
                           <div className="col-md-4">
@@ -1017,413 +1217,330 @@ export default function VendorListPage() {
                       </div>
                     </div>
                     <div className="tbl-container mt-3 px-3">
-                      <table className="w-100">
-                        <thead>
-                          <tr>
-                            {eventProjectColumns.map((column) => (
-                              <th key={column.key}>{column.label}</th>
-                            ))}
-                          </tr>
-                        </thead>
-
-                        <tbody>
-                          {eventsToDisplay.length === 0 ? (
-                            <tr>
-                              <td colSpan="9">No events found.</td>
-                            </tr>
-                          ) : (
-                            eventsToDisplay.map((event, index) => (
-                              <tr key={index}>
-                                <td>
-                                  {(pagination.current_page - 1) * 10 + index + 1}
-                                </td>
-                                {/* <td>{event.event_title || "N/A"}</td> */}
-                                <td>{event.event_no || "N/A"}</td>
-                                <td>
-                                  {event.event_schedule?.start_time ? (
-                                    <FormatDateTime
-                                      timestamp={event.event_schedule?.start_time}
-                                    />
-                                  ) : (
-                                    "N/A"
-                                  )}
-                                </td>
-
-                                <td>
-                                  {event.event_schedule?.end_time ? (
-                                    <FormatDateTime
-                                      timestamp={event.event_schedule?.end_time}
-                                    />
-                                  ) : (
-                                    "N/A"
-                                  )}
-                                </td>
-                                <td>
-                                  {event.created_at ? (
-                                    <FormatDate timestamp={event.created_at} />
-                                  ) : (
-                                    "N/A"
-                                  )}
-                                </td>
-                                {/* <td>{event.created_by || "N/A"}</td> */}
-                                <td style={{textTransform:'capitalize'}}>
-                                  {event.event_type_with_configuration || "N/A"}
-                                </td>
-                                {/* <td>
-                                  {event.event_type_detail?.event_configuration ||
-                                    "N/A"}
-                                </td> */}
-                                <td style={{textTransform:'capitalize'}}>{event.status || "N/A"}</td>
-                                <td>
-                                  <button
-                                    className="btn "
-                                    onClick={() =>
-                                      navigate(`/user-list/${event.id}`)
-                                    }
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      fill="currentColor"
-                                      class="bi bi-eye"
-                                      viewBox="0 0 16 16"
-                                    >
-                                      <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"></path>
-                                      <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                    </svg>{" "}
-                                  </button>
-
-                                  {/* <button
-                                    className="btn "
-                                    onClick={() => {
-                                      // Check if the event is an EOI (when event_type_detail is null or if the status is indicative of EOI)
-                                      if (
-                                        event.event_type_detail?.event_type ===
-                                          "eoi" ||
-                                        !event.event_type_detail?.event_type
-                                      ) {
-                                        // If event_type is 'eoi' or missing, navigate to the EOI details page
-                                        navigate(
-                                          `/eoi-details/${event.event_id}?eoi_id=${event.id}`
-                                        );
-                                        // If event_type_detail is null or it explicitly mentions 'eoi', navigate to the EOI details page
-                                        navigate(
-                                          `/eoi-details/${event.event_id}?eoi_id=${event.id}`
-                                        );
-                                      } else {
-                                        // For Live, All, History, navigate to the user list page
-                                        navigate(`/user-list/${event.id}`);
-                                      }
-                                    }}
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      fill="currentColor"
-                                      className="bi bi-eye"
-                                      viewBox="0 0 16 16"
-                                    >
-                                      <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"></path>
-                                      <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
-                                    </svg>{" "}
-                                  </button> */}
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="d-flex justify-content-between align-items-center px-3 mt-2">
-                      <ul className="pagination justify-content-center d-flex">
-                        {/* First Button */}
-                        <li
-                          className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
-                            }`}
-                        >
-                          <button
-                            className="page-link"
-                            onClick={() => handlePageChange(1)}
-                          >
-                            First
-                          </button>
-                        </li>
-
-                        {/* Previous Button */}
-                        <li
-                          className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
-                            }`}
-                        >
-                          <button
-                            className="page-link"
-                            onClick={() =>
-                              handlePageChange(pagination.current_page - 1)
-                            }
-                            disabled={pagination.current_page === 1}
-                          >
-                            Prev
-                          </button>
-                        </li>
-
-                        {/* Dynamic Page Numbers */}
-                        {pageNumbers.map((pageNumber) => (
-                          <li
-                            key={pageNumber}
-                            className={`page-item ${pagination.current_page === pageNumber
-                              ? "active"
-                              : ""
-                              }`}
-                          >
-                            <button
-                              className="page-link"
-                              onClick={() => handlePageChange(pageNumber)}
-                            >
-                              {pageNumber}
-                            </button>
-                          </li>
-                        ))}
-
-                        {/* Next Button */}
-                        <li
-                          className={`page-item ${pagination.current_page === pagination.total_pages
-                            ? "disabled"
-                            : ""
-                            }`}
-                        >
-                          <button
-                            className="page-link"
-                            onClick={() =>
-                              handlePageChange(pagination.current_page + 1)
-                            }
-                            disabled={
-                              pagination.current_page === pagination.total_pages
-                            }
-                          >
-                            Next
-                          </button>
-                        </li>
-
-                        {/* Last Button */}
-                        <li
-                          className={`page-item ${pagination.current_page === pagination.total_pages
-                            ? "disabled"
-                            : ""
-                            }`}
-                        >
-                          <button
-                            className="page-link"
-                            onClick={() =>
-                              handlePageChange(pagination.total_pages)
-                            }
-                            disabled={
-                              pagination.current_page === pagination.total_pages
-                            }
-                          >
-                            Last
-                          </button>
-                        </li>
-                      </ul>
-
-                      {/* Showing entries count */}
-                      <div>
-                        <p>
-                          Showing{" "}
-                          {Math.min(
-                            (pagination.current_page - 1) * pageSize + 1 || 1,
-                            pagination.total_count
-                          )}{" "}
-                          to{" "}
-                          {Math.min(
-                            pagination.current_page * pageSize,
-                            pagination.total_count
-                          )}{" "}
-                          of {pagination.total_count} entries
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <LayoutModal show={settingShow} onHide={handleSettingClose} />
-
-              <Modal
-                show={show}
-                onHide={handleClose}
-                dialogClassName="modal-right"
-                className="setting-modal"
-                backdrop={true}
-              >
-                <Modal.Header>
-                  <div className="container-fluid p-0">
-                    <div className="border-0 d-flex justify-content-between align-items-center">
-                      <div className="d-flex align-items-center">
-                        <button
-                          type="button"
-                          className="btn"
-                          aria-label="Close"
-                          onClick={handleClose}
-                        >
-                          <svg
-                            width="10"
-                            height="16"
-                            viewBox="0 0 10 18"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M9 1L1 9L9 17"
-                              stroke=" #8b0203"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </button>
-                        <h3
-                          className="modal-title m-0"
-                          style={{ fontWeight: 500 }}
-                        >
-                          Filter
-                        </h3>
-                      </div>
-                      <Link
-                        className="resetCSS"
-                        style={{
-                          fontSize: "14px",
-                          textDecoration: "underline",
+                      <DataGrid
+                        rows={dataGridRows}
+                        columns={columns}
+                        pagination
+                        pageSize={pageSize}
+                        rowHeight={60}
+                        rowCount={
+                          Number.isInteger(pagination?.total_count)
+                            ? pagination.total_count
+                            : 0
+                        }
+                        paginationMode="server"
+                        page={
+                          Number.isInteger(pagination?.current_page) &&
+                          pagination.current_page > 0
+                            ? pagination.current_page - 1
+                            : 0
+                        }
+                        onPageChange={(params) => handlePageChange(params + 1)}
+                        loading={loading}
+                        disableSelectionOnClick
+                        getRowId={(row) => row.id}
+                        sx={{
+                          "& .MuiDataGrid-columnHeaders": {
+                            backgroundColor: "#f8f9fa",
+                            color: "#000",
+                            fontWeight: "bold",
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 1,
+                          },
+                          "& .MuiDataGrid-cell": {
+                            borderColor: "#dee2e6",
+                          },
+                          "& .MuiDataGrid-columnHeader": {
+                            borderColor: "#dee2e6",
+                          },
                         }}
-                        to="#"
-                        onClick={handleReset} // Attach the reset function
+                        components={{
+                          ColumnMenu: () => null,
+                          NoRowsOverlay: () => (
+                            <div
+                              style={{ padding: "2rem", textAlign: "center" }}
+                            >
+                              No events found.
+                            </div>
+                          ),
+                        }}
+                      />
+                    </div>
+                    {/* Settings Modal for column visibility */}
+                    <Modal
+                      show={settingShow}
+                      onHide={handleSettingClose}
+                      dialogClassName="modal-right"
+                      className="setting-modal"
+                      backdrop={true}
+                      size="sm"
+                    >
+                      <Modal.Header>
+                        <div className="container-fluid p-0">
+                          <div className="border-0 d-flex justify-content-between align-items-center">
+                            <div className="d-flex align-items-center">
+                              <button
+                                type="button"
+                                className="btn"
+                                aria-label="Close"
+                                onClick={handleSettingClose}
+                              >
+                                <svg
+                                  width="10"
+                                  height="16"
+                                  viewBox="0 0 10 18"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M8 2L2 8L8 14"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                            <button
+                              style={{
+                                textDecoration: "underline",
+                                border: "none",
+                                background: "none",
+                                color: "#8b0203",
+                              }}
+                              onClick={handleResetColumns}
+                            >
+                              Reset
+                            </button>
+                          </div>
+                        </div>
+                      </Modal.Header>
+                      <Modal.Body
+                        style={{ height: "400px", overflowY: "auto" }}
                       >
-                        Reset
-                      </Link>
-                    </div>
+                        {allColumns.map((column) => (
+                          <div
+                            className="row justify-content-between align-items-center mt-2"
+                            key={column.field}
+                          >
+                            <div className="col-md-6">
+                              <label>{column.headerName}</label>
+                            </div>
+                            <div className="col-md-4">
+                              <div className="form-check form-switch mt-1">
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  checked={columnVisibility[column.field]}
+                                  onChange={() =>
+                                    handleToggleColumn(column.field)
+                                  }
+                                  role="switch"
+                                  id={`flexSwitchCheckDefault-${column.field}`}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </Modal.Body>
+                      <Modal.Footer>
+                        <button className="purple-btn1" onClick={handleShowAll}>
+                          Show All
+                        </button>
+                        <button className="purple-btn2" onClick={handleHideAll}>
+                          Hide All
+                        </button>
+                      </Modal.Footer>
+                    </Modal>
                   </div>
-                </Modal.Header>
-                <form onSubmit={handleSubmit}>
-                  <div className="modal-body" style={{ overflowY: "scroll" }}>
-                    <div className="form-group mb-4">
-                      <div className="form-group">
-                        <label htmlFor="mor-date-from">Enter Title </label>
-                        <Select
-                          options={filterOptions.event_titles}
-                          placeholder="Select an Event Title"
-                          isClearable
-                          value={filterOptions.event_titles.find(
-                            (opt) => opt.value === filters.title_in
-                          )}
-                          onChange={(option) =>
-                            handleFilterChange("title_in", option?.value || "")
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="form-group mb-4">
-                      <div className="form-group">
-                        <label htmlFor="mor-date-from">Product</label>
-                        <Select
-                          options={filterOptions.material_name}
-                          placeholder="Select a Product"
-                          isClearable
-                          value={filterOptions.material_name.find(
-                            (opt) =>
-                              opt.value ===
-                              filters.event_materials_inventory_id_in
-                          )}
-                          onChange={(option) =>
-                            handleFilterChange(
-                              "event_materials_inventory_id_in",
-                              option?.value || ""
-                            )
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="form-group mb-4">
-                      <div className="form-group">
-                        <label htmlFor="mor-date-from">Product Category</label>
-                        <Select
-                          options={filterOptions.material_type}
-                          placeholder="Select a Product Category"
-                          isClearable
-                          value={filterOptions.material_type.find(
-                            (opt) =>
-                              opt.value ===
-                              filters.event_materials_pms_inventory_inventory_type_id_in
-                          )}
-                          onChange={(option) =>
-                            handleFilterChange(
-                              "event_materials_pms_inventory_inventory_type_id_in",
-                              option?.value || ""
-                            )
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="form-group mb-4">
-                      <div className="form-group">
-                        <label htmlFor="mor-date-from">Location</label>
-                        <Select
-                          options={filterOptions.locations}
-                          placeholder="Select a Location"
-                          isClearable
-                          value={filterOptions.locations.find(
-                            (opt) => opt.value === filters.event_materials_id_in
-                          )}
-                          onChange={(option) =>
-                            handleFilterChange(
-                              "event_materials_id_in",
-                              option?.value || ""
-                            )
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="form-group mb-4">
-                      <div className="form-group">
-                        <label htmlFor="mor-date-from">Created By</label>
-                        <Select
-                          options={filterOptions.creaters}
-                          placeholder="Select a Creator"
-                          isClearable
-                          value={filterOptions.creaters.find(
-                            (opt) => opt.value === filters.created_by_id_in
-                          )}
-                          onChange={(option) =>
-                            handleFilterChange(
-                              "created_by_id_in",
-                              option?.value || ""
-                            )
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="form-group mb-4">
-                      <div className="form-group d-flex align-items-start">
-                        <label htmlFor="mor-date-from">My Event</label>
-                        <div className="form-check form-switch ms-5">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            role="switch"
-                            id="flexSwitchCheckDefault"
-                            checked={isMyEvent}
-                            onChange={(e) => setIsMyEvent(e.target.checked)}
-                          />
+                  <Modal
+                    show={show}
+                    onHide={handleClose}
+                    dialogClassName="modal-right"
+                    className="setting-modal"
+                    backdrop={true}
+                  >
+                    <Modal.Header>
+                      <div className="container-fluid p-0">
+                        <div className="border-0 d-flex justify-content-between align-items-center">
+                          <div className="d-flex align-items-center">
+                            <button
+                              type="button"
+                              className="btn"
+                              aria-label="Close"
+                              onClick={handleClose}
+                            >
+                              <svg
+                                width="10"
+                                height="16"
+                                viewBox="0 0 10 18"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M9 1L1 9L9 17"
+                                  stroke=" #8b0203"
+                                  strokeWidth="1.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </button>
+                            <h3
+                              className="modal-title m-0"
+                              style={{ fontWeight: 500 }}
+                            >
+                              Filter
+                            </h3>
+                          </div>
+                          <Link
+                            className="resetCSS"
+                            style={{
+                              fontSize: "14px",
+                              textDecoration: "underline",
+                            }}
+                            to="#"
+                            onClick={handleReset} // Attach the reset function
+                          >
+                            Reset
+                          </Link>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="modal-footer justify-content-center">
-                    <button type="submit" className="purple-btn2">
-                      Go
-                    </button>
-                  </div>
-                </form>
-              </Modal>
+                    </Modal.Header>
+                    <form onSubmit={handleSubmit}>
+                      <div
+                        className="modal-body"
+                        style={{ overflowY: "scroll" }}
+                      >
+                        <div className="form-group mb-4">
+                          <div className="form-group">
+                            <label htmlFor="mor-date-from">Enter Title </label>
+                            <Select
+                              options={filterOptions.event_titles}
+                              placeholder="Select an Event Title"
+                              isClearable
+                              value={filterOptions.event_titles.find(
+                                (opt) => opt.value === filters.title_in
+                              )}
+                              onChange={(option) =>
+                                handleFilterChange(
+                                  "title_in",
+                                  option?.value || ""
+                                )
+                              }
+                            />
+                          </div>
+                        </div>
+                        <div className="form-group mb-4">
+                          <div className="form-group">
+                            <label htmlFor="mor-date-from">Product</label>
+                            <Select
+                              options={filterOptions.material_name}
+                              placeholder="Select a Product"
+                              isClearable
+                              value={filterOptions.material_name.find(
+                                (opt) =>
+                                  opt.value ===
+                                  filters.event_materials_inventory_id_in
+                              )}
+                              onChange={(option) =>
+                                handleFilterChange(
+                                  "event_materials_inventory_id_in",
+                                  option?.value || ""
+                                )
+                              }
+                            />
+                          </div>
+                        </div>
+                        <div className="form-group mb-4">
+                          <div className="form-group">
+                            <label htmlFor="mor-date-from">
+                              Product Category
+                            </label>
+                            <Select
+                              options={filterOptions.material_type}
+                              placeholder="Select a Product Category"
+                              isClearable
+                              value={filterOptions.material_type.find(
+                                (opt) =>
+                                  opt.value ===
+                                  filters.event_materials_pms_inventory_inventory_type_id_in
+                              )}
+                              onChange={(option) =>
+                                handleFilterChange(
+                                  "event_materials_pms_inventory_inventory_type_id_in",
+                                  option?.value || ""
+                                )
+                              }
+                            />
+                          </div>
+                        </div>
+                        <div className="form-group mb-4">
+                          <div className="form-group">
+                            <label htmlFor="mor-date-from">Location</label>
+                            <Select
+                              options={filterOptions.locations}
+                              placeholder="Select a Location"
+                              isClearable
+                              value={filterOptions.locations.find(
+                                (opt) =>
+                                  opt.value === filters.event_materials_id_in
+                              )}
+                              onChange={(option) =>
+                                handleFilterChange(
+                                  "event_materials_id_in",
+                                  option?.value || ""
+                                )
+                              }
+                            />
+                          </div>
+                        </div>
+                        <div className="form-group mb-4">
+                          <div className="form-group">
+                            <label htmlFor="mor-date-from">Created By</label>
+                            <Select
+                              options={filterOptions.creaters}
+                              placeholder="Select a Creator"
+                              isClearable
+                              value={filterOptions.creaters.find(
+                                (opt) => opt.value === filters.created_by_id_in
+                              )}
+                              onChange={(option) =>
+                                handleFilterChange(
+                                  "created_by_id_in",
+                                  option?.value || ""
+                                )
+                              }
+                            />
+                          </div>
+                        </div>
+                        <div className="form-group mb-4">
+                          <div className="form-group d-flex align-items-start">
+                            <label htmlFor="mor-date-from">My Event</label>
+                            <div className="form-check form-switch ms-5">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                role="switch"
+                                id="flexSwitchCheckDefault"
+                                checked={isMyEvent}
+                                onChange={(e) => setIsMyEvent(e.target.checked)}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="modal-footer justify-content-center">
+                        <button type="submit" className="purple-btn2">
+                          Go
+                        </button>
+                      </div>
+                    </form>
+                  </Modal>
+                </div>
+              )}
             </div>
           </div>
         </div>

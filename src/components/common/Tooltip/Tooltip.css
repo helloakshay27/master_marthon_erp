@@ -10,7 +10,7 @@
   border-radius: 8px;
   padding: 5px;
   position: absolute;
-  z-index: 1;
+  z-index: 1000;
   top: 125%; /* Position below the element */
   left: 50%;
   margin-left: -60px;
@@ -36,4 +36,10 @@
   border-width: 5px;
   border-style: solid;
   border-color: transparent transparent lightgrey transparent;
+}
+
+.MuiDataGrid-cell {
+  overflow: visible !important;
+  position: relative;
+  z-index: 1;
 }
