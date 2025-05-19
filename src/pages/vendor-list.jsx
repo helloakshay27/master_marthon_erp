@@ -38,7 +38,7 @@ export default function VendorListPage() {
   const [show, setShow] = useState(false);
   const location = useLocation();
 
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("live");
   const [liveEvents, setLiveEvents] = useState({ events: [], pagination: {} });
   const [historyEvents, setHistoryEvents] = useState({
     events: [],
@@ -530,7 +530,7 @@ export default function VendorListPage() {
 
   const eventProjectColumns = [
     { label: "Sr.No.", key: "srNo" },
-    { label: "Event Title", key: "event_title" },
+    // { label: "Event Title", key: "event_title" },
     { label: "Event No", key: "event_no" },
     { label: "Start Time", key: "start_time" },
 
@@ -539,7 +539,7 @@ export default function VendorListPage() {
     { label: "Created At", key: "created_at" },
     // { label: "Created By", key: "created_by" },
     { label: "Event Type", key: "event_type" },
-    { label: "Event Configuration", key: "event_configuration" },
+    // { label: "Event Configuration", key: "event_configuration" },
     { label: "Status", key: "status" },
     { label: "Action" },
   ];
@@ -1037,7 +1037,7 @@ export default function VendorListPage() {
                                 <td>
                                   {(pagination.current_page - 1) * 10 + index + 1}
                                 </td>
-                                <td>{event.event_title || "N/A"}</td>
+                                {/* <td>{event.event_title || "N/A"}</td> */}
                                 <td>{event.event_no || "N/A"}</td>
                                 <td>
                                   {event.event_schedule?.start_time ? (
@@ -1067,12 +1067,12 @@ export default function VendorListPage() {
                                 </td>
                                 {/* <td>{event.created_by || "N/A"}</td> */}
                                 <td style={{textTransform:'capitalize'}}>
-                                  {event.event_type_detail?.event_type || "N/A"}
+                                  {event.event_type_with_configuration || "N/A"}
                                 </td>
-                                <td>
+                                {/* <td>
                                   {event.event_type_detail?.event_configuration ||
                                     "N/A"}
-                                </td>
+                                </td> */}
                                 <td style={{textTransform:'capitalize'}}>{event.status || "N/A"}</td>
                                 <td>
                                   <button

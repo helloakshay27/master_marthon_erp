@@ -128,7 +128,7 @@ export default function adminList() {
         params.row.event_schedule?.start_time ? (
           <FormatDateTime timestamp={params.row.event_schedule.start_time} />
         ) : (
-          "N/A"
+          "-"
         ),
     },
     {
@@ -139,7 +139,7 @@ export default function adminList() {
         params.row.event_schedule?.end_time ? (
           <FormatDateTime timestamp={params.row.event_schedule.end_time} />
         ) : (
-          "N/A"
+          "-"
         ),
     },
     {
@@ -147,31 +147,31 @@ export default function adminList() {
       headerName: "Created At",
       width: 140,
       renderCell: (params) =>
-        params.row.created_at ? <FormatDate timestamp={params.row.created_at} /> : "N/A",
+        params.row.created_at ? <FormatDate timestamp={params.row.created_at} /> : "-",
     },
-    { field: "created_by", headerName: "Created By", width: 120, renderCell: (params) => params.value || "N/A" },
+    { field: "created_by", headerName: "Created By", width: 120, renderCell: (params) => params.value || "-" },
     {
       field: "event_type",
       headerName: "Event Type",
       width: 120,
       renderCell: (params) =>
-        params.row.event_type_detail?.event_type
-          ? params.row.event_type_detail.event_type.toUpperCase()
-          : "N/A",
+        params.row.event_type_with_configuration
+          ? params.row.event_type_with_configuration
+          : "-",
     },
-    {
-      field: "event_configuration",
-      headerName: "Event Configuration",
-      width: 160,
-      renderCell: (params) =>
-        params.row.event_type_detail?.event_configuration || "N/A",
-    },
+    // {
+    //   field: "event_configuration",
+    //   headerName: "Event Configuration",
+    //   width: 160,
+    //   renderCell: (params) =>
+    //     params.row.event_type_detail?.event_configuration || "-",
+    // },
     {
       field: "status",
       headerName: "Status",
       width: 110,
       renderCell: (params) =>
-        params.row.status ? params.row.status.charAt(0).toUpperCase() + params.row.status.slice(1) : "N/A",
+        params.row.status ? params.row.status.charAt(0).toUpperCase() + params.row.status.slice(1) : "-",
     },
     {
       field: "action",
@@ -244,6 +244,7 @@ export default function adminList() {
     event_type_detail: event.event_type_detail,
     event_title: event?.event_title,
     status: event.status,
+    event_type_with_configuration: event.event_type_with_configuration,
     // Add any other fields you need for columns
   }));
 
