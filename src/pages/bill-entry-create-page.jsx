@@ -451,7 +451,7 @@ const BillEntryListSubPage = () => {
   const [attachModal, setattachModal] = useState(false);
   const [viewDocumentModal, setviewDocumentModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
-  const [documents, setDocuments] = useState([]);
+
   const openattachModal = () => setattachModal(true);
   const closeattachModal = () => setattachModal(false);
   const [newDocument, setNewDocument] = useState({
@@ -459,27 +459,68 @@ const BillEntryListSubPage = () => {
     attachments: [],
   });
 
+  const initialDocumentTypes = [
+    { id: 1, name: "Tax Invoice", count: 0 },
+    {
+      id: 2,
+      name: "Site acknowledged challan / Challan cum Invoice",
+      count: 0,
+    },
+    { id: 3, name: "Weighment slips", count: 0 },
+    { id: 4, name: "Lorry receipt", count: 0 },
+    { id: 5, name: "E Way bill", count: 0 },
+    { id: 6, name: "E Invoice", count: 0 },
+    { id: 7, name: "Warranty", count: 0 },
+    { id: 8, name: "MTC", count: 0 },
+  ];
+
+  const [documents, setDocuments] = useState(
+    initialDocumentTypes.map((doc) => ({
+      document_type: doc.name,
+      attachments: [],
+      isDefault: true, // Add flag to identify default documents
+    }))
+  );
+
+  // Add this at the top of your component
+
   const handleAttachDocument = () => {
     if (newDocument.document_type && newDocument.attachments.length > 0) {
-      // Check if document type already exists
-      const existingDocIndex = documents.findIndex(
-        (doc) => doc.document_type === newDocument.document_type
-      );
+      setDocuments((prevDocs) => {
+        // Check if document type already exists
+        const existingDoc = prevDocs.find(
+          (doc) =>
+            doc.document_type.toLowerCase() ===
+            newDocument.document_type.toLowerCase()
+        );
 
-      if (existingDocIndex !== -1) {
-        // If document type exists, append new attachments
-        const updatedDocuments = [...documents];
-        updatedDocuments[existingDocIndex].attachments = [
-          ...updatedDocuments[existingDocIndex].attachments,
-          ...newDocument.attachments,
-        ];
-        setDocuments(updatedDocuments);
-      } else {
-        // If document type doesn't exist, add new document
-        setDocuments((prev) => [...prev, newDocument]);
-      }
+        if (existingDoc) {
+          // Update existing document
+          return prevDocs.map((doc) => {
+            if (
+              doc.document_type.toLowerCase() ===
+              newDocument.document_type.toLowerCase()
+            ) {
+              return {
+                ...doc,
+                attachments: [...doc.attachments, ...newDocument.attachments],
+              };
+            }
+            return doc;
+          });
+        } else {
+          // Add new document type
+          return [
+            ...prevDocs,
+            {
+              document_type: newDocument.document_type,
+              attachments: [...newDocument.attachments],
+              isDefault: false,
+            },
+          ];
+        }
+      });
 
-      // Reset new document state
       setNewDocument({
         document_type: "",
         attachments: [],
@@ -539,29 +580,28 @@ const BillEntryListSubPage = () => {
       alert("Please select a Purchase Order.");
       return;
     }
+    // const documentsWithAttachments = documents.filter(
+    //   (doc) => doc.attachments.length > 0
+    // );
+    // Map through all initialDocumentTypes
+    const allDocuments = initialDocumentTypes.map((docType) => {
+      // Find corresponding document from documents state
+      const existingDoc = documents.find(
+        (doc) => doc.document_type === docType.name
+      );
 
-    // const payload = {
-    //   bill_entry: {
-    //     purchase_order_id: selectedPO.id,
-    //     bill_no: "BILL-2025-001", // Replace with dynamic value if needed
-    //     bill_date: billDate, // Use dynamic value from input
-    //     bill_amount: parseFloat(billAmount), // Use dynamic value from input
-    //     status: status, // Use dynamic value from input
-    //     vendor_remark: vendorRemark, // Use dynamic value from input
-    //     // documents: [
-    //     //   {
-    //     //     document_type: "Invoice",
-    //     //     attachments: [
-    //     //       {
-    //     //         filename: "invoice.pdf", // Replace with dynamic value if needed
-    //     //         content_type: "application/pdf",
-    //     //         content: "data:application/pdf;base64,JVBERi0xLjQKJ..." // Replace with actual base64 content
-    //     //       }
-    //     //     ]
-    //     //   }
-    //     // ]
-    //   },
-    // };
+      return {
+        document_type: docType.name,
+        id: null,
+        attachments:
+          existingDoc?.attachments?.map((attachment) => ({
+            filename: attachment.filename,
+            content_type: attachment.content_type,
+            content: attachment.content,
+          })) || [], // If no attachments, pass empty array
+      };
+    });
+
     const payload = {
       bill_entry: {
         purchase_order_id: selectedPO.id,
@@ -571,14 +611,15 @@ const BillEntryListSubPage = () => {
         status: "open",
         mode_of_submission: "Offline",
         vendor_remark: formData.vendor_remark,
-        documents: documents.map((doc) => ({
-          document_type: doc.document_type,
-          attachments: doc.attachments.map((attachment) => ({
-            filename: attachment.filename,
-            content_type: attachment.content_type,
-            content: attachment.content,
-          })),
-        })),
+        // documents: documentsWithAttachments.map((doc) => ({
+        //   document_type: doc.document_type,
+        //   attachments: doc.attachments.map((attachment) => ({
+        //     filename: attachment.filename,
+        //     content_type: attachment.content_type,
+        //     content: attachment.content,
+        //   })),
+        // })),
+        documents: allDocuments,
       },
     };
 
@@ -634,19 +675,6 @@ const BillEntryListSubPage = () => {
           <div className="col-md-12">
             <div className="card p-3 mt-2">
               <div className="row">
-                <div className="col-md-3">
-                  <div className="form-group">
-                    <label>Vendor Name</label>
-                    <input
-                      className="form-control"
-                      type="text"
-                      placeholder=""
-                      fdprocessedid="qv9ju9"
-                      value={selectedPO?.supplier_name || ""}
-                      disabled
-                    />
-                  </div>
-                </div>
                 <div className="col-md-2">
                   <div className="form-group">
                     <label>PO Number</label>
@@ -668,7 +696,61 @@ const BillEntryListSubPage = () => {
                     Select
                   </p>
                 </div>
-                {/* <div className="col-md-3 ">
+                <div className="col-md-3">
+                  <div className="form-group">
+                    <label>Vendor Name</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      placeholder=""
+                      fdprocessedid="qv9ju9"
+                      value={selectedPO?.supplier_name || ""}
+                      disabled
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-3">
+                  <div className="form-group">
+                    <label>PO Value</label>
+                    <input
+                      className="form-control"
+                      type="number"
+                      value={selectedPO?.total_value || ""}
+                      disabled
+                      readOnly
+                    />
+                  </div>
+                </div>
+                <div className="col-md-3">
+                  <div className="form-group">
+                    <label>GSTIN</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      // value={formData.gstin}
+                      value={selectedPO?.gstin || ""}
+                      disabled
+                      readOnly
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-3 mt-2">
+                  <div className="form-group">
+                    <label>PAN</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      // value={formData.pan}
+                      value={selectedPO?.pan || ""}
+                      disabled
+                      readOnly
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-3 mt-2 ">
                   <div className="form-group">
                     <label>Bill Number</label>
                     <input
@@ -681,8 +763,8 @@ const BillEntryListSubPage = () => {
                       disabled
                     />
                   </div>
-                </div> */}
-                <div className="col-md-3 ">
+                </div>
+                <div className="col-md-3 mt-2 ">
                   <div className="form-group">
                     <label>Bill Date</label>
                     <input
@@ -696,7 +778,7 @@ const BillEntryListSubPage = () => {
                   </div>
                 </div>
 
-                <div className="col-md-3 ">
+                <div className="col-md-3  mt-2">
                   <div className="form-group">
                     <label>Bill Amount</label>
                     <input
@@ -704,6 +786,20 @@ const BillEntryListSubPage = () => {
                       type="text"
                       name="bill_amount"
                       value={formData.bill_amount}
+                      onChange={handleInputChange}
+                      placeholder=""
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-3  mt-2">
+                  <div className="form-group">
+                    <label>Due Date</label>
+                    <input
+                      className="form-control"
+                      type="date"
+                      // name="bill_amount"
+                      // value={formData.bill_amount}
                       onChange={handleInputChange}
                       placeholder=""
                     />
@@ -764,7 +860,7 @@ const BillEntryListSubPage = () => {
                       data-bs-target="#RevisionModal"
                       onClick={openattachModal}
                     >
-                      Attach Document
+                      + Attach Document
                     </button>
                   </div>
                 </div>
@@ -776,57 +872,49 @@ const BillEntryListSubPage = () => {
                       <th className="text-start">Sr. No.</th>
                       <th className="text-start">Document Name</th>
                       <th className="text-start">No. of Documents</th>
-                      <th className="text-start">Action</th>
+                      <th className="text-start">Attach Copy</th>
                     </tr>
                   </thead>
+                  {/* // Replace your existing table body with this */}
                   <tbody>
-                    {documents.length === 0 ? (
-                      <tr>
-                        <td colSpan="4" className="text-center">
-                          No documents added yet
+                    {documents.map((doc, index) => (
+                      <tr key={index}>
+                        <td className="text-start">{index + 1}</td>
+                        <td className="text-start">{doc.document_type}</td>
+                        <td
+                          className="text-start"
+                          style={{
+                            color: "#8b0203",
+                            textDecoration: "underline",
+                            cursor: "pointer",
+                          }}
+                          onClick={() =>
+                            handleDocumentCountClick(doc.document_type)
+                          }
+                        >
+                          {doc.attachments.length}
                         </td>
-                      </tr>
-                    ) : (
-                      documents.map((doc, index) => (
-                        <tr key={index}>
-                          <td className="text-start">{index + 1}</td>
-                          <td className="text-start">{doc.document_type}</td>
-                          <td
-                            className="text-start"
-                            // style={{ cursor: "pointer" }}
+                        <td className="text-start">
+                          <button
+                            className="text-decoration-underline border-0 bg-transparent"
                             style={{
                               color: "#8b0203",
                               textDecoration: "underline",
                               cursor: "pointer",
                             }}
-                            onClick={() =>
-                              handleDocumentCountClick(doc.document_type)
-                            }
+                            onClick={() => {
+                              setNewDocument((prev) => ({
+                                ...prev,
+                                document_type: doc.document_type,
+                              }));
+                              openattachModal();
+                            }}
                           >
-                            {doc.attachments.length}
-                          </td>
-                          <td className="text-start">
-                            <button
-                              className="text-decoration-underline border-0 bg-transparent"
-                              style={{
-                                color: "#8b0203",
-                                textDecoration: "underline",
-                                cursor: "pointer",
-                              }}
-                              onClick={() => {
-                                setNewDocument((prev) => ({
-                                  ...prev,
-                                  document_type: doc.document_type,
-                                }));
-                                openattachModal();
-                              }}
-                            >
-                              Attach Another Document
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
+                            + Attach
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -932,7 +1020,7 @@ const BillEntryListSubPage = () => {
                       <td>{selectedDocument.document_type}</td>
                       <td>{attachment.filename}</td>
                       <td>{new Date().toLocaleDateString()}</td>
-                      <td>vendor user</td>
+                      {/* <td>vendor user</td> */}
                       {/* <td>
                         <button
                           className="border-0 bg-transparent"
@@ -962,7 +1050,7 @@ const BillEntryListSubPage = () => {
                     <th>Document Name</th>
                     <th>Attachment Name</th>
                     <th>Upload Date</th>
-                    <th>Uploaded By</th>
+                    {/* <th>Uploaded By</th> */}
                     {/* <th>Action</th> */}
                   </tr>
                 </thead>
@@ -1019,25 +1107,41 @@ const BillEntryListSubPage = () => {
         className="modal-centered-custom"
       >
         <Modal.Header closeButton>
-          <h5>Attach Other Document</h5>
+          <h5>Attach Document</h5>
         </Modal.Header>
         <Modal.Body>
           <div className="row">
             <div className="col-md-12">
               <div className="form-group">
                 <label>Name of the Document</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={newDocument.document_type}
-                  onChange={(e) =>
-                    setNewDocument((prev) => ({
-                      ...prev,
-                      document_type: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter document name"
-                />
+                {newDocument.document_type &&
+                documents.find(
+                  (doc) =>
+                    doc.isDefault &&
+                    doc.document_type === newDocument.document_type
+                ) ? (
+                  // For default document types - show as disabled input
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.document_type}
+                    disabled
+                  />
+                ) : (
+                  // For new document types - allow input
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.document_type}
+                    onChange={(e) =>
+                      setNewDocument((prev) => ({
+                        ...prev,
+                        document_type: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter document name"
+                  />
+                )}
               </div>
             </div>
             <div className="col-md-12 mt-2">
