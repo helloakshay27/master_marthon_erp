@@ -44,6 +44,10 @@ export default function OverviewTab({
   const [specification, setSpecification] = useState(false);
   const [auditLogData, setAuditLogData] = useState([]);
   const [auditLog, setAuditLog] = useState(false);
+  // Local state for expand/collapse
+  const [openDelivery, setOpenDelivery] = useState(false);
+  const [openDynamic, setOpenDynamic] = useState(false);
+  const [openAttachments, setOpenAttachments] = useState(false);
 
   const { eventId } = useParams();
 
@@ -493,13 +497,6 @@ export default function OverviewTab({
 
                     // Unique key for this row
                     const rowKey = `${overviewDatas.sectionName}_${overviewDatas.inventoryName}_${rowIndex}`;
-
-                    // Local state for expand/collapse
-                    const [openDelivery, setOpenDelivery] = useState(false);
-                    const [openDynamic, setOpenDynamic] = useState(false);
-                    const [openAttachments, setOpenAttachments] =
-                      useState(false);
-
                     // If nothing to show
                     if (
                       attachmentsData.length === 0 &&

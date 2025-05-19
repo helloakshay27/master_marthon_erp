@@ -306,45 +306,35 @@ const EventTypeModal = ({
                 <p className="pro-text pro-body pro-text--normal">Contract</p>
               </div>
 
-              <div
-                className={`pro-radio-tabs__tab ${
-                  localEventType === "auction"
-                    ? "pro-radio-tabs__tab__selected"
-                    : ""
-                }`}
-                role="radio"
-                aria-checked={localEventType === "auction"}
-                tabIndex={0}
-                onClick={() => setLocalEventType("auction")}
-              >
-                <div className="pro-radio-tabs__check-icon">
-                  <label
-                    htmlFor="eventType"
-                    className={`ant-radio-wrapper ${
-                      localEventType === "auction"
-                        ? "ant-radio-wrapper-checked"
-                        : ""
-                    }`}
-                  >
-                    <span
-                      className={`ant-radio ${
-                        localEventType === "auction" ? "ant-radio-checked" : ""
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        className="ant-radio-input"
-                        value="auction"
-                        checked={localEventType === "auction"}
-                        onChange={() => setLocalEventType("auction")}
-                        id="eventType"
-                      />
-                      <div className="ant-radio-inner"></div>
-                    </span>
-                  </label>
-                </div>
-                <p className="pro-text pro-body pro-text--normal">Auction</p>
-              </div>
+              {localEventType === "auction" && (
+  <div
+    className={`pro-radio-tabs__tab pro-radio-tabs__tab__selected`}
+    role="radio"
+    aria-checked={true}
+    tabIndex={0}
+    onClick={() => setLocalEventType("auction")}
+  >
+    <div className="pro-radio-tabs__check-icon">
+      <label
+        htmlFor="eventType"
+        className="ant-radio-wrapper ant-radio-wrapper-checked"
+      >
+        <span className="ant-radio ant-radio-checked">
+          <input
+            type="radio"
+            className="ant-radio-input"
+            value="auction"
+            checked={true}
+            onChange={() => setLocalEventType("auction")}
+            id="eventType"
+          />
+          <div className="ant-radio-inner"></div>
+        </span>
+      </label>
+    </div>
+    <p className="pro-text pro-body pro-text--normal">Auction</p>
+  </div>
+)}
             </div>
           </div>
         </div>
@@ -438,7 +428,7 @@ const EventTypeModal = ({
               </div>
             </div>
 
-            <div
+            {/* <div
               className={`pro-radio-tabs__tab ${
                 localSelectedStrategy === "traffic_light"
                   ? "pro-radio-tabs__tab__selected"
@@ -479,7 +469,7 @@ const EventTypeModal = ({
                   </p>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         )}
         {localSelectedStrategy === "2" && (
