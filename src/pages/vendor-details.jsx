@@ -47,6 +47,7 @@ export default function VendorDetails() {
   const [openDeliveryRows, setOpenDeliveryRows] = useState({});
 const [openDynamicRows, setOpenDynamicRows] = useState({});
 const [openAttachmentsRows, setOpenAttachmentsRows] = useState({});
+const [sectionOptions, setSectionOptions] = useState([]); // To store section options
 
   const [terms, setTerms] = useState([]); // To store terms and
   const [shortTableData, setShortTableData] = useState({});
@@ -234,6 +235,31 @@ const [openAttachmentsRows, setOpenAttachmentsRows] = useState({});
   const [counterId, setCounterId] = useState(0);
 
   const navigate = useNavigate();
+
+   useEffect(() => {
+      const fetchSections = async () => {
+            try {
+              const response = await axios.get(
+                `${baseURL}rfq/events/material_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+              );
+      
+              if (response.data && Array.isArray(response.data.inventory_types)) {
+                setSectionOptions(
+                  response.data.inventory_types.map((section) => ({
+                    label: section.name,
+                    value: section.value,
+                  }))
+                );
+              } else {
+                console.error("Unexpected response structure:", response.data);
+              }
+            } catch (error) {
+              console.error("Error fetching sections:", error);
+            }
+          };
+      fetchSections();
+      
+        }, []);
 
   const handleDescriptionOfItemChange = (selected, rowIndex) => {
     const updatedData = [...data];
@@ -3728,8 +3754,50 @@ useEffect(() => {
                               className="mt-2"
                               style={{ paddingLeft: "24px" }}
                             >
-                              <div className="card card-body rounded-3 p-4 ">
-                                {/* Table Section */}
+                              <div className="card card-body rounded-3 p-0">
+                                {(() => {
+  // Get all grouped materials
+  const groupedMaterials = Object.values(data1?.grouped_event_materials || {});
+  // Get all material types
+  const allMaterialTypes = groupedMaterials
+    .flatMap(group => Object.values(group).flat())
+    .map(item => item.material_type);
+  const uniqueMaterialTypes = Array.from(new Set(allMaterialTypes));
+  // Use the first event_material for header context
+  const firstRow = data1?.event_materials && data1.event_materials[0];
+  const materialTypeIndex = firstRow
+    ? uniqueMaterialTypes.findIndex(type => type === firstRow.material_type)
+    : -1;
+  // Find the first material item for this type
+  const firstMaterialItem = groupedMaterials
+    .flatMap(group => Object.values(group).flat())
+    .find(item => item.material_type === (firstRow && firstRow.material_type));
+  return (
+    firstMaterialItem && (
+      <div className="card-header3" style={{ display: "flex", alignItems: "center", gap: "24px", padding: "16px 0 8px 0" }}>
+        <h3 className="card-title" style={{ fontWeight: 600, fontSize: "18px" }}>
+          Material Type {materialTypeIndex + 1} of {uniqueMaterialTypes.length}
+        </h3>
+        <SelectBox
+            label={"Select Material Type"}
+              options={sectionOptions}
+              defaultValue={
+            sectionOptions.find(
+              (option) => option.label === firstMaterialItem?.material_type
+            )?.value
+          }
+              onChange={(e) => {
+                // Handle change if needed
+                console.log('Selected Material Type:', e.target.value);
+              }}
+              style={{ minWidth: 180, padding: "0 20px", borderRadius: 4, marginTop: '50px' }}
+              disabled={true}
+            />
+      </div>
+    )
+  );
+})()}
+<div className="p-4">
                                 <Table
                                   columns={[
                                     { key: "srNo", label: "Sr.No." },
@@ -3776,7 +3844,6 @@ useEffect(() => {
                                   isAccordion={true}
                                   enableHoverEffect={true}
                                   isMinWidth={true}
-
 accordionRender={(row, rowIndex) => {
   // Filter matched data based on material type and inventory name
   const matchedData = Object.values(data1?.grouped_event_materials || {}).flatMap((group) =>
@@ -3809,31 +3876,8 @@ accordionRender={(row, rowIndex) => {
       }));
     }
   };
-
-  if (
-    attachmentsData.length === 0 &&
-    morInventorySpecifications.length === 0 &&
-    deliverySchedules.length === 0
-  ) {
-    return (
-      <div
-        style={{
-          width: "75vw",
-          marginLeft: "20px",
-          position: "sticky",
-          left: 0,
-          zIndex: 1,
-          backgroundColor: "white",
-          padding: "40px",
-          border: "1px solid #ddd",
-        }}
-        className="card card-body"
-      >
-        <p className="text-center">No additional details available.</p>
-      </div>
-    );
-  }
-
+  console.log("data1?.grouped_event_materials:-",data1?.grouped_event_materials);
+  
   return (
     <div
       style={{
@@ -3847,176 +3891,194 @@ accordionRender={(row, rowIndex) => {
       }}
     >
       {/* Delivery Schedules Accordion */}
-      {deliverySchedules.length > 0 && (
-        <div className="mb-3 card card-body p-0">
-          <div
+      <div className="mb-3 card card-body p-0">
+        <div
+          style={{
+            cursor: "pointer",
+            padding: "12px 20px",
+            background: "#f8f9fa",
+            borderBottom: "1px solid #eee",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+          onClick={() => handleToggle("delivery")}
+        >
+          <span style={{ fontWeight: 600, fontSize: "16px" }}>
+            Delivery Schedules
+          </span>
+          <button
+            className="purple-btn2 d-flex align-items-center"
             style={{
-              cursor: "pointer",
-              padding: "12px 20px",
-              background: "#f8f9fa",
-              borderBottom: "1px solid #eee",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
+              borderRadius: "50%",
+              width: "32px",
+              height: "32px",
+              padding: "0",
+              background: "transparent",
+              border: "none",
             }}
-            onClick={() => handleToggle("delivery")}
+            tabIndex={-1}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleToggle("delivery");
+            }}
           >
-            <span style={{ fontWeight: 600, fontSize: "16px" }}>
-              Delivery Schedules
-            </span>
-            <button
-              className="purple-btn2 d-flex align-items-center"
-              style={{
-                borderRadius: "50%",
-                width: "32px",
-                height: "32px",
-                padding: "0",
-                background: "transparent",
-                border: "none",
-              }}
-              tabIndex={-1}
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggle("delivery");
-              }}
-            >
-              <DropdownCollapseIcon isCollapsed={!openDeliveryRows[rowKey]} />
-            </button>
-          </div>
-          {openDeliveryRows[rowKey] && (
-            <div style={{ padding: "24px" }}>
-              <table className="table table-bordered">
-                <thead>
+            <DropdownCollapseIcon isCollapsed={!openDeliveryRows[rowKey]} />
+          </button>
+        </div>
+        {openDeliveryRows[rowKey] && (
+          <div style={{ padding: "24px" }}>
+            <table className="table table-bordered">
+              <thead>
+                <tr>
+                  <th style={{ textAlign: "center" }}>Expected Date</th>
+                  <th style={{ textAlign: "center" }}>Expected Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {deliverySchedules.length === 0 ? (
                   <tr>
-                    <th style={{ textAlign: "center" }}>Expected Date</th>
-                    <th style={{ textAlign: "center" }}>Expected Quantity</th>
+                    <td colSpan={2} style={{ textAlign: "center" }}>
+                      No delivery schedules available.
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {deliverySchedules.map((schedule, index) => (
+                ) : (
+                  deliverySchedules.map((schedule, index) => (
                     <tr key={index}>
                       <td>{schedule.expected_date}</td>
                       <td>{schedule.expected_quantity}</td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
       {/* Dynamic Details Accordion */}
-      {morInventorySpecifications.length > 0 && (
-        <div className="mb-3 card card-body p-0">
-          <div
+      <div className="mb-3 card card-body p-0">
+        <div
+          style={{
+            cursor: "pointer",
+            padding: "12px 20px",
+            background: "#f8f9fa",
+            borderBottom: "1px solid #eee",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+          onClick={() => handleToggle("dynamic")}
+        >
+          <span style={{ fontWeight: 600, fontSize: "16px" }}>
+            Dynamic Details
+          </span>
+          <button
+            className="purple-btn2 d-flex align-items-center"
             style={{
-              cursor: "pointer",
-              padding: "12px 20px",
-              background: "#f8f9fa",
-              borderBottom: "1px solid #eee",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
+              borderRadius: "50%",
+              width: "32px",
+              height: "32px",
+              padding: "0",
+              background: "transparent",
+              border: "none",
             }}
-            onClick={() => handleToggle("dynamic")}
+            tabIndex={-1}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleToggle("dynamic");
+            }}
           >
-            <span style={{ fontWeight: 600, fontSize: "16px" }}>
-              Dynamic Details
-            </span>
-            <button
-              className="purple-btn2 d-flex align-items-center"
-              style={{
-                borderRadius: "50%",
-                width: "32px",
-                height: "32px",
-                padding: "0",
-                background: "transparent",
-                border: "none",
-              }}
-              tabIndex={-1}
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggle("dynamic");
-              }}
-            >
-              <DropdownCollapseIcon isCollapsed={!openDynamicRows[rowKey]} />
-            </button>
-          </div>
-          {openDynamicRows[rowKey] && (
-            <div style={{ padding: "24px" }}>
-              <table className="table table-bordered">
-                <thead>
+            <DropdownCollapseIcon isCollapsed={!openDynamicRows[rowKey]} />
+          </button>
+        </div>
+        {openDynamicRows[rowKey] && (
+          <div style={{ padding: "24px" }}>
+            <table className="table table-bordered">
+              <thead>
+                <tr>
+                  <th style={{ textAlign: "center" }}>Field</th>
+                  <th style={{ textAlign: "center" }}>Specification</th>
+                </tr>
+              </thead>
+              <tbody>
+                {morInventorySpecifications.length === 0 ? (
                   <tr>
-                    <th style={{ textAlign: "center" }}>Field</th>
-                    <th style={{ textAlign: "center" }}>Specification</th>
+                    <td colSpan={2} style={{ textAlign: "center" }}>
+                      No dynamic details available.
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {morInventorySpecifications.map((spec, index) => (
+                ) : (
+                  morInventorySpecifications.map((spec, index) => (
                     <tr key={index}>
                       <td>{spec.field}</td>
                       <td>{spec.specification || "N/A"}</td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
       {/* Attachments Accordion */}
-      {attachmentsData.length > 0 && (
-        <div className="mb-3 card card-body p-0">
-          <div
+      <div className="mb-3 card card-body p-0">
+        <div
+          style={{
+            cursor: "pointer",
+            padding: "12px 20px",
+            background: "#f8f9fa",
+            borderBottom: "1px solid #eee",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+          onClick={() => handleToggle("attachments")}
+        >
+          <span style={{ fontWeight: 600, fontSize: "16px" }}>
+            Attachments
+          </span>
+          <button
+            className="purple-btn2 d-flex align-items-center"
             style={{
-              cursor: "pointer",
-              padding: "12px 20px",
-              background: "#f8f9fa",
-              borderBottom: "1px solid #eee",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
+              borderRadius: "50%",
+              width: "32px",
+              height: "32px",
+              padding: "0",
+              background: "transparent",
+              border: "none",
             }}
-            onClick={() => handleToggle("attachments")}
+            tabIndex={-1}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleToggle("attachments");
+            }}
           >
-            <span style={{ fontWeight: 600, fontSize: "16px" }}>
-              Attachments
-            </span>
-            <button
-              className="purple-btn2 d-flex align-items-center"
-              style={{
-                borderRadius: "50%",
-                width: "32px",
-                height: "32px",
-                padding: "0",
-                background: "transparent",
-                border: "none",
-              }}
-              tabIndex={-1}
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggle("attachments");
-              }}
-            >
-              <DropdownCollapseIcon isCollapsed={!openAttachmentsRows[rowKey]} />
-            </button>
-          </div>
-          {openAttachmentsRows[rowKey] && (
-            <div style={{ padding: "24px" }}>
-              <table className="table table-bordered">
-                <thead>
+            <DropdownCollapseIcon isCollapsed={!openAttachmentsRows[rowKey]} />
+          </button>
+        </div>
+        {openAttachmentsRows[rowKey] && (
+          <div style={{ padding: "24px" }}>
+            <table className="table table-bordered">
+              <thead>
+                <tr>
+                  <th style={{ textAlign: "center" }}>Filename</th>
+                  <th style={{ textAlign: "center" }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {attachmentsData.length === 0 ? (
                   <tr>
-                    <th style={{ textAlign: "center" }}>Filename</th>
-                    <th style={{ textAlign: "center" }}>Action</th>
+                    <td colSpan={2} style={{ textAlign: "center" }}>
+                      No attachments available.
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {attachmentsData.map((attachment, index) => (
+                ) : (
+                  attachmentsData.map((attachment, index) => (
                     <tr key={index}>
                       <td>{attachment.filename}</td>
                       <td
@@ -4055,13 +4117,13 @@ accordionRender={(row, rowIndex) => {
                         </a>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }}
@@ -4080,6 +4142,7 @@ accordionRender={(row, rowIndex) => {
                                       : {}),
                                   }}
                                 />
+</div>
                               </div>
                             </div>
                           )}

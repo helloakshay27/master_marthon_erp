@@ -1398,6 +1398,7 @@ export default function EditEvent() {
                 templateData={eventDetails?.applied_event_template}
                 existingData={eventDetails?.grouped_event_materials}
                 deliveryData={eventDetails?.delivery_schedules}
+                isMorSelected={eventDetails?.from_mor}
                 updateSelectedTemplate={setSelectedTemplate}
                 updateBidTemplateFields={setBidTemplateFields}
                 updateAdditionalFields={setAdditionalFields}
