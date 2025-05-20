@@ -494,339 +494,383 @@ export default function OverviewTab({
           </a>
           {productOpen && (
             <div id="product-sheet" className="mx-5">
-              <div className="card card-body p-0 m-0 rounded-3">
-                {(() => {
-    // Calculate these outside accordionRender
-    const groupedMaterials = Object.values(overviewData?.grouped_event_materials || {});
-    const allMaterialTypes = groupedMaterials
-      .flatMap(group => Object.values(group).flat())
-      .map(item => item.material_type);
-    const uniqueMaterialTypes = Array.from(new Set(allMaterialTypes));
-    // Use the first row's sectionName for header
-    const firstRow = overviewDatas && overviewDatas[0];
-    const materialTypeIndex = firstRow
-      ? uniqueMaterialTypes.findIndex(type => type === firstRow.sectionName)
-      : -1;
-    const firstMaterialItem = groupedMaterials
-      .flatMap(group => Object.values(group).flat())
-      .find(item => item.material_type === (firstRow && firstRow.sectionName));
-    return (
-      firstMaterialItem && (
-        <div className="card-header3" style={{ display: "flex", alignItems: "center", gap: "24px", padding: "16px 0 8px 0" }}>
-          <h3 className="card-title" style={{ fontWeight: 600, fontSize: "18px" }}>
-            Material Type {materialTypeIndex + 1} of {uniqueMaterialTypes.length}
-          </h3>
-    <SelectBox
-    label={"Select Material Type"}
-      options={sectionOptions}
-      defaultValue={
-    sectionOptions.find(
-      (option) => option.label === firstMaterialItem?.material_type
-    )?.value
-  }
-      onChange={(e) => {
-        // Handle change if needed
-        console.log('Selected Material Type:', e.target.value);
-      }}
-      style={{ minWidth: 180, padding: "0 20px", borderRadius: 4, marginTop: '50px' }}
-      disabled={true}
-    />
-    {console.log('First Material Item:', firstMaterialItem, sectionOptions)
-    }
-        </div>
-      )
-    );
-  })()}
-  <div className="p-4">
-                <Table
-                  columns={columns}
-                  data={overviewDatas}
-                  isAccordion={true}
-                  accordionRender={(overviewDatas, rowIndex) => {
-  // Find the matching data for this row
-  const groupedMaterials = Object.values(overviewData?.grouped_event_materials || {});
-
-
-  const matchedData = groupedMaterials.flatMap((group) =>
-    Object.values(group)
-      .flat()
-      .filter(
-        (item) =>
-          item.material_type === overviewDatas.sectionName &&
-          item.inventory_name === overviewDatas.inventoryName
-      )
-  );
-
-  const deliverySchedules = matchedData.flatMap(
-    (item) => item.delivery_schedules || []
-  );
-  const morInventorySpecifications = matchedData.flatMap(
-    (item) => item.mor_inventory_specifications || []
-  );
-  const attachmentsData = matchedData.flatMap(
-    (item) => item.attachments || []
-  );
-
-  // Unique key for this row
-  const rowKey = `${overviewDatas.sectionName}_${overviewDatas.inventoryName}_${rowIndex}`;
-
-  // Local state for each accordion section
-  // const [openDelivery, setOpenDelivery] = React.useState(false);
-  // const [openDynamic, setOpenDynamic] = React.useState(false);
-  // const [openAttachments, setOpenAttachments] = React.useState(false);
-
-  return (
-    <div
-      style={{
-        width: "83vw",
-        marginLeft: "20px",
-        position: "sticky",
-        left: 0,
-        zIndex: 1,
-        backgroundColor: "white",
-        padding: "0",
-      }}
-    >
-      {/* Delivery Schedules Accordion */}
-      <div className="mb-3 card card-body p-0">
-        <div
-          style={{
-            cursor: "pointer",
-            padding: "0px 20px",
-            background: "#f8f9fa",
-            borderBottom: "1px solid #eee",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-          onClick={() => setOpenDelivery((prev) => !prev)}
-        >
-          <span style={{ fontWeight: 600, fontSize: "16px" }}>
-            Delivery Schedules
-          </span>
-          <button
-            className="purple-btn2 d-flex align-items-center"
+              <div className="">
+  {overviewData?.grouped_event_materials &&
+    Object.entries(overviewData.grouped_event_materials).map(
+      ([materialType, groups], typeIdx) => {
+        const materialsArr = Object.values(groups).flat();
+        if (!materialsArr.length) return null;
+        const rowKey = `${materialType}_${typeIdx}`;
+        return (
+          <div
+            key={rowKey}
+            className="mb-4 card card-body rounded-3 p-0"
             style={{
-              borderRadius: "50%",
-              width: "32px",
-              height: "32px",
-              padding: "0",
-              background: "transparent",
-              border: "none",
-            }}
-            tabIndex={-1}
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenDelivery((prev) => !prev);
+              border: "1px solid #eee",
+              borderRadius: "8px",
+              marginBottom: "24px",
+              background: "#fff",
             }}
           >
-            <DropdownCollapseIcon isCollapsed={!openDelivery} />
-          </button>
-        </div>
-        {openDelivery && (
-          <div style={{ padding: "24px" }}>
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th style={{ textAlign: "center" }}>Expected Date</th>
-                  <th style={{ textAlign: "center" }}>Expected Quantity</th>
-                </tr>
-              </thead>
-              <tbody>
-                {deliverySchedules.length === 0 ? (
-                  <tr>
-                    <td colSpan={2} style={{ textAlign: "center" }}>
-                      No delivery schedules available.
-                    </td>
-                  </tr>
-                ) : (
-                  deliverySchedules.map((schedule, index) => (
-                    <tr key={index}>
-                      <td>{schedule.expected_date}</td>
-                      <td>{schedule.expected_quantity}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Dynamic Details Accordion */}
-      <div className="mb-3 card card-body p-0">
-        <div
-          style={{
-            cursor: "pointer",
-            padding: "0px 20px",
-            background: "#f8f9fa",
-            borderBottom: "1px solid #eee",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-          onClick={() => setOpenDynamic((prev) => !prev)}
-        >
-          <span style={{ fontWeight: 600, fontSize: "16px" }}>
-            Dynamic Details
-          </span>
-          <button
-            className="purple-btn2 d-flex align-items-center"
-            style={{
-              borderRadius: "50%",
-              width: "32px",
-              height: "32px",
-              padding: "0",
-              background: "transparent",
-              border: "none",
-            }}
-            tabIndex={-1}
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenDynamic((prev) => !prev);
-            }}
-          >
-            <DropdownCollapseIcon isCollapsed={!openDynamic} />
-          </button>
-        </div>
-        {openDynamic && (
-          <div style={{ padding: "24px" }}>
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th style={{ textAlign: "center" }}>Field</th>
-                  <th style={{ textAlign: "center" }}>Specification</th>
-                </tr>
-              </thead>
-              <tbody>
-                {morInventorySpecifications.length === 0 ? (
-                  <tr>
-                    <td colSpan={2} style={{ textAlign: "center" }}>
-                      No dynamic details available.
-                    </td>
-                  </tr>
-                ) : (
-                  morInventorySpecifications.map((spec, index) => (
-                    <tr key={index}>
-                      <td>{spec.field}</td>
-                      <td>{spec.specification || "N/A"}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Attachments Accordion */}
-      <div className="mb-3 card card-body p-0">
-        <div
-          style={{
-            cursor: "pointer",
-            padding: "0px 20px",
-            background: "#f8f9fa",
-            borderBottom: "1px solid #eee",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-          onClick={() => setOpenAttachments((prev) => !prev)}
-        >
-          <span style={{ fontWeight: 600, fontSize: "16px" }}>
-            Attachments
-          </span>
-          <button
-            className="purple-btn2 d-flex align-items-center"
-            style={{
-              borderRadius: "50%",
-              width: "32px",
-              height: "32px",
-              padding: "0",
-              background: "transparent",
-              border: "none",
-            }}
-            tabIndex={-1}
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenAttachments((prev) => !prev);
-            }}
-          >
-            <DropdownCollapseIcon isCollapsed={!openAttachments} />
-          </button>
-        </div>
-        {openAttachments && (
-          <div style={{ padding: "24px" }}>
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th style={{ textAlign: "center" }}>Filename</th>
-                  <th style={{ textAlign: "center" }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {attachmentsData.length === 0 ? (
-                  <tr>
-                    <td colSpan={2} style={{ textAlign: "center" }}>
-                      No attachments available.
-                    </td>
-                  </tr>
-                ) : (
-                  attachmentsData.map((attachment, index) => (
-                    <tr key={index}>
-                      <td>{attachment.filename}</td>
-                      <td
-                        style={{
-                          display: "flex",
-                          gap: "10px",
-                          justifyContent: "center",
-                          width: "100%",
-                        }}
-                      >
-                        <a
-                          href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
-                          download={attachment.filename}
-                          className="purple-btn2"
+            {/* Header with Material Type and SelectBox */}
+            <div
+              className="card-header3"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "24px",
+                padding: "16px 0 8px 5px",
+              }}
+            >
+              <h3
+                className="card-title"
+                style={{ fontWeight: 500, fontSize: "16px" }}
+              >
+                Material Type {typeIdx + 1} of {Object.keys(overviewData.grouped_event_materials).length}
+              </h3>
+              <SelectBox
+                label={"Select Material Type"}
+                options={sectionOptions}
+                defaultValue={
+                  sectionOptions.find(
+                    (option) => option.label === materialType
+                  )?.value
+                }
+                disabled={true}
+                style={{
+                  minWidth: 180,
+                  padding: "0 20px",
+                  borderRadius: 4,
+                  marginTop: "48px",
+                }}
+              />
+            </div>
+            {/* Table for all materials of this type */}
+            <div className="p-4 pt-0">
+              <Table
+                columns={[
+                  { key: "srNo", label: "Sr.No." },
+                  { key: "material_type", label: "Material Type" },
+                  { key: "inventory_sub_type", label: "Material Sub Type" },
+                  { key: "inventory_name", label: "Material Name" },
+                  { key: "quantity", label: "Quantity" },
+                  { key: "uom_name", label: "UOM" },
+                  { key: "location", label: "Location" },
+                  { key: "rate", label: "Rate" },
+                  { key: "amount", label: "Amount" },
+                  { key: "pms_brand_name", label: "Brand" },
+                  { key: "pms_colour_name", label: "Colour" },
+                  { key: "generic_info_name", label: "Generic Info" },
+                  ...(materialsArr[0]?.extra_data
+                    ? Object.keys(materialsArr[0].extra_data).map((key) => ({
+                        key,
+                        label: key.replace(/_/g, " ").toUpperCase(),
+                      }))
+                    : []),
+                ]}
+                data={materialsArr.map((material, idx) => ({
+                  ...material,
+                  srNo: idx + 1,
+                }))}
+                isAccordion={true}
+                enableHoverEffect={true}
+                isMinWidth={true}
+                accordionRender={(_, rowIndex) => {
+                  const material = materialsArr[rowIndex];
+                  const deliverySchedules = material.delivery_schedules || [];
+                  const morInventorySpecifications = material.mor_inventory_specifications || [];
+                  const attachmentsData = material.attachments || [];
+                  const rowKey = material.id || `${materialType}_${rowIndex}`;
+                  return (
+                    <div
+                      style={{
+                        width: "85vw",
+                        marginLeft: "20px",
+                        position: "sticky",
+                        left: 0,
+                        zIndex: 1,
+                        backgroundColor: "white",
+                        padding: "0",
+                      }}
+                    >
+                      {/* Delivery Schedules Accordion */}
+                      <div className="mb-3 card card-body p-0">
+                        <div
                           style={{
-                            width: "40px",
-                            height: "40px",
-                            padding: "0",
+                            cursor: "pointer",
+                            padding: "12px 20px",
+                            background: "#f8f9fa",
+                            borderBottom: "1px solid #eee",
                             display: "flex",
                             alignItems: "center",
-                            justifyContent: "center",
+                            justifyContent: "space-between",
                           }}
+                          onClick={() =>
+                            setOpenDeliveryRows((prev) => ({
+                              ...prev,
+                              [rowKey]: !prev[rowKey],
+                            }))
+                          }
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 16 16"
-                            style={{ fill: "black" }}
+                          <span style={{ fontWeight: 600, fontSize: "16px" }}>
+                            Delivery Schedules
+                          </span>
+                          <button
+                            className="purple-btn2 d-flex align-items-center"
+                            style={{
+                              borderRadius: "50%",
+                              width: "32px",
+                              height: "32px",
+                              padding: "0",
+                              background: "transparent",
+                              border: "none",
+                            }}
+                            tabIndex={-1}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenDeliveryRows((prev) => ({
+                                ...prev,
+                                [rowKey]: !prev[rowKey],
+                              }));
+                            }}
                           >
-                            <g fill="white">
-                              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
-                              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
-                            </g>
-                          </svg>
-                        </a>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                            <DropdownCollapseIcon isCollapsed={!openDeliveryRows[rowKey]} />
+                          </button>
+                        </div>
+                        {openDeliveryRows[rowKey] && (
+                          <div style={{ padding: "24px" }}>
+                            <table className="table table-bordered">
+                              <thead>
+                                <tr>
+                                  <th style={{ textAlign: "center" }}>Expected Date</th>
+                                  <th style={{ textAlign: "center" }}>Expected Quantity</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {deliverySchedules.length === 0 ? (
+                                  <tr>
+                                    <td colSpan={2} style={{ textAlign: "center" }}>
+                                      No delivery schedules available.
+                                    </td>
+                                  </tr>
+                                ) : (
+                                  deliverySchedules.map((schedule, idx) => (
+                                    <tr key={idx}>
+                                      <td>{schedule.expected_date}</td>
+                                      <td>{schedule.expected_quantity}</td>
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                      {/* Dynamic Details Accordion */}
+                      <div className="mb-3 card card-body p-0">
+                        <div
+                          style={{
+                            cursor: "pointer",
+                            padding: "12px 20px",
+                            background: "#f8f9fa",
+                            borderBottom: "1px solid #eee",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
+                          onClick={() =>
+                            setOpenDynamicRows((prev) => ({
+                              ...prev,
+                              [rowKey]: !prev[rowKey],
+                            }))
+                          }
+                        >
+                          <span style={{ fontWeight: 600, fontSize: "16px" }}>
+                            Dynamic Details
+                          </span>
+                          <button
+                            className="purple-btn2 d-flex align-items-center"
+                            style={{
+                              borderRadius: "50%",
+                              width: "32px",
+                              height: "32px",
+                              padding: "0",
+                              background: "transparent",
+                              border: "none",
+                            }}
+                            tabIndex={-1}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenDynamicRows((prev) => ({
+                                ...prev,
+                                [rowKey]: !prev[rowKey],
+                              }));
+                            }}
+                          >
+                            <DropdownCollapseIcon isCollapsed={!openDynamicRows[rowKey]} />
+                          </button>
+                        </div>
+                        {openDynamicRows[rowKey] && (
+                          <div style={{ padding: "24px" }}>
+                            <table className="table table-bordered">
+                              <thead>
+                                <tr>
+                                  <th style={{ textAlign: "center" }}>Field</th>
+                                  <th style={{ textAlign: "center" }}>Specification</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {morInventorySpecifications.length === 0 ? (
+                                  <tr>
+                                    <td colSpan={2} style={{ textAlign: "center" }}>
+                                      No dynamic details available.
+                                    </td>
+                                  </tr>
+                                ) : (
+                                  morInventorySpecifications.map((spec, idx) => (
+                                    <tr key={idx}>
+                                      <td>{spec.field}</td>
+                                      <td>{spec.specification || "N/A"}</td>
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                      {/* Attachments Accordion */}
+                      <div className="mb-3 card card-body p-0">
+                        <div
+                          style={{
+                            cursor: "pointer",
+                            padding: "12px 20px",
+                            background: "#f8f9fa",
+                            borderBottom: "1px solid #eee",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                          }}
+                          onClick={() =>
+                            setOpenAttachmentsRows((prev) => ({
+                              ...prev,
+                              [rowKey]: !prev[rowKey],
+                            }))
+                          }
+                        >
+                          <span style={{ fontWeight: 600, fontSize: "16px" }}>
+                            Attachments
+                          </span>
+                          <button
+                            className="purple-btn2 d-flex align-items-center"
+                            style={{
+                              borderRadius: "50%",
+                              width: "32px",
+                              height: "32px",
+                              padding: "0",
+                              background: "transparent",
+                              border: "none",
+                            }}
+                            tabIndex={-1}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenAttachmentsRows((prev) => ({
+                                ...prev,
+                                [rowKey]: !prev[rowKey],
+                              }));
+                            }}
+                          >
+                            <DropdownCollapseIcon isCollapsed={!openAttachmentsRows[rowKey]} />
+                          </button>
+                        </div>
+                        {openAttachmentsRows[rowKey] && (
+                          <div style={{ padding: "24px" }}>
+                            <table className="table table-bordered">
+                              <thead>
+                                <tr>
+                                  <th style={{ textAlign: "center" }}>Filename</th>
+                                  <th style={{ textAlign: "center" }}>Action</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {attachmentsData.length === 0 ? (
+                                  <tr>
+                                    <td colSpan={2} style={{ textAlign: "center" }}>
+                                      No attachments available.
+                                    </td>
+                                  </tr>
+                                ) : (
+                                  attachmentsData.map((attachment, idx) => (
+                                    <tr key={idx}>
+                                      <td>{attachment.filename}</td>
+                                      <td
+                                        style={{
+                                          display: "flex",
+                                          gap: "10px",
+                                          justifyContent: "center",
+                                          width: "100%",
+                                        }}
+                                      >
+                                        <a
+                                          href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                          download={attachment.filename}
+                                          className="purple-btn2"
+                                          style={{
+                                            width: "40px",
+                                            height: "40px",
+                                            padding: "0",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                          }}
+                                        >
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 16 16"
+                                            style={{ fill: "black" }}
+                                          >
+                                            <g fill="white">
+                                              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                                              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                                            </g>
+                                          </svg>
+                                        </a>
+                                      </td>
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }}
+                customRender={{
+                  pms_brand_name: (value) => value || "-",
+                  pms_colour_name: (value) => value || "-",
+                  generic_info_name: (value) => value || "-",
+                  ...(materialsArr[0]?.extra_data
+                    ? Object.keys(materialsArr[0].extra_data).reduce((acc, key) => {
+                        acc[key] = (value) => value?.value || "-";
+                        return acc;
+                      }, {})
+                    : {}),
+                }}
+              />
+            </div>
           </div>
-        )}
-      </div>
-    </div>
-  );
-}}
-                />
-  </div>
-              </div>
+        );
+      }
+    )
+  }
+</div>
             </div>
           )}
         </div>
