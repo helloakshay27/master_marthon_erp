@@ -2337,31 +2337,31 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
 
   const mergedColumns = [...defaultColumns, ...bidTemplate];
 
-  useEffect(() => {
-  // Only run if data exists and at least one row is missing realisedPrice
-  if (Array.isArray(data) && data.length > 0) {
-    let needsUpdate = false;
-    const updated = data.map((row) => {
-      const price = parseFloat(row.price) || 0;
-      const discount = parseFloat(row.discount) || 0;
-      // Only recalculate if realisedPrice is missing or out of sync
-      const expectedRealisedPrice = (price - (price * discount) / 100).toFixed(2);
-      if (
-        price > 0 &&
-        (row.realisedPrice === undefined ||
-          row.realisedPrice !== expectedRealisedPrice)
-      ) {
-        needsUpdate = true;
-        return {
-          ...row,
-          realisedPrice: expectedRealisedPrice,
-        };
-      }
-      return row;
-    });
-    if (needsUpdate) setData(updated);
-  }
-}, [data]);
+//   useEffect(() => {
+//   // Only run if data exists and at least one row is missing realisedPrice
+//   if (Array.isArray(data) && data.length > 0) {
+//     let needsUpdate = false;
+//     const updated = data.map((row) => {
+//       const price = parseFloat(row.price) || 0;
+//       const discount = parseFloat(row.discount) || 0;
+//       // Only recalculate if realisedPrice is missing or out of sync
+//       const expectedRealisedPrice = (price - (price * discount) / 100).toFixed(2);
+//       if (
+//         price > 0 &&
+//         (row.realisedPrice === undefined ||
+//           row.realisedPrice !== expectedRealisedPrice)
+//       ) {
+//         needsUpdate = true;
+//         return {
+//           ...row,
+//           realisedPrice: expectedRealisedPrice,
+//         };
+//       }
+//       return row;
+//     });
+//     if (needsUpdate) setData(updated);
+//   }
+// }, [data]);
 
 useEffect(() => {
   if (data.length > 0) {

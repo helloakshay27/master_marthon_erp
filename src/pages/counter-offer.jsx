@@ -97,39 +97,39 @@ export default function CounterOffer() {
     }
   }, [formData?.bid_materials]); // Removed extraFields from dependencies to prevent unnecessary updates
 
-  useEffect(() => {
-  // Only run if formData.bid_materials exists and at least one row is missing realised_price
-  if (
-    Array.isArray(formData?.bid_materials) &&
-    formData.bid_materials.length > 0
-  ) {
-    let needsUpdate = false;
-    const updatedMaterials = formData.bid_materials.map((row) => {
-      const price = parseFloat(row.price) || 0;
-      const discount = parseFloat(row.discount) || 0;
-      // Only recalculate if realised_price is missing or out of sync
-      const expectedRealisedPrice = (price - (price * discount) / 100).toFixed(2);
-      if (
-        price > 0 &&
-        (row.realised_price === undefined ||
-          row.realised_price !== expectedRealisedPrice)
-      ) {
-        needsUpdate = true;
-        return {
-          ...row,
-          realised_price: expectedRealisedPrice,
-        };
-      }
-      return row;
-    });
-    if (needsUpdate) {
-      setFormData({
-        ...formData,
-        bid_materials: updatedMaterials,
-      });
-    }
-  }
-}, [formData]);
+//   useEffect(() => {
+//   // Only run if formData.bid_materials exists and at least one row is missing realised_price
+//   if (
+//     Array.isArray(formData?.bid_materials) &&
+//     formData.bid_materials.length > 0
+//   ) {
+//     let needsUpdate = false;
+//     const updatedMaterials = formData.bid_materials.map((row) => {
+//       const price = parseFloat(row.price) || 0;
+//       const discount = parseFloat(row.discount) || 0;
+//       // Only recalculate if realised_price is missing or out of sync
+//       const expectedRealisedPrice = (price - (price * discount) / 100).toFixed(2);
+//       if (
+//         price > 0 &&
+//         (row.realised_price === undefined ||
+//           row.realised_price !== expectedRealisedPrice)
+//       ) {
+//         needsUpdate = true;
+//         return {
+//           ...row,
+//           realised_price: expectedRealisedPrice,
+//         };
+//       }
+//       return row;
+//     });
+//     if (needsUpdate) {
+//       setFormData({
+//         ...formData,
+//         bid_materials: updatedMaterials,
+//       });
+//     }
+//   }
+// }, [formData]);
 
   useEffect(() => {
     if (formData.extra_data && Object.keys(shortTableData).length === 0) {
