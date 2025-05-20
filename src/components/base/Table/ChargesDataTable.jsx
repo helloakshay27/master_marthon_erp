@@ -22,6 +22,7 @@ export default function ChargesDataTable({
   const [showTaxModal, setShowTaxModal] = useState(false);
   const [chargesTaxRate, setChargesTaxRate] = useState({}); // State for tax rate data
   const [selectedTableId, setSelectedTableId] = useState(null); // State for selected table ID
+  const [taxPercentageOptions, setTaxPercentageOptions] = useState([]);
 
   useEffect(() => {
     // Initialize chargesTaxRate with data from props
@@ -247,6 +248,19 @@ export default function ChargesDataTable({
       .catch((error) =>
         console.error("Error fetching deduction tax options:", error)
       );
+
+      async function fetchTaxPercentages() {
+    try {
+      const res = await fetch(
+        "https://marathon.lockated.com//rfq/events/tax_percentage?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      );
+      const data = await res.json();
+      setTaxPercentageOptions(data);
+    } catch (err) {
+      setTaxPercentageOptions([]);
+    }
+  }
+  fetchTaxPercentages();
   }, []);
 
   const handleInputChange = (index, e) => {
@@ -551,26 +565,35 @@ export default function ChargesDataTable({
                         )} //]] Remove duplicates
                       />
                     </td>
-                    <td>
-                      <select
-                        className="form-select"
-                        defaultValue={item?.percentage}
-                        onChange={(e) =>
-                          handleTaxChargeChange(
-                            selectedTableId,
-                            item.id,
-                            "percentage",
-                            e.target.value
-                          )
-                        }
-                      >
-                        <option value="">Select Tax</option>
-                        <option value="5%">5%</option>
-                        <option value="12%">12%</option>
-                        <option value="18%">18%</option>
-                        <option value="28%">28%</option>
-                      </select>
-                    </td>
+               <td>
+  <SelectBox
+    options={
+      (() => {
+        // Find the selected tax type name by resource_id
+        const selectedTaxType =
+          additionalTaxOptions.find((opt) => opt.value === item.resource_id)?.label;
+        const match = taxPercentageOptions.find(
+          (tax) => tax.tax_name === selectedTaxType
+        );
+        return match && Array.isArray(match.percentage)
+          ? match.percentage.map((percent) => ({
+              label: `${percent}%`,
+              value: `${percent}%`,
+            }))
+          : [];
+      })()
+    }
+    defaultValue={item?.percentage || ""}
+    onChange={(value) =>
+      handleTaxChargeChange(
+        selectedTableId,
+        item.id,
+        "percentage",
+        value
+      )
+    }
+  />
+</td>
                     <td className="text-center">
                       <input
                         type="checkbox"
@@ -673,7 +696,7 @@ export default function ChargesDataTable({
                           ?.map((item) => item.resource_id)} // Pass selected options to disable
                       />
                     </td>
-                    <td>
+                    {/* <td>
                       <select
                         className="form-select"
                         defaultValue={item?.percentage}
@@ -691,7 +714,35 @@ export default function ChargesDataTable({
                         <option value="2%">2%</option>
                         <option value="10%">10%</option>
                       </select>
-                    </td>
+                    </td> */}
+                    <td>
+  <SelectBox
+    options={
+      (() => {
+        const selectedTaxType =
+          deductionTaxOptions.find((opt) => opt.value === item.resource_id)?.label;
+        const match = taxPercentageOptions.find(
+          (tax) => tax.tax_name === selectedTaxType
+        );
+        return match && Array.isArray(match.percentage)
+          ? match.percentage.map((percent) => ({
+              label: `${percent}%`,
+              value: `${percent}%`,
+            }))
+          : [];
+      })()
+    }
+    defaultValue={item?.percentage || ""}
+    onChange={(value) =>
+      handleTaxChargeChange(
+        selectedTableId,
+        item.id,
+        "percentage",
+        value
+      )
+    }
+  />
+</td>
                     <td className="text-center">
                       <input
                         type="checkbox"

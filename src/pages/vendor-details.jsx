@@ -37,6 +37,7 @@ export default function VendorDetails() {
   const [showModal, setShowModal] = useState(false);
   const [showModal1, setShowModal1] = useState(false);
   const [taxRateData, setTaxRateData] = useState([]);
+  const [taxPercentageOptions, setTaxPercentageOptions] = useState([]);
   const [originalTaxRateData, setOriginalTaxRateData] = useState([]);
   const [taxOptions, setTaxOptions] = useState([]);
   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]);
@@ -2741,6 +2742,19 @@ useEffect(() => {
         console.error("Error fetching deduction tax data:", error);
       }
     };
+
+    async function fetchTaxPercentages() {
+    try {
+      const res = await fetch(
+        "https://marathon.lockated.com//rfq/events/tax_percentage?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      );
+      const data = await res.json();
+      setTaxPercentageOptions(data);
+    } catch (err) {
+      setTaxPercentageOptions([]);
+    }
+  }
+  fetchTaxPercentages();
 
     fetchTaxes();
   }, []);
@@ -6337,28 +6351,48 @@ useEffect(() => {
                             />
                           </td>
 
-                          <td>
-                            <select
-                              className="form-select"
-                              defaultValue={item?.taxChargePerUom}
-                              onChange={(e) =>
+<td>
+  <SelectBox
+    options={
+      (() => {
+        // Find the selected tax type (by name or resource_id)
+        const selectedTaxType =
+          item.taxChargeType ||
+          taxOptions.find((option) => option.id === item.resource_id)?.name ||
+          taxOptions.find((option) => option.id === item.resource_id)?.value;
+
+        // Find the matching percentage array from taxPercentageOptions
+        const match = taxPercentageOptions.find(
+          (tax) => tax.tax_name === selectedTaxType
+        );
+
+        // If found, return as [{label, value}]
+        if (match && Array.isArray(match.percentage)) {
+          return match.percentage.map((percent) => ({
+            label: `${percent}%`,
+            value: `${percent}%`,
+          }));
+        }
+        // If not found, return empty array (no static options)
+        return [
+          {label: "5%", value: "5%"},
+          {label: "12%", value: "12%"},
+          {label: "18%", value: "18%"},
+          {label: "28%", value: "28%"},
+      ]
+      })()
+    }
+    defaultValue={item?.taxChargePerUom || ""}
+    onChange={(e) =>
                                 handleAllTaxChargeChange(
                                   "taxChargePerUom",
-                                  e.target.value,
+                                  e,
                                   "addition",
                                   item.id
                                 )
                               }
-                            >
-                              <option value="">Select Tax</option>
-                              <option value="5%">5%</option>
-                              <option value="12%">12%</option>
-                              <option value="18%">18%</option>
-                              <option value="28%">28%</option>
-                            </select>
-                            {/* <p>{item?.taxChargePerUom || item?.tax_percentage}</p> */}
-                          </td>
-
+  />
+</td>
                           <td className="text-center">
                             <input
                               type="checkbox"
@@ -6437,7 +6471,7 @@ useEffect(() => {
                             )}
                           />
                         </td>
-                        <td>
+                        {/* <td>
                           <select
                             className="form-select"
                             defaultValue={item?.taxChargePerUom}
@@ -6455,7 +6489,50 @@ useEffect(() => {
                             <option value="2%">2%</option>
                             <option value="10%">10%</option>
                           </select>
-                        </td>
+                        </td> */}
+                        <td>
+  <SelectBox
+    options={
+      (() => {
+        // Find the selected tax type (by name or resource_id)
+        const selectedTaxType =
+          item.taxChargeType ||
+          deductionTaxOptions.find((option) => option.id === item.resource_id)?.name ||
+          deductionTaxOptions.find((option) => option.id === item.resource_id)?.value;
+
+        // Find the matching percentage array from taxPercentageOptions
+        const match = taxPercentageOptions.find(
+          (tax) => tax.tax_name === selectedTaxType
+        );
+
+        // If found, return as [{label, value}]
+        if (match && Array.isArray(match.percentage)) {
+          return match.percentage.map((percent) => ({
+            label: `${percent}%`,
+            value: `${percent}%`,
+          }));
+        }
+        // If not found, return empty array (no static options)
+        return [
+          {label: "5%", value: "5%"},
+          {label: "12%", value: "12%"},
+          {label: "18%", value: "18%"},
+          {label: "28%", value: "28%"},
+      ]
+      })()
+    }
+    defaultValue={item?.taxChargePerUom || ""}
+    onChange={(value) =>
+      handleAllTaxChargeChange(
+        "taxChargePerUom",
+        value,
+        "deduction",
+        item.id
+      )
+    }
+    // className="form-select"
+  />
+</td>
                         <td className="text-center">
                           <input
                             type="checkbox"
@@ -6777,27 +6854,48 @@ useEffect(() => {
                           </td>
 
                           <td>
-                            <select
-                              className="form-select"
-                              // value={item.taxChargePerUom}
-                              defaultValue={item?.taxChargePerUom}
-                              onChange={(e) =>
+  <SelectBox
+    options={
+      (() => {
+        // Find the selected tax type (by name or resource_id)
+        const selectedTaxType =
+          item.taxChargeType ||
+          taxOptions.find((option) => option.id === item.resource_id)?.name ||
+          taxOptions.find((option) => option.id === item.resource_id)?.value;
+
+        // Find the matching percentage array from taxPercentageOptions
+        const match = taxPercentageOptions.find(
+          (tax) => tax.tax_name === selectedTaxType
+        );
+
+        // If found, return as [{label, value}]
+        if (match && Array.isArray(match.percentage)) {
+          return match.percentage.map((percent) => ({
+            label: `${percent}%`,
+            value: `${percent}%`,
+          }));
+        }
+        // If not found, return empty array (no static options)
+        return [
+          {label: "5%", value: "5%"},
+          {label: "12%", value: "12%"},
+          {label: "18%", value: "18%"},
+          {label: "28%", value: "28%"},
+      ]
+      })()
+    }
+    defaultValue={item?.taxChargePerUom || ""}
+    onChange={(e) =>
                                 handleTaxChargeChange(
                                   tableId,
                                   item.id,
                                   "taxChargePerUom",
-                                  e.target.value,
+                                  e,
                                   "addition"
                                 )
                               }
-                            >
-                              <option value="">Select Tax</option>
-                              <option value="5%">5%</option>
-                              <option value="12%">12%</option>
-                              <option value="18%">18%</option>
-                              <option value="28%">28%</option>
-                            </select>
-                          </td>
+  />
+</td>
 
                           <td className="text-center">
                             <input
@@ -6895,26 +6993,48 @@ useEffect(() => {
                           />
                         </td>
                         <td>
-                          <select
-                            className="form-select"
-                            // value={item.taxChargePerUom}
-                            defaultValue={item?.taxChargePerUom}
-                            onChange={(e) =>
+  <SelectBox
+    options={
+      (() => {
+        // Find the selected tax type (by name or resource_id)
+        const selectedTaxType =
+          item.taxChargeType ||
+          deductionTaxOptions.find((option) => option.id === item.resource_id)?.name ||
+          deductionTaxOptions.find((option) => option.id === item.resource_id)?.value;
+
+        // Find the matching percentage array from taxPercentageOptions
+        const match = taxPercentageOptions.find(
+          (tax) => tax.tax_name === selectedTaxType
+        );
+
+        // If found, return as [{label, value}]
+        if (match && Array.isArray(match.percentage)) {
+          return match.percentage.map((percent) => ({
+            label: `${percent}%`,
+            value: `${percent}%`,
+          }));
+        }
+        // If not found, return empty array (no static options)
+        return [
+          {label: "5%", value: "5%"},
+          {label: "12%", value: "12%"},
+          {label: "18%", value: "18%"},
+          {label: "28%", value: "28%"},
+      ]
+      })()
+    }
+    defaultValue={item?.taxChargePerUom || ""}
+    onChange={(e) =>
                               handleTaxChargeChange(
                                 tableId,
                                 item.id,
                                 "taxChargePerUom",
-                                e.target.value,
+                                e,
                                 "deduction"
                               )
                             }
-                          >
-                            <option value="">Select Tax</option>
-                            <option value="1%">1%</option>
-                            <option value="2%">2%</option>
-                            <option value="10%">10%</option>
-                          </select>
-                        </td>
+  />
+</td>
                         <td className="text-center">
                           <input
                             type="checkbox"
