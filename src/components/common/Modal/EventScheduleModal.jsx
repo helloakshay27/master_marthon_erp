@@ -118,10 +118,24 @@ const EventScheduleModal = ({
   const handleEndTimeChange = (e) => {
     const selectedTime = e.target.value;
     const selectedDateTime = new Date(`${endDate}T${selectedTime}`);
-    const laterDateTime = new Date(`${laterDate}T${laterTime}`);
 
-    if (endDate === laterDate && selectedDateTime <= laterDateTime) {
-      toast.info("End time must be after the selected later date and time.");
+    let startDateTime;
+    if (isLater) {
+      // Use the scheduled later date/time
+      startDateTime = new Date(`${laterDate}T${laterTime}`);
+    } else {
+      // Use the current date/time
+      const now = new Date();
+      // If endDate is today, use current time, else use 00:00
+      if (endDate === now.toISOString().split("T")[0]) {
+        startDateTime = now;
+      } else {
+        startDateTime = new Date(`${endDate}T00:00`);
+      }
+    }
+
+    if (selectedDateTime <= startDateTime) {
+      toast.info("End time must be after the start time.");
       return;
     }
 
@@ -140,33 +154,33 @@ const EventScheduleModal = ({
   };
 
   const handleSaveScheduleFun = () => {
-  const currentTime = new Date();
-  const startTime = isLater
-    ? `${laterDate}T${laterTime}:00Z`
-    : `${new Date().toISOString().split("T")[0]}T${new Date()
-        .toTimeString()
-        .split(" ")[0]
-        .substring(0, 5)}:00Z`; // Use the latest current time if not scheduled for later
-      console.log("startTime", startTime);
-      
-  const endTimeFormatted =
-    endDate && endTime
-      ? `${endDate}T${endTime}:00Z`
-      : ""; // Ensure it uses the latest updated values
+    const currentTime = new Date();
+    const startTime = isLater
+      ? `${laterDate}T${laterTime}:00Z`
+      : `${new Date().toISOString().split("T")[0]}T${new Date()
+          .toTimeString()
+          .split(" ")[0]
+          .substring(0, 5)}:00Z`; // Use the latest current time if not scheduled for later
+    console.log("startTime", startTime);
 
-  const evaluationTimeFormatted =
-    evaluationDurationVal && customEvaluationDuration
-      ? `${evaluationDurationVal} ${customEvaluationDuration}`
-      : "Mins Mins"; // Use the latest evaluation duration values
+    const endTimeFormatted =
+      endDate && endTime
+        ? `${endDate}T${endTime}:00Z`
+        : ""; // Ensure it uses the latest updated values
 
-  const data = {
-    start_time: startTime,
-    end_time_duration: endTimeFormatted,
-    evaluation_time: evaluationTimeFormatted,
+    const evaluationTimeFormatted =
+      evaluationDurationVal && customEvaluationDuration
+        ? `${evaluationDurationVal} ${customEvaluationDuration}`
+        : "Mins Mins"; // Use the latest evaluation duration values
+
+    const data = {
+      start_time: startTime,
+      end_time_duration: endTimeFormatted,
+      evaluation_time: evaluationTimeFormatted,
+    };
+
+    handleSaveSchedule(data);
   };
-
-  handleSaveSchedule(data);
-};
 
   return (
     <DynamicModalBox

@@ -500,6 +500,18 @@ export default function CreateEvent() {
 
   // console.log("materialFormData:--------",materialFormData);
 
+  // Utility to get ISO string with +05:30 offset for IST
+  const toISTISOString = (dateTime) => {
+    if (!dateTime) return "";
+    const date = new Date(dateTime);
+    if (isNaN(date.getTime())) {
+      console.warn("Invalid dateTime passed to toISTISOString:", dateTime);
+      return "";
+    }
+    date.setMinutes(date.getMinutes());
+    return date.toISOString().replace('Z', '+05:30');
+  };
+
   const handleSubmit = async (event) => {
     setLoading(true);
     event.preventDefault();
@@ -518,10 +530,10 @@ export default function CreateEvent() {
       });
       setTimeout(() => {
         setLoading(false);
-      }, 500); // Adjusted the delay to 500ms for better visibility
-
+      }, 500);
       return;
     }
+    
 
     setSubmitted(true);
     const eventData = {
@@ -531,8 +543,8 @@ export default function CreateEvent() {
         status: eventStatus,
         event_description: eventDescription,
         event_schedule_attributes: {
-          start_time: scheduleData.start_time,
-          end_time: scheduleData.end_time_duration,
+          start_time: toISTISOString(scheduleData.start_time),
+          end_time: toISTISOString(scheduleData.end_time_duration),
           evaluation_time: scheduleData.evaluation_time,
         },
         event_type_detail_attributes: {
@@ -653,6 +665,7 @@ export default function CreateEvent() {
           body: JSON.stringify(eventData),
         }
       );
+      
       if (response.ok) {
         const responseData = await response.json(); // Parse the response to get event details
         console.log("Response data:", responseData);
@@ -2034,7 +2047,7 @@ export default function CreateEvent() {
           title=""
           centered={true}
           footerButtons={[]}
-          modalType={false}
+          modalType={true}
           children={
             <div
               style={{
@@ -2081,8 +2094,8 @@ export default function CreateEvent() {
                 <div style={{ fontWeight: 600, color: "#22c55e", fontSize: 18, marginBottom: 4 }}>
                   Success
                 </div>
-                <div style={{ fontWeight: 500, color: "#222", textTransform: "capitalize" }}>
-                  Event Successfully created: {createdEventInfo?.event_title}
+                <div style={{ fontWeight: 500, color: "#222" }}>
+                  Event Successfully created: "{createdEventInfo?.event_title}"
                   <br />
                   (Event No: {createdEventInfo?.event_no})
                 </div>
