@@ -1465,6 +1465,7 @@ export default function CreateRFQForm({
                         handleInputChange(value, rowIndex, "pms_brand_id", 0)
                       }
                       defaultValue={cell}
+                      disabled
                     />
                   ),
                   pms_colour_id: (cell, rowIndex) => (
@@ -1474,6 +1475,7 @@ export default function CreateRFQForm({
                       onChange={(value) =>
                         handleInputChange(value, rowIndex, "pms_colour_id", 0)
                       }
+                      disabled
                     />
                   ),
                   generic_info_id: (cell, rowIndex) => (
@@ -1483,6 +1485,7 @@ export default function CreateRFQForm({
                       onChange={(value) =>
                         handleInputChange(value, rowIndex, "generic_info_id", 0)
                       }
+                      disabled
                     />
                   ),
                   ...additionalFields.reduce((acc, field) => {
