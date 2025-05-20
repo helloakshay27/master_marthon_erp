@@ -761,6 +761,17 @@ export default function EditEvent() {
 
   const [eventData1, setEventData1] = useState(eventData2);
 
+  const toISTISOString = (dateTime) => {
+    if (!dateTime) return "";
+    const date = new Date(dateTime);
+    if (isNaN(date.getTime())) {
+      console.warn("Invalid dateTime passed to toISTISOString:", dateTime);
+      return "";
+    }
+    date.setMinutes(date.getMinutes());
+    return date.toISOString().replace('Z', '+05:30');
+  };
+
   const handleSubmit = async (event) => {
     setLoading(true);
     event.preventDefault();
@@ -786,8 +797,8 @@ export default function EditEvent() {
         status: eventStatus,
         event_description: eventDescription,
         event_schedule_attributes: {
-          start_time: scheduleData.start_time || start_time,
-          end_time: scheduleData.end_time_duration || end_time,
+          start_time: toISTISOString(scheduleData.start_time) || toISTISOString(start_time),
+          end_time: toISTISOString(scheduleData.end_time_duration) || toISTISOString(end_time),
           evaluation_time: scheduleData.evaluation_time || evaluation_time,
         },
         event_type_detail_attributes: {

@@ -665,6 +665,10 @@ export default function CreateEvent() {
           body: JSON.stringify(eventData),
         }
       );
+      console.log('scheduleData:--', scheduleData);
+      
+      console.log('eventData:--', eventData);
+      
       
       if (response.ok) {
         const responseData = await response.json(); // Parse the response to get event details
@@ -2047,12 +2051,12 @@ export default function CreateEvent() {
           title=""
           centered={true}
           footerButtons={[]}
-          modalType={true}
+          modalType={false}
           children={
             <div
               style={{
                 minWidth: 320,
-                padding: "12px 18px",
+                padding: "10px",
                 display: "flex",
                 alignItems: "flex-start",
                 gap: 12,
@@ -2094,8 +2098,8 @@ export default function CreateEvent() {
                 <div style={{ fontWeight: 600, color: "#22c55e", fontSize: 18, marginBottom: 4 }}>
                   Success
                 </div>
-                <div style={{ fontWeight: 500, color: "#222" }}>
-                  Event Successfully created: "{createdEventInfo?.event_title}"
+                <div style={{ fontWeight: 500, color: "#222", textTransform: "capitalize" }}>
+                  Event Successfully created: {createdEventInfo?.event_title}
                   <br />
                   (Event No: {createdEventInfo?.event_no})
                 </div>
