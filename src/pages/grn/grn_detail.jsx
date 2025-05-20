@@ -721,7 +721,7 @@ const GoodReceiveNoteDetails = () => {
                       <thead className="w-100">
                         <tr>
                           <th className="main2-th">Sr. No.</th>
-                          <th className="main2-th">Document Name</th>
+                          {/* <th className="main2-th">Document Name</th> */}
                           <th className="main2-th">File Name</th>
                           <th className="main2-th">File Type</th>
                           <th className="main2-th">Upload Date</th>
@@ -732,7 +732,7 @@ const GoodReceiveNoteDetails = () => {
                         {data?.attachments?.map((item, index) => (
                           <tr>
                             <td>{index + 1}</td>
-                            <td>{item.document_file_name || "-"}</td>
+                            {/* <td>{item.document_file_name || "-"}</td> */}
                             <td>{item.file_name || "-"}</td>
                             <td>{item.document_content_type || "-"}</td>
                             <td>
