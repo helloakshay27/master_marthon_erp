@@ -2,13 +2,16 @@ import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import { useState, useEffect } from "react";
-import { Modal, ModalBody } from "react-bootstrap";
+import { Modal, Button, ModalBody } from "react-bootstrap";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { DataGrid } from "@mui/x-data-grid";
+import { Stack, Typography, Pagination } from "@mui/material";
+import { DownloadIcon, FilterIcon, StarIcon, SettingIcon } from "../components";
 
 const DebitNoteList = () => {
   const navigate = useNavigate(); // Initialize navigation
@@ -22,6 +25,13 @@ const DebitNoteList = () => {
   const itemsPerPage = 10; // Items per page
   const [searchKeyword, setSearchKeyword] = useState('');
   const [activeTab, setActiveTab] = useState("total"); // State to track the active tab
+
+  const [pageSize, setPageSize] = useState(10);
+  const [showOnlyPinned, setShowOnlyPinned] = useState(false);
+  const [pinnedRows, setPinnedRows] = useState([]);
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [settingShow, setSettingShow] = useState(false);
+  const [show, setShow] = useState(false);
 
 
   // Static data for SingleSelector (this will be replaced by API data later)
@@ -55,6 +65,12 @@ const DebitNoteList = () => {
   // const [selectedWing, setSelectedWing] = useState(null);
   const [siteOptions, setSiteOptions] = useState([]);
   // const [wingsOptions, setWingsOptions] = useState([]);
+
+  const [activeSearch, setActiveSearch] = useState('');
+  const [filterCompanyId, setFilterCompanyId] = useState("");
+  const [filterProjectId, setFilterProjectId] = useState("");
+  const [filterSiteId, setFilterSiteId] = useState("");
+
 
   // Fetch company data on component mount
   useEffect(() => {
@@ -135,10 +151,42 @@ const DebitNoteList = () => {
 
   const fetchCreditNotes = async (page) => {
     try {
-      const response = await axios.get(
-        `${baseURL}debit_notes?page=${page}&per_page=10token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      );
-      setDebitNotes(response.data.debit_notes);
+      // const response = await axios.get(
+      //   `${baseURL}debit_notes?page=${page}&per_page=10token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      // );
+
+      let url = `${baseURL}debit_notes?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+      if (activeSearch) {
+        url += `&q[debit_note_no_or_debit_note_date_or_debit_note_amount_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_purchase_order_supplier_full_name_cont]=${activeSearch}`;
+      }
+      if (filterCompanyId) url += `&q[company_id_eq]=${filterCompanyId}`;
+      if (filterProjectId) url += `&q[project_id_eq]=${filterProjectId}`;
+      if (filterSiteId) url += `&q[site_id_eq]=${filterSiteId}`;
+      // const response = await axios.get(
+      //     `${baseURL}credit_notes?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      // );
+      const response = await axios.get(url);
+
+      const transformedData = response.data.debit_notes.map(
+        (entry, index) => {
+          // console.log("created_at raw:", entry.created_at);
+          let formattedDate = "-";
+          if (entry.created_at) {
+            try {
+              formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+            } catch (e) {
+              formattedDate = "-";
+            }
+          }
+          return {
+            id: entry.id,
+            srNo: (page - 1) * pageSize + index + 1,
+            ...entry,
+            created_at: formattedDate
+          }
+        })
+      console.log("transform data:", transformedData)
+      setDebitNotes(transformedData);
       setMeta(response.data.meta)
       setTotalPages(response.data.meta.total_pages); // Set total pages
       setTotalEntries(response.data.meta.total_count);
@@ -172,6 +220,9 @@ const DebitNoteList = () => {
     const projectId = selectedProject?.value || "";
     const siteId = selectedSite?.value || "";
     const search = searchKeyword || "";
+    setFilterCompanyId(companyId);
+    setFilterProjectId(projectId);
+    setFilterSiteId(siteId);
     console.log("ids filter:", companyId, projectId, siteId)
     const url = `${baseURL}debit_notes?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
 
@@ -179,7 +230,25 @@ const DebitNoteList = () => {
     axios
       .get(url)
       .then((response) => {
-        setDebitNotes(response.data.debit_notes);
+        const transformedData = response.data.debit_notes.map(
+          (entry, index) => {
+            // console.log("created_at raw:", entry.created_at);
+            let formattedDate = "-";
+            if (entry.created_at) {
+              try {
+                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+              } catch (e) {
+                formattedDate = "-";
+              }
+            }
+            return {
+              id: entry.id,
+              srNo: (currentPage - 1) * pageSize + index + 1,
+              ...entry,
+              created_at: formattedDate
+            }
+          })
+        setDebitNotes(transformedData);
         setMeta(response.data.meta)
         setTotalPages(response.data.meta.total_pages); // Set total pages
         setTotalEntries(response.data.meta.total_count);
@@ -194,12 +263,37 @@ const DebitNoteList = () => {
     setSelectedCompany(null);
     setSelectedProject(null);
     setSelectedSite(null);
+    setFilterCompanyId("");
+    setFilterProjectId("");
+    setFilterSiteId("");
+    setActiveSearch("");
+    setSearchKeyword("");
+    setCurrentPage(1); // Go to first page
 
     // Fetch unfiltered data
     axios
       .get(`${baseURL}debit_notes?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
       .then((response) => {
-        setDebitNotes(response.data.debit_notes);
+
+        const transformedData = response.data.debit_notes.map(
+          (entry, index) => {
+            // console.log("created_at raw:", entry.created_at);
+            let formattedDate = "-";
+            if (entry.created_at) {
+              try {
+                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+              } catch (e) {
+                formattedDate = "-";
+              }
+            }
+            return {
+              id: entry.id,
+              srNo: (currentPage - 1) * pageSize + index + 1,
+              ...entry,
+              created_at: formattedDate
+            }
+          })
+        setDebitNotes(transformedData);
         setMeta(response.data.meta)
         setTotalPages(response.data.meta.total_pages); // Set total pages
         setTotalEntries(response.data.meta.total_count);
@@ -243,8 +337,7 @@ const DebitNoteList = () => {
   const [fromStatus, setFromStatus] = useState("");
   const [toStatus, setToStatus] = useState("");
   const [remark, setRemark] = useState("");
-  // const [boqList, setBoqList] = useState([]);
-  // const [loading, setLoading] = useState(false);
+ 
 
   // Handle input changes
   const handleStatusChange = (selectedOption) => {
@@ -311,7 +404,25 @@ const DebitNoteList = () => {
       axios
         .get(`${baseURL}debit_notes?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[status_eq]=${fromStatus}`)
         .then((response) => {
-          setDebitNotes(response.data.debit_notes);
+          const transformedData = response.data.debit_notes.map(
+            (entry, index) => {
+              // console.log("created_at raw:", entry.created_at);
+              let formattedDate = "-";
+              if (entry.created_at) {
+                try {
+                  formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                } catch (e) {
+                  formattedDate = "-";
+                }
+              }
+              return {
+                id: entry.id,
+                srNo: (currentPage - 1) * pageSize + index + 1,
+                ...entry,
+                created_at: formattedDate
+              }
+            })
+          setDebitNotes(transformedData);
           setMeta(response.data.meta)
           setTotalPages(response.data.meta.total_pages); // Set total pages
           setTotalEntries(response.data.meta.total_count);
@@ -357,45 +468,225 @@ const DebitNoteList = () => {
 
   console.log("selected bill id array :", selectedBoqDetails)
 
-   //card filter
-    const fetchFilteredData2 = (status) => {
-      const url = `${baseURL}debit_notes?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${
-        status ? `&q[status_eq]=${status}` : ""
+  //card filter
+  const fetchFilteredData2 = (status) => {
+    const url = `${baseURL}debit_notes?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${status ? `&q[status_eq]=${status}` : ""
       }`;
-    
-      axios
-        .get(url)
-        .then((response) => {
-          setDebitNotes(response.data.debit_notes);
-          // setMeta(response.data.meta)
-          setTotalPages(response.data.meta.total_pages); // Set total pages
-          setTotalEntries(response.data.meta.total_count);
-        })
-        .catch((error) => {
-          console.error("Error fetching filtered data:", error);
-        });
-    };
 
-     const fetchSearchResults = async () => {
-          try {
-            setLoading(true);
-            const response = await axios.get(
-              `${baseURL}debit_notes?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[debit_note_no_or_debit_note_date_or_debit_note_amount_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_purchase_order_supplier_full_name_cont]=${searchKeyword}`
-            );
-            setDebitNotes(response.data.debit_notes);
-            // setBillEntries(response.data.bill_entries);
-            setMeta(response.data.meta);
-            setTotalPages(response.data.meta.total_pages);
-            setTotalEntries(response.data.meta.total_count);
-          } catch (err) {
-            setError("Failed to fetch search results");
-            console.error("Error fetching search results:", err);
-          } finally {
-            setLoading(false);
+    axios
+      .get(url)
+      .then((response) => {
+        const transformedData = response.data.debit_notes.map(
+          (entry, index) => {
+            // console.log("created_at raw:", entry.created_at);
+            let formattedDate = "-";
+            if (entry.created_at) {
+              try {
+                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+              } catch (e) {
+                formattedDate = "-";
+              }
+            }
+            return {
+              id: entry.id,
+              srNo: (currentPage - 1) * pageSize + index + 1,
+              ...entry,
+              created_at: formattedDate
+            }
+          })
+        setDebitNotes(transformedData);
+        // setMeta(response.data.meta)
+        setTotalPages(response.data.meta.total_pages); // Set total pages
+        setTotalEntries(response.data.meta.total_count);
+      })
+      .catch((error) => {
+        console.error("Error fetching filtered data:", error);
+      });
+  };
+
+  const fetchSearchResults = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `${baseURL}debit_notes?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[debit_note_no_or_debit_note_date_or_debit_note_amount_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_purchase_order_supplier_full_name_cont]=${searchKeyword}`
+      );
+      const transformedData = response.data.debit_notes.map(
+        (entry, index) => {
+          // console.log("created_at raw:", entry.created_at);
+          let formattedDate = "-";
+          if (entry.created_at) {
+            try {
+              formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+            } catch (e) {
+              formattedDate = "-";
+            }
           }
-        };
+          return {
+            id: entry.id,
+            srNo: (currentPage - 1) * pageSize + index + 1,
+            ...entry,
+            created_at: formattedDate
+          }
+        })
+      setDebitNotes(transformedData);
+      // setBillEntries(response.data.bill_entries);
+      setMeta(response.data.meta);
+      setTotalPages(response.data.meta.total_pages);
+      setTotalEntries(response.data.meta.total_count);
+    } catch (err) {
+      setError("Failed to fetch search results");
+      console.error("Error fetching search results:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
   // if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
+
+  //   column sort and setting 
+  const [columnVisibility, setColumnVisibility] = useState({
+    //  select: true, 
+    srNo: true,
+    // mode_of_submission: true,
+    company_name: true,
+    project_name: true,
+    site_name: true,
+    debit_note_no: true,
+    debit_note_date: true,
+
+    debit_note_type: true,
+    created_at: true,
+
+    po_number: true,
+    po_date: true,
+    po_value: true,
+    pms_supplier: true,
+    gstin: true,
+    pan_no: true,
+    debit_note_amount: true,
+    deduction_tax: true,
+    addition_tax: true,
+    total_amount: true,
+    status: true,
+    due_date: true,
+    overdue: true,
+    due_at: true,
+  });
+
+  const allColumns = [
+   
+    {
+      field: "srNo",
+      headerName: "Sr. No.",
+      width: 100,
+    },
+    // {
+    //   field: "mode_of_submission",
+    //   headerName: "Mode of Submission",
+    //   width: 150,
+    // },
+    { field: "company_name", headerName: "Company", width: 150 },
+    { field: "project_name", headerName: "Project", width: 150 },
+    { field: "site_name", headerName: "Sub Project", width: 150 },
+    {
+      field: "debit_note_no", headerName: "Debit Note No.", width: 150,
+      renderCell: (params) =>
+        params.value && params.row.id ? (
+          <Link to={`/debit-note-details/${params.row.id}`}
+
+          >
+            <span className="boq-id-link">{params.value}</span>
+          </Link>
+        ) : (
+          "-"
+        ),
+    },
+    { field: "debit_note_date", headerName: "Date", width: 150 },
+    { field: "debit_note_type", headerName: "Debit Note Type", width: 150 },
+    {
+      field: "created_at",
+      headerName: "Created On",
+      width: 150,
+    },
+    { field: "po_number", headerName: "PO No.", width: 150 },
+    { field: "po_date", headerName: "PO Date", width: 150 },
+    { field: "po_value", headerName: "PO Value", width: 150 },
+    { field: "pms_supplier", headerName: "Supplier Name", width: 150 },
+
+    { field: "gstin", headerName: "GSTIN No.", width: 150 },
+    { field: "pan_no", headerName: "PAN No.", width: 150 },
+    { field: "debit_note_amount", headerName: "Debit Note Amount", width: 150 },
+    { field: "deduction_tax", headerName: "Deduction Tax", width: 150 },
+
+    { field: "addition_tax", headerName: "Addition Tax", width: 150 },
+    { field: "total_amount", headerName: "Total Amount", width: 150 },
+    { field: "status", headerName: "Status", width: 150 },
+    { field: "due_date", headerName: "Due Date", width: 150 },
+    { field: "overdue", headerName: "Overdue", width: 150 },
+    { field: "due_at", headerName: "Due At", width: 150 },
+
+  ];
+
+  const columns = allColumns.filter((col) => columnVisibility[col.field]);
+
+  const handleSettingClose = () => setSettingShow(false);
+  const handleClose = () => setShow(false);
+  const handleSettingModalShow = () => setSettingShow(true);
+  const handleModalShow = () => setShow(true);
+
+  const handleToggleColumn = (field) => {
+    setColumnVisibility((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
+
+  const handleShowAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+
+  const handleHideAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = false;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+
+  const handleResetColumns = () => {
+    const defaultVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(defaultVisibility);
+  };
+
+  const getTransformedRows = () => {
+    let rowsToShow = showOnlyPinned
+      ? debitNotes.filter((row) => pinnedRows.includes(row.id))
+      : debitNotes;
+
+    // const normalizedSearchTerm = searchKeyword.trim().toLowerCase();
+    // if (normalizedSearchTerm) {
+    //     rowsToShow = rowsToShow.filter((item) =>
+    //         Object.values(item).some(
+    //             (value) =>
+    //                 value && String(value).toLowerCase().includes(normalizedSearchTerm)
+    //         )
+    //     );
+    // }
+
+    return rowsToShow;
+  };
+
+
+
+  // Calculate displayed rows for the current page
+  const startEntry = (currentPage - 1) * pageSize + 1;
+  const endEntry = Math.min(currentPage * pageSize, totalEntries);
+
+  console.log("selected bill id array :", selectedBoqDetails)
   return (
     <>
       <div className="website-content overflow-auto">
@@ -411,7 +702,8 @@ const DebitNoteList = () => {
                     data-tab="total"
                     onClick={() => {
                       setActiveTab("total")
-                      fetchFilteredData2("")}} // Fetch all data (no status filter)
+                      fetchFilteredData2("")
+                    }} // Fetch all data (no status filter)
                   >
                     <h4 className="content-box-title fw-semibold">Total</h4>
                     <p className="content-box-sub">{meta?.total_count}</p>
@@ -420,9 +712,10 @@ const DebitNoteList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div className={`content-box tab-button ${activeTab === "draft" ? "active" : ""}`} data-tab="draft"
-                   onClick={() => {
-                    setActiveTab("draft")
-                    fetchFilteredData2("draft")}} // Fetch data with status "draft"
+                    onClick={() => {
+                      setActiveTab("draft")
+                      fetchFilteredData2("draft")
+                    }} // Fetch data with status "draft"
                   >
                     <h4 className="content-box-title fw-semibold">
                       Draft
@@ -431,9 +724,10 @@ const DebitNoteList = () => {
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div className={`content-box tab-button ${activeTab === "verified" ? "active" : ""}`} data-tab="draft" 
-                   onClick={() => {
-                    setActiveTab("verified"); fetchFilteredData2("verified")}}>
+                  <div className={`content-box tab-button ${activeTab === "verified" ? "active" : ""}`} data-tab="draft"
+                    onClick={() => {
+                      setActiveTab("verified"); fetchFilteredData2("verified")
+                    }}>
                     <h4 className="content-box-title fw-semibold">
                       Verified
                     </h4>
@@ -444,10 +738,10 @@ const DebitNoteList = () => {
                   <div
                     className={`content-box tab-button ${activeTab === "submited" ? "active" : ""}`}
                     data-tab="pending-approval"
-                    onClick={() => 
-                      {
-                        setActiveTab("submited"); 
-                      fetchFilteredData2("submited")}}
+                    onClick={() => {
+                      setActiveTab("submited");
+                      fetchFilteredData2("submited")
+                    }}
                   >
                     <h4 className="content-box-title fw-semibold">Submit</h4>
                     <p className="content-box-sub">{meta?.submited_count}</p>
@@ -457,10 +751,10 @@ const DebitNoteList = () => {
                   <div
                     className={`content-box tab-button ${activeTab === "approved" ? "active" : ""}`}
                     data-tab="self-overdue"
-                    onClick={() =>
-                      {
-                        setActiveTab("approved");
-                       fetchFilteredData2("approved")}}
+                    onClick={() => {
+                      setActiveTab("approved");
+                      fetchFilteredData2("approved")
+                    }}
                   >
                     <h4 className="content-box-title fw-semibold">Approved</h4>
                     <p className="content-box-sub">{meta?.approved_count}</p>
@@ -470,8 +764,9 @@ const DebitNoteList = () => {
                   <div
                     className={`content-box tab-button ${activeTab === "proceed" ? "active" : ""}`}
                     data-tab="self-overdue"
-                    onClick={() =>{
-                      setActiveTab("proceed"); fetchFilteredData2("proceed")}}
+                    onClick={() => {
+                      setActiveTab("proceed"); fetchFilteredData2("proceed")
+                    }}
                   >
                     <h4 className="content-box-title fw-semibold">Proceed</h4>
                     <p className="content-box-sub">{meta?.proceed_count}</p>
@@ -629,7 +924,7 @@ const DebitNoteList = () => {
                       />
                       <div className="input-group-append">
                         <button type="button" className="btn btn-md btn-default"
-                        onClick={() => fetchSearchResults()} 
+                          onClick={() => fetchSearchResults()}
                         >
                           <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203" />
@@ -663,6 +958,13 @@ const DebitNoteList = () => {
                     </button> */}
 
                     {/* Create BOQ Button */}
+                    <button
+                      type="button"
+                      className="btn btn-md"
+                      onClick={handleSettingModalShow}
+                    >
+                      <SettingIcon />
+                    </button>
                     <button className="purple-btn2"
                       onClick={() => navigate("/debit-note-create")}
                     >
@@ -681,121 +983,76 @@ const DebitNoteList = () => {
                   </div>
                 </div>
               </div>
-              {!loading && !error && (
-              <div className="tbl-container mx-3 mt-3" style={{ width: "98%" }}>
-                <table
-                  style={{
-                    width: "max-content",
-                    maxHeight: "max-content",
-                    height: "auto",
+
+              <div
+                className="
+                            
+                            mt-3 mx-3"
+                style={{
+                  //   width: "100%",
+                  //   height: "430px",
+                  //   boxShadow: "unset",
+                  overflowY: "hidden",
+                }}
+              >
+
+                <DataGrid
+                  rows={getTransformedRows()}
+                  columns={columns}
+                  pageSize={pageSize}
+                  autoHeight={false}
+                  // getRowId={(row) => row.id}
+                  getRowId={(row) => {
+                    //   console.log("Row ID:", row.id);
+                    return row.id;
                   }}
-                >
-                  <thead>
-                    <tr>
-                      <th className="text-start">
-                        <input type="checkbox" />
-                      </th>
-                      <th className="text-start">Sr.No.</th>
-                      <th className="text-start">Company</th>
-                      <th className="text-start">Project</th>
-                      <th className="text-start">Sub Project</th>
-                      <th className="text-start">Debit Note No.</th>
-                      <th className="text-start">Date</th>
-                      <th className="text-start">Debit Note Type</th>
-                      <th className="text-start">Created On</th>
-                      <th className="text-start">PO No.</th>
-                      <th className="text-start">PO Date</th>
-                      <th className="text-start">PO Value</th>
-                      <th className="text-start">Supplier Name</th>
-                      <th className="text-start">GSTIN No.</th>
-                      <th className="text-start">PAN No.</th>
-                      <th className="text-start">Debit Note Ammount</th>
-                      <th className="text-start">Deduction Tax</th>
-                      <th className="text-start">Addition Tax</th>
-                      <th className="text-start">Total Amount</th>
-                      <th className="text-start">Status</th>
-                      <th className="text-start">Due Date</th>
-                      <th className="text-start">Overdue</th>
-                      <th className="text-start">Due At</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                  loading={loading}
+                  disableSelectionOnClick
+                  checkboxSelection // <-- enables checkboxes and select all
+                  selectionModel={selectedBoqDetails}
+                  //   onSelectionModelChange={(ids) => setSelectedBoqDetails(ids)}
+                  onSelectionModelChange={(ids) => {
+                    setSelectedBoqDetails(ids.map(String));
+                    console.log("Selected Row IDs:", ids); // This will log the selected row ids array
+                  }}
 
-                    {debitNotes.length > 0 ? (
-                      debitNotes?.map((note, index) => (
-                        <tr key={note.id}>
-                          <td className="text-start">
-
-                            <input
-                              className="ms-1 me-1 mb-1"
-                              type="checkbox"
-                              checked={selectedBoqDetails.includes(note.id)} // Check if this ID is selected
-                              onChange={() => handleCheckboxChange(note.id)} // Handle checkbox change
-                            />
-                          </td>
-                          <td className="text-start">{index + 1}</td>
-                          <td className="text-start">{note.company_name || "-"}</td>
-                          <td className="text-start">{note.project_name || "-"}</td>
-                          <td className="text-start">{note.site_name || "-"}</td>
-                          <td className="text-start boq-id-link">
-                            <Link to={`/debit-note-details/${note.id}`} className="">
-                              {note.debit_note_no || "-"}
-                            </Link>
-                          </td>
-                          <td className="text-start">
-                            {note.debit_note_date
-                              ? new Date(note.debit_note_date).toLocaleDateString()
-                              : "-"}
-                          </td>
-                          <td className="text-start">
-                            {/* {note.created_at
-                ? new Date(note.created_at).toLocaleDateString()
-                : "-"} */}
-                          </td>
-                          <td className="text-start">
-                            {note.created_at
-                              ? new Date(note.created_at).toLocaleDateString()
-                              : "-"}
-                          </td>
-                          <td className="text-start">{note.po_number || "-"}</td>
-                          <td className="text-start">  {note.po_date
-                                ? new Date(note.po_date).toLocaleDateString()
-                                : "-"}</td>
-                          <td className="text-start">{note.po_value || "-"}</td>
-                          <td className="text-start">{note.pms_supplier || "-"}</td>
-                          <td className="text-start">{note.gstin || "-"}</td>
-                          <td className="text-start">{note.pan_no || "-"}</td>
-                          <td className="text-start">{note.debit_note_amount || "-"}</td>
-                          <td className="text-start">
-                          {/* {note.taxes_and_charges &&
-                                note.taxes_and_charges
-                                  .filter((tax) => !tax.addition)
-                                  .reduce(
-                                    (total, tax) =>
-                                      total + (parseFloat(tax.amount) || 0),
-                                    0
-                                  )
-                                  .toFixed(2)} */}
-                          </td>
-                          <td className="text-start"></td>
-                          <td className="text-start"></td>
-                          <td className="text-start">{note.status || "-"}</td>
-                          <td className="text-start"></td>
-                          <td className="text-start"></td>
-                          <td className="text-start"></td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="12" className="text-center">
-                          No debit notes found
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                  onRowSelectionModelChange={(ids) => {
+                    setSelectedBoqDetails(ids);
+                    console.log("Selected Row IDs: 2", ids);
+                  }}
+                  components={{
+                    ColumnMenu: () => null,
+                  }}
+                  sx={{
+                    "& .MuiDataGrid-columnHeaders": {
+                      backgroundColor: "#f8f9fa",
+                      color: "#000",
+                      fontWeight: "bold",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 1,
+                    },
+                    "& .MuiDataGrid-cell": {
+                      borderColor: "#dee2e6",
+                    },
+                    "& .MuiDataGrid-columnHeader": {
+                      borderColor: "#dee2e6",
+                    },
+                    // Red color for checked checkboxes
+                    "& .MuiCheckbox-root.Mui-checked .MuiSvgIcon-root": {
+                      color: "#8b0203",
+                    },
+                    // Black for header (select all) checkbox, even when checked
+                    "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root": {
+                      color: "#fff",
+                    },
+                    // Make checkboxes smaller
+                    "& .MuiCheckbox-root .MuiSvgIcon-root": {
+                      fontSize: "1.1rem", // adjust as needed (default is 1.5rem)
+                    },
+                  }}
+                />
               </div>
-               )}
               <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                 <ul className="pagination justify-content-center d-flex">
                   <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
@@ -880,6 +1137,105 @@ const DebitNoteList = () => {
         </div>
       )}
 
+      {/* Settings Modal */}
+      <Modal
+        show={settingShow}
+        onHide={handleSettingClose}
+        dialogClassName="modal-right"
+        className="setting-modal"
+        backdrop={true}
+      >
+        <Modal.Header>
+          <div className="container-fluid p-0">
+            <div className="border-0 d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <button
+                  type="button"
+                  className="btn"
+                  aria-label="Close"
+                  onClick={handleSettingClose}
+                >
+                  <svg
+                    width="10"
+                    height="16"
+                    viewBox="0 0 10 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M8 2L2 8L8 14"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <Button
+                style={{ textDecoration: "underline" }}
+                variant="alert"
+                onClick={handleResetColumns}
+              >
+                Reset
+              </Button>
+            </div>
+          </div>
+        </Modal.Header>
+
+        <Modal.Body style={{ height: "400px", overflowY: "auto" }}>
+          {allColumns
+            .filter(
+              (column) => column.field !== "srNo" && column.field !== "Star"
+            )
+            .map((column) => (
+              <div
+                className="row justify-content-between align-items-center mt-2"
+                key={column.field}
+              >
+                <div className="col-md-6">
+                  <button type="submit" className="btn btn-md">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                    </svg>
+                  </button>
+                  <label>{column.headerName}</label>
+                </div>
+                <div className="col-md-4">
+                  <div className="form-check form-switch mt-1">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={columnVisibility[column.field]}
+                      onChange={() => handleToggleColumn(column.field)}
+                      role="switch"
+                      id={`flexSwitchCheckDefault-${column.field}`}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+        </Modal.Body>
+
+        <Modal.Footer>
+          <button className="purple-btn2" onClick={handleShowAll}>
+            Show All
+          </button>
+          <button className="purple-btn1" onClick={handleHideAll}>
+            Hide All
+          </button>
+        </Modal.Footer>
+      </Modal>
 
       {/* modal start */}
       <Modal
