@@ -66,8 +66,8 @@ const CreditNoteList = () => {
     // const [wingsOptions, setWingsOptions] = useState([]);
     const [activeSearch, setActiveSearch] = useState('');
     const [filterCompanyId, setFilterCompanyId] = useState("");
-const [filterProjectId, setFilterProjectId] = useState("");
-const [filterSiteId, setFilterSiteId] = useState("");
+    const [filterProjectId, setFilterProjectId] = useState("");
+    const [filterSiteId, setFilterSiteId] = useState("");
 
     // Fetch company data on component mount
     useEffect(() => {
@@ -88,37 +88,40 @@ const [filterSiteId, setFilterSiteId] = useState("");
 
         try {
             setLoading(true); // Start loading
-             let url = `${baseURL}credit_notes?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
-        if (activeSearch) {
-            url += `&q[credit_note_no_or_credit_note_date_or_credit_note_amount_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_purchase_order_supplier_full_name_cont]=${activeSearch}`;
-        }
-         if (filterCompanyId) url += `&q[company_id_eq]=${filterCompanyId}`;
-    if (filterProjectId) url += `&q[project_id_eq]=${filterProjectId}`;
-    if (filterSiteId) url += `&q[site_id_eq]=${filterSiteId}`;
+            let url = `${baseURL}credit_notes?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+            if (activeSearch) {
+                url += `&q[credit_note_no_or_credit_note_date_or_credit_note_amount_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_purchase_order_supplier_full_name_cont]=${activeSearch}`;
+            }
+            if (filterCompanyId) url += `&q[company_id_eq]=${filterCompanyId}`;
+            if (filterProjectId) url += `&q[project_id_eq]=${filterProjectId}`;
+            if (filterSiteId) url += `&q[site_id_eq]=${filterSiteId}`;
             // const response = await axios.get(
             //     `${baseURL}credit_notes?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
             // );
-             const response = await axios.get(url);
-         const transformedData = response.data.credit_notes.map(
-        (entry, index) => {
-          // console.log("created_at raw:", entry.created_at);
-          let formattedDate = "-";
-          if (entry.created_at) {
-            try {
-              formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
-            } catch (e) {
-              formattedDate = "-";
-            }
-          }
-          return {
-            id: entry.id,
-            srNo: (page - 1) * pageSize + index + 1,
-            ...entry,
-            created_at: formattedDate
-          }
-        })
-
-        
+            const response = await axios.get(url);
+            const transformedData = response.data.credit_notes.map(
+                (entry, index) => {
+                    // console.log("created_at raw:", entry.created_at);
+                    let formattedDate = "-";
+                    if (entry.created_at) {
+                        try {
+                            formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                        } catch (e) {
+                            formattedDate = "-";
+                        }
+                    }
+                    let status = entry.status;
+                    if (status && typeof status === "string") {
+                        status = status.charAt(0).toUpperCase() + status.slice(1);
+                    }
+                    return {
+                        id: entry.id,
+                        srNo: (page - 1) * pageSize + index + 1,
+                        ...entry,
+                        created_at: formattedDate,
+                        status,
+                    }
+                })
             console.log("transform data:", transformedData)
             setCreditNotes(transformedData);
             setMeta(response.data.meta)
@@ -139,7 +142,7 @@ const [filterSiteId, setFilterSiteId] = useState("");
     }, [currentPage]);
     // console.log("credit list:",creditNotes)
 
-   
+
 
     // Handle company selection
     const handleCompanyChange = (selectedOption) => {
@@ -207,9 +210,9 @@ const [filterSiteId, setFilterSiteId] = useState("");
         const projectId = selectedProject?.value || "";
         const siteId = selectedSite?.value || "";
         const search = searchKeyword || "";
-         setFilterCompanyId(companyId);
-    setFilterProjectId(projectId);
-    setFilterSiteId(siteId);
+        setFilterCompanyId(companyId);
+        setFilterProjectId(projectId);
+        setFilterSiteId(siteId);
         console.log("ids filter:", companyId, projectId, siteId)
         const url = `${baseURL}credit_notes?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
 
@@ -217,24 +220,29 @@ const [filterSiteId, setFilterSiteId] = useState("");
         axios
             .get(url)
             .then((response) => {
-                 const transformedData = response.data.credit_notes.map(
-        (entry, index) => {
-          // console.log("created_at raw:", entry.created_at);
-          let formattedDate = "-";
-          if (entry.created_at) {
-            try {
-              formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
-            } catch (e) {
-              formattedDate = "-";
-            }
-          }
-          return {
-            id: entry.id,
-            srNo: (currentPage - 1) * pageSize + index + 1,
-            ...entry,
-            created_at: formattedDate
-          }
-        })
+                const transformedData = response.data.credit_notes.map(
+                    (entry, index) => {
+                        // console.log("created_at raw:", entry.created_at);
+                        let formattedDate = "-";
+                        if (entry.created_at) {
+                            try {
+                                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                            } catch (e) {
+                                formattedDate = "-";
+                            }
+                        }
+                        let status = entry.status;
+                        if (status && typeof status === "string") {
+                            status = status.charAt(0).toUpperCase() + status.slice(1);
+                        }
+                        return {
+                            id: entry.id,
+                            srNo: (currentPage - 1) * pageSize + index + 1,
+                            ...entry,
+                            created_at: formattedDate,
+                            status,
+                        }
+                    })
                 setCreditNotes(transformedData);
                 setTotalPages(response.data.meta.total_pages); // Set total pages
                 setTotalEntries(response.data.meta.total_count);
@@ -249,35 +257,40 @@ const [filterSiteId, setFilterSiteId] = useState("");
         setSelectedCompany(null);
         setSelectedProject(null);
         setSelectedSite(null);
-         setFilterCompanyId("");
-    setFilterProjectId("");
-    setFilterSiteId("");
-    setActiveSearch("");
-    setSearchKeyword("");
-    setCurrentPage(1); // Go to first page
+        setFilterCompanyId("");
+        setFilterProjectId("");
+        setFilterSiteId("");
+        setActiveSearch("");
+        setSearchKeyword("");
+        setCurrentPage(1); // Go to first page
 
         // Fetch unfiltered data
         axios
             .get(`${baseURL}credit_notes?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
             .then((response) => {
-                 const transformedData = response.data.credit_notes.map(
-        (entry, index) => {
-          // console.log("created_at raw:", entry.created_at);
-          let formattedDate = "-";
-          if (entry.created_at) {
-            try {
-              formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
-            } catch (e) {
-              formattedDate = "-";
-            }
-          }
-          return {
-            id: entry.id,
-            srNo: (currentPage - 1) * pageSize + index + 1,
-            ...entry,
-            created_at: formattedDate
-          }
-        })
+                const transformedData = response.data.credit_notes.map(
+                    (entry, index) => {
+                        // console.log("created_at raw:", entry.created_at);
+                        let formattedDate = "-";
+                        if (entry.created_at) {
+                            try {
+                                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                            } catch (e) {
+                                formattedDate = "-";
+                            }
+                        }
+                        let status = entry.status;
+                        if (status && typeof status === "string") {
+                            status = status.charAt(0).toUpperCase() + status.slice(1);
+                        }
+                        return {
+                            id: entry.id,
+                            srNo: (currentPage - 1) * pageSize + index + 1,
+                            ...entry,
+                            created_at: formattedDate,
+                            status,
+                        }
+                    })
                 setCreditNotes(transformedData);
 
                 // setCreditNotes(response.data.credit_notes);
@@ -351,7 +364,7 @@ const [filterSiteId, setFilterSiteId] = useState("");
     const [selectedBoqDetails, setSelectedBoqDetails] = useState([]);
 
     console.log("data for bulk action")
-    
+
     const handleSubmit = () => {
         console.log("data for bulk action");
 
@@ -392,24 +405,29 @@ const [filterSiteId, setFilterSiteId] = useState("");
             axios
                 .get(`${baseURL}credit_notes?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[status_eq]=${fromStatus}`)
                 .then((response) => {
-                     const transformedData = response.data.credit_notes.map(
-        (entry, index) => {
-          // console.log("created_at raw:", entry.created_at);
-          let formattedDate = "-";
-          if (entry.created_at) {
-            try {
-              formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
-            } catch (e) {
-              formattedDate = "-";
-            }
-          }
-          return {
-            id: entry.id,
-            srNo: (currentPage - 1) * pageSize + index + 1,
-            ...entry,
-            created_at: formattedDate
-          }
-        })
+                    const transformedData = response.data.credit_notes.map(
+                        (entry, index) => {
+                            // console.log("created_at raw:", entry.created_at);
+                            let formattedDate = "-";
+                            if (entry.created_at) {
+                                try {
+                                    formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                                } catch (e) {
+                                    formattedDate = "-";
+                                }
+                            }
+                            let status = entry.status;
+                            if (status && typeof status === "string") {
+                                status = status.charAt(0).toUpperCase() + status.slice(1);
+                            }
+                            return {
+                                id: entry.id,
+                                srNo: (currentPage - 1) * pageSize + index + 1,
+                                ...entry,
+                                created_at: formattedDate,
+                                status,
+                            }
+                        })
                     setCreditNotes(transformedData);
                     //   setCreditNotes(response.data.credit_notes);
                     setTotalPages(response.data.meta.total_pages); // Set total pages
@@ -434,24 +452,29 @@ const [filterSiteId, setFilterSiteId] = useState("");
         axios
             .get(url)
             .then((response) => {
-                 const transformedData = response.data.credit_notes.map(
-        (entry, index) => {
-          // console.log("created_at raw:", entry.created_at);
-          let formattedDate = "-";
-          if (entry.created_at) {
-            try {
-              formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
-            } catch (e) {
-              formattedDate = "-";
-            }
-          }
-          return {
-            id: entry.id,
-            srNo: (currentPage - 1) * pageSize + index + 1,
-            ...entry,
-            created_at: formattedDate
-          }
-        })
+                const transformedData = response.data.credit_notes.map(
+                    (entry, index) => {
+                        // console.log("created_at raw:", entry.created_at);
+                        let formattedDate = "-";
+                        if (entry.created_at) {
+                            try {
+                                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                            } catch (e) {
+                                formattedDate = "-";
+                            }
+                        }
+                        let status = entry.status;
+                        if (status && typeof status === "string") {
+                            status = status.charAt(0).toUpperCase() + status.slice(1);
+                        }
+                        return {
+                            id: entry.id,
+                            srNo: (currentPage - 1) * pageSize + index + 1,
+                            ...entry,
+                            created_at: formattedDate,
+                            status,
+                        }
+                    })
                 setCreditNotes(transformedData);
                 // setCreditNotes(response.data.credit_notes);
                 setTotalPages(response.data.meta.total_pages); // Set total pages
@@ -466,28 +489,33 @@ const [filterSiteId, setFilterSiteId] = useState("");
     const fetchSearchResults = async (page = 1) => {
         try {
             setLoading(true);
-             setActiveSearch(searchKeyword);
+            setActiveSearch(searchKeyword);
             const response = await axios.get(
                 `${baseURL}credit_notes?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[credit_note_no_or_credit_note_date_or_credit_note_amount_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_purchase_order_supplier_full_name_cont]=${searchKeyword}`
             );
-             const transformedData = response.data.credit_notes.map(
-        (entry, index) => {
-          // console.log("created_at raw:", entry.created_at);
-          let formattedDate = "-";
-          if (entry.created_at) {
-            try {
-              formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
-            } catch (e) {
-              formattedDate = "-";
-            }
-          }
-          return {
-            id: entry.id,
-            srNo: (currentPage- 1) * pageSize + index + 1,
-            ...entry,
-            created_at: formattedDate
-          }
-        })
+            const transformedData = response.data.credit_notes.map(
+                (entry, index) => {
+                    // console.log("created_at raw:", entry.created_at);
+                    let formattedDate = "-";
+                    if (entry.created_at) {
+                        try {
+                            formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                        } catch (e) {
+                            formattedDate = "-";
+                        }
+                    }
+                    let status = entry.status;
+                    if (status && typeof status === "string") {
+                        status = status.charAt(0).toUpperCase() + status.slice(1);
+                    }
+                    return {
+                        id: entry.id,
+                        srNo: (currentPage - 1) * pageSize + index + 1,
+                        ...entry,
+                        created_at: formattedDate,
+                        status
+                    }
+                })
             setCreditNotes(transformedData);
             //   setCreditNotes(response.data.credit_notes);
             setMeta(response.data.meta);
@@ -534,7 +562,7 @@ const [filterSiteId, setFilterSiteId] = useState("");
     });
 
     const allColumns = [
-       
+
         {
             field: "srNo",
             headerName: "Sr. No.",
@@ -548,18 +576,19 @@ const [filterSiteId, setFilterSiteId] = useState("");
         { field: "company_name", headerName: "Company", width: 200 },
         { field: "project_name", headerName: "Project", width: 180 },
         { field: "site_name", headerName: "Sub Project", width: 150 },
-        { field: "credit_note_no", headerName: "Credit Note No.", width: 150,
-             renderCell: (params) =>
-                    params.value && params.row.id ? (
-                      <Link to={`/credit-note-details/${params.row.id}`}
-                       
-                      >
+        {
+            field: "credit_note_no", headerName: "Credit Note No.", width: 150,
+            renderCell: (params) =>
+                params.value && params.row.id ? (
+                    <Link to={`/credit-note-details/${params.row.id}`}
+
+                    >
                         <span className="boq-id-link">{params.value}</span>
-                      </Link>
-                    ) : (
-                      "-"
-                    ),
-         },
+                    </Link>
+                ) : (
+                    "-"
+                ),
+        },
         { field: "credit_note_date", headerName: "Date", width: 150 },
         { field: "credit_note_type", headerName: "Credit Note Type", width: 150 },
         {
@@ -638,7 +667,7 @@ const [filterSiteId, setFilterSiteId] = useState("");
         return rowsToShow;
     };
 
-     // Handle page change
+    // Handle page change
     const handlePageChange = (pageNumber) => {
         if (pageNumber > 0 && pageNumber <= totalPages) {
             setCurrentPage(pageNumber);
@@ -978,7 +1007,7 @@ const [filterSiteId, setFilterSiteId] = useState("");
                                         //   console.log("Row ID:", row.id);
                                         return row.id;
                                     }}
-                                    loading={loading}
+                                    loading={false}
                                     disableSelectionOnClick
                                     checkboxSelection // <-- enables checkboxes and select all
                                     selectionModel={selectedBoqDetails}
@@ -1230,7 +1259,7 @@ const [filterSiteId, setFilterSiteId] = useState("");
                 </Modal.Body>
 
                 <Modal.Footer>
-                    <button  className="purple-btn2" onClick={handleShowAll}>
+                    <button className="purple-btn2" onClick={handleShowAll}>
                         Show All
                     </button>
                     <button className="purple-btn1" onClick={handleHideAll}>

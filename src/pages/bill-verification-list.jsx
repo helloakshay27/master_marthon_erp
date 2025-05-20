@@ -83,11 +83,17 @@ const BillVerificationList = () => {
               formattedDate = "-";
             }
           }
+          let status = entry.status;
+          if (status && typeof status === "string") {
+            status = status.replace(/_/g, " ");
+            status = status.charAt(0).toUpperCase() + status.slice(1);
+          }
           return {
             id: entry.id,
             srNo: (page - 1) * pageSize + index + 1,
             ...entry,
-            created_at: formattedDate
+            created_at: formattedDate,
+            status,
           }
         })
       console.log("transform data:", transformedData)
@@ -222,11 +228,17 @@ const BillVerificationList = () => {
                 formattedDate = "-";
               }
             }
+            let status = entry.status;
+            if (status && typeof status === "string") {
+              status = status.replace(/_/g, " ");
+              status = status.charAt(0).toUpperCase() + status.slice(1);
+            }
             return {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate
+              created_at: formattedDate,
+              status,
             }
           })
         setBillEntries(transformedData);
@@ -265,11 +277,17 @@ const BillVerificationList = () => {
                 formattedDate = "-";
               }
             }
+            let status = entry.status;
+            if (status && typeof status === "string") {
+              status = status.replace(/_/g, " ");
+              status = status.charAt(0).toUpperCase() + status.slice(1);
+            }
             return {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate
+              created_at: formattedDate,
+              status,
             }
           })
         setBillEntries(transformedData);
@@ -387,11 +405,17 @@ const BillVerificationList = () => {
                   formattedDate = "-";
                 }
               }
+              let status = entry.status;
+              if (status && typeof status === "string") {
+                status = status.replace(/_/g, " ");
+                status = status.charAt(0).toUpperCase() + status.slice(1);
+              }
               return {
                 id: entry.id,
                 srNo: (currentPage - 1) * pageSize + index + 1,
                 ...entry,
-                created_at: formattedDate
+                created_at: formattedDate,
+                status,
               }
             })
           // setBillData(response.data.bill_bookings); // Set fetched data
@@ -449,11 +473,17 @@ const BillVerificationList = () => {
                 formattedDate = "-";
               }
             }
+            let status = entry.status;
+            if (status && typeof status === "string") {
+              status = status.replace(/_/g, " ");
+              status = status.charAt(0).toUpperCase() + status.slice(1);
+            }
             return {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate
+              created_at: formattedDate,
+              status
             }
           })
         setBillEntries(transformedData);
@@ -483,11 +513,17 @@ const BillVerificationList = () => {
               formattedDate = "-";
             }
           }
+          let status = entry.status;
+          if (status && typeof status === "string") {
+            status = status.replace(/_/g, " ");
+            status = status.charAt(0).toUpperCase() + status.slice(1);
+          }
           return {
             id: entry.id,
             srNo: (currentPage - 1) * pageSize + index + 1,
             ...entry,
-            created_at: formattedDate
+            created_at: formattedDate,
+            status,
           }
         })
       setBillEntries(transformedData);
@@ -991,7 +1027,7 @@ const BillVerificationList = () => {
                     //   console.log("Row ID:", row.id);
                     return row.id;
                   }}
-                  loading={loading}
+                  loading={false}
                   disableSelectionOnClick
                   checkboxSelection // <-- enables checkboxes and select all
                   selectionModel={selectedBoqDetails}

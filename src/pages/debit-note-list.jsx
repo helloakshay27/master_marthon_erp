@@ -32,9 +32,7 @@ const DebitNoteList = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [settingShow, setSettingShow] = useState(false);
   const [show, setShow] = useState(false);
-
-
-  // Static data for SingleSelector (this will be replaced by API data later)
+  
 
   // Handle value change in SingleSelector
   const handleChange = (value) => {
@@ -178,11 +176,16 @@ const DebitNoteList = () => {
               formattedDate = "-";
             }
           }
+          let status = entry.status;
+          if (status && typeof status === "string") {
+            status = status.charAt(0).toUpperCase() + status.slice(1);
+          }
           return {
             id: entry.id,
             srNo: (page - 1) * pageSize + index + 1,
             ...entry,
-            created_at: formattedDate
+            created_at: formattedDate,
+            status,
           }
         })
       console.log("transform data:", transformedData)
@@ -241,11 +244,16 @@ const DebitNoteList = () => {
                 formattedDate = "-";
               }
             }
+            let status = entry.status;
+            if (status && typeof status === "string") {
+              status = status.charAt(0).toUpperCase() + status.slice(1);
+            }
             return {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate
+              created_at: formattedDate,
+              status,
             }
           })
         setDebitNotes(transformedData);
@@ -286,11 +294,16 @@ const DebitNoteList = () => {
                 formattedDate = "-";
               }
             }
+            let status = entry.status;
+            if (status && typeof status === "string") {
+              status = status.charAt(0).toUpperCase() + status.slice(1);
+            }
             return {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate
+              created_at: formattedDate,
+              status,
             }
           })
         setDebitNotes(transformedData);
@@ -337,7 +350,7 @@ const DebitNoteList = () => {
   const [fromStatus, setFromStatus] = useState("");
   const [toStatus, setToStatus] = useState("");
   const [remark, setRemark] = useState("");
- 
+
 
   // Handle input changes
   const handleStatusChange = (selectedOption) => {
@@ -415,11 +428,16 @@ const DebitNoteList = () => {
                   formattedDate = "-";
                 }
               }
+              let status = entry.status;
+              if (status && typeof status === "string") {
+                status = status.charAt(0).toUpperCase() + status.slice(1);
+              }
               return {
                 id: entry.id,
                 srNo: (currentPage - 1) * pageSize + index + 1,
                 ...entry,
-                created_at: formattedDate
+                created_at: formattedDate,
+                status,
               }
             })
           setDebitNotes(transformedData);
@@ -487,11 +505,16 @@ const DebitNoteList = () => {
                 formattedDate = "-";
               }
             }
+            let status = entry.status;
+            if (status && typeof status === "string") {
+              status = status.charAt(0).toUpperCase() + status.slice(1);
+            }
             return {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate
+              created_at: formattedDate,
+              status,
             }
           })
         setDebitNotes(transformedData);
@@ -521,11 +544,16 @@ const DebitNoteList = () => {
               formattedDate = "-";
             }
           }
+          let status = entry.status;
+          if (status && typeof status === "string") {
+            status = status.charAt(0).toUpperCase() + status.slice(1);
+          }
           return {
             id: entry.id,
             srNo: (currentPage - 1) * pageSize + index + 1,
             ...entry,
-            created_at: formattedDate
+            created_at: formattedDate,
+            status,
           }
         })
       setDebitNotes(transformedData);
@@ -574,7 +602,7 @@ const DebitNoteList = () => {
   });
 
   const allColumns = [
-   
+
     {
       field: "srNo",
       headerName: "Sr. No.",
@@ -1006,7 +1034,7 @@ const DebitNoteList = () => {
                     //   console.log("Row ID:", row.id);
                     return row.id;
                   }}
-                  loading={loading}
+                  loading={false}
                   disableSelectionOnClick
                   checkboxSelection // <-- enables checkboxes and select all
                   selectionModel={selectedBoqDetails}
