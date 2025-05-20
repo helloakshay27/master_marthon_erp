@@ -972,7 +972,7 @@ const [filterSiteId, setFilterSiteId] = useState("");
                                     rows={getTransformedRows()}
                                     columns={columns}
                                     pageSize={pageSize}
-                                    autoHeight={false}
+                                    autoHeight={true}
                                     // getRowId={(row) => row.id}
                                     getRowId={(row) => {
                                         //   console.log("Row ID:", row.id);

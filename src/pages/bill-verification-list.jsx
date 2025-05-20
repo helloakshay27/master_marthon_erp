@@ -10,19 +10,23 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { baseURL } from "../confi/apiDomain";
+import { DataGrid } from "@mui/x-data-grid";
 
 const BillVerificationList = () => {
   const navigate = useNavigate();
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
   const [activeTab, setActiveTab] = useState("total"); // State to track the active tab
-  
 
-  // Static data for SingleSelector (this will be replaced by API data later)
-  // const companyOptions = [
-  //   { value: "company1", label: "Company 1" },
-  //   { value: "company2", label: "Company 2" },
-  //   { value: "company3", label: "Company 3" },
-  // ];
+  const [pageSize, setPageSize] = useState(10);
+  const [showOnlyPinned, setShowOnlyPinned] = useState(false);
+  const [pinnedRows, setPinnedRows] = useState([]);
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [settingShow, setSettingShow] = useState(false);
+  const [show, setShow] = useState(false);
+  const [activeSearch, setActiveSearch] = useState('');
+  const [filterCompanyId, setFilterCompanyId] = useState("");
+  const [filterProjectId, setFilterProjectId] = useState("");
+  const [filterSiteId, setFilterSiteId] = useState("");
 
   // Handle value change in SingleSelector
   const handleChange = (value) => {
@@ -56,10 +60,38 @@ const BillVerificationList = () => {
   const fetchBillEntries = async (page) => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${baseURL}bill_entries?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      );
-      setBillEntries(response.data.bill_entries);
+      // const response = await axios.get(
+      //   `${baseURL}bill_entries?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      // );
+
+      let url = `${baseURL}bill_entries?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+      if (activeSearch) {
+        url += `&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_cont]=${activeSearch}`;
+      }
+      if (filterCompanyId) url += `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${filterCompanyId}`;
+      if (filterProjectId) url += `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${filterProjectId}`;
+      if (filterSiteId) url += `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_in]=${filterSiteId}`;
+      const response = await axios.get(url);
+      const transformedData = response.data.bill_entries.map(
+        (entry, index) => {
+          // console.log("created_at raw:", entry.created_at);
+          let formattedDate = "-";
+          if (entry.created_at) {
+            try {
+              formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+            } catch (e) {
+              formattedDate = "-";
+            }
+          }
+          return {
+            id: entry.id,
+            srNo: (page - 1) * pageSize + index + 1,
+            ...entry,
+            created_at: formattedDate
+          }
+        })
+      console.log("transform data:", transformedData)
+      setBillEntries(transformedData);
       setMeta(response.data.meta)
       setTotalPages(response.data.meta.total_pages); // Set total pages
       setTotalEntries(response.data.meta.total_count);
@@ -169,6 +201,9 @@ const BillVerificationList = () => {
     const projectId = selectedProject?.value || "";
     const siteId = selectedSite?.value || "";
     const search = searchKeyword || "";
+    setFilterCompanyId(companyId);
+    setFilterProjectId(projectId);
+    setFilterSiteId(siteId);
     console.log("ids filter:", companyId, projectId, siteId)
     const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${companyId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${projectId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_cont]=${siteId}`;
 
@@ -176,7 +211,25 @@ const BillVerificationList = () => {
     axios
       .get(url)
       .then((response) => {
-        setBillEntries(response.data.bill_entries);
+        const transformedData = response.data.bill_entries.map(
+          (entry, index) => {
+            // console.log("created_at raw:", entry.created_at);
+            let formattedDate = "-";
+            if (entry.created_at) {
+              try {
+                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+              } catch (e) {
+                formattedDate = "-";
+              }
+            }
+            return {
+              id: entry.id,
+              srNo: (currentPage - 1) * pageSize + index + 1,
+              ...entry,
+              created_at: formattedDate
+            }
+          })
+        setBillEntries(transformedData);
         setTotalPages(response.data.meta.total_pages); // Set total pages
         setTotalEntries(response.data.meta.total_count);
         setMeta(response.data.meta)
@@ -190,12 +243,36 @@ const BillVerificationList = () => {
     setSelectedCompany(null);
     setSelectedProject(null);
     setSelectedSite(null);
+    setFilterCompanyId("");
+    setFilterProjectId("");
+    setFilterSiteId("");
+    setActiveSearch("");
+    setSearchKeyword("");
+    setCurrentPage(1); // Go to first page
 
     // Fetch unfiltered data
     axios
       .get(`${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
       .then((response) => {
-        setBillEntries(response.data.bill_entries);
+        const transformedData = response.data.bill_entries.map(
+          (entry, index) => {
+            // console.log("created_at raw:", entry.created_at);
+            let formattedDate = "-";
+            if (entry.created_at) {
+              try {
+                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+              } catch (e) {
+                formattedDate = "-";
+              }
+            }
+            return {
+              id: entry.id,
+              srNo: (currentPage - 1) * pageSize + index + 1,
+              ...entry,
+              created_at: formattedDate
+            }
+          })
+        setBillEntries(transformedData);
         setTotalPages(response.data.meta.total_pages); // Set total pages
         setTotalEntries(response.data.meta.total_count);
         setMeta(response.data.meta)
@@ -206,14 +283,6 @@ const BillVerificationList = () => {
   };
 
 
-  // if (loading) {
-  //   return <p>Loading...</p>;
-  // }
-
-  // if (error) {
-  //   return <p>{error}</p>;
-  // }
-
   //  bulk action 
   //bulkaction options 
   const options = [
@@ -221,26 +290,6 @@ const BillVerificationList = () => {
       label: 'Select Status',
       value: '',
     },
-    // {
-    //   label: 'Draft',
-    //   value: 'draft',
-    // },
-    // {
-    //   label: 'Verified',
-    //   value: 'verified',
-    // },
-    // {
-    //   label: 'Submitted',
-    //   value: 'submitted',
-    // },
-    // {
-    //   label: 'Proceed',
-    //   value: 'proceed',
-    // },
-    // {
-    //   label: 'Approved',
-    //   value: 'approved',
-    // },
 
     {
       label: "Open",
@@ -311,6 +360,7 @@ const BillVerificationList = () => {
       .then((response) => {
         console.log('Success:', response.data);
         alert('Status updated successfully ....')
+        fetchBillEntries(currentPage)
         // Handle success (e.g., show a success message, update UI, etc.)
       })
       .catch((error) => {
@@ -326,8 +376,26 @@ const BillVerificationList = () => {
       axios
         .get(`${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[status_eq]=${fromStatus}`)
         .then((response) => {
+          const transformedData = response.data.bill_entries.map(
+            (entry, index) => {
+              // console.log("created_at raw:", entry.created_at);
+              let formattedDate = "-";
+              if (entry.created_at) {
+                try {
+                  formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                } catch (e) {
+                  formattedDate = "-";
+                }
+              }
+              return {
+                id: entry.id,
+                srNo: (currentPage - 1) * pageSize + index + 1,
+                ...entry,
+                created_at: formattedDate
+              }
+            })
           // setBillData(response.data.bill_bookings); // Set fetched data
-          setBillEntries(response.data.bill_entries);
+          setBillEntries(transformedData);
           setMeta(response.data.meta)
           setTotalPages(response.data.meta.total_pages); // Reset total pages
           setTotalEntries(response.data.meta.total_count); // Reset total entries
@@ -360,44 +428,226 @@ const BillVerificationList = () => {
   };
 
   console.log("selected bill id array :", selectedBoqDetails)
-  
+
 
   //card filter
-    const fetchFilteredData2 = (status) => {
-      const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${
-        status ? `&q[status_eq]=${status}` : ""
+  const fetchFilteredData2 = (status) => {
+    const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${status ? `&q[status_eq]=${status}` : ""
       }`;
-    
-      axios
-        .get(url)
-        .then((response) => {
-          setBillEntries(response.data.bill_entries);
-          setTotalPages(response.data.meta.total_pages); // Set total pages
-          setTotalEntries(response.data.meta.total_count);
-          // setMeta(response.data.meta);
-        })
-        .catch((error) => {
-          console.error("Error fetching filtered data:", error);
-        });
-    };
 
-    const fetchSearchResults = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(
-        `${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_cont]=${searchKeyword}`
-        );
-        setBillEntries(response.data.bill_entries);
-        setMeta(response.data.meta);
-        setTotalPages(response.data.meta.total_pages);
+    axios
+      .get(url)
+      .then((response) => {
+        const transformedData = response.data.bill_entries.map(
+          (entry, index) => {
+            // console.log("created_at raw:", entry.created_at);
+            let formattedDate = "-";
+            if (entry.created_at) {
+              try {
+                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+              } catch (e) {
+                formattedDate = "-";
+              }
+            }
+            return {
+              id: entry.id,
+              srNo: (currentPage - 1) * pageSize + index + 1,
+              ...entry,
+              created_at: formattedDate
+            }
+          })
+        setBillEntries(transformedData);
+        setTotalPages(response.data.meta.total_pages); // Set total pages
         setTotalEntries(response.data.meta.total_count);
-      } catch (err) {
-        setError("Failed to fetch search results");
-        console.error("Error fetching search results:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+        // setMeta(response.data.meta);
+      })
+      .catch((error) => {
+        console.error("Error fetching filtered data:", error);
+      });
+  };
+
+  const fetchSearchResults = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_cont]=${searchKeyword}`
+      );
+      const transformedData = response.data.bill_entries.map(
+        (entry, index) => {
+          // console.log("created_at raw:", entry.created_at);
+          let formattedDate = "-";
+          if (entry.created_at) {
+            try {
+              formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+            } catch (e) {
+              formattedDate = "-";
+            }
+          }
+          return {
+            id: entry.id,
+            srNo: (currentPage - 1) * pageSize + index + 1,
+            ...entry,
+            created_at: formattedDate
+          }
+        })
+      setBillEntries(transformedData);
+      setMeta(response.data.meta);
+      setTotalPages(response.data.meta.total_pages);
+      setTotalEntries(response.data.meta.total_count);
+    } catch (err) {
+      setError("Failed to fetch search results");
+      console.error("Error fetching search results:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  //   column sort and setting 
+  const [columnVisibility, setColumnVisibility] = useState({
+    srNo: true,
+    bill_no: true,
+    mode_of_submission: true,
+    company_name: true,
+    project_name: true,
+    site_name: true,
+    pms_supplier: true,
+    Is_MSME: true,
+    po_number: true,
+    created_at: true,
+    accepted_at: true,
+    bill_date: true,
+    bill_amount: true,
+    bill_copies: true,
+    due: true,
+    due_date: true,
+    certificate_no: true,
+    // advance_adjust_amount: true,
+    payable_amount: true,
+    paid: true,
+    balance: true,
+    status: true,
+    overdue: true,
+    assign_to: true,
+    tat: true,
+  });
+
+  const allColumns = [
+
+    {
+      field: "srNo",
+      headerName: "Sr. No.",
+      width: 100,
+    },
+    {
+      field: "bill_no",
+      headerName: "Bill No.",
+      width: 150,
+      renderCell: (params) =>
+        params.value && params.row.id ? (
+          <Link to={`/bill-verification-details/${params.row.id}`}>
+            <span className="boq-id-link">{params.value}</span>
+          </Link>
+        ) : (
+          "-"
+        ),
+    },
+    {
+      field: "mode_of_submission",
+      headerName: "Mode of Submission",
+      width: 180,
+    },
+    { field: "company_name", headerName: "Company", width: 200 },
+    { field: "project_name", headerName: "Project", width: 180 },
+    { field: "site_name", headerName: "Sub Project", width: 150 },
+    { field: "pms_supplier", headerName: "Vendor Name", width: 150 },
+    { field: "Is_MSME", headerName: "Is MSME", width: 150 },
+    { field: "po_number", headerName: "PO No.", width: 150 },
+    {
+      field: "created_at",
+      headerName: "Created On",
+      width: 150,
+    },
+    {
+      field: "accepted_at",
+      headerName: "Accepted On",
+      width: 150,
+    },
+
+    { field: "bill_date", headerName: "Bill Date", width: 150 },
+    { field: "bill_amount", headerName: "Bill Amount", width: 150 },
+    { field: "bill_copies", headerName: "Bill Copies", width: 150 },
+    { field: "due", headerName: "Due", width: 150 },
+    { field: "due_date", headerName: "Due Date", width: 150 },
+    { field: "certificate_no", headerName: "Certificate No.", width: 150 },
+    // { field: "advance_adjust_amount", headerName: "Advance Adjust Amount", width: 200 },
+    { field: "payable_amount", headerName: "Payable Amount", width: 150 },
+    { field: "paid", headerName: "Paid", width: 150 },
+    { field: "balance", headerName: "Balance", width: 150 },
+    { field: "status", headerName: "Status", width: 180 },
+    { field: "overdue", headerName: "Overdue", width: 150 },
+    { field: "assign_to", headerName: "Assign to", width: 150 },
+    { field: "tat", headerName: "TAT", width: 150 },
+
+  ];
+
+  const columns = allColumns.filter((col) => columnVisibility[col.field]);
+
+  const handleSettingClose = () => setSettingShow(false);
+  const handleClose = () => setShow(false);
+  const handleSettingModalShow = () => setSettingShow(true);
+  const handleModalShow = () => setShow(true);
+
+  const handleToggleColumn = (field) => {
+    setColumnVisibility((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
+
+  const handleShowAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+
+  const handleHideAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = false;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+
+  const handleResetColumns = () => {
+    const defaultVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(defaultVisibility);
+  };
+
+  const getTransformedRows = () => {
+    let rowsToShow = showOnlyPinned
+      ? billEntries.filter((row) => pinnedRows.includes(row.id))
+      : billEntries;
+
+    // const normalizedSearchTerm = searchKeyword.trim().toLowerCase();
+    // if (normalizedSearchTerm) {
+    //     rowsToShow = rowsToShow.filter((item) =>
+    //         Object.values(item).some(
+    //             (value) =>
+    //                 value && String(value).toLowerCase().includes(normalizedSearchTerm)
+    //         )
+    //     );
+    // }
+
+    return rowsToShow;
+  };
+
+  // Calculate displayed rows for the current page
+  const startEntry = (currentPage - 1) * pageSize + 1;
+  const endEntry = Math.min(currentPage * pageSize, totalEntries);
+
+  console.log("selected bill id array :", selectedBoqDetails)
 
   return (
     <>
@@ -464,27 +714,28 @@ const BillVerificationList = () => {
                     className={`content-box tab-button ${activeTab === "total" ? "active" : ""}`}
                     onClick={() => {
                       setActiveTab("total")
-                      fetchFilteredData2("")}} // Fetch all data (no status filter)
+                      fetchFilteredData2("")
+                    }} // Fetch all data (no status filter)
                   >
                     <h4 className="content-box-title fw-semibold">Bill List</h4>
                     <p className="content-box-sub">{meta?.total_count}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div 
-                  // className="content-box tab-button" 
-                  data-tab="open"
+                  <div
+                    // className="content-box tab-button" 
+                    data-tab="open"
                     className={`content-box tab-button ${activeTab === "open" ? "active" : ""}`}
                     onClick={() => {
                       setActiveTab("open")
-                      fetchFilteredData2("open")}}
+                      fetchFilteredData2("open")
+                    }}
                   >
                     <h4 className="content-box-title fw-semibold">
                       Open Bills
                     </h4>
                     <p className="content-box-sub">
-                    {/* {meta?.total_count} */}
-                      {"0"}</p>
+                      {meta?.draft_count}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -494,7 +745,8 @@ const BillVerificationList = () => {
                     className={`content-box tab-button ${activeTab === "recieved_for_verification" ? "active" : ""}`}
                     onClick={() => {
                       setActiveTab("recieved_for_verification")
-                      fetchFilteredData2("recieved_for_verification")}}
+                      fetchFilteredData2("recieved_for_verification")
+                    }}
                   >
                     <h4 className="content-box-title fw-semibold">
                       Received for Verification
@@ -509,7 +761,8 @@ const BillVerificationList = () => {
                     className={`content-box tab-button ${activeTab === "verified" ? "active" : ""}`}
                     onClick={() => {
                       setActiveTab("verified")
-                      fetchFilteredData2("verified")}}
+                      fetchFilteredData2("verified")
+                    }}
                   >
                     <h4 className="content-box-title fw-semibold">Verified</h4>
                     <p className="content-box-sub">{meta?.verified_count}</p>
@@ -658,7 +911,7 @@ const BillVerificationList = () => {
                       />
                       <div className="input-group-append">
                         <button type="button" className="btn btn-md btn-default"
-                        onClick={() => fetchSearchResults()} // Call the search function
+                          onClick={() => fetchSearchResults()} // Call the search function
                         >
                           <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203" />
@@ -692,6 +945,13 @@ const BillVerificationList = () => {
                     </button> */}
 
                     {/* Create BOQ Button */}
+                    <button
+                      type="button"
+                      className="btn btn-md me-5"
+                      onClick={handleSettingModalShow}
+                    >
+                      <SettingIcon />
+                    </button>
                     {/* <button className="purple-btn2"
                       onClick={() => navigate("/bill-verification-create")}
                     >
@@ -710,107 +970,77 @@ const BillVerificationList = () => {
                   </div>
                 </div>
               </div>
-              <div className="tbl-container mx-3 mt-3" style={{ width: "98%" }}>
-                <table
-                  style={{
-                    width: "max-content",
-                    maxHeight: "max-content",
-                    height: "auto",
+
+              <div
+                className="mt-3 mx-3"
+                style={{
+                  //   width: "100%",
+                  //   height: "430px",
+                  //   boxShadow: "unset",
+                  overflowY: "hidden",
+                }}
+              >
+
+                <DataGrid
+                  rows={getTransformedRows()}
+                  columns={columns}
+                  pageSize={pageSize}
+                  autoHeight={true}
+                  // getRowId={(row) => row.id}
+                  getRowId={(row) => {
+                    //   console.log("Row ID:", row.id);
+                    return row.id;
                   }}
-                >
-                  <thead>
-                    <tr>
-                      <th className="text-start">
-                        <input type="checkbox" />
-                      </th>
-                      <th className="text-start">Sr.No.</th>
-                      {/* <th className="text-start">ID</th> */}
-                      <th className="text-start">Mode of Submission</th>
-                      <th className="text-start">Company</th>
-                      <th className="text-start">Project</th>
-                      <th className="text-start">Sub Project</th>
-                      <th className="text-start">Vendor Name</th>
-                      <th className="text-start">Is MSME</th>
-                      <th className="text-start">PO No.</th>
-                      <th className="text-start">Created On</th>
-                      <th className="text-start">Accepted On</th>
-                      <th className="text-start">Bill No.</th>
-                      <th className="text-start">Bill Date</th>
-                      <th className="text-start">Bill Amount</th>
-                      <th className="text-start">Bill Copies</th>
-                      <th className="text-start">Due</th>
-                      <th className="text-start">Due Date</th>
-                      <th className="text-start">Certificate No.</th>
-                      <th className="text-start">Payable Amount</th>
-                      <th className="text-start">Paid</th>
-                      <th className="text-start">Balance</th>
-                      <th className="text-start">Status</th>
-                      <th className="text-start">Overdue</th>
-                      <th className="text-start">Assign to</th>
-                      <th className="text-start">TAT</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {billEntries.map((entry, index) => (
-                      <tr key={entry.id}>
-                        <td className="text-start">
-                          {/* <input type="checkbox" 
-                          /> */}
-                          <input
-                            className="ms-1 me-1 mb-1"
-                            type="checkbox"
-                            checked={selectedBoqDetails.includes(entry.id)} // Check if this ID is selected
-                            onChange={() => handleCheckboxChange(entry.id)} // Handle checkbox change
-                          />
-                        </td>
-                        <td className="text-start boq-id-link">
-                          <Link
-                            to={`/bill-verification-details/${entry.id}`}
-                            className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
-                            {/* {index + 1} */}
-                            {(currentPage - 1) * itemsPerPage + index + 1}
-                          </Link>
-                        </td>
-                        {/* <td className="text-start" /> */}
-                        <td className="text-start">{entry.mode_of_submission}</td>
-                        <td className="text-start">{entry.company_name}</td>
-                        <td className="text-start">{entry.project_name || ""}</td>
-                        <td className="text-start">{entry.site_name || ""}</td>
-                        <td className="text-start">{entry.pms_supplier}</td>
-                        <td className="text-start" > </td>
-                        <td className="text-start">{entry.po_number}</td>
-                        <td className="text-start">{new Date(entry.created_at).toLocaleDateString()}</td>
-                        <td className="text-start"></td>
-                        <td className="text-start boq-id-link">
-                          <Link
-                            to={`/bill-verification-details/${entry.id}`}
-                            className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
-                            {entry.bill_no}
-                          </Link>
-                        </td>
-                        <td className="text-start">{new Date(entry.bill_date).toLocaleDateString()}</td>
-                        <td className="text-start">{entry.bill_amount}</td>
-                        <td className="text-start" > </td>
-                        <td className="text-start" > </td>
-                        <td className="text-start" > </td>
-                        <td className="text-start"></td>
-                        <td className="text-start"></td>
-                        <td className="text-start"></td>
-                        <td className="text-start"></td>
-                        <td className="text-start">
-                          {/* {entry.status} */}
-                          {/* {entry.status.charAt(0).toUpperCase() + entry.status.slice(1)} */}
-                          {entry.status
-    .split("_") // Split the string by underscores
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize each word
-    .join(" ")}
-                        </td>
-                        <td className="text-start"></td>
-                        <td className="text-start" > </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                  loading={loading}
+                  disableSelectionOnClick
+                  checkboxSelection // <-- enables checkboxes and select all
+                  selectionModel={selectedBoqDetails}
+                  //   onSelectionModelChange={(ids) => setSelectedBoqDetails(ids)}
+                  onSelectionModelChange={(ids) => {
+                    setSelectedBoqDetails(ids.map(String));
+                    console.log("Selected Row IDs:", ids); // This will log the selected row ids array
+                  }}
+
+                  onRowSelectionModelChange={(ids) => {
+                    setSelectedBoqDetails(ids);
+                    console.log("Selected Row IDs: 2", ids);
+                  }}
+                  components={{
+                    ColumnMenu: () => null,
+                  }}
+                  sx={{
+                    "& .MuiDataGrid-columnHeaders": {
+                      backgroundColor: "#f8f9fa",
+                      color: "#000",
+                      fontWeight: "bold",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 1,
+                    },
+                    "& .MuiDataGrid-cell": {
+                      borderColor: "#dee2e6",
+                    },
+                    "& .MuiDataGrid-columnHeader": {
+                      borderColor: "#dee2e6",
+                    },
+                    // Red color for checked checkboxes
+                    "& .MuiCheckbox-root.Mui-checked .MuiSvgIcon-root": {
+                      color: "#8b0203",
+                    },
+                    // Black for header (select all) checkbox, even when checked
+                    "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root": {
+                      color: "#fff",
+                    },
+                    // Make checkboxes smaller
+                    "& .MuiCheckbox-root .MuiSvgIcon-root": {
+                      fontSize: "1.1rem", // adjust as needed (default is 1.5rem)
+                    },
+                    // // Hide vertical scrollbar
+                    // "& .MuiDataGrid-virtualScroller": {
+                    //   overflowY: "hidden !important",
+                    // },
+                  }}
+                />
               </div>
               <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                 <ul className="pagination justify-content-center d-flex">
@@ -896,6 +1126,107 @@ const BillVerificationList = () => {
           <p>Loading...</p>
         </div>
       )}
+
+
+      {/* Settings Modal */}
+      <Modal
+        show={settingShow}
+        onHide={handleSettingClose}
+        dialogClassName="modal-right"
+        className="setting-modal"
+        backdrop={true}
+      >
+        <Modal.Header>
+          <div className="container-fluid p-0">
+            <div className="border-0 d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <button
+                  type="button"
+                  className="btn"
+                  aria-label="Close"
+                  onClick={handleSettingClose}
+                >
+                  <svg
+                    width="10"
+                    height="16"
+                    viewBox="0 0 10 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M8 2L2 8L8 14"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <Button
+                style={{ textDecoration: "underline" }}
+                variant="alert"
+                onClick={handleResetColumns}
+              >
+                Reset
+              </Button>
+            </div>
+          </div>
+        </Modal.Header>
+
+        <Modal.Body style={{ height: "400px", overflowY: "auto" }}>
+          {allColumns
+            .filter(
+              (column) => column.field !== "srNo" && column.field !== "Star"
+            )
+            .map((column) => (
+              <div
+                className="row justify-content-between align-items-center mt-2"
+                key={column.field}
+              >
+                <div className="col-md-6">
+                  <button type="submit" className="btn btn-md">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                    </svg>
+                  </button>
+                  <label>{column.headerName}</label>
+                </div>
+                <div className="col-md-4">
+                  <div className="form-check form-switch mt-1">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={columnVisibility[column.field]}
+                      onChange={() => handleToggleColumn(column.field)}
+                      role="switch"
+                      id={`flexSwitchCheckDefault-${column.field}`}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+        </Modal.Body>
+
+        <Modal.Footer>
+          <button className="purple-btn2" onClick={handleShowAll}>
+            Show All
+          </button>
+          <button className="purple-btn1" onClick={handleHideAll}>
+            Hide All
+          </button>
+        </Modal.Footer>
+      </Modal>
 
       {/* modal start */}
       <Modal
