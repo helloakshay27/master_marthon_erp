@@ -40,6 +40,7 @@ const BillEntryList = () => {
 
   const [columnVisibility, setColumnVisibility] = useState({
     srNo: true,
+    bill_id: true,
     mode_of_submission: true,
     company_name: true,
     project_name: true,
@@ -79,11 +80,25 @@ const BillEntryList = () => {
       // },
     },
     {
+      field: "bill_id",
+      headerName: "Bill Id",
+      width: 100,
+      renderCell: (params) =>
+        params.value && params.row.id ? (
+          <Link to={`/bill-entry-details/${params.row.id}`}>
+            <span className="boq-id-link">{params.value}</span>
+          </Link>
+        ) : (
+          "-"
+        ),
+    },
+
+    {
       field: "mode_of_submission",
       headerName: "Mode of Submission",
       width: 150,
     },
-    { field: "company_name", headerName: "Company", width: 150 },
+    { field: "company_name", headerName: "Company", width: 180 },
     { field: "project_name", headerName: "Project", width: 150 },
     { field: "site_name", headerName: "Sub Project", width: 150 },
     { field: "pms_supplier", headerName: "Vendor Name", width: 150 },
@@ -93,27 +108,11 @@ const BillEntryList = () => {
       field: "created_at",
       headerName: "Created On",
       width: 150,
-      valueFormatter: (params) => {
-        if (!params || !params.value) return "-";
-        try {
-          return new Date(params.value).toLocaleDateString();
-        } catch (error) {
-          return "-";
-        }
-      },
     },
     {
-      field: "accepted_at",
+      field: "updated_at",
       headerName: "Accepted On",
       width: 150,
-      valueFormatter: (params) => {
-        if (!params || !params.value) return "-";
-        try {
-          return new Date(params.value).toLocaleDateString();
-        } catch (error) {
-          return "-";
-        }
-      },
     },
     {
       field: "bill_no",
@@ -122,7 +121,7 @@ const BillEntryList = () => {
       renderCell: (params) =>
         params.value && params.row.id ? (
           <Link to={`/bill-entry-details/${params.row.id}`}>
-            {params.value}
+            <span className="boq-id-link">{params.value}</span>
           </Link>
         ) : (
           "-"
@@ -374,18 +373,67 @@ const BillEntryList = () => {
       setLoading(true);
 
       const response = await axios.get(
-        `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_ord
-er_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inve
-ntories_mor_inventory_material_order_request_company_id_cont]
-        =${search}`
+        `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_cont]=${search}`
       );
-      const transformedData = response.data.bill_entries.map(
-        (entry, index) => ({
+      const transformedData = response.data.bill_entries.map((entry, index) => {
+        // Format created_at date
+        let formattedCreatedAt = "-";
+        if (entry.created_at) {
+          try {
+            formattedCreatedAt = new Date(entry.created_at)
+              .toISOString()
+              .slice(0, 10);
+          } catch (e) {
+            formattedCreatedAt = "-";
+          }
+        }
+
+        // Format updated_at date
+        let formattedUpdatedAt = "-";
+        if (entry.updated_at) {
+          try {
+            formattedUpdatedAt = new Date(entry.updated_at)
+              .toISOString()
+              .slice(0, 10);
+          } catch (e) {
+            formattedUpdatedAt = "-";
+          }
+        }
+
+        // Format due_date
+        let formattedDueDate = "-";
+        if (entry.due_date) {
+          try {
+            formattedDueDate = new Date(entry.due_date)
+              .toISOString()
+              .slice(0, 10);
+          } catch (e) {
+            formattedDueDate = "-";
+          }
+        }
+
+        // Format bill_date
+        let formattedBillDate = "-";
+        if (entry.bill_date) {
+          try {
+            formattedBillDate = new Date(entry.bill_date)
+              .toISOString()
+              .slice(0, 10);
+          } catch (e) {
+            formattedBillDate = "-";
+          }
+        }
+
+        return {
           id: entry.id,
-          srNo: (page - 1) * pageSize + index + 1, // <-- This line is key!
+          srNo: (page - 1) * pageSize + index + 1,
           ...entry,
-        })
-      );
+          created_at: formattedCreatedAt,
+          updated_at: formattedUpdatedAt,
+          due_date: formattedDueDate,
+          bill_date: formattedBillDate,
+        };
+      });
 
       setBillEntries(transformedData);
       setMeta(response.data.meta);

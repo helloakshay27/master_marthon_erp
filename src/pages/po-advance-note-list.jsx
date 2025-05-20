@@ -10,6 +10,9 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import { useEffect } from "react";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
+import { SettingIcon } from "../components";
+import { DataGrid } from "@mui/x-data-grid";
+import { Stack, Pagination, Typography } from "@mui/material";
 
 const PoAdvanceNoteList = () => {
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
@@ -22,6 +25,7 @@ const PoAdvanceNoteList = () => {
   const [error, setError] = useState(null);
   const [selectedTab, setSelectedTab] = useState("total"); // Add this line to track selected tab
   const [selectedIds, setSelectedIds] = useState([]);
+  const [settingShow, setSettingShow] = useState(false);
 
   // Static data for SingleSelector (this will be replaced by API data later)
 
@@ -177,7 +181,41 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
       const data = Array.isArray(response.data.advance_notes)
         ? response.data.advance_notes
         : [];
-      setCreditNotes(data);
+
+      const transformedData = data.map((entry, index) => {
+        // Format created_at date
+        let formattedCreatedAt = "-";
+        if (entry.created_at) {
+          try {
+            formattedCreatedAt = new Date(entry.created_at)
+              .toISOString()
+              .slice(0, 10);
+          } catch (e) {
+            formattedCreatedAt = "-";
+          }
+        }
+
+        // Format expected_payment_date
+        let formattedExpectedPaymentDate = "-";
+        if (entry.expected_payment_date) {
+          try {
+            formattedExpectedPaymentDate = new Date(entry.expected_payment_date)
+              .toISOString()
+              .slice(0, 10);
+          } catch (e) {
+            formattedExpectedPaymentDate = "-";
+          }
+        }
+
+        return {
+          id: entry.id,
+          srNo: (currentPage - 1) * itemsPerPage + index + 1,
+          ...entry,
+          created_at: formattedCreatedAt,
+          expected_payment_date: formattedExpectedPaymentDate,
+        };
+      });
+      setCreditNotes(transformedData);
 
       // If no status filter is applied, update both counts and original counts
       if (!filters.status) {
@@ -363,6 +401,7 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
   // Handle bulk status update
   const handleBulkStatusUpdate = async (e) => {
     e.preventDefault();
+    console.log("Current selectedIds:", selectedIds); // Debug log
 
     if (selectedIds.length === 0) {
       alert("Please select at least one advance note");
@@ -373,37 +412,271 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
       alert("Please select a target status");
       return;
     }
+    const data = {
+      advance_note_ids: selectedIds,
+      to_status: toStatus,
+      comments: remark,
+    };
+    console.log("data for bulk action", data);
 
     try {
       const response = await axios.patch(
         `${baseURL}advance_notes/update_bulk_status?token=2e86c08136922760d29d4fee6b8ccfccd5f4547d2868ed31`,
-        {
-          advance_note_ids: selectedIds,
-          to_status: toStatus,
-          comments: remark,
-        }
+        data
       );
 
-      console.log("API Response:", response.data); // Debugging: Log the response
+      console.log("Success:", response.data);
+      alert("Status updated successfully ....");
 
-      // Check for success based on the presence of a success field or other indicators
-      if (response.data.success || response.status === 200) {
-        // Refresh the table data
-        fetchTableData();
-        // Reset form
-        setSelectedIds([]);
-        setToStatus("");
-        setFromStatus("");
-        setRemark("");
-        alert(response.data.message || "Bulk status update successful"); // Use default message if undefined
-      } else {
-        alert(response.data.message || "Failed to update status"); // Use default error message if undefined
-      }
+      // Refresh data and reset form
+      await fetchTableData();
+      setSelectedIds([]);
+      setToStatus("");
+      setFromStatus("");
+      setRemark("");
     } catch (error) {
-      console.error("Error updating bulk status:", error);
+      console.error("Error:", error);
       alert("Error updating status. Please try again.");
     }
   };
+
+  // try {
+  //   const response = await axios.patch(
+  //     `${baseURL}advance_notes/update_bulk_status?token=2e86c08136922760d29d4fee6b8ccfccd5f4547d2868ed31`,
+  //     {
+  //       advance_note_ids: selectedIds,
+  //       to_status: toStatus,
+  //       comments: remark,
+  //     }
+  //   );
+
+  //   console.log("API Response:", response.data); // Debugging: Log the response
+
+  //   // Check for success based on the presence of a success field or other indicators
+  //   if (response.data.success || response.status === 200) {
+  //     // Refresh the table data
+  //     fetchTableData();
+  //     // Reset form
+  //     setSelectedIds([]);
+  //     setToStatus("");
+  //     setFromStatus("");
+  //     setRemark("");
+  //     alert(response.data.message || "Bulk status update successful"); // Use default message if undefined
+  //   } else {
+  //     alert(response.data.message || "Failed to update status"); // Use default error message if undefined
+  //   }
+  // } catch (error) {
+  //   console.error("Error updating bulk status:", error);
+  //   alert("Error updating status. Please try again.");
+  // }
+
+  // Add column visibility state
+  const [columnVisibility, setColumnVisibility] = useState({
+    srNo: true,
+    company_name: true,
+    project_name: true,
+    advance_number: true,
+    invoice_date: true,
+    payment_mode: true,
+    created_at: true,
+    po_number: true,
+    po_date: true,
+    po_value: true,
+    supplier_name: true,
+    gstin: true,
+    pan_no: true,
+    advance_amount: true,
+    net_payable: true,
+    status: true,
+    expected_payment_date: true,
+    overdue: true,
+    due_at: true,
+  });
+
+  // Define all columns
+  const allColumns = [
+    {
+      field: "srNo",
+      headerName: "Sr. No.",
+      width: 100,
+    },
+    {
+      field: "company_name",
+      headerName: "Company",
+      width: 150,
+    },
+    {
+      field: "project_name",
+      headerName: "Project",
+      width: 150,
+    },
+    {
+      field: "advance_number",
+      headerName: "Debit Note No.",
+      width: 150,
+      renderCell: (params) => (
+        <Link
+          to={`/po-advance-note-details/${params.row.id}`}
+          // style={{ color: "#8b0203" }}
+        >
+          <span className="boq-id-link">{params.value}</span>
+        </Link>
+      ),
+    },
+    {
+      field: "invoice_date",
+      headerName: "Date",
+      width: 150,
+      // valueFormatter: (params) => {
+      //   if (!params?.value) return "-";
+      //   try {
+      //     return new Date(params.value).toLocaleDateString();
+      //   } catch (error) {
+      //     return "-";
+      //   }
+      // },
+    },
+    {
+      field: "payment_mode",
+      headerName: "Credit Note Type",
+      width: 150,
+    },
+    {
+      field: "created_at",
+      headerName: "Created On",
+      width: 150,
+      // valueFormatter: (params) => {
+      //   if (!params?.value) return "-";
+      //   try {
+      //     return new Date(params.value).toLocaleDateString();
+      //   } catch (error) {
+      //     return "-";
+      //   }
+      // },
+    },
+    {
+      field: "po_number",
+      headerName: "PO No.",
+      width: 150,
+    },
+    {
+      field: "po_date",
+      headerName: "PO Date",
+      width: 150,
+      // valueFormatter: (params) => {
+      //   if (!params?.value) return "-";
+      //   try {
+      //     return new Date(params.value).toLocaleDateString();
+      //   } catch (error) {
+      //     return "-";
+      //   }
+      // },
+    },
+    {
+      field: "po_value",
+      headerName: "PO Value",
+      width: 150,
+    },
+    {
+      field: "supplier_name",
+      headerName: "Supplier Name",
+      width: 150,
+    },
+    {
+      field: "gstin",
+      headerName: "GSTIN No.",
+      width: 150,
+    },
+    {
+      field: "pan_no",
+      headerName: "PAN No.",
+      width: 150,
+    },
+    {
+      field: "advance_amount",
+      headerName: "Debit Note Amount",
+      width: 150,
+    },
+    {
+      field: "net_payable",
+      headerName: "Total Amount",
+      width: 150,
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 150,
+    },
+    {
+      field: "expected_payment_date",
+      headerName: "Due Date",
+      width: 150,
+      // valueFormatter: (params) => {
+      //   if (!params?.value) return "-";
+      //   try {
+      //     return new Date(params.value).toLocaleDateString();
+      //   } catch (error) {
+      //     return "-";
+      //   }
+      // },
+    },
+    {
+      field: "overdue",
+      headerName: "Overdue",
+      width: 150,
+    },
+    {
+      field: "due_at",
+      headerName: "Due At",
+      width: 150,
+    },
+  ];
+
+  // Filter columns based on visibility
+  const columns = allColumns.filter((col) => columnVisibility[col.field]);
+
+  // Column visibility handlers
+  const handleToggleColumn = (field) => {
+    setColumnVisibility((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
+
+  const handleShowAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+
+  const handleHideAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = false;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+
+  const handleResetColumns = () => {
+    const defaultVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(defaultVisibility);
+  };
+
+  // Transform data for DataGrid
+  const getTransformedRows = () => {
+    return creditNotes.map((note, index) => ({
+      id: note.id,
+      srNo: index + 1 + (currentPage - 1) * itemsPerPage,
+      ...note,
+    }));
+  };
+
+  // Add setting modal handlers
+  const handleSettingClose = () => setSettingShow(false);
+  const handleSettingModalShow = () => setSettingShow(true);
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -653,7 +926,6 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
                       value={searchInput}
                       onChange={(e) => setSearchInput(e.target.value)}
                     />
-
                     <div className="input-group-append">
                       <button
                         type="submit"
@@ -706,6 +978,15 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
                       </div>
                     )}
                   </div>
+                </div>
+                <div className="col-md-5 d-flex justify-content-end align-items-center gap-5 mt-1">
+                  <button
+                    type="button"
+                    className="btn btn-md"
+                    onClick={handleSettingModalShow}
+                  >
+                    <SettingIcon />
+                  </button>
                 </div>
               </div>
               {/* <div className="row mt-5 justify-content-center px-4">
@@ -775,677 +1056,245 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
                   </div>
                 </button>
               </div> */}
-              <div className="tbl-container mx-3 mt-3" style={{ width: "98%" }}>
-                <table
-                  style={{
-                    width: "max-content",
-                    maxHeight: "max-content",
-                    height: "auto",
+              <div
+                className="mx-3 mt-3"
+                // style={{ width: "98%" }}
+                style={{
+                  //   width: "100%",
+                  //   height: "430px",
+                  //   boxShadow: "unset",
+                  overflowY: "hidden",
+                }}
+              >
+                {/* <DataGrid
+                  rows={getTransformedRows()}
+                  columns={columns}
+                  pageSize={itemsPerPage}
+                  autoHeight
+                  getRowId={(row) => row.id}
+                  loading={loading}
+                  checkboxSelection
+                  selectionModel={selectedIds}
+                  // onSelectionModelChange={(ids) => {
+                  //   setSelectedIds(ids);
+                  //   console.log("Selected Row IDs:", ids);
+                  // }}
+                   onSelectionModelChange={(newSelectionModel) => {
+    const selectedIdsArray = Array.from(newSelectionModel);
+    console.log("Selected IDs:", selectedIdsArray);
+    setSelectedIds(selectedIdsArray);
+  }}
+  disableSelectionOnClick={false}
+                  components={{
+                    ColumnMenu: () => null,
                   }}
-                >
-                  <thead>
-                    <tr>
-                      <th className="text-start">
-                        <input
-                          type="checkbox"
-                          checked={selectAll} // Bind to "select all" state
-                          onChange={handleSelectAllChange} // Handle "select all" change
-                        />
-                      </th>
-                      <th className="text-start">Sr.No.</th>
-                      <th className="text-start">Company</th>
-                      <th className="text-start">Project</th>
-                      {/* <th className="text-start">Sub-Project</th> */}
-                      <th className="text-start">Debit Note No.</th>
-                      <th className="text-start">Date</th>
-                      <th className="text-start">Credit Note Type</th>
-                      <th className="text-start">Created On</th>
-                      <th className="text-start">PO No.</th>
-                      <th className="text-start">PO Date</th>
-                      <th className="text-start">PO Value</th>
-                      <th className="text-start">Supplier Name</th>
-                      <th className="text-start">GSTIN No.</th>
-                      <th className="text-start">PAN No.</th>
-                      <th className="text-start">Debit Note Amount</th>
-                      <th className="text-start">Deduction Tax</th>
-                      <th className="text-start">Addition Tax</th>
-                      <th className="text-start">Total Amount</th>
-                      <th className="text-start">Status</th>
-                      <th className="text-start">Due Date</th>
-                      <th className="text-start">Overdue</th>
-                      <th className="text-start">Due At</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loading ? (
-                      <tr>
-                        <td colSpan="23" className="text-center">
-                          Loading...
-                        </td>
-                      </tr>
-                    ) : error ? (
-                      <tr>
-                        <td colSpan="23" className="text-center text-danger">
-                          {error}
-                        </td>
-                      </tr>
-                    ) : paginatedData.length > 0 ? (
-                      paginatedData.map((note, index) => (
-                        <tr key={note.id}>
-                          <td className="text-start">
-                            <input
-                              type="checkbox"
-                              checked={selectedIds.includes(note.id)}
-                              onChange={() => handleCheckboxChange(note.id)}
-                            />
-                          </td>
-                          <td className="text-start">
-                            {index + 1 + (currentPage - 1) * itemsPerPage}
-                          </td>
-                          <td className="text-start">{note.company_name}</td>
-                          <td className="text-start">{note.project_name}</td>
-                          {/* <td className="text-start">-</td> */}
-                          {/* <td className="text-start">
-                            {note.advance_number || "-"}
-                          </td> */}
-
-                          <td className="text-start">
-                            <Link to={`/po-advance-note-details/${note.id}`}>
-                              {note.advance_number || "-"}
-                            </Link>
-                          </td>
-                          <td className="text-start">
-                            {note.invoice_date
-                              ? new Date(note.invoice_date).toLocaleDateString()
-                              : "-"}
-                          </td>
-                          <td className="text-start">
-                            {note.payment_mode || ""}
-                          </td>
-                          <td className="text-start">
-                            {note.created_at
-                              ? new Date(note.created_at).toLocaleDateString()
-                              : "-"}
-                          </td>
-                          <td className="text-start">
-                            {note.po_number || "-"}
-                          </td>
-                          <td className="text-start">
-                            {note.po_date
-                              ? new Date(note.po_date).toLocaleDateString()
-                              : "-"}
-                          </td>
-                          <td className="text-start">{note.po_value || "-"}</td>
-                          <td className="text-start">
-                            {note.supplier_name || "-"}
-                          </td>
-                          <td className="text-start">{note.gstin || "-"}</td>
-                          <td className="text-start">{note.pan_no || "-"}</td>
-                          <td className="text-start">
-                            {note.advance_amount || "-"}
-                          </td>
-                          <td className="text-start">-</td>
-                          <td className="text-start">-</td>
-                          <td className="text-start">
-                            {note.net_payable || "-"}
-                          </td>
-                          <td className="text-start">{note.status || "-"}</td>
-                          <td className="text-start">
-                            {note.expected_payment_date
-                              ? new Date(
-                                  note.expected_payment_date
-                                ).toLocaleDateString()
-                              : "-"}
-                          </td>
-                          <td className="text-start">-</td>
-                          <td className="text-start">-</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="23" className="text-center">
-                          No advance notes found
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                  sx={{
+                    "& .MuiDataGrid-columnHeaders": {
+                      backgroundColor: "#f8f9fa",
+                      color: "#000",
+                      fontWeight: "bold",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 1,
+                    },
+                    "& .MuiDataGrid-cell": {
+                      borderColor: "#dee2e6",
+                    },
+                    "& .MuiDataGrid-columnHeader": {
+                      borderColor: "#dee2e6",
+                    },
+                    // Red color for checked checkboxes
+                    "& .MuiCheckbox-root.Mui-checked .MuiSvgIcon-root": {
+                      color: "#8b0203",
+                    },
+                    // Black for header (select all) checkbox, even when checked
+                    "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root":
+                      {
+                        color: "#fff",
+                      },
+                    // Make checkboxes smaller
+                    "& .MuiCheckbox-root .MuiSvgIcon-root": {
+                      fontSize: "1.1rem",
+                    },
+                  }}
+                /> */}
+                <DataGrid
+                  rows={getTransformedRows()}
+                  columns={columns}
+                  pageSize={itemsPerPage}
+                  autoHeight={false}
+                  getRowId={(row) => {
+                    return row.id;
+                  }}
+                  loading={loading}
+                  disableSelectionOnClick
+                  checkboxSelection
+                  selectionModel={selectedIds}
+                  onSelectionModelChange={(ids) => {
+                    setSelectedIds(ids.map(String));
+                    console.log("Selected Row IDs:", ids);
+                  }}
+                  onRowSelectionModelChange={(ids) => {
+                    setSelectedIds(ids);
+                    console.log("Selected Row IDs: 2", ids);
+                  }}
+                  components={{
+                    ColumnMenu: () => null,
+                  }}
+                  sx={{
+                    "& .MuiDataGrid-columnHeaders": {
+                      backgroundColor: "#f8f9fa",
+                      color: "#000",
+                      fontWeight: "bold",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 1,
+                    },
+                    "& .MuiDataGrid-cell": {
+                      borderColor: "#dee2e6",
+                    },
+                    "& .MuiDataGrid-columnHeader": {
+                      borderColor: "#dee2e6",
+                    },
+                    "& .MuiCheckbox-root.Mui-checked .MuiSvgIcon-root": {
+                      color: "#8b0203",
+                    },
+                    "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root":
+                      {
+                        color: "#fff",
+                      },
+                    "& .MuiCheckbox-root .MuiSvgIcon-root": {
+                      fontSize: "1.1rem",
+                    },
+                  }}
+                />
               </div>
 
-              {/* Pagination Controls */}
-              <div className="d-flex justify-content-between align-items-center px-3 mt-2">
-                <ul className="pagination justify-content-center d-flex">
-                  <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(1)}
-                      disabled={currentPage === 1}
-                    >
-                      First
-                    </button>
-                  </li>
-                  <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
-                      Prev
-                    </button>
-                  </li>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                padding={2}
+              >
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={(event, value) => handlePageChange(value)}
+                  siblingCount={1}
+                  boundaryCount={1}
+                  color="primary"
+                  showFirstButton
+                  showLastButton
+                  disabled={totalPages <= 1}
+                />
 
-                  {Array.from({ length: totalPages }, (_, index) => (
-                    <li
-                      key={index + 1}
-                      className={`page-item ${
-                        currentPage === index + 1 ? "active" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(index + 1)}
-                      >
-                        {index + 1}
-                      </button>
-                    </li>
-                  ))}
-
-                  <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                    </button>
-                  </li>
-                  <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(totalPages)}
-                      disabled={currentPage === totalPages}
-                    >
-                      Last
-                    </button>
-                  </li>
-                </ul>
-                <div>
+                <Typography variant="body2">
                   Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
                   {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
                   {totalEntries} entries
-                </div>
-              </div>
+                </Typography>
+              </Stack>
             </div>
           </div>
         </div>
       </div>
 
-      {/* <Modal
-        centered
-        size="lg"
-        show={filterModal}
-        onHide={closeFilterModal}
-        backdrop="static"
-        keyboard={true}
-        className="modal-centered-custom"
+      {/* Settings Modal */}
+      <Modal
+        show={settingShow}
+        onHide={handleSettingClose}
+        dialogClassName="modal-right"
+        className="setting-modal"
+        backdrop={true}
       >
-        <Modal.Header closeButton>
-          <Modal.Title>Add</Modal.Title>
+        <Modal.Header>
+          <div className="container-fluid p-0">
+            <div className="border-0 d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <button
+                  type="button"
+                  className="btn"
+                  aria-label="Close"
+                  onClick={handleSettingClose}
+                >
+                  <svg
+                    width="10"
+                    height="16"
+                    viewBox="0 0 10 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M8 2L2 8L8 14"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <Button
+                style={{ textDecoration: "underline" }}
+                variant="alert"
+                onClick={handleResetColumns}
+              >
+                Reset
+              </Button>
+            </div>
+          </div>
         </Modal.Header>
-        <div
-          className="modal-body"
-          style={{ maxHeight: "400px", overflowY: "auto" }}
-        >
-          <div className="row">
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Company</label>
-                <SingleSelector
-                  options={companyOptions}
-                  selectedValue={selectedValue}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Project</label>
-                <SingleSelector
-                  options={companyOptions}
-                  selectedValue={selectedValue}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Sub Project</label>
-                <SingleSelector
-                  options={companyOptions}
-                  selectedValue={selectedValue}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Debit Note No.</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Date From 7 to</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Created on From &amp; To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Dabit Note Type</label>
-                <SingleSelector
-                  options={companyOptions}
-                  selectedValue={selectedValue}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Created on From &amp; To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>PO No.</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>PO Date</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>PO Value</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Supplier Name</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>GSTIN No.</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>PAN No.</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Debit Note Amount</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Deduction Tax</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Payable Amount</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Addition Tax </label>
-                <div className="">
-                  <input
-                    className="form-control"
-                    type="text"
-                    placeholder=""
-                    fdprocessedid="qv9ju9"
-                  />
+
+        <Modal.Body style={{ height: "400px", overflowY: "auto" }}>
+          {allColumns
+            .filter((column) => column.field !== "srNo")
+            .map((column) => (
+              <div
+                className="row justify-content-between align-items-center mt-2"
+                key={column.field}
+              >
+                <div className="col-md-6">
+                  <button type="submit" className="btn btn-md">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                    </svg>
+                  </button>
+                  <label>{column.headerName}</label>
+                </div>
+                <div className="col-md-4">
+                  <div className="form-check form-switch mt-1">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={columnVisibility[column.field]}
+                      onChange={() => handleToggleColumn(column.field)}
+                      role="switch"
+                      id={`flexSwitchCheckDefault-${column.field}`}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Total Amount</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Status</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Due Date From &amp; To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Overdue</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Due At</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="modal-footer modal-footer-k justify-content-center">
-          <a
-            className="purple-btn2"
-            href="/pms/admin/task_managements/kanban_list?type="
-          >
-            Go
-          </a>
-        </div>
-      </Modal> */}
-
-      <Modal
-        centered
-        size="sm"
-        show={layoutModal}
-        onHide={closeLayoutModal}
-        backdrop="static"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Layout</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="row justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
-              </div>
-            </div>
-          </div>
+            ))}
         </Modal.Body>
+
+        <Modal.Footer>
+          <button className="purple-btn2" onClick={handleShowAll}>
+            Show All
+          </button>
+          <button className="purple-btn1" onClick={handleHideAll}>
+            Hide All
+          </button>
+        </Modal.Footer>
       </Modal>
     </>
   );
