@@ -11,10 +11,11 @@ const FormatDateTime = ({ timestamp }) => {
   let hours = date.getHours();
   const ampm = hours >= 12 ? "p.m." : "a.m.";
   hours = hours % 12 || 12;
+  const minutes = date.getMinutes().toString().padStart(2, "0");
 
   return (
     <div>
-      {`${datePart} at ${hours} ${ampm}`}
+      {`${datePart} at ${hours}:${minutes} ${ampm}`}
     </div>
   );
 };

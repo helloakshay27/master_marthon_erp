@@ -213,12 +213,13 @@ export default function adminList() {
       field: "start_time",
       headerName: "Start Date",
       width: 160,
-      renderCell: (params) =>
+      renderCell: (params) => (
+        
         params.row.event_schedule?.start_time ? (
           <FormatDateTime timestamp={params.row.event_schedule.start_time} />
         ) : (
           "-"
-        ),
+        ))
     },
     {
       field: "end_time",
