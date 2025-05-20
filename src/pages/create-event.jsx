@@ -657,82 +657,12 @@ export default function CreateEvent() {
         const responseData = await response.json(); // Parse the response to get event details
         console.log("Response data:", responseData);
 
-        toast(
-  ({ closeToast }) => (
-    <div
-      style={{
-        minWidth: 620,
-        padding: "12px 18px",
-        display: "flex",
-        alignItems: "flex-start",
-        gap: 12,
-      }}
-    >
-      <div style={{ marginTop: 2 }}>
-        <span
-          style={{
-            display: "inline-block",
-            width: 32,
-            height: 32,
-            background: "#d1fae5",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <svg
-            width="20"
-            height="20"
-            fill="none"
-            viewBox="0 0 20 20"
-            style={{ color: "#22c55e" }}
-          >
-            <circle cx="10" cy="10" r="10" fill="#22c55e" opacity="0.15" />
-            <path
-              d="M6 10.5l3 3 5-5"
-              stroke="#22c55e"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-            />
-          </svg>
-        </span>
-      </div>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: 600, color: "#22c55e", fontSize: 18, marginBottom: 4 }}>
-          Success
-        </div>
-        <div style={{ fontWeight: 500, color: "#222" }}>
-          Event Successfully created: "{responseData?.event_title}"
-          <br />
-          (Event No: {responseData?.event_no})
-        </div>
-        <button
-          className="btn btn-success btn-sm mt-3"
-          style={{ minWidth: 60 }}
-          onClick={() => {
-            closeToast();
-            navigate(
-              "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-            );
-          }}
-        >
-          OK
-        </button>
-      </div>
-    </div>
-  ),
-  {
-    position: "top-right",
-    autoClose: false,
-    closeOnClick: false,
-    closeButton: false,
-    draggable: false,
-    style: { background: "#fff", border: "1px solid #d1fae5", boxShadow: "0 2px 8px #0001" },
-  }
-);
+        // Show modal instead of toast
+        setCreatedEventInfo({
+          event_title: responseData?.event_title,
+          event_no: responseData?.event_no,
+        });
+        setShowSuccessModal(true);
       } else {
         const errorData = await response.json();
         console.error("Error response data:", errorData);
@@ -747,6 +677,14 @@ export default function CreateEvent() {
       setSubmitted(false);
       setLoading(false);
     }
+  };
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdEventInfo, setCreatedEventInfo] = useState({ event_title: "", event_no: "" });
+
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    navigate("/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414");
   };
 
   useEffect(() => {
@@ -2089,6 +2027,76 @@ export default function CreateEvent() {
           </div>
         </div>
         <ToastContainer />
+        <DynamicModalBox
+          show={showSuccessModal}
+          onHide={handleSuccessModalClose}
+          size="md"
+          title=""
+          centered={true}
+          footerButtons={[]}
+          modalType={false}
+          children={
+            <div
+              style={{
+                minWidth: 320,
+                padding: "12px 18px",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 12,
+              }}
+            >
+              <div style={{ marginTop: 2 }}>
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: 32,
+                    height: 32,
+                    background: "#d1fae5",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    fill="none"
+                    viewBox="0 0 20 20"
+                    style={{ color: "#22c55e" }}
+                  >
+                    <circle cx="10" cy="10" r="10" fill="#22c55e" opacity="0.15" />
+                    <path
+                      d="M6 10.5l3 3 5-5"
+                      stroke="#22c55e"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      fill="none"
+                    />
+                  </svg>
+                </span>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, color: "#22c55e", fontSize: 18, marginBottom: 4 }}>
+                  Success
+                </div>
+                <div style={{ fontWeight: 500, color: "#222", textTransform: "capitalize" }}>
+                  Event Successfully created: {createdEventInfo?.event_title}
+                  <br />
+                  (Event No: {createdEventInfo?.event_no})
+                </div>
+                <button
+                  className="btn btn-success btn-sm mt-3"
+                  style={{ minWidth: 60 }}
+                  onClick={handleSuccessModalClose}
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          }
+        />
       </div>
     </>
   );

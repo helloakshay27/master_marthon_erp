@@ -160,10 +160,12 @@ export default function adminList() {
   headerName: "Mor no",
   width: 180,
   renderCell: (params) => {
-    const mors = params.row.mors || [];
+    console.log("Params:", params);
+    
+    const mors = params.row.event_title || [];
     const morNos =
       mors.length > 0
-        ? mors.map((mor) => mor.mor_no || "-").join(", ")
+        ? mors.map((mor) => mor || "-").join(", ")
         : "No MOR Number";
 
     const [anchorEl, setAnchorEl] = useState(null);
@@ -425,7 +427,7 @@ export default function adminList() {
     created_at: event.created_at,
     created_by: event.created_by,
     event_type_detail: event.event_type_detail,
-    event_title: event?.event_title,
+    event_title: event?.mors,
     status: event.status,
     event_type_with_configuration: event.event_type_with_configuration,
     // Add any other fields you need for columns
