@@ -238,7 +238,7 @@ export default function adminList() {
     },
     {
       field: "start_time",
-      headerName: "Start Time",
+      headerName: "Start Date",
       width: 160,
       renderCell: (params) =>
         params.row.event_schedule?.start_time ? (
@@ -249,7 +249,7 @@ export default function adminList() {
     },
     {
       field: "end_time",
-      headerName: "End Time",
+      headerName: "End Date",
       width: 160,
       renderCell: (params) =>
         params.row.event_schedule?.end_time ? (
