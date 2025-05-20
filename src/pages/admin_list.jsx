@@ -12,6 +12,7 @@ import DataTable from "datatables.net-react";
 import DT from "datatables.net-dt";
 DataTable.use(DT);
 import { DataGrid } from "@mui/x-data-grid";
+import ReactDOM from "react-dom";
 import { Popper } from "@mui/material";
 import { createPortal } from "react-dom";
 import Tooltip from "../components/common/Tooltip/Tooltip";
@@ -89,6 +90,37 @@ export default function adminList() {
   const [vendorId, setVendorId] = useState("");
   const [vendorOptions, setVendorOptions] = useState([]);
 
+  const InfoTooltip = ({ content, anchorEl }) => {
+  if (!anchorEl) return null;
+
+  const rect = anchorEl.getBoundingClientRect();
+  const style = {
+    position: "fixed",
+    top: rect.top + rect.height / 2,
+    left: rect.right + 10,
+    transform: "translateY(-50%)",
+    background: "linear-gradient(to bottom, white, #f0f0f0)",
+    border: "1px solid #f3f3f3",
+    borderBottom: "4px solid #8b0203",
+    borderRadius: "8px",
+    boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
+    padding: "10px",
+    fontSize: "11px",
+    zIndex: 9999,
+    minWidth: "100px",
+    maxWidth: "200px",
+    color: "#000",
+    whiteSpace: "pre-wrap",
+  };
+
+  return ReactDOM.createPortal(
+    <div style={style}>
+      {content}
+    </div>,
+    document.body
+  );
+};
+
   // 1. Column visibility state and helpers
   const [columnVisibility, setColumnVisibility] = useState({
     srNo: true,
@@ -124,111 +156,50 @@ export default function adminList() {
       // }
     },
     {
-      field: "event_title",
-      headerName: "Mor no",
-      width: 180,
-      renderCell: (params) => {
-        const mors = params.row.mors || [];
-        const morNos =
-          mors.length > 0
-            ? mors.map((mor) => mor.mor_no || "-").join(", ")
-            : "No MORs";
+  field: "event_title",
+  headerName: "Mor no",
+  width: 180,
+  renderCell: (params) => {
+    const mors = params.row.mors || [];
+    const morNos =
+      mors.length > 0
+        ? mors.map((mor) => mor.mor_no || "-").join(", ")
+        : "No MOR Number";
 
-        return (
-          <div
-            className="tooltip-container"
-            style={{
-              position: "relative",
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-            }}
-          >
-            <div style={{ position: "relative", display: "inline-block" }}>
-              {/* Info icon */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                fill="#8b0203"
-                className="bi bi-info-circle"
-                viewBox="0 0 16 16"
-              >
-                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
-              </svg>
-              {/* Tooltip box */}
-              <div
-                className="tooltip-content"
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "calc(100% + 68px)",
-                  transform: "translateY(-50%)",
-                  background: "linear-gradient(to bottom, white, #f0f0f0)",
-                  color: "#000",
-                  fontSize: "11px",
-                  borderRadius: "8px",
-                  border: "1px solid #f3f3f3",
-                  borderBottom: "4px solid #8b0203",
-                  whiteSpace: "normal",
-                  zIndex: 1000,
-                  boxShadow: "0 3px 6px rgba(0, 0, 0, 0.1)",
-                  opacity: 1,
-                  visibility: "hidden",
-                  transition: "opacity 1s ease",
-                  minWidth: "max-content",
-                  padding: "0",
-                  overflow: "hidden",
-                  display: "flex",
-                  alignItems: "center",
-                  height: "auto",
-                }}
-              >
-                {/* Arrow */}
-                <div
-                  style={{
-                    position: "absolute",
-                    left: "-8px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    width: 0,
-                    height: 0,
-                    borderTop: "7px solid transparent",
-                    borderBottom: "7px solid transparent",
-                    borderRight: "8px solid #f0f0f0",
-                    zIndex: 1001,
-                  }}
-                />
-                <span
-                  style={{
-                    padding: "0px 10px",
-                    margin: 0,
-                    height: "40px",
-                    display: "block",
-                    width: "100%",
-                    textAlign: "left",
-                    wordBreak: "break-word",
-                    whiteSpace: "pre-line",
-                    color: "#000",
-                    fontStyle: morNos === "No MORs" ? "italic" : "normal",
-                  }}
-                >
-                  {morNos}
-                </span>
-              </div>
-            </div>
-            {/* Hover handler */}
-            <style>{`
-              .tooltip-container:hover .tooltip-content {
-                opacity: 1 !important;
-                visibility: visible !important;
-              }
-            `}</style>
-          </div>
-        );
-      },
-    },
+    const [anchorEl, setAnchorEl] = useState(null);
+    const iconRef = useRef();
+
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "4px",
+          position: "relative",
+          marginTop: "15px",
+        }}
+        onMouseEnter={() => setAnchorEl(iconRef.current)}
+        onMouseLeave={() => setAnchorEl(null)}
+      >
+        <svg
+          ref={iconRef}
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          fill="#8b0203"
+          className="bi bi-info-circle"
+          viewBox="0 0 16 16"
+          style={{ cursor: "pointer" }}
+        >
+          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+        </svg>
+
+        <InfoTooltip content={morNos} anchorEl={anchorEl} />
+      </div>
+    );
+  },
+},
     { field: "event_no", headerName: "Event No", width: 120 },
     {
       field: "bid_placed",
