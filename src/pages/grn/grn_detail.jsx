@@ -498,9 +498,8 @@ const GoodReceiveNoteDetails = () => {
                       </div>
                     </div>
                     <div
-                      className={`card-body mt-1 pt-1 ${
-                        collapsed[index] ? "d-none" : ""
-                      }`}
+                      className={`card-body mt-1 pt-1 ${collapsed[index] ? "d-none" : ""
+                        }`}
                     >
                       <div className="mt-2">
                         <h5>Materials</h5>
@@ -574,7 +573,7 @@ const GoodReceiveNoteDetails = () => {
                         </table>
                       </div>
 
-                      {/* MOR Details Section */}
+                      /* MOR Details Section */
                       <div className="card p-3 mt-3">
                         <div className="mt-2">
                           <h5>MOR Details</h5>
@@ -584,30 +583,36 @@ const GoodReceiveNoteDetails = () => {
                             <thead>
                               <tr>
                                 <th>MOR No.</th>
+                                <th>Project</th>
+                                <th>Sub Project</th>
                                 <th>MOR Ordered</th>
-                                <th>Received Upto GRN</th>
                                 <th>MOR Accepted</th>
+                                <th>Received Up To</th>
+                                <th>Received Up Date</th>
                               </tr>
                             </thead>
                             <tbody>
                               {item?.mor_details?.length > 0 ? (
-                                item?.mor_details?.map((detail, detailIndex) => (
+                                item.mor_details.map((detail, detailIndex) => (
                                   <tr key={detail.mor_number + detailIndex}>
                                     <td>{detail.mor_number ?? "-"}</td>
+                                    <td>{detail.project_name ?? "-"}</td>
+                                    <td>{detail.sub_project_name ?? "-"}</td>
                                     <td>{detail.ordered_qty ?? "-"}</td>
-                                    <td>-</td>
                                     <td>{detail.accepted_qty ?? "-"}</td>
+                                    <td>{detail.received_upto ?? "-"}</td>
+                                    <td>{detail?.received_upto_date ?? "-"}</td>
+
                                   </tr>
                                 ))
                               ) : (
                                 <tr key={item.id}>
-                                  <td colSpan={4}>No MOR Details Available</td>
+                                  <td colSpan={6}>No MOR Details Available</td>
                                 </tr>
                               )}
                             </tbody>
                           </table>
                         </div>
-
                         {/* Delivery Details Section */}
                         <div className="mt-2">
                           <h5>Delivery Details</h5>
@@ -956,7 +961,7 @@ const GoodReceiveNoteDetails = () => {
                     <div className="tbl-container me-2 mt-3">
                       {/* Check if approval_logs is empty or undefined */}
                       {!data?.approval_logs ||
-                      data.approval_logs.length === 0 ? (
+                        data.approval_logs.length === 0 ? (
                         // Display a message if no logs are available
                         <div className="text-center py-4">
                           <p className="text-muted">
