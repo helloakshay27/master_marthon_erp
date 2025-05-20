@@ -351,6 +351,7 @@ const [filterSiteId, setFilterSiteId] = useState("");
     const [selectedBoqDetails, setSelectedBoqDetails] = useState([]);
 
     console.log("data for bulk action")
+    
     const handleSubmit = () => {
         console.log("data for bulk action");
 
