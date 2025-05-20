@@ -544,8 +544,8 @@ const [filterSiteId, setFilterSiteId] = useState("");
         //   headerName: "Mode of Submission",
         //   width: 150,
         // },
-        { field: "company_name", headerName: "Company", width: 150 },
-        { field: "project_name", headerName: "Project", width: 150 },
+        { field: "company_name", headerName: "Company", width: 200 },
+        { field: "project_name", headerName: "Project", width: 180 },
         { field: "site_name", headerName: "Sub Project", width: 150 },
         { field: "credit_note_no", headerName: "Credit Note No.", width: 150,
              renderCell: (params) =>

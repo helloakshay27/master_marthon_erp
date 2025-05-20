@@ -585,8 +585,8 @@ const DebitNoteList = () => {
     //   headerName: "Mode of Submission",
     //   width: 150,
     // },
-    { field: "company_name", headerName: "Company", width: 150 },
-    { field: "project_name", headerName: "Project", width: 150 },
+    { field: "company_name", headerName: "Company", width: 200 },
+    { field: "project_name", headerName: "Project", width: 180 },
     { field: "site_name", headerName: "Sub Project", width: 150 },
     {
       field: "debit_note_no", headerName: "Debit Note No.", width: 150,
