@@ -356,8 +356,8 @@ export default function EditEvent() {
           const vendors = Array.isArray(data.vendors)
             ? data.vendors
             : Array.isArray(data.data?.vendors)
-            ? data.data.vendors
-            : [];
+              ? data.data.vendors
+              : [];
 
           formattedData = vendors.map((vendor) => ({
             id: vendor.id,
@@ -607,10 +607,10 @@ export default function EditEvent() {
         textareas.map((textarea) =>
           textarea.id === id
             ? {
-                id: textarea.id,
-                value: selectedCondition.condition,
-                textareaId: selectedCondition.value,
-              }
+              id: textarea.id,
+              value: selectedCondition.condition,
+              textareaId: selectedCondition.value,
+            }
             : textarea
         )
       );
@@ -797,9 +797,21 @@ export default function EditEvent() {
         status: eventStatus,
         event_description: eventDescription,
         event_schedule_attributes: {
-          start_time: toISTISOString(scheduleData.start_time) || toISTISOString(start_time),
-          end_time: toISTISOString(scheduleData.end_time_duration) || toISTISOString(end_time),
-          evaluation_time: scheduleData.evaluation_time || evaluation_time,
+          start_time:
+            toISTISOString(scheduleData.start_time) ||
+            toISTISOString(start_time) ||
+            toISTISOString(eventDetails?.event_schedule?.start_time) ||
+            "",
+          end_time:
+            toISTISOString(scheduleData.end_time_duration) ||
+            toISTISOString(end_time) ||
+            toISTISOString(eventDetails?.event_schedule?.end_time) ||
+            "",
+          evaluation_time:
+            scheduleData.evaluation_time ||
+            evaluation_time ||
+            eventDetails?.event_schedule?.evaluation_time ||
+            "",
         },
         event_type_detail_attributes: {
           event_type: eventType || eventDetails?.event_type_detail?.event_type,
@@ -884,16 +896,16 @@ export default function EditEvent() {
         resource_term_conditions_attributes: textareas.map((textarea) =>
           isTextId
             ? {
-                id: textarea?.id || null,
-                term_condition_id: textarea.textareaId,
-                condition_type: "general",
-                condition: textarea.value,
-              }
+              id: textarea?.id || null,
+              term_condition_id: textarea.textareaId,
+              condition_type: "general",
+              condition: textarea.value,
+            }
             : {
-                term_condition_id: textarea.textareaId,
-                condition_type: "general",
-                condition: textarea.value,
-              }
+              term_condition_id: textarea.textareaId,
+              condition_type: "general",
+              condition: textarea.value,
+            }
         ),
         attachments: documentRows.map((row) => row.upload),
         applied_event_template: {
@@ -932,8 +944,8 @@ export default function EditEvent() {
           body: JSON.stringify(eventData),
         }
       );
-      console.log("eventData:--",eventData);
-      
+      console.log("eventData:--", eventData);
+
       if (response.ok) {
         const data = await response.json();
         toast.success("Event updated successfully!", { autoClose: 1000 });
@@ -1030,7 +1042,7 @@ export default function EditEvent() {
     }
   };
 
-  useEffect(() => {}, [eventType, awardType]);
+  useEffect(() => { }, [eventType, awardType]);
 
   const handleStatusChange = (selectedOption) => {
     setEventStatus(selectedOption);
@@ -1090,7 +1102,7 @@ export default function EditEvent() {
     setSelectedVendors(updatedSelected);
   };
 
-  useEffect(() => {}, [filteredTableData]);
+  useEffect(() => { }, [filteredTableData]);
 
   const validateInviteVendorForm = () => {
     const errors = {};
@@ -1982,9 +1994,8 @@ export default function EditEvent() {
                   <div className="d-flex justify-content-between align-items-center px-1 mt-2">
                     <ul className="pagination justify-content-center d-flex ">
                       <li
-                        className={`page-item ${
-                          currentPage === 1 ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === 1 ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -1995,9 +2006,8 @@ export default function EditEvent() {
                       </li>
 
                       <li
-                        className={`page-item ${
-                          currentPage === 1 ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === 1 ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -2011,9 +2021,8 @@ export default function EditEvent() {
                       {getPageRange().map((pageNumber) => (
                         <li
                           key={pageNumber}
-                          className={`page-item ${
-                            currentPage === pageNumber ? "active" : ""
-                          }`}
+                          className={`page-item ${currentPage === pageNumber ? "active" : ""
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -2025,9 +2034,8 @@ export default function EditEvent() {
                       ))}
 
                       <li
-                        className={`page-item ${
-                          currentPage === totalPages ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -2039,9 +2047,8 @@ export default function EditEvent() {
                       </li>
 
                       <li
-                        className={`page-item ${
-                          currentPage === totalPages ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -2062,9 +2069,9 @@ export default function EditEvent() {
                         to{" "}
                         {filteredTableData.length > 0
                           ? Math.min(
-                              currentPage * pageSize,
-                              filteredTableData.length
-                            )
+                            currentPage * pageSize,
+                            filteredTableData.length
+                          )
                           : 0}{" "}
                         of {filteredTableData.length} entries
                       </p>
