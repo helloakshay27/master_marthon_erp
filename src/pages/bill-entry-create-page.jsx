@@ -563,6 +563,7 @@ const BillEntryListSubPage = () => {
   const [formData, setFormData] = useState({
     bill_no: "",
     bill_date: "",
+    due_date: "",
     bill_amount: "",
     vendor_remark: "",
   });
@@ -607,6 +608,7 @@ const BillEntryListSubPage = () => {
         purchase_order_id: selectedPO.id,
         bill_no: formData.bill_no,
         bill_date: formData.bill_date,
+        due_date: formData.due_date,
         bill_amount: parseFloat(formData.bill_amount),
         status: "open",
         mode_of_submission: "Offline",
@@ -760,7 +762,7 @@ const BillEntryListSubPage = () => {
                       value={formData.bill_no}
                       onChange={handleInputChange}
                       placeholder=""
-                      disabled
+                      // disabled
                     />
                   </div>
                 </div>
@@ -799,7 +801,7 @@ const BillEntryListSubPage = () => {
                       className="form-control"
                       type="date"
                       // name="bill_amount"
-                      // value={formData.bill_amount}
+                      value={formData.due_date}
                       onChange={handleInputChange}
                       placeholder=""
                     />

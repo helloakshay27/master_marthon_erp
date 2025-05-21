@@ -82,7 +82,7 @@ const BillEntryList = () => {
     {
       field: "bill_id",
       headerName: "Bill Id",
-      width: 100,
+      width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
           <Link to={`/bill-entry-details/${params.row.id}`}>
