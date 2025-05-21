@@ -356,8 +356,8 @@ export default function EditEvent() {
           const vendors = Array.isArray(data.vendors)
             ? data.vendors
             : Array.isArray(data.data?.vendors)
-            ? data.data.vendors
-            : [];
+              ? data.data.vendors
+              : [];
 
           formattedData = vendors.map((vendor) => ({
             id: vendor.id,
@@ -607,10 +607,10 @@ export default function EditEvent() {
         textareas.map((textarea) =>
           textarea.id === id
             ? {
-                id: textarea.id,
-                value: selectedCondition.condition,
-                textareaId: selectedCondition.value,
-              }
+              id: textarea.id,
+              value: selectedCondition.condition,
+              textareaId: selectedCondition.value,
+            }
             : textarea
         )
       );
@@ -790,37 +790,65 @@ export default function EditEvent() {
 
     setSubmitted(true);
 
+    // Patch: Ensure form fields are pre-filled with GET API payload if available
     const eventData = {
       event: {
-        event_title: eventName,
-        created_on: createdOn,
-        status: eventStatus,
-        event_description: eventDescription,
+        event_title: eventName || eventDetails?.event_title || "",
+        created_on: createdOn || eventDetails?.created_on || "",
+        status: eventStatus || eventDetails?.status || "",
+        event_description: eventDescription || eventDetails?.event_description || "",
         event_schedule_attributes: {
-          start_time: toISTISOString(scheduleData.start_time) || toISTISOString(start_time),
-          end_time: toISTISOString(scheduleData.end_time_duration) || toISTISOString(end_time),
-          evaluation_time: scheduleData.evaluation_time || evaluation_time,
+          start_time:
+            toISTISOString(scheduleData.start_time) ||
+            toISTISOString(start_time) ||
+            toISTISOString(eventDetails?.event_schedule?.start_time) ||
+            "",
+          end_time:
+            toISTISOString(scheduleData.end_time_duration) ||
+            toISTISOString(end_time) ||
+            toISTISOString(eventDetails?.event_schedule?.end_time) ||
+            "",
+          evaluation_time:
+            scheduleData.evaluation_time ||
+            evaluation_time ||
+            eventDetails?.event_schedule?.evaluation_time ||
+            "",
         },
         event_type_detail_attributes: {
-          event_type: eventType || eventDetails?.event_type_detail?.event_type,
-          award_scheme:
-            awardType || eventDetails?.event_type_detail?.award_scheme,
-          event_configuration: selectedStrategy,
+          event_type: eventType || eventDetails?.event_type_detail?.event_type || "",
+          award_scheme: awardType || eventDetails?.event_type_detail?.award_scheme || "",
+          event_configuration: selectedStrategy || eventDetails?.event_type_detail?.event_configuration || "",
           time_extension_type:
-            dynamicExtensionConfigurations.time_extension_type,
+            dynamicExtensionConfigurations.time_extension_type ||
+            eventDetails?.event_type_detail?.time_extension_type ||
+            "",
           triggered_time_extension_on_last:
-            dynamicExtensionConfigurations.triggered_time_extension_on_last,
-          extend_event_time_by: Number(
-            dynamicExtensionConfigurations.extend_event_time_by
-          ),
-          enable_english_auction: true,
-          extension_time_min: 5,
-          extend_time_min: 10,
+            dynamicExtensionConfigurations.triggered_time_extension_on_last ||
+            eventDetails?.event_type_detail?.triggered_time_extension_on_last ||
+            "",
+          extend_event_time_by:
+            Number(dynamicExtensionConfigurations.extend_event_time_by) ||
+            eventDetails?.event_type_detail?.extend_event_time_by ||
+            0,
+          enable_english_auction:
+            typeof eventDetails?.event_type_detail?.enable_english_auction === "boolean"
+              ? eventDetails?.event_type_detail?.enable_english_auction
+              : true,
+          extension_time_min: eventDetails?.event_type_detail?.extension_time_min || 5,
+          extend_time_min: eventDetails?.event_type_detail?.extend_time_min || 10,
           time_extension_change:
-            dynamicExtensionConfigurations.time_extension_on_change_in,
-          delivery_date: dynamicExtensionConfigurations.delivery_date,
+            dynamicExtensionConfigurations.time_extension_on_change_in ||
+            eventDetails?.event_type_detail?.time_extension_change ||
+            "",
+          delivery_date:
+            dynamicExtensionConfigurations.delivery_date ||
+            eventDetails?.event_type_detail?.delivery_date ||
+            "",
         },
-        event_materials_attributes: materialFormData.map((material) => {
+        event_materials_attributes: (materialFormData.length > 0
+          ? materialFormData
+          : eventDetails?.event_materials || []
+        ).map((material) => {
           const dynamicFields = Object.keys(material).reduce((acc, key) => {
             if (
               ![
@@ -840,7 +868,7 @@ export default function EditEvent() {
                 "pms_brand_id",
                 "generic_info_id",
                 "pms_colour_id",
-                "attachments", // Exclude attachments from dynamic fields
+                "attachments",
               ].includes(key)
             ) {
               acc[key] = material[key] || null;
@@ -863,12 +891,15 @@ export default function EditEvent() {
             pms_brand_id: material.pms_brand_id || null,
             pms_colour_id: material.pms_colour_id || null,
             generic_info_id: material.generic_info_id || null,
-            attachments: material.attachments || [], // Include attachments
+            attachments: material.attachments || [],
             _destroy: material._destroy || false,
             ...dynamicFields,
           };
         }),
-        event_vendors_attributes: selectedVendors.map((vendor) => ({
+        event_vendors_attributes: (selectedVendors.length > 0
+          ? selectedVendors
+          : eventDetails?.event_vendors || []
+        ).map((vendor) => ({
           status: 1,
           pms_supplier_id: vendor.pms_supplier_id,
           id: vendor.id,
@@ -881,33 +912,44 @@ export default function EditEvent() {
             comments: "No comments",
           },
         ],
-        resource_term_conditions_attributes: textareas.map((textarea) =>
+        resource_term_conditions_attributes: (textareas.length > 0
+          ? textareas
+          : eventDetails?.resource_term_conditions || []
+        ).map((textarea) =>
           isTextId
             ? {
-                id: textarea?.id || null,
-                term_condition_id: textarea.textareaId,
-                condition_type: "general",
-                condition: textarea.value,
-              }
+              id: textarea?.id || null,
+              term_condition_id: textarea.textareaId,
+              condition_type: "general",
+              condition: textarea.value,
+            }
             : {
-                term_condition_id: textarea.textareaId,
-                condition_type: "general",
-                condition: textarea.value,
-              }
+              term_condition_id: textarea.textareaId,
+              condition_type: "general",
+              condition: textarea.value,
+            }
         ),
-        attachments: documentRows.map((row) => row.upload),
+        attachments: (documentRows.length > 0
+          ? documentRows
+          : eventDetails?.attachments || []
+        ).map((row) => row.upload),
         applied_event_template: {
-          event_template_id: selectedTemplate,
-          applied_bid_template_fields_attributes: bidTemplateFields.map(
-            (field) => ({
-              field_name: field.field_name,
-              is_required: field.is_required,
-              is_read_only: field.is_read_only,
-              field_owner: field.field_owner,
-              extra_fields: field.extra_fields || null,
-            })
-          ),
-          applied_bid_material_template_fields_attributes: additionalFields
+          event_template_id:
+            selectedTemplate || eventDetails?.applied_event_template?.event_template_id,
+          applied_bid_template_fields_attributes: (bidTemplateFields.length > 0
+            ? bidTemplateFields
+            : eventDetails?.applied_event_template?.applied_bid_template_fields || []
+          ).map((field) => ({
+            field_name: field.field_name,
+            is_required: field.is_required,
+            is_read_only: field.is_read_only,
+            field_owner: field.field_owner,
+            extra_fields: field.extra_fields || null,
+          })),
+          applied_bid_material_template_fields_attributes: (additionalFields.length > 0
+            ? additionalFields
+            : eventDetails?.applied_event_template?.applied_bid_material_template_fields || []
+          )
             .filter((field) => field.field_name !== "Sr no.")
             .map((field) => ({
               field_name: field.field_name,
@@ -921,6 +963,8 @@ export default function EditEvent() {
       },
     };
 
+    console.log("eventData:--", JSON.stringify(eventData , null, 2));
+
     try {
       const response = await fetch(
         `${baseURL}rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
@@ -932,8 +976,8 @@ export default function EditEvent() {
           body: JSON.stringify(eventData),
         }
       );
-      console.log("eventData:--",eventData);
-      
+      console.log("eventData:--", JSON.stringify(eventData));
+
       if (response.ok) {
         const data = await response.json();
         toast.success("Event updated successfully!", { autoClose: 1000 });
@@ -1030,7 +1074,7 @@ export default function EditEvent() {
     }
   };
 
-  useEffect(() => {}, [eventType, awardType]);
+  useEffect(() => { }, [eventType, awardType]);
 
   const handleStatusChange = (selectedOption) => {
     setEventStatus(selectedOption);
@@ -1090,7 +1134,7 @@ export default function EditEvent() {
     setSelectedVendors(updatedSelected);
   };
 
-  useEffect(() => {}, [filteredTableData]);
+  useEffect(() => { }, [filteredTableData]);
 
   const validateInviteVendorForm = () => {
     const errors = {};
@@ -1982,9 +2026,8 @@ export default function EditEvent() {
                   <div className="d-flex justify-content-between align-items-center px-1 mt-2">
                     <ul className="pagination justify-content-center d-flex ">
                       <li
-                        className={`page-item ${
-                          currentPage === 1 ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === 1 ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -1995,9 +2038,8 @@ export default function EditEvent() {
                       </li>
 
                       <li
-                        className={`page-item ${
-                          currentPage === 1 ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === 1 ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -2011,9 +2053,8 @@ export default function EditEvent() {
                       {getPageRange().map((pageNumber) => (
                         <li
                           key={pageNumber}
-                          className={`page-item ${
-                            currentPage === pageNumber ? "active" : ""
-                          }`}
+                          className={`page-item ${currentPage === pageNumber ? "active" : ""
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -2025,9 +2066,8 @@ export default function EditEvent() {
                       ))}
 
                       <li
-                        className={`page-item ${
-                          currentPage === totalPages ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -2039,9 +2079,8 @@ export default function EditEvent() {
                       </li>
 
                       <li
-                        className={`page-item ${
-                          currentPage === totalPages ? "disabled" : ""
-                        }`}
+                        className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -2062,9 +2101,9 @@ export default function EditEvent() {
                         to{" "}
                         {filteredTableData.length > 0
                           ? Math.min(
-                              currentPage * pageSize,
-                              filteredTableData.length
-                            )
+                            currentPage * pageSize,
+                            filteredTableData.length
+                          )
                           : 0}{" "}
                         of {filteredTableData.length} entries
                       </p>
