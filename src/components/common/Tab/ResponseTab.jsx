@@ -452,8 +452,7 @@ export default function ResponseTab({ isCounterOffer }) {
         error
       );
       toast.error(
-        `Failed to ${
-          status === "accepted" ? "accept" : "decline"
+        `Failed to ${status === "accepted" ? "accept" : "decline"
         } the offer. Please try again.`
       );
     } finally {
@@ -577,7 +576,7 @@ export default function ResponseTab({ isCounterOffer }) {
         <FullScreen handle={handle}>
           {loading ? (
             <>
-            <div className="loader-container">
+              <div className="loader-container">
                 <div className="lds-ring">
                   <div></div>
                   <div></div>
@@ -593,450 +592,447 @@ export default function ResponseTab({ isCounterOffer }) {
             </>
           ) : (
 
-          <div className="">
-            <div
-              style={{
-                backgroundColor: "white",
-                color: "black",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            ></div>
-            {eventVendors.length > 0 ? (
-              <>
-                <div style={{ overflowX: "auto" }}>
-                  <table
-                    ref={tableRef}
-                    className="bid-tbl w-100 mb-0"
-                    style={{
-                      boxShadow: "none",
-                      tableLayout: "fixed",
-                      width: "100%",
-                    }}
-                  >
-                    <colgroup>
-                      <col style={{ width: "300px" }} />
-                      {eventVendors.map((_, index) => (
-                        <col key={index} style={{ width: "180px" }} />
-                      ))}
-                      <col style={{ width: "auto" }} />
-                    </colgroup>
-                    <tbody>
-                      <tr>
-                        <td
-                          style={{
-                            width: "300px",
-                            background:
-                              "repeating-linear-gradient(135deg, #f3f3f3, #f3f3f3 10px, #e0e0e0 10px, #e0e0e0 11px)",
-                          }}
-                        ></td>
-                        {eventVendors?.map((vendor, index) => {
-                          const activeIndex = activeIndexes[vendor.id] || 0;
-                          const bidLength = vendor?.bid_length || 0;
-                          const hasPendingBid = vendor?.bids?.some(
-                            (bid) => bid.status === "pending"
-                          );
+            <div className="">
+              <div
+                style={{
+                  backgroundColor: "white",
+                  color: "black",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              ></div>
+              {eventVendors.length > 0 ? (
+                <>
+                  <div style={{ overflowX: "auto" }}>
+                    <table
+                      ref={tableRef}
+                      className="bid-tbl w-100 mb-0"
+                      style={{
+                        boxShadow: "none",
+                        tableLayout: "fixed",
+                        width: "100%",
+                      }}
+                    >
+                      <colgroup>
+                        <col style={{ width: "300px" }} />
+                        {eventVendors.map((_, index) => (
+                          <col key={index} style={{ width: "180px" }} />
+                        ))}
+                        <col style={{ width: "auto" }} />
+                      </colgroup>
+                      <tbody>
+                        <tr>
+                          <td
+                            style={{
+                              width: "300px",
+                              background:
+                                "repeating-linear-gradient(135deg, #f3f3f3, #f3f3f3 10px, #e0e0e0 10px, #e0e0e0 11px)",
+                            }}
+                          ></td>
+                          {eventVendors?.map((vendor, index) => {
+                            const activeIndex = activeIndexes[vendor.id] || 0;
+                            const bidLength = vendor?.bid_length || 0;
+                            const hasPendingBid = vendor?.bids?.some(
+                              (bid) => bid.status === "pending"
+                            );
 
-                          return (
-                            <td
-                              key={vendor.id}
-                              style={{
-                                background: "#f3f3f3",
-                                position: "relative",
-                              }}
-                            >
-                              <div
-                                className="d-flex flex-column align-items-center justify-content-between"
-                                style={{ height: "160px" }}
+                            return (
+                              <td
+                                key={vendor.id}
+                                style={{
+                                  background: "#f3f3f3",
+                                  position: "relative",
+                                }}
                               >
-                                <div className="">
-                                  {vendor.full_name}
-                                  <p>
-                                    {formatDate(vendor?.bids?.[0]?.created_at)}
-                                  </p>
-                                  <p>
-                                    {vendor?.counter_bid_length} Counter Bid
-                                    <span>
-                                      {vendor?.counter_bid_length > 0
-                                        ? "s"
-                                        : ""}
-                                    </span>
-                                  </p>
-                                  <div className="d-flex justify-content-center align-items-center w-100 my-2">
-                                    {activeIndex > 0 && (
-                                      <button
-                                        className="px-2 border-0"
-                                        style={{ fontSize: "1.5rem" }}
-                                        onClick={() => handlePrev(vendor.id)}
-                                      >
-                                        &lt;
-                                      </button>
-                                    )}
-                                    <div className="carousel-item-content">
-                                      {activeIndex === 0 && "Current Bid"}
-                                      {activeIndex === 1 && "Initial Bid"}
-                                      {activeIndex > 1 &&
-                                        `${activeIndex - 1}${getOrdinalSuffix(
-                                          activeIndex - 1
-                                        )} Revision`}
-                                    </div>
-                                    {activeIndex < bidLength - 1 && (
-                                      <button
-                                        className="px-2 border-0"
-                                        style={{ fontSize: "1.5rem" }}
-                                        onClick={() => handleNext(vendor.id)}
-                                      >
-                                        &gt;
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-                                <button
-                                  className={`purple-btn1 mt-2 ${
-                                    isCounterOffer ? "disabled-btn" : ""
-                                  } position-absolute bottom-0 start-50 translate-middle-x`}
-                                  onClick={async () => {
-                                    if (
-                                      vendor?.bids?.length > 0 &&
-                                      vendor?.bids[0]?.bid_materials?.length > 0
-                                    ) {
-                                      const bidId =
-                                        vendor.bids[0].bid_materials[0].bid_id;
-                                      setBidId(bidId);
-
-                                      try {
-                                        setLoading(true);
-                                        setError(null);
-
-                                        const response = await axios.get(
-                                          `${baseURL}rfq/events/${eventId}/bids/${bidId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-                                        );
-
-                                        const fetchedData = response.data;
-                                        setBidCounterData(fetchedData);
-
-                                        navigate(`/counter-offer/${bidId}`, {
-                                          state: {
-                                            bidCounterData: fetchedData,
-                                          },
-                                        });
-                                      } catch (err) {
-                                        setError(err.message);
-                                      } finally {
-                                        setLoading(false);
-                                      }
-                                    }
-                                  }}
-                                  disabled={isCounterOffer}
+                                <div
+                                  className="d-flex flex-column align-items-center justify-content-between"
+                                  style={{ height: "160px" }}
                                 >
-                                  Counter
-                                </button>
-                                {hasPendingBid && (
+                                  <div className="">
+                                    {vendor.full_name}
+                                    <p>
+                                      {formatDate(vendor?.bids?.[0]?.created_at)}
+                                    </p>
+                                    <p>
+                                      {vendor?.counter_bid_length} Counter Bid
+                                      <span>
+                                        {vendor?.counter_bid_length > 0
+                                          ? "s"
+                                          : ""}
+                                      </span>
+                                    </p>
+                                    <div className="d-flex justify-content-center align-items-center w-100 my-2">
+                                      {activeIndex > 0 && (
+                                        <button
+                                          className="px-2 border-0"
+                                          style={{ fontSize: "1.5rem" }}
+                                          onClick={() => handlePrev(vendor.id)}
+                                        >
+                                          &lt;
+                                        </button>
+                                      )}
+                                      <div className="carousel-item-content">
+                                        {activeIndex === 0 && "Current Bid"}
+                                        {activeIndex === 1 && "Initial Bid"}
+                                        {activeIndex > 1 &&
+                                          `${activeIndex - 1}${getOrdinalSuffix(
+                                            activeIndex - 1
+                                          )} Revision`}
+                                      </div>
+                                      {activeIndex < bidLength - 1 && (
+                                        <button
+                                          className="px-2 border-0"
+                                          style={{ fontSize: "1.5rem" }}
+                                          onClick={() => handleNext(vendor.id)}
+                                        >
+                                          &gt;
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
                                   <button
-                                    className="d-block mt-2"
-                                    style={{
-                                      position: "absolute",
-                                      top: "10px",
-                                      right: "10px",
-                                      background: "none",
-                                      border: "none",
+                                    className={`purple-btn1 mt-2 ${isCounterOffer ? "disabled-btn" : ""
+                                      } position-absolute bottom-0 start-50 translate-middle-x`}
+                                    onClick={async () => {
+                                      if (
+                                        vendor?.bids?.length > 0 &&
+                                        vendor?.bids[0]?.bid_materials?.length > 0
+                                      ) {
+                                        const bidId =
+                                          vendor.bids[0].bid_materials[0].bid_id;
+                                        setBidId(bidId);
+
+                                        try {
+                                          setLoading(true);
+                                          setError(null);
+
+                                          const response = await axios.get(
+                                            `${baseURL}rfq/events/${eventId}/bids/${bidId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                                          );
+
+                                          const fetchedData = response.data;
+                                          setBidCounterData(fetchedData);
+
+                                          navigate(`/counter-offer/${bidId}`, {
+                                            state: {
+                                              bidCounterData: fetchedData,
+                                            },
+                                          });
+                                        } catch (err) {
+                                          setError(err.message);
+                                        } finally {
+                                          setLoading(false);
+                                        }
+                                      }
                                     }}
-                                    onClick={() => {
-                                      setShowCounterOfferPopup(true);
-                                      setMaterialData({
-                                        material_name:
-                                          vendor?.bids?.[0]?.bid_materials?.[0]
-                                            ?.material_name,
-                                        vendor_name: vendor.full_name,
-                                        bids_values: vendor.bids,
-                                      });
-                                    }}
+                                    disabled={isCounterOffer}
                                   >
-                                    <img
-                                      src="/offer-btn.png"
-                                      alt="Offer"
-                                      width="30px"
-                                      height="30px"
-                                    />
+                                    Counter
                                   </button>
-                                )}
-                              </div>
-                            </td>
-                          );
-                        })}
-                        <td
-                          style={{ width: "auto", background: "#f3f3f3" }}
-                        ></td>
-                      </tr>
-                      <tr>
-                        <td
-                          className="viewBy-tBody1-p"
-                          style={{ minidth: "300px", textAlign: "left" }}
-                        >
-                          Gross Total
-                        </td>
-                        {eventVendors?.map((vendor) => {
-                          return (
-                            <td key={`gross-${vendor.id}`}>
-                              {vendor?.bids?.[0]?.gross_total || "_"}
-                            </td>
-                          );
-                        })}
-                        <td style={{ width: "auto" }}></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                                  {hasPendingBid && (
+                                    <button
+                                      className="d-block mt-2"
+                                      style={{
+                                        position: "absolute",
+                                        top: "10px",
+                                        right: "10px",
+                                        background: "none",
+                                        border: "none",
+                                      }}
+                                      onClick={() => {
+                                        setShowCounterOfferPopup(true);
+                                        setMaterialData({
+                                          material_name:
+                                            vendor?.bids?.[0]?.bid_materials?.[0]
+                                              ?.material_name,
+                                          vendor_name: vendor.full_name,
+                                          bids_values: vendor.bids,
+                                        });
+                                      }}
+                                    >
+                                      <img
+                                        src="/offer-btn.png"
+                                        alt="Offer"
+                                        width="30px"
+                                        height="30px"
+                                      />
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            );
+                          })}
+                          <td
+                            style={{ width: "auto", background: "#f3f3f3" }}
+                          ></td>
+                        </tr>
+                        <tr>
+                          <td
+                            className="viewBy-tBody1-p"
+                            style={{ minidth: "300px", textAlign: "left" }}
+                          >
+                            Gross Total
+                          </td>
+                          {eventVendors?.map((vendor) => {
+                            return (
+                              <td key={`gross-${vendor.id}`}>
+                                {vendor?.bids?.[0]?.gross_total || "_"}
+                              </td>
+                            );
+                          })}
+                          <td style={{ width: "auto" }}></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
 
-                {segeregatedMaterialData?.map((materialData, ind) => {
-                  const extraColumns = Array.from(
-                    new Set(
-                      materialData.bids_values?.flatMap(
-                        (material) => material.extra_columns
-                      ) || []
-                    )
-                  );
+                  {segeregatedMaterialData?.map((materialData, ind) => {
+                    const extraColumns = Array.from(
+                      new Set(
+                        materialData.bids_values?.flatMap(
+                          (material) => material.extra_columns
+                        ) || []
+                      )
+                    );
 
-                  const extraKeys = Array.from(
-                    new Set(
-                      materialData.bids_values?.flatMap((material) =>
-                        Object.keys(material.extra || {})
-                      ) || []
-                    )
-                  );
+                    const extraKeys = Array.from(
+                      new Set(
+                        materialData.bids_values?.flatMap((material) =>
+                          Object.keys(material.extra || {})
+                        ) || []
+                      )
+                    );
 
-                  return (
-                    <Accordion
-                      key={ind}
-                      serializedData={
-                        materialData.bids_values?.some(
-                          (bid) =>
-                            bid.status === "pending" &&
-                            bid.serialized_last_bid?.event_vendor_id ===
+                    return (
+                      <Accordion
+                        key={ind}
+                        serializedData={
+                          materialData.bids_values?.some(
+                            (bid) =>
+                              bid.status === "pending" &&
+                              bid.serialized_last_bid?.event_vendor_id ===
                               bid?.event_vendor_id
-                        )
-                          ? materialData.bids_values
+                          )
+                            ? materialData.bids_values
                               ?.filter(
                                 (bid) =>
                                   bid.status === "pending" &&
                                   bid?.serialized_last_bid?.event_vendor_id ===
-                                    bid?.event_vendor_id
+                                  bid?.event_vendor_id
                               )
                               ?.map((bid) => bid.serialized_last_bid)
-                          : undefined
-                      }
-                      title={materialData.material_name || "_"}
-                      amount={materialData.total_amounts}
-                      isDefault={true}
-                      tableColumn={[
-                        { label: "Best Total Amount", key: "bestTotalAmount" },
-                        {
-                          label: "Quantity Available",
-                          key: "quantityAvailable",
-                        },
-                        { label: "Price", key: "price" },
-                        { label: "Discount", key: "discount" },
-                        {
-                          label: "Realised Discount",
-                          key: "realisedDiscount",
-                        },
-                        { label: "Landed Amount", key: "landedAmount" },
-                        {
-                          label: "Realised Tax Amount",
-                          key: "realised_tax_amount",
-                        },
-                        { label: "Total Amount", key: "totalAmount" },
-                        ...extraColumns
-                          .filter((column) => /^[A-Z]/.test(column))
-                          .map((column) => ({
-                            label: column
-                              .replace(/_/g, " ")
-                              .replace(/\b\w/g, (c) => c.toUpperCase()),
-                            key: column,
-                          })),
-                        {
-                          label: "Tax Rate",
-                          key: "taxRate",
-                        },
-                      ]}
-                      tableData={materialData.bids_values?.map(
-                        (material, bidIndex) => {
-                          const extraData = material.extra_data || {};
+                            : undefined
+                        }
+                        title={materialData.material_name || "_"}
+                        amount={materialData.total_amounts}
+                        isDefault={true}
+                        tableColumn={[
+                          { label: "Best Total Amount", key: "bestTotalAmount" },
+                          {
+                            label: "Quantity Available",
+                            key: "quantityAvailable",
+                          },
+                          { label: "Price", key: "price" },
+                          { label: "Discount", key: "discount" },
+                          {
+                            label: "Realised Discount",
+                            key: "realisedDiscount",
+                          },
+                          { label: "Landed Amount", key: "landedAmount" },
+                          {
+                            label: "Realised Tax Amount",
+                            key: "realised_tax_amount",
+                          },
+                          { label: "Total Amount", key: "totalAmount" },
+                          ...extraColumns
+                            .filter((column) => /^[A-Z]/.test(column))
+                            .map((column) => ({
+                              label: column
+                                .replace(/_/g, " ")
+                                .replace(/\b\w/g, (c) => c.toUpperCase()),
+                              key: column,
+                            })),
+                          {
+                            label: "Tax Rate",
+                            key: "taxRate",
+                          },
+                        ]}
+                        tableData={materialData.bids_values?.map(
+                          (material, bidIndex) => {
+                            const extraData = material.extra_data || {};
 
-                          return {
-                            bestTotalAmount: material.total_amount || "_",
-                            quantityAvailable:
-                              material.quantity_available || "_",
-                            price: material.price || "_",
-                            discount: material.discount || "_",
-                            realisedDiscount: material.realised_discount || "_",
-                            gst: material.gst || "_",
-                            realisedGST: material.realised_gst || "_",
-                            landedAmount: material.landed_amount || "_",
-                            participantAttachment:
-                              material.participant_attachment || "_",
-                            realised_tax_amount:
-                              parseFloat(material.realised_tax_amount).toFixed(
-                                2
-                              ) || "_",
-                            totalAmount: material.total_amount || "_",
-                            ...material.extra_columns.reduce((acc, column) => {
-                              if (extraData[column]?.value) {
-                                const value = extraData[column].value;
-                                acc[column] = Array.isArray(value)
-                                  ? value
+                            return {
+                              bestTotalAmount: material.total_amount || "_",
+                              quantityAvailable:
+                                material.quantity_available || "_",
+                              price: material.price || "_",
+                              discount: material.discount || "_",
+                              realisedDiscount: material.realised_discount || "_",
+                              gst: material.gst || "_",
+                              realisedGST: material.realised_gst || "_",
+                              landedAmount: material.landed_amount || "_",
+                              participantAttachment:
+                                material.participant_attachment || "_",
+                              realised_tax_amount:
+                                parseFloat(material.realised_tax_amount).toFixed(
+                                  2
+                                ) || "_",
+                              totalAmount: material.total_amount || "_",
+                              ...material.extra_columns.reduce((acc, column) => {
+                                if (extraData[column]?.value) {
+                                  const value = extraData[column].value;
+                                  acc[column] = Array.isArray(value)
+                                    ? value
                                       .map(
                                         (item) =>
-                                          `${item.taxChargeType || ""}: ${
-                                            item.amount || 0
-                                          }${
-                                            item.taxChargePerUom
-                                              ? ` (${item.taxChargePerUom})`
-                                              : ""
+                                          `${item.taxChargeType || ""}: ${item.amount || 0
+                                          }${item.taxChargePerUom
+                                            ? ` (${item.taxChargePerUom})`
+                                            : ""
                                           }`
                                       )
                                       .join(", ")
-                                  : value || "_";
-                              } else {
-                                acc[column] = "_";
-                              }
-                              return acc;
-                            }, {}),
-                            taxRate: material,
-                            bidIndex: bidIndex,
-                          };
-                        }
-                      )}
-                      handleTaxButtonClick={(bid, str, rowIndex) => {
-                        setSelectedMaterialIndex(ind);
-                        setBidMaterialIndex(rowIndex);
-                        setShowTaxModal(true);
-                      }}
-                    />
-                  );
-                })}
-                {(() => {
-                  const extractedData =
-                    eventVendors?.flatMap((vendor) => {
-                      const extra = vendor?.bids?.[0]?.extra;
-
-                      if (
-                        extra &&
-                        Object.values(extra).some(
-                          (val) =>
-                            (typeof val === "string" && val.trim() !== "") ||
-                            (typeof val === "object" &&
-                              val !== null &&
-                              !Array.isArray(val))
-                        )
-                      ) {
-                        const formattedExtra = {};
-                        Object.entries(extra).forEach(([key, val]) => {
-                          if (!Array.isArray(val)) {
-                            formattedExtra[key] = val?.toString().trim() || "_";
+                                    : value || "_";
+                                } else {
+                                  acc[column] = "_";
+                                }
+                                return acc;
+                              }, {}),
+                              taxRate: material,
+                              bidIndex: bidIndex,
+                            };
                           }
-                        });
-
-                        return Object.keys(formattedExtra).length > 0
-                          ? [formattedExtra]
-                          : [];
-                      }
-
-                      return [];
-                    }) || [];
-
-                  const extractedKeys = Array.from(
-                    new Set(extractedData.flatMap((obj) => Object.keys(obj)))
-                  );
-
-                  // ✅ Conditionally render Accordion only if both data and keys exist
-                  if (extractedData.length > 0 && extractedKeys.length > 0) {
-                    return (
-                      <Accordion
-                        title="Other Informations"
-                        isDefault={true}
-                        tableColumn={extractedKeys.map((key) => ({
-                          label: key
-                            .replace(/_/g, " ")
-                            .replace(/\b\w/g, (c) => c.toUpperCase()),
-                          key: key,
-                        }))}
-                        tableData={extractedData}
+                        )}
+                        handleTaxButtonClick={(bid, str, rowIndex) => {
+                          setSelectedMaterialIndex(ind);
+                          setBidMaterialIndex(rowIndex);
+                          setShowTaxModal(true);
+                        }}
                       />
                     );
-                  }
+                  })}
+                  {(() => {
+                    const extractedData =
+                      eventVendors?.flatMap((vendor) => {
+                        const extra = vendor?.bids?.[0]?.extra;
 
-                  return null;
-                })()}
+                        if (
+                          extra &&
+                          Object.values(extra).some(
+                            (val) =>
+                              (typeof val === "string" && val.trim() !== "") ||
+                              (typeof val === "object" &&
+                                val !== null &&
+                                !Array.isArray(val))
+                          )
+                        ) {
+                          const formattedExtra = {};
+                          Object.entries(extra).forEach(([key, val]) => {
+                            if (!Array.isArray(val)) {
+                              formattedExtra[key] = val?.toString().trim() || "_";
+                            }
+                          });
 
-                {(() => {
-                  const extractedChargeData =
-                    eventVendors?.flatMap((vendor) => {
-                      const charges = vendor?.bids?.[0]?.extra?.charges || [];
-                      return charges.map((charge) => ({
-                        charge_id: charge.charge_id,
-                        amount: Number(charge.amount || 0),
-                        realisedAmount: Number(charge.realised_amount || 0),
-                        taxDetails: charge.taxes_and_charges || [],
-                      }));
-                    }) || [];
+                          return Object.keys(formattedExtra).length > 0
+                            ? [formattedExtra]
+                            : [];
+                        }
 
-                  const handleChargesTaxModalOpen = (taxDetails) => {
-                    setShowChargesTaxModal(true);
-                    setChargesTaxModalData(taxDetails);
-                  };
+                        return [];
+                      }) || [];
 
-                  const renderAccordion = (title, chargeId) => {
-                    const data = extractedChargeData.filter(
-                      (c) => c.charge_id === chargeId
+                    const extractedKeys = Array.from(
+                      new Set(extractedData.flatMap((obj) => Object.keys(obj)))
                     );
 
-                    if (data.length === 0) return null;
+                    // ✅ Conditionally render Accordion only if both data and keys exist
+                    if (extractedData.length > 0 && extractedKeys.length > 0) {
+                      return (
+                        <Accordion
+                          title="Other Informations"
+                          isDefault={true}
+                          tableColumn={extractedKeys.map((key) => ({
+                            label: key
+                              .replace(/_/g, " ")
+                              .replace(/\b\w/g, (c) => c.toUpperCase()),
+                            key: key,
+                          }))}
+                          tableData={extractedData}
+                        />
+                      );
+                    }
 
-                    return (
-                      <Accordion
-                        key={chargeId}
-                        title={title}
-                        isDefault={true}
-                        tableColumn={[
-                          { label: "Amount", key: "amount" },
-                          { label: "Realised Amount", key: "realisedAmount" },
-                          { label: "Tax Details", key: "taxDetails" },
-                        ]}
-                        tableData={data.map((charge) => ({
-                          amount: charge.amount || "-",
-                          realisedAmount: charge.realisedAmount || "-",
-                          taxDetails: (
-                            <button
-                              className="purple-btn2"
-                              onClick={() =>
-                                handleChargesTaxModalOpen(charge.taxDetails)
-                              }
-                            >
-                              View Tax
-                            </button>
-                          ),
-                        }))}
-                      />
-                    );
-                  };
+                    return null;
+                  })()}
 
-                  const accordions = [
-                    renderAccordion("Handling Charges", 2),
-                    renderAccordion("Other Charges", 4),
-                    renderAccordion("Freight Charges", 5),
-                  ].filter(Boolean); // remove nulls
+                  {(() => {
+                    const extractedChargeData =
+                      eventVendors?.flatMap((vendor) => {
+                        const charges = vendor?.bids?.[0]?.extra?.charges || [];
+                        return charges.map((charge) => ({
+                          charge_id: charge.charge_id,
+                          amount: Number(charge.amount || 0),
+                          realisedAmount: Number(charge.realised_amount || 0),
+                          taxDetails: charge.taxes_and_charges || [],
+                        }));
+                      }) || [];
 
-                  return accordions.length > 0 ? <>{accordions}</> : null;
-                })()}
-              </>
-            ) : (
-              <h4 className="h-100 w-100 d-flex justify-content-center align-items-center pt-5">
-                No Bid Details found
-              </h4>
-            )}
-          </div>
+                    const handleChargesTaxModalOpen = (taxDetails) => {
+                      setShowChargesTaxModal(true);
+                      setChargesTaxModalData(taxDetails);
+                    };
+
+                    const renderAccordion = (title, chargeId) => {
+                      const data = extractedChargeData.filter(
+                        (c) => c.charge_id === chargeId
+                      );
+
+                      if (data.length === 0) return null;
+
+                      return (
+                        <Accordion
+                          key={chargeId}
+                          title={title}
+                          isDefault={true}
+                          tableColumn={[
+                            { label: "Amount", key: "amount" },
+                            { label: "Realised Amount", key: "realisedAmount" },
+                            { label: "Tax Details", key: "taxDetails" },
+                          ]}
+                          tableData={data.map((charge) => ({
+                            amount: charge.amount || "-",
+                            realisedAmount: charge.realisedAmount || "-",
+                            taxDetails: (
+                              <button
+                                className="purple-btn2"
+                                onClick={() =>
+                                  handleChargesTaxModalOpen(charge.taxDetails)
+                                }
+                              >
+                                View Tax
+                              </button>
+                            ),
+                          }))}
+                        />
+                      );
+                    };
+
+                    const accordions = [
+                      renderAccordion("Handling Charges", 2),
+                      renderAccordion("Other Charges", 4),
+                      renderAccordion("Freight Charges", 5),
+                    ].filter(Boolean); // remove nulls
+
+                    return accordions.length > 0 ? <>{accordions}</> : null;
+                  })()}
+                </>
+              ) : (
+                <h4 className="h-100 w-100 d-flex justify-content-center align-items-center pt-5">
+                  No Bid Details found
+                </h4>
+              )}
+            </div>
           )}
         </FullScreen>
       )}
@@ -1279,7 +1275,7 @@ export default function ResponseTab({ isCounterOffer }) {
                               type="text"
                               className="form-control"
                               value={item.amount}
-                              onChange={(e) => {}}
+                              onChange={(e) => { }}
                               readOnly
                               disabled={true}
                             />
@@ -1424,9 +1420,8 @@ export default function ResponseTab({ isCounterOffer }) {
             <div className="d-flex justify-content-between align-items-center px-1 mt-2">
               <ul className="pagination justify-content-center d-flex">
                 <li
-                  className={`page-item ${
-                    currentReminderPage === 1 ? "disabled" : ""
-                  }`}
+                  className={`page-item ${currentReminderPage === 1 ? "disabled" : ""
+                    }`}
                 >
                   <button
                     className="page-link"
@@ -1437,9 +1432,8 @@ export default function ResponseTab({ isCounterOffer }) {
                 </li>
 
                 <li
-                  className={`page-item ${
-                    currentReminderPage === 1 ? "disabled" : ""
-                  }`}
+                  className={`page-item ${currentReminderPage === 1 ? "disabled" : ""
+                    }`}
                 >
                   <button
                     className="page-link"
@@ -1454,9 +1448,8 @@ export default function ResponseTab({ isCounterOffer }) {
                 {getReminderPageRange().map((page) => (
                   <li
                     key={page}
-                    className={`page-item ${
-                      currentReminderPage === page ? "active" : ""
-                    }`}
+                    className={`page-item ${currentReminderPage === page ? "active" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1468,9 +1461,8 @@ export default function ResponseTab({ isCounterOffer }) {
                 ))}
 
                 <li
-                  className={`page-item ${
-                    currentReminderPage === totalReminderPages ? "disabled" : ""
-                  }`}
+                  className={`page-item ${currentReminderPage === totalReminderPages ? "disabled" : ""
+                    }`}
                 >
                   <button
                     className="page-link"
@@ -1483,9 +1475,8 @@ export default function ResponseTab({ isCounterOffer }) {
                 </li>
 
                 <li
-                  className={`page-item ${
-                    currentReminderPage === totalReminderPages ? "disabled" : ""
-                  }`}
+                  className={`page-item ${currentReminderPage === totalReminderPages ? "disabled" : ""
+                    }`}
                 >
                   <button
                     className="page-link"
@@ -1652,6 +1643,11 @@ export default function ResponseTab({ isCounterOffer }) {
                         disabled={true}
                       >
                         <option value="">Select Tax</option>
+                        <option value="1%">1%</option>
+                        <option value="2%">2%</option>
+
+                        <option value="6%">6%</option>
+                        <option value="9%">9%</option>
                         <option value="5%">5%</option>
                         <option value="12%">12%</option>
                         <option value="18%">18%</option>
@@ -1681,7 +1677,7 @@ export default function ResponseTab({ isCounterOffer }) {
                         type="text"
                         className="form-control"
                         value={item.amount}
-                        onChange={(e) => {}}
+                        onChange={(e) => { }}
                         readOnly
                         disabled={true}
                       />
