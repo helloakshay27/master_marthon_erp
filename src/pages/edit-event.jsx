@@ -358,6 +358,8 @@ export default function EditEvent() {
             : Array.isArray(data.data?.vendors)
               ? data.data.vendors
               : [];
+              ? data.data.vendors
+              : [];
 
           formattedData = vendors.map((vendor) => ({
             id: vendor.id,
@@ -976,7 +978,7 @@ export default function EditEvent() {
           body: JSON.stringify(eventData),
         }
       );
-      console.log("eventData:--", JSON.stringify(eventData));
+      console.log("eventData:--", eventData);
 
       if (response.ok) {
         const data = await response.json();

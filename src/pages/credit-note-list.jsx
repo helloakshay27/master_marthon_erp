@@ -1000,7 +1000,7 @@ const CreditNoteList = () => {
                                 <DataGrid
                                     rows={getTransformedRows()}
                                     columns={columns}
-                                    pageSize={pageSize}
+                                    // pageSize={pageSize}
                                     autoHeight={true}
                                     // getRowId={(row) => row.id}
                                     getRowId={(row) => {
