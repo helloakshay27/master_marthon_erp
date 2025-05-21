@@ -682,6 +682,10 @@ const BillBookingCreate = () => {
       return;
     }
 
+    const advance_note_adjustment = selectedAdvanceNotes.map((note) => ({
+      id: note.id,
+      value: parseFloat(note.this_recovery) || 0,
+    }));
     // Build debit and credit note adjustment arrays
     const debit_note_adjustment = selectedDebitNotes.map((note) => ({
       id: note.id,
@@ -743,6 +747,7 @@ const BillBookingCreate = () => {
           })),
           debit_note_adjustment,
           credit_note_adjustment,
+          advance_note_adjustment,
         },
       };
 
@@ -932,23 +937,75 @@ const BillBookingCreate = () => {
 
   const [pendingAdvances, setPendingAdvances] = useState([]);
 
-  // useEffect(() => {
-  //   const fetchPendingAdvances = async () => {
-  //     if (selectedPO?.id) {
-  //       try {
-  //         const response = await axios.get(
-  //           `${baseURL}advance_notes?q[purchase_order__id_eq]=${selectedPO.id}`
-  //         );
-  //         setPendingAdvances(response.data.advance_notes || []);
-  //       } catch (error) {
-  //         console.error("Error fetching pending advances:", error);
-  //         setPendingAdvances([]);
-  //       }
-  //     }
-  //   };
+  useEffect(() => {
+    const fetchPendingAdvances = async () => {
+      if (selectedPO?.id) {
+        try {
+          const response = await axios.get(
+            `${baseURL}advance_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+          setPendingAdvances(response.data.advance_notes || []);
+        } catch (error) {
+          console.error("Error fetching pending advances:", error);
+          setPendingAdvances([]);
+        }
+      }
+    };
 
-  //   fetchPendingAdvances();
-  // }, [selectedPO]);
+    fetchPendingAdvances();
+  }, [selectedPO, formData.pms_supplier_id]);
+
+  // Add these state variables at the top
+  const [advanceNoteModal, setAdvanceNoteModal] = useState(false);
+  const [selectedAdvanceNotes, setSelectedAdvanceNotes] = useState([]);
+
+  // Add these handlers
+  const handleAdvanceNoteSelect = (note) => {
+    setSelectedAdvanceNotes((prev) => {
+      const isSelected = prev.some((n) => n.id === note.id);
+      if (isSelected) {
+        const newNotes = prev.filter((n) => n.id !== note.id);
+        // Update form data with new total
+        setFormData((prevForm) => ({
+          ...prevForm,
+          currentAdvanceDeduction: calculateTotalAdvanceRecovery(),
+        }));
+        return newNotes;
+      } else {
+        const newNotes = [...prev, note];
+        // Update form data with new total
+        setFormData((prevForm) => ({
+          ...prevForm,
+          currentAdvanceDeduction: calculateTotalAdvanceRecovery(),
+        }));
+        return newNotes;
+      }
+    });
+  };
+
+  // Add modal toggle handlers
+  const openAdvanceNoteModal = () => setAdvanceNoteModal(true);
+  const closeAdvanceNoteModal = () => setAdvanceNoteModal(false);
+
+  // Add validation handler
+  const validateAdvanceRecovery = (note, value) => {
+    const recovery = parseFloat(value) || 0;
+    const advanceAmount = parseFloat(note.advance_amount) || 0;
+
+    if (recovery > advanceAmount) {
+      alert("Recovery amount cannot exceed advance amount");
+      return false;
+    }
+    return true;
+  };
+
+  const calculateTotalAdvanceRecovery = () => {
+    return selectedAdvanceNotes
+      .reduce((total, note) => {
+        return total + (parseFloat(note.this_recovery) || 0);
+      }, 0)
+      .toFixed(2);
+  };
 
   const [creditNotes, setCreditNotes] = useState([]);
   const [debitNotes, setDebitNotes] = useState([]);
@@ -960,7 +1017,6 @@ const BillBookingCreate = () => {
 
   // Add these handlers
   const handleCreditNoteSelect = (note) => {
-
     setSelectedCreditNotes((prev) => {
       const isSelected = prev.some((n) => n.id === note.id);
       if (isSelected) {
@@ -1016,7 +1072,6 @@ const BillBookingCreate = () => {
   }, [selectedPO, formData.pms_supplier_id]);
 
   // Add these handler functions if not already present
-  
 
   const handleSelectAllCreditNotes = (e) => {
     if (e.target.checked) {
@@ -1078,6 +1133,7 @@ const BillBookingCreate = () => {
     const otherAdd = parseFloat(otherAdditions) || 0;
     const creditAdjustment = parseFloat(calculateCreditNoteAdjustment()) || 0;
     const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
+    const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0; // Add this line
 
     return (
       totalAmount -
@@ -1085,8 +1141,10 @@ const BillBookingCreate = () => {
       otherDed +
       otherAdd +
       creditAdjustment -
-      debitAdjustment
-    ).toFixed(2);
+      debitAdjustment -
+      advanceAdjustment
+    ) // Subtract advance adjustment
+      .toFixed(2);
   };
 
   // ...existing code...
@@ -1192,6 +1250,18 @@ const BillBookingCreate = () => {
               <div className="card p-3">
                 <div className="row">
                   <div className="col-md-4">
+                    <label htmlFor="event-no-select">Bill Entries</label>
+                    <span> *</span>
+                    <div className="form-group">
+                      <SingleSelector
+                        options={billEntryOptions}
+                        onChange={setSelectedBillEntry}
+                        value={selectedBillEntry}
+                        placeholder="Select Bill Entry"
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4">
                     <div className="form-group">
                       <label>Company</label>
                       <span> *</span>
@@ -1217,7 +1287,7 @@ const BillBookingCreate = () => {
                     </div>
                   </div>
 
-                  <div className="col-md-4">
+                  <div className="col-md-4 mt-2">
                     <label htmlFor="event-no-select"> SubProject</label>
                     <span> *</span>
                     <div className="form-group">
@@ -1226,19 +1296,6 @@ const BillBookingCreate = () => {
                         type="text"
                         value={displaySite}
                         disabled
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-md-4 mt-2">
-                    <label htmlFor="event-no-select">Bill Entries</label>
-                    <span> *</span>
-                    <div className="form-group">
-                      <SingleSelector
-                        options={billEntryOptions}
-                        onChange={setSelectedBillEntry}
-                        value={selectedBillEntry}
-                        placeholder="Select Bill Entry"
                       />
                     </div>
                   </div>
@@ -1878,7 +1935,8 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="number"
-                        value={formData.currentAdvanceDeduction}
+                        // value={formData.currentAdvanceDeduction}
+                        value={calculateTotalAdvanceRecovery()} // Changed this line
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
@@ -1892,7 +1950,7 @@ const BillBookingCreate = () => {
                   </div>
                   {/* </div> */}
                   {/* <div className="row"> */}
-                  <div className="col-md-4">
+                  <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Other Deduction</label>
                       <input
@@ -1911,7 +1969,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4">
+                  <div className="col-md-5 mt-2">
                     <div className="form-group">
                       <label>Other Deduction Remark</label>
                       <textarea
@@ -1952,7 +2010,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4 mt-2">
+                  <div className="col-md-5 mt-2">
                     <div className="form-group">
                       <label>Other Addition Remark</label>
                       <textarea
@@ -2017,38 +2075,43 @@ const BillBookingCreate = () => {
                         //   }))
                         // }
                         placeholder="Enter other addition amount"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Retention Percentage</label>
-                      <input
-                        className="form-control"
-                        type="number"
-                        value={formData.retentionPercentage}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            retentionPercentage: e.target.value,
-                          }))
-                        }
-                        placeholder="Enter retention percentage"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Retention Amount</label>
-                      <input
-                        className="form-control"
-                        type="number"
-                        value={calculateRetentionAmount()}
                         disabled
                       />
                     </div>
                   </div>
+                  {formData.typeOfCertificate === "Retention" && (
+                    <>
+                      <div className="col-md-4 mt-2">
+                        <div className="form-group">
+                          <label>Retention Percentage</label>
+                          <input
+                            className="form-control"
+                            type="number"
+                            value={formData.retentionPercentage}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                retentionPercentage: e.target.value,
+                              }))
+                            }
+                            placeholder="Enter retention percentage"
+                            disabled
+                          />
+                        </div>
+                      </div>
+                      <div className="col-md-4 mt-2">
+                        <div className="form-group">
+                          <label>Retention Amount</label>
+                          <input
+                            className="form-control"
+                            type="number"
+                            value={calculateRetentionAmount()}
+                            disabled
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
 
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
@@ -2063,6 +2126,7 @@ const BillBookingCreate = () => {
                         readOnly
                         placeholder="Enter other addition amount"
                         // amount payable should be total amount - retention amount
+                        disabled
                       />
                     </div>
                   </div>
@@ -2135,6 +2199,7 @@ const BillBookingCreate = () => {
                             paymentDueDate: e.target.value,
                           }))
                         }
+                        disabled
                       />
                     </div>
                   </div>
@@ -2202,7 +2267,23 @@ const BillBookingCreate = () => {
                   </div> */}
                 {/* </div> */}
                 <div className="d-flex justify-content-between mt-3 me-2">
-                  <h5 className=" ">Advance Adjusted:</h5>
+                  <h5 className=" ">Advance Adjusted</h5>
+                  <button
+                    className="purple-btn2"
+                    onClick={openAdvanceNoteModal}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={20}
+                      height={20}
+                      fill="currentColor"
+                      className="bi bi-plus"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                    </svg>
+                    <span>Select Advance Note</span>
+                  </button>
                 </div>
                 <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
@@ -2228,42 +2309,67 @@ const BillBookingCreate = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {pendingAdvances.length > 0 ? (
-                        pendingAdvances.map((advance, index) => (
-                          <tr key={index}>
-                            <td className="text-start">{advance.id || "-"}</td>
+                      {selectedAdvanceNotes.length > 0 ? (
+                        selectedAdvanceNotes.map((note) => (
+                          <tr key={note.id}>
+                            <td className="text-start">{note.id || "-"}</td>
                             <td className="text-start">
-                              {advance.po_number || "-"}
+                              {note.po_number || "-"}
                             </td>
                             <td className="text-start">
-                              {advance.project_name || "-"}
+                              {note.project_name || "-"}
                             </td>
                             <td className="text-start">
-                              {advance.advance_amount || "-"}
+                              {note.advance_amount || "-"}
                             </td>
                             <td className="text-start">
-                              {advance.debit_note_for_advance || "-"}
+                              {note.debit_note_for_advance || "-"}
                             </td>
                             <td className="text-start">
-                              {advance.advance_adjusted_till_date || "-"}
+                              {note.advance_adjusted_till_date || "-"}
                             </td>
                             <td className="text-start">
-                              {advance.advance_outstanding_till_certificate_date ||
+                              {note.advance_outstanding_till_certificate_date ||
                                 "-"}
                             </td>
                             <td className="text-start">
-                              {advance.advance_outstanding_till_current_date ||
+                              {note.advance_outstanding_till_current_date ||
                                 "-"}
                             </td>
                             <td className="text-start">
-                              {advance.this_recovery || "-"}
+                              <input
+                                type="number"
+                                className="form-control"
+                                value={note.this_recovery || ""}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (validateAdvanceRecovery(note, value)) {
+                                    setSelectedAdvanceNotes((prev) => {
+                                      const newNotes = prev.map((n) =>
+                                        n.id === note.id
+                                          ? { ...n, this_recovery: value }
+                                          : n
+                                      );
+                                      // Update form data with new total after recovery amount changes
+                                      setFormData((prevForm) => ({
+                                        ...prevForm,
+                                        currentAdvanceDeduction:
+                                          calculateTotalAdvanceRecovery(),
+                                      }));
+                                      return newNotes;
+                                    });
+                                  }
+                                }}
+                                min="0"
+                                max={note.advance_amount}
+                              />
                             </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
                           <td className="text-start" colSpan="9">
-                            No advance adjusted data found.
+                            No advance notes selected.
                           </td>
                         </tr>
                       )}
@@ -3533,6 +3639,122 @@ const BillBookingCreate = () => {
               <button
                 className="purple-btn1 w-100"
                 onClick={closeDebitNoteModal}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+      <Modal
+        centered
+        size="xl"
+        show={advanceNoteModal}
+        onHide={closeAdvanceNoteModal}
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Select Advance Notes</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="tbl-container">
+            <table className="w-100">
+              <thead>
+                <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      checked={
+                        pendingAdvances.length > 0 &&
+                        selectedAdvanceNotes.length === pendingAdvances.length
+                      }
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedAdvanceNotes(pendingAdvances);
+                        } else {
+                          setSelectedAdvanceNotes([]);
+                        }
+                      }}
+                    />
+                  </th>
+                  <th className="text-start">ID</th>
+                  <th className="text-start">PO Display No.</th>
+                  <th className="text-start">Project</th>
+                  <th className="text-start">Advance Amount (INR)</th>
+                  <th className="text-start">Debit Note For Advance (INR)</th>
+                  <th className="text-start">
+                    Advance Adjusted Till Date (INR)
+                  </th>
+                  <th className="text-start">
+                    Advance Outstanding till Certificate Date (INR)
+                  </th>
+                  <th className="text-start">
+                    Advance Outstanding till current Date (INR)
+                  </th>
+                  <th className="text-start">This Recovery (INR)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingAdvances.length > 0 ? (
+                  pendingAdvances.map((note) => (
+                    <tr key={note.id}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedAdvanceNotes.some(
+                            (n) => n.id === note.id
+                          )}
+                          onChange={() => handleAdvanceNoteSelect(note)}
+                        />
+                      </td>
+                      <td className="text-start">{note.id || "-"}</td>
+                      <td className="text-start">{note.po_number || "-"}</td>
+                      <td className="text-start">{note.project_name || "-"}</td>
+                      <td className="text-start">
+                        {note.advance_amount || "-"}
+                      </td>
+                      <td className="text-start">
+                        {note.debit_note_for_advance || "-"}
+                      </td>
+                      <td className="text-start">
+                        {note.advance_adjusted_till_date || "-"}
+                      </td>
+                      <td className="text-start">
+                        {note.advance_outstanding_till_certificate_date || "-"}
+                      </td>
+                      <td className="text-start">
+                        {note.advance_outstanding_till_current_date || "-"}
+                      </td>
+                      <td className="text-start">
+                        {note.this_recovery || "-"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="10" className="text-center">
+                      No advance notes available
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-3">
+              <button
+                className="purple-btn2 w-100"
+                onClick={closeAdvanceNoteModal}
+                disabled={selectedAdvanceNotes.length === 0}
+              >
+                Submit
+              </button>
+            </div>
+            <div className="col-md-3">
+              <button
+                className="purple-btn1 w-100"
+                onClick={closeAdvanceNoteModal}
               >
                 Cancel
               </button>
