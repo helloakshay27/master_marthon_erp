@@ -801,13 +801,13 @@ export default function EditEvent() {
         event_schedule_attributes: {
           start_time:
             toISTISOString(scheduleData.start_time) ||
-            toISTISOString(start_time) ||
-            toISTISOString(eventDetails?.event_schedule?.start_time) ||
+            (start_time) ||
+            (eventDetails?.event_schedule?.start_time) ||
             "",
           end_time:
             toISTISOString(scheduleData.end_time_duration) ||
-            toISTISOString(end_time) ||
-            toISTISOString(eventDetails?.event_schedule?.end_time) ||
+            (end_time) ||
+            (eventDetails?.event_schedule?.end_time) ||
             "",
           evaluation_time:
             scheduleData.evaluation_time ||
