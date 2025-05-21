@@ -83,6 +83,14 @@ const BillVerificationList = () => {
               formattedDate = "-";
             }
           }
+          let formattedDue = "-";
+          if (entry.due_date) {
+            try {
+              formattedDue = new Date(entry.due_date).toISOString().slice(0, 10);
+            } catch (e) {
+              formattedDue = "-";
+            }
+          }
           let status = entry.status;
           if (status && typeof status === "string") {
             status = status.replace(/_/g, " ");
@@ -93,6 +101,7 @@ const BillVerificationList = () => {
             srNo: (page - 1) * pageSize + index + 1,
             ...entry,
             created_at: formattedDate,
+            due_date: formattedDue,
             status,
           }
         })
@@ -228,6 +237,14 @@ const BillVerificationList = () => {
                 formattedDate = "-";
               }
             }
+            let formattedDue = "-";
+            if (entry.due_date) {
+              try {
+                formattedDue = new Date(entry.due_date).toISOString().slice(0, 10);
+              } catch (e) {
+                formattedDue = "-";
+              }
+            }
             let status = entry.status;
             if (status && typeof status === "string") {
               status = status.replace(/_/g, " ");
@@ -238,6 +255,7 @@ const BillVerificationList = () => {
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
               created_at: formattedDate,
+              due_date: formattedDue,
               status,
             }
           })
@@ -277,6 +295,14 @@ const BillVerificationList = () => {
                 formattedDate = "-";
               }
             }
+            let formattedDue = "-";
+            if (entry.due_date) {
+              try {
+                formattedDue = new Date(entry.due_date).toISOString().slice(0, 10);
+              } catch (e) {
+                formattedDue = "-";
+              }
+            }
             let status = entry.status;
             if (status && typeof status === "string") {
               status = status.replace(/_/g, " ");
@@ -287,6 +313,7 @@ const BillVerificationList = () => {
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
               created_at: formattedDate,
+              due_date: formattedDue,
               status,
             }
           })
@@ -405,6 +432,14 @@ const BillVerificationList = () => {
                   formattedDate = "-";
                 }
               }
+              let formattedDue = "-";
+              if (entry.due_date) {
+                try {
+                  formattedDue = new Date(entry.due_date).toISOString().slice(0, 10);
+                } catch (e) {
+                  formattedDue = "-";
+                }
+              }
               let status = entry.status;
               if (status && typeof status === "string") {
                 status = status.replace(/_/g, " ");
@@ -415,6 +450,7 @@ const BillVerificationList = () => {
                 srNo: (currentPage - 1) * pageSize + index + 1,
                 ...entry,
                 created_at: formattedDate,
+                due_date: formattedDue,
                 status,
               }
             })
@@ -473,6 +509,14 @@ const BillVerificationList = () => {
                 formattedDate = "-";
               }
             }
+            let formattedDue = "-";
+            if (entry.due_date) {
+              try {
+                formattedDue = new Date(entry.due_date).toISOString().slice(0, 10);
+              } catch (e) {
+                formattedDue = "-";
+              }
+            }
             let status = entry.status;
             if (status && typeof status === "string") {
               status = status.replace(/_/g, " ");
@@ -483,6 +527,7 @@ const BillVerificationList = () => {
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
               created_at: formattedDate,
+              due_date: formattedDue,
               status
             }
           })
@@ -513,6 +558,14 @@ const BillVerificationList = () => {
               formattedDate = "-";
             }
           }
+          let formattedDue = "-";
+          if (entry.due_date) {
+            try {
+              formattedDue = new Date(entry.due_date).toISOString().slice(0, 10);
+            } catch (e) {
+              formattedDue = "-";
+            }
+          }
           let status = entry.status;
           if (status && typeof status === "string") {
             status = status.replace(/_/g, " ");
@@ -523,6 +576,7 @@ const BillVerificationList = () => {
             srNo: (currentPage - 1) * pageSize + index + 1,
             ...entry,
             created_at: formattedDate,
+            due_date: formattedDue,
             status,
           }
         })
@@ -541,16 +595,18 @@ const BillVerificationList = () => {
   //   column sort and setting 
   const [columnVisibility, setColumnVisibility] = useState({
     srNo: true,
-    bill_no: true,
+    bill_id: true,
+   
     mode_of_submission: true,
     company_name: true,
     project_name: true,
     site_name: true,
     pms_supplier: true,
-    Is_MSME: true,
+    is_msme: true,
     po_number: true,
     created_at: true,
     accepted_at: true,
+     bill_no: true,
     bill_date: true,
     bill_amount: true,
     bill_copies: true,
@@ -574,6 +630,41 @@ const BillVerificationList = () => {
       headerName: "Sr. No.",
       width: 100,
     },
+     {
+          field: "bill_id",
+          headerName: "Bill Id",
+          width: 150,
+          renderCell: (params) =>
+            params.value && params.row.id ? (
+              <Link to={`/bill-verification-details/${params.row.id}`}>
+                <span className="boq-id-link">{params.value}</span>
+              </Link>
+            ) : (
+              "-"
+            ),
+        },
+    
+    {
+      field: "mode_of_submission",
+      headerName: "Mode of Submission",
+      width: 180,
+    },
+    { field: "company_name", headerName: "Company", width: 200 },
+    { field: "project_name", headerName: "Project", width: 180 },
+    { field: "site_name", headerName: "Sub Project", width: 150 },
+    { field: "pms_supplier", headerName: "Vendor Name", width: 150 },
+    { field: "is_msme", headerName: "Is MSME", width: 150 },
+    { field: "po_number", headerName: "PO No.", width: 150 },
+    {
+      field: "created_at",
+      headerName: "Created On",
+      width: 150,
+    },
+    {
+      field: "accepted_at",
+      headerName: "Accepted On",
+      width: 150,
+    },
     {
       field: "bill_no",
       headerName: "Bill No.",
@@ -586,27 +677,6 @@ const BillVerificationList = () => {
         ) : (
           "-"
         ),
-    },
-    {
-      field: "mode_of_submission",
-      headerName: "Mode of Submission",
-      width: 180,
-    },
-    { field: "company_name", headerName: "Company", width: 200 },
-    { field: "project_name", headerName: "Project", width: 180 },
-    { field: "site_name", headerName: "Sub Project", width: 150 },
-    { field: "pms_supplier", headerName: "Vendor Name", width: 150 },
-    { field: "Is_MSME", headerName: "Is MSME", width: 150 },
-    { field: "po_number", headerName: "PO No.", width: 150 },
-    {
-      field: "created_at",
-      headerName: "Created On",
-      width: 150,
-    },
-    {
-      field: "accepted_at",
-      headerName: "Accepted On",
-      width: 150,
     },
 
     { field: "bill_date", headerName: "Bill Date", width: 150 },

@@ -18,24 +18,24 @@ const BillEntryDetails = () => {
   const [status, setStatus] = useState(""); // A
   const [loading, setLoading] = useState(false); // Add loading state
   const [editableBillNo, setEditableBillNo] = useState("");
-    const [editableBillDate, setEditableBillDate] = useState("");
-    const [editableBillAmount, setEditableBillAmount] = useState("");
-    const [showRevisionModal, setShowRevisionModal] = useState(false);
-     const [attachModal, setattachModal] = useState(false);
-      const [selectedDocument, setSelectedDocument] = useState(null);
-      const [documents, setDocuments] = useState([]);
-      const [newDocument, setNewDocument] = useState({
-        document_type: "",
-        attachments: [],
-      });
-    
-      const openattachModal = () => setattachModal(true);
-      const closeattachModal = () => setattachModal(false);
-      const [viewDocumentModal, setviewDocumentModal] = useState(false);
-      
-        const openviewDocumentModal = () => setviewDocumentModal(true);
-        const closeviewDocumentModal = () => setviewDocumentModal(false);
-  
+  const [editableBillDate, setEditableBillDate] = useState("");
+  const [editableBillAmount, setEditableBillAmount] = useState("");
+  const [showRevisionModal, setShowRevisionModal] = useState(false);
+  const [attachModal, setattachModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [documents, setDocuments] = useState([]);
+  const [newDocument, setNewDocument] = useState({
+    document_type: "",
+    attachments: [],
+  });
+
+  const openattachModal = () => setattachModal(true);
+  const closeattachModal = () => setattachModal(false);
+  const [viewDocumentModal, setviewDocumentModal] = useState(false);
+
+  const openviewDocumentModal = () => setviewDocumentModal(true);
+  const closeviewDocumentModal = () => setviewDocumentModal(false);
+
   const navigate = useNavigate();
 
   const statusOptions = [
@@ -58,6 +58,10 @@ const BillEntryDetails = () => {
     {
       label: "Submited",
       value: "submited",
+    },
+    {
+      label: "Request for revision",
+      value: "request_for_revision",
     },
     // {
     //   label: "Proceed",
@@ -82,6 +86,7 @@ const BillEntryDetails = () => {
           `https://marathon.lockated.com/bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setBillDetails(response.data);
+         setStatus(response.data.status);
         console.log("API Bill Entry Data:", response.data); // <-- Console log full API response
         if (response.data.documents) {
           setDocuments(response.data.documents);
@@ -93,17 +98,17 @@ const BillEntryDetails = () => {
     fetchBillDetails();
   }, [id]);
   useEffect(() => {
-      if (billDetails) {
-        setEditableBillNo(billDetails.bill_no || "");
-        setEditableBillDate(billDetails.bill_date || "");
-        setEditableBillAmount(billDetails.bill_amount || "");
-      }
-       if (billDetails?.status === "request_for_revision") {
-    setShowRevisionModal(true);
-  }
-    }, [billDetails]);
-  
-     const handleAttachDocument = () => {
+    if (billDetails) {
+      setEditableBillNo(billDetails.bill_no || "");
+      setEditableBillDate(billDetails.bill_date || "");
+      setEditableBillAmount(billDetails.bill_amount || "");
+    }
+    if (billDetails?.status === "request_for_revision") {
+      setShowRevisionModal(true);
+    }
+  }, [billDetails]);
+
+  const handleAttachDocument = () => {
     if (newDocument.document_type && newDocument.attachments.length > 0) {
       // Check if document type already exists
       const existingDocIndex = documents.findIndex(
@@ -158,7 +163,7 @@ const BillEntryDetails = () => {
     }
   };
 
-   const payload = {
+  const payload = {
     bill_entry: {
       status: status || "",
       bill_no: editableBillNo,
@@ -174,7 +179,7 @@ const BillEntryDetails = () => {
       })),
     },
   };
-  console.log("bill entry update payload:",payload)
+  console.log("bill entry update payload:", payload)
 
   const handleUpdateBillEntry = async () => {
     try {
@@ -185,22 +190,22 @@ const BillEntryDetails = () => {
       //   },
       // };
 
-       const payload = {
-    bill_entry: {
-      status: status || "",
-      bill_no: editableBillNo,
-      bill_date: editableBillDate,
-      bill_amount: editableBillAmount,
-      documents: documents.map((doc) => ({
-        document_type: doc.document_type,
-        attachments: doc.attachments.map((attachment) => ({
-          filename: attachment.filename,
-          content_type: attachment.content_type,
-          content: attachment.content,
-        })),
-      })),
-    },
-  };
+      const payload = {
+        bill_entry: {
+          status: status || "",
+          bill_no: editableBillNo,
+          bill_date: editableBillDate,
+          bill_amount: editableBillAmount,
+          documents: documents.map((doc) => ({
+            document_type: doc.document_type,
+            attachments: doc.attachments.map((attachment) => ({
+              filename: attachment.filename,
+              content_type: attachment.content_type,
+              content: attachment.content,
+            })),
+          })),
+        },
+      };
 
       const response = await axios.patch(
         `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
@@ -211,7 +216,7 @@ const BillEntryDetails = () => {
         alert("Bill entry updated successfully");
         // Make sure to import navigate from react-router-dom
         navigate("/bill-entry-list");
-         setLoading(false);
+        setLoading(false);
       } else {
         throw new Error("No response data received");
       }
@@ -305,6 +310,42 @@ const BillEntryDetails = () => {
                     </div>
                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
+                        <label>GSTIN</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">:-</span>
+                          {billDetails?.gstin || "-"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>PAN</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">:-</span>
+                          {billDetails?.pan_no || "-"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Due Date</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">:-</span>
+                          {/* {billDetails?.due_date || "-"} */}
+                          {billDetails?.due_date
+                            ? new Date(billDetails.due_date).toISOString().slice(0, 10)
+                            : "-"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
                         <label>Remark</label>
                       </div>
                       <div className="col-6">
@@ -339,54 +380,54 @@ const BillEntryDetails = () => {
                   </div>
                 </div>
               </div>
-               <div className="row mt-4">
-                  <div className="col-md-12 mt-2">
-                    <div className="card p-3">
-                      <div className="row mb-3">
-                        <div className="col-md-4">
-                          <div className="form-group mb-0">
-                            <label>Bill Number</label>
-                            <input
-                              className="form-control"
-                              type="text"
-                              placeholder="Default input"
-                              value={editableBillNo}
-                              onChange={e => setEditableBillNo(e.target.value)}
-                            />
-                          </div>
+              <div className="row mt-4">
+                <div className="col-md-12 mt-2">
+                  <div className="card p-3">
+                    <div className="row mb-3">
+                      <div className="col-md-4">
+                        <div className="form-group mb-0">
+                          <label>Bill Number</label>
+                          <input
+                            className="form-control"
+                            type="text"
+                            placeholder="Default input"
+                            value={editableBillNo}
+                            onChange={e => setEditableBillNo(e.target.value)}
+                          />
                         </div>
-                        <div className="col-md-4">
-                          <div className="form-group mb-0">
-                            <label>Bill Date</label>
-                            <input
-                              className="form-control"
-                              type="date"
-                              placeholder="Default input"
-                              value={editableBillDate}
-                              onChange={e => setEditableBillDate(e.target.value)}
-                            />
-                          </div>
+                      </div>
+                      <div className="col-md-4">
+                        <div className="form-group mb-0">
+                          <label>Bill Date</label>
+                          <input
+                            className="form-control"
+                            type="date"
+                            placeholder="Default input"
+                            value={editableBillDate}
+                            onChange={e => setEditableBillDate(e.target.value)}
+                          />
                         </div>
-                        <div className="col-md-4">
-                          <div className="form-group mb-0">
-                            <label>Bill Amount</label>
-                            <input
-                              className="form-control"
-                              type="text"
-                              placeholder="Default input"
-                              value={editableBillAmount}
-                              onChange={e => setEditableBillAmount(e.target.value)}
-                            />
-                          </div>
+                      </div>
+                      <div className="col-md-4">
+                        <div className="form-group mb-0">
+                          <label>Bill Amount</label>
+                          <input
+                            className="form-control"
+                            type="text"
+                            placeholder="Default input"
+                            value={editableBillAmount}
+                            onChange={e => setEditableBillAmount(e.target.value)}
+                          />
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="d-flex justify-content-between mt-5 ">
-                  <h5 className=" ">Supporting Documents</h5>
-                  <div className="card-tools d-flex">
-                    {/* <button
+              </div>
+              <div className="d-flex justify-content-between mt-5 ">
+                <h5 className=" ">Supporting Documents</h5>
+                <div className="card-tools d-flex">
+                  {/* <button
                       className="purple-btn2 me-2"
                       data-bs-toggle="modal"
                       data-bs-target="#AttachModal"
@@ -394,94 +435,94 @@ const BillEntryDetails = () => {
                     >
                       Revision Req.
                     </button> */}
-                    <div>
-                      <button
-                        className="purple-btn2 me-2"
-                        data-bs-toggle="modal"
-                        data-bs-target="#RevisionModal"
-                        onClick={openattachModal}
+                  <div>
+                    <button
+                      className="purple-btn2 me-2"
+                      data-bs-toggle="modal"
+                      data-bs-target="#RevisionModal"
+                      onClick={openattachModal}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        fill="white"
+                        className="bi bi-plus"
+                        viewBox="0 0 16 16"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
-                          fill="white"
-                          className="bi bi-plus"
-                          viewBox="0 0 16 16"
-                        >
-                          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                        </svg>
-                        <span> Attach Document</span>
-                      </button>
-                    </div>
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                      </svg>
+                      <span> Attach Document</span>
+                    </button>
                   </div>
                 </div>
-                   <div className="tbl-container mt-3">
-                  <table className="w-100">
-                    <thead>
+              </div>
+              <div className="tbl-container mt-3">
+                <table className="w-100">
+                  <thead>
+                    <tr>
+                      <th className="text-start">Sr. No.</th>
+                      <th className="text-start">Document Name</th>
+                      <th className="text-start">No. of Documents</th>
+                      <th className="text-start">Attach Copy</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {documents?.length === 0 ? (
                       <tr>
-                        <th className="text-start">Sr. No.</th>
-                        <th className="text-start">Document Name</th>
-                        <th className="text-start">No. of Documents</th>
-                        <th className="text-start">Attach Copy</th>
+                        <td colSpan="4" className="text-center">
+                          No documents added yet
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {documents?.length === 0 ? (
-                        <tr>
-                          <td colSpan="4" className="text-center">
-                            No documents added yet
+                    ) : (
+                      documents?.map((doc, index) => (
+                        <tr key={index}>
+                          <td className="text-start">{index + 1}</td>
+                          <td className="text-start">{doc.document_type}</td>
+                          <td
+                            className="text-start boq-id-link"
+                            style={{ cursor: "pointer" }}
+                            onClick={() =>
+                              handleDocumentCountClick(doc.document_type)
+                            }
+                          >
+                            {doc.attachments.length}
+                          </td>
+                          <td className="text-start">
+                            <button
+                              className="purple-btn2"
+                              // style={{
+                              //   color: "#8b0203",
+                              //   textDecoration: "underline",
+                              //   cursor: "pointer",
+                              // }}
+                              onClick={() => {
+                                setNewDocument((prev) => ({
+                                  ...prev,
+                                  document_type: doc.document_type,
+                                }));
+                                openattachModal();
+                              }}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                fill="white"
+                                className="bi bi-plus"
+                                viewBox="0 0 16 16"
+                              >
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                              </svg>
+                              <span>Attach</span>
+                            </button>
                           </td>
                         </tr>
-                      ) : (
-                        documents?.map((doc, index) => (
-                          <tr key={index}>
-                            <td className="text-start">{index + 1}</td>
-                            <td className="text-start">{doc.document_type}</td>
-                            <td
-                              className="text-start boq-id-link"
-                              style={{ cursor: "pointer" }}
-                              onClick={() =>
-                                handleDocumentCountClick(doc.document_type)
-                              }
-                            >
-                              {doc.attachments.length}
-                            </td>
-                            <td className="text-start">
-                              <button
-                                className="purple-btn2"
-                                // style={{
-                                //   color: "#8b0203",
-                                //   textDecoration: "underline",
-                                //   cursor: "pointer",
-                                // }}
-                                onClick={() => {
-                                  setNewDocument((prev) => ({
-                                    ...prev,
-                                    document_type: doc.document_type,
-                                  }));
-                                  openattachModal();
-                                }}
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="20"
-                                  height="20"
-                                  fill="white"
-                                  className="bi bi-plus"
-                                  viewBox="0 0 16 16"
-                                >
-                                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                </svg>
-                                <span>Attach</span>
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
               <div className="row mt-4 justify-content-end align-items-center mx-2">
                 <div className="col-md-3">
                   <div className="form-group d-flex gap-3 align-items-center mx-3">
@@ -499,6 +540,7 @@ const BillEntryDetails = () => {
                       // isDisabled={true} // Disable the selector
                       classNamePrefix="react-select"
                     />
+
                   </div>
                 </div>
               </div>
@@ -516,16 +558,69 @@ const BillEntryDetails = () => {
                 </div>
               </div>
 
-              <h5 className=" mt-3">Audit Log</h5>
+              {/* <h5 className=" mt-3">Audit Log</h5>
               <div className="mx-0">
                 <Table columns={auditLogColumns} data={auditLogData} />
+              </div> */}
+
+
+                 <div className=" mb-5">
+                <h5>Audit Log</h5>
+                <div className="mx-0">
+                  <div className="tbl-container mt-1">
+                    <table className="w-100">
+                      <thead>
+                        <tr>
+                          <th>Sr.No.</th>
+                          <th>Created By</th>
+                          {/* <th>Date</th> */}
+                          <th>Status</th>
+                          <th>Remark</th>
+                          <th>Comment</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {billDetails?.status_logs?.map((log, index) => (
+                          <tr key={log.id}>
+                            <td className="text-start">{index + 1}</td>
+                            <td className="text-start">
+                              {log.created_by_name || ""}
+                            </td>
+                            {/* <td className="text-start">
+                                  {log.created_at
+                                    ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                    })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      // second: "2-digit",
+                                      hour12: true,
+                                    })}`
+                                    : ""}
+                                </td> */}
+                            <td className="text-start">
+                              {log.status
+                                ? log.status.charAt(0).toUpperCase() +
+                                log.status.slice(1)
+                                : ""}
+                            </td>
+                            <td className="text-start">{log.remarks || ""}</td>
+                            <td className="text-start">{""}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-       {loading && (
+      {loading && (
         <div className="loader-container">
           <div className="lds-ring">
             <div></div>
@@ -543,32 +638,32 @@ const BillEntryDetails = () => {
 
       {/* revision modal */}
       <Modal
-  centered
-  size="xl"
-  show={showRevisionModal}
-  onHide={() => setShowRevisionModal(false)}
-  backdrop="true"
-  keyboard={true}
-  className="modal-centered-custom"
->
-  <Modal.Header closeButton>
-    <h5>Revision Requested</h5>
-  </Modal.Header>
-  <Modal.Body style={{ background: "#f5f5f5" }}>
-    <div className="col-md-12">
-      <div className="form-group">
-        <p>
-          This bill entry is marked as <b>Request for Revision</b>.
-        </p>
-        {billDetails?.revision_remark && (
-          <div>
-            <strong>Remark :</strong>
-            <div>{billDetails.revision_remark}</div>
+        centered
+        size="xl"
+        show={showRevisionModal}
+        onHide={() => setShowRevisionModal(false)}
+        backdrop="true"
+        keyboard={true}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Revision Requested</h5>
+        </Modal.Header>
+        <Modal.Body style={{ background: "#f5f5f5" }}>
+          <div className="col-md-12">
+            <div className="form-group">
+              <p>
+                This bill entry is marked as <b>Request for Revision</b>.
+              </p>
+              {billDetails?.revision_remark && (
+                <div>
+                  <strong>Remark :</strong>
+                  <div>{billDetails.revision_remark}</div>
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </div>
-    </div>
-    {/* <div className="row mt-3 justify-content-center">
+          {/* <div className="row mt-3 justify-content-center">
       <div className="col-md-4">
         <button
           className="purple-btn1 w-100"
@@ -578,18 +673,18 @@ const BillEntryDetails = () => {
         </button>
       </div>
     </div> */}
-  </Modal.Body>
-   <Modal.Footer className="justify-content-end">
-    <button
-      className="purple-btn1"
-      onClick={() => setShowRevisionModal(false)}
-    >
-      Close
-    </button>
-  </Modal.Footer>
-</Modal>
-{/* document add */}
-  <Modal
+        </Modal.Body>
+        <Modal.Footer className="justify-content-end">
+          <button
+            className="purple-btn1"
+            onClick={() => setShowRevisionModal(false)}
+          >
+            Close
+          </button>
+        </Modal.Footer>
+      </Modal>
+      {/* document add */}
+      <Modal
         centered
         size="lg"
         show={viewDocumentModal}
@@ -741,73 +836,73 @@ const BillEntryDetails = () => {
         </Modal.Body>
       </Modal>
 
-       {/* attach document */}
-      
-            <Modal
-              centered
-              size="l"
-              show={attachModal}
-              onHide={closeattachModal}
-              backdrop="true"
-              keyboard={true}
-              className="modal-centered-custom"
-            >
-              <Modal.Header closeButton>
-                <h5>Attach Other Document</h5>
-              </Modal.Header>
-              <Modal.Body>
-                <div className="row">
-                  <div className="col-md-12">
-                    <div className="form-group">
-                      <label>Name of the Document</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={newDocument.document_type}
-                        onChange={(e) =>
-                          setNewDocument((prev) => ({
-                            ...prev,
-                            document_type: e.target.value,
-                          }))
-                        }
-                        placeholder="Enter document name"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-12 mt-2">
-                    <div className="form-group">
-                      <label>Upload File</label>
-                      <input
-                        type="file"
-                        className="form-control"
-                        onChange={handleFileUpload}
-                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="row mt-2 justify-content-center">
-                  <div className="col-md-4">
-                    <button
-                      className="purple-btn2 w-100"
-                      onClick={handleAttachDocument}
-                      disabled={
-                        !newDocument.document_type ||
-                        newDocument.attachments.length === 0
-                      }
-                    >
-                      Attach
-                    </button>
-                  </div>
-                  <div className="col-md-4">
-                    <button className="purple-btn1 w-100" onClick={closeattachModal}>
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </Modal.Body>
-            </Modal>
-            {/* attach document */}
+      {/* attach document */}
+
+      <Modal
+        centered
+        size="l"
+        show={attachModal}
+        onHide={closeattachModal}
+        backdrop="true"
+        keyboard={true}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Attach Other Document</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row">
+            <div className="col-md-12">
+              <div className="form-group">
+                <label>Name of the Document</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={newDocument.document_type}
+                  onChange={(e) =>
+                    setNewDocument((prev) => ({
+                      ...prev,
+                      document_type: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter document name"
+                />
+              </div>
+            </div>
+            <div className="col-md-12 mt-2">
+              <div className="form-group">
+                <label>Upload File</label>
+                <input
+                  type="file"
+                  className="form-control"
+                  onChange={handleFileUpload}
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-4">
+              <button
+                className="purple-btn2 w-100"
+                onClick={handleAttachDocument}
+                disabled={
+                  !newDocument.document_type ||
+                  newDocument.attachments.length === 0
+                }
+              >
+                Attach
+              </button>
+            </div>
+            <div className="col-md-4">
+              <button className="purple-btn1 w-100" onClick={closeattachModal}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+      {/* attach document */}
     </>
   );
 };
