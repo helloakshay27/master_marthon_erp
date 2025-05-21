@@ -218,8 +218,6 @@ const BillBookingCreate = () => {
 
   // company project subproject api
 
-  
-
   // Add New Row
 
   // Add new state variables for API data
@@ -683,6 +681,17 @@ const BillBookingCreate = () => {
       alert("Invoice Amount should not be less than Payable Amount.");
       return;
     }
+
+    // Build debit and credit note adjustment arrays
+    const debit_note_adjustment = selectedDebitNotes.map((note) => ({
+      id: note.id,
+      value: parseFloat(note.this_recovery) || 0,
+    }));
+    const credit_note_adjustment = selectedCreditNotes.map((note) => ({
+      id: note.id,
+      value: parseFloat(note.this_recovery) || 0,
+    }));
+
     setLoading(true);
 
     try {
@@ -701,22 +710,19 @@ const BillBookingCreate = () => {
           invoice_amount: parseFloat(formData.invoiceAmount),
           type_of_certificate: formData.typeOfCertificate,
           department_id: formData.departmentId,
-          // other_deductions: parseFloat(otherDeductions) || 0,
           base_cost: baseCost,
           all_inclusive_cost: allInclusiveCost,
           other_deduction: otherDeduction,
           other_addition: otherAddition,
           total_amount: totalAmount,
           other_deduction_remarks: formData.otherDeductionRemarks,
-          // other_additions: parseFloat(otherAdditions) || 0,
           other_addition_remarks: formData.otherAdditionRemarks,
           retention_per: parseFloat(formData.retentionPercentage) || 0,
           retention_amount: retentionAmount,
           total_value: taxDeductionData.total_material_cost,
-          // total_amount: taxDeductionData.total_material_cost,
           payable_amount: payableAmount,
           remark: formData.remark || "",
-          status: "draft", // Changed to hardcoded "draft"
+          status: "draft",
           po_type: "domestic",
           payee_name: formData.pms_supplier_id || null,
           payment_mode: formData.paymentMode,
@@ -735,6 +741,8 @@ const BillBookingCreate = () => {
             content: row.upload?.content || "",
             content_type: row.upload?.content_type || "",
           })),
+          debit_note_adjustment,
+          credit_note_adjustment,
         },
       };
 
@@ -944,22 +952,58 @@ const BillBookingCreate = () => {
 
   const [creditNotes, setCreditNotes] = useState([]);
   const [debitNotes, setDebitNotes] = useState([]);
+  // Add these state variables at the top
+  const [creditNoteModal, setCreditNoteModal] = useState(false);
+  const [debitNoteModal, setDebitNoteModal] = useState(false);
+  const [selectedCreditNotes, setSelectedCreditNotes] = useState([]);
+  const [selectedDebitNotes, setSelectedDebitNotes] = useState([]);
+
+  // Add these handlers
+  const handleCreditNoteSelect = (note) => {
+
+    setSelectedCreditNotes((prev) => {
+      const isSelected = prev.some((n) => n.id === note.id);
+      if (isSelected) {
+        return prev.filter((n) => n.id !== note.id);
+      } else {
+        return [...prev, note];
+      }
+    });
+  };
+
+  const handleDebitNoteSelect = (note) => {
+    setSelectedDebitNotes((prev) => {
+      const isSelected = prev.some((n) => n.id === note.id);
+      if (isSelected) {
+        return prev.filter((n) => n.id !== note.id);
+      } else {
+        return [...prev, note];
+      }
+    });
+  };
+
+  // Add modal toggle handlers
+  const openCreditNoteModal = () => setCreditNoteModal(true);
+  const closeCreditNoteModal = () => setCreditNoteModal(false);
+  const openDebitNoteModal = () => setDebitNoteModal(true);
+  const closeDebitNoteModal = () => setDebitNoteModal(false);
 
   useEffect(() => {
     const fetchCreditAndDebitNotes = async () => {
-      if (selectedPO?.id) {
+      if (formData.pms_supplier_id) {
         try {
           // Fetch Credit Notes
           const creditResponse = await axios.get(
-            `${baseURL}credit_notes?q[purchase_order__id_eq]=${selectedPO.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}credit_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           );
           setCreditNotes(creditResponse.data.credit_notes || []);
 
           // Fetch Debit Notes
           const debitResponse = await axios.get(
-            `${baseURL}debit_notes?q[purchase_order__id_eq]=${selectedPO.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}debit_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           );
           setDebitNotes(debitResponse.data.debit_notes || []);
+          console.log("Supplier ID for debit notes:", formData.pms_supplier_id);
         } catch (error) {
           console.error("Error fetching credit or debit notes:", error);
           setCreditNotes([]);
@@ -969,7 +1013,49 @@ const BillBookingCreate = () => {
     };
 
     fetchCreditAndDebitNotes();
-  }, [selectedPO]);
+  }, [selectedPO, formData.pms_supplier_id]);
+
+  // Add these handler functions if not already present
+  
+
+  const handleSelectAllCreditNotes = (e) => {
+    if (e.target.checked) {
+      setSelectedCreditNotes(creditNotes);
+    } else {
+      setSelectedCreditNotes([]);
+    }
+  };
+
+  const handleSelectAllDebitNotes = (e) => {
+    if (e.target.checked) {
+      setSelectedDebitNotes(debitNotes);
+    } else {
+      setSelectedDebitNotes([]);
+    }
+  };
+
+  const validateCreditRecovery = (note, value) => {
+    const recovery = parseFloat(value) || 0;
+    const creditAmount = parseFloat(note.credit_note_amount) || 0;
+
+    // const outstandingAmount = parseFloat(note.outstanding_current_date) || 0;
+    if (recovery > creditAmount) {
+      alert("Recovery amount cannot exceed credit amount");
+      return false;
+    }
+    return true;
+  };
+
+  const validateDebitRecovery = (note, value) => {
+    const recovery = parseFloat(value) || 0;
+    const debitAmount = parseFloat(note.debit_note_amount) || 0;
+    // const outstandingAmount = parseFloat(note.outstanding_current_date) || 0;
+    if (recovery > debitAmount) {
+      alert("Recovery amount cannot exceed  debit amount");
+      return false;
+    }
+    return true;
+  };
 
   // Add these helper functions above your return statement
 
@@ -990,7 +1076,17 @@ const BillBookingCreate = () => {
     const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
     const otherDed = parseFloat(otherDeductions) || 0;
     const otherAdd = parseFloat(otherAdditions) || 0;
-    return (totalAmount - retentionAmount - otherDed + otherAdd).toFixed(2);
+    const creditAdjustment = parseFloat(calculateCreditNoteAdjustment()) || 0;
+    const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
+
+    return (
+      totalAmount -
+      retentionAmount -
+      otherDed +
+      otherAdd +
+      creditAdjustment -
+      debitAdjustment
+    ).toFixed(2);
   };
 
   // ...existing code...
@@ -1066,6 +1162,23 @@ const BillBookingCreate = () => {
     const percentage = parseFloat(formData.retentionPercentage) || 0;
     const totalAmount = parseFloat(calculateTotalAmount()) || 0;
     return ((percentage / 100) * totalAmount).toFixed(2);
+  };
+
+  // Add these calculation functions after the existing calculation functions
+  const calculateCreditNoteAdjustment = () => {
+    return selectedCreditNotes
+      .reduce((total, note) => {
+        return total + (parseFloat(note.this_recovery) || 0);
+      }, 0)
+      .toFixed(2);
+  };
+
+  const calculateDebitNoteAdjustment = () => {
+    return selectedDebitNotes
+      .reduce((total, note) => {
+        return total + (parseFloat(note.this_recovery) || 0);
+      }, 0)
+      .toFixed(2);
   };
 
   return (
@@ -1858,15 +1971,26 @@ const BillBookingCreate = () => {
                   </div>
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
-                      <label>Debit Note Adjustment</label>
-
+                      <label>Credit Note Adjustment</label>
                       <input
                         className="form-control"
                         type="number"
-                        // value={otherAdditions}
-                        // onChange={(e) => setOtherAdditions(e.target.value)}
-                        placeholder="Enter other addition amount"
+                        value={calculateCreditNoteAdjustment()}
                         disabled
+                        placeholder="Credit note adjustment amount"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Debit Note Adjustment</label>
+                      <input
+                        className="form-control"
+                        type="number"
+                        value={calculateDebitNoteAdjustment()}
+                        disabled
+                        placeholder="Debit note adjustment amount"
                       />
                     </div>
                   </div>
@@ -2146,43 +2270,22 @@ const BillBookingCreate = () => {
                     </tbody>
                   </table>
                 </div>
-                {/* <div className="d-flex justify-content-between mt-3 me-2">
-                  <h5 className=" ">Payment Details</h5>
-                </div>
-                <div className="tbl-container mx-3 mt-3">
-                  <table className="w-100">
-                    <thead>
-                      <tr>
-                        <th className="text-start">Mode of Payment</th>
-                        <th className="text-start">Instrument Date</th>
-                        <th className="text-start">Instrument No.</th>
-                        <th className="text-start">Bank / Cash Account</th>
-                        <th className="text-start">Amount</th>
-                        <th className="text-start">Created by</th>
-                        <th className="text-start">Created On</th>
-                        <th className="text-start">Status</th>
-                        <th className="text-start">View Cheque Details</th>
-                        <th className="text-start">Print</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="text-start">1</td>
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                      </tr>
-                    </tbody>
-                  </table>
-                </div> */}
+
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Debit Note</h5>
+                  <button className="purple-btn2" onClick={openDebitNoteModal}>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={20}
+                      height={20}
+                      fill="currentColor"
+                      className="bi bi-plus"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                    </svg>
+                    <span>Select Debit Note</span>
+                  </button>
                 </div>
                 <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
@@ -2206,7 +2309,7 @@ const BillBookingCreate = () => {
                         <th className="text-start">This Recovery</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    {/* <tbody>
                       {debitNotes.length > 0 ? (
                         debitNotes.map((note, index) => (
                           <tr key={index}>
@@ -2249,11 +2352,89 @@ const BillBookingCreate = () => {
                           </td>
                         </tr>
                       )}
+                    </tbody> */}
+                    <tbody>
+                      {selectedDebitNotes.length > 0 ? (
+                        selectedDebitNotes.map((note, index) => (
+                          <tr key={index}>
+                            <td className="text-start">
+                              {note.debit_note_no || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.po_number || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.project_name || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.debit_note_amount || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.recovery_till_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.waive_off_till_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.outstanding_certificate_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.outstanding_current_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.reason_type || "-"}
+                            </td>
+                            {/* <td className="text-start">
+                              {note.this_recovery || "-"}
+                            </td> */}
+                            <td className="text-start">
+                              <input
+                                type="number"
+                                className="form-control"
+                                value={note.this_recovery || ""}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (validateDebitRecovery(note, value)) {
+                                    setSelectedDebitNotes((prev) =>
+                                      prev.map((n) =>
+                                        n.id === note.id
+                                          ? { ...n, this_recovery: value }
+                                          : n
+                                      )
+                                    );
+                                  }
+                                }}
+                                min="0"
+                                max={note.debit_note_amount}
+                              />
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td className="text-start" colSpan="10">
+                            No debit notes selected.
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Credit Note</h5>
+                  <button className="purple-btn2" onClick={openCreditNoteModal}>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={20}
+                      height={20}
+                      fill="currentColor"
+                      className="bi bi-plus"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                    </svg>
+                    <span>Select Credit Note</span>
+                  </button>
                 </div>
                 <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
@@ -2277,7 +2458,7 @@ const BillBookingCreate = () => {
                         <th className="text-start">This Recovery</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    {/* <tbody>
                       {creditNotes.length > 0 ? (
                         creditNotes.map((note, index) => (
                           <tr key={index}>
@@ -2317,6 +2498,69 @@ const BillBookingCreate = () => {
                         <tr>
                           <td className="text-start" colSpan="10">
                             No credit notes found.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody> */}
+                    <tbody>
+                      {selectedCreditNotes.length > 0 ? (
+                        selectedCreditNotes.map((note, index) => (
+                          <tr key={index}>
+                            <td className="text-start">
+                              {note.credit_note_no || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.po_number || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.project_name || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.credit_note_amount || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.recovery_till_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.waive_off_till_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.outstanding_certificate_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.outstanding_current_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.reason_type || "-"}
+                            </td>
+
+                            <td className="text-start">
+                              <input
+                                type="number"
+                                className="form-control"
+                                value={note.this_recovery || ""}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (validateCreditRecovery(note, value)) {
+                                    setSelectedCreditNotes((prev) =>
+                                      prev.map((n) =>
+                                        n.id === note.id
+                                          ? { ...n, this_recovery: value }
+                                          : n
+                                      )
+                                    );
+                                  }
+                                }}
+                                min="0"
+                                max={note.credit_note_amount}
+                              />
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td className="text-start" colSpan="10">
+                            No credit notes selected.
                           </td>
                         </tr>
                       )}
@@ -2573,7 +2817,6 @@ const BillBookingCreate = () => {
           <p>loading...</p>
         </div>
       )}
-
       {/* modal */}
       {/* 
       {/*  */}
@@ -2627,9 +2870,7 @@ const BillBookingCreate = () => {
           </div>
         </Modal.Body>
       </Modal>
-
       {/*  */}
-
       {/*  */}
       <Modal
         centered
@@ -3055,6 +3296,245 @@ const BillBookingCreate = () => {
               >
                 {/* {isSubmitting ? "Submitting..." : "Submit"} */}
                 Submitt
+              </button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+      {/* Credit Note Modal */}
+      // Update the Credit Note Modal table structure
+      <Modal
+        centered
+        size="xl"
+        show={creditNoteModal}
+        onHide={closeCreditNoteModal}
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Select Credit Notes</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="tbl-container">
+            <table className="w-100">
+              <thead>
+                <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      checked={
+                        creditNotes.length > 0 &&
+                        selectedCreditNotes.length === creditNotes.length
+                      }
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedCreditNotes(creditNotes);
+                        } else {
+                          setSelectedCreditNotes([]);
+                        }
+                      }}
+                    />
+                  </th>
+                  <th className="text-start">Credit Note No.</th>
+                  <th className="text-start">PO Display No.</th>
+                  <th className="text-start">Project</th>
+                  <th className="text-start">Credit Note Amount</th>
+                  <th className="text-start">Recovery Till Date</th>
+                  <th className="text-start">Waive off Till Date</th>
+                  <th className="text-start">
+                    Outstanding Amount (Certificate Date)
+                  </th>
+                  <th className="text-start">
+                    Outstanding Amount (Current Date)
+                  </th>
+                  <th className="text-start">Credit Note Reason Type</th>
+                  <th className="text-start">This Recovery</th>
+                </tr>
+              </thead>
+              <tbody>
+                {creditNotes.length > 0 ? (
+                  creditNotes.map((note) => (
+                    <tr key={note.id}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedCreditNotes.some(
+                            (n) => n.id === note.id
+                          )}
+                          onChange={() => handleCreditNoteSelect(note)}
+                        />
+                      </td>
+                      <td className="text-start">
+                        {note.credit_note_no || "-"}
+                      </td>
+                      <td className="text-start">{note.po_number || "-"}</td>
+                      <td className="text-start">{note.project_name || "-"}</td>
+                      <td className="text-start">
+                        {note.credit_note_amount || "-"}
+                      </td>
+                      <td className="text-start">
+                        {note.recovery_till_date || "-"}
+                      </td>
+                      <td className="text-start">
+                        {note.waive_off_till_date || "-"}
+                      </td>
+                      <td className="text-start">
+                        {note.outstanding_certificate_date || "-"}
+                      </td>
+                      <td className="text-start">
+                        {note.outstanding_current_date || "-"}
+                      </td>
+                      <td className="text-start">{note.reason_type || "-"}</td>
+                      <td className="text-start">
+                        {note.this_recovery || "-"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="11" className="text-center">
+                      No credit notes available
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-3">
+              <button
+                className="purple-btn2 w-100"
+                onClick={closeCreditNoteModal}
+                disabled={selectedCreditNotes.length === 0}
+              >
+                Submit
+              </button>
+            </div>
+            <div className="col-md-3">
+              <button
+                className="purple-btn1 w-100"
+                onClick={closeCreditNoteModal}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+      {/* Update the Debit Note Modal with similar structure */}
+      <Modal
+        centered
+        size="xl"
+        show={debitNoteModal}
+        onHide={closeDebitNoteModal}
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Select Debit Notes</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="tbl-container">
+            <table className="w-100">
+              <thead>
+                <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      checked={
+                        debitNotes.length > 0 &&
+                        selectedDebitNotes.length === debitNotes.length
+                      }
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedDebitNotes(debitNotes);
+                        } else {
+                          setSelectedDebitNotes([]);
+                        }
+                      }}
+                    />
+                  </th>
+                  <th className="text-start">Debit Note No.</th>
+                  <th className="text-start">PO Display No.</th>
+                  <th className="text-start">Project</th>
+                  <th className="text-start">Debit Note Amount</th>
+                  <th className="text-start">Recovery Till Date</th>
+                  <th className="text-start">Waive off Till Date</th>
+                  <th className="text-start">
+                    Outstanding Amount (Certificate Date)
+                  </th>
+                  <th className="text-start">
+                    Outstanding Amount (Current Date)
+                  </th>
+                  <th className="text-start">Debit Note Reason Type</th>
+                  <th className="text-start">This Recovery</th>
+                </tr>
+              </thead>
+              <tbody>
+                {debitNotes.length > 0 ? (
+                  debitNotes.map((note) => (
+                    <tr key={note.id}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedDebitNotes.some(
+                            (n) => n.id === note.id
+                          )}
+                          onChange={() => handleDebitNoteSelect(note)}
+                        />
+                      </td>
+                      <td className="text-start">
+                        {note.debit_note_no || "-"}
+                      </td>
+                      <td className="text-start">{note.po_number || "-"}</td>
+                      <td className="text-start">{note.project_name || "-"}</td>
+                      <td className="text-start">
+                        {note.debit_note_amount || "-"}
+                      </td>
+                      <td className="text-start">
+                        {note.recovery_till_date || "-"}
+                      </td>
+                      <td className="text-start">
+                        {note.waive_off_till_date || "-"}
+                      </td>
+                      <td className="text-start">
+                        {note.outstanding_certificate_date || "-"}
+                      </td>
+                      <td className="text-start">
+                        {note.outstanding_current_date || "-"}
+                      </td>
+                      <td className="text-start">{note.reason_type || "-"}</td>
+                      <td className="text-start">
+                        {note.this_recovery || "-"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="11" className="text-center">
+                      No debit notes available
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-3">
+              <button
+                className="purple-btn2 w-100"
+                onClick={closeDebitNoteModal}
+                disabled={selectedDebitNotes.length === 0}
+              >
+                Submit
+              </button>
+            </div>
+            <div className="col-md-3">
+              <button
+                className="purple-btn1 w-100"
+                onClick={closeDebitNoteModal}
+              >
+                Cancel
               </button>
             </div>
           </div>
