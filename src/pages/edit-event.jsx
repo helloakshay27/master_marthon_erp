@@ -358,8 +358,7 @@ export default function EditEvent() {
             : Array.isArray(data.data?.vendors)
               ? data.data.vendors
               : [];
-              ? data.data.vendors
-              : [];
+
 
           formattedData = vendors.map((vendor) => ({
             id: vendor.id,
@@ -965,7 +964,7 @@ export default function EditEvent() {
       },
     };
 
-    console.log("eventData:--", JSON.stringify(eventData , null, 2));
+    console.log("eventData:--", JSON.stringify(eventData, null, 2));
 
     try {
       const response = await fetch(
