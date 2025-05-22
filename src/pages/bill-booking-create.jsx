@@ -23,6 +23,33 @@ const BillBookingCreate = () => {
   const [rows, setRows] = useState([
     {
       id: 1,
+      type: "SGST",
+      percentage: "",
+      inclusive: false,
+      amount: "",
+      isEditable: true,
+      addition: true,
+    },
+    {
+      id: 2,
+      type: "CGST",
+      percentage: "",
+      inclusive: false,
+      amount: "",
+      isEditable: true,
+      addition: true,
+    },
+    {
+      id: 3,
+      type: "IGST",
+      percentage: "",
+      inclusive: false,
+      amount: "",
+      isEditable: true,
+      addition: true,
+    },
+    {
+      id: 4,
       type: "Handling Charges",
       percentage: "",
       inclusive: false,
@@ -31,7 +58,7 @@ const BillBookingCreate = () => {
       addition: true,
     },
     {
-      id: 2,
+      id: 5,
       type: "Other charges",
       percentage: "",
       inclusive: false,
@@ -40,7 +67,7 @@ const BillBookingCreate = () => {
       addition: true,
     },
     {
-      id: 3,
+      id: 6,
       type: "Freight",
       percentage: "",
       inclusive: false,
@@ -48,15 +75,15 @@ const BillBookingCreate = () => {
       isEditable: false,
       addition: true,
     },
-    {
-      id: 4,
-      type: "IGST",
-      percentage: "",
-      inclusive: false,
-      amount: "",
-      isEditable: true,
-      addition: true,
-    },
+    // {
+    //   id: 4,
+    //   type: "IGST",
+    //   percentage: "",
+    //   inclusive: false,
+    //   amount: "",
+    //   isEditable: true,
+    //   addition: true,
+    // },
   ]);
   const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
 
@@ -76,19 +103,32 @@ const BillBookingCreate = () => {
     fetchTaxTypes();
   }, []);
   // console.log("tax types:", taxTypes)
+  // const addRow = () => {
+  //   setRows((prevRows) => [
+  //     ...prevRows,
+  //     {
+  //       id: prevRows.length + 1,
+  //       type: "",
+  //       percentage: "0",
+  //       inclusive: false,
+  //       amount: "",
+  //       isEditable: true,
+  //       addition: true,
+  //     },
+  //   ]);
+  // };
   const addRow = () => {
-    setRows((prevRows) => [
-      ...prevRows,
-      {
-        id: prevRows.length + 1,
-        type: "",
-        percentage: "0",
-        inclusive: false,
-        amount: "",
-        isEditable: true,
-        addition: true,
-      },
-    ]);
+    // Only allow adding non-tax rows
+    const newRow = {
+      id: rows.length + 1,
+      type: "",
+      percentage: "0",
+      inclusive: false,
+      amount: "",
+      isEditable: false, // Set to false to prevent editing
+      addition: true,
+    };
+    setRows((prevRows) => [...prevRows, newRow]);
   };
   // Function to calculate the subtotal of addition rows
   const calculateSubTotal = () => {
@@ -295,6 +335,7 @@ const BillBookingCreate = () => {
     attachments: [],
     currentAdvanceDeduction: "",
     status: "draft",
+    roundOffAmount: "",
   });
 
   const [billEntryOptions, setBillEntryOptions] = useState([]);
@@ -307,7 +348,15 @@ const BillBookingCreate = () => {
   const [displayCompanyId, setDisplayCompanyId] = useState(null);
   const [displayProjectId, setDisplayProjectId] = useState(null);
   const [displaySiteId, setDisplaySiteId] = useState(null);
-  // ...existing code...
+
+  // Add this helper function if date format conversion is needed
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return "";
+
+    // If date is in DD-MM-YYYY format, convert to YYYY-MM-DD
+    const [day, month, year] = dateString.split("-");
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  };
 
   useEffect(() => {
     const fetchBillEntries = async () => {
@@ -351,6 +400,9 @@ const BillBookingCreate = () => {
             pms_supplier_id: data.pms_supplier_id || null, // <-- Add this line
             invoiceAmount: data.bill_amount || "", // <-- Add this line
             totalAmount: data.bill_amount || "", // <-- Add this line
+            paymentDueDate:
+              formatDateForInput(data.purchase_order?.due_date) || "",
+            // data.due_date || "", // Add this line to get due date
           }));
 
           setSupplierName(data.pms_supplier || "");
@@ -374,6 +426,7 @@ const BillBookingCreate = () => {
                 grnResponse.data.purchase_orders[0]?.grn_materials || [],
               gstin: data.gstin,
               pan: data.pan_no,
+              due_date: data.due_date, // Add this line
             };
             setSelectedPO(poWithGrn);
 
@@ -388,6 +441,7 @@ const BillBookingCreate = () => {
               po_type: data.purchase_order?.po_type,
               gstin: data.gstin,
               pan: data.pan_no,
+              due_date: data.purchase_order?.due_date, // Add this line
               grn_materials: [],
             });
             setSelectedGRNs([]);
@@ -433,6 +487,7 @@ const BillBookingCreate = () => {
         attachments: [],
         currentAdvanceDeduction: "",
         status: "draft",
+        roundOffAmount: "",
       }));
       setSupplierName("");
       setSelectedPO(null);
@@ -708,6 +763,7 @@ const BillBookingCreate = () => {
           site_id: displaySiteId,
           project_id: displayProjectId,
           pms_supplier_id: formData.pms_supplier_id || null,
+          bill_entry_id: selectedBillEntry?.value, // Add this line
           invoice_number: formData.invoiceNumber,
           einvoice: selectedEInvoice?.value === "yes",
           inventory_date: formData.invoiceDate,
@@ -934,6 +990,64 @@ const BillBookingCreate = () => {
       });
     }
   }, [selectedGRN]);
+
+  // Add new state for tax percentages
+  const [taxPercentages, setTaxPercentages] = useState({
+    SGST: [],
+    CGST: [],
+    IGST: [],
+    TDS: [],
+  });
+
+  // Add useEffect to fetch tax percentages
+  useEffect(() => {
+    const fetchTaxPercentages = async () => {
+      try {
+        const response = await axios.get(
+          "https://marathon.lockated.com/rfq/events/tax_percentage?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+
+        if (response.data) {
+          const formattedData = {
+            SGST: [],
+            CGST: [],
+            IGST: [],
+            TDS: [],
+          };
+
+          response.data.forEach((tax) => {
+            if (tax.tax_name === "SGST") {
+              formattedData.SGST = tax.percentage.map((p) => ({
+                value: `SGST ${p}%`,
+                percentage: p,
+              }));
+            } else if (tax.tax_name === "CGST") {
+              formattedData.CGST = tax.percentage.map((p) => ({
+                value: `CGST ${p}%`,
+                percentage: p,
+              }));
+            } else if (tax.tax_name === "IGST") {
+              formattedData.IGST = tax.percentage.map((p) => ({
+                value: `IGST ${p}%`,
+                percentage: p,
+              }));
+            } else if (tax.tax_name === "TDS") {
+              formattedData.TDS = tax.percentage.map((p) => ({
+                value: `TDS ${p}%`,
+                percentage: p,
+              }));
+            }
+          });
+
+          setTaxPercentages(formattedData);
+        }
+      } catch (error) {
+        console.error("Error fetching tax percentages:", error);
+      }
+    };
+
+    fetchTaxPercentages();
+  }, []);
 
   const [pendingAdvances, setPendingAdvances] = useState([]);
 
@@ -1239,6 +1353,12 @@ const BillBookingCreate = () => {
       .toFixed(2);
   };
 
+  // Add this validation function at the top of the component
+  const validatePositiveNumber = (value) => {
+    const num = parseFloat(value);
+    return !isNaN(num) && num >= 0;
+  };
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -1447,21 +1567,14 @@ const BillBookingCreate = () => {
                         value={formData.invoiceAmount}
                         onChange={(e) => {
                           const value = e.target.value;
-                          setFormData((prev) => ({
-                            ...prev,
-                            invoiceAmount: value,
-                          }));
-                          // Live validation (optional)
-                          const invoice = parseFloat(value) || 0;
-                          const payable =
-                            parseFloat(calculateAmountPayable()) || 0;
-                          if (invoice < payable) {
-                            // Optionally show a warning here
-                            // e.g. setInvoiceError("Invoice Amount should not be less than Payable Amount.");
-                          } else {
-                            // setInvoiceError("");
+                          if (validatePositiveNumber(value)) {
+                            setFormData((prev) => ({
+                              ...prev,
+                              invoiceAmount: value,
+                            }));
                           }
                         }}
+                        min="0"
                       />
                     </div>
                   </div>
@@ -1964,8 +2077,14 @@ const BillBookingCreate = () => {
                         //   }))
                         // }
                         value={otherDeductions}
-                        onChange={(e) => setOtherDeductions(e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (validatePositiveNumber(value)) {
+                            setOtherDeductions(value);
+                          }
+                        }}
                         placeholder="Enter other deduction amount"
+                        min="0"
                       />
                     </div>
                   </div>
@@ -2005,8 +2124,14 @@ const BillBookingCreate = () => {
                         className="form-control"
                         type="number"
                         value={otherAdditions}
-                        onChange={(e) => setOtherAdditions(e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (validatePositiveNumber(value)) {
+                            setOtherAdditions(value);
+                          }
+                        }}
                         placeholder="Enter other addition amount"
+                        min="0"
                       />
                     </div>
                   </div>
@@ -2088,14 +2213,19 @@ const BillBookingCreate = () => {
                             className="form-control"
                             type="number"
                             value={formData.retentionPercentage}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                retentionPercentage: e.target.value,
-                              }))
-                            }
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (validatePositiveNumber(value)) {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  retentionPercentage: value,
+                                }));
+                              }
+                            }}
                             placeholder="Enter retention percentage"
                             disabled
+                            min="0"
+                            max="100"
                           />
                         </div>
                       </div>
@@ -2141,6 +2271,7 @@ const BillBookingCreate = () => {
                         // value={otherAdditions}
                         // onChange={(e) => setOtherAdditions(e.target.value)}
                         placeholder="Enter other addition amount"
+                        min="0"
                       />
                     </div>
                   </div>
@@ -3013,12 +3144,16 @@ const BillBookingCreate = () => {
                       className="form-control"
                       value={selectedGRN?.base_cost}
                       onChange={(e) => {
-                        const newBaseCost = parseFloat(e.target.value) || 0;
-                        setSelectedGRN((prev) => ({
-                          ...prev,
-                          base_cost: newBaseCost,
-                        }));
+                        const value = e.target.value;
+                        if (validatePositiveNumber(value)) {
+                          const newBaseCost = parseFloat(value) || 0;
+                          setSelectedGRN((prev) => ({
+                            ...prev,
+                            base_cost: newBaseCost,
+                          }));
+                        }
                       }}
+                      min="0"
                     />
                   </td>
                   <td />
@@ -3049,7 +3184,7 @@ const BillBookingCreate = () => {
                 {/* Dynamic Rows for Addition Tax */}
                 {rows.map((row) => (
                   <tr key={row.id}>
-                    <td className="text-start">
+                    {/* <td className="text-start">
                       <SingleSelector
                         options={taxTypes.map((type) => ({
                           value: type.name,
@@ -3090,6 +3225,19 @@ const BillBookingCreate = () => {
                         placeholder="Select Type"
                         isDisabled={!row.isEditable} // Disable if not editable
                       />
+                    </td> */}
+                    <td className="text-start">
+                      <SingleSelector
+                        options={taxTypes.map((type) => ({
+                          value: type.name,
+                          label: type.name,
+                          isDisabled: true, // Make all options disabled
+                        }))}
+                        value={{ value: row.type, label: row.type }}
+                        onChange={() => {}} // Empty onChange handler
+                        placeholder="Select Type"
+                        isDisabled={true} // Disable the entire selector
+                      />
                     </td>
                     <td className="text-start">
                       {row.isEditable ? (
@@ -3117,30 +3265,24 @@ const BillBookingCreate = () => {
                           }}
                         >
                           <option value="">Select Tax</option>
-                          {row.type === "IGST" && (
-                            <>
-                              <option value="IGST 5%">IGST 5%</option>
-                              <option value="IGST 12%">IGST 12%</option>
-                              <option value="IGST 18%">IGST 18%</option>
-                              <option value="IGST 28%">IGST 28%</option>
-                            </>
-                          )}
-                          {row.type === "SGST" && (
-                            <>
-                              <option value="SGST 5%">SGST 5%</option>
-                              <option value="SGST 12%">SGST 12%</option>
-                              <option value="SGST 18%">SGST 18%</option>
-                              <option value="SGST 28%">SGST 28%</option>
-                            </>
-                          )}
-                          {row.type === "CGST" && (
-                            <>
-                              <option value="CGST 5%">CGST 5%</option>
-                              <option value="CGST 12%">CGST 12%</option>
-                              <option value="CGST 18%">CGST 18%</option>
-                              <option value="CGST 28%">CGST 28%</option>
-                            </>
-                          )}
+                          {row.type === "IGST" &&
+                            taxPercentages.IGST.map((tax, index) => (
+                              <option key={index} value={tax.value}>
+                                {tax.value}
+                              </option>
+                            ))}
+                          {row.type === "SGST" &&
+                            taxPercentages.SGST.map((tax, index) => (
+                              <option key={index} value={tax.value}>
+                                {tax.value}
+                              </option>
+                            ))}
+                          {row.type === "CGST" &&
+                            taxPercentages.CGST.map((tax, index) => (
+                              <option key={index} value={tax.value}>
+                                {tax.value}
+                              </option>
+                            ))}
                         </select>
                       ) : (
                         <input
@@ -3172,18 +3314,22 @@ const BillBookingCreate = () => {
                         className="form-control"
                         value={row.amount}
                         disabled={row.percentage !== ""}
-                        onChange={(e) =>
-                          setRows((prevRows) =>
-                            prevRows.map((r) =>
-                              r.id === row.id
-                                ? {
-                                    ...r,
-                                    amount: parseFloat(e.target.value) || 0,
-                                  }
-                                : r
-                            )
-                          )
-                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (validatePositiveNumber(value)) {
+                            setRows((prevRows) =>
+                              prevRows.map((r) =>
+                                r.id === row.id
+                                  ? {
+                                      ...r,
+                                      amount: parseFloat(value) || 0,
+                                    }
+                                  : r
+                              )
+                            );
+                          }
+                        }}
+                        min="0"
                       />
                     </td>
                     <td
@@ -3340,18 +3486,22 @@ const BillBookingCreate = () => {
                         className="form-control"
                         value={row.amount}
                         disabled
-                        onChange={(e) =>
-                          setDeductionRows((prevRows) =>
-                            prevRows.map((r) =>
-                              r.id === row.id
-                                ? {
-                                    ...r,
-                                    amount: parseFloat(e.target.value) || 0,
-                                  }
-                                : r
-                            )
-                          )
-                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (validatePositiveNumber(value)) {
+                            setDeductionRows((prevRows) =>
+                              prevRows.map((r) =>
+                                r.id === row.id
+                                  ? {
+                                      ...r,
+                                      amount: parseFloat(value) || 0,
+                                    }
+                                  : r
+                              )
+                            );
+                          }
+                        }}
+                        min="0"
                       />
                     </td>
                     <td

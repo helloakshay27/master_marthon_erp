@@ -1322,13 +1322,13 @@ const BillEntryCreateVendorPage = () => {
                 <table className="w-100">
                   <thead>
                     <tr>
-                      <th className="text-start">
+                      {/* <th className="text-start">
                         <input
                           type="checkbox"
                           checked={selectedPOs.length === purchaseOrders.length}
                           onChange={handleSelectAll}
                         />
-                      </th>
+                      </th> */}
                       {/* <th></th> */}
                       <th className="text-start">Sr.No</th>
                       <th className="text-start">PO Number</th>
@@ -1354,13 +1354,13 @@ const BillEntryCreateVendorPage = () => {
                     ) : (
                       purchaseOrders.map((po, index) => (
                         <tr key={po.id}>
-                          <td className="text-start">
+                          {/* <td className="text-start">
                             <input
                               type="checkbox"
                               checked={selectedPOs.includes(po.id)}
                               onChange={() => handleCheckboxChange(po.id)}
                             />
-                          </td>
+                          </td> */}
                           {/* <td className="text-start">{index + 1}</td> */}
                           <td className="text-start">{po.serialNumber}</td>
                           <td className="text-start">{po.po_number}</td>
