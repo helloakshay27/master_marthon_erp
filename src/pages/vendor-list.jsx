@@ -157,11 +157,11 @@ export default function VendorListPage() {
         event_numbers: preprocessOptions(response.data.event_numbers),
         creaters: preprocessOptions(response.data.creaters, true),
         statuses: preprocessOptions(
-          response.data.statuses.map((status) => ({
-            name: status,
-            value: status,
-          }))
-        ),
+  response.data.statuses.map((status) => ({
+    name: status.charAt(0).toUpperCase() + status.slice(1).toLowerCase(),
+    value: status,
+  }))
+),
         material_name: preprocessOptions(response.data?.material_name || []),
         material_type: preprocessOptions(response.data?.material_type || []),
         locations: preprocessOptions(response.data?.locations || []),

@@ -3829,7 +3829,7 @@ useEffect(() => {
                 { key: "inventory_sub_type", label: "Material Sub Type" },
                 { key: "inventory_name", label: "Material Name" },
                 { key: "quantity", label: "Quantity" },
-                { key: "uom_name", label: "UOM" },
+                { key: "unit", label: "UOM" },
                 { key: "location", label: "Location" },
                 { key: "rate", label: "Rate" },
                 { key: "amount", label: "Amount" },
@@ -4358,7 +4358,7 @@ useEffect(() => {
                                           overflow: "hidden",
                                           textOverflow: "ellipsis",
                                           whiteSpace: "normal",
-                                          textTransform: "capitalize",
+                                          textTransform: item.value === 'rfq' ? "UpperCase" : "capitalize",
                                         }}
                                       >
                                         {item.value}
@@ -4707,7 +4707,7 @@ useEffect(() => {
                   </div>
                   <div className="d-flex justify-content-end align-items-center">
                     <button
-                      className="purple-btn2"
+                      className="purple-btn2 no-print"
                       onClick={handleDownloadPDF}
                       style={{
                         backgroundColor: "#8b0203",
@@ -4831,7 +4831,7 @@ useEffect(() => {
                         <div className="">
                           <p>Counter Offer</p>
                           <p>
-                            A counter is pending on your bid. You cannot ake any
+                            A counter is pending on your bid. You cannot make any
                             further changes to your bid untill your resolve the
                             counter offer
                           </p>

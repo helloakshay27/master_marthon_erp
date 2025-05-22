@@ -1381,6 +1381,7 @@ export default function EditEvent() {
                   </div>
                   <input
                     className="form-control"
+                    style={{ textTransform: "uppercase" }}
                     onClick={handleEventTypeModalShow}
                     placeholder="Configure The Event"
                     value={eventTypeText}
@@ -1438,7 +1439,7 @@ export default function EditEvent() {
                       { label: "Expired", value: "expired" },
                       { label: "Closed", value: "closed" },
                       { label: "Pending", value: "pending" },
-                      { label: "Draft", value: "draft" },
+                      // { label: "Draft", value: "draft" },
                     ]}
                     onChange={handleStatusChange}
                     defaultValue={eventStatus}
@@ -1634,58 +1635,63 @@ export default function EditEvent() {
                 </div>
 
                 <table className="tbl-container w-100">
-                  <thead>
-                    <tr>
-                      <th>Condition Category</th>
-                      <th>Condition</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {textareas?.map((textarea, idx) => {
-                      if (textarea.id === null) {
-                        return null;
-                      }
-                      return (
-                        <tr key={idx}>
-                          <td>
-                            <SelectBox
-                              options={termsOptions.map((option) => ({
-                                label: option.label,
-                                value: option.value,
-                              }))}
-                              onChange={(option) =>
-                                handleConditionChange(textarea.id, option)
-                              }
-                              defaultValue={
-                                termsOptions.find(
-                                  (option) =>
-                                    option.condition === textarea.value
-                                )?.value
-                              }
-                            />
-                          </td>
-                          <td>
-                            <textarea
-                              className="form-control"
-                              value={textarea.value}
-                              readOnly
-                            />
-                          </td>
-                          <td>
-                            <button
-                              className="btn btn-danger"
-                              onClick={() => handleRemoveTextarea(textarea.id)}
-                              disabled={idx === 0}
-                            >
-                              Remove
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+  <thead>
+    <tr>
+      <th>Condition Category</th>
+      <th>Condition</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {(!textareas || textareas.filter(t => t.id !== null).length === 0) ? (
+      <tr>
+        <td colSpan={3} className="text-center">No Terms & Conditions available</td>
+      </tr>
+    ) : (
+      textareas.map((textarea, idx) => {
+        if (textarea.id === null) {
+          return null;
+        }
+        return (
+          <tr key={idx}>
+            <td>
+              <SelectBox
+                options={termsOptions.map((option) => ({
+                  label: option.label,
+                  value: option.value,
+                }))}
+                onChange={(option) =>
+                  handleConditionChange(textarea.id, option)
+                }
+                defaultValue={
+                  termsOptions.find(
+                    (option) => option.condition === textarea.value
+                  )?.value
+                }
+              />
+            </td>
+            <td>
+              <textarea
+                className="form-control"
+                value={textarea.value}
+                readOnly
+              />
+            </td>
+            <td>
+              <button
+                className="btn btn-danger"
+                onClick={() => handleRemoveTextarea(textarea.id)}
+                disabled={idx === 0}
+              >
+                Remove
+              </button>
+            </td>
+          </tr>
+        );
+      })
+    )}
+  </tbody>
+</table>
               </div>
 
               {statusLogData?.length > 0 && (
