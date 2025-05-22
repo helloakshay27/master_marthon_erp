@@ -147,7 +147,6 @@ export default function CreateRFQForm({
   }, [isMor]);
 
   const mapBidTemplateFields = (fields) => {
-    // console.log("fields", fields);
 
     return fields.map((field) => ({
       label: field.field_name,
@@ -163,7 +162,6 @@ export default function CreateRFQForm({
   };
 
   const handleTemplateChange = async (event) => {
-    // console.log("event :-----",event);
 
     setSelectedTemplate(event);
     updateSelectedTemplate(event); // Update the parent component's state
@@ -235,7 +233,6 @@ export default function CreateRFQForm({
           uom: material.uom,
         }));
         setMaterials(materialOptions);
-        // console.log("materials :----", materials);
       } else {
         console.error("Unexpected response structure:", response.data);
       }
@@ -250,10 +247,7 @@ export default function CreateRFQForm({
       //   ? `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
       const url = `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
-      // console.log("Fetching sub-sections with URL:", url);
-
       const response = await axios.get(url);
-      // console.log("API Response for sub-sections:", response.data);
 
       if (response.data && Array.isArray(response.data.inventory_sub_types)) {
         const options = response.data.inventory_sub_types.map((subSection) => ({
@@ -261,7 +255,6 @@ export default function CreateRFQForm({
           value: subSection.value,
         }));
         setSubSectionOptions(options);
-        // console.log("Fetched subSectionOptions:", options);
       } else {
         console.error("Unexpected response structure:", response.data);
         setSubSectionOptions((prevOptions) => [...prevOptions]); // Retain previous options
@@ -339,7 +332,6 @@ export default function CreateRFQForm({
 
   useEffect(() => {
     if (existingData) {
-      console.log("Existing data:", existingData);
       
       const updatedSections = Object.entries(existingData).map(
         ([materialType, subMaterials]) => {
@@ -393,7 +385,6 @@ export default function CreateRFQForm({
   }, [existingData]);
 
   useEffect(() => {
-    // console.log("Existing data:", existingData);
 
     const fetchSections = async () => {
       try {
@@ -468,7 +459,6 @@ export default function CreateRFQForm({
   useEffect(() => {
     setData(sections.flatMap((section) => section.sectionData));
   }, [sections]);
-  // console.log(existingData, "existingData");
 
   useEffect(() => {
     // Ensure all field_name keys from additionalFields are included in sectionData
@@ -508,25 +498,14 @@ export default function CreateRFQForm({
   }, [templateData]);
 
   const handleUnitChange = (selected, rowIndex, sectionIndex) => {
-    // console.log("handleUnitChange called with:", {
-    //   selected,
-    //   rowIndex,
-    //   sectionIndex,
-    // });
 
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData[rowIndex].unit = selected;
 
     setSections(updatedSections);
-    // console.log("Updated sections after unit change:", updatedSections);
   };
 
   const handleLocationChange = (selected, rowIndex, sectionIndex) => {
-    // console.log("handleLocationChange called with:", {
-    //   selected,
-    //   rowIndex,
-    //   sectionIndex,
-    // });
 
     const updatedSections = [...sections];
     const selectedLocation = locationOptions.find(
@@ -537,7 +516,6 @@ export default function CreateRFQForm({
       selectedLocation ? selectedLocation.label : selected;
 
     setSections(updatedSections);
-    // console.log("Updated sections after location change:", updatedSections);
   };
 
   const handleRemoveRow = (rowIndex, sectionIndex) => {
@@ -647,7 +625,6 @@ export default function CreateRFQForm({
   }, [materialId]);
 
   const handleDescriptionOfItemChange = (selected, rowIndex, sectionIndex) => {
-    // console.log("called", selected, rowIndex, sectionIndex);
 
     const updatedSections = [...sections];
     const selectedMaterial = materials.find(
@@ -658,7 +635,6 @@ export default function CreateRFQForm({
       console.error("Selected material not found in materials list:", selected);
       return;
     }
-    // console.log(selectedMaterial, "selectedMaterial");
 
     updatedSections[sectionIndex].sectionData[rowIndex].descriptionOfItem =
       selectedMaterial.label;
@@ -674,7 +650,6 @@ export default function CreateRFQForm({
       selectedMaterial.type || "-";
     updatedSections[sectionIndex].sectionData[rowIndex].inventory_id =
       selectedMaterial.label;
-    // console.log("updatedSections", updatedSections);
 
     // Update materialId state
     setMaterialId(selectedMaterial.value);
@@ -808,8 +783,7 @@ export default function CreateRFQForm({
     );
 
     setAdditionalFields(updatedFields);
-    updateAdditionalFields(updatedFields); // Update the parent component's state
-    // console.log("Updated additional fields:", updatedFields, editField);
+    updateAdditionalFields(updatedFields);
 
     setShowEditModal(false);
     setSections((prevSections) => {
@@ -883,7 +857,6 @@ export default function CreateRFQForm({
     setAdditionalFields(updatedAdditionalFields);
     updateAdditionalFields(updatedAdditionalFields);
     setShowAddColumnModal(false);
-    // console.log("New field data:", newFieldData, updatedAdditionalFields, newField, "newField");
   };
 
   const deliveryColumns = [
@@ -977,6 +950,7 @@ export default function CreateRFQForm({
     }
 
     if (field.field_name === "location") {
+      
       return (
         <SelectBox
           options={locationOptions}
@@ -1028,11 +1002,8 @@ export default function CreateRFQForm({
       );
     }
 
-    // console.log("fieldValue:----", field,fieldValue, field.field_name);
-    // Default input for other fields
     return (
       <div className="input-group">
-        {/* {console.log("field:----", field)} */}
         {field.field_owner === "Admin" && (
           <>
             <input
@@ -1112,8 +1083,9 @@ export default function CreateRFQForm({
       );
     }
 
-    if (fieldName === "location") {
+    if (fieldName === "location") {      
       return (
+        <>
         <SelectBox
           options={locationOptions}
           defaultValue={
@@ -1126,6 +1098,7 @@ export default function CreateRFQForm({
           disabled={isDisabled}
         // className={disabledClass}
         />
+        </>
       );
     }
 
@@ -1999,9 +1972,11 @@ export default function CreateRFQForm({
                           );
                         },
                         location: (cell, rowIndex) => {
+                          
                           return (
                             <SelectBox
                               options={locationOptions}
+                              
                               onChange={(value) =>
                                 handleLocationChange(
                                   value,
@@ -2266,7 +2241,6 @@ export default function CreateRFQForm({
             value={editField.fieldName}
             onChange={(e) => {
               setEditField({ ...editField, fieldName: e.target.value });
-              // console.log("inputVal", e.target.value);
             }}
             placeholder="Enter Field Name"
           />

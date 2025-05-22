@@ -143,6 +143,7 @@ export default function adminList() {
       headerName: "Sr.No.",
       width: 80,
       hide: !columnVisibility.srNo,
+      sortable: true,
       // renderCell: (params, id) => {
       // return (
       //   <div display="flex" alignItems="center" gap={1}>
@@ -159,6 +160,7 @@ export default function adminList() {
   field: "event_title",
   headerName: "Mor no",
   width: 180,
+  sortable: true,
   renderCell: (params) => {
     console.log("Params:", params);
     
@@ -202,17 +204,46 @@ export default function adminList() {
     );
   },
 },
-    { field: "event_no", headerName: "Event No", width: 120 },
+    { field: "event_no", headerName: "Event No", width: 120, sortable: true },
     {
       field: "bid_placed",
       headerName: "Bid Placed",
       width: 110,
-      renderCell: (params) => (params.value ? "Yes" : "No"),
+      sortable: true,
+      renderCell: (params) =>
+  params.value ? (
+    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: "15px" }}>  
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        fill="none"
+        style={{ verticalAlign: "middle" }}
+      >
+        <circle cx="10" cy="10" r="9" stroke="#28a745" strokeWidth="2" fill="none" />
+        <path d="M6 10.5l3 3 5-5" stroke="#28a745" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </span>
+  ) : (
+    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: "15px" }}>  
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        fill="none"
+        style={{ verticalAlign: "middle" }}
+      >
+        <circle cx="10" cy="10" r="9" stroke="#dc3545" strokeWidth="2" fill="none" />
+        <path d="M7 7l6 6M13 7l-6 6" stroke="#dc3545" strokeWidth="2" fill="none" strokeLinecap="round" />
+      </svg>
+    </span>
+  ),
     },
     {
       field: "start_time",
       headerName: "Start Date",
       width: 160,
+      sortable: true,
       renderCell: (params) => (
         
         params.row.event_schedule?.start_time ? (
@@ -225,6 +256,7 @@ export default function adminList() {
       field: "end_time",
       headerName: "End Date",
       width: 160,
+      sortable: true,
       renderCell: (params) =>
         params.row.event_schedule?.end_time ? (
           <FormatDateTime timestamp={params.row.event_schedule.end_time} />
@@ -236,6 +268,7 @@ export default function adminList() {
       field: "created_at",
       headerName: "Created At",
       width: 140,
+      sortable: true,
       renderCell: (params) =>
         params.row.created_at ? (
           <FormatDate timestamp={params.row.created_at} />
@@ -247,12 +280,14 @@ export default function adminList() {
       field: "created_by",
       headerName: "Created By",
       width: 120,
+      sortable: true,
       renderCell: (params) => params.value || "-",
     },
     {
       field: "event_type",
       headerName: "Event Type",
       width: 120,
+      sortable: true,
       renderCell: (params) =>
         params.row.event_type_with_configuration
           ? params.row.event_type_with_configuration
@@ -262,6 +297,7 @@ export default function adminList() {
       field: "status",
       headerName: "Status",
       width: 110,
+      sortable: true,
       renderCell: (params) =>
         params.row.status
           ? params.row.status.charAt(0).toUpperCase() +
@@ -434,16 +470,28 @@ export default function adminList() {
     // Add any other fields you need for columns
   }));
 
+  // Add a recursive function to check if any value in the object matches the search term
+function objectContainsValue(obj, searchTerm) {
+  if (obj == null) return false;
+  if (typeof obj === "string" || typeof obj === "number" || typeof obj === "boolean") {
+    return String(obj).toLowerCase().includes(searchTerm);
+  }
+  if (Array.isArray(obj)) {
+    return obj.some((el) => objectContainsValue(el, searchTerm));
+  }
+  if (typeof obj === "object") {
+    return Object.values(obj).some((val) => objectContainsValue(val, searchTerm));
+  }
+  return false;
+}
+
   const getTransformedRows = () => {
     let rowsToShow = dataGridRows;
 
     const normalizedSearchTerm = searchQuery.trim().toLowerCase();
     if (normalizedSearchTerm) {
       rowsToShow = rowsToShow.filter((item) =>
-        Object.values(item).some(
-          (value) =>
-            value && String(value).toLowerCase().includes(normalizedSearchTerm)
-        )
+        objectContainsValue(item, normalizedSearchTerm)
       );
     }
 
@@ -816,8 +864,7 @@ export default function adminList() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setIsSuggestionsVisible(false);
-    // Trigger search logic with `searchQuery`
-    fetchSuggestions(searchQuery);
+    // No need to call fetchSuggestions here, filtering is handled by getTransformedRows
   };
 
   const handleResetSearch = async () => {
@@ -1218,7 +1265,7 @@ export default function adminList() {
 
                             <div className="input-group-append">
                               <button
-                                type="sumbit"
+                                type="submit" // fixed typo here
                                 className="btn btn-md btn-default"
                               >
                                 <SearchIcon />
@@ -1313,54 +1360,51 @@ export default function adminList() {
       style={{ width: "100%", height: "600px", display: "flex", flexDirection: "column", padding:'20px' }}
     >
       <DataGrid
-        rows={dataGridRows}
-        columns={fixedColumns}
-        pageSize={pageSize}
-        rowCount={Number.isInteger(pagination?.total_count) ? pagination.total_count : 0}
-        paginationMode="server"
-        page={Number.isInteger(pagination?.current_page) && pagination.current_page > 0 ? pagination.current_page - 1 : 0}
-        onPageChange={(page) => handlePageChange(page + 1)}
-        loading={loading}
-        disableSelectionOnClick
-        disableColumnMenu
-        disableExtendRowFullWidth
-        columnBuffer={0}
-        getRowId={(row) => row.id}
-        sx={{
-          flexGrow: 1,
-          width: "100%",
-          "& .MuiDataGrid-columnHeaders": {
-            backgroundColor: "#f8f9fa",
-            color: "#000",
-            fontWeight: "bold",
-            position: "sticky",
-            top: 0,
-            zIndex: 1,
-          },
-          "& .MuiDataGrid-cell": {
-            borderColor: "#dee2e6",
-          },
-          "& .MuiDataGrid-columnHeader": {
-            borderColor: "#dee2e6",
-          },
-          "& .MuiDataGrid-virtualScroller": {
-            overflowY: "auto",
-          },
-          "& .MuiDataGrid-virtualScrollerContent": {
-            minWidth: `${containerWidth}px !important`,
-          },
-          "& .MuiDataGrid-footerContainer": {
-            borderTop: "1px solid #dee2e6",
-          },
-        }}
-        components={{
-          NoRowsOverlay: () => (
-            <div style={{ padding: "2rem", textAlign: "center" }}>
-              No events found.
-            </div>
-          ),
-        }}
-      />
+  rows={getTransformedRows()}
+  columns={fixedColumns}
+  pageSize={pageSize}
+  rowCount={Number.isInteger(pagination?.total_count) ? pagination.total_count : 0}
+  paginationMode="server"
+  page={Number.isInteger(pagination?.current_page) && pagination.current_page > 0 ? pagination.current_page - 1 : 0}
+  onPageChange={(page) => handlePageChange(page + 1)}
+  loading={loading}
+  columnBuffer={0}
+  getRowId={(row) => row.id}
+  sx={{
+    flexGrow: 1,
+    width: "100%",
+    "& .MuiDataGrid-columnHeaders": {
+      backgroundColor: "#f8f9fa",
+      color: "#000",
+      fontWeight: "bold",
+      position: "sticky",
+      top: 0,
+      zIndex: 1,
+    },
+    "& .MuiDataGrid-cell": {
+      borderColor: "#dee2e6",
+    },
+    "& .MuiDataGrid-columnHeader": {
+      borderColor: "#dee2e6",
+    },
+    "& .MuiDataGrid-virtualScroller": {
+      overflowY: "auto",
+    },
+    "& .MuiDataGrid-virtualScrollerContent": {
+      minWidth: `${containerWidth}px !important`,
+    },
+    "& .MuiDataGrid-footerContainer": {
+      borderTop: "1px solid #dee2e6",
+    },
+  }}
+  components={{
+    NoRowsOverlay: () => (
+      <div style={{ padding: "2rem", textAlign: "center" }}>
+        No events found.
+      </div>
+    ),
+  }}
+/>
     </div>
                     <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                       <ul className="pagination justify-content-center d-flex">

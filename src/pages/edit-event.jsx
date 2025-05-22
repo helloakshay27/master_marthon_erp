@@ -488,7 +488,7 @@ export default function EditEvent() {
               material.descriptionOfItem || material.inventory_name || "",
             inventory_id: material.inventory_id,
             quantity: material.quantity,
-            unit: material.uom,
+            unit: material.unit,
             location: material.location,
             rate: material.rate,
             amount: material.amount,
@@ -859,6 +859,8 @@ export default function EditEvent() {
             }
             return acc;
           }, {});
+          console.log("material",material);
+          
 
           return {
             id: material.id || null,
@@ -893,20 +895,26 @@ export default function EditEvent() {
             comments: "No comments",
           },
         ],
-        resource_term_conditions_attributes: textareas.map((textarea) =>
-          isTextId
-            ? {
-              id: textarea?.id || null,
-              term_condition_id: textarea.textareaId,
-              condition_type: "general",
-              condition: textarea.value,
-            }
-            : {
-              term_condition_id: textarea.textareaId,
-              condition_type: "general",
-              condition: textarea.value,
-            }
-        ),
+        resource_term_conditions_attributes: textareas.map((textarea) => {
+  // Only include id if it's a string and length < 10 (likely a real DB id)
+  // or if it's a number and less than 1e9 (to avoid Date.now() values)
+  const isValidId =
+    (typeof textarea.id === "string" && textarea.id.length < 10) ||
+    (typeof textarea.id === "number" && String(textarea.id).length < 10);
+
+  return isValidId
+    ? {
+        id: textarea.id,
+        term_condition_id: textarea.textareaId,
+        condition_type: "general",
+        condition: textarea.value,
+      }
+    : {
+        term_condition_id: textarea.textareaId,
+        condition_type: "general",
+        condition: textarea.value,
+      };
+}),
         attachments: documentRows.map((row) => row.upload),
         applied_event_template: {
           event_template_id: selectedTemplate,
@@ -946,21 +954,21 @@ export default function EditEvent() {
       );
       console.log("eventData:--", eventData);
 
-      if (response.ok) {
-        const data = await response.json();
-        toast.success("Event updated successfully!", { autoClose: 1000 });
-        setTimeout(() => {
-          navigate(
-            "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-          );
-        }, 1500);
-      } else {
-        const errorData = await response.json();
-        toast.error(
-          errorData.message || "Failed to update event. Please try again.",
-          { autoClose: 1000 }
-        );
-      }
+      // if (response.ok) {
+      //   const data = await response.json();
+      //   toast.success("Event updated successfully!", { autoClose: 1000 });
+      //   setTimeout(() => {
+      //     navigate(
+      //       "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      //     );
+      //   }, 1500);
+      // } else {
+      //   const errorData = await response.json();
+      //   toast.error(
+      //     errorData.message || "Failed to update event. Please try again.",
+      //     { autoClose: 1000 }
+      //   );
+      // }
     } catch (error) {
       console.error("Error updating event:", error);
       toast.error("An unexpected error occurred. Please try again.", {
