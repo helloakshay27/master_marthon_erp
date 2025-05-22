@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { EnvelopeIcon, ParticipantsIcon, SelectBox, ShowIcon, Table } from "../..";
+import {
+  EnvelopeIcon,
+  ParticipantsIcon,
+  SelectBox,
+  ShowIcon,
+  Table,
+} from "../..";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { baseURL } from "../../../confi/apiDomain";
@@ -8,7 +14,7 @@ import {
   specificationColumns,
   deliveryColumns,
 } from "../../../constant/data";
-import DropdownCollapseIcon from '../Icon/DropdownCollapseIcon'
+import DropdownCollapseIcon from "../Icon/DropdownCollapseIcon";
 
 export default function OverviewTab({
   handleParticipants,
@@ -69,7 +75,6 @@ export default function OverviewTab({
     setAuditLog(!auditLog);
   };
 
-
   useEffect(() => {
     const fetchSections = async () => {
       try {
@@ -92,7 +97,6 @@ export default function OverviewTab({
       }
     };
     fetchSections();
-
   }, []);
 
   const participants = [
@@ -229,7 +233,7 @@ export default function OverviewTab({
   const orderConfig = [
     {
       label: "Order Type",
-      value: overviewData?.event_type_detail?.event_type || "_",
+      value: (overviewData?.event_type_detail?.event_type || "_"),
     },
     {
       label: "Order Mode",
@@ -257,6 +261,7 @@ export default function OverviewTab({
       value: overviewData?.event_schedule?.evaluation_time || "_",
     },
   ];
+  console.log("orderDetails", overviewData?.event_schedule);
 
   const overviewDatas = materialData?.event_materials?.map((item) => ({
     inventoryName: item.inventory_name || "_",
@@ -530,7 +535,12 @@ export default function OverviewTab({
                               className="card-title"
                               style={{ fontWeight: 500, fontSize: "16px" }}
                             >
-                              Material Type {typeIdx + 1} of {Object.keys(overviewData.grouped_event_materials).length}
+                              Material Type {typeIdx + 1} of{" "}
+                              {
+                                Object.keys(
+                                  overviewData.grouped_event_materials
+                                ).length
+                              }
                             </h3>
                             <SelectBox
                               label={"Select Material Type"}
@@ -554,9 +564,18 @@ export default function OverviewTab({
                             <Table
                               columns={[
                                 { key: "srNo", label: "Sr.No." },
-                                { key: "material_type", label: "Material Type" },
-                                { key: "inventory_sub_type", label: "Material Sub Type" },
-                                { key: "inventory_name", label: "Material Name" },
+                                {
+                                  key: "material_type",
+                                  label: "Material Type",
+                                },
+                                {
+                                  key: "inventory_sub_type",
+                                  label: "Material Sub Type",
+                                },
+                                {
+                                  key: "inventory_name",
+                                  label: "Material Name",
+                                },
                                 { key: "quantity", label: "Quantity" },
                                 { key: "uom_name", label: "UOM" },
                                 { key: "location", label: "Location" },
@@ -564,12 +583,19 @@ export default function OverviewTab({
                                 { key: "amount", label: "Amount" },
                                 { key: "pms_brand_name", label: "Brand" },
                                 { key: "pms_colour_name", label: "Colour" },
-                                { key: "generic_info_name", label: "Generic Info" },
+                                {
+                                  key: "generic_info_name",
+                                  label: "Generic Info",
+                                },
                                 ...(materialsArr[0]?.extra_data
-                                  ? Object.keys(materialsArr[0].extra_data).map((key) => ({
-                                    key,
-                                    label: key.replace(/_/g, " ").toUpperCase(),
-                                  }))
+                                  ? Object.keys(materialsArr[0].extra_data).map(
+                                      (key) => ({
+                                        key,
+                                        label: key
+                                          .replace(/_/g, " ")
+                                          .toUpperCase(),
+                                      })
+                                    )
                                   : []),
                               ]}
                               data={materialsArr.map((material, idx) => ({
@@ -581,10 +607,14 @@ export default function OverviewTab({
                               isMinWidth={true}
                               accordionRender={(_, rowIndex) => {
                                 const material = materialsArr[rowIndex];
-                                const deliverySchedules = material.delivery_schedules || [];
-                                const morInventorySpecifications = material.mor_inventory_specifications || [];
-                                const attachmentsData = material.attachments || [];
-                                const rowKey = material.id || `${materialType}_${rowIndex}`;
+                                const deliverySchedules =
+                                  material.delivery_schedules || [];
+                                const morInventorySpecifications =
+                                  material.mor_inventory_specifications || [];
+                                const attachmentsData =
+                                  material.attachments || [];
+                                const rowKey =
+                                  material.id || `${materialType}_${rowIndex}`;
                                 return (
                                   <div
                                     style={{
@@ -616,7 +646,12 @@ export default function OverviewTab({
                                           }))
                                         }
                                       >
-                                        <span style={{ fontWeight: 600, fontSize: "16px" }}>
+                                        <span
+                                          style={{
+                                            fontWeight: 600,
+                                            fontSize: "16px",
+                                          }}
+                                        >
                                           Delivery Schedules
                                         </span>
                                         <button
@@ -639,7 +674,11 @@ export default function OverviewTab({
                                             }));
                                           }}
                                         >
-                                          <DropdownCollapseIcon isCollapsed={!openDeliveryRows[rowKey]} />
+                                          <DropdownCollapseIcon
+                                            isCollapsed={
+                                              !openDeliveryRows[rowKey]
+                                            }
+                                          />
                                         </button>
                                       </div>
                                       {openDeliveryRows[rowKey] && (
@@ -647,24 +686,51 @@ export default function OverviewTab({
                                           <table className="table table-bordered">
                                             <thead>
                                               <tr>
-                                                <th style={{ textAlign: "center" }}>Expected Date</th>
-                                                <th style={{ textAlign: "center" }}>Expected Quantity</th>
+                                                <th
+                                                  style={{
+                                                    textAlign: "center",
+                                                  }}
+                                                >
+                                                  Expected Date
+                                                </th>
+                                                <th
+                                                  style={{
+                                                    textAlign: "center",
+                                                  }}
+                                                >
+                                                  Expected Quantity
+                                                </th>
                                               </tr>
                                             </thead>
                                             <tbody>
-                                              {deliverySchedules.length === 0 ? (
+                                              {deliverySchedules.length ===
+                                              0 ? (
                                                 <tr>
-                                                  <td colSpan={2} style={{ textAlign: "center" }}>
-                                                    No delivery schedules available.
+                                                  <td
+                                                    colSpan={2}
+                                                    style={{
+                                                      textAlign: "center",
+                                                    }}
+                                                  >
+                                                    No delivery schedules
+                                                    available.
                                                   </td>
                                                 </tr>
                                               ) : (
-                                                deliverySchedules.map((schedule, idx) => (
-                                                  <tr key={idx}>
-                                                    <td>{schedule.expected_date}</td>
-                                                    <td>{schedule.expected_quantity}</td>
-                                                  </tr>
-                                                ))
+                                                deliverySchedules.map(
+                                                  (schedule, idx) => (
+                                                    <tr key={idx}>
+                                                      <td>
+                                                        {schedule.expected_date}
+                                                      </td>
+                                                      <td>
+                                                        {
+                                                          schedule.expected_quantity
+                                                        }
+                                                      </td>
+                                                    </tr>
+                                                  )
+                                                )
                                               )}
                                             </tbody>
                                           </table>
@@ -690,7 +756,12 @@ export default function OverviewTab({
                                           }))
                                         }
                                       >
-                                        <span style={{ fontWeight: 600, fontSize: "16px" }}>
+                                        <span
+                                          style={{
+                                            fontWeight: 600,
+                                            fontSize: "16px",
+                                          }}
+                                        >
                                           Dynamic Details
                                         </span>
                                         <button
@@ -713,7 +784,11 @@ export default function OverviewTab({
                                             }));
                                           }}
                                         >
-                                          <DropdownCollapseIcon isCollapsed={!openDynamicRows[rowKey]} />
+                                          <DropdownCollapseIcon
+                                            isCollapsed={
+                                              !openDynamicRows[rowKey]
+                                            }
+                                          />
                                         </button>
                                       </div>
                                       {openDynamicRows[rowKey] && (
@@ -721,24 +796,48 @@ export default function OverviewTab({
                                           <table className="table table-bordered">
                                             <thead>
                                               <tr>
-                                                <th style={{ textAlign: "center" }}>Field</th>
-                                                <th style={{ textAlign: "center" }}>Specification</th>
+                                                <th
+                                                  style={{
+                                                    textAlign: "center",
+                                                  }}
+                                                >
+                                                  Field
+                                                </th>
+                                                <th
+                                                  style={{
+                                                    textAlign: "center",
+                                                  }}
+                                                >
+                                                  Specification
+                                                </th>
                                               </tr>
                                             </thead>
                                             <tbody>
-                                              {morInventorySpecifications.length === 0 ? (
+                                              {morInventorySpecifications.length ===
+                                              0 ? (
                                                 <tr>
-                                                  <td colSpan={2} style={{ textAlign: "center" }}>
-                                                    No dynamic details available.
+                                                  <td
+                                                    colSpan={2}
+                                                    style={{
+                                                      textAlign: "center",
+                                                    }}
+                                                  >
+                                                    No dynamic details
+                                                    available.
                                                   </td>
                                                 </tr>
                                               ) : (
-                                                morInventorySpecifications.map((spec, idx) => (
-                                                  <tr key={idx}>
-                                                    <td>{spec.field}</td>
-                                                    <td>{spec.specification || "N/A"}</td>
-                                                  </tr>
-                                                ))
+                                                morInventorySpecifications.map(
+                                                  (spec, idx) => (
+                                                    <tr key={idx}>
+                                                      <td>{spec.field}</td>
+                                                      <td>
+                                                        {spec.specification ||
+                                                          "N/A"}
+                                                      </td>
+                                                    </tr>
+                                                  )
+                                                )
                                               )}
                                             </tbody>
                                           </table>
@@ -764,7 +863,12 @@ export default function OverviewTab({
                                           }))
                                         }
                                       >
-                                        <span style={{ fontWeight: 600, fontSize: "16px" }}>
+                                        <span
+                                          style={{
+                                            fontWeight: 600,
+                                            fontSize: "16px",
+                                          }}
+                                        >
                                           Attachments
                                         </span>
                                         <button
@@ -787,7 +891,11 @@ export default function OverviewTab({
                                             }));
                                           }}
                                         >
-                                          <DropdownCollapseIcon isCollapsed={!openAttachmentsRows[rowKey]} />
+                                          <DropdownCollapseIcon
+                                            isCollapsed={
+                                              !openAttachmentsRows[rowKey]
+                                            }
+                                          />
                                         </button>
                                       </div>
                                       {openAttachmentsRows[rowKey] && (
@@ -795,58 +903,86 @@ export default function OverviewTab({
                                           <table className="table table-bordered">
                                             <thead>
                                               <tr>
-                                                <th style={{ textAlign: "center" }}>Filename</th>
-                                                <th style={{ textAlign: "center" }}>Action</th>
+                                                <th
+                                                  style={{
+                                                    textAlign: "center",
+                                                  }}
+                                                >
+                                                  Filename
+                                                </th>
+                                                <th
+                                                  style={{
+                                                    textAlign: "center",
+                                                  }}
+                                                >
+                                                  Action
+                                                </th>
                                               </tr>
                                             </thead>
                                             <tbody>
                                               {attachmentsData.length === 0 ? (
                                                 <tr>
-                                                  <td colSpan={2} style={{ textAlign: "center" }}>
+                                                  <td
+                                                    colSpan={2}
+                                                    style={{
+                                                      textAlign: "center",
+                                                    }}
+                                                  >
                                                     No attachments available.
                                                   </td>
                                                 </tr>
                                               ) : (
-                                                attachmentsData.map((attachment, idx) => (
-                                                  <tr key={idx}>
-                                                    <td>{attachment.filename}</td>
-                                                    <td
-                                                      style={{
-                                                        display: "flex",
-                                                        gap: "10px",
-                                                        justifyContent: "center",
-                                                        width: "100%",
-                                                      }}
-                                                    >
-                                                      <a
-                                                        href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
-                                                        download={attachment.filename}
-                                                        className="purple-btn2"
+                                                attachmentsData.map(
+                                                  (attachment, idx) => (
+                                                    <tr key={idx}>
+                                                      <td>
+                                                        {attachment.filename}
+                                                      </td>
+                                                      <td
                                                         style={{
-                                                          width: "40px",
-                                                          height: "40px",
-                                                          padding: "0",
                                                           display: "flex",
-                                                          alignItems: "center",
-                                                          justifyContent: "center",
+                                                          gap: "10px",
+                                                          justifyContent:
+                                                            "center",
+                                                          width: "100%",
                                                         }}
                                                       >
-                                                        <svg
-                                                          xmlns="http://www.w3.org/2000/svg"
-                                                          width="16"
-                                                          height="16"
-                                                          viewBox="0 0 16 16"
-                                                          style={{ fill: "black" }}
+                                                        <a
+                                                          href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                                          download={
+                                                            attachment.filename
+                                                          }
+                                                          className="purple-btn2"
+                                                          style={{
+                                                            width: "40px",
+                                                            height: "40px",
+                                                            padding: "0",
+                                                            display: "flex",
+                                                            alignItems:
+                                                              "center",
+                                                            justifyContent:
+                                                              "center",
+                                                          }}
                                                         >
-                                                          <g fill="white">
-                                                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
-                                                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
-                                                          </g>
-                                                        </svg>
-                                                      </a>
-                                                    </td>
-                                                  </tr>
-                                                ))
+                                                          <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="16"
+                                                            height="16"
+                                                            viewBox="0 0 16 16"
+                                                            style={{
+                                                              fill: "black",
+                                                            }}
+                                                          >
+                                                            <g fill="white">
+                                                              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                                                              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                                                            </g>
+                                                          </svg>
+                                                        </a>
+                                                      </td>
+                                                    </tr>
+                                                  )
+                                                )
                                               )}
                                             </tbody>
                                           </table>
@@ -861,10 +997,12 @@ export default function OverviewTab({
                                 pms_colour_name: (value) => value || "-",
                                 generic_info_name: (value) => value || "-",
                                 ...(materialsArr[0]?.extra_data
-                                  ? Object.keys(materialsArr[0].extra_data).reduce((acc, key) => {
-                                    acc[key] = (value) => value?.value || "-";
-                                    return acc;
-                                  }, {})
+                                  ? Object.keys(
+                                      materialsArr[0].extra_data
+                                    ).reduce((acc, key) => {
+                                      acc[key] = (value) => value?.value || "-";
+                                      return acc;
+                                    }, {})
                                   : {}),
                               }}
                             />
@@ -872,8 +1010,7 @@ export default function OverviewTab({
                         </div>
                       );
                     }
-                  )
-                }
+                  )}
               </div>
             </div>
           )}
@@ -903,12 +1040,13 @@ export default function OverviewTab({
             <div id="terms-conditions" className="mx-5">
               <div className="card card-body p-4">
                 {overviewData?.resource_term_conditions &&
-                  overviewData.resource_term_conditions.length > 0 ? (
+                overviewData.resource_term_conditions.length > 0 ? (
                   overviewData.resource_term_conditions.map((item, index) => (
                     <div key={index}>
-                      <p>{`${index + 1}. ${item.term_condition?.condition ||
+                      <p>{`${index + 1}. ${
+                        item.term_condition?.condition ||
                         "No condition available"
-                        }`}</p>
+                      }`}</p>
                       <p>
                         {item.condition || "No additional details available"}
                       </p>
@@ -965,6 +1103,7 @@ export default function OverviewTab({
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "normal",
+                            textTransform: item.value === 'rfq' ? 'uppercase' : 'capitalize',
                           }}
                         >
                           {formatValue(item.value)}

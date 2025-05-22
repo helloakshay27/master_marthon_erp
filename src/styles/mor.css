@@ -18816,6 +18816,17 @@ ul.pagination.justify-content-center {
 }
 
 @media print {
+  .btn,
+  button,
+  .purple-btn2,
+  .no-print,
+  .nav-tabs,
+  [type="button"],
+  [type="submit"],
+  [role="button"] {
+    display: none !important;
+    visibility: hidden !important;
+  }
   @supports (-ms-ime-align: auto) {
     .print-wrapper {
       transform: scale(0.8);

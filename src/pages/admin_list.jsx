@@ -531,11 +531,11 @@ export default function adminList() {
         event_numbers: preprocessOptions(response.data.event_numbers),
         creaters: preprocessOptions(response.data.creaters, true),
         statuses: preprocessOptions(
-          response.data.statuses?.map((status) => ({
-            name: status,
-            value: status,
-          }))
-        ),
+  response.data.statuses.map((status) => ({
+    name: status.charAt(0).toUpperCase() + status.slice(1).toLowerCase(),
+    value: status,
+  }))
+),
         material_name: preprocessOptions(response.data?.material_name || []),
         material_type: preprocessOptions(response.data?.material_type || []),
         locations: preprocessOptions(response.data?.locations || []),
@@ -1013,7 +1013,7 @@ export default function adminList() {
                         )}
 
                         <div className="row my-2 align-items-end">
-                          <div className="col-md-2">
+                          {/* <div className="col-md-2">
                             <label htmlFor="event-title-select">
                               Event Title
                             </label>
@@ -1044,7 +1044,7 @@ export default function adminList() {
                                 }),
                               }}
                             />
-                          </div>
+                          </div> */}
 
                           <div className="col-md-2">
                             <label htmlFor="event-no-select">
