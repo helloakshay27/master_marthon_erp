@@ -863,7 +863,7 @@ const BillEntryCreateVendorPage = () => {
                         <th className="text-start">Sr. No.</th>
                         <th className="text-start">Document Name</th>
                         <th className="text-start">No. of Documents</th>
-                        <th className="text-start">Attach Copy</th>
+                        <th className="text-start">Attach Additional Copy</th>
                       </tr>
                     </thead>
                     <tbody>

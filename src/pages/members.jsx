@@ -254,6 +254,15 @@ function Members() {
             style={{ marginBottom: "200px" }}
           >
             <div className="m-3">
+               <h1>Rule engine</h1>
+              <ul>
+                <li>
+                  <Link to="/rule-engine-list">Rule engine list </Link>
+                </li>
+                <li>
+                  <Link to="/rule-engine-create"> Rule engine create</Link>
+                </li>
+              </ul>
               <h1>Rate</h1>
               <ul>
                 <li>

@@ -89,6 +89,8 @@ import BillVerificationEdit from "./pages/bill-verification-edit";
 import BillEntryCreateVendorPage from "./pages/bill-entry-create-vendor";
 import BillEntryVendorList from "./pages/bill-entry-vendor-list";
 import TestTable from "./pages/testTable";
+import RuleEngineList from "./pages/rule-engine-list";
+import RuleEngineCreate from "./pages/rule-engine-create";
 
 function App() {
   return (
@@ -464,6 +466,14 @@ function App() {
           <Route
             path="/test-table"
             element={<TestTable/>}
+          />
+          <Route
+            path="/rule-engine-list"
+            element={<RuleEngineList/>}
+          />
+          <Route
+            path="/rule-engine-create"
+            element={<RuleEngineCreate/>}
           />
         </Routes>
       </div>

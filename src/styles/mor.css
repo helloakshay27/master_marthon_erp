@@ -19180,6 +19180,20 @@ table.custom-table {
   } */
 }
 
+.custom-radio-lg input[type="radio"] {
+  width: 22px;
+  height: 22px;
+  accent-color: #8b0203; /* fallback for modern browsers */
+  cursor: pointer;
+}
+
+.custom-radio-lg input[type="radio"]:checked {
+  accent-color: #8b0203; /* Bootstrap red */
+  /* border-color: #dc3545; */
+  /* outline: 2px solid #dc3545; */
+  /* box-shadow: 0 0 0 2px #dc354533; */
+}
+
 @media (min-width: 768px) {
   .d-flex .col-md-6 .col-md-5 {
       -webkit-flex: 0 0 53.666667% !important;

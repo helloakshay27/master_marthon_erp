@@ -751,6 +751,19 @@ const BillEntryListSubPage = () => {
                     />
                   </div>
                 </div>
+                <div className="col-md-3 mt-2 ">
+                  <div className="form-group">
+                    <label>Bill Date</label>
+                    <input
+                      className="form-control"
+                      type="date"
+                      name="bill_date"
+                      value={formData.bill_date}
+                      onChange={handleInputChange}
+                      placeholder=""
+                    />
+                  </div>
+                </div>
 
                 <div className="col-md-3 mt-2 ">
                   <div className="form-group">
@@ -763,19 +776,6 @@ const BillEntryListSubPage = () => {
                       onChange={handleInputChange}
                       placeholder=""
                       // disabled
-                    />
-                  </div>
-                </div>
-                <div className="col-md-3 mt-2 ">
-                  <div className="form-group">
-                    <label>Bill Date</label>
-                    <input
-                      className="form-control"
-                      type="date"
-                      name="bill_date"
-                      value={formData.bill_date}
-                      onChange={handleInputChange}
-                      placeholder=""
                     />
                   </div>
                 </div>
@@ -874,7 +874,7 @@ const BillEntryListSubPage = () => {
                       <th className="text-start">Sr. No.</th>
                       <th className="text-start">Document Name</th>
                       <th className="text-start">No. of Documents</th>
-                      <th className="text-start">Attach Copy</th>
+                      <th className="text-start">Attach Additional Copy</th>
                     </tr>
                   </thead>
                   {/* // Replace your existing table body with this */}
