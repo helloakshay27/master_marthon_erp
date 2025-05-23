@@ -62,6 +62,17 @@ const BillEntryListSubPage = () => {
   const [poOptions, setPoOptions] = useState([]);
   const [selectedPONumbers, setSelectedPONumbers] = useState([]);
 
+  // Add this date formatting function near the top of the component
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear().toString().slice(-2);
+    return `${day}/${month}/${year}`;
+  };
+
+  // Update the handlePOSelect function
   const handlePOSelect = (po) => {
     if (!po) return;
     setSelectedPO(po);
@@ -95,6 +106,12 @@ const BillEntryListSubPage = () => {
       if (panInput) {
         panInput.value = po.pan || "";
       }
+
+      // Update Due Date with formatted date
+      setFormData((prev) => ({
+        ...prev,
+        due_date: formatDate(po.due_date),
+      }));
     }
 
     closeSelectPOModal();
@@ -799,11 +816,13 @@ const BillEntryListSubPage = () => {
                     <label>Due Date</label>
                     <input
                       className="form-control"
-                      type="date"
-                      // name="bill_amount"
+                      type="text"
+                      name="due_date"
                       value={formData.due_date}
                       onChange={handleInputChange}
-                      placeholder=""
+                      placeholder="DD/MM/YY"
+                      readOnly
+                      disabled
                     />
                   </div>
                 </div>
@@ -1305,13 +1324,13 @@ const BillEntryListSubPage = () => {
                 <table className="w-100">
                   <thead>
                     <tr>
-                      <th className="text-start">
+                      {/* <th className="text-start">
                         <input
                           type="checkbox"
                           checked={selectedPOs.length === purchaseOrders.length}
                           onChange={handleSelectAll}
                         />
-                      </th>
+                      </th> */}
                       <th className="text-start">Sr.No</th>
                       <th className="text-start">PO Number</th>
                       <th className="text-start">PO Date</th>
@@ -1336,13 +1355,13 @@ const BillEntryListSubPage = () => {
                     ) : (
                       purchaseOrders.map((po) => (
                         <tr key={po.id}>
-                          <td className="text-start">
+                          {/* <td className="text-start">
                             <input
                               type="checkbox"
                               checked={selectedPOs.includes(po.id)}
                               onChange={() => handleCheckboxChange(po.id)}
                             />
-                          </td>
+                          </td> */}
                           <td className="text-start">{po.serialNumber}</td>
                           <td className="text-start">{po.po_number}</td>
                           <td className="text-start">{po.po_date}</td>
