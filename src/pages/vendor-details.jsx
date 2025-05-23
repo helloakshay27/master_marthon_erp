@@ -3411,6 +3411,7 @@ useEffect(() => {
               ) : error ? (
                 "Something went wrong..."
               ) : data1 ? (
+                <>
                 <div className="w-100 container-fluid print-wrapper">
                   <div className="main-content w-100 ">
                     <div className="w-100  pt-2 mb-2  pe-2">
@@ -4242,8 +4243,9 @@ useEffect(() => {
                                               ).toLocaleString()}
                                             </td> */}
                                             <td className="text-start">
+                                              {/* {console.log("attachment:-",attachment)} */}
                                               <a
-                                                href={`${baseURL}/rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                                href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.doc_path}`}
                                                 download={attachment.filename}
                                               >
                                                 <svg
@@ -4705,23 +4707,25 @@ useEffect(() => {
                       </div>
                     </div>
                   </div>
-                  <div className="d-flex justify-content-end align-items-center">
-                    <button
-                      className="purple-btn2 no-print"
-                      onClick={handleDownloadPDF}
-                      style={{
-                        backgroundColor: "#8b0203",
-                        color: "#fff",
-                        border: "none",
-                        padding: "10px 20px",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Download PDF
-                    </button>
-                  </div>
+                  
                 </div>
+                <div className="d-flex justify-content-end align-items-center">
+    <button
+      className="purple-btn2"
+      onClick={handleDownloadPDF}
+      style={{
+        backgroundColor: "#8b0203",
+        color: "#fff",
+        border: "none",
+        padding: "10px 20px",
+        borderRadius: "5px",
+        cursor: "pointer",
+      }}
+    >
+      Download PDF
+    </button>
+  </div>
+                </>
               ) : (
                 "No data available"
               )}

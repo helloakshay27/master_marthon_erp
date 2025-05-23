@@ -1,11 +1,10 @@
-import React,{useEffect,useState} from "react";
+import React, { useEffect, useState } from "react";
 import ScatterChart from "../Chart/ScatterChart";
 import axios from "axios";
 import { baseURL } from "../../../confi/apiDomain";
 
 export default function AnalyticsTab({ eventId }) {
-
-  const [selectedFilter, setSelectedFilter] = useState('gross_total'); // Default filter value
+  const [selectedFilter, setSelectedFilter] = useState("gross_total"); // Default filter value
   const [analyticsData, setAnalyticsData] = useState(null); // State to hold fetched analytics data
   const [loading, setLoading] = useState(false); // Loading state
   const [error, setError] = useState(null); // Error state
@@ -42,11 +41,10 @@ export default function AnalyticsTab({ eventId }) {
     };
 
     // if (selectedFilter && selectedMaterialId) {
-      fetchAnalytics(); // Fetch data only if filter is selected
+    fetchAnalytics(); // Fetch data only if filter is selected
     // }
-  }, [selectedFilter,selectedMaterialId]); // Depend on both `id` and `selectedFilter`
- 
-  
+  }, [selectedFilter, selectedMaterialId]); // Depend on both `id` and `selectedFilter`
+
   useEffect(() => {
     const fetchCompanies = async () => {
       setLoading(true); // Set loading state to true before fetching
@@ -70,11 +68,42 @@ export default function AnalyticsTab({ eventId }) {
     };
 
     fetchCompanies(); // Fetch the companies data on component mount
-  }, [selectedFilter,selectedMaterialId]); // Empty dependency array ensures this runs once on mount
+  }, [selectedFilter, selectedMaterialId]); // Empty dependency array ensures this runs once on mount
 
   // Handle the dropdown change event
   const handleDropdownChange = (event) => {
     setSelectedMaterialId(event.target.value); // Set selected company ID
+  };
+
+  // Utility functions for formatting
+  const formatCurrency = (value) =>
+    value !== undefined && value !== null
+      ? `₹${Number(value).toLocaleString("en-IN")} / Nos`
+      : "-";
+
+  const formatSavings = (initial, cheapest) => {
+    if (
+      initial === undefined ||
+      cheapest === undefined ||
+      initial === null ||
+      cheapest === null
+    )
+      return "-";
+    const savings = initial - cheapest;
+    const percent = initial > 0 ? ((savings / initial) * 100).toFixed(2) : "0";
+    return `₹${savings.toLocaleString("en-IN")} - ${percent}%`;
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    const date = new Date(dateStr);
+    return date.toLocaleString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      day: "2-digit",
+      month: "short",
+      year: "2-digit",
+    });
   };
 
   return (
@@ -87,7 +116,11 @@ export default function AnalyticsTab({ eventId }) {
     >
       {/* Details Section */}
       <div className="details d-flex align-items-center my-4">
-        <label htmlFor="details" className="me-2 fw-bold" style={{ textWrap: 'nowrap' }}>
+        <label
+          htmlFor="details"
+          className="me-2 fw-bold"
+          style={{ textWrap: "nowrap" }}
+        >
           Show the details according to:
         </label>
         <select
@@ -97,59 +130,78 @@ export default function AnalyticsTab({ eventId }) {
           value={selectedFilter}
           onChange={handleFilterChange}
         >
-           <option value="gross_total">Gross Total</option>
+          <option value="gross_total">Gross Total</option>
           <option value="product_price">Product Price</option>
           <option value="product_total">Product Total</option>
         </select>
         <span className="me-2">for</span>
-        <select id="product" className="form-select" aria-label="Product filter"
-        onChange={handleDropdownChange}
-        value={selectedMaterialId || ''} // Set the selected value to the current selected company ID
+        <select
+          id="product"
+          className="form-select"
+          aria-label="Product filter"
+          onChange={handleDropdownChange}
+          value={selectedMaterialId || ""} // Set the selected value to the current selected company ID
         >
           {/* <option value="woodenDoorFrame">Wooden Door Frame (...</option> */}
           <option value="">Select Material</option>
-        {companies.map(([companyName, companyId]) => (
-          <option key={companyId} value={companyId}>
-            {companyName} {/* Display company name */}
-          </option>
-        ))}
+          {companies.map(([companyName, companyId]) => (
+            <option key={companyId} value={companyId}>
+              {companyName} {/* Display company name */}
+            </option>
+          ))}
         </select>
       </div>
 
       {/* Quotes and Timing Section */}
-      {/* <div className="d-flex justify-content-between mb-4">
-        <div className="quote d-flex justify-content-between flex-grow-1">
-          <div>
+      <div className="d-flex mb-4">
+        <div className="quote d-flex gap-4">
+          <div className="d-flex flex-column">
             <label className="d-block fw-semibold">Initial Quote</label>
-            <p className="text-muted">₹10,800 / Nos</p>
+            <p className="text-muted mb-0">
+              {formatCurrency(analyticsData?.event_data?.initial_bid)}
+            </p>
           </div>
-          <div>
+          <div className="d-flex flex-column">
             <label className="d-block fw-semibold">Final Best Price</label>
-            <p className="text-muted">₹10,800 / Nos</p>
+            <p className="text-muted mb-0">
+              {formatCurrency(analyticsData?.event_data?.cheapest_bid)}
+            </p>
           </div>
-          <div>
-            <label className="d-block fw-semibold">Realized Savings</label>
-            <p className="text-muted">₹0 - 0%</p>
-          </div>
+          {/* <div className="d-flex flex-column">
+      <label className="d-block fw-semibold">Realized Savings</label>
+      <p className="text-muted mb-0">
+        {formatSavings(
+          analyticsData?.event_data?.initial_bid,
+          analyticsData?.event_data?.cheapest_bid
+        )}
+      </p>
+    </div> */}
         </div>
 
-        <div className="time ms-4 flex-grow-1">
+        <div className="time d-flex">
           <div>
             <label className="d-block fw-semibold">Start Time</label>
-            <p className="text-muted">06:10 PM Apr 01, 24</p>
+            <p className="text-muted mb-0">
+              {formatDate(analyticsData?.event_data?.start_time)}
+            </p>
           </div>
           <div>
             <label className="d-block fw-semibold">End Time</label>
-            <p className="text-muted">03:35 PM Apr 06, 24</p>
+            <p className="text-muted mb-0">
+              {formatDate(analyticsData?.event_data?.end_time)}
+            </p>
           </div>
         </div>
-      </div> */}
+      </div>
 
       {/* Chart Container */}
       <div id="container" className="mt-4 card p-4 pt-5 h-100 rounded-3">
         {/* Render the ScatterChart only if analyticsData is available */}
         {analyticsData && analyticsData.graph_data.length > 0 ? (
-          <ScatterChart graphData={analyticsData.graph_data} selectedFilter={selectedFilter} />
+          <ScatterChart
+            graphData={analyticsData.graph_data}
+            selectedFilter={selectedFilter}
+          />
         ) : (
           <p>No data available for the selected filter.</p>
         )}
@@ -157,5 +209,3 @@ export default function AnalyticsTab({ eventId }) {
     </div>
   );
 }
-
-

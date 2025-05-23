@@ -590,8 +590,6 @@ export default function ParticipantsTab({ id }) {
                   {filteredData.map((vendor, index) => (
                     
                     <tr key={vendor.key}>
-                      {console.log("vendor",vendor)
-                      }
                       <td style={{ textAlign: "left" }}>
                         {(currentParticipantPage - 1) * participantPageSize +
                           index +
