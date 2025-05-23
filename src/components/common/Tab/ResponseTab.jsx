@@ -969,7 +969,7 @@ export default function ResponseTab({ isCounterOffer }) {
                   {(() => {
                     const extractedChargeData =
                       eventVendors?.flatMap((vendor) => {
-                        const charges = vendor?.bids?.[0]?.extra?.charges || [];
+                        const charges = vendor?.bids?.[0]?.tax_with_charge || [];
                         return charges.map((charge) => ({
                           charge_id: charge.charge_id,
                           amount: Number(charge.amount || 0),
@@ -992,29 +992,34 @@ export default function ResponseTab({ isCounterOffer }) {
 
                       return (
                         <Accordion
-                          key={chargeId}
-                          title={title}
-                          isDefault={true}
-                          tableColumn={[
-                            { label: "Amount", key: "amount" },
-                            { label: "Realised Amount", key: "realisedAmount" },
-                            { label: "Tax Details", key: "taxDetails" },
-                          ]}
-                          tableData={data.map((charge) => ({
-                            amount: charge.amount || "-",
-                            realisedAmount: charge.realisedAmount || "-",
-                            taxDetails: (
-                              <button
-                                className="purple-btn2"
-                                onClick={() =>
-                                  handleChargesTaxModalOpen(charge.taxDetails)
-                                }
-                              >
-                                View Tax
-                              </button>
-                            ),
-                          }))}
-                        />
+  key={chargeId}
+  title={title}
+  isDefault={true}
+  tableColumn={[
+    { label: "Amount", key: "amount" },
+    { label: "Realised Amount", key: "realisedAmount" },
+    { label: "Tax Amount", key: "taxAmount" }, // Added column
+    { label: "Tax Details", key: "taxDetails" },
+  ]}
+  tableData={data.map((charge) => {
+    const amount = Number(charge.amount) || 0;
+    const realisedAmount = Number(charge.realisedAmount) || 0;
+    const taxAmount = realisedAmount - amount;
+    return {
+      amount: amount || "-",
+      realisedAmount: realisedAmount || "-",
+      taxAmount: taxAmount || "-",
+      taxDetails: (
+        <button
+          className="purple-btn2"
+          onClick={() => handleChargesTaxModalOpen(charge.taxDetails)}
+        >
+          View Tax
+        </button>
+      ),
+    };
+  })}
+/>
                       );
                     };
 

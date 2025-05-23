@@ -12,6 +12,7 @@ import { baseURL } from "../../../confi/apiDomain";
 import SelectBox from "../../base/Select/SelectBox";
 import axios from "axios";
 import ChargesDataTable from "../../base/Table/ChargesDataTable";
+import ShortDataTable from "../../base/Table/ShortDataTable";
 
 export default function BulkCounterOfferModalTwo({
   show,
@@ -36,6 +37,7 @@ export default function BulkCounterOfferModalTwo({
   const originalTaxRateDataRef = useRef([]);
   const [tableId, setTableId] = useState(0);
   const [taxRateData, setTaxRateData] = useState([]);
+  const [taxPercentageOptions, setTaxPercentageOptions] = useState([]);
   const { eventId } = useParams();
 
   useEffect(() => {
@@ -63,8 +65,21 @@ export default function BulkCounterOfferModalTwo({
         console.error("Error fetching tax data:", error);
       }
     };
+    async function fetchTaxPercentages() {
+      try {
+        const res = await fetch(
+          "https://marathon.lockated.com//rfq/events/tax_percentage?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+        const data = await res.json();
+        setTaxPercentageOptions(data);
+      } catch (err) {
+        setTaxPercentageOptions([]);
+      }
+    }
 
     fetchTaxes();
+
+    fetchTaxPercentages();
   }, []);
 
   useEffect(() => {
@@ -162,7 +177,7 @@ export default function BulkCounterOfferModalTwo({
                   charge.taxChargeType.trim().toLowerCase()
               );
               return {
-                resource_id: matchedTax?.id || null, 
+                resource_id: matchedTax?.id || null,
                 resource_type: matchedTax?.taxChargeType || "TaxCharge",
                 amount: charge.amount,
                 inclusive: charge.inclusive,
@@ -171,7 +186,7 @@ export default function BulkCounterOfferModalTwo({
               };
             }
           ),
-    
+
           ...(taxRateData[index]?.deduction_bid_material_tax_details || []).map(
             (charge) => {
               const matchedTax = deductionTaxOptions?.find(
@@ -179,7 +194,7 @@ export default function BulkCounterOfferModalTwo({
                   tax.value?.trim().toLowerCase() ===
                   charge.taxChargeType.trim().toLowerCase()
               );
-    
+
               return {
                 resource_id: matchedTax?.id || null,
                 resource_type: matchedTax?.type || "TaxCharge",
@@ -191,8 +206,8 @@ export default function BulkCounterOfferModalTwo({
             }
           ),
         ];
-        console.log("taxDetails",taxRateData, taxDetails);
-        
+        console.log("taxDetails", taxRateData, taxDetails);
+
         return {
           event_material_id: item.id,
           bid_material_id: item.bid_materials?.[0]?.bid_id || null,
@@ -205,7 +220,9 @@ export default function BulkCounterOfferModalTwo({
           // realised_gst: parseFloat(item.realised_gst) || 0,
           vendor_remark: item.vendor_remark || "",
           bid_material_tax_details: taxDetails,
-          addition_tax_charges: (taxRateData[index]?.addition_bid_material_tax_details || [])?.map((charge) => ({
+          addition_tax_charges: (
+            taxRateData[index]?.addition_bid_material_tax_details || []
+          )?.map((charge) => ({
             taxChargeType: charge.taxChargeType,
             taxChargePerUom: charge.taxChargePerUom,
             inclusive: charge.inclusive,
@@ -258,7 +275,7 @@ export default function BulkCounterOfferModalTwo({
         payment_terms: formData.payment_terms || "_",
         loading_unloading_clause: formData.loading_unloading_clause || "_",
         counter_bid_materials_attributes: counterBidMaterialsAttributes,
-        charges: extractChargeTableData
+        charges: extractChargeTableData,
       },
     };
 
@@ -299,22 +316,24 @@ export default function BulkCounterOfferModalTwo({
     updatedMaterials[index][field] = value;
 
     const price = parseFloat(updatedMaterials[index].price) || 0;
+    // Use quantity_available if set, otherwise fallback to quantity
     const quantityAvail =
-      parseFloat(updatedMaterials[index].quantity_available) || 0;
+      updatedMaterials[index].quantity_available !== undefined &&
+      updatedMaterials[index].quantity_available !== null &&
+      updatedMaterials[index].quantity_available !== ""
+        ? parseFloat(updatedMaterials[index].quantity_available) || 0
+        : parseFloat(updatedMaterials[index].quantity) || 0;
     const discount = parseFloat(updatedMaterials[index].discount) || 0;
     const gst = parseFloat(updatedMaterials[index].gst) || 0;
 
     const total = price * quantityAvail;
     const realisedPrice = price - (price * discount) / 100;
-
     const realisedDiscount = (total * discount) / 100;
-
     const landedAmount = total - realisedDiscount;
     let realisedGst = 0;
     if (gst > 0) {
       realisedGst = (landedAmount * gst) / 100;
     }
-
     const finalTotal = landedAmount + realisedGst;
 
     updatedMaterials[index].realised_discount = realisedDiscount.toFixed(2);
@@ -396,11 +415,17 @@ export default function BulkCounterOfferModalTwo({
             type="number"
             min="0"
             className="form-control"
-            value={eventMaterial.quantity_available || ""}
+            value={
+              eventMaterial.quantity_available !== undefined &&
+              eventMaterial.quantity_available !== null &&
+              eventMaterial.quantity_available !== ""
+                ? eventMaterial.quantity_available
+                : eventMaterial.quantity || ""
+            }
             style={{ width: "auto" }}
             onChange={(e) => {
-              const value = parseFloat(e.target.value) || 0;
-              const quantityRequested = eventMaterial.quantity || 0; // Ensure quantityRequested is a number
+              const value = parseFloat(e.target.value);
+              const quantityRequested = eventMaterial.quantity || 0;
 
               if (value > quantityRequested) {
                 toast.error(
@@ -700,9 +725,7 @@ export default function BulkCounterOfferModalTwo({
       })
     );
 
-    setShortTableData(
-      formattedCharges
-    );
+    setShortTableData(formattedCharges);
   }, []);
   const onValueChange = (updated) => {
     setShortTableData(updated);
@@ -752,10 +775,10 @@ export default function BulkCounterOfferModalTwo({
   // };
 
   const calculateGrossTotal = () => {
-    console.log("bidCounterData:---",bidCounterData, formData);
-    
+    console.log("bidCounterData:---", bidCounterData, formData);
+
     const total = formData.event_materials.reduce((acc, material) => {
-      const itemTotal = parseFloat(material.total_amount) || 0;// Ensure valid number
+      const itemTotal = parseFloat(material.total_amount) || 0; // Ensure valid number
       return acc + itemTotal;
     }, 0);
 
@@ -1104,7 +1127,12 @@ export default function BulkCounterOfferModalTwo({
         <Table columns={productTableColumns} data={productTableData} />
 
         <div className="d-flex justify-content-end">
-          <ShortTable data={sideTableData} />
+          {/* <ShortTable data={sideTableData} /> */}
+          <ShortDataTable
+            data={sideTableData}
+            disabled={true} // Use the new disabled prop
+            onValueChange={() => {}}
+          />
         </div>
 
         <div className="d-flex justify-content-end mt-4">
@@ -1112,17 +1140,17 @@ export default function BulkCounterOfferModalTwo({
             Other Charges
           </button>
         </div>
-        <ChargesDataTable 
-        data={shortTableData}
-        showOtherChargesModal={showOtherChargesModal}
-        handleCloseOtherChargesModal={handleCloseOtherChargesModal}
-        setGrossTotal={setSumTotal}
-        grossTotal={sumTotal}
-        editable={true}
-        onValueChange={(updated) => {
-          setShortTableData(updated);
-        }}
-        calculateGrossTotal={calculateGrossTotal}
+        <ChargesDataTable
+          data={shortTableData}
+          showOtherChargesModal={showOtherChargesModal}
+          handleCloseOtherChargesModal={handleCloseOtherChargesModal}
+          setGrossTotal={setSumTotal}
+          grossTotal={sumTotal}
+          editable={true}
+          onValueChange={(updated) => {
+            setShortTableData(updated);
+          }}
+          calculateGrossTotal={calculateGrossTotal}
         />
         <div className="d-flex justify-content-end">
           <h4>Sum Total : ₹{sumTotal}</h4>
@@ -1415,7 +1443,7 @@ export default function BulkCounterOfferModalTwo({
                               disabled={true}
                             />
                           </td>
-                          <td>
+                          {/* <td>
                             <select
                               className="form-select"
                               // value={item.taxChargePerUom}
@@ -1437,6 +1465,36 @@ export default function BulkCounterOfferModalTwo({
                               <option value="18%">18%</option>
                               <option value="28%">28%</option>
                             </select>
+                          </td> */}
+                          <td>
+                            <SelectBox
+                              options={
+                                (() => {
+                                  // Find the selected tax type name by resource_id
+                                  const selectedTaxType =
+                                    taxOptions.find((opt) => opt.value === item.resource_id)?.label;
+                                  const match = taxPercentageOptions.find(
+                                    (tax) => tax.tax_name === selectedTaxType
+                                  );
+                                  return match && Array.isArray(match.percentage)
+                                    ? match.percentage.map((percent) => ({
+                                        label: `${percent}%`,
+                                        value: `${percent}%`,
+                                      }))
+                                    : [];
+                                })()
+                              }
+                              defaultValue={item?.percentage || ""}
+                              onChange={(value) =>
+                                handleTaxChargeChange(
+                                  selectedMaterialIndex,
+                                  item.id,
+                                  "percentage",
+                                  value,
+                                  "addition"
+                                )
+                              }
+                            />
                           </td>
                           <td className="text-center">
                             <input
@@ -1784,19 +1842,9 @@ export default function BulkCounterOfferModalTwo({
                         <button
                           className="btn btn-outline-danger btn-sm"
                           onClick={() => {
-                            if (
-                              taxRateData[tableId]
-                                ?.addition_bid_material_tax_details.length >= 4
-                            ) {
-                              toast.error(
-                                "You can only add up to 1 fields for Additional Tax & Charges.",
-                                {
-                                  autoClose: 2000,
-                                }
-                              );
-                            } else {
+                            
                               addAdditionTaxCharge(tableId);
-                            }
+                            
                           }}
                         >
                           <span>+</span>
@@ -1806,7 +1854,6 @@ export default function BulkCounterOfferModalTwo({
                     {/* {console.log("item:----", taxRateData, "taxOpiton",tableId)} */}
 
                     {taxRateData[tableId]?.addition_bid_material_tax_details
-                      .slice(0, 1)
                       ?.map((item, rowIndex) => (
                         <tr key={`${rowIndex}-${item.id}`}>
                           <td>
@@ -1831,10 +1878,51 @@ export default function BulkCounterOfferModalTwo({
                                 );
                               }}
                               className="custom-select"
+                              disabledOptions={(
+                                taxRateData[
+                                  tableId
+                                ]?.addition_bid_material_tax_details?.reduce(
+                                  (acc, item) => {
+                                    const matchedOption = taxOptions.find(
+                                      (option) => option.id === item.resource_id
+                                    );
+
+                                    const taxType = item.taxChargeType;
+
+                                    // Disable CGST and IGST if CGST is selected
+                                    if (taxType === "CGST") {
+                                      acc.push("CGST", "IGST");
+                                    }
+
+                                    // Disable SGST and IGST if SGST is selected
+                                    if (taxType === "SGST") {
+                                      acc.push("SGST", "IGST");
+                                    }
+
+                                    // Disable CGST and SGST if IGST is selected
+                                    if (taxType === "IGST") {
+                                      acc.push("CGST", "SGST");
+                                    }
+
+                                    // Add taxType or matched option value as fallback
+                                    if (taxType) {
+                                      acc.push(taxType);
+                                    } else if (matchedOption?.value) {
+                                      acc.push(matchedOption.value);
+                                    }
+
+                                    return acc;
+                                  },
+                                  []
+                                ) || []
+                              ).filter(
+                                (value, index, self) =>
+                                  self.indexOf(value) === index
+                              )}
                             />
                           </td>
 
-                          <td>
+                          {/* <td>
                             <select
                               className="form-select"
                               // value={item.taxChargePerUom}
@@ -1855,6 +1943,44 @@ export default function BulkCounterOfferModalTwo({
                               <option value="18%">18%</option>
                               <option value="28%">28%</option>
                             </select>
+                          </td> */}
+                          <td>
+                            <SelectBox
+                              options={
+                                (() => {
+                                  // Find the selected tax type name by resource_id
+                                  console.log("item:----", item, taxOptions);
+                                  
+                                  const selectedTaxType =
+                                    taxOptions.find((opt) => opt.label === item.taxChargeType)?.label;
+                                  const match = taxPercentageOptions.find(
+                                    (tax) => tax.tax_name === selectedTaxType
+                                  );
+                                  return match && Array.isArray(match.percentage)
+                                    ? match.percentage.map((percent) => ({
+                                        label: `${percent}%`,
+                                        value: `${percent}%`,
+                                      }))
+                                    : [];
+                                })()
+                              }
+                              defaultValue={item?.percentage || ""}
+                              onChange={(value) =>
+                                // handleTaxChargeChange(
+                                //   tableId,
+                                //   item.id,
+                                //   "percentage",
+                                //   value
+                                // )
+                                handleTaxChargeChange(
+                                  tableId,
+                                  item.id,
+                                  "taxChargePerUom",
+                                  value,
+                                  "addition"
+                                )
+                              }
+                            />
                           </td>
 
                           <td className="text-center">
@@ -1946,7 +2072,7 @@ export default function BulkCounterOfferModalTwo({
                             }
                           />
                         </td>
-                        <td>
+                        {/* <td>
                           <select
                             className="form-select"
                             // value={item.taxChargePerUom}
@@ -1966,6 +2092,36 @@ export default function BulkCounterOfferModalTwo({
                             <option value="2%">2%</option>
                             <option value="10%">10%</option>
                           </select>
+                        </td> */}
+
+                        <td>
+                          <SelectBox
+                            options={
+                              (() => {
+                                const selectedTaxType =
+                                  deductionTaxOptions.find((opt) => opt.value === item.taxChargeType)?.label;
+                                const match = taxPercentageOptions.find(
+                                  (tax) => tax.tax_name === selectedTaxType
+                                );
+                                return match && Array.isArray(match.percentage)
+                                  ? match.percentage.map((percent) => ({
+                                      label: `${percent}%`,
+                                      value: `${percent}%`,
+                                    }))
+                                  : [];
+                              })()
+                            }
+                            defaultValue={item?.percentage || ""}
+                            onChange={(value) =>                            
+                              handleTaxChargeChange(
+                                tableId,
+                                item.id,
+                                "taxChargePerUom",
+                                value,
+                                "deduction"
+                              )
+                            }
+                          />
                         </td>
                         <td className="text-center">
                           <input
