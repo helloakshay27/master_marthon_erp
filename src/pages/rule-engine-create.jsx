@@ -28,7 +28,7 @@ const RuleEngineCreate = () => {
 
     const [conditions, setConditions] = useState([{ ...initialCondition }]);
     const [ruleName, setRuleName] = useState("");
-     // THEN section state
+    // THEN section state
     const [masterRewardOutcome, setMasterRewardOutcome] = useState("");
     const [subRewardOutcome, setSubRewardOutcome] = useState("");
     const [parameter, setParameter] = useState("");
@@ -56,10 +56,10 @@ const RuleEngineCreate = () => {
         ruleName,
         conditions,
         then: {
-                masterRewardOutcome,
-                subRewardOutcome,
-                parameter,
-            },
+            masterRewardOutcome,
+            subRewardOutcome,
+            parameter,
+        },
     };
     console.log("Payload:", payload);
 
@@ -129,17 +129,17 @@ const RuleEngineCreate = () => {
                                                     onClick={() => removeCondition(idx)}
                                                     title="Remove Condition"
                                                 >
-                                                    <span>Remove Condition</span>
-                                                    {/* <svg
+                                                    {/* <span>Remove Condition</span> */}
+
+                                                    <svg
                                                         xmlns="http://www.w3.org/2000/svg"
-                                                        width="26"
-                                                        height="26"
+                                                        width="20"
+                                                        height="20"
                                                         fill="currentColor"
-                                                        className="bi bi-x-circle"
                                                         viewBox="0 0 16 16"
                                                     >
-                                                        <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm3.354 4.646a.5.5 0 0 1 0 .708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708L8 7.293l2.646-2.647a.5.5 0 0 1 .708 0z" />
-                                                    </svg> */}
+                                                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                                                    </svg>
                                                 </button>
                                             )}
                                         </h6>
@@ -179,37 +179,37 @@ const RuleEngineCreate = () => {
                                             //     </div>
                                             // </ul>
                                             <ul className="nav nav-tabs border-0 mt-3">
-  <div className="d-flex gap-3 And-btn rounded custom-radio-lg">
-    <li className="nav-item d-flex p-2 gap-2" role="presentation">
-      <input
-        type="radio"
-        className="nav-link"
-        id={`and-tab-${idx}`}
-        name={`condition-type-${idx}`}
-        value="AND"
-        checked={condition.conditionType === "AND"}
-        onChange={() => handleConditionChange(idx, "conditionType", "AND")}
-      />
-      <label htmlFor={`and-tab-${idx}`} className="and-or-btn">
-        AND
-      </label>
-    </li>
-    <li className="nav-item d-flex p-2 gap-2" role="presentation">
-      <input
-        type="radio"
-        className="nav-link"
-        id={`or-tab-${idx}`}
-        name={`condition-type-${idx}`}
-        value="OR"
-        checked={condition.conditionType === "OR"}
-        onChange={() => handleConditionChange(idx, "conditionType", "OR")}
-      />
-      <label htmlFor={`or-tab-${idx}`} className="and-or-btn">
-        OR
-      </label>
-    </li>
-  </div>
-</ul>
+                                                <div className="d-flex gap-3 And-btn rounded custom-radio-lg">
+                                                    <li className="nav-item d-flex p-2 gap-2" role="presentation">
+                                                        <input
+                                                            type="radio"
+                                                            className="nav-link"
+                                                            id={`and-tab-${idx}`}
+                                                            name={`condition-type-${idx}`}
+                                                            value="AND"
+                                                            checked={condition.conditionType === "AND"}
+                                                            onChange={() => handleConditionChange(idx, "conditionType", "AND")}
+                                                        />
+                                                        <label htmlFor={`and-tab-${idx}`} className="and-or-btn">
+                                                            AND
+                                                        </label>
+                                                    </li>
+                                                    <li className="nav-item d-flex p-2 gap-2" role="presentation">
+                                                        <input
+                                                            type="radio"
+                                                            className="nav-link"
+                                                            id={`or-tab-${idx}`}
+                                                            name={`condition-type-${idx}`}
+                                                            value="OR"
+                                                            checked={condition.conditionType === "OR"}
+                                                            onChange={() => handleConditionChange(idx, "conditionType", "OR")}
+                                                        />
+                                                        <label htmlFor={`or-tab-${idx}`} className="and-or-btn">
+                                                            OR
+                                                        </label>
+                                                    </li>
+                                                </div>
+                                            </ul>
                                         )}
                                         <div className="border-btm pb-2 mt-2">
                                             {/* IF Section */}
@@ -370,72 +370,72 @@ const RuleEngineCreate = () => {
 
                             {/* THEN section */}
 
-                               <div className="mt-3 p-3 mb-5">
-                <h4>
-                    <span
-                        className="badge setRuleCard"
-                        style={{
-                            color: "#8b0203",
-                            backgroundColor: "#E954202E",
-                        }}
-                    >
-                        THEN
-                    </span>
-                </h4>
-                <div className="row  mt-2">
-                    <div className="col-md-4 ">
-                        <div className="form-group">
-                            <label>
-                                Master Reward Outcome <span>*</span>
-                            </label>
-                            <SingleSelector
-                                options={options}
-                                value={options.find(opt => opt.value === masterRewardOutcome)}
-                                onChange={selected =>
-                                    setMasterRewardOutcome(selected ? selected.value : "")
-                                }
-                                placeholder={`Select  Master Reward Outcome`}
-                            />
-                        </div>
-                    </div>
-                    <div className="col-md-1 d-flex justify-content-center align-items-center">
-                        <h4>&</h4>
-                    </div>
-                    <div className="col-md-4 ">
-                        <div className="form-group">
-                            <label>
-                                Sub Reward Outcome <span>*</span>
-                            </label>
-                            <SingleSelector
-                                options={options}
-                                value={options.find(opt => opt.value === subRewardOutcome)}
-                                onChange={selected =>
-                                    setSubRewardOutcome(selected ? selected.value : "")
-                                }
-                                placeholder={`Select Sub Reward Outcome`}
-                            />
-                        </div>
-                    </div>
-                    <div className="col-md-3">
-                        <div className="form-group">
-                            <label>Parameter <span>*</span></label>
-                            <div
-                                id="datepicker"
-                                className="input-group date"
-                                data-date-format="mm-dd-yyyy"
-                            >
-                                <input
-                                    className="form-control"
-                                    type="text"
-                                    name="creditNoteDate"
-                                    value={parameter}
-                                    onChange={e => setParameter(e.target.value)}
-                                />
+                            <div className="mt-3 p-3 mb-5">
+                                <h4>
+                                    <span
+                                        className="badge setRuleCard"
+                                        style={{
+                                            color: "#8b0203",
+                                            backgroundColor: "#E954202E",
+                                        }}
+                                    >
+                                        THEN
+                                    </span>
+                                </h4>
+                                <div className="row  mt-2">
+                                    <div className="col-md-4 ">
+                                        <div className="form-group">
+                                            <label>
+                                                Master Reward Outcome <span>*</span>
+                                            </label>
+                                            <SingleSelector
+                                                options={options}
+                                                value={options.find(opt => opt.value === masterRewardOutcome)}
+                                                onChange={selected =>
+                                                    setMasterRewardOutcome(selected ? selected.value : "")
+                                                }
+                                                placeholder={`Select  Master Reward Outcome`}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="col-md-1 d-flex justify-content-center align-items-center">
+                                        <h4>&</h4>
+                                    </div>
+                                    <div className="col-md-4 ">
+                                        <div className="form-group">
+                                            <label>
+                                                Sub Reward Outcome <span>*</span>
+                                            </label>
+                                            <SingleSelector
+                                                options={options}
+                                                value={options.find(opt => opt.value === subRewardOutcome)}
+                                                onChange={selected =>
+                                                    setSubRewardOutcome(selected ? selected.value : "")
+                                                }
+                                                placeholder={`Select Sub Reward Outcome`}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="col-md-3">
+                                        <div className="form-group">
+                                            <label>Parameter <span>*</span></label>
+                                            <div
+                                                id="datepicker"
+                                                className="input-group date"
+                                                data-date-format="mm-dd-yyyy"
+                                            >
+                                                <input
+                                                    className="form-control"
+                                                    type="text"
+                                                    name="creditNoteDate"
+                                                    value={parameter}
+                                                    onChange={e => setParameter(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
                         </div>
                         <div className="row mt-4 mb-5 justify-content-center w-100">
                             {/* <div className="col-md-2">
