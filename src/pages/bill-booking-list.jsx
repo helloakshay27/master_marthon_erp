@@ -570,6 +570,7 @@ const BillBookingList = () => {
     po_number: true,
     created_at: true,
     accepted_at: true,
+    bill_id:true,
     inventory_date: true,
     total_amount: true,
     bill_copies: true,
@@ -595,7 +596,7 @@ const BillBookingList = () => {
     },
     {
       field: "invoice_number",
-      headerName: "Bill No.",
+      headerName: "Invoice No.",
       width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
@@ -627,7 +628,16 @@ const BillBookingList = () => {
       headerName: "Accepted On",
       width: 150,
     },
-
+{ field: "bill_id", headerName: "Bill ID", width: 150 ,
+  renderCell: (params) =>
+        params.value && params.row.bill_entry_id ? (
+          <Link to={`/bill-entry-details/${params.row.bill_entry_id}`}>
+            <span className="boq-id-link">{params.value}</span>
+          </Link>
+        ) : (
+          "-"
+        ),
+},
     { field: "inventory_date", headerName: "Bill Date", width: 150 },
     { field: "total_amount", headerName: "Bill Amount", width: 150 },
     { field: "bill_copies", headerName: "Bill Copies", width: 150 },

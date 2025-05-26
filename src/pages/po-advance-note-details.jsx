@@ -8,12 +8,14 @@ import { auditLogColumns, auditLogData } from "../constant/data";
 import { DownloadIcon } from "../components";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { useEffect } from "react";
 import axios from "axios";
 
 const POAdvanceNoteDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [showRows, setShowRows] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -41,24 +43,53 @@ const POAdvanceNoteDetails = () => {
   const [advanceNote, setAdvanceNote] = useState(null); // State to store API data
 
   // Fetch data from API
+  // useEffect(() => {
+  //   const fetchAdvanceNotes = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const response = await axios.get(
+  //         `https://marathon.lockated.com/advance_notes/${id}/
+  //         token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //       );
+  //       const data = response.data; // Assuming you want the first item
+  //       console.log("data", data);
+  //       setAdvanceNote(data);
+  //     } catch (err) {
+  //       setError("Failed to fetch data");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchAdvanceNotes();
+  // }, [id]);
+
   useEffect(() => {
     const fetchAdvanceNotes = async () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/advance_notes/${id}`
+          `https://marathon.lockated.com/advance_notes/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
-        const data = response.data; // Assuming you want the first item
+        const data = response.data;
+        console.log("data", data);
         setAdvanceNote(data);
+        setStatus(
+          data.status?.charAt(0).toUpperCase() +
+            data.status?.slice(1).toLowerCase() || ""
+        );
       } catch (err) {
+        console.error("Error fetching advance note:", err);
         setError("Failed to fetch data");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAdvanceNotes();
-  }, []);
+    if (id) {
+      fetchAdvanceNotes();
+    }
+  }, [id]);
 
   const [rows, setRows] = useState([
     {
@@ -245,12 +276,13 @@ const POAdvanceNoteDetails = () => {
     try {
       const response = await axios.patch(
         // "https://marathon.lockated.com/advance_notes/3/update_status",
-        `https://marathon.lockated.com/advance_notes/${advanceNote.id}/update_status`, // Use the dynamic ID here
+        `https://marathon.lockated.com/advance_notes/${advanceNote.id}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`, // Use the dynamic ID here
 
         payload
       );
       console.log("Status updated successfully:", response.data);
       alert("Status updated successfully!");
+      navigate("/po-advance-note-list"); // Redirect to bill-booking-list
     } catch (error) {
       console.error("Error updating status:", error);
       alert("Failed to update status.");

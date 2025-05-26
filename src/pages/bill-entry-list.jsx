@@ -272,13 +272,76 @@ const BillEntryList = () => {
         `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${statusQuery}`
       )
       .then((response) => {
+        // const transformedData = response.data.bill_entries.map(
+        //   (entry, index) => ({
+        //     id: entry.id,
+        //     srNo: (page - 1) * pageSize + index + 1,
+        //     ...entry,
+        //   })
+        // );
         const transformedData = response.data.bill_entries.map(
-          (entry, index) => ({
-            id: entry.id,
-            srNo: (page - 1) * pageSize + index + 1,
-            ...entry,
-          })
+          (entry, index) => {
+            // Format created_at date
+            let formattedCreatedAt = "-";
+            if (entry.created_at) {
+              try {
+                formattedCreatedAt = new Date(entry.created_at)
+                  .toISOString()
+                  .slice(0, 10);
+              } catch (e) {
+                formattedCreatedAt = "-";
+              }
+            }
+
+            // Format updated_at date
+            let formattedUpdatedAt = "-";
+            if (entry.updated_at) {
+              try {
+                formattedUpdatedAt = new Date(entry.updated_at)
+                  .toISOString()
+                  .slice(0, 10);
+              } catch (e) {
+                formattedUpdatedAt = "-";
+              }
+            }
+
+            // Format due_date
+            let formattedDueDate = "-";
+            if (entry.due_date) {
+              try {
+                formattedDueDate = new Date(entry.due_date)
+                  .toISOString()
+                  .slice(0, 10);
+              } catch (e) {
+                formattedDueDate = "-";
+              }
+            }
+
+            // Format bill_date
+            let formattedBillDate = "-";
+            if (entry.bill_date) {
+              try {
+                formattedBillDate = new Date(entry.bill_date)
+                  .toISOString()
+                  .slice(0, 10);
+              } catch (e) {
+                formattedBillDate = "-";
+              }
+            }
+
+            return {
+              id: entry.id,
+              srNo: (page - 1) * pageSize + index + 1,
+              ...entry,
+              created_at: formattedCreatedAt,
+              updated_at: formattedUpdatedAt,
+              due_date: formattedDueDate,
+              bill_date: formattedBillDate,
+            };
+          }
         );
+
+        setBillEntries(transformedData);
         setBillEntries(transformedData);
         setMeta(response.data.meta);
         setTotalPages(response.data.meta.total_pages);
@@ -307,13 +370,98 @@ const BillEntryList = () => {
     axios
       .get(url)
       .then((response) => {
+        // const transformedData = response.data.bill_entries.map(
+        //   (entry, index) => ({
+        //     id: entry.id,
+        //     srNo: (currentPage - 1) * pageSize + index + 1, // Use currentPage here
+        //     ...entry,
+        //   })
+        // );
+        // const transformedData = response.data.bill_entries.map(
+        //   (entry, index) => {
+        //     // Format created_at date
+        //     let formattedCreatedAt = "-";
+        //     if (entry.created_at) {
+        //       try {
+        //         formattedCreatedAt = new Date(entry.created_at)
+        //           .toISOString()
+        //           .slice(0, 10);
+        //       } catch (e) {
+        //         formattedCreatedAt = "-";
+        //       }
+        //     }
+
+        //     // Format updated_at date
+        //     let formattedUpdatedAt = "-";
+        //     if (entry.updated_at) {
+        //       try {
+        //         formattedUpdatedAt = new Date(entry.updated_at)
+        //           .toISOString()
+        //           .slice(0, 10);
+        //       } catch (e) {
+        //         formattedUpdatedAt = "-";
+        //       }
+        //     }
+
+        //     // Format due_date
+        //     let formattedDueDate = "-";
+        //     if (entry.due_date) {
+        //       try {
+        //         formattedDueDate = new Date(entry.due_date)
+        //           .toISOString()
+        //           .slice(0, 10);
+        //       } catch (e) {
+        //         formattedDueDate = "-";
+        //       }
+        //     }
+
+        //     // Format bill_date
+        //     let formattedBillDate = "-";
+        //     if (entry.bill_date) {
+        //       try {
+        //         formattedBillDate = new Date(entry.bill_date)
+        //           .toISOString()
+        //           .slice(0, 10);
+        //       } catch (e) {
+        //         formattedBillDate = "-";
+        //       }
+        //     }
+
+        //     return {
+        //       id: entry.id,
+        //       srNo: (page - 1) * pageSize + index + 1,
+        //       ...entry,
+        //       created_at: formattedCreatedAt,
+        //       updated_at: formattedUpdatedAt,
+        //       due_date: formattedDueDate,
+        //       bill_date: formattedBillDate,
+        //     };
+        //   }
+        // );
+
         const transformedData = response.data.bill_entries.map(
-          (entry, index) => ({
-            id: entry.id,
-            srNo: (currentPage - 1) * pageSize + index + 1, // Use currentPage here
-            ...entry,
-          })
+          (entry, index) => {
+            const formatDate = (date) => {
+              try {
+                return date ? new Date(date).toISOString().slice(0, 10) : "-";
+              } catch {
+                return "-";
+              }
+            };
+
+            return {
+              id: entry.id,
+              srNo: (currentPage - 1) * pageSize + index + 1,
+              ...entry,
+              created_at: formatDate(entry.created_at),
+              updated_at: formatDate(entry.updated_at),
+              due_date: formatDate(entry.due_date),
+              bill_date: formatDate(entry.bill_date),
+            };
+          }
         );
+
+        setBillEntries(transformedData);
         setBillEntries(transformedData);
         setTotalPages(response.data.meta.total_pages);
         setTotalEntries(response.data.meta.total_count);
