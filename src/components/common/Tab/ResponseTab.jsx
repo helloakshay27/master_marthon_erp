@@ -452,7 +452,8 @@ export default function ResponseTab({ isCounterOffer }) {
         error
       );
       toast.error(
-        `Failed to ${status === "accepted" ? "accept" : "decline"
+        `Failed to ${
+          status === "accepted" ? "accept" : "decline"
         } the offer. Please try again.`
       );
     } finally {
@@ -591,7 +592,6 @@ export default function ResponseTab({ isCounterOffer }) {
               </div>
             </>
           ) : (
-
             <div className="">
               <div
                 style={{
@@ -652,7 +652,9 @@ export default function ResponseTab({ isCounterOffer }) {
                                   <div className="">
                                     {vendor.full_name}
                                     <p>
-                                      {formatDate(vendor?.bids?.[0]?.created_at)}
+                                      {formatDate(
+                                        vendor?.bids?.[0]?.created_at
+                                      )}
                                     </p>
                                     <p>
                                       {vendor?.counter_bid_length} Counter Bid
@@ -692,15 +694,18 @@ export default function ResponseTab({ isCounterOffer }) {
                                     </div>
                                   </div>
                                   <button
-                                    className={`purple-btn1 mt-2 ${isCounterOffer ? "disabled-btn" : ""
-                                      } position-absolute bottom-0 start-50 translate-middle-x`}
+                                    className={`purple-btn1 mt-2 ${
+                                      isCounterOffer ? "disabled-btn" : ""
+                                    } position-absolute bottom-0 start-50 translate-middle-x`}
                                     onClick={async () => {
                                       if (
                                         vendor?.bids?.length > 0 &&
-                                        vendor?.bids[0]?.bid_materials?.length > 0
+                                        vendor?.bids[0]?.bid_materials?.length >
+                                          0
                                       ) {
                                         const bidId =
-                                          vendor.bids[0].bid_materials[0].bid_id;
+                                          vendor.bids[0].bid_materials[0]
+                                            .bid_id;
                                         setBidId(bidId);
 
                                         try {
@@ -744,7 +749,8 @@ export default function ResponseTab({ isCounterOffer }) {
                                         setShowCounterOfferPopup(true);
                                         setMaterialData({
                                           material_name:
-                                            vendor?.bids?.[0]?.bid_materials?.[0]
+                                            vendor?.bids?.[0]
+                                              ?.bid_materials?.[0]
                                               ?.material_name,
                                           vendor_name: vendor.full_name,
                                           bids_values: vendor.bids,
@@ -804,31 +810,31 @@ export default function ResponseTab({ isCounterOffer }) {
                       )
                     );
 
+                    const serializedData = materialData.bids_values?.map(
+                      (bid) => {
+                        if (
+                          bid.status === "pending" &&
+                          bid.serialized_last_bid?.event_vendor_id ===
+                            bid?.event_vendor_id
+                        ) {
+                          return bid.serialized_last_bid;
+                        }
+                        return undefined; // or null, if you prefer
+                      }
+                    );
+
                     return (
                       <Accordion
                         key={ind}
-                        serializedData={
-                          materialData.bids_values?.some(
-                            (bid) =>
-                              bid.status === "pending" &&
-                              bid.serialized_last_bid?.event_vendor_id ===
-                              bid?.event_vendor_id
-                          )
-                            ? materialData.bids_values
-                              ?.filter(
-                                (bid) =>
-                                  bid.status === "pending" &&
-                                  bid?.serialized_last_bid?.event_vendor_id ===
-                                  bid?.event_vendor_id
-                              )
-                              ?.map((bid) => bid.serialized_last_bid)
-                            : undefined
-                        }
+                        serializedData={serializedData}
                         title={materialData.material_name || "_"}
                         amount={materialData.total_amounts}
                         isDefault={true}
                         tableColumn={[
-                          { label: "Best Total Amount", key: "bestTotalAmount" },
+                          {
+                            label: "Best Total Amount",
+                            key: "bestTotalAmount",
+                          },
                           {
                             label: "Quantity Available",
                             key: "quantityAvailable",
@@ -868,37 +874,43 @@ export default function ResponseTab({ isCounterOffer }) {
                                 material.quantity_available || "_",
                               price: material.price || "_",
                               discount: material.discount || "_",
-                              realisedDiscount: material.realised_discount || "_",
+                              realisedDiscount:
+                                material.realised_discount || "_",
                               gst: material.gst || "_",
                               realisedGST: material.realised_gst || "_",
                               landedAmount: material.landed_amount || "_",
                               participantAttachment:
                                 material.participant_attachment || "_",
                               realised_tax_amount:
-                                parseFloat(material.realised_tax_amount).toFixed(
-                                  2
-                                ) || "_",
+                                parseFloat(
+                                  material.realised_tax_amount
+                                ).toFixed(2) || "_",
                               totalAmount: material.total_amount || "_",
-                              ...material.extra_columns.reduce((acc, column) => {
-                                if (extraData[column]?.value) {
-                                  const value = extraData[column].value;
-                                  acc[column] = Array.isArray(value)
-                                    ? value
-                                      .map(
-                                        (item) =>
-                                          `${item.taxChargeType || ""}: ${item.amount || 0
-                                          }${item.taxChargePerUom
-                                            ? ` (${item.taxChargePerUom})`
-                                            : ""
-                                          }`
-                                      )
-                                      .join(", ")
-                                    : value || "_";
-                                } else {
-                                  acc[column] = "_";
-                                }
-                                return acc;
-                              }, {}),
+                              ...material.extra_columns.reduce(
+                                (acc, column) => {
+                                  if (extraData[column]?.value) {
+                                    const value = extraData[column].value;
+                                    acc[column] = Array.isArray(value)
+                                      ? value
+                                          .map(
+                                            (item) =>
+                                              `${item.taxChargeType || ""}: ${
+                                                item.amount || 0
+                                              }${
+                                                item.taxChargePerUom
+                                                  ? ` (${item.taxChargePerUom})`
+                                                  : ""
+                                              }`
+                                          )
+                                          .join(", ")
+                                      : value || "_";
+                                  } else {
+                                    acc[column] = "_";
+                                  }
+                                  return acc;
+                                },
+                                {}
+                              ),
                               taxRate: material,
                               bidIndex: bidIndex,
                             };
@@ -930,7 +942,8 @@ export default function ResponseTab({ isCounterOffer }) {
                           const formattedExtra = {};
                           Object.entries(extra).forEach(([key, val]) => {
                             if (!Array.isArray(val)) {
-                              formattedExtra[key] = val?.toString().trim() || "_";
+                              formattedExtra[key] =
+                                val?.toString().trim() || "_";
                             }
                           });
 
@@ -969,7 +982,8 @@ export default function ResponseTab({ isCounterOffer }) {
                   {(() => {
                     const extractedChargeData =
                       eventVendors?.flatMap((vendor) => {
-                        const charges = vendor?.bids?.[0]?.tax_with_charge || [];
+                        const charges =
+                          vendor?.bids?.[0]?.tax_with_charge || [];
                         return charges.map((charge) => ({
                           charge_id: charge.charge_id,
                           amount: Number(charge.amount || 0),
@@ -992,34 +1006,37 @@ export default function ResponseTab({ isCounterOffer }) {
 
                       return (
                         <Accordion
-  key={chargeId}
-  title={title}
-  isDefault={true}
-  tableColumn={[
-    { label: "Amount", key: "amount" },
-    { label: "Realised Amount", key: "realisedAmount" },
-    { label: "Tax Amount", key: "taxAmount" }, // Added column
-    { label: "Tax Details", key: "taxDetails" },
-  ]}
-  tableData={data.map((charge) => {
-    const amount = Number(charge.amount) || 0;
-    const realisedAmount = Number(charge.realisedAmount).toFixed(2) || 0;
-    const taxAmount = realisedAmount - amount;
-    return {
-      amount: amount || "-",
-      realisedAmount: realisedAmount || "-",
-      taxAmount: Number(taxAmount).toFixed(2) || "-",
-      taxDetails: (
-        <button
-          className="purple-btn2"
-          onClick={() => handleChargesTaxModalOpen(charge.taxDetails)}
-        >
-          View Tax
-        </button>
-      ),
-    };
-  })}
-/>
+                          key={chargeId}
+                          title={title}
+                          isDefault={true}
+                          tableColumn={[
+                            { label: "Amount", key: "amount" },
+                            { label: "Realised Amount", key: "realisedAmount" },
+                            { label: "Tax Amount", key: "taxAmount" }, // Added column
+                            { label: "Tax Details", key: "taxDetails" },
+                          ]}
+                          tableData={data.map((charge) => {
+                            const amount = Number(charge.amount) || 0;
+                            const realisedAmount =
+                              Number(charge.realisedAmount).toFixed(2) || 0;
+                            const taxAmount = realisedAmount - amount;
+                            return {
+                              amount: amount || "-",
+                              realisedAmount: realisedAmount || "-",
+                              taxAmount: Number(taxAmount).toFixed(2) || "-",
+                              taxDetails: (
+                                <button
+                                  className="purple-btn2"
+                                  onClick={() =>
+                                    handleChargesTaxModalOpen(charge.taxDetails)
+                                  }
+                                >
+                                  View Tax
+                                </button>
+                              ),
+                            };
+                          })}
+                        />
                       );
                     };
 
@@ -1280,7 +1297,7 @@ export default function ResponseTab({ isCounterOffer }) {
                               type="text"
                               className="form-control"
                               value={item.amount}
-                              onChange={(e) => { }}
+                              onChange={(e) => {}}
                               readOnly
                               disabled={true}
                             />
@@ -1425,8 +1442,9 @@ export default function ResponseTab({ isCounterOffer }) {
             <div className="d-flex justify-content-between align-items-center px-1 mt-2">
               <ul className="pagination justify-content-center d-flex">
                 <li
-                  className={`page-item ${currentReminderPage === 1 ? "disabled" : ""
-                    }`}
+                  className={`page-item ${
+                    currentReminderPage === 1 ? "disabled" : ""
+                  }`}
                 >
                   <button
                     className="page-link"
@@ -1437,8 +1455,9 @@ export default function ResponseTab({ isCounterOffer }) {
                 </li>
 
                 <li
-                  className={`page-item ${currentReminderPage === 1 ? "disabled" : ""
-                    }`}
+                  className={`page-item ${
+                    currentReminderPage === 1 ? "disabled" : ""
+                  }`}
                 >
                   <button
                     className="page-link"
@@ -1453,8 +1472,9 @@ export default function ResponseTab({ isCounterOffer }) {
                 {getReminderPageRange().map((page) => (
                   <li
                     key={page}
-                    className={`page-item ${currentReminderPage === page ? "active" : ""
-                      }`}
+                    className={`page-item ${
+                      currentReminderPage === page ? "active" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -1466,8 +1486,9 @@ export default function ResponseTab({ isCounterOffer }) {
                 ))}
 
                 <li
-                  className={`page-item ${currentReminderPage === totalReminderPages ? "disabled" : ""
-                    }`}
+                  className={`page-item ${
+                    currentReminderPage === totalReminderPages ? "disabled" : ""
+                  }`}
                 >
                   <button
                     className="page-link"
@@ -1480,8 +1501,9 @@ export default function ResponseTab({ isCounterOffer }) {
                 </li>
 
                 <li
-                  className={`page-item ${currentReminderPage === totalReminderPages ? "disabled" : ""
-                    }`}
+                  className={`page-item ${
+                    currentReminderPage === totalReminderPages ? "disabled" : ""
+                  }`}
                 >
                   <button
                     className="page-link"
@@ -1682,7 +1704,7 @@ export default function ResponseTab({ isCounterOffer }) {
                         type="text"
                         className="form-control"
                         value={item.amount}
-                        onChange={(e) => { }}
+                        onChange={(e) => {}}
                         readOnly
                         disabled={true}
                       />

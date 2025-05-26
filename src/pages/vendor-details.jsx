@@ -3834,14 +3834,16 @@ useEffect(() => {
           </div>
           {/* Table for all materials of this type */}
           <div className="p-4 pt-0">
+            {console.log("Materials Array:", materialsArr)
+            }
             <Table
               columns={[
                 { key: "srNo", label: "Sr.No." },
                 { key: "material_type", label: "Material Type" },
-                { key: "inventory_sub_type", label: "Material Sub Type" },
+                { key: "inventory_sub_type", label: "Material Sub Type"},
                 { key: "inventory_name", label: "Material Name" },
                 { key: "quantity", label: "Quantity" },
-                { key: "unit", label: "UOM" },
+                { key: "uom", label: "UOM" },
                 { key: "location", label: "Location" },
                 { key: "rate", label: "Rate" },
                 { key: "amount", label: "Amount" },

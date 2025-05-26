@@ -577,7 +577,7 @@ export default function OverviewTab({
                                   label: "Material Name",
                                 },
                                 { key: "quantity", label: "Quantity" },
-                                { key: "uom_name", label: "UOM" },
+                                { key: "uom", label: "UOM" },
                                 { key: "location", label: "Location" },
                                 { key: "rate", label: "Rate" },
                                 { key: "amount", label: "Amount" },
