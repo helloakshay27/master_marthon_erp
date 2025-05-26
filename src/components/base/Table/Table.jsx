@@ -209,13 +209,11 @@ export default function Table({
                     >
                       {row.header}
                     </td>
-                    {row.values.map((value, valueIndex) => {
+                    {/* {row.values.map((value, valueIndex) => {
                       // Handle serializedData as an array of arrays
-                      const serializedEntries = Array.isArray(
-                        loadedSerializedData[valueIndex]
-                      )
-                        ? loadedSerializedData[valueIndex]
-                        : [loadedSerializedData[valueIndex] || {}];
+                        const serializedEntry = loadedSerializedData[valueIndex] || {};
+  const originalValue = value === "_" ? "" : value;
+
 
                       const serializedCharges = serializedEntries.map(
                         (entry) => entry.charges || {}
@@ -223,7 +221,6 @@ export default function Table({
                       const serializedBidMaterials = serializedEntries.flatMap(
                         (entry) => entry.bid_materials || [] // Handle all bid_materials, not just the first one
                       );
-                      const originalValue = value === "_" ? "" : value; // Replace "_" with an empty string
 
                       // Map tableColumn keys to serializedBidMaterials keys
                       const keyMapping = {
@@ -233,6 +230,8 @@ export default function Table({
                         landedAmount: "total_amount",
                         totalAmount: "total_amount",
                         realised_tax_amount: "realised_tax_amount",
+                        price: "price",
+    discount: "discount",
                       };
 
                       // Fetch serialized value based on key mapping
@@ -346,7 +345,110 @@ export default function Table({
                           )}
                         </td>
                       );
-                    })}
+                    })} */}
+{row.values.map((value, valueIndex) => {
+  // Directly get the serialized value for this column
+  const serializedEntry = loadedSerializedData[valueIndex] || {};
+  const originalValue = value === "_" ? "" : value;
+
+  // Map tableColumn keys to serializedEntry keys if needed
+  const keyMapping = {
+    bestTotalAmount: "total_amount",
+    quantityAvailable: "quantity_available",
+    realisedDiscount: "realised_discount",
+    landedAmount: "total_amount",
+    totalAmount: "total_amount",
+    realised_tax_amount: "realised_tax_amount",
+    price: "price",
+    discount: "discount",
+  };
+
+  // Pick the correct key for comparison
+  const columnKey = columns[rowIndex]?.key;
+  const serializedValue =
+    serializedEntry[
+      keyMapping[columnKey] ? keyMapping[columnKey] : columnKey
+    ] ?? "";
+
+  const shouldCompare = [
+    "freight_charge_amount",
+    "gst_on_freight",
+    "gst_on_handling_charge",
+    "gst_on_other_charge",
+    "handling_charge_amount",
+    "other_charge_amount",
+    "realised_freight_charge_amount",
+    "realised_handling_charge_amount",
+    "realised_other_charge_amount",
+    "bestTotalAmount",
+    "quantityAvailable",
+    "realisedDiscount",
+    "landedAmount",
+    "totalAmount",
+    "price",
+    "discount",
+    "realised_tax_amount",
+  ].includes(columnKey);
+
+  return (
+    <td
+      key={valueIndex}
+      style={{
+        width: "180px",
+        textAlign: "center",
+        whiteSpace: "nowrap",
+        backgroundColor: [
+          "totalAmount",
+          "grossTotal",
+        ].includes(columnKey)
+          ? getBackgroundColor(value)
+          : "transparent",
+        fontWeight: ["totalAmount", "grossTotal"].includes(columnKey)
+          ? "bold"
+          : "normal",
+        textTransform: "capitalize",
+      }}
+      onMouseOver={(e) =>
+        enableHoverEffect &&
+        (e.currentTarget.style.backgroundColor = "#f0f0f0")
+      }
+      onMouseOut={(e) =>
+        enableHoverEffect &&
+        (e.currentTarget.style.backgroundColor = [
+          "totalAmount",
+          "grossTotal",
+        ].includes(columnKey)
+          ? getBackgroundColor(value)
+          : "transparent")
+      }
+    >
+      {customRender[columnKey] ? (
+        customRender[columnKey](value, valueIndex, data[valueIndex])
+      ) : shouldCompare && serializedValue !== "" ? (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <span
+            style={{
+              textDecoration: "line-through",
+              color: "red",
+            }}
+          >
+            {serializedValue}
+          </span>
+          <span style={{ margin: "0 5px" }}>→</span>
+          <span>{originalValue}</span>
+        </div>
+      ) : (
+        value
+      )}
+    </td>
+  );
+})}
                   </tr>
                 )
             )}

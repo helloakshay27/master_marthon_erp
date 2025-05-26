@@ -3834,14 +3834,16 @@ useEffect(() => {
           </div>
           {/* Table for all materials of this type */}
           <div className="p-4 pt-0">
+            {console.log("Materials Array:", materialsArr)
+            }
             <Table
               columns={[
                 { key: "srNo", label: "Sr.No." },
                 { key: "material_type", label: "Material Type" },
-                { key: "inventory_sub_type", label: "Material Sub Type" },
+                { key: "inventory_sub_type", label: "Material Sub Type"},
                 { key: "inventory_name", label: "Material Name" },
                 { key: "quantity", label: "Quantity" },
-                { key: "unit", label: "UOM" },
+                { key: "uom", label: "UOM" },
                 { key: "location", label: "Location" },
                 { key: "rate", label: "Rate" },
                 { key: "amount", label: "Amount" },
@@ -4248,15 +4250,9 @@ useEffect(() => {
                                             <td className="text-start">
                                               {formattedDate}
                                             </td>
-                                            {/* <td className="text-start">
-                                              {new Date(
-                                                attachment.blob_created_at
-                                              ).toLocaleString()}
-                                            </td> */}
                                             <td className="text-start">
-                                              {/* {console.log("attachment:-",attachment)} */}
                                               <a
-                                                href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.doc_path}`}
+                                                href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
                                                 download={attachment.filename}
                                               >
                                                 <svg
