@@ -485,7 +485,7 @@ function objectContainsValue(obj, searchTerm) {
   return false;
 }
 
- const getTransformedRows = () => {
+const getTransformedRows = () => {
   let rowsToShow = dataGridRows;
 
   const normalizedSearchTerm = searchQuery.trim().toLowerCase();
@@ -496,43 +496,73 @@ function objectContainsValue(obj, searchTerm) {
     if (!dateStr) return "";
     try {
       const date = new Date(dateStr);
-      // Example: "May 21, 2025 at 3:15 p.m."
-      return date.toLocaleString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "2-digit",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      }).replace(",", "").replace("AM", "a.m.").replace("PM", "p.m.").toLowerCase();
+      return date
+        .toLocaleString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "2-digit",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        })
+        .replace(",", "")
+        .replace("AM", "a.m.")
+        .replace("PM", "p.m.")
+        .toLowerCase();
     } catch {
       return "";
+    }
+  };
+
+  // Helper to get all possible date string representations for a date
+  const getAllDateRepresentations = (dateStr) => {
+    if (!dateStr) return [];
+    try {
+      const date = new Date(dateStr);
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+      const shortMonth = date.toLocaleString("en-US", { month: "short" }).toLowerCase();
+      const longMonth = date.toLocaleString("en-US", { month: "long" }).toLowerCase();
+
+      return [
+        formatDateTime(dateStr), // as shown in table
+        `${day}/${month}/${year}`,
+        `${year}-${month}-${day}`,
+        `${month}/${day}/${year}`,
+        `${day}/${month}`,
+        `${month}/${year}`,
+        `${day}`,
+        `${shortMonth} ${day}, ${year}`,
+        `${longMonth} ${day}, ${year}`,
+        `${shortMonth} ${day}`,
+        `${longMonth} ${day}`,
+        `${year}`,
+      ].map((s) => s.toLowerCase());
+    } catch {
+      return [];
     }
   };
 
   // Helper to get all formatted values for a row as shown in the table
   const getFormattedValues = (row) => {
     let formatted = [];
-
-    // Add formatted created_at
-    if (row.created_at) formatted.push(formatDateTime(row.created_at));
-    // Add formatted start_time and end_time if present
-    if (row.event_schedule?.start_time) formatted.push(formatDateTime(row.event_schedule.start_time));
-    if (row.event_schedule?.end_time) formatted.push(formatDateTime(row.event_schedule.end_time));
-    // Add other formatted fields as needed...
-
-    // Split each formatted value into words for partial matching (e.g., "may", "21", "3:15", "p.m.")
+    if (row.created_at) formatted.push(...getAllDateRepresentations(row.created_at));
+    if (row.event_schedule?.start_time) formatted.push(...getAllDateRepresentations(row.event_schedule.start_time));
+    if (row.event_schedule?.end_time) formatted.push(...getAllDateRepresentations(row.event_schedule.end_time));
     return formatted.flatMap(val => val.split(/[\s,]+/));
   };
 
-  // Enhanced search: check both raw and formatted values
+  // Enhanced search: check both raw, formatted, and all date representations
   rowsToShow = rowsToShow.filter((item) => {
     // Check raw values (deep search)
     if (objectContainsValue(item, normalizedSearchTerm)) return true;
 
-    // Check formatted values as shown in table (split for partial match)
+    // Check all formatted date values and their representations
     const formattedValues = getFormattedValues(item);
-    return formattedValues.some((val) => val.includes(normalizedSearchTerm));
+    if (formattedValues.some((val) => val.includes(normalizedSearchTerm))) return true;
+
+    return false;
   });
 
   return rowsToShow;

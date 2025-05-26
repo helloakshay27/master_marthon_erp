@@ -981,21 +981,21 @@ export default function EditEvent() {
       );
       console.log("eventData:--", eventData);
 
-      // if (response.ok) {
-      //   const data = await response.json();
-      //   toast.success("Event updated successfully!", { autoClose: 1000 });
-      //   setTimeout(() => {
-      //     navigate(
-      //       "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-      //     );
-      //   }, 1500);
-      // } else {
-      //   const errorData = await response.json();
-      //   toast.error(
-      //     errorData.message || "Failed to update event. Please try again.",
-      //     { autoClose: 1000 }
-      //   );
-      // }
+      if (response.ok) {
+        const data = await response.json();
+        toast.success("Event updated successfully!", { autoClose: 1000 });
+        setTimeout(() => {
+          navigate(
+            "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          );
+        }, 1500);
+      } else {
+        const errorData = await response.json();
+        toast.error(
+          errorData.message || "Failed to update event. Please try again.",
+          { autoClose: 1000 }
+        );
+      }
     } catch (error) {
       console.error("Error updating event:", error);
       toast.error("An unexpected error occurred. Please try again.", {
