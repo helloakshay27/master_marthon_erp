@@ -4248,15 +4248,9 @@ useEffect(() => {
                                             <td className="text-start">
                                               {formattedDate}
                                             </td>
-                                            {/* <td className="text-start">
-                                              {new Date(
-                                                attachment.blob_created_at
-                                              ).toLocaleString()}
-                                            </td> */}
                                             <td className="text-start">
-                                              {/* {console.log("attachment:-",attachment)} */}
                                               <a
-                                                href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.doc_path}`}
+                                                href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
                                                 download={attachment.filename}
                                               >
                                                 <svg

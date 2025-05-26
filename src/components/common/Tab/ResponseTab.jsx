@@ -1003,12 +1003,12 @@ export default function ResponseTab({ isCounterOffer }) {
   ]}
   tableData={data.map((charge) => {
     const amount = Number(charge.amount) || 0;
-    const realisedAmount = Number(charge.realisedAmount) || 0;
+    const realisedAmount = Number(charge.realisedAmount).toFixed(2) || 0;
     const taxAmount = realisedAmount - amount;
     return {
       amount: amount || "-",
       realisedAmount: realisedAmount || "-",
-      taxAmount: taxAmount || "-",
+      taxAmount: Number(taxAmount).toFixed(2) || "-",
       taxDetails: (
         <button
           className="purple-btn2"
