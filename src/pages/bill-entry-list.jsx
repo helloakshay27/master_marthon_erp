@@ -107,7 +107,7 @@ const BillEntryList = () => {
     {
       field: "created_at",
       headerName: "Created On",
-      width: 150,
+      width: 200,
     },
     {
       field: "updated_at",
@@ -127,11 +127,11 @@ const BillEntryList = () => {
           "-"
         ),
     },
-    { field: "bill_date", headerName: "Bill Date", width: 150 },
+    { field: "bill_date", headerName: "Bill Date", width: 200 },
     { field: "bill_amount", headerName: "Bill Amount", width: 150 },
     { field: "bill_copies", headerName: "Bill Copies", width: 150 },
     { field: "due", headerName: "Due", width: 150 },
-    { field: "due_date", headerName: "Due Date", width: 150 },
+    { field: "due_date", headerName: "Due Date", width: 200 },
     { field: "certificate_no", headerName: "Certificate No.", width: 150 },
     { field: "payable_amount", headerName: "Payable Amount", width: 150 },
     { field: "paid", headerName: "Paid", width: 150 },
@@ -260,89 +260,68 @@ const BillEntryList = () => {
     fetchAllBillCount();
   }, []);
 
+  // Update the date formatting function
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "-";
+
+      // Get day, month, and year
+      const day = date.getDate().toString().padStart(2, "0");
+      const month = (date.getMonth() + 1).toString().padStart(2, "0");
+      const year = date.getFullYear();
+
+      // Return in DD-MM-YYYY format
+      return `${day}-${month}-${year}`;
+    } catch (e) {
+      return "-";
+    }
+  };
+
+  // Add state to store current filters
+  const [currentFilters, setCurrentFilters] = useState({
+    companyId: "",
+    projectId: "",
+    siteId: "",
+  });
+
+  // Update the fetchTabData function to handle all tabs correctly
   const fetchTabData = (tab, page) => {
     setLoading(true);
     let statusQuery = "";
-    if (tab === "open") statusQuery = "&q[status_eq]=open";
-    if (tab === "online") statusQuery = "&q[mode_of_submission_eq]=online";
-    if (tab === "offline") statusQuery = "&q[status_eq]=offline";
+
+    // Set the correct filter based on the active tab
+    switch (tab) {
+      case "open":
+        statusQuery = "&q[status_eq]=open";
+        break;
+      case "online":
+        statusQuery = "&q[mode_of_submission_eq]=online";
+        break;
+      case "offline":
+        statusQuery = "&q[mode_of_submission_eq]=offline";
+        break;
+      default:
+        statusQuery = ""; // For "list" tab, no additional filter
+    }
 
     axios
       .get(
         `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${statusQuery}`
       )
       .then((response) => {
-        // const transformedData = response.data.bill_entries.map(
-        //   (entry, index) => ({
-        //     id: entry.id,
-        //     srNo: (page - 1) * pageSize + index + 1,
-        //     ...entry,
-        //   })
-        // );
-        const transformedData = response.data.bill_entries.map(
-          (entry, index) => {
-            // Format created_at date
-            let formattedCreatedAt = "-";
-            if (entry.created_at) {
-              try {
-                formattedCreatedAt = new Date(entry.created_at)
-                  .toISOString()
-                  .slice(0, 10);
-              } catch (e) {
-                formattedCreatedAt = "-";
-              }
-            }
+        const data = response.data.bill_entries.map((entry, index) => ({
+          id: entry.id,
+          srNo: (page - 1) * pageSize + index + 1,
+          ...entry,
+          created_at: formatDate(entry.created_at),
+          updated_at: formatDate(entry.updated_at),
+          due_date: formatDate(entry.due_date),
+          bill_date: formatDate(entry.bill_date),
+        }));
 
-            // Format updated_at date
-            let formattedUpdatedAt = "-";
-            if (entry.updated_at) {
-              try {
-                formattedUpdatedAt = new Date(entry.updated_at)
-                  .toISOString()
-                  .slice(0, 10);
-              } catch (e) {
-                formattedUpdatedAt = "-";
-              }
-            }
-
-            // Format due_date
-            let formattedDueDate = "-";
-            if (entry.due_date) {
-              try {
-                formattedDueDate = new Date(entry.due_date)
-                  .toISOString()
-                  .slice(0, 10);
-              } catch (e) {
-                formattedDueDate = "-";
-              }
-            }
-
-            // Format bill_date
-            let formattedBillDate = "-";
-            if (entry.bill_date) {
-              try {
-                formattedBillDate = new Date(entry.bill_date)
-                  .toISOString()
-                  .slice(0, 10);
-              } catch (e) {
-                formattedBillDate = "-";
-              }
-            }
-
-            return {
-              id: entry.id,
-              srNo: (page - 1) * pageSize + index + 1,
-              ...entry,
-              created_at: formattedCreatedAt,
-              updated_at: formattedUpdatedAt,
-              due_date: formattedDueDate,
-              bill_date: formattedBillDate,
-            };
-          }
-        );
-
-        setBillEntries(transformedData);
-        setBillEntries(transformedData);
+        setBillEntries(data);
         setMeta(response.data.meta);
         setTotalPages(response.data.meta.total_pages);
         setTotalEntries(response.data.meta.total_count);
@@ -353,152 +332,144 @@ const BillEntryList = () => {
       })
       .finally(() => setLoading(false));
   };
+
+  // Update the useEffect to include filters
   useEffect(() => {
-    fetchTabData(activeTab, currentPage);
-    // eslint-disable-next-line
-  }, [activeTab, currentPage, pageSize]);
+    // Check if we have active filters
+    if (
+      currentFilters.companyId ||
+      currentFilters.projectId ||
+      currentFilters.siteId
+    ) {
+      const url = `${baseURL}bill_entries?page=${currentPage}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${currentFilters.companyId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${currentFilters.projectId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_cont]=${currentFilters.siteId}`;
 
-  // Fetch filtered data
-  const fetchFilteredData = () => {
-    const companyId = selectedCompany?.value || "";
-    const projectId = selectedProject?.value || "";
-    const siteId = selectedSite?.value || "";
-    const search = searchKeyword || "";
+      axios
+        .get(url)
+        .then((response) => {
+          const data = response.data.bill_entries.map((entry, index) => ({
+            id: entry.id,
+            srNo: (currentPage - 1) * pageSize + index + 1,
+            ...entry,
+            created_at: formatDate(entry.created_at),
+            updated_at: formatDate(entry.updated_at),
+            due_date: formatDate(entry.due_date),
+            bill_date: formatDate(entry.bill_date),
+          }));
 
-    const url = `${baseURL}bill_entries?page=1&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${companyId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${projectId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_cont]=${siteId}`;
+          setBillEntries(data);
+          setTotalPages(response.data.meta.total_pages);
+          setTotalEntries(response.data.meta.total_count);
+        })
+        .catch((error) => {
+          console.error("Error fetching filtered data:", error);
+        });
+    } else {
+      // If no filters are active, use the regular tab data fetch
+      fetchTabData(activeTab, currentPage);
+    }
+  }, [currentPage, pageSize, currentFilters, activeTab]);
+
+  // Remove the duplicate handlePageChange and consolidate data fetching
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+    // The useEffect will handle the data fetching with filters
+  };
+
+  // Update the useEffect to handle all data fetching scenarios
+  useEffect(() => {
+    setLoading(true);
+
+    // Build the base URL
+    let url = `${baseURL}bill_entries?page=${currentPage}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
+    // Add filters if they exist
+    if (
+      currentFilters.companyId ||
+      currentFilters.projectId ||
+      currentFilters.siteId
+    ) {
+      url += `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${currentFilters.companyId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${currentFilters.projectId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_cont]=${currentFilters.siteId}`;
+    } else {
+      // Add tab-specific filters if no custom filters
+      switch (activeTab) {
+        case "open":
+          url += "&q[status_eq]=open";
+          break;
+        case "online":
+          url += "&q[mode_of_submission_eq]=online";
+          break;
+        case "offline":
+          url += "&q[mode_of_submission_eq]=offline";
+          break;
+      }
+    }
+
+    // Add search if it exists
+    if (searchKeyword) {
+      url += `&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_cont]=${searchKeyword}`;
+    }
 
     axios
       .get(url)
       .then((response) => {
-        // const transformedData = response.data.bill_entries.map(
-        //   (entry, index) => ({
-        //     id: entry.id,
-        //     srNo: (currentPage - 1) * pageSize + index + 1, // Use currentPage here
-        //     ...entry,
-        //   })
-        // );
-        // const transformedData = response.data.bill_entries.map(
-        //   (entry, index) => {
-        //     // Format created_at date
-        //     let formattedCreatedAt = "-";
-        //     if (entry.created_at) {
-        //       try {
-        //         formattedCreatedAt = new Date(entry.created_at)
-        //           .toISOString()
-        //           .slice(0, 10);
-        //       } catch (e) {
-        //         formattedCreatedAt = "-";
-        //       }
-        //     }
+        const data = response.data.bill_entries.map((entry, index) => ({
+          id: entry.id,
+          srNo: (currentPage - 1) * pageSize + index + 1,
+          ...entry,
+          created_at: formatDate(entry.created_at),
+          updated_at: formatDate(entry.updated_at),
+          due_date: formatDate(entry.due_date),
+          bill_date: formatDate(entry.bill_date),
+        }));
 
-        //     // Format updated_at date
-        //     let formattedUpdatedAt = "-";
-        //     if (entry.updated_at) {
-        //       try {
-        //         formattedUpdatedAt = new Date(entry.updated_at)
-        //           .toISOString()
-        //           .slice(0, 10);
-        //       } catch (e) {
-        //         formattedUpdatedAt = "-";
-        //       }
-        //     }
-
-        //     // Format due_date
-        //     let formattedDueDate = "-";
-        //     if (entry.due_date) {
-        //       try {
-        //         formattedDueDate = new Date(entry.due_date)
-        //           .toISOString()
-        //           .slice(0, 10);
-        //       } catch (e) {
-        //         formattedDueDate = "-";
-        //       }
-        //     }
-
-        //     // Format bill_date
-        //     let formattedBillDate = "-";
-        //     if (entry.bill_date) {
-        //       try {
-        //         formattedBillDate = new Date(entry.bill_date)
-        //           .toISOString()
-        //           .slice(0, 10);
-        //       } catch (e) {
-        //         formattedBillDate = "-";
-        //       }
-        //     }
-
-        //     return {
-        //       id: entry.id,
-        //       srNo: (page - 1) * pageSize + index + 1,
-        //       ...entry,
-        //       created_at: formattedCreatedAt,
-        //       updated_at: formattedUpdatedAt,
-        //       due_date: formattedDueDate,
-        //       bill_date: formattedBillDate,
-        //     };
-        //   }
-        // );
-
-        const transformedData = response.data.bill_entries.map(
-          (entry, index) => {
-            const formatDate = (date) => {
-              try {
-                return date ? new Date(date).toISOString().slice(0, 10) : "-";
-              } catch {
-                return "-";
-              }
-            };
-
-            return {
-              id: entry.id,
-              srNo: (currentPage - 1) * pageSize + index + 1,
-              ...entry,
-              created_at: formatDate(entry.created_at),
-              updated_at: formatDate(entry.updated_at),
-              due_date: formatDate(entry.due_date),
-              bill_date: formatDate(entry.bill_date),
-            };
-          }
-        );
-
-        setBillEntries(transformedData);
-        setBillEntries(transformedData);
-        setTotalPages(response.data.meta.total_pages);
-        setTotalEntries(response.data.meta.total_count);
-      })
-      .catch((error) => {
-        console.error("Error fetching filtered data:", error);
-      });
-  };
-
-  // Handle reset
-  const handleReset = () => {
-    setSelectedCompany(null);
-    setSelectedProject(null);
-    setSelectedSite(null);
-    setSearchKeyword("");
-
-    axios
-      .get(
-        `${baseURL}bill_entries?page=1&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      )
-      .then((response) => {
-        const transformedData = response.data.bill_entries.map(
-          (entry, index) => ({
-            id: entry.id,
-            srNo: index + 1,
-            ...entry,
-          })
-        );
-        setBillEntries(transformedData);
+        setBillEntries(data);
         setMeta(response.data.meta);
         setTotalPages(response.data.meta.total_pages);
         setTotalEntries(response.data.meta.total_count);
       })
       .catch((error) => {
-        console.error("Error resetting data:", error);
+        console.error("Error fetching data:", error);
+        setError("Failed to fetch data");
+      })
+      .finally(() => {
+        setLoading(false);
       });
+  }, [currentPage, pageSize, currentFilters, activeTab, searchKeyword]);
+
+  // Update fetchFilteredData to only set filters
+  const fetchFilteredData = () => {
+    const companyId = selectedCompany?.value || "";
+    const projectId = selectedProject?.value || "";
+    const siteId = selectedSite?.value || "";
+
+    // Store current filters
+    setCurrentFilters({
+      companyId,
+      projectId,
+      siteId,
+    });
+
+    // Reset to first page when applying new filters
+    setCurrentPage(1);
   };
+
+  // Update the handleReset function
+  const handleReset = () => {
+    setSelectedCompany(null);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setSearchKeyword("");
+    setCurrentFilters({
+      companyId: "",
+      projectId: "",
+      siteId: "",
+    });
+
+    // Reset to first page and fetch data
+    setCurrentPage(1);
+    fetchTabData(activeTab, 1);
+  };
+
   const [searchInput, setSearchInput] = useState("");
 
   // Handle search button click
@@ -513,91 +484,6 @@ const BillEntryList = () => {
     setSearchKeyword("");
     setCurrentPage(1); // Reset to first page
   };
-
-  // Fetch bill entries
-  const fetchData = async (page) => {
-    const search = searchKeyword || "";
-    try {
-      setLoading(true);
-
-      const response = await axios.get(
-        `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_cont]=${search}`
-      );
-      const transformedData = response.data.bill_entries.map((entry, index) => {
-        // Format created_at date
-        let formattedCreatedAt = "-";
-        if (entry.created_at) {
-          try {
-            formattedCreatedAt = new Date(entry.created_at)
-              .toISOString()
-              .slice(0, 10);
-          } catch (e) {
-            formattedCreatedAt = "-";
-          }
-        }
-
-        // Format updated_at date
-        let formattedUpdatedAt = "-";
-        if (entry.updated_at) {
-          try {
-            formattedUpdatedAt = new Date(entry.updated_at)
-              .toISOString()
-              .slice(0, 10);
-          } catch (e) {
-            formattedUpdatedAt = "-";
-          }
-        }
-
-        // Format due_date
-        let formattedDueDate = "-";
-        if (entry.due_date) {
-          try {
-            formattedDueDate = new Date(entry.due_date)
-              .toISOString()
-              .slice(0, 10);
-          } catch (e) {
-            formattedDueDate = "-";
-          }
-        }
-
-        // Format bill_date
-        let formattedBillDate = "-";
-        if (entry.bill_date) {
-          try {
-            formattedBillDate = new Date(entry.bill_date)
-              .toISOString()
-              .slice(0, 10);
-          } catch (e) {
-            formattedBillDate = "-";
-          }
-        }
-
-        return {
-          id: entry.id,
-          srNo: (page - 1) * pageSize + index + 1,
-          ...entry,
-          created_at: formattedCreatedAt,
-          updated_at: formattedUpdatedAt,
-          due_date: formattedDueDate,
-          bill_date: formattedBillDate,
-        };
-      });
-
-      setBillEntries(transformedData);
-      setMeta(response.data.meta);
-      setTotalPages(response.data.meta.total_pages);
-      setTotalEntries(response.data.meta.total_count);
-    } catch (error) {
-      console.error("Error fetching bill entries:", error);
-      setError("Failed to fetch bill entries");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData(currentPage);
-  }, [currentPage, searchKeyword]);
 
   const getTransformedRows = () => {
     let rowsToShow = showOnlyPinned
@@ -940,7 +826,7 @@ display:none !important;
               <Pagination
                 count={totalPages}
                 page={currentPage}
-                onChange={(event, value) => setCurrentPage(value)}
+                onChange={handlePageChange}
                 siblingCount={1}
                 boundaryCount={1}
                 color="primary"
