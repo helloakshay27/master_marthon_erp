@@ -503,7 +503,7 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
     {
       field: "company_name",
       headerName: "Company",
-      width: 150,
+      width: 200,
     },
     {
       field: "project_name",

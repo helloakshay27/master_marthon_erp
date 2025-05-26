@@ -817,7 +817,7 @@ const BillBookingCreate = () => {
       if (response.data) {
         alert("Bill booking created successfully!");
         setLoading(false);
-        // navigate("/bill-booking-list"); // Redirect to bill-booking-list
+        navigate("/bill-booking-list"); // Redirect to bill-booking-list
         // Reset form or redirect as needed
       }
     } catch (error) {
