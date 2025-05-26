@@ -485,18 +485,58 @@ function objectContainsValue(obj, searchTerm) {
   return false;
 }
 
-  const getTransformedRows = () => {
-    let rowsToShow = dataGridRows;
+ const getTransformedRows = () => {
+  let rowsToShow = dataGridRows;
 
-    const normalizedSearchTerm = searchQuery.trim().toLowerCase();
-    if (normalizedSearchTerm) {
-      rowsToShow = rowsToShow.filter((item) =>
-        objectContainsValue(item, normalizedSearchTerm)
-      );
+  const normalizedSearchTerm = searchQuery.trim().toLowerCase();
+  if (!normalizedSearchTerm) return rowsToShow;
+
+  // Helper to format date/time as shown in the table (e.g., "May 21, 2025 at 3:15 p.m.")
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return "";
+    try {
+      const date = new Date(dateStr);
+      // Example: "May 21, 2025 at 3:15 p.m."
+      return date.toLocaleString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      }).replace(",", "").replace("AM", "a.m.").replace("PM", "p.m.").toLowerCase();
+    } catch {
+      return "";
     }
-
-    return rowsToShow;
   };
+
+  // Helper to get all formatted values for a row as shown in the table
+  const getFormattedValues = (row) => {
+    let formatted = [];
+
+    // Add formatted created_at
+    if (row.created_at) formatted.push(formatDateTime(row.created_at));
+    // Add formatted start_time and end_time if present
+    if (row.event_schedule?.start_time) formatted.push(formatDateTime(row.event_schedule.start_time));
+    if (row.event_schedule?.end_time) formatted.push(formatDateTime(row.event_schedule.end_time));
+    // Add other formatted fields as needed...
+
+    // Split each formatted value into words for partial matching (e.g., "may", "21", "3:15", "p.m.")
+    return formatted.flatMap(val => val.split(/[\s,]+/));
+  };
+
+  // Enhanced search: check both raw and formatted values
+  rowsToShow = rowsToShow.filter((item) => {
+    // Check raw values (deep search)
+    if (objectContainsValue(item, normalizedSearchTerm)) return true;
+
+    // Check formatted values as shown in table (split for partial match)
+    const formattedValues = getFormattedValues(item);
+    return formattedValues.some((val) => val.includes(normalizedSearchTerm));
+  });
+
+  return rowsToShow;
+};
 
   const navigate = useNavigate();
 
