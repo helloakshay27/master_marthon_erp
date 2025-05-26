@@ -203,6 +203,16 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
   });
 
   const handleDownloadPDF = () => {
+
+    setPublishedStages(true);
+  setTermss(true);
+  setContact(true);
+  setLineItems(true);
+  setDocumentAttachment(true);
+  setOrderConfigOpen(true);
+  setOrderDetails(true);
+  setAuditLog(true);
+
     const element = document.querySelector(".print-wrapper");
     const options = {
       margin: 0,
@@ -1604,7 +1614,8 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
   const [date, setDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [documentAttachment, setDocumentAttachment] = useState(true);
-  const [orderConfig, setOrderConfig] = useState(true);
+  const [orderConfig, setOrderConfig] = useState([]); // always array
+const [orderConfigOpen, setOrderConfigOpen] = useState(false); // for collapse
   const [orderDetails, setOrderDetails] = useState(true);
   const [deliveryDate, setDelivaryDate] = useState(null);
 
@@ -1630,8 +1641,8 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
     setDocumentAttachment(!documentAttachment);
   };
   const handleOrderConfig = () => {
-    setOrderConfig(!orderConfig);
-  };
+  setOrderConfigOpen((prev) => !prev);
+};
   const handleOrderDetails = () => {
     setOrderDetails(!orderDetails);
   };
@@ -2041,7 +2052,7 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
           return `${days} Days ${hours} Hours ${minutes} Minutes`;
         };
 
-        const newOrderConfig = [
+        let newOrderConfig = [
           {
             label: "Order Type",
             value: data?.event_type_detail?.event_type || "_",
@@ -4297,15 +4308,15 @@ useEffect(() => {
                           }}
                         >
                           <a
-                            className="btn d-flex justify-content-between w-100"
-                            data-bs-toggle="collapse"
-                            href="#order-config"
-                            role="button"
-                            aria-expanded={orderConfig}
-                            aria-controls="order-config"
-                            onClick={handleOrderConfig}
-                            style={{ fontSize: "16px", fontWeight: "normal" }}
-                          >
+  className="btn d-flex justify-content-between w-100"
+  data-bs-toggle="collapse"
+  href="#order-config"
+  role="button"
+  aria-expanded={orderConfigOpen}
+  aria-controls="order-config"
+  onClick={handleOrderConfig}
+  style={{ fontSize: "16px", fontWeight: "normal" }}
+>
                             <div>
                               <span
                                 id="order-config-icon"
@@ -4320,7 +4331,7 @@ useEffect(() => {
                                   fontSize: "12px",
                                 }}
                               >
-                                {orderConfig ? (
+                                {orderConfigOpen ? (
                                   <i className="bi bi-dash-lg"></i>
                                 ) : (
                                   <i className="bi bi-plus-lg"></i>
@@ -4336,44 +4347,37 @@ useEffect(() => {
                               </span>
                             </div>
                           </a>
-                          {orderConfig && (
-                            <div
-                              id="order-config"
-                              className="mt-2"
-                              style={{ paddingLeft: "24px" }}
-                            >
-                              <div className="card card-body rounded-3 p-4">
-                                {/* Document Details Table */}
-                                <div className="row">
-                                  {orderConfig?.map((item, idx) => (
-                                    <div
-                                      className="total-activity col-3 my-3"
-                                      key={idx}
-                                    >
-                                      <p>{item.label}</p>
-                                      <p
-                                        id={item.id}
-                                        style={{
-                                          display: "-webkit-box",
-                                          WebkitBoxOrient: "vertical",
-                                          WebkitLineClamp: 2,
-                                          overflow: "hidden",
-                                          textOverflow: "ellipsis",
-                                          whiteSpace: "normal",
-                                          textTransform: item.value === 'rfq' ? "UpperCase" : "capitalize",
-                                        }}
-                                      >
-                                        {item.value}
-                                      </p>
-                                      {/* <p>
-                                      <strong>{item.label}</strong>: {item.value}
-                                    </p> */}
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          )}
+                          {orderConfigOpen && (
+  <div
+    id="order-config"
+    className="mt-2"
+    style={{ paddingLeft: "24px" }}
+  >
+    <div className="card card-body rounded-3 p-4">
+      <div className="row">
+        {Array.isArray(orderConfig) && orderConfig.map((item, idx) => (
+          <div className="total-activity col-3 my-3" key={idx}>
+            <p>{item.label}</p>
+            <p
+              id={item.id}
+              style={{
+                display: "-webkit-box",
+                WebkitBoxOrient: "vertical",
+                WebkitLineClamp: 2,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "normal",
+                textTransform: item.value === 'rfq' ? "UpperCase" : "capitalize",
+              }}
+            >
+              {item.value}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
                         </div>
                         <div
                           className="col-12 pb-4 pt-3"
@@ -4392,7 +4396,7 @@ useEffect(() => {
                             role="button"
                             aria-expanded={orderDetails}
                             aria-controls="order-details"
-                            onClick={handleOrderConfig}
+                            onClick={handleOrderDetails}
                             style={{ fontSize: "16px", fontWeight: "normal" }}
                           >
                             <div>
@@ -4488,158 +4492,6 @@ useEffect(() => {
                             </div>
                           )}
                         </div>
-                        {/* <div
-                          className="col-12 pb-4 pt-3"
-                          style={{
-                            // borderTop: "1px solid #ccc",
-                            borderBottom: "1px solid #ccc",
-                            // padding: "20px 0", // Optional padding to add spacing between content and borders
-                            paddingTop: "20px ",
-                            paddingBottom: "20px ",
-                          }}
-                        >
-                          <a
-                            className="btn"
-                            data-bs-toggle="collapse"
-                            href="#delivery-schedule"
-                            role="button"
-                            aria-expanded={deliverySchedule}
-                            aria-controls="delivery-schedule"
-                            onClick={handledeliverySchedule}
-                            style={{ fontSize: "16px", fontWeight: "normal" }}
-                          >
-                            <span
-                              id="delivery-schedule-icon"
-                              className="icon-1"
-                              style={{
-                                marginRight: "8px",
-                                border: "1px solid #dee2e6",
-                                paddingTop: "10px",
-                                paddingBottom: "10px",
-                                paddingLeft: "8px",
-                                paddingRight: "8px",
-                                fontSize: "12px",
-                              }}
-                            >
-                              {deliverySchedule ? (
-                                <i className="bi bi-dash-lg"></i>
-                              ) : (
-                                <i className="bi bi-plus-lg"></i>
-                              )}
-                            </span>
-                            Delivery Schedule
-                          </a>
-                          {deliverySchedule && (
-                            <div id="delivery-schedule" className="mx-5">
-                              <div className="card card-body p-4">
-                                {deliveryData?.length > 0 ? (
-                                  <Table
-                                    columns={deliveryColumns}
-                                    data={deliveryData}
-                                  />
-                                ) : (
-                                  <p className="text-center mt-4">
-                                    No delivery schedule available for this
-                                    event.
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div> */}
-                        {/* <div
-                          className="col-12 pb-4 pt-3"
-                          style={{
-                            // borderTop: "1px solid #ccc",
-                            borderBottom: "1px solid #ccc",
-                            // padding: "20px 0", // Optional padding to add spacing between content and borders
-                            paddingTop: "20px ",
-                            paddingBottom: "20px ",
-                          }}
-                        >
-                          <a
-                            className="btn"
-                            data-bs-toggle="collapse"
-                            href="#specification"
-                            role="button"
-                            aria-expanded={specification}
-                            aria-controls="specification"
-                            onClick={handleSpecification}
-                            style={{ fontSize: "16px", fontWeight: "normal" }}
-                          >
-                            <span
-                              id="specification-icon"
-                              className="icon-1"
-                              style={{
-                                marginRight: "8px",
-                                border: "1px solid #dee2e6",
-                                paddingTop: "10px",
-                                paddingBottom: "10px",
-                                paddingLeft: "8px",
-                                paddingRight: "8px",
-                                fontSize: "12px",
-                              }}
-                            >
-                              {specification ? (
-                                <i className="bi bi-dash-lg"></i>
-                              ) : (
-                                <i className="bi bi-plus-lg"></i>
-                              )}
-                            </span>
-                            Dynamic Details
-                          </a>
-                          {specification && (
-                            <div id="specification" className="mx-5">
-                              <div className="card card-body p-4">
-                                {specificationData?.length > 0 ? (
-                                  <table className="tbl-container w-100">
-                                    <thead>
-                                      <tr>
-                                        {specificationColumns.map(
-                                          (col, index) => (
-                                            <th
-                                              key={index}
-                                              style={{
-                                                textAlign: "center !important",
-                                              }}
-                                            >
-                                              {col.label}
-                                            </th>
-                                          )
-                                        )}
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {specificationData.map(
-                                        (row, rowIndex) => (
-                                          <tr key={rowIndex}>
-                                            {specificationColumns.map(
-                                              (col, colIndex) => (
-                                                <td
-                                                  key={colIndex}
-                                                  style={{
-                                                    textAlign:
-                                                      "center !important",
-                                                  }}
-                                                >
-                                                  {row[col.key]}
-                                                </td>
-                                              )
-                                            )}
-                                          </tr>
-                                        )
-                                      )}
-                                    </tbody>
-                                  </table>
-                                ) : (
-                                  <p className="text-center mt-4">
-                                    No Dynamic Data available for this event.
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div> */}
                         <div
                           className="col-12 pb-4 pt-3"
                           style={{
