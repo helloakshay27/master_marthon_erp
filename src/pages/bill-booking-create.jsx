@@ -399,7 +399,9 @@ const BillBookingCreate = () => {
             pan: data.pan_no || "",
             pms_supplier_id: data.pms_supplier_id || null, // <-- Add this line
             invoiceAmount: data.bill_amount || "", // <-- Add this line
+
             totalAmount: data.bill_amount || "", // <-- Add this line
+            invoiceNumber: data.bill_no || "", // Auto-populate from bill_no
             paymentDueDate:
               formatDateForInput(data.purchase_order?.due_date) || "",
             // data.due_date || "", // Add this line to get due date
@@ -1514,12 +1516,13 @@ const BillBookingCreate = () => {
                         className="form-control"
                         type="text"
                         value={formData.invoiceNumber}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            invoiceNumber: e.target.value,
-                          }))
-                        }
+                        // onChange={(e) =>
+                        //   setFormData((prev) => ({
+                        //     ...prev,
+                        //     invoiceNumber: e.target.value,
+                        //   }))
+                        // }
+                        disabled
                       />
                     </div>
                   </div>

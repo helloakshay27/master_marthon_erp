@@ -615,6 +615,7 @@ export default function OverviewTab({
                                   material.attachments || [];
                                 const rowKey =
                                   material.id || `${materialType}_${rowIndex}`;
+                                  
                                 return (
                                   <div
                                     style={{
@@ -993,14 +994,36 @@ export default function OverviewTab({
                                 );
                               }}
                               customRender={{
-                                pms_brand_name: (value) => value || "-",
-                                pms_colour_name: (value) => value || "-",
-                                generic_info_name: (value) => value || "-",
+                                material_type: (value) =>
+                                  value === undefined || value === null || value === "" ? "-" : value,
+                                inventory_sub_type: (value) =>
+                                  value === undefined || value === null || value === "" ? "-" : value,
+                                inventory_name: (value) =>
+                                  value === undefined || value === null || value === "" ? "-" : value,
+                                quantity: (value) =>
+                                  value === undefined || value === null || value === "" ? "-" : value,
+                                uom: (value) =>
+                                  value === undefined || value === null || value === "" ? "-" : value,
+                                location: (value) =>
+                                  value === undefined || value === null || value === "" ? "-" : value,
+                                rate: (value) =>
+                                  value === undefined || value === null || value === "" ? "-" : value,
+                                amount: (value) =>
+                                  value === undefined || value === null || value === "" ? "-" : value,
+                                pms_brand_name: (value) =>
+                                  value === undefined || value === null || value === "" ? "-" : value,
+                                pms_colour_name: (value) =>
+                                  value === undefined || value === null || value === "" ? "-" : value,
+                                generic_info_name: (value) =>
+                                  value === undefined || value === null || value === "" ? "-" : value,
                                 ...(materialsArr[0]?.extra_data
-                                  ? Object.keys(
-                                      materialsArr[0].extra_data
-                                    ).reduce((acc, key) => {
-                                      acc[key] = (value) => value?.value || "-";
+                                  ? Object.keys(materialsArr[0].extra_data).reduce((acc, key) => {
+                                      acc[key] = (value) =>
+                                        value?.value === undefined ||
+                                        value?.value === null ||
+                                        value?.value === ""
+                                          ? "-"
+                                          : value?.value;
                                       return acc;
                                     }, {})
                                   : {}),
