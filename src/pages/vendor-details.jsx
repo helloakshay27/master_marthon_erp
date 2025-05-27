@@ -3834,8 +3834,6 @@ useEffect(() => {
           </div>
           {/* Table for all materials of this type */}
           <div className="p-4 pt-0">
-            {console.log("Materials Array:", materialsArr)
-            }
             <Table
               columns={[
                 { key: "srNo", label: "Sr.No." },
@@ -4142,16 +4140,40 @@ useEffect(() => {
                 );
               }}
               customRender={{
-                pms_brand_name: (value) => value || "-",
-                pms_colour_name: (value) => value || "-",
-                generic_info_name: (value) => value || "-",
-                ...(materialsArr[0]?.extra_data
-                  ? Object.keys(materialsArr[0].extra_data).reduce((acc, key) => {
-                      acc[key] = (value) => value?.value || "-";
-                      return acc;
-                    }, {})
-                  : {}),
-              }}
+    material_type: (value) =>
+      value === undefined || value === null || value === "" ? "-" : value,
+    inventory_sub_type: (value) =>
+      value === undefined || value === null || value === "" ? "-" : value,
+    inventory_name: (value) =>
+      value === undefined || value === null || value === "" ? "-" : value,
+    quantity: (value) =>
+      value === undefined || value === null || value === "" ? "-" : value,
+    uom: (value) =>
+      value === undefined || value === null || value === "" ? "-" : value,
+    location: (value) =>
+      value === undefined || value === null || value === "" ? "-" : value,
+    rate: (value) =>
+      value === undefined || value === null || value === "" ? "-" : value,
+    amount: (value) =>
+      value === undefined || value === null || value === "" ? "-" : value,
+    pms_brand_name: (value) =>
+      value === undefined || value === null || value === "" ? "-" : value,
+    pms_colour_name: (value) =>
+      value === undefined || value === null || value === "" ? "-" : value,
+    generic_info_name: (value) =>
+      value === undefined || value === null || value === "" ? "-" : value,
+    ...(materialsArr[0]?.extra_data
+      ? Object.keys(materialsArr[0].extra_data).reduce((acc, key) => {
+          acc[key] = (value) =>
+            value?.value === undefined ||
+            value?.value === null ||
+            value?.value === ""
+              ? "-"
+              : value?.value;
+          return acc;
+        }, {})
+      : {}),
+  }}
             />
           </div>
         </div>
