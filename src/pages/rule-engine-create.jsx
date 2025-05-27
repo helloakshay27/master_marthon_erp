@@ -51,9 +51,96 @@ const RuleEngineCreate = () => {
         setConditions(conditions.filter((_, i) => i !== idx));
     };
 
+    // ...existing code...
+    const [masterAttributeOptions, setMasterAttributeOptions] = useState([]);
+    const [subAttributeOptions, setSubAttributeOptions] = useState({}); // key: condition idx, value: options array
+
+    // Fetch master attribute options on mount
+    useEffect(() => {
+        axios
+            .get("https://marathon.lockated.com/rule_engine/available_models.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414")
+            .then((response) => {
+                // Assuming response.data is an array of objects with 'id' and 'name'
+                const options = response.data.map(item => ({
+                    value: item.id,
+                    label: item.display_name
+                }));
+                setMasterAttributeOptions(options);
+            })
+            .catch((error) => {
+                console.error("Error fetching master attributes:", error);
+            });
+    }, []);
+    // Fetch sub-attributes when master attribute changes for a condition
+    const handleMasterAttributeChange = (idx, selectedValue) => {
+        handleConditionChange(idx, "masterAttribute", selectedValue);
+        handleConditionChange(idx, "subAttribute", ""); // Reset sub-attribute
+
+        if (selectedValue) {
+            axios
+                .get(`https://marathon.lockated.com/rule_engine/available_attributes.json?q[available_model_id_eq]=${selectedValue}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+                .then((response) => {
+                    const options = response.data.map(item => ({
+                        value: item.id,
+                        label: item.display_name
+                    }));
+                    setSubAttributeOptions(prev => ({
+                        ...prev,
+                        [idx]: options
+                    }));
+                })
+                .catch((error) => {
+                    setSubAttributeOptions(prev => ({
+                        ...prev,
+                        [idx]: []
+                    }));
+                    console.error("Error fetching sub attributes:", error);
+                });
+        } else {
+            setSubAttributeOptions(prev => ({
+                ...prev,
+                [idx]: []
+            }));
+        }
+    };
+
+
+    const rulePayload = {
+  rule_engine_rule: {
+    name: ruleName,
+    // description: "This rule shall credit points to member after creation of referral",
+    // company_id: 31,
+    // organization_id: null,
+    // user_id: 71,
+    // active: true,
+    // model_id: 1,
+
+    rule_engine_conditions_attributes: [
+      {
+        condition_attribute: "referral",
+        operator: "greater_than",
+        compare_value: "1000",
+        action_type: "created"
+      }
+    ],
+
+    rule_engine_actions_attributes: [
+      {
+        lock_model_name: "Referral",
+        action_method: "credit_points_on_referral",
+        parameters: {},
+        rule_engine_applicable_model_id: 1,
+        rule_engine_available_function_id: 1,
+        action_selected_model: 1
+      }
+    ]
+  }
+};
+
+console.log(" rule Payload:", rulePayload);
 
     const payload = {
-        ruleName,
+        name:ruleName,
         conditions,
         then: {
             masterRewardOutcome,
@@ -61,7 +148,7 @@ const RuleEngineCreate = () => {
             parameter,
         },
     };
-    console.log("Payload:", payload);
+    // console.log("Payload:", payload);
 
     // Handle submit
     const handleSubmit = e => {
@@ -232,11 +319,23 @@ const RuleEngineCreate = () => {
                                                                 Master Attribute <span>*</span>
                                                             </label>
                                                             <SingleSelector
-                                                                options={options}
-                                                                value={options.find(opt => opt.value === condition.masterAttribute)}
-                                                                onChange={selected =>
-                                                                    handleConditionChange(idx, "masterAttribute", selected ? selected.value : "")
-                                                                }
+                                                                // options={options}
+                                                                // value={options.find(opt => opt.value === condition.masterAttribute)}
+                                                                // onChange={selected =>
+                                                                //     handleConditionChange(idx, "masterAttribute", selected ? selected.value : "")
+                                                                // }
+
+                                                                // options={masterAttributeOptions}
+                                                                // value={masterAttributeOptions.find(opt => opt.value === condition.masterAttribute)}
+                                                                // onChange={selected =>
+                                                                //     handleConditionChange(idx, "masterAttribute", selected ? selected.value : "")
+                                                                // }
+
+                                                                 options={masterAttributeOptions}
+                                    value={masterAttributeOptions.find(opt => opt.value === condition.masterAttribute)}
+                                    onChange={selected =>
+                                        handleMasterAttributeChange(idx, selected ? selected.value : "")
+                                    }
                                                                 placeholder="Select Master Attribute"
                                                             />
                                                         </div>
@@ -250,8 +349,14 @@ const RuleEngineCreate = () => {
                                                                 Sub Attribute <span>*</span>
                                                             </label>
                                                             <SingleSelector
-                                                                options={options}
-                                                                value={options.find(opt => opt.value === condition.subAttribute)}
+                                                                // options={options}
+                                                                // value={options.find(opt => opt.value === condition.subAttribute)}
+                                                                // onChange={selected =>
+                                                                //     handleConditionChange(idx, "subAttribute", selected ? selected.value : "")
+                                                                // }
+
+                                                                options={subAttributeOptions[idx] || []}
+                                                                value={(subAttributeOptions[idx] || []).find(opt => opt.value === condition.subAttribute)}
                                                                 onChange={selected =>
                                                                     handleConditionChange(idx, "subAttribute", selected ? selected.value : "")
                                                                 }
