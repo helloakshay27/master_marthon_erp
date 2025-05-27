@@ -611,7 +611,7 @@ const BillBookingDetails = () => {
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">GRN Details</h5>
                 </div>
-                <div className="tbl-container mx-3 mt-3">
+                <div className="tbl-container mx-1 mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -698,7 +698,7 @@ const BillBookingDetails = () => {
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Tax Deduction</h5>
                 </div>
-                <div className="tbl-container mx-3 mt-3">
+                <div className="tbl-container mx-1 mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -738,7 +738,7 @@ const BillBookingDetails = () => {
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Tax Details</h5>
                 </div>
-                <div className="tbl-container mx-3 mt-3">
+                <div className="tbl-container mx-1 mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -774,7 +774,7 @@ const BillBookingDetails = () => {
                   </table>
                 </div>
 
-             
+
                 {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Advance Adjusted</h5>
                 </div> */}
@@ -845,7 +845,7 @@ const BillBookingDetails = () => {
                 </div>
                 <div className="details_page">
                   <div className="row px-3">
-                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Base Cost</label>
                       </div>
@@ -858,7 +858,7 @@ const BillBookingDetails = () => {
                         </label>
                       </div>
                     </div>
-                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>All Inclusive Cost</label>
                       </div>
@@ -1112,10 +1112,10 @@ const BillBookingDetails = () => {
                     </div>
                   </div>
                 </div>
-                {/* <div className="d-flex justify-content-between mt-3 me-2">
+                <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Advance Adjusted</h5>
-                </div> */}
-                {/* <div className="tbl-container mx-3 mt-3">
+                </div>
+                <div className="tbl-container mx-1 mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -1139,24 +1139,34 @@ const BillBookingDetails = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td className="text-start"></td>
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                      </tr>
+
+                      {details?.bill_advance_notes && details.bill_advance_notes.length > 0 ? (
+                        details.bill_advance_notes.map((note, idx) => (
+                          <tr key={note.id}>
+                            <td className="text-start">{note.advance_note?.advance_note_no || "-"}</td>
+                            <td className="text-start">{note.advance_note?.po_number || "-"}</td>
+                            <td className="text-start">{note.advance_note?.project_name || "-"}</td>
+                            <td className="text-start">{note.advance_note?.advance_note_amount || "-"}</td>
+                            <td className="text-start">{/* Credit Note Recovery Till Date (add logic if available) */ "-"}</td>
+                            <td className="text-start">{/* Waive off Till Date (add logic if available) */ "-"}</td>
+                            <td className="text-start">{/* Outstanding Amount (Certificate Date) */ "-"}</td>
+                            <td className="text-start">{/* Outstanding Amount (Current Date) */ "-"}</td>
+                            <td className="text-start">{"-"}</td>
+                            <td className="text-start">{note.amount || ""}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td className="text-center" colSpan={10}>No Advance Notes Found</td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
-                </div> */}
-                <div className="d-flex justify-content-between mt-3 me-2">
-                  <h5 className=" ">Payment Details</h5>
                 </div>
-                <div className="tbl-container mx-3 mt-3">
+                {/* <div className="d-flex justify-content-between mt-3 me-2">
+                  <h5 className=" ">Payment Details</h5>
+                </div> */}
+                {/* <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -1187,11 +1197,11 @@ const BillBookingDetails = () => {
                       </tr>
                     </tbody>
                   </table>
-                </div>
-                {/* <div className="d-flex justify-content-between mt-3 me-2">
-                  <h5 className=" ">Debit Note</h5>
                 </div> */}
-                {/* <div className="tbl-container mx-3 mt-3">
+                <div className="d-flex justify-content-between mt-3 me-2">
+                  <h5 className=" ">Debit Note</h5>
+                </div>
+                <div className="tbl-container mx-1 mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -1214,25 +1224,76 @@ const BillBookingDetails = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td className="text-start"></td>
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                      </tr>
+                      {details?.bill_debit_notes && details.bill_debit_notes.length > 0 ? (
+                        details.bill_debit_notes.map((note, idx) => (
+                          <tr key={note.id}>
+                            <td className="text-start">{note.debit_note?.debit_note_no || "-"}</td>
+                            <td className="text-start">{note.debit_note?.po_number || "-"}</td>
+                            <td className="text-start">{note.debit_note?.project_name || "-"}</td>
+                            <td className="text-start">{note.debit_note?.debit_note_amount || "-"}</td>
+                            <td className="text-start">{/* Credit Note Recovery Till Date (add logic if available) */ "-"}</td>
+                            <td className="text-start">{/* Waive off Till Date (add logic if available) */ "-"}</td>
+                            <td className="text-start">{/* Outstanding Amount (Certificate Date) */ "-"}</td>
+                            <td className="text-start">{/* Outstanding Amount (Current Date) */ "-"}</td>
+                            <td className="text-start">{"-"}</td>
+                            <td className="text-start">{note.amount || ""}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td className="text-center" colSpan={10}>No Debit Notes Found</td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
-                </div> */}
+                </div>
+                <div className="d-flex justify-content-between mt-3 me-2">
+                  <h5 className=" ">Credit Note</h5>
+                </div>
+                <div className="tbl-container mx-1 mt-3">
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th className="text-start">Credit Note No.</th>
+                        <th className="text-start">PO Display No.</th>
+                        <th className="text-start">Project</th>
+                        <th className="text-start">Credit Note Amount</th>
+                        <th className="text-start">Credit Note Recovery Till Date</th>
+                        <th className="text-start">Waive off Till Date</th>
+                        <th className="text-start">Outstanding Amount (Certificate Date)</th>
+                        <th className="text-start">Outstanding Amount (Current Date)</th>
+                        <th className="text-start">Credit Note Reason Type</th>
+                        <th className="text-start">This Recovery</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {details?.bill_credit_notes && details.bill_credit_notes.length > 0 ? (
+                        details.bill_credit_notes.map((note, idx) => (
+                          <tr key={note.id}>
+                            <td className="text-start">{note.credit_note?.credit_note_no || "-"}</td>
+                            <td className="text-start">{note.credit_note?.po_number || "-"}</td>
+                            <td className="text-start">{note.credit_note?.project_name || "-"}</td>
+                            <td className="text-start">{note.credit_note?.credit_note_amount || "-"}</td>
+                            <td className="text-start">{/* Credit Note Recovery Till Date (add logic if available) */ "-"}</td>
+                            <td className="text-start">{/* Waive off Till Date (add logic if available) */ "-"}</td>
+                            <td className="text-start">{/* Outstanding Amount (Certificate Date) */ "-"}</td>
+                            <td className="text-start">{/* Outstanding Amount (Current Date) */ "-"}</td>
+                            <td className="text-start">{"-"}</td>
+                            <td className="text-start">{note.amount || ""}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td className="text-center" colSpan={10}>No Credit Notes Found</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Document Attachment</h5>
                 </div>
-                <div className="tbl-container mx-3 mt-3">
+                <div className="tbl-container mx-1 mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
