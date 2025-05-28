@@ -739,9 +739,9 @@ const calculatePayableAmount = () => {
     setLoading2(true)
     const payload = {
       credit_note: {
-        company_id: selectedCompany?.value || "",
-        site_id: selectedSite?.value || "",
-        project_id: selectedProject?.value || "",
+        // company_id: selectedCompany?.value || "",
+        // site_id: selectedSite?.value || "",
+        // project_id: selectedProject?.value || "",
         purchase_order_id: selectedPO?.id || "",
         credit_note_no: "DN-001",
         credit_note_date: creditNoteDate || "",
@@ -869,13 +869,13 @@ const calculatePayableAmount = () => {
                         id="mor-material-details"
                       >
                         <div className="card-body mt-0">
-                          <div className=" d-flex justify-content-end">
+                          {/* <div className=" d-flex justify-content-end">
                             <a href="#" className="text-decoration-underline">
                               Existing Allocated PO &amp; Advance
                             </a>
-                          </div>
-                          <div className="row">
-                            <div className="col-md-4 ">
+                          </div> */}
+                          <div className="row mt-2">
+                            {/* <div className="col-md-4 ">
                               <div className="form-group">
                                 <label>
                                   Company <span>*</span>
@@ -887,8 +887,8 @@ const calculatePayableAmount = () => {
                                   placeholder="Select Company"
                                 />
                               </div>
-                            </div>
-                            <div className="col-md-4  ">
+                            </div> */}
+                            {/* <div className="col-md-4  ">
                               <div className="form-group">
                                 <label>
                                   Project <span>*</span>
@@ -901,8 +901,8 @@ const calculatePayableAmount = () => {
                                   isDisabled={!selectedCompany}
                                 />
                               </div>
-                            </div>
-                            <div className="col-md-4 ">
+                            </div> */}
+                            {/* <div className="col-md-4 ">
                               <div className="form-group">
                                 <label>
                                   Sub-Project <span>*</span>
@@ -916,8 +916,8 @@ const calculatePayableAmount = () => {
                                   isDisabled={!selectedCompany}
                                 />
                               </div>
-                            </div>
-                            <div className="col-md-4 mt-2">
+                            </div> */}
+                            {/* <div className="col-md-4 mt-2">
                               <div className="form-group">
                                 <label>Credit Note Number</label>
                                 <input
@@ -927,41 +927,9 @@ const calculatePayableAmount = () => {
                                   placeholder=""
                                 />
                               </div>
-                            </div>
-                            <div className="col-md-4 mt-2">
-                              <div className="form-group">
-                                <label>Credit Note Date</label>
-                                <div
-                                  id="datepicker"
-                                  className="input-group date"
-                                  data-date-format="mm-dd-yyyy"
-                                >
-                                  <input className="form-control"
-
-                                    type="date"
-                                    name="creditNoteDate"
-                                    value={creditNoteDate} // Bind to state
-                                    onChange={(e) => setCreditNoteDate(e.target.value)} // Update state on change
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                            <div className="col-md-4 mt-2">
-                              <div className="form-group">
-                                <label>Created On</label>
-                                <div
-                                  id="datepicker"
-                                  className="input-group date"
-                                  data-date-format="mm-dd-yyyy"
-                                >
-                                  <input className="form-control" type="text"
-                                    value={new Date().toLocaleDateString("en-GB")} // Format: DD/MM/YYYY
-                                    disabled // Makes the input field non-editable
-                                  />
-
-                                </div>
-                              </div>
-                            </div>
+                            </div> */}
+                          
+                           
                             <div className="col-md-3 mt-2">
                               <div className="form-group">
                                 <label>PO / WO Number</label>
@@ -1015,6 +983,23 @@ const calculatePayableAmount = () => {
                                 />
                               </div>
                             </div>
+                           
+                             <div className="col-md-4 mt-2">
+                              <div className="form-group">
+                                <label>Created On</label>
+                                <div
+                                  id="datepicker"
+                                  className="input-group date"
+                                  data-date-format="mm-dd-yyyy"
+                                >
+                                  <input className="form-control" type="text"
+                                    value={new Date().toLocaleDateString("en-GB")} // Format: DD/MM/YYYY
+                                    disabled // Makes the input field non-editable
+                                  />
+
+                                </div>
+                              </div>
+                            </div>
                             <div className="col-md-4 mt-2">
                               <div className="form-group">
                                 <label>Supplier Name</label>
@@ -1065,6 +1050,24 @@ const calculatePayableAmount = () => {
                                   value={creditNoteAmount} // Bind to state
                                   onChange={(e) => setCreditNoteAmount(Number(e.target.value) || 0)} // Update state on change
                                 />
+                              </div>
+                            </div>
+                               <div className="col-md-4 mt-2">
+                              <div className="form-group">
+                                <label>Credit Note Date</label>
+                                <div
+                                  id="datepicker"
+                                  className="input-group date"
+                                  data-date-format="mm-dd-yyyy"
+                                >
+                                  <input className="form-control"
+
+                                    type="date"
+                                    name="creditNoteDate"
+                                    value={creditNoteDate} // Bind to state
+                                    onChange={(e) => setCreditNoteDate(e.target.value)} // Update state on change
+                                  />
+                                </div>
                               </div>
                             </div>
                             <div className="col-md-4 mt-2">

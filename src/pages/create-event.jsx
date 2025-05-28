@@ -2065,7 +2065,6 @@ export default function CreateEvent() {
               <div style={{ marginTop: 2 }}>
                 <span
                   style={{
-                    display: "inline-block",
                     width: 32,
                     height: 32,
                     background: "#d1fae5",

@@ -361,7 +361,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.id}
+                          {details?.id || "-"}
                         </label>
                       </div>
                     </div>
@@ -374,7 +374,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.company_name}
+                          {details?.company_name || "-"}
                         </label>
                       </div>
                     </div>
@@ -387,7 +387,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.project_name}
+                          {details?.project_name || "-"}
                         </label>
                       </div>
                     </div>
@@ -400,7 +400,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.site_name}
+                          {details?.site_name || "-"}
                         </label>
                       </div>
                     </div>
@@ -413,7 +413,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.supplier?.organization_name}
+                          {details?.pms_supplier || "-"}
                         </label>
                       </div>
                     </div>
@@ -426,7 +426,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.po_number}
+                          {details?.po_number || "-" }
                         </label>
                       </div>
                     </div>
@@ -439,7 +439,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          Domestic
+                          {"Domestic"  || "-"}
                         </label>
                       </div>
                     </div>
@@ -452,7 +452,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.invoice_number}
+                          {details?.invoice_number  || "-"}
                         </label>
                       </div>
                     </div>
@@ -488,7 +488,7 @@ const BillBookingDetails = () => {
                               month: "2-digit",
                               year: "numeric",
                             })
-                            : ""}
+                            : "-"}
                         </label>
                       </div>
                     </div>
@@ -501,7 +501,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.invoice_amount}
+                          {details?.invoice_amount  || "-"}
                         </label>
                       </div>
                     </div>
@@ -527,7 +527,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.supplier?.gstin}
+                          {details?.supplier?.gstin || "-"}
                         </label>
                       </div>
                     </div>
@@ -540,7 +540,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.supplier?.pan_number}
+                          {details?.supplier?.pan_number || "-"}
                         </label>
                       </div>
                     </div>
@@ -553,7 +553,20 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.type_of_certificate}
+                          {details?.type_of_certificate  || "-"}
+                        </label>
+                      </div>
+                    </div>
+                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Bill Entry Number</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {details?.bill_entry?.bill_id || "-"}
                         </label>
                       </div>
                     </div>
@@ -566,7 +579,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {/* {details?.retention_amount} */}
+                          {/* {details?.retention_amount} */} {"-"}
                         </label>
                       </div>
                     </div>
@@ -579,6 +592,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
+                          {"-"}
                         </label>
                       </div>
                     </div>
@@ -591,6 +605,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
+                           {"-"}
                         </label>
                       </div>
                     </div>
@@ -603,6 +618,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
+                          {"-"}
                         </label>
                       </div>
                     </div>
@@ -636,26 +652,26 @@ const BillBookingDetails = () => {
                                   {materialIndex + 1}
                                 </td>
                                 <td className="text-start">
-                                  {material.material_name || ""}
+                                  {material.material_name || "-"}
                                 </td>
                                 <td className="text-start">
-                                  {material.material_grn_amount || ""}
+                                  {material.material_grn_amount || "-"}
                                 </td>
-                                <td className="text-start">{""}</td>
+                                <td className="text-start">{"-"}</td>
                                 <td className="text-start">
-                                  {material.base_cost || ""}
-                                </td>
-                                <td className="text-start">
-                                  {material.net_taxes || ""}
+                                  {material.base_cost || "-"}
                                 </td>
                                 <td className="text-start">
-                                  {material.net_charges || ""}
+                                  {material.net_taxes || "-"}
                                 </td>
                                 <td className="text-start">
-                                  {material.qty || ""}
+                                  {material.net_charges || "-"}
                                 </td>
                                 <td className="text-start">
-                                  {material.all_inc_tax || ""}
+                                  {material.qty || "-"}
+                                </td>
+                                <td className="text-start">
+                                  {material.all_inc_tax || "-"}
                                 </td>
                               </tr>
                             )
@@ -854,7 +870,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.base_cost}
+                          {details?.base_cost ||"-"}
                         </label>
                       </div>
                     </div>
@@ -867,7 +883,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.all_inclusive_cost}
+                          {details?.all_inclusive_cost ||"-"}
                         </label>
                       </div>
                     </div>
@@ -880,7 +896,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.other_deductions}
+                          {details?.other_deductions ||"-"}
                         </label>
                       </div>
                     </div>
@@ -893,7 +909,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.other_deduction_remarks}
+                          {details?.other_deduction_remarks ||"-"}
                         </label>
                       </div>
                     </div>
@@ -906,7 +922,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.other_additions}
+                          {details?.other_additions ||"-"}
                         </label>
                       </div>
                     </div>
@@ -919,7 +935,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.other_addition_remarks}
+                          {details?.other_addition_remarks ||"-"}
                         </label>
                       </div>
                     </div>
@@ -945,7 +961,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.total_amount}
+                          {details?.total_amount ||"-"}
                         </label>
                       </div>
                     </div>
@@ -957,8 +973,8 @@ const BillBookingDetails = () => {
                         <label className="text">
                           <span className="me-3">
                             <span className="text-dark">:</span>
-                          </span>{" "}
-                          {details?.retention_per}
+                          </span>
+                          {details?.retention_per ||"-"}
                         </label>
                       </div>
                     </div>
@@ -971,7 +987,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.retention_amount}
+                          {details?.retention_amount ||"-"}
                         </label>
                       </div>
                     </div>
@@ -984,7 +1000,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.payable_amount}
+                          {details?.payable_amount ||"-"}
                         </label>
                       </div>
                     </div>
@@ -1010,7 +1026,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.payee_name}
+                          {details?.payee_name ||"-"}
                         </label>
                       </div>
                     </div>
@@ -1023,7 +1039,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.payment_mode}
+                          {details?.payment_mode ||"-"}
                         </label>
                       </div>
                     </div>
@@ -1044,7 +1060,7 @@ const BillBookingDetails = () => {
                               month: "2-digit",
                               year: "numeric",
                             })
-                            : ""}
+                            : "-"}
                         </label>
                       </div>
                     </div>
@@ -1057,6 +1073,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
+                          {"-"}
                         </label>
                       </div>
                     </div>
@@ -1069,7 +1086,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.remark}
+                          {details?.remark ||"-"}
                         </label>
                       </div>
                     </div>
@@ -1082,6 +1099,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
+                          {"-"}
                         </label>
                       </div>
                     </div>
@@ -1094,6 +1112,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
+                          {"-"}
                         </label>
                       </div>
                     </div>
@@ -1106,7 +1125,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.status}
+                          {details?.status ||"-"}
                         </label>
                       </div>
                     </div>
@@ -1119,7 +1138,7 @@ const BillBookingDetails = () => {
                   <table className="w-100">
                     <thead>
                       <tr>
-                        <th className="text-start">ID</th>
+                        <th className="text-start">Advance Note No.</th>
                         <th className="text-start">PO Display No.</th>
                         <th className="text-start">Project</th>
                         <th className="text-start">Advance Amount (INR)</th>
@@ -1143,15 +1162,15 @@ const BillBookingDetails = () => {
                       {details?.bill_advance_notes && details.bill_advance_notes.length > 0 ? (
                         details.bill_advance_notes.map((note, idx) => (
                           <tr key={note.id}>
-                            <td className="text-start">{note.advance_note?.advance_note_no || "-"}</td>
+                            <td className="text-start">{note.advance_note?.advance_number || "-"}</td>
                             <td className="text-start">{note.advance_note?.po_number || "-"}</td>
                             <td className="text-start">{note.advance_note?.project_name || "-"}</td>
-                            <td className="text-start">{note.advance_note?.advance_note_amount || "-"}</td>
+                            <td className="text-start">{note.advance_note?.advance_amount || "-"}</td>
                             <td className="text-start">{/* Credit Note Recovery Till Date (add logic if available) */ "-"}</td>
                             <td className="text-start">{/* Waive off Till Date (add logic if available) */ "-"}</td>
                             <td className="text-start">{/* Outstanding Amount (Certificate Date) */ "-"}</td>
                             <td className="text-start">{/* Outstanding Amount (Current Date) */ "-"}</td>
-                            <td className="text-start">{"-"}</td>
+                            {/* <td className="text-start">{"-"}</td> */}
                             <td className="text-start">{note.amount || ""}</td>
                           </tr>
                         ))

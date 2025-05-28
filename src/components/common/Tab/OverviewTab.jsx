@@ -314,8 +314,8 @@ export default function OverviewTab({
     { label: "Location", key: "location" },
     { label: "Rate", key: "rate" },
     { label: "Amount", key: "amount" },
-    { label: "PMS Brand", key: "pmsBrand" },
-    { label: "PMS Colour", key: "pmsColour" },
+    { label: "Brand", key: "pmsBrand" },
+    { label: "Colour", key: "pmsColour" },
     { label: "Generic Info", key: "genericInfo" },
     ...additionalFields,
   ];
