@@ -2002,7 +2002,7 @@ const BillBookingCreate = () => {
                   </table>
                 </div> */}
                 <div className="d-flex justify-content-between mt-3 me-2">
-                  <h5 className=" ">Current advance deduction:</h5>
+                  {/* <h5 className=" ">Current advance deduction:</h5> */}
                 </div>
                 <div className="row">
                   <div className="col-md-4">

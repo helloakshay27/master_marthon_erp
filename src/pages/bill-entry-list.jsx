@@ -136,7 +136,7 @@ const BillEntryList = () => {
     { field: "payable_amount", headerName: "Payable Amount", width: 150 },
     { field: "paid", headerName: "Paid", width: 150 },
     { field: "balance", headerName: "Balance", width: 150 },
-    { field: "status", headerName: "Status", width: 150 },
+    { field: "status", headerName: "Status", width: 200 },
     { field: "overdue", headerName: "Overdue", width: 150 },
     { field: "assign_to", headerName: "Assign to", width: 150 },
     { field: "tat", headerName: "TAT", width: 150 },
@@ -241,26 +241,87 @@ const BillEntryList = () => {
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    fetchTabData(tab, 1); // Always go to first page on tab change
+    // fetchTabData(tab, 1); // Always go to first page on tab change
+    setCurrentPage(1); // R
   };
   const [allBillCount, setAllBillCount] = useState(0); // <-- Add this
 
-  // Fetch total bill count only once, on mount
+  // Add state to store current filters
+  const [currentFilters, setCurrentFilters] = useState({
+    companyId: "",
+    projectId: "",
+    siteId: "",
+  });
+  // Update the date formatting function
   useEffect(() => {
-    const fetchAllBillCount = async () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get(
-          `${baseURL}bill_entries?page=1&per_page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-        );
-        setAllBillCount(response.data.meta.total_count || 0);
+        // Build base URL
+        let url = `${baseURL}bill_entries?page=${currentPage}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+
+        // Add filters
+        if (
+          currentFilters.companyId ||
+          currentFilters.projectId ||
+          currentFilters.siteId
+        ) {
+          url += `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${currentFilters.companyId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${currentFilters.projectId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_cont]=${currentFilters.siteId}`;
+        } else {
+          // Add tab filters
+          switch (activeTab) {
+            case "open":
+              url += "&q[status_eq]=open";
+              break;
+            case "online":
+              url += "&q[mode_of_submission_eq]=online";
+              break;
+            case "offline":
+              url += "&q[mode_of_submission_eq]=offline";
+              break;
+          }
+        }
+
+        // Add search
+        if (searchKeyword) {
+          url += `&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_cont]=${searchKeyword}`;
+        }
+        const response = await axios.get(url);
+        const data = response.data.bill_entries.map((entry, index) => ({
+          id: entry.id,
+          srNo: (currentPage - 1) * pageSize + index + 1,
+          ...entry,
+          created_at: formatDate(entry.created_at),
+          updated_at: formatDate(entry.updated_at),
+          due_date: formatDate(entry.due_date),
+          bill_date: formatDate(entry.bill_date),
+        }));
+
+        setBillEntries(data);
+        setMeta(response.data.meta);
+        setTotalPages(response.data.meta.total_pages);
+        setTotalEntries(response.data.meta.total_count);
+        // Update allBillCount when on list tab
+        if (
+          activeTab === "list" &&
+          !currentFilters.companyId &&
+          !currentFilters.projectId &&
+          !currentFilters.siteId &&
+          !searchKeyword
+        ) {
+          setAllBillCount(response.data.meta.total_count);
+        }
       } catch (error) {
-        setAllBillCount(0);
+        console.error("Error fetching data:", error);
+        setError("Failed to fetch data");
+      } finally {
+        setLoading(false);
       }
     };
-    fetchAllBillCount();
-  }, []);
 
-  // Update the date formatting function
+    fetchData();
+  }, [currentPage, pageSize, currentFilters, activeTab, searchKeyword]);
+
   const formatDate = (dateString) => {
     if (!dateString) return "-";
     try {
@@ -279,164 +340,13 @@ const BillEntryList = () => {
     }
   };
 
-  // Add state to store current filters
-  const [currentFilters, setCurrentFilters] = useState({
-    companyId: "",
-    projectId: "",
-    siteId: "",
-  });
-
-  // Update the fetchTabData function to handle all tabs correctly
-  const fetchTabData = (tab, page) => {
-    setLoading(true);
-    let statusQuery = "";
-
-    // Set the correct filter based on the active tab
-    switch (tab) {
-      case "open":
-        statusQuery = "&q[status_eq]=open";
-        break;
-      case "online":
-        statusQuery = "&q[mode_of_submission_eq]=online";
-        break;
-      case "offline":
-        statusQuery = "&q[mode_of_submission_eq]=offline";
-        break;
-      default:
-        statusQuery = ""; // For "list" tab, no additional filter
-    }
-
-    axios
-      .get(
-        `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${statusQuery}`
-      )
-      .then((response) => {
-        const data = response.data.bill_entries.map((entry, index) => ({
-          id: entry.id,
-          srNo: (page - 1) * pageSize + index + 1,
-          ...entry,
-          created_at: formatDate(entry.created_at),
-          updated_at: formatDate(entry.updated_at),
-          due_date: formatDate(entry.due_date),
-          bill_date: formatDate(entry.bill_date),
-        }));
-
-        setBillEntries(data);
-        setMeta(response.data.meta);
-        setTotalPages(response.data.meta.total_pages);
-        setTotalEntries(response.data.meta.total_count);
-        setCurrentPage(page);
-      })
-      .catch((error) => {
-        console.error("Error fetching tab data:", error);
-      })
-      .finally(() => setLoading(false));
-  };
-
-  // Update the useEffect to include filters
-  useEffect(() => {
-    // Check if we have active filters
-    if (
-      currentFilters.companyId ||
-      currentFilters.projectId ||
-      currentFilters.siteId
-    ) {
-      const url = `${baseURL}bill_entries?page=${currentPage}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${currentFilters.companyId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${currentFilters.projectId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_cont]=${currentFilters.siteId}`;
-
-      axios
-        .get(url)
-        .then((response) => {
-          const data = response.data.bill_entries.map((entry, index) => ({
-            id: entry.id,
-            srNo: (currentPage - 1) * pageSize + index + 1,
-            ...entry,
-            created_at: formatDate(entry.created_at),
-            updated_at: formatDate(entry.updated_at),
-            due_date: formatDate(entry.due_date),
-            bill_date: formatDate(entry.bill_date),
-          }));
-
-          setBillEntries(data);
-          setTotalPages(response.data.meta.total_pages);
-          setTotalEntries(response.data.meta.total_count);
-        })
-        .catch((error) => {
-          console.error("Error fetching filtered data:", error);
-        });
-    } else {
-      // If no filters are active, use the regular tab data fetch
-      fetchTabData(activeTab, currentPage);
-    }
-  }, [currentPage, pageSize, currentFilters, activeTab]);
-
   // Remove the duplicate handlePageChange and consolidate data fetching
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
+
     // The useEffect will handle the data fetching with filters
   };
 
-  // Update the useEffect to handle all data fetching scenarios
-  useEffect(() => {
-    setLoading(true);
-
-    // Build the base URL
-    let url = `${baseURL}bill_entries?page=${currentPage}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
-
-    // Add filters if they exist
-    if (
-      currentFilters.companyId ||
-      currentFilters.projectId ||
-      currentFilters.siteId
-    ) {
-      url += `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${currentFilters.companyId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${currentFilters.projectId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_cont]=${currentFilters.siteId}`;
-    } else {
-      // Add tab-specific filters if no custom filters
-      switch (activeTab) {
-        case "open":
-          url += "&q[status_eq]=open";
-          break;
-        case "online":
-          url += "&q[mode_of_submission_eq]=online";
-          break;
-        case "offline":
-          url += "&q[mode_of_submission_eq]=offline";
-          break;
-      }
-    }
-
-    // Add search if it exists
-    if (searchKeyword) {
-      url += `&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_cont]=${searchKeyword}`;
-    }
-
-    axios
-      .get(url)
-      .then((response) => {
-        const data = response.data.bill_entries.map((entry, index) => ({
-          id: entry.id,
-          srNo: (currentPage - 1) * pageSize + index + 1,
-          ...entry,
-          created_at: formatDate(entry.created_at),
-          updated_at: formatDate(entry.updated_at),
-          due_date: formatDate(entry.due_date),
-          bill_date: formatDate(entry.bill_date),
-        }));
-
-        setBillEntries(data);
-        setMeta(response.data.meta);
-        setTotalPages(response.data.meta.total_pages);
-        setTotalEntries(response.data.meta.total_count);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-        setError("Failed to fetch data");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [currentPage, pageSize, currentFilters, activeTab, searchKeyword]);
-
-  // Update fetchFilteredData to only set filters
   const fetchFilteredData = () => {
     const companyId = selectedCompany?.value || "";
     const projectId = selectedProject?.value || "";
