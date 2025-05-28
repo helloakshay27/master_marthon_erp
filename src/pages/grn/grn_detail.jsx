@@ -573,7 +573,7 @@ const GoodReceiveNoteDetails = () => {
                         </table>
                       </div>
 
-                      /* MOR Details Section */
+                      {/* /* MOR Details Section */ }
                       <div className="card p-3 mt-3">
                         <div className="mt-2">
                           <h5>MOR Details</h5>
