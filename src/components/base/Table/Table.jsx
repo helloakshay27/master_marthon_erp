@@ -32,6 +32,7 @@ export default function Table({
   enableOverflowScroll = false,
   enableHoverEffect = false, // Add new prop
   isMinWidth = false, // Add new prop
+  isWidth = false,
   accordionRender = null,
   ...rest
 }) {
@@ -420,7 +421,7 @@ export default function Table({
                           : "clip",
                         width: col.key === "srNo" ? "100px !important" : "70px", // Set width for srNo column
                         minWidth:
-                          isMinWidth && col.key !== "srNo" ? "300px" : "70px", // Set minimum width if minWidth prop is true
+                          isMinWidth && col.key !== "srNo" ? isWidth ? "150px" :  "300px" : "70px", // Set minimum width if minWidth prop is true
                       }}
                     >
                       {col.key === "srNo" ? (

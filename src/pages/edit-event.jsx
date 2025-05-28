@@ -1355,7 +1355,7 @@ export default function EditEvent() {
               </li>
             </ol>
           </nav>
-          <h5 className="mt-3 ms-3">Edit RFQ &amp; Auction</h5>
+          <h5 className="mt-3 ms-3">Edit Event</h5>
           <div style={{ width: "15%" }}></div>
         </div>
         <div className="pt-3" ref={myRef}>
@@ -1566,6 +1566,7 @@ export default function EditEvent() {
                 <Table
                   columns={[
                     { label: "Sr No", key: "srNo" },
+                    { label: "File Name", key: "fileName" },
                     { label: "Upload File", key: "upload" },
                     { label: "Action", key: "action" },
                   ]}
@@ -1575,6 +1576,8 @@ export default function EditEvent() {
                   data={documentRows.map((row, index) => ({
                     upload: (
                       <td style={{ border: "none" }}>
+                        {console.log("documentRows:-",documentRows)
+                        }
                         <input
                           type="file"
                           id={`file-input-${index}`}

@@ -1368,6 +1368,7 @@ export default function CreateRFQForm({
           {isMorChecked && selectedMor ? (
             <div className="mt-4">
               <Table
+                isWidth={true}
                 columns={renderTableColumns().filter(
                   (col) => col.key !== "actions"
                 )} // Exclude "actions" column
@@ -1571,6 +1572,7 @@ export default function CreateRFQForm({
                       </div>
                     </div>
                     <Table
+                      isWidth={true}
                       style={{ maxHeight: "none" }}
                       columns={renderTableColumns()}
                       isMinWidth={true}
