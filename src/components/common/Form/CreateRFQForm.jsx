@@ -872,7 +872,7 @@ export default function CreateRFQForm({
       { label: "Material Name", key: "descriptionOfItem" },
       { label: "Quantity", key: "quantity" },
       { label: "UOM", key: "unit" },
-      { label: "Type", key: "type" },
+      // { label: "Type", key: "type" },
       { label: "Brand", key: "pms_brand_id" }, // Add brand column
       { label: "Colour", key: "pms_colour_id" }, // Add PMS Colour column
       { label: "Generic Info", key: "generic_info_id" }, // Add Generic Info column

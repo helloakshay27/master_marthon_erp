@@ -1539,7 +1539,7 @@ export default function EditEvent() {
                 <Table
                   columns={[
                     { label: "Sr No", key: "srNo" },
-                    { label: "File Name", key: "fileName" },
+                    // { label: "File Name", key: "fileName" },
                     { label: "Upload File", key: "upload" },
                     { label: "Action", key: "action" },
                   ]}
