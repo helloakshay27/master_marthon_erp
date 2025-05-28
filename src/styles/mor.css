@@ -18842,6 +18842,17 @@ ul.pagination.justify-content-center {
   }
 }
 
+.pro-radio-tabs__tab--disabled {
+  pointer-events: none;
+  opacity: 0.5;
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+.pro-radio-tabs__tab--disabled .ant-radio-inner {
+  background: #e0e0e0;
+  border-color: #ccc;
+}
+
 
 .modal-xxl .modal-dialog {
   max-width: 95%;

@@ -306,25 +306,27 @@ const EventTypeModal = ({
                 <p className="pro-text pro-body pro-text--normal">Contract</p>
               </div>
 
-              {localEventType === "auction" && (
+              {/* {localEventType === "auction" && ( */}
   <div
-    className={`pro-radio-tabs__tab pro-radio-tabs__tab__selected`}
+    className={`pro-radio-tabs__tab pro-radio-tabs__tab--disabled`}
     role="radio"
     aria-checked={true}
     tabIndex={0}
     onClick={() => setLocalEventType("auction")}
+    
   >
     <div className="pro-radio-tabs__check-icon">
       <label
         htmlFor="eventType"
         className="ant-radio-wrapper ant-radio-wrapper-checked"
       >
-        <span className="ant-radio ant-radio-checked">
+        <span className="ant-radio">
           <input
             type="radio"
             className="ant-radio-input"
             value="auction"
             checked={true}
+            disabled={true}
             onChange={() => setLocalEventType("auction")}
             id="eventType"
           />
@@ -334,7 +336,7 @@ const EventTypeModal = ({
     </div>
     <p className="pro-text pro-body pro-text--normal">Auction</p>
   </div>
-)}
+{/* )} */}
             </div>
           </div>
         </div>
