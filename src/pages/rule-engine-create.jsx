@@ -5,9 +5,12 @@ import axios from "axios";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import "../styles/mor.css";
-
+import { useNavigate } from "react-router-dom";
 
 const RuleEngineCreate = () => {
+    const navigate = useNavigate();
+    const [errors, setErrors] = useState({});
+    const [thenError, setThenError] = useState({});
     const options = [
         { value: "alabama", label: "Alabama" },
         { value: "alaska", label: "Alaska" },
@@ -17,14 +20,27 @@ const RuleEngineCreate = () => {
         { value: "texas", label: "Texas" },
         { value: "washington", label: "Washington" },
     ];
+
     const initialCondition = {
-        masterAttribute: "",
-        subAttribute: "",
-        masterOperator: "",
-        subOperator: "",
-        value: "",
-        conditionType: "",
+        model_id: "", // master attribute 
+        condition_attribute: "", //sub atrribute 
+        master_operator: "", //master operator
+        operator: "",    //sub operator 
+        compare_value: "",
+        condition_type: "",
+        action_type: "created",
+
     };
+
+    const toSnakeCase = str =>
+        str &&
+        str
+            .replace(/\s+/g, '_')         // Replace spaces with underscores
+            .replace(/[A-Z]/g, letter =>
+                `${letter.toLowerCase()}`
+            ) // Add _ before uppercase and lowercase it
+            .replace(/^_+/, '')           // Remove leading underscores
+            .toLowerCase();
 
     const [conditions, setConditions] = useState([{ ...initialCondition }]);
     const [ruleName, setRuleName] = useState("");
@@ -73,17 +89,18 @@ const RuleEngineCreate = () => {
     }, []);
     // Fetch sub-attributes when master attribute changes for a condition
     const handleMasterAttributeChange = (idx, selectedValue) => {
-        handleConditionChange(idx, "masterAttribute", selectedValue);
-        handleConditionChange(idx, "subAttribute", ""); // Reset sub-attribute
+        handleConditionChange(idx, "model_id", selectedValue);
+        handleConditionChange(idx, "condition_attribute", ""); // Reset sub-attribute
 
         if (selectedValue) {
             axios
                 .get(`https://marathon.lockated.com/rule_engine/available_attributes.json?q[available_model_id_eq]=${selectedValue}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
                 .then((response) => {
                     const options = response.data.map(item => ({
-                        value: item.id,
+                        value: toSnakeCase(item.display_name),
                         label: item.display_name
                     }));
+                    console.log("sub options", options)
                     setSubAttributeOptions(prev => ({
                         ...prev,
                         [idx]: options
@@ -104,62 +121,214 @@ const RuleEngineCreate = () => {
         }
     };
 
+    console.log("sub attriL", subAttributeOptions)
 
-    const rulePayload = {
-  rule_engine_rule: {
-    name: ruleName,
-    // description: "This rule shall credit points to member after creation of referral",
-    // company_id: 31,
-    // organization_id: null,
-    // user_id: 71,
-    // active: true,
-    // model_id: 1,
+    const [masterRewardOptions, setMasterRewardOptions] = useState([]);
+    const [subRewardOptions, setSubRewardOptions] = useState([]);
+    // Fetch Master Reward Outcome options on mount
+    useEffect(() => {
+        axios
+            .get("https://marathon.lockated.com/rule_engine/available_functions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414")
+            .then((response) => {
+                // Assuming response.data is an array of objects with 'id' and 'display_name'
+                const options = response.data.map(item => ({
+                    value: item.id,
+                    label: item.display_name
+                }));
+                setMasterRewardOptions(options);
+            })
+            .catch((error) => {
+                console.error("Error fetching master reward outcomes:", error);
+            });
+    }, []);
 
-    rule_engine_conditions_attributes: [
-      {
-        condition_attribute: "referral",
-        operator: "greater_than",
-        compare_value: "1000",
-        action_type: "created"
-      }
-    ],
+    // Fetch sub reward options when masterRewardOutcome changes
+    useEffect(() => {
+        if (masterRewardOutcome) {
+            axios
+                .get(`https://marathon.lockated.com/rule_engine/available_functions.json?q[available_model_id]=${masterRewardOutcome}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+                .then((response) => {
+                    const options = response.data.map(item => ({
+                        value: item.id,
+                        label: item.display_name
+                    }));
+                    setSubRewardOptions(options);
+                })
+                .catch((error) => {
+                    setSubRewardOptions([]);
+                    console.error("Error fetching sub reward outcomes:", error);
+                });
+        } else {
+            setSubRewardOptions([]);
+        }
+    }, [masterRewardOutcome]);
 
-    rule_engine_actions_attributes: [
-      {
-        lock_model_name: "Referral",
-        action_method: "credit_points_on_referral",
-        parameters: {},
-        rule_engine_applicable_model_id: 1,
-        rule_engine_available_function_id: 1,
-        action_selected_model: 1
-      }
-    ]
-  }
-};
+    const [masterOperatorOptions, setMasterOperatorOptions] = useState([]);
+    const [subOperatorOptions, setSubOperatorOptions] = useState({}); // key: condition idx, value: options array
+    // Fetch master operator options on mount
+    useEffect(() => {
+        axios
+            .get("https://marathon.lockated.com/rule_engine/conditions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414")
+            .then((response) => {
+                // Filter out unique master_operator values and ignore null/empty
+                const operators = response.data
+                    .map(item => item.master_operator)
+                    .filter((op, idx, arr) => op && arr.indexOf(op) === idx)
+                    .map(op => ({
+                        value: op,
+                        label: op
+                    }));
+                setMasterOperatorOptions(operators);
+            })
+            .catch((error) => {
+                console.error("Error fetching master operators:", error);
+            });
+    }, []);
 
-console.log(" rule Payload:", rulePayload);
+    // Fetch sub operators when master operator changes for a condition
+    const handleMasterOperatorChange = (idx, selectedValue) => {
+        handleConditionChange(idx, "master_operator", selectedValue);
+        handleConditionChange(idx, "operator", ""); // Reset sub-operator
+
+        if (selectedValue) {
+            // Find the selected master operator's id (assuming value is id)
+            const selectedOperator = masterOperatorOptions.find(op => op.value === selectedValue);
+            if (selectedOperator) {
+                axios
+                    .get(`https://marathon.lockated.com/rule_engine/conditions.json?q[rule_id]=${selectedValue}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+                    .then((response) => {
+                        // Map sub operators from response (assuming 'operator' field)
+                        const options = response.data
+                            .map(item => {
+                                if (!item.operator) return null;
+                                const label = item.operator
+                                    .split('_')
+                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                    .join(' ');
+                                return {
+                                    value: item.operator,
+                                    label
+                                };
+                            })
+                            .filter((op, idx, arr) => op.value && arr.findIndex(o => o.value === op.value) === idx);
+                        setSubOperatorOptions(prev => ({
+                            ...prev,
+                            [idx]: options
+                        }));
+                    })
+                    .catch((error) => {
+                        setSubOperatorOptions(prev => ({
+                            ...prev,
+                            [idx]: []
+                        }));
+                        console.error("Error fetching sub operators:", error);
+                    });
+            }
+        } else {
+            setSubOperatorOptions(prev => ({
+                ...prev,
+                [idx]: []
+            }));
+        }
+    };
+
+    const rule_engine_conditions_attributes = conditions.map(cond => ({
+        ...cond,
+        model_id: Number(cond.model_id),
+        // compare_value: cond.compare_value !== "" && !isNaN(cond.compare_value)
+        // ? Number(cond.compare_value)
+        // : cond.compare_value
+    }));
+
+    // Helper to get master reward outcome name by id
+    const getMasterRewardOutcomeName = (id) => {
+        const found = masterRewardOptions.find(opt => opt.value === id);
+        return found ? toSnakeCase(found.label) : "";
+    };
+
+    const rule_engine_actions_attributes = conditions.map(condition => ({
+        lock_model_name: condition.condition_attribute,
+        action_method: getMasterRewardOutcomeName(masterRewardOutcome),
+        parameters: Number(parameter) || 0,
+        rule_engine_applicable_model_id: Number(condition.model_id),
+        rule_engine_available_function_id: Number(masterRewardOutcome),
+        action_selected_model: Number(condition.model_id)
+    }));
+
 
     const payload = {
-        name:ruleName,
-        conditions,
-        then: {
-            masterRewardOutcome,
-            subRewardOutcome,
-            parameter,
-        },
+        rule_engine_rule: {
+            name: ruleName,
+            active: true,
+            model_id: Number(conditions[0]?.model_id) || 1,
+            rule_engine_conditions_attributes,
+            rule_engine_actions_attributes,
+        }
     };
-    // console.log("Payload:", payload);
+    console.log("Payload:", payload);
 
     // Handle submit
-    const handleSubmit = e => {
-        e.preventDefault();
+    const handleSubmit = async () => {
+        // e.preventDefault();
+        let newErrors = {};
+        let hasError = false;
+
+        // Rule name validation
+        if (!ruleName) {
+            newErrors.ruleName = "Rule name is required.";
+            hasError = true;
+        }
+        // Validate each condition
+        conditions.forEach((c, idx) => {
+            let condErr = {};
+            if (!c.model_id) condErr.model_id = "Master attribute is required.";
+            if (!c.condition_attribute) condErr.condition_attribute = "Sub attribute is required.";
+            if (!c.master_operator) condErr.master_operator = "Master operator is required.";
+            if (!c.operator) condErr.operator = "Sub operator is required.";
+            if (!c.compare_value) condErr.compare_value = "Value is required.";
+            if (Object.keys(condErr).length > 0) {
+                newErrors[idx] = condErr;
+                hasError = true;
+            }
+        });
+
+        // Validate THEN section
+        let thenErr = {};
+        if (!masterRewardOutcome) thenErr.masterRewardOutcome = "Master reward outcome is required.";
+        if (!subRewardOutcome) thenErr.subRewardOutcome = "Sub reward outcome is required.";
+        // if (!parameter) thenErr.parameter = "Required";
+        setThenError(thenErr);
+
+        setErrors(newErrors);
+
+        if (hasError || Object.keys(thenErr).length > 0) return;
         // Build payload
         const payload = {
-            ruleName,
-            conditions,
+            rule_engine_rule: {
+                name: ruleName,
+                active: true,
+                model_id: Number(conditions[0]?.model_id) || 1,
+                rule_engine_conditions_attributes,
+                rule_engine_actions_attributes,
+
+            }
         };
-        console.log("Payload:", payload);
+        console.log("Payload on submisiion:", payload);
         // Send payload to API here
+        try {
+            const response = await axios.post(
+                "https://marathon.lockated.com/rule_engine/rules.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+                payload
+            );
+            // Handle success (show message, redirect, etc.)
+            console.log("Rule created:", response.data);
+            alert("Rule created successfully!");
+            navigate("/rule-engine-list")
+        } catch (error) {
+            // Handle error
+            console.error("Error creating rule:", error);
+            alert("Failed to create rule.");
+        }
     };
 
     return (
@@ -185,6 +354,9 @@ console.log(" rule Payload:", rulePayload);
                                             type="text"
                                             placeholder="Enter Rule Name"
                                         />
+                                        {errors.ruleName && (
+                                            <div className="text-danger" style={{ fontSize: "12px" }}>{errors.ruleName}</div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -209,10 +381,6 @@ console.log(" rule Payload:", rulePayload);
                                             {idx > 0 && (
                                                 <button
                                                     className="purple-btn2"
-                                                    // style={{ color: "#8b0203", fontSize: "20px", lineHeight: "1" }}
-                                                    // onClick={() => {
-                                                    //     setConditions(conditions.filter((_, i) => i !== idx));
-                                                    // }}
                                                     onClick={() => removeCondition(idx)}
                                                     title="Remove Condition"
                                                 >
@@ -231,40 +399,6 @@ console.log(" rule Payload:", rulePayload);
                                             )}
                                         </h6>
                                         {idx > 0 && (
-
-                                            // <ul className="nav nav-tabs border-0 mt-3">
-                                            //     <div className="d-flex gap-3 And-btn rounded">
-                                            //         <li className="nav-item d-flex p-2 gap-2" role="presentation">
-                                            //             <input
-                                            //                 type="radio"
-                                            //                 className="nav-link"
-                                            //                 id={`and-tab-${idx}`}
-                                            //                 name={`condition-type-${idx}`}
-                                            //                 value="AND"
-                                            //                 checked={condition.conditionType === "AND"}
-                                            //                 onChange={() => handleConditionChange(idx, "conditionType", "AND")}
-
-                                            //             />
-                                            //             <label htmlFor={`and-tab-${idx}`} className="and-or-btn">
-                                            //                 AND
-                                            //             </label>
-                                            //         </li>
-                                            //         <li className="nav-item d-flex p-2 gap-2" role="presentation">
-                                            //             <input
-                                            //                 type="radio"
-                                            //                 className="nav-link"
-                                            //                 id={`or-tab-${idx}`}
-                                            //                 name={`condition-type-${idx}`}
-                                            //                 value="OR"
-                                            //                 checked={condition.conditionType === "OR"}
-                                            //                 onChange={() => handleConditionChange(idx, "conditionType", "OR")}
-                                            //             />
-                                            //             <label htmlFor={`or-tab-${idx}`} className="and-or-btn">
-                                            //                 OR
-                                            //             </label>
-                                            //         </li>
-                                            //     </div>
-                                            // </ul>
                                             <ul className="nav nav-tabs border-0 mt-3">
                                                 <div className="d-flex gap-3 And-btn rounded custom-radio-lg">
                                                     <li className="nav-item d-flex p-2 gap-2" role="presentation">
@@ -274,8 +408,8 @@ console.log(" rule Payload:", rulePayload);
                                                             id={`and-tab-${idx}`}
                                                             name={`condition-type-${idx}`}
                                                             value="AND"
-                                                            checked={condition.conditionType === "AND"}
-                                                            onChange={() => handleConditionChange(idx, "conditionType", "AND")}
+                                                            checked={condition.condition_type === "AND"}
+                                                            onChange={() => handleConditionChange(idx, "condition_type", "AND")}
                                                         />
                                                         <label htmlFor={`and-tab-${idx}`} className="and-or-btn">
                                                             AND
@@ -288,8 +422,8 @@ console.log(" rule Payload:", rulePayload);
                                                             id={`or-tab-${idx}`}
                                                             name={`condition-type-${idx}`}
                                                             value="OR"
-                                                            checked={condition.conditionType === "OR"}
-                                                            onChange={() => handleConditionChange(idx, "conditionType", "OR")}
+                                                            checked={condition.condition_type === "OR"}
+                                                            onChange={() => handleConditionChange(idx, "condition_type", "OR")}
                                                         />
                                                         <label htmlFor={`or-tab-${idx}`} className="and-or-btn">
                                                             OR
@@ -319,25 +453,16 @@ console.log(" rule Payload:", rulePayload);
                                                                 Master Attribute <span>*</span>
                                                             </label>
                                                             <SingleSelector
-                                                                // options={options}
-                                                                // value={options.find(opt => opt.value === condition.masterAttribute)}
-                                                                // onChange={selected =>
-                                                                //     handleConditionChange(idx, "masterAttribute", selected ? selected.value : "")
-                                                                // }
-
-                                                                // options={masterAttributeOptions}
-                                                                // value={masterAttributeOptions.find(opt => opt.value === condition.masterAttribute)}
-                                                                // onChange={selected =>
-                                                                //     handleConditionChange(idx, "masterAttribute", selected ? selected.value : "")
-                                                                // }
-
-                                                                 options={masterAttributeOptions}
-                                    value={masterAttributeOptions.find(opt => opt.value === condition.masterAttribute)}
-                                    onChange={selected =>
-                                        handleMasterAttributeChange(idx, selected ? selected.value : "")
-                                    }
+                                                                options={masterAttributeOptions}
+                                                                value={masterAttributeOptions.find(opt => opt.value === condition.model_id)}
+                                                                onChange={selected =>
+                                                                    handleMasterAttributeChange(idx, selected ? selected.value : "")
+                                                                }
                                                                 placeholder="Select Master Attribute"
                                                             />
+                                                            {errors[idx]?.model_id && (
+                                                                <div className="text-danger" style={{ fontSize: "12px" }}>{errors[idx].model_id}</div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                     <div className="col-md-1 d-flex justify-content-center align-items-center">
@@ -349,19 +474,16 @@ console.log(" rule Payload:", rulePayload);
                                                                 Sub Attribute <span>*</span>
                                                             </label>
                                                             <SingleSelector
-                                                                // options={options}
-                                                                // value={options.find(opt => opt.value === condition.subAttribute)}
-                                                                // onChange={selected =>
-                                                                //     handleConditionChange(idx, "subAttribute", selected ? selected.value : "")
-                                                                // }
-
                                                                 options={subAttributeOptions[idx] || []}
-                                                                value={(subAttributeOptions[idx] || []).find(opt => opt.value === condition.subAttribute)}
+                                                                value={(subAttributeOptions[idx] || []).find(opt => opt.value === condition.condition_attribute)}
                                                                 onChange={selected =>
-                                                                    handleConditionChange(idx, "subAttribute", selected ? selected.value : "")
+                                                                    handleConditionChange(idx, "condition_attribute", selected ? selected.value : "")
                                                                 }
                                                                 placeholder="Select Sub Attribute"
                                                             />
+                                                            {errors[idx]?.condition_attribute && (
+                                                                <div className="text-danger" style={{ fontSize: "12px" }}>{errors[idx].condition_attribute}</div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -386,13 +508,16 @@ console.log(" rule Payload:", rulePayload);
                                                                 Master Operator <span>*</span>
                                                             </label>
                                                             <SingleSelector
-                                                                options={options}
+                                                                options={masterOperatorOptions}
                                                                 placeholder="Select Master Operator"
-                                                                value={options.find(opt => opt.value === condition.masterOperator)}
+                                                                value={masterOperatorOptions.find(opt => opt.value === condition.master_operator)}
                                                                 onChange={selected =>
-                                                                    handleConditionChange(idx, "masterOperator", selected ? selected.value : "")
+                                                                    handleMasterOperatorChange(idx, selected ? selected.value : "")
                                                                 }
                                                             />
+                                                            {errors[idx]?.master_operator && (
+                                                                <div className="text-danger" style={{ fontSize: "12px" }}>{errors[idx].master_operator}</div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                     <div className="col-md-1 d-flex justify-content-center align-items-center">
@@ -404,13 +529,16 @@ console.log(" rule Payload:", rulePayload);
                                                                 Sub Operator <span>*</span>
                                                             </label>
                                                             <SingleSelector
-                                                                options={options}
+                                                                options={subOperatorOptions[idx] || []}
                                                                 placeholder="Select Sub Operator"
-                                                                value={options.find(opt => opt.value === condition.subOperator)}
+                                                                value={(subOperatorOptions[idx] || []).find(opt => opt.value === condition.operator)}
                                                                 onChange={selected =>
-                                                                    handleConditionChange(idx, "subOperator", selected ? selected.value : "")
+                                                                    handleConditionChange(idx, "operator", selected ? selected.value : "")
                                                                 }
                                                             />
+                                                            {errors[idx]?.operator && (
+                                                                <div className="text-danger" style={{ fontSize: "12px" }}>{errors[idx].operator}</div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -443,12 +571,16 @@ console.log(" rule Payload:", rulePayload);
                                                                     className="form-control"
                                                                     type="text"
                                                                     name="creditNoteDate"
-                                                                    value={condition.value}
+                                                                    value={condition.compare_value}
                                                                     onChange={e =>
-                                                                        handleConditionChange(idx, "value", e.target.value)
+                                                                        handleConditionChange(idx, "compare_value", e.target.value)
                                                                     }
                                                                 />
+
                                                             </div>
+                                                            {errors[idx]?.compare_value && (
+                                                                <div className="text-danger" style={{ fontSize: "12px" }}>{errors[idx].compare_value}</div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -494,13 +626,16 @@ console.log(" rule Payload:", rulePayload);
                                                 Master Reward Outcome <span>*</span>
                                             </label>
                                             <SingleSelector
-                                                options={options}
-                                                value={options.find(opt => opt.value === masterRewardOutcome)}
+                                                options={masterRewardOptions}
+                                                value={masterRewardOptions.find(opt => opt.value === masterRewardOutcome)}
                                                 onChange={selected =>
                                                     setMasterRewardOutcome(selected ? selected.value : "")
                                                 }
                                                 placeholder={`Select  Master Reward Outcome`}
                                             />
+                                            {thenError.masterRewardOutcome && (
+                                                <div className="text-danger" style={{ fontSize: "12px" }}>{thenError.masterRewardOutcome}</div>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="col-md-1 d-flex justify-content-center align-items-center">
@@ -512,18 +647,21 @@ console.log(" rule Payload:", rulePayload);
                                                 Sub Reward Outcome <span>*</span>
                                             </label>
                                             <SingleSelector
-                                                options={options}
-                                                value={options.find(opt => opt.value === subRewardOutcome)}
+                                                options={subRewardOptions}
+                                                value={subRewardOptions.find(opt => opt.value === subRewardOutcome)}
                                                 onChange={selected =>
                                                     setSubRewardOutcome(selected ? selected.value : "")
                                                 }
                                                 placeholder={`Select Sub Reward Outcome`}
                                             />
+                                            {thenError.subRewardOutcome && (
+                                                <div className="text-danger" style={{ fontSize: "12px" }}>{thenError.subRewardOutcome}</div>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="col-md-3">
                                         <div className="form-group">
-                                            <label>Parameter <span>*</span></label>
+                                            <label>Parameter </label>
                                             <div
                                                 id="datepicker"
                                                 className="input-group date"
@@ -543,11 +681,8 @@ console.log(" rule Payload:", rulePayload);
                             </div>
                         </div>
                         <div className="row mt-4 mb-5 justify-content-center w-100">
-                            {/* <div className="col-md-2">
-                    <button className="purple-btn2 w-100">Print</button>
-                  </div> */}
                             <div className="col-md-2">
-                                <button className="purple-btn2 w-100" >Submit</button>
+                                <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
                             </div>
                             <div className="col-md-2">
                                 <button className="purple-btn1 w-100">Cancel</button>
