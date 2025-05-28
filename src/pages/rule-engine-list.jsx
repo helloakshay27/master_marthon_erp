@@ -1,27 +1,29 @@
 import React, { useState, useEffect } from "react";
 import "../styles/mor.css";
 import { Link } from "react-router-dom";
-// import SubHeader from "../components/SubHeader";
 import axios from "axios";
-// import {
-//   fetchMasterAttributes,
-//   fetchSubAttributes,
-// } from "../Confi/ruleEngineApi";
 import { Modal } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { useNavigate } from "react-router-dom";
-// import BASE_URL from "../Confi/baseurl";
+
 
 const RuleEngineList = () => {
   const navigate = useNavigate();
-  
+  const [rules, setRules] = useState([]);
+
   const [showModal, setShowModal] = useState(false);
- 
+
   const handleCloseModal = () => {
     setShowModal(false);
   };
+  useEffect(() => {
+    axios
+      .get("https://marathon.lockated.com/rule_engine/rules.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414")
+      .then((res) => setRules(res.data))
+      .catch((err) => console.error(err));
+  }, []);
 
 
 
@@ -34,6 +36,14 @@ const RuleEngineList = () => {
     { value: "texas", label: "Texas" },
     { value: "washington", label: "Washington" },
   ];
+
+  function toTitleCaseFromSnake(str) {
+    if (!str) return "";
+    return str
+      .replace(/_/g, " ") // Replace underscores with spaces
+      .replace(/\s+/g, " ") // Remove extra spaces
+      .replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()); // Capitalize each word
+  }
   return (
     <>
 
@@ -113,11 +123,7 @@ const RuleEngineList = () => {
                   {/* Create BOQ Button */}
                   <button
                     className="purple-btn2"
-                  //   onClick={() =>
-                  //     // navigate("/material-reconciliation-create")
-                  //   } // Navigate to the specified path
-                  // onClick={handleClick}
-                  onClick={() => navigate("/rule-engine-create")}
+                    onClick={() => navigate("/rule-engine-create")}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -135,8 +141,8 @@ const RuleEngineList = () => {
               </div>
             </div>
 
-            <div className="mx-3">
-              <div className="tbl-container mt-1">
+            <div className="mx-3 mb-5">
+              <div className="tbl-container mt-1" style={{ maxHeight: "410px", overflowY: "auto" }}>
                 <table className="w-100">
                   <thead>
                     <tr>
@@ -161,20 +167,51 @@ const RuleEngineList = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td className="text-start"></td>
-                      <td className="text-start"></td>
-                      <td className="text-start"></td>
-                      <td className="text-start"></td>
-                      <td className="text-start"></td>
-                      <td className="text-start"></td>
-                      <td className="text-start"></td>
 
-                      <td className="text-start"></td>
-                      <td className="text-start"></td>
-                      <td className="text-start"></td>
-                      <td className="text-start"></td>
-                    </tr>
+                    {rules.length === 0 ? (
+                      <tr>
+                        <td colSpan={11} className="text-center">No data found</td>
+                      </tr>
+                    ) : (
+                      rules.flatMap((rule, ruleIdx) =>
+                        rule.conditions.map((condition, condIdx) => {
+                          const action = rule.actions?.[condIdx] || rule.actions?.[0] || {};
+                          return (
+                            <tr key={`${rule.id}-${condition.id}`}>
+                              {/* Only show rule name and Sr.No. for the first condition, with rowspan */}
+                              {condIdx === 0 && (
+                                <>
+                                  <td className="text-start" rowSpan={rule.conditions.length}>{ruleIdx + 1}</td>
+                                  <td className="text-start" rowSpan={rule.conditions.length}>{rule.name}</td>
+                                </>
+                              )}
+                              {/* For subsequent rows, skip these cells */}
+                              {/* Attribute */}
+                              <td className="text-start">{"-"}</td>
+                              <td className="text-start">{toTitleCaseFromSnake(condition.condition_attribute) || "-"}</td>
+                              <td className="text-start">{condition.master_operator || ""}</td>
+                              <td className="text-start">{toTitleCaseFromSnake(condition.operator) || "-"}</td>
+                              <td className="text-start">{toTitleCaseFromSnake(action.action_method) || "-"}</td>
+                              <td className="text-start">{/* Sub Reward Outcome if available */}{"-"}</td>
+                              {/* Only show toggle, edit, view for the first condition */}
+                              {condIdx === 0 && (
+                                <>
+                                  <td className="text-start" rowSpan={rule.conditions.length}>
+                                    {/* <input type="checkbox" checked={rule.active} readOnly /> */}
+                                  </td>
+                                  <td className="text-start" rowSpan={rule.conditions.length}>
+                                    {/* <button className="btn btn-sm btn-primary">Edit</button> */}
+                                  </td>
+                                  <td className="text-start" rowSpan={rule.conditions.length}>
+                                    {/* <button className="btn btn-sm btn-secondary">View</button> */}
+                                  </td>
+                                </>
+                              )}
+                            </tr>
+                          );
+                        })
+                      )
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -211,8 +248,8 @@ const RuleEngineList = () => {
                   required=""
                   className="mt-1 mb-1"
                   style={{ fontSize: "12px", fontWeight: "400" }}
-                  // onChange={handleMasterAttributeChange}
-                  // value={selectedMasterAttribute}
+                // onChange={handleMasterAttributeChange}
+                // value={selectedMasterAttribute}
                 >
                   <option value="" disabled selected hidden>
                     Select Master Attribute
@@ -235,9 +272,9 @@ const RuleEngineList = () => {
                   required=""
                   className="mt-1 mb-1"
                   style={{ fontSize: "12px", fontWeight: "400" }}
-                  // onChange={handleSubAttributeChange}
-                  // value={selectedSubAttribute}
-                  // disabled={!selectedMasterAttribute}
+                // onChange={handleSubAttributeChange}
+                // value={selectedSubAttribute}
+                // disabled={!selectedMasterAttribute}
                 >
                   <option value="" disabled selected hidden>
                     Select Sub Attribute

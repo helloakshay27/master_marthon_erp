@@ -6059,7 +6059,7 @@ useEffect(() => {
                           borderRadius: "5px",
                         }}
                       >
-                        {revisedBid ? "Revise Bid" : "Create Bid"}
+                        {revisedBid ? "Revise Bid" : "Submit"}
                       </button>
                     </div>
                   </div>
