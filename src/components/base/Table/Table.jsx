@@ -353,6 +353,7 @@ export default function Table({
   return (
     <div
       className="tbl-container px-0 mt-3"
+      
       {...rest}
     >
       <table className="w-100">
@@ -481,8 +482,8 @@ export default function Table({
                 )}
               </tr>
               {openAccordionIndex === rowIndex && accordionRender && (
-                <tr>
-                  <td colSpan={columns.length + 1}>
+                <tr style={{ border: "none" }}>
+                  <td colSpan={columns.length + 1} style={{ padding: "0", margin: "0" }}>
                     <div style={{ textAlign: "left" }}>
                       {accordionRender(row, rowIndex)}
                     </div>

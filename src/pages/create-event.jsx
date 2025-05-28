@@ -951,7 +951,6 @@ export default function CreateEvent() {
         </div>
         <div className="pt-3" ref={myRef}>
           <div className="module-data-section mx-3">
-            <div className="card p-3 mt-3">
               <div className="row align-items-end justify-items-end mb-5 mt-3">
                 <div className="col-md-4 col-sm-6 mt-0 mb-2">
                   <div className="form-group">
@@ -1391,7 +1390,6 @@ export default function CreateEvent() {
                   </button>
                 </div>
               </div>
-            </div>
             {/* // vendor model with vendor data */}
             <DynamicModalBox
               size="xl"

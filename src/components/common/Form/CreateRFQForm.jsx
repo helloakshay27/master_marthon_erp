@@ -20,7 +20,7 @@ export default function CreateRFQForm({
   updateBidTemplateFields, // Rename this prop
   updateAdditionalFields, // Rename this prop
   isMor,
-  isMorSelected
+  isMorSelected,
 }) {
   const [materials, setMaterials] = useState([]);
   const [sections, setSections] = useState([
@@ -147,7 +147,6 @@ export default function CreateRFQForm({
   }, [isMor]);
 
   const mapBidTemplateFields = (fields) => {
-
     return fields.map((field) => ({
       label: field.field_name,
       value: field.field_name, // Initialize with empty value or any default value
@@ -162,7 +161,6 @@ export default function CreateRFQForm({
   };
 
   const handleTemplateChange = async (event) => {
-
     setSelectedTemplate(event);
     updateSelectedTemplate(event); // Update the parent component's state
 
@@ -332,7 +330,6 @@ export default function CreateRFQForm({
 
   useEffect(() => {
     if (existingData) {
-      
       const updatedSections = Object.entries(existingData).map(
         ([materialType, subMaterials]) => {
           const materialsArray = Object.values(subMaterials).flat();
@@ -385,7 +382,6 @@ export default function CreateRFQForm({
   }, [existingData]);
 
   useEffect(() => {
-
     const fetchSections = async () => {
       try {
         const response = await axios.get(
@@ -498,7 +494,6 @@ export default function CreateRFQForm({
   }, [templateData]);
 
   const handleUnitChange = (selected, rowIndex, sectionIndex) => {
-
     const updatedSections = [...sections];
     updatedSections[sectionIndex].sectionData[rowIndex].unit = selected;
 
@@ -506,7 +501,6 @@ export default function CreateRFQForm({
   };
 
   const handleLocationChange = (selected, rowIndex, sectionIndex) => {
-
     const updatedSections = [...sections];
     const selectedLocation = locationOptions.find(
       (location) => location.value === selected
@@ -625,7 +619,6 @@ export default function CreateRFQForm({
   }, [materialId]);
 
   const handleDescriptionOfItemChange = (selected, rowIndex, sectionIndex) => {
-
     const updatedSections = [...sections];
     const selectedMaterial = materials.find(
       (material) => material.value === selected
@@ -950,7 +943,6 @@ export default function CreateRFQForm({
     }
 
     if (field.field_name === "location") {
-      
       return (
         <SelectBox
           options={locationOptions}
@@ -1048,8 +1040,8 @@ export default function CreateRFQForm({
   const renderGenericField = (fieldName, rowIndex, sectionIndex) => {
     const fieldValue =
       sections[sectionIndex]?.sectionData[rowIndex]?.[fieldName] || "";
-      const isDisabled = isMorSelected === true;
-  const disabledClass = isDisabled ? "disabled-btn" : "";
+    const isDisabled = isMorSelected === true;
+    const disabledClass = isDisabled ? "disabled-btn" : "";
 
     if (fieldName === "descriptionOfItem") {
       return (
@@ -1062,7 +1054,7 @@ export default function CreateRFQForm({
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
           }
           disabled={isDisabled}
-        // className={disabledClass}
+          // className={disabledClass}
         />
       );
     }
@@ -1078,26 +1070,26 @@ export default function CreateRFQForm({
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
           }
           disabled={isDisabled}
-        // className={disabledClass}
+          // className={disabledClass}
         />
       );
     }
 
-    if (fieldName === "location") {      
+    if (fieldName === "location") {
       return (
         <>
-        <SelectBox
-          options={locationOptions}
-          defaultValue={
-            locationOptions.find((option) => option.label === fieldValue)
-              ?.value || fieldValue
-          }
-          onChange={(value) =>
-            handleInputChange(value, rowIndex, fieldName, sectionIndex)
-          }
-          disabled={isDisabled}
-        // className={disabledClass}
-        />
+          <SelectBox
+            options={locationOptions}
+            defaultValue={
+              locationOptions.find((option) => option.label === fieldValue)
+                ?.value || fieldValue
+            }
+            onChange={(value) =>
+              handleInputChange(value, rowIndex, fieldName, sectionIndex)
+            }
+            disabled={isDisabled}
+            // className={disabledClass}
+          />
         </>
       );
     }
@@ -1114,7 +1106,7 @@ export default function CreateRFQForm({
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
           }
           disabled={isDisabled}
-        // className={disabledClass}
+          // className={disabledClass}
         />
       );
     }
@@ -1128,7 +1120,7 @@ export default function CreateRFQForm({
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
           }
           disabled={isDisabled}
-        // className={disabledClass}
+          // className={disabledClass}
         />
       );
     }
@@ -1142,7 +1134,7 @@ export default function CreateRFQForm({
             handleInputChange(value, rowIndex, fieldName, sectionIndex)
           }
           disabled={isDisabled}
-        // className={disabledClass}
+          // className={disabledClass}
         />
       );
     }
@@ -1167,7 +1159,7 @@ export default function CreateRFQForm({
             handleInputChange(e.target.value, rowIndex, fieldName, sectionIndex)
           }
           disabled={isDisabled}
-        // className={disabledClass}
+          // className={disabledClass}
         />
       );
     }
@@ -1216,7 +1208,7 @@ export default function CreateRFQForm({
             }
           }}
           disabled={isDisabled}
-        // className={disabledClass}
+          // className={disabledClass}
         />
       );
     }
@@ -1228,7 +1220,7 @@ export default function CreateRFQForm({
           type="number"
           value={fieldValue}
           disabled={isDisabled}
-        // className={disabledClass}
+          // className={disabledClass}
         />
       );
     }
@@ -1244,7 +1236,7 @@ export default function CreateRFQForm({
             handleInputChange(e.target.value, rowIndex, fieldName, sectionIndex)
           }
           disabled={isDisabled}
-        // className={disabledClass}
+          // className={disabledClass}
         />
       </div>
     );
@@ -1357,17 +1349,23 @@ export default function CreateRFQForm({
               </div>
             )}
           </div>
-          {!isMorSelected && (<button className="purple-btn2" onClick={handleAddColumn}>
-            <span className="material-symbols-outlined align-text-top">
-              add{" "}
-            </span>
-            <span>Add Columns</span>
-          </button>)}
+          {!isMorSelected && (
+            <button className="purple-btn2" onClick={handleAddColumn}>
+              <span className="material-symbols-outlined align-text-top">
+                add{" "}
+              </span>
+              <span>Add Columns</span>
+            </button>
+          )}
         </div>
         <div className="px-3 py-3">
           {isMorChecked && selectedMor ? (
             <div className="mt-4">
               <Table
+                style={{
+                  boxShadow: "none !important",
+                  border: "1px solid red !important",
+                }}
                 isWidth={true}
                 columns={renderTableColumns().filter(
                   (col) => col.key !== "actions"
@@ -1489,12 +1487,14 @@ export default function CreateRFQForm({
             </div>
           ) : (
             sections.map((section, sectionIndex) => (
-              <div key={section.sectionId} className="card pb-3" >
+              <div key={section.sectionId} className="card pb-3">
                 <div className="d-flex justify-content-between align-items-center">
-                  <div className="card-header3" style={{ width:'200px'}}>
-                  <h3 className="card-title">{`Material Type (${ sectionIndex + 1 } of ${sections.length})`}</h3>
-                </div>
-                <button
+                  <div className="card-header3" style={{ width: "200px" }}>
+                    <h3 className="card-title">{`Material Type (${
+                      sectionIndex + 1
+                    } of ${sections.length})`}</h3>
+                  </div>
+                  <button
                     className="purple-btn2 d-flex align-items-center"
                     style={{
                       borderRadius: "50%",
@@ -1513,7 +1513,7 @@ export default function CreateRFQForm({
                     />
                   </button>
                 </div>
-                
+
                 {openSectionIndexes[sectionIndex] && (
                   <div className="p-4 mb-4">
                     <div className="row mt-4">
@@ -1551,15 +1551,17 @@ export default function CreateRFQForm({
                         </div>
                       </div>
                       <div className="col-md-4 col-sm-12 d-flex gap-3 py-3 justify-content-end">
-                        {!isMorSelected && (<button
-                          className="purple-btn2"
-                          onClick={() => handleAddRow(sectionIndex)}
-                        >
-                          <span className="material-symbols-outlined align-text-top">
-                            add{" "}
-                          </span>
-                          <span>Add Row</span>
-                        </button>)}
+                        {!isMorSelected && (
+                          <button
+                            className="purple-btn2"
+                            onClick={() => handleAddRow(sectionIndex)}
+                          >
+                            <span className="material-symbols-outlined align-text-top">
+                              add{" "}
+                            </span>
+                            <span>Add Row</span>
+                          </button>
+                        )}
 
                         {sectionIndex > 0 && (
                           <button
@@ -1572,8 +1574,10 @@ export default function CreateRFQForm({
                       </div>
                     </div>
                     <Table
+                      style={{
+                        maxHeight: "none",
+                      }}
                       isWidth={true}
-                      style={{ maxHeight: "none" }}
                       columns={renderTableColumns()}
                       isMinWidth={true}
                       isAccordion={eventId}
@@ -1648,298 +1652,319 @@ export default function CreateRFQForm({
                         };
 
                         return (
-    <div
-      style={{
-        width: "85vw",
-        marginLeft: "20px",
-        position: "sticky",
-        left: 0,
-        zIndex: 1,
-        backgroundColor: "white",
-        padding: "0",
-      }}
-    >
-      {/* Delivery Schedules Accordion */}
-      <div className="mb-3 card card-body p-0">
-        <div
-          style={{
-            cursor: "pointer",
-            padding: "12px 20px",
-            background: "#f8f9fa",
-            borderBottom: "1px solid #eee",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-          onClick={() => handleToggle("delivery")}
-        >
-          <span
-            style={{
-              fontWeight: 600,
-              fontSize: "16px",
-            }}
-          >
-            Delivery Schedules
-          </span>
-          <button
-            className="purple-btn2 d-flex align-items-center"
-            style={{
-              borderRadius: "50%",
-              width: "32px",
-              height: "32px",
-              padding: "0",
-              background: "transparent",
-              border: "none",
-            }}
-            tabIndex={-1}
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleToggle("delivery");
-            }}
-          >
-            <DropdownCollapseIcon
-              isCollapsed={!openDeliveryRows[rowKey]}
-            />
-          </button>
-        </div>
-        {openDeliveryRows[rowKey] && (
-          <div style={{ padding: "24px" }}>
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th style={{ textAlign: "center" }}>
-                    Expected Date
-                  </th>
-                  <th style={{ textAlign: "center" }}>
-                    Expected Quantity
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {deliverySchedules.length === 0 ? (
-                  <tr>
-                    <td colSpan={2} style={{ textAlign: "center" }}>
-                      No delivery schedules available.
-                    </td>
-                  </tr>
-                ) : (
-                  deliverySchedules.map((schedule, index) => (
-                    <tr key={index}>
-                      <td>{schedule.expected_date}</td>
-                      <td>{schedule.expected_quantity}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Dynamic Details Accordion */}
-      <div className="mb-3 card card-body p-0">
-        <div
-          style={{
-            cursor: "pointer",
-            padding: "12px 20px",
-            background: "#f8f9fa",
-            borderBottom: "1px solid #eee",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-          onClick={() => handleToggle("dynamic")}
-        >
-          <span
-            style={{
-              fontWeight: 600,
-              fontSize: "16px",
-            }}
-          >
-            Dynamic Details
-          </span>
-          <button
-            className="purple-btn2 d-flex align-items-center"
-            style={{
-              borderRadius: "50%",
-              width: "32px",
-              height: "32px",
-              padding: "0",
-              background: "transparent",
-              border: "none",
-            }}
-            tabIndex={-1}
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleToggle("dynamic");
-            }}
-          >
-            <DropdownCollapseIcon
-              isCollapsed={!openDynamicRows[rowKey]}
-            />
-          </button>
-        </div>
-        {openDynamicRows[rowKey] && (
-          <div style={{ padding: "24px" }}>
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th style={{ textAlign: "center" }}>
-                    Field
-                  </th>
-                  <th style={{ textAlign: "center" }}>
-                    Specification
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {morInventorySpecifications.length === 0 ? (
-                  <tr>
-                    <td colSpan={2} style={{ textAlign: "center" }}>
-                      No dynamic details available.
-                    </td>
-                  </tr>
-                ) : (
-                  morInventorySpecifications.map((spec, index) => (
-                    <tr key={index}>
-                      <td>{spec.field}</td>
-                      <td>{spec.specification || "N/A"}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Attachments Accordion */}
-      <div className="mb-3 card card-body p-0">
-        <div
-          style={{
-            cursor: "pointer",
-            padding: "12px 20px",
-            background: "#f8f9fa",
-            borderBottom: "1px solid #eee",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-          onClick={() => handleToggle("attachments")}
-        >
-          <span
-            style={{
-              fontWeight: 600,
-              fontSize: "16px",
-            }}
-          >
-            Attachments
-          </span>
-          <button
-            className="purple-btn2 d-flex align-items-center"
-            style={{
-              borderRadius: "50%",
-              width: "32px",
-              height: "32px",
-              padding: "0",
-              background: "transparent",
-              border: "none",
-            }}
-            tabIndex={-1}
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleToggle("attachments");
-            }}
-          >
-            <DropdownCollapseIcon
-              isCollapsed={!openAttachmentsRows[rowKey]}
-            />
-          </button>
-        </div>
-        {openAttachmentsRows[rowKey] && (
-          <div style={{ padding: "24px" }}>
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th style={{ textAlign: "center" }}>
-                    Filename
-                  </th>
-                  <th style={{ textAlign: "center" }}>
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {attachmentsData.length === 0 ? (
-                  <tr>
-                    <td colSpan={2} style={{ textAlign: "center" }}>
-                      No attachments available.
-                    </td>
-                  </tr>
-                ) : (
-                  attachmentsData.map((attachment, index) => (
-                    <tr key={index}>
-                      <td>{attachment.filename}</td>
-                      <td
-                        style={{
-                          display: "flex",
-                          gap: "10px",
-                          justifyContent: "center",
-                          width: "100%",
-                        }}
-                      >
-                        <a
-                          href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
-                          download={attachment.filename}
-                          className="purple-btn2"
-                          style={{
-                            width: "40px",
-                            height: "40px",
-                            padding: "0",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 16 16"
-                            style={{ fill: "black" }}
+                          <div
+                            style={{
+                              width: "90vw",
+                              position: "sticky",
+                              left: 0,
+                              zIndex: 1,
+                              backgroundColor: "white",
+                              padding: "0",
+                              marginLeft:'10px',
+                              marginTop:'10px',
+                            }}
                           >
-                            <g fill="white">
-                              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
-                              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
-                            </g>
-                          </svg>
-                        </a>
-                        <button
-                          className="purple-btn2"
-                          onClick={() =>
-                            handleDeleteAttachment(
-                              attachment.blob_id,
-                              index
-                            )
-                          }
-                          style={{ marginLeft: "10px" }}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+                            {/* Delivery Schedules Accordion */}
+                            <div className="mb-3">
+                              <div
+                                style={{
+                                  cursor: "pointer",
+                                  padding: "12px 20px",
+                                  background: "#f8f9fa",
+                                  borderBottom: "1px solid #eee",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                }}
+                                onClick={() => handleToggle("delivery")}
+                              >
+                                <span
+                                  style={{
+                                    fontWeight: 600,
+                                    fontSize: "16px",
+                                  }}
+                                >
+                                  Delivery Schedules
+                                </span>
+                                <button
+                                  className="purple-btn2 d-flex align-items-center"
+                                  style={{
+                                    borderRadius: "50%",
+                                    width: "32px",
+                                    height: "32px",
+                                    padding: "0",
+                                    background: "transparent",
+                                    border: "none",
+                                  }}
+                                  tabIndex={-1}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggle("delivery");
+                                  }}
+                                >
+                                  <DropdownCollapseIcon
+                                    isCollapsed={!openDeliveryRows[rowKey]}
+                                  />
+                                </button>
+                              </div>
+                              {openDeliveryRows[rowKey] && (
+                                <div>
+                                  <table className="table table-bordered">
+                                    <thead>
+                                      <tr>
+                                        <th style={{ textAlign: "center" }}>
+                                          Expected Date
+                                        </th>
+                                        <th style={{ textAlign: "center" }}>
+                                          Expected Quantity
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {deliverySchedules.length === 0 ? (
+                                        <tr>
+                                          <td
+                                            colSpan={2}
+                                            style={{ textAlign: "center" }}
+                                          >
+                                            No delivery schedules available.
+                                          </td>
+                                        </tr>
+                                      ) : (
+                                        deliverySchedules.map(
+                                          (schedule, index) => (
+                                            <tr key={index}>
+                                              <td>{schedule.expected_date}</td>
+                                              <td>
+                                                {schedule.expected_quantity}
+                                              </td>
+                                            </tr>
+                                          )
+                                        )
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Dynamic Details Accordion */}
+                            <div className="mb-3">
+                              <div
+                                style={{
+                                  cursor: "pointer",
+                                  padding: "12px 20px",
+                                  background: "#f8f9fa",
+                                  borderBottom: "1px solid #eee",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                }}
+                                onClick={() => handleToggle("dynamic")}
+                              >
+                                <span
+                                  style={{
+                                    fontWeight: 600,
+                                    fontSize: "16px",
+                                  }}
+                                >
+                                  Dynamic Details
+                                </span>
+                                <button
+                                  className="purple-btn2 d-flex align-items-center"
+                                  style={{
+                                    borderRadius: "50%",
+                                    width: "32px",
+                                    height: "32px",
+                                    padding: "0",
+                                    background: "transparent",
+                                    border: "none",
+                                  }}
+                                  tabIndex={-1}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggle("dynamic");
+                                  }}
+                                >
+                                  <DropdownCollapseIcon
+                                    isCollapsed={!openDynamicRows[rowKey]}
+                                  />
+                                </button>
+                              </div>
+                              {openDynamicRows[rowKey] && (
+                                <div>
+                                  <table className="table table-bordered">
+                                    <thead>
+                                      <tr>
+                                        <th style={{ textAlign: "center" }}>
+                                          Field
+                                        </th>
+                                        <th style={{ textAlign: "center" }}>
+                                          Specification
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {morInventorySpecifications.length ===
+                                      0 ? (
+                                        <tr>
+                                          <td
+                                            colSpan={2}
+                                            style={{ textAlign: "center" }}
+                                          >
+                                            No dynamic details available.
+                                          </td>
+                                        </tr>
+                                      ) : (
+                                        morInventorySpecifications.map(
+                                          (spec, index) => (
+                                            <tr key={index}>
+                                              <td>{spec.field}</td>
+                                              <td>
+                                                {spec.specification || "N/A"}
+                                              </td>
+                                            </tr>
+                                          )
+                                        )
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Attachments Accordion */}
+                            <div className="mb-3">
+                              <div
+                                style={{
+                                  cursor: "pointer",
+                                  padding: "12px 20px",
+                                  background: "#f8f9fa",
+                                  borderBottom: "1px solid #eee",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                }}
+                                onClick={() => handleToggle("attachments")}
+                              >
+                                <span
+                                  style={{
+                                    fontWeight: 600,
+                                    fontSize: "16px",
+                                  }}
+                                >
+                                  Attachments
+                                </span>
+                                <button
+                                  className="purple-btn2 d-flex align-items-center"
+                                  style={{
+                                    borderRadius: "50%",
+                                    width: "32px",
+                                    height: "32px",
+                                    padding: "0",
+                                    background: "transparent",
+                                    border: "none",
+                                  }}
+                                  tabIndex={-1}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggle("attachments");
+                                  }}
+                                >
+                                  <DropdownCollapseIcon
+                                    isCollapsed={!openAttachmentsRows[rowKey]}
+                                  />
+                                </button>
+                              </div>
+                              {openAttachmentsRows[rowKey] && (
+                                <div>
+                                  <table className="table table-bordered">
+                                    <thead>
+                                      <tr>
+                                        <th style={{ textAlign: "center" }}>
+                                          Filename
+                                        </th>
+                                        <th style={{ textAlign: "center" }}>
+                                          Action
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {attachmentsData.length === 0 ? (
+                                        <tr>
+                                          <td
+                                            colSpan={2}
+                                            style={{ textAlign: "center" }}
+                                          >
+                                            No attachments available.
+                                          </td>
+                                        </tr>
+                                      ) : (
+                                        attachmentsData.map(
+                                          (attachment, index) => (
+                                            <tr key={index}>
+                                              <td>{attachment.filename}</td>
+                                              <td
+                                                style={{
+                                                  display: "flex",
+                                                  gap: "10px",
+                                                  justifyContent: "center",
+                                                  width: "100%",
+                                                }}
+                                              >
+                                                <a
+                                                  href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                                  download={attachment.filename}
+                                                  className="purple-btn2"
+                                                  style={{
+                                                    width: "40px",
+                                                    height: "40px",
+                                                    padding: "0",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                  }}
+                                                >
+                                                  <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="16"
+                                                    height="16"
+                                                    viewBox="0 0 16 16"
+                                                    style={{ fill: "black" }}
+                                                  >
+                                                    <g fill="white">
+                                                      <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                                                      <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                                                    </g>
+                                                  </svg>
+                                                </a>
+                                                <button
+                                                  className="purple-btn2"
+                                                  onClick={() =>
+                                                    handleDeleteAttachment(
+                                                      attachment.blob_id,
+                                                      index
+                                                    )
+                                                  }
+                                                  style={{ marginLeft: "10px" }}
+                                                >
+                                                  Delete
+                                                </button>
+                                              </td>
+                                            </tr>
+                                          )
+                                        )
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
                       }}
                       customRender={{
                         srno: (cell, rowIndex) => <p>{rowIndex + 1}</p>,
@@ -1974,11 +1999,9 @@ export default function CreateRFQForm({
                           );
                         },
                         location: (cell, rowIndex) => {
-                          
                           return (
                             <SelectBox
                               options={locationOptions}
-                              
                               onChange={(value) =>
                                 handleLocationChange(
                                   value,
@@ -2147,7 +2170,9 @@ export default function CreateRFQForm({
                         pms_colour_id: (cell, rowIndex) => (
                           <SelectBox
                             options={pmsColours}
-                            defaultValue={section?.sectionData[rowIndex].pms_colour_id}
+                            defaultValue={
+                              section?.sectionData[rowIndex].pms_colour_id
+                            }
                             onChange={(value) =>
                               handleInputChange(
                                 value,
@@ -2212,12 +2237,13 @@ export default function CreateRFQForm({
             <Table columns={deliveryColumns} data={deliveryData} />
           )} */}
           {!isMorSelected && (
-          <button className="purple-btn2" onClick={handleAddSection}>
-            <span className="material-symbols-outlined align-text-top">
-              add{" "}
-            </span>
-            <span>Add Section</span>
-          </button>)}
+            <button className="purple-btn2" onClick={handleAddSection}>
+              <span className="material-symbols-outlined align-text-top">
+                add{" "}
+              </span>
+              <span>Add Section</span>
+            </button>
+          )}
         </div>
       </div>
       <DynamicModalBox
