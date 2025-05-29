@@ -481,10 +481,10 @@ function App() {
             path="/rule-engine-details/:id"
             element={<RuleEngineDetails/>}
           />
-           {/* <Route
-            path="/rule-engine-edit"
+           <Route
+            path="/rule-engine-edit/:id"
             element={<RuleEngineEdit/>}
-          /> */}
+          />
         </Routes>
       </div>
     </BrowserRouter>

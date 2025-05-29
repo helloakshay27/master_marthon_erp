@@ -22,7 +22,7 @@ const RuleEngineCreate = () => {
     ];
 
     const initialCondition = {
-        model_id: "", // master attribute 
+        condition_selected_model: "", // master attribute 
         condition_attribute: "", //sub atrribute 
         master_operator: "", //master operator
         operator: "",    //sub operator 
@@ -89,7 +89,7 @@ const RuleEngineCreate = () => {
     }, []);
     // Fetch sub-attributes when master attribute changes for a condition
     const handleMasterAttributeChange = (idx, selectedValue) => {
-        handleConditionChange(idx, "model_id", selectedValue);
+        handleConditionChange(idx, "condition_selected_model", selectedValue);
         handleConditionChange(idx, "condition_attribute", ""); // Reset sub-attribute
 
         if (selectedValue) {
@@ -234,7 +234,7 @@ const RuleEngineCreate = () => {
 
     const rule_engine_conditions_attributes = conditions.map(cond => ({
         ...cond,
-        model_id: Number(cond.model_id),
+         condition_selected_model: Number(cond.condition_selected_model),
         // compare_value: cond.compare_value !== "" && !isNaN(cond.compare_value)
         // ? Number(cond.compare_value)
         // : cond.compare_value
@@ -250,17 +250,17 @@ const RuleEngineCreate = () => {
         lock_model_name: condition.condition_attribute,
         action_method: getMasterRewardOutcomeName(masterRewardOutcome),
         parameters: Number(parameter) || 0,
-        rule_engine_applicable_model_id: Number(condition.model_id),
+        rule_engine_applicable_model_id: Number(condition.condition_selected_model),
         rule_engine_available_function_id: Number(masterRewardOutcome),
-        action_selected_model: Number(condition.model_id)
+        action_selected_model: Number(subRewardOutcome)
     }));
-
+// console.log("sub reward:",subRewardOutcome)
 
     const payload = {
         rule_engine_rule: {
             name: ruleName,
             active: true,
-            model_id: Number(conditions[0]?.model_id) || 1,
+            model_id: Number(conditions[0]?.condition_selected_model) || 1,
             rule_engine_conditions_attributes,
             rule_engine_actions_attributes,
         }
@@ -281,7 +281,7 @@ const RuleEngineCreate = () => {
         // Validate each condition
         conditions.forEach((c, idx) => {
             let condErr = {};
-            if (!c.model_id) condErr.model_id = "Master attribute is required.";
+            if (!c.condition_selected_model) condErr.condition_selected_model = "Master attribute is required.";
             if (!c.condition_attribute) condErr.condition_attribute = "Sub attribute is required.";
             if (!c.master_operator) condErr.master_operator = "Master operator is required.";
             if (!c.operator) condErr.operator = "Sub operator is required.";
@@ -307,7 +307,7 @@ const RuleEngineCreate = () => {
             rule_engine_rule: {
                 name: ruleName,
                 active: true,
-                model_id: Number(conditions[0]?.model_id) || 1,
+                model_id: Number(conditions[0]?.condition_selected_model) || 1,
                 rule_engine_conditions_attributes,
                 rule_engine_actions_attributes,
 
@@ -454,14 +454,14 @@ const RuleEngineCreate = () => {
                                                             </label>
                                                             <SingleSelector
                                                                 options={masterAttributeOptions}
-                                                                value={masterAttributeOptions.find(opt => opt.value === condition.model_id)}
+                                                                value={masterAttributeOptions.find(opt => opt.value === condition.condition_selected_model)}
                                                                 onChange={selected =>
                                                                     handleMasterAttributeChange(idx, selected ? selected.value : "")
                                                                 }
                                                                 placeholder="Select Master Attribute"
                                                             />
-                                                            {errors[idx]?.model_id && (
-                                                                <div className="text-danger" style={{ fontSize: "12px" }}>{errors[idx].model_id}</div>
+                                                            {errors[idx]?.condition_selected_model && (
+                                                                <div className="text-danger" style={{ fontSize: "12px" }}>{errors[idx].condition_selected_model}</div>
                                                             )}
                                                         </div>
                                                     </div>
