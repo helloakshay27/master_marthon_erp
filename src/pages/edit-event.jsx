@@ -441,6 +441,73 @@ export default function EditEvent() {
   useEffect(() => {
     if (eventDetails) {
       seteventName(eventDetails?.event_title);
+      setSelectedTemplate(eventDetails?.applied_event_template?.event_template_id);
+      setEventStatus(eventDetails?.status);
+      setEventTypeText(eventDetails?.event_type_detail?.event_type);
+      setEventDescription(eventDetails?.event_description);
+      setScheduleData({
+        start_time: eventDetails?.event_schedule?.start_time,
+        end_time_duration: eventDetails?.event_schedule?.end_time,
+        evaluation_time: eventDetails?.event_schedule?.evaluation_time,
+      });
+      setStart_time(eventDetails?.event_schedule?.start_time);
+      setEnd_time(eventDetails?.event_schedule?.end_time);
+      setEvaluation_time(eventDetails?.event_schedule?.evaluation_time);
+      setStatusLogData(eventDetails?.status_logs);
+      setDocumentRows(eventDetails?.attachments || []);
+      setGroupedData(eventDetails?.grouped_event_materials);
+
+      const materials = eventDetails?.event_materials || [];
+      const parsedMaterials = materials.map((material) => {
+        const dynamicFields = Object.keys(material).reduce((acc, key) => {
+          if (
+            ![
+              "id", "inventory_id", "quantity", "uom", "location", "rate",
+              "amount", "section_name", "inventory_type_id", "inventory_sub_type_id", "_destroy"
+            ].includes(key)
+          ) {
+            acc[key] = material[key] || "";
+          }
+          return acc;
+        }, {});
+
+        return {
+          id: material.id,
+          descriptionOfItem: material.descriptionOfItem || material.inventory_name || "",
+          inventory_id: material.inventory_id,
+          quantity: material.quantity,
+          unit: material.unit,
+          location: material.location,
+          rate: material.rate,
+          amount: material.amount,
+          section_id: material.section_name || material.section_id,
+          inventory_type_id: material.inventory_type_id,
+          inventory_sub_type_id: material.inventory_sub_type_id,
+          ...dynamicFields,
+        };
+      });
+
+      setMaterialFormData(parsedMaterials);
+
+      setSelectedVendors(
+        eventDetails?.event_vendors?.map((vendor) => ({
+          id: vendor.id,
+          name: vendor.full_name,
+          organisation: vendor.organization_name,
+          phone: vendor.phone,
+          pms_supplier_id: vendor.pms_supplier_id,
+        }))
+      );
+
+      setSpecificationData(eventDetails?.mor_inventory_specifications);
+    }
+  }, [eventDetails, termsOptions]);
+
+  const [documentRowsInitialized, setDocumentRowsInitialized] = useState(false);
+
+  useEffect(() => {
+    if (eventDetails && !documentRowsInitialized) {
+      seteventName(eventDetails?.event_title);
       setSelectedTemplate(
         eventDetails?.applied_event_template?.event_template_id
       );
@@ -456,6 +523,8 @@ export default function EditEvent() {
       setEnd_time(eventDetails?.event_schedule?.end_time);
       setEvaluation_time(eventDetails?.event_schedule?.evaluation_time);
       setStatusLogData(eventDetails?.status_logs);
+      setDocumentRows(eventDetails?.attachments || []);
+      setDocumentRowsInitialized(true);
       setGroupedData(
         eventDetails?.grouped_event_materials
       )
@@ -521,7 +590,7 @@ export default function EditEvent() {
 
       setSpecificationData(eventDetails?.mor_inventory_specifications);
     }
-  }, [eventDetails, termsOptions]);
+  }, [eventDetails, termsOptions, documentRowsInitialized]);
 
   useEffect(() => {
     if (eventDetails?.resource_term_conditions?.length > 0) {
@@ -625,16 +694,14 @@ export default function EditEvent() {
   };
 
   const handleRemoveDocumentRow = (index) => {
-    if (documentRows.length > 1) {
-      const updatedRows = documentRows.filter((_, i) => i !== index);
-
-      updatedRows.forEach((row, i) => {
-        row.srNo = i + 1;
-      });
-
+    setDocumentRows((prevRows) => {
+      if (prevRows.length === 1) return prevRows;
+      const updatedRows = [...prevRows];
+      updatedRows.splice(index, 1);
+      updatedRows.forEach((row, i) => (row.srNo = i + 1));
       documentRowsRef.current = updatedRows;
-      setDocumentRows([...updatedRows]);
-    }
+      return updatedRows;
+    });
   };
 
   const handleFileChange = (index, file) => {
@@ -643,14 +710,23 @@ export default function EditEvent() {
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64String = reader.result.split(",")[1];
-
-      documentRowsRef.current[index].upload = {
-        filename: file.name,
-        content: base64String,
-        content_type: file.type,
-      };
-
-      setDocumentRows([...documentRowsRef.current]);
+      setDocumentRows((prevRows) => {
+        const updatedRows = [...prevRows];
+        if (updatedRows[index]) {
+          const { id, blob_id, created_at, updated_at, ...rest } =
+            updatedRows[index];
+          updatedRows[index] = {
+            ...rest,
+            upload: {
+              filename: file.name,
+              content: base64String,
+              content_type: file.type,
+            },
+          };
+        }
+        documentRowsRef.current = updatedRows;
+        return updatedRows;
+      });
     };
 
     reader.readAsDataURL(file);
@@ -660,6 +736,7 @@ export default function EditEvent() {
       inputElement.value = "";
     }
   };
+
 
   const fetcher = (url, options) =>
     fetch(url, options).then((res) => res.json());
@@ -790,6 +867,21 @@ export default function EditEvent() {
 
     setSubmitted(true);
 
+    const attachments = documentRows
+      .filter(row =>
+        (row.upload && row.upload.filename) ||
+        (row.id && row.filename && row.content_type)
+      )
+      .map(row => row.upload ? row.upload : {
+        id: row.id,
+        filename: row.filename,
+        content_type: row.content_type,
+        ...(row.blob_id ? { blob_id: row.blob_id } : {}),
+      });
+      console.log("attachments:--", attachments);
+      
+
+    // Build attachments ONLY from current documentRows (UI state)
     const eventData = {
       event: {
         event_title: eventName,
@@ -915,7 +1007,7 @@ export default function EditEvent() {
         condition: textarea.value,
       };
 }),
-        attachments: documentRows.map((row) => row.upload),
+        attachments,
         applied_event_template: {
           event_template_id: selectedTemplate,
           applied_bid_template_fields_attributes: bidTemplateFields.map(
@@ -952,7 +1044,7 @@ export default function EditEvent() {
           body: JSON.stringify(eventData),
         }
       );
-      console.log("eventData:--", eventData);
+      console.log("eventData:--", eventData, attachments);
 
       if (response.ok) {
         const data = await response.json();
@@ -1535,11 +1627,11 @@ export default function EditEvent() {
                     <span>Add</span>
                   </button>
                 </div>
-
+                      {console.log("documentRows:-",documentRows)}
                 <Table
                   columns={[
                     { label: "Sr No", key: "srNo" },
-                    // { label: "File Name", key: "fileName" },
+                    { label: "File Name", key: "fileName" },
                     { label: "Upload File", key: "upload" },
                     { label: "Action", key: "action" },
                   ]}
@@ -1547,27 +1639,29 @@ export default function EditEvent() {
                   resetSelectedRows={undefined}
                   onResetComplete={undefined}
                   data={documentRows.map((row, index) => ({
+                    srNo: row.srNo,
+                    fileName: (
+                      <td
+                      >
+                        { row?.upload?.filename || row.filename || "No File Selected"}
+                      </td>
+                    ),
                     upload: (
                       <td style={{ border: "none" }}>
-                        {console.log("documentRows:-",documentRows)
-                        }
                         <input
                           type="file"
                           id={`file-input-${index}`}
                           key={row?.srNo}
                           style={{ display: "none" }}
-                          onChange={(e) =>
-                            handleFileChange(index, e.target.files[0])
-                          }
+                          onChange={(e) => handleFileChange(index, e.target.files[0])}
                           accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
                         />
-
                         <label
                           htmlFor={`file-input-${index}`}
                           style={{
                             display: "inline-block",
-                            width: "300px",
-                            padding: "10px",
+                            width: "120px",
+                            padding: "8px",
                             border: "1px solid #ccc",
                             borderRadius: "4px",
                             cursor: "pointer",
@@ -1576,9 +1670,7 @@ export default function EditEvent() {
                             textAlign: "center",
                           }}
                         >
-                          {row.upload?.filename
-                            ? row.upload.filename
-                            : "Choose File"}
+                          Upload
                         </label>
                       </td>
                     ),
@@ -2107,6 +2199,7 @@ export default function EditEvent() {
               //     label: "Close",
               //     onClick: handleInviteModalClose,
               //     props: {
+
               //       className: "purple-btn1",
               //     },
               //   },
@@ -2179,7 +2272,7 @@ export default function EditEvent() {
                         type="text"
                         name="gstNumber"
                         placeholder="Enter GST Number"
-                        value={inviteVendorData.gstNumber || ""}
+                        value={ inviteVendorData.gstNumber || ""}
                         onChange={handleInviteVendorChange}
                       />
                     </div>
@@ -2209,7 +2302,7 @@ export default function EditEvent() {
                           }));
                         }}
                       />
-                    </div>
+                                       </div>
                     <div className="form-group mb-3">
                       <label className="po-fontBold">Organization <span style={{ color: "red" }}>*</span></label>
                       <input

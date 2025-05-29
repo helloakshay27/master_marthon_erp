@@ -211,7 +211,7 @@ export default function BulkCounterOfferModalTwo({
         return {
           event_material_id: item.id,
           bid_material_id: item.bid_materials?.[0]?.bid_id || null,
-          quantity_available: parseFloat(item.quantity_available) || 0,
+          quantity_available: parseFloat(item.quantity_available) || parseFloat(item.quantity) || 0,
           price: parseFloat(item.price) || 0,
           discount: parseFloat(item.discount) || 0,
           total_amount: parseFloat(item.total_amount) || 0,
@@ -292,17 +292,17 @@ export default function BulkCounterOfferModalTwo({
           body: JSON.stringify(payload),
         }
       );
-      if (response.ok) {
-        toast.success("Counter Bid Created successfully!", {
-          autoClose: 1000, // Close after 3 seconds
-        });
-        setTimeout(() => {
-          handleClose();
-        }, 1000); //
-      } else {
-        const errorText = await response.text();
-        toast.error(`Failed to submit counter bid: ${errorText}`);
-      }
+      // if (response.ok) {
+      //   toast.success("Counter Bid Created successfully!", {
+      //     autoClose: 1000, // Close after 3 seconds
+      //   });
+      //   setTimeout(() => {
+      //     handleClose();
+      //   }, 1000); //
+      // } else {
+      //   const errorText = await response.text();
+      //   toast.error(`Failed to submit counter bid: ${errorText}`);
+      // }
     } catch (error) {
       console.error("Error while submitting counter bid", error);
     } finally {
