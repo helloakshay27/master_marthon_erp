@@ -7,8 +7,66 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import "../styles/mor.css";
 import { useNavigate } from "react-router-dom";
 
-const RuleEngineCreate = () => {
+const staticRuleData = {
+  id: 8,
+  name: "rule test",
+  active: true,
+  created_at: "2025-05-28T16:46:14.752+05:30",
+  conditions: [
+    {
+      id: 10,
+      model_id: 1,
+      condition_attribute: "refferal_code",
+      operator: "greater_than",
+      compare_value: "100",
+      action_type: "created",
+      condition_selected_model: null,
+      condition_type: "",
+      master_operator: "Common Operator1",
+      model_name: "No applicable model"
+    },
+    {
+      id: 11,
+      model_id: 1,
+      condition_attribute: "user_type",
+      operator: "greater_than",
+      compare_value: "200",
+      action_type: "created",
+      condition_selected_model: null,
+      condition_type: "AND",
+      master_operator: "Common Operator1",
+      model_name: "No applicable model"
+    },
+    {
+      id: 12,
+      model_id: 1,
+      condition_attribute: "refferal_code",
+      operator: "greater_than",
+      compare_value: "300",
+      action_type: "created",
+      condition_selected_model: null,
+      condition_type: "OR",
+      master_operator: "Common Operator1",
+      model_name: "No applicable model"
+    }
+  ],
+  actions: [
+    {
+      id: 9,
+      lock_model_name: "refferal_code",
+      action_method: "calculate_loyalty_points",
+      parameters: "100",
+      rule_engine_available_function_id: 1,
+    }
+  ]
+};
+
+const RuleEngineEdit = () => {
     const navigate = useNavigate();
+     const { id } = useParams();
+        const [ruleData, setRuleData] = useState(null);
+        const [loading, setLoading] = useState(true);
+        const [error, setError] = useState(null);
     const [errors, setErrors] = useState({});
     const [thenError, setThenError] = useState({});
     const options = [
@@ -28,7 +86,7 @@ const RuleEngineCreate = () => {
         operator: "",    //sub operator 
         compare_value: "",
         condition_type: "",
-        action_type: "created",
+        // action_type: "created",
 
     };
 
@@ -42,13 +100,43 @@ const RuleEngineCreate = () => {
             .replace(/^_+/, '')           // Remove leading underscores
             .toLowerCase();
 
-    const [conditions, setConditions] = useState([{ ...initialCondition }]);
+    // const [conditions, setConditions] = useState(staticRuleData.conditions);
+    // const [ruleName, setRuleName] = useState(staticRuleData.name);
+    // // THEN section state
+    // const [masterRewardOutcome, setMasterRewardOutcome] = useState(staticRuleData.actions[0]?.rule_engine_available_function_id || "");
+    // const [subRewardOutcome, setSubRewardOutcome] = useState("");
+    // const [parameter, setParameter] = useState(staticRuleData.actions[0]?.parameters || "");
+
+
+    // Form states
+    const [conditions, setConditions] = useState([]);
     const [ruleName, setRuleName] = useState("");
-    // THEN section state
     const [masterRewardOutcome, setMasterRewardOutcome] = useState("");
     const [subRewardOutcome, setSubRewardOutcome] = useState("");
     const [parameter, setParameter] = useState("");
 
+    // Fetch rule details from API
+    useEffect(() => {
+        setLoading(true);
+        axios
+            .get(`https://marathon.lockated.com/rule_engine/rules/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+            .then((res) => {
+                setRuleData(res.data);
+                setRuleName(res.data.name || "");
+                setConditions(res.data.conditions || []);
+                // Set THEN section from first action if available
+                if (res.data.actions && res.data.actions.length > 0) {
+                    setMasterRewardOutcome(res.data.actions[0].rule_engine_available_function_id || "");
+                    setSubRewardOutcome(res.data.actions[0].action_selected_model || "")
+                    setParameter(res.data.actions[0].parameters || "");
+                }
+                setLoading(false);
+            })
+            .catch((err) => {
+                setLoading(false);
+                setRuleData(null);
+            });
+    }, [id]);
 
     const addCondition = () => {
         setConditions([...conditions, { ...initialCondition }]);
@@ -87,6 +175,33 @@ const RuleEngineCreate = () => {
                 console.error("Error fetching master attributes:", error);
             });
     }, []);
+
+    useEffect(() => {
+    // For each condition, if model_id exists, fetch sub-attributes
+    conditions.forEach((condition, idx) => {
+        if (condition.condition_selected_model) {
+            axios
+                .get(`https://marathon.lockated.com/rule_engine/available_attributes.json?q[available_model_id_eq]=${condition.condition_selected_model}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+                .then((response) => {
+                    const options = response.data.map(item => ({
+                        value: toSnakeCase(item.display_name),
+                        label: item.display_name
+                    }));
+                    setSubAttributeOptions(prev => ({
+                        ...prev,
+                        [idx]: options
+                    }));
+                })
+                .catch(() => {
+                    setSubAttributeOptions(prev => ({
+                        ...prev,
+                        [idx]: []
+                    }));
+                });
+        }
+    });
+    // eslint-disable-next-line
+}, []);
     // Fetch sub-attributes when master attribute changes for a condition
     const handleMasterAttributeChange = (idx, selectedValue) => {
         handleConditionChange(idx, "condition_selected_model", selectedValue);
@@ -121,7 +236,7 @@ const RuleEngineCreate = () => {
         }
     };
 
-    console.log("sub attriL", subAttributeOptions)
+    // console.log("sub attriL", subAttributeOptions)
 
     const [masterRewardOptions, setMasterRewardOptions] = useState([]);
     const [subRewardOptions, setSubRewardOptions] = useState([]);
@@ -185,6 +300,41 @@ const RuleEngineCreate = () => {
             });
     }, []);
 
+    useEffect(() => {
+  conditions.forEach((condition, idx) => {
+    if (condition.master_operator) {
+      axios
+        .get(`https://marathon.lockated.com/rule_engine/conditions.json?q[rule_id]=${condition.master_operator}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        .then((response) => {
+          const options = response.data
+            .map(item => {
+              if (!item.operator) return null;
+              const label = item.operator
+                .split('_')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+              return {
+                value: item.operator,
+                label
+              };
+            })
+            .filter((op, idx2, arr) => op && arr.findIndex(o => o.value === op.value) === idx2);
+          setSubOperatorOptions(prev => ({
+            ...prev,
+            [idx]: options
+          }));
+        })
+        .catch(() => {
+          setSubOperatorOptions(prev => ({
+            ...prev,
+            [idx]: []
+          }));
+        });
+    }
+  });
+  // eslint-disable-next-line
+}, []);
+
     // Fetch sub operators when master operator changes for a condition
     const handleMasterOperatorChange = (idx, selectedValue) => {
         handleConditionChange(idx, "master_operator", selectedValue);
@@ -234,7 +384,7 @@ const RuleEngineCreate = () => {
 
     const rule_engine_conditions_attributes = conditions.map(cond => ({
         ...cond,
-         condition_selected_model: Number(cond.condition_selected_model),
+        condition_selected_model: Number(cond.condition_selected_model),
         // compare_value: cond.compare_value !== "" && !isNaN(cond.compare_value)
         // ? Number(cond.compare_value)
         // : cond.compare_value
@@ -254,7 +404,7 @@ const RuleEngineCreate = () => {
         rule_engine_available_function_id: Number(masterRewardOutcome),
         action_selected_model: Number(subRewardOutcome)
     }));
-// console.log("sub reward:",subRewardOutcome)
+
 
     const payload = {
         rule_engine_rule: {
@@ -336,9 +486,9 @@ const RuleEngineCreate = () => {
             <div className="website-content overflow-auto">
                 <div className="module-data-section p-4 pb-5">
                     <a href="">
-                        <a href="">Rule Engine &gt; Create Rule</a>
+                        <a href="">Rule Engine &gt; Edit Rule</a>
                     </a>
-                    <h5 class="mt-4">Create Rule</h5>
+                    <h5 class="mt-4">Edit Rule</h5>
                     <div className="card mt-3 pb-">
 
                         <div className="card m-3">
@@ -347,7 +497,7 @@ const RuleEngineCreate = () => {
                                     <div className="form-group">
                                         <label>New Rule <span>*</span></label>
                                         <input
-                                            //   disabled
+                                              disabled
                                             value={ruleName}
                                             onChange={e => setRuleName(e.target.value)}
                                             className="form-control"
@@ -695,4 +845,4 @@ const RuleEngineCreate = () => {
     );
 };
 
-export default RuleEngineCreate;
+export default RuleEngineEdit;

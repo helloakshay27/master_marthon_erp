@@ -91,6 +91,8 @@ import BillEntryVendorList from "./pages/bill-entry-vendor-list";
 import TestTable from "./pages/testTable";
 import RuleEngineList from "./pages/rule-engine-list";
 import RuleEngineCreate from "./pages/rule-engine-create";
+import RuleEngineDetails from "./pages/rule-engine-details";
+import RuleEngineEdit from "./pages/rule-engine-edit";
 
 function App() {
   return (
@@ -474,6 +476,14 @@ function App() {
           <Route
             path="/rule-engine-create"
             element={<RuleEngineCreate/>}
+          />
+          <Route
+            path="/rule-engine-details/:id"
+            element={<RuleEngineDetails/>}
+          />
+           <Route
+            path="/rule-engine-edit/:id"
+            element={<RuleEngineEdit/>}
           />
         </Routes>
       </div>
