@@ -63,6 +63,10 @@ const staticRuleData = {
 
 const RuleEngineEdit = () => {
     const navigate = useNavigate();
+     const { id } = useParams();
+        const [ruleData, setRuleData] = useState(null);
+        const [loading, setLoading] = useState(true);
+        const [error, setError] = useState(null);
     const [errors, setErrors] = useState({});
     const [thenError, setThenError] = useState({});
     const options = [
@@ -76,7 +80,7 @@ const RuleEngineEdit = () => {
     ];
 
     const initialCondition = {
-        model_id: "", // master attribute 
+        condition_selected_model: "", // master attribute 
         condition_attribute: "", //sub atrribute 
         master_operator: "", //master operator
         operator: "",    //sub operator 
@@ -96,13 +100,43 @@ const RuleEngineEdit = () => {
             .replace(/^_+/, '')           // Remove leading underscores
             .toLowerCase();
 
-    const [conditions, setConditions] = useState(staticRuleData.conditions);
-    const [ruleName, setRuleName] = useState(staticRuleData.name);
-    // THEN section state
-    const [masterRewardOutcome, setMasterRewardOutcome] = useState(staticRuleData.actions[0]?.rule_engine_available_function_id || "");
-    const [subRewardOutcome, setSubRewardOutcome] = useState("");
-    const [parameter, setParameter] = useState(staticRuleData.actions[0]?.parameters || "");
+    // const [conditions, setConditions] = useState(staticRuleData.conditions);
+    // const [ruleName, setRuleName] = useState(staticRuleData.name);
+    // // THEN section state
+    // const [masterRewardOutcome, setMasterRewardOutcome] = useState(staticRuleData.actions[0]?.rule_engine_available_function_id || "");
+    // const [subRewardOutcome, setSubRewardOutcome] = useState("");
+    // const [parameter, setParameter] = useState(staticRuleData.actions[0]?.parameters || "");
 
+
+    // Form states
+    const [conditions, setConditions] = useState([]);
+    const [ruleName, setRuleName] = useState("");
+    const [masterRewardOutcome, setMasterRewardOutcome] = useState("");
+    const [subRewardOutcome, setSubRewardOutcome] = useState("");
+    const [parameter, setParameter] = useState("");
+
+    // Fetch rule details from API
+    useEffect(() => {
+        setLoading(true);
+        axios
+            .get(`https://marathon.lockated.com/rule_engine/rules/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+            .then((res) => {
+                setRuleData(res.data);
+                setRuleName(res.data.name || "");
+                setConditions(res.data.conditions || []);
+                // Set THEN section from first action if available
+                if (res.data.actions && res.data.actions.length > 0) {
+                    setMasterRewardOutcome(res.data.actions[0].rule_engine_available_function_id || "");
+                    setSubRewardOutcome(res.data.actions[0].action_selected_model || "")
+                    setParameter(res.data.actions[0].parameters || "");
+                }
+                setLoading(false);
+            })
+            .catch((err) => {
+                setLoading(false);
+                setRuleData(null);
+            });
+    }, [id]);
 
     const addCondition = () => {
         setConditions([...conditions, { ...initialCondition }]);
@@ -145,9 +179,9 @@ const RuleEngineEdit = () => {
     useEffect(() => {
     // For each condition, if model_id exists, fetch sub-attributes
     conditions.forEach((condition, idx) => {
-        if (condition.model_id) {
+        if (condition.condition_selected_model) {
             axios
-                .get(`https://marathon.lockated.com/rule_engine/available_attributes.json?q[available_model_id_eq]=${condition.model_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+                .get(`https://marathon.lockated.com/rule_engine/available_attributes.json?q[available_model_id_eq]=${condition.condition_selected_model}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
                 .then((response) => {
                     const options = response.data.map(item => ({
                         value: toSnakeCase(item.display_name),
@@ -170,7 +204,7 @@ const RuleEngineEdit = () => {
 }, []);
     // Fetch sub-attributes when master attribute changes for a condition
     const handleMasterAttributeChange = (idx, selectedValue) => {
-        handleConditionChange(idx, "model_id", selectedValue);
+        handleConditionChange(idx, "condition_selected_model", selectedValue);
         handleConditionChange(idx, "condition_attribute", ""); // Reset sub-attribute
 
         if (selectedValue) {
@@ -350,7 +384,7 @@ const RuleEngineEdit = () => {
 
     const rule_engine_conditions_attributes = conditions.map(cond => ({
         ...cond,
-        model_id: Number(cond.model_id),
+        condition_selected_model: Number(cond.condition_selected_model),
         // compare_value: cond.compare_value !== "" && !isNaN(cond.compare_value)
         // ? Number(cond.compare_value)
         // : cond.compare_value
@@ -366,9 +400,9 @@ const RuleEngineEdit = () => {
         lock_model_name: condition.condition_attribute,
         action_method: getMasterRewardOutcomeName(masterRewardOutcome),
         parameters: Number(parameter) || 0,
-        rule_engine_applicable_model_id: Number(condition.model_id),
+        rule_engine_applicable_model_id: Number(condition.condition_selected_model),
         rule_engine_available_function_id: Number(masterRewardOutcome),
-        action_selected_model: Number(condition.model_id)
+        action_selected_model: Number(subRewardOutcome)
     }));
 
 
@@ -376,7 +410,7 @@ const RuleEngineEdit = () => {
         rule_engine_rule: {
             name: ruleName,
             active: true,
-            model_id: Number(conditions[0]?.model_id) || 1,
+            model_id: Number(conditions[0]?.condition_selected_model) || 1,
             rule_engine_conditions_attributes,
             rule_engine_actions_attributes,
         }
@@ -397,7 +431,7 @@ const RuleEngineEdit = () => {
         // Validate each condition
         conditions.forEach((c, idx) => {
             let condErr = {};
-            if (!c.model_id) condErr.model_id = "Master attribute is required.";
+            if (!c.condition_selected_model) condErr.condition_selected_model = "Master attribute is required.";
             if (!c.condition_attribute) condErr.condition_attribute = "Sub attribute is required.";
             if (!c.master_operator) condErr.master_operator = "Master operator is required.";
             if (!c.operator) condErr.operator = "Sub operator is required.";
@@ -423,7 +457,7 @@ const RuleEngineEdit = () => {
             rule_engine_rule: {
                 name: ruleName,
                 active: true,
-                model_id: Number(conditions[0]?.model_id) || 1,
+                model_id: Number(conditions[0]?.condition_selected_model) || 1,
                 rule_engine_conditions_attributes,
                 rule_engine_actions_attributes,
 
@@ -570,14 +604,14 @@ const RuleEngineEdit = () => {
                                                             </label>
                                                             <SingleSelector
                                                                 options={masterAttributeOptions}
-                                                                value={masterAttributeOptions.find(opt => opt.value === condition.model_id)}
+                                                                value={masterAttributeOptions.find(opt => opt.value === condition.condition_selected_model)}
                                                                 onChange={selected =>
                                                                     handleMasterAttributeChange(idx, selected ? selected.value : "")
                                                                 }
                                                                 placeholder="Select Master Attribute"
                                                             />
-                                                            {errors[idx]?.model_id && (
-                                                                <div className="text-danger" style={{ fontSize: "12px" }}>{errors[idx].model_id}</div>
+                                                            {errors[idx]?.condition_selected_model && (
+                                                                <div className="text-danger" style={{ fontSize: "12px" }}>{errors[idx].condition_selected_model}</div>
                                                             )}
                                                         </div>
                                                     </div>
