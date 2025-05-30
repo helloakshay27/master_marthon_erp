@@ -178,7 +178,7 @@ const RuleEngineDetails = () => {
                                                             </div>
                                                             <div className="col-lg-4 col-md-6 col-sm-12 row px-3">
                                                                 <div className="col-6"><label>Master Attribute</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>{"-"}</label></div>
+                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>{condition.model_name||"-"}</label></div>
                                                             </div>
                                                             <div className="col-lg-4 col-md-6 col-sm-12 row px-3">
                                                                 <div className="col-6"><label>Sub Attribute</label></div>
