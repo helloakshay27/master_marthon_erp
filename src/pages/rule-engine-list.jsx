@@ -8,7 +8,6 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { useNavigate } from "react-router-dom";
 
-
 const RuleEngineList = () => {
   const navigate = useNavigate();
   const [rules, setRules] = useState([]);
@@ -22,8 +21,9 @@ const RuleEngineList = () => {
   };
   useEffect(() => {
     axios
-      .get("https://marathon.lockated.com/rule_engine/rules.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414")
-
+      .get(
+        "https://marathon.lockated.com/rule_engine/rules.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      )
 
       .then((res) => {
         setRules(res.data);
@@ -36,36 +36,68 @@ const RuleEngineList = () => {
       });
   }, []);
 
-
-
-  const options = [
-    { value: "alabama", label: "Alabama" },
-    { value: "alaska", label: "Alaska" },
-    { value: "california", label: "California" },
-    { value: "delaware", label: "Delaware" },
-    { value: "tennessee", label: "Tennessee" },
-    { value: "texas", label: "Texas" },
-    { value: "washington", label: "Washington" },
-  ];
-
   function toTitleCaseFromSnake(str) {
     if (!str) return "";
     return str
       .replace(/_/g, " ") // Replace underscores with spaces
       .replace(/\s+/g, " ") // Remove extra spaces
-      .replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()); // Capitalize each word
+      .replace(
+        /\w\S*/g,
+        (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+      ); // Capitalize each word
   }
+
+  // Add these states at the top of your component
+  const [masterRewardOptions, setMasterRewardOptions] = useState({});
+  const [subRewardMapping, setSubRewardMapping] = useState({});
+
+  // Add this useEffect to fetch and store the mappings
+  useEffect(() => {
+    // Fetch master reward options
+    axios
+      .get(
+        "https://marathon.lockated.com/rule_engine/available_functions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      )
+      .then((response) => {
+        // Create mapping of id to display_name
+        const mapping = {};
+        response.data.forEach((item) => {
+          mapping[item.id] = {
+            name: item.display_name,
+            subOptions: {},
+          };
+          // Fetch sub-options for each master option
+          axios
+            .get(
+              `https://marathon.lockated.com/rule_engine/available_functions.json?q[available_model_id]=${item.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            )
+            .then((subResponse) => {
+              const subMapping = {};
+              subResponse.data.forEach((subItem) => {
+                subMapping[subItem.id] = subItem.display_name;
+              });
+              setSubRewardMapping((prev) => ({
+                ...prev,
+                [item.id]: subMapping,
+              }));
+            });
+        });
+        setMasterRewardOptions(mapping);
+      })
+      .catch((error) => {
+        console.error("Error fetching reward mappings:", error);
+      });
+  }, []);
+
   return (
     <>
-
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4 pb-5">
           <a href="">
-            <a href="">Rule Engine  &gt; Rule List </a>
+            <a href="">Rule Engine &gt; Rule List </a>
           </a>
           <h5 class="mt-4">Rule List</h5>
           <div className="card mt-3 pb-">
-
             <div className="d-flex justify-content-between align-items-center me-2 mt-4">
               {/* Search Input */}
               <div className="col-md-4">
@@ -80,10 +112,7 @@ const RuleEngineList = () => {
                       placeholder="Type your keywords here"
                     />
                     <div className="input-group-append">
-                      <button
-                        type="button"
-                        className="btn btn-md btn-default"
-                      >
+                      <button type="button" className="btn btn-md btn-default">
                         <svg
                           width={16}
                           height={16}
@@ -152,8 +181,11 @@ const RuleEngineList = () => {
               </div>
             </div>
 
-            <div className="mx-3 mb-5 mt-3">
-              <div className="tbl-container mt-1" style={{ maxHeight: "410px", overflowY: "auto" }}>
+            <div className="mx-3 mb-5">
+              <div
+                className="tbl-container mt-1"
+                style={{ maxHeight: "410px", overflowY: "auto" }}
+              >
                 <table className="w-100">
                   <thead>
                     <tr>
@@ -171,61 +203,115 @@ const RuleEngineList = () => {
                     </tr>
                   </thead>
                   <tbody>
-
                     {rules.length === 0 ? (
                       <tr>
-                        <td colSpan={11} className="text-center">No data found</td>
+                        <td colSpan={11} className="text-center">
+                          No data found
+                        </td>
                       </tr>
                     ) : (
                       rules.flatMap((rule, ruleIdx) =>
                         rule.conditions.map((condition, condIdx) => {
-                          const action = rule.actions?.[condIdx] || rule.actions?.[0] || {};
+                          const action =
+                            rule.actions?.[condIdx] || rule.actions?.[0] || {};
                           return (
                             <tr key={`${rule.id}-${condition.id}`}>
                               {/* Only show rule name and Sr.No. for the first condition, with rowspan */}
                               {condIdx === 0 && (
                                 <>
-                                  <td className="text-start" rowSpan={rule.conditions.length}>{ruleIdx + 1}</td>
-                                  <td className="text-start" rowSpan={rule.conditions.length}>{rule.name}</td>
+                                  <td
+                                    className="text-start"
+                                    rowSpan={rule.conditions.length}
+                                  >
+                                    {ruleIdx + 1}
+                                  </td>
+                                  <td
+                                    className="text-start"
+                                    rowSpan={rule.conditions.length}
+                                  >
+                                    {rule.name}
+                                  </td>
                                 </>
                               )}
                               {/* For subsequent rows, skip these cells */}
                               {/* Attribute */}
-                              <td className="text-start">{condition.model_name || "-"}</td>
-                              <td className="text-start">{toTitleCaseFromSnake(condition.condition_attribute) || "-"}</td>
-                              <td className="text-start">{condition.master_operator || ""}</td>
-                              <td className="text-start">{toTitleCaseFromSnake(condition.operator) || "-"}</td>
-                              <td className="text-start">{toTitleCaseFromSnake(action.action_method) || "-"}</td>
-                              <td className="text-start">{/* Sub Reward Outcome if available */}{"-"}</td>
+                              <td className="text-start">{"-"}</td>
+                              <td className="text-start">
+                                {toTitleCaseFromSnake(
+                                  condition.condition_attribute
+                                ) || "-"}
+                              </td>
+                              <td className="text-start">
+                                {condition.master_operator || ""}
+                              </td>
+                              <td className="text-start">
+                                {toTitleCaseFromSnake(condition.operator) ||
+                                  "-"}
+                              </td>
+                              <td className="text-start">
+                                {toTitleCaseFromSnake(action.action_method) ||
+                                  "-"}
+                              </td>
+
+                              <td className="text-start">
+                                {(action.action_selected_model &&
+                                  subRewardMapping[
+                                    action.rule_engine_available_function_id
+                                  ]?.[action.action_selected_model]) ||
+                                  action.action_selected_model}
+                              </td>
                               {/* Only show toggle, edit, view for the first condition */}
                               {condIdx === 0 && (
                                 <>
-                                  <td className="text-start" rowSpan={rule.conditions.length}>
+                                  <td
+                                    className="text-start"
+                                    rowSpan={rule.conditions.length}
+                                  >
                                     {/* <input type="checkbox" checked={rule.active} readOnly /> */}
                                   </td>
-                                  <td className="text-center" rowSpan={rule.conditions.length}>
+                                  <td
+                                    className="text-center"
+                                    rowSpan={rule.conditions.length}
+                                  >
                                     {/* <button className="btn btn-sm btn-secondary">View</button> */}
-                                    <Link to={`/rule-engine-details/${rule.id}`}>
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" class="bi bi-eye" viewBox="0 0 16 16">
-                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z">
-                                        </path>
-                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0">
-                                        </path>
+                                    <Link
+                                      to={`/rule-engine-details/${rule.id}`}
+                                    >
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="16"
+                                        height="16"
+                                        fill="black"
+                                        class="bi bi-eye"
+                                        viewBox="0 0 16 16"
+                                      >
+                                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"></path>
+                                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
                                       </svg>
                                     </Link>
                                   </td>
-                                  <td className="text-center" rowSpan={rule.conditions.length}>
+                                  <td
+                                    className="text-center"
+                                    rowSpan={rule.conditions.length}
+                                  >
                                     {/* <button className="btn btn-sm btn-primary">Edit</button> */}
                                     <Link to={`/rule-engine-edit/${rule.id}`}>
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" class="bi bi-pencil-square" viewBox="0 0 16 16">
-                                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z">
-                                        </path>
-                                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z">
-                                        </path>
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="16"
+                                        height="16"
+                                        fill="black"
+                                        class="bi bi-pencil-square"
+                                        viewBox="0 0 16 16"
+                                      >
+                                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path>
+                                        <path
+                                          fill-rule="evenodd"
+                                          d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                                        ></path>
                                       </svg>
                                     </Link>
                                   </td>
-
                                 </>
                               )}
                             </tr>
@@ -238,7 +324,6 @@ const RuleEngineList = () => {
               </div>
             </div>
           </div>
-
         </div>
       </div>
       {loading && (
@@ -283,8 +368,8 @@ const RuleEngineList = () => {
                   required=""
                   className="mt-1 mb-1"
                   style={{ fontSize: "12px", fontWeight: "400" }}
-                // onChange={handleMasterAttributeChange}
-                // value={selectedMasterAttribute}
+                  // onChange={handleMasterAttributeChange}
+                  // value={selectedMasterAttribute}
                 >
                   <option value="" disabled selected hidden>
                     Select Master Attribute
@@ -307,9 +392,9 @@ const RuleEngineList = () => {
                   required=""
                   className="mt-1 mb-1"
                   style={{ fontSize: "12px", fontWeight: "400" }}
-                // onChange={handleSubAttributeChange}
-                // value={selectedSubAttribute}
-                // disabled={!selectedMasterAttribute}
+                  // onChange={handleSubAttributeChange}
+                  // value={selectedSubAttribute}
+                  // disabled={!selectedMasterAttribute}
                 >
                   <option value="" disabled selected hidden>
                     Select Sub Attribute
@@ -327,23 +412,16 @@ const RuleEngineList = () => {
 
           <div className="row mt-2 justify-content-center mt-5">
             <div className="col-md-4">
-              <button className="purple-btn1 w-100" >
-                Submit
-              </button>
+              <button className="purple-btn1 w-100">Submit</button>
             </div>
             <div className="col-md-4">
-              <button
-                className="purple-btn2 w-100"
-                onClick={handleCloseModal}
-              >
+              <button className="purple-btn2 w-100" onClick={handleCloseModal}>
                 Cancel
               </button>
             </div>
           </div>
         </Modal.Body>
       </Modal>
-
-
     </>
   );
 };
