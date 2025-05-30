@@ -6,6 +6,7 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import "../styles/mor.css";
 import { useNavigate } from "react-router-dom";
+import { baseURL } from "../confi/apiDomain";
 
 const staticRuleData = {
     id: 8,
@@ -119,7 +120,7 @@ const RuleEngineEdit = () => {
     useEffect(() => {
         setLoading(true);
         axios
-            .get(`https://marathon.lockated.com/rule_engine/rules/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+            .get(`${baseURL}rule_engine/rules/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
             .then((res) => {
                 setRuleData(res.data);
                 setRuleName(res.data.name || "");
@@ -162,7 +163,7 @@ const RuleEngineEdit = () => {
     // Fetch master attribute options on mount
     useEffect(() => {
         axios
-            .get("https://marathon.lockated.com/rule_engine/available_models.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414")
+            .get(`${baseURL}rule_engine/available_models.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
             .then((response) => {
                 // Assuming response.data is an array of objects with 'id' and 'name'
                 const options = response.data.map(item => ({
@@ -181,7 +182,7 @@ const RuleEngineEdit = () => {
         conditions.forEach((condition, idx) => {
             if (condition.condition_selected_model) {
                 axios
-                    .get(`https://marathon.lockated.com/rule_engine/available_attributes.json?q[available_model_id_eq]=${condition.condition_selected_model}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+                    .get(`${baseURL}rule_engine/available_attributes.json?q[available_model_id_eq]=${condition.condition_selected_model}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
                     .then((response) => {
                         const options = response.data.map(item => ({
                             value: toSnakeCase(item.display_name),
@@ -209,7 +210,7 @@ const RuleEngineEdit = () => {
 
         if (selectedValue) {
             axios
-                .get(`https://marathon.lockated.com/rule_engine/available_attributes.json?q[available_model_id_eq]=${selectedValue}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+                .get(`${baseURL}rule_engine/available_attributes.json?q[available_model_id_eq]=${selectedValue}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
                 .then((response) => {
                     const options = response.data.map(item => ({
                         value: toSnakeCase(item.display_name),
@@ -243,7 +244,7 @@ const RuleEngineEdit = () => {
     // Fetch Master Reward Outcome options on mount
     useEffect(() => {
         axios
-            .get("https://marathon.lockated.com/rule_engine/available_functions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414")
+            .get(`${baseURL}rule_engine/available_functions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
             .then((response) => {
                 // Assuming response.data is an array of objects with 'id' and 'display_name'
                 const options = response.data.map(item => ({
@@ -261,7 +262,7 @@ const RuleEngineEdit = () => {
     useEffect(() => {
         if (masterRewardOutcome) {
             axios
-                .get(`https://marathon.lockated.com/rule_engine/available_functions.json?q[available_model_id]=${masterRewardOutcome}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+                .get(`${baseURL}rule_engine/available_functions.json?q[available_model_id]=${masterRewardOutcome}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
                 .then((response) => {
                     const options = response.data.map(item => ({
                         value: item.id,
@@ -283,7 +284,7 @@ const RuleEngineEdit = () => {
     // Fetch master operator options on mount
     useEffect(() => {
         axios
-            .get("https://marathon.lockated.com/rule_engine/conditions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414")
+            .get(`${baseURL}rule_engine/conditions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
             .then((response) => {
                 // Filter out unique master_operator values and ignore null/empty
                 const operators = response.data
@@ -304,7 +305,7 @@ const RuleEngineEdit = () => {
         conditions.forEach((condition, idx) => {
             if (condition.master_operator) {
                 axios
-                    .get(`https://marathon.lockated.com/rule_engine/conditions.json?q[rule_id]=${condition.master_operator}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+                    .get(`${baseURL}rule_engine/conditions.json?q[rule_id]=${condition.master_operator}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
                     .then((response) => {
                         const options = response.data
                             .map(item => {
@@ -345,7 +346,7 @@ const RuleEngineEdit = () => {
             const selectedOperator = masterOperatorOptions.find(op => op.value === selectedValue);
             if (selectedOperator) {
                 axios
-                    .get(`https://marathon.lockated.com/rule_engine/conditions.json?q[rule_id]=${selectedValue}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+                    .get(`${baseURL}rule_engine/conditions.json?q[rule_id]=${selectedValue}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
                     .then((response) => {
                         // Map sub operators from response (assuming 'operator' field)
                         const options = response.data
@@ -552,7 +553,7 @@ const RuleEngineEdit = () => {
         setLoading(true);
         try {
             const response = await axios.patch(
-                "https://marathon.lockated.com/rule_engine/rules/loyalty_re_update.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+                `${baseURL}rule_engine/rules/loyalty_re_update.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
                 updatePayload
             );
             alert("Rule updated successfully!");

@@ -24,7 +24,7 @@ const RuleEngineDetails = () => {
         const fetchRuleData = async () => {
             try {
                 const response = await axios.get(
-                    `https://marathon.lockated.com/rule_engine/rules/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                    `${baseURL}rule_engine/rules/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
                 );
                 setRuleData(response.data);
                 setLoading(false);
@@ -55,7 +55,7 @@ const RuleEngineDetails = () => {
         // Fetch master reward options
         axios
             .get(
-                "https://marathon.lockated.com/rule_engine/available_functions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+                `${baseURL}rule_engine/available_functions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
             )
             .then((response) => {
                 // Create mapping of id to display_name
@@ -68,7 +68,7 @@ const RuleEngineDetails = () => {
                     // Fetch sub-options for each master option
                     axios
                         .get(
-                            `https://marathon.lockated.com/rule_engine/available_functions.json?q[available_model_id]=${item.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                            `${baseURL}rule_engine/available_functions.json?q[available_model_id]=${item.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
                         )
                         .then((subResponse) => {
                             const subMapping = {};
