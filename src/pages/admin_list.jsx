@@ -1429,52 +1429,59 @@ const getTransformedRows = () => {
       ref={containerRef}
       style={{ width: "100%", height: "600px", display: "flex", flexDirection: "column", padding:'20px' }}
     >
-      <DataGrid
-  rows={getTransformedRows()}
-  columns={fixedColumns}
-  pageSize={pageSize}
-  rowCount={Number.isInteger(pagination?.total_count) ? pagination.total_count : 0}
-  paginationMode="server"
-  page={Number.isInteger(pagination?.current_page) && pagination.current_page > 0 ? pagination.current_page - 1 : 0}
-  onPageChange={(page) => handlePageChange(page + 1)}
-  loading={loading}
-  columnBuffer={0}
-  getRowId={(row) => row.id}
-  sx={{
-    flexGrow: 1,
-    width: "100%",
-    "& .MuiDataGrid-columnHeaders": {
-      backgroundColor: "#f8f9fa",
-      color: "#000",
-      fontWeight: "bold",
-      position: "sticky",
-      top: 0,
-      zIndex: 1,
-    },
-    "& .MuiDataGrid-cell": {
-      borderColor: "#dee2e6",
-    },
-    "& .MuiDataGrid-columnHeader": {
-      borderColor: "#dee2e6",
-    },
-    "& .MuiDataGrid-virtualScroller": {
-      overflowY: "auto",
-    },
-    "& .MuiDataGrid-virtualScrollerContent": {
-      minWidth: `${containerWidth}px !important`,
-    },
-    "& .MuiDataGrid-footerContainer": {
-      borderTop: "1px solid #dee2e6",
-    },
-  }}
-  components={{
-    NoRowsOverlay: () => (
-      <div style={{ padding: "2rem", textAlign: "center" }}>
-        No events found.
-      </div>
-    ),
-  }}
-/>
+      {/* Only show DataGrid when not loading */}
+      {dataGridRows.length > 0 ? (
+        <DataGrid
+          rows={getTransformedRows()}
+          columns={fixedColumns}
+          pageSize={pageSize}
+          rowCount={Number.isInteger(pagination?.total_count) ? pagination.total_count : 0}
+          paginationMode="server"
+          page={Number.isInteger(pagination?.current_page) && pagination.current_page > 0 ? pagination.current_page - 1 : 0}
+          onPageChange={(page) => handlePageChange(page + 1)}
+          loading={loading}
+          columnBuffer={0}
+          getRowId={(row) => row.id}
+          sx={{
+            flexGrow: 1,
+            width: "100%",
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: "#f8f9fa",
+              color: "#000",
+              fontWeight: "bold",
+              position: "sticky",
+              top: 0,
+              zIndex: 1,
+            },
+            "& .MuiDataGrid-cell": {
+              borderColor: "#dee2e6",
+            },
+            "& .MuiDataGrid-columnHeader": {
+              borderColor: "#dee2e6",
+            },
+            "& .MuiDataGrid-virtualScroller": {
+              overflowY: "auto",
+            },
+            "& .MuiDataGrid-virtualScrollerContent": {
+              minWidth: `${containerWidth}px !important`,
+            },
+            "& .MuiDataGrid-footerContainer": {
+              borderTop: "1px solid #dee2e6",
+            },
+          }}
+          components={{
+            NoRowsOverlay: () => (
+              <div style={{ padding: "2rem", textAlign: "center" }}>
+                No events found.
+              </div>
+            ),
+          }}
+        />
+      ) : (
+        <div className="text-center mt-5">
+          <p>No events found for the selected filters.</p>
+        </div>
+      )}
     </div>
                     <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                       <ul className="pagination justify-content-center d-flex">

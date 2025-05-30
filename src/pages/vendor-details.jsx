@@ -562,165 +562,259 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
 
   // 🔁 Bulk Update - All Rows
   const handleAllTaxChargeChange = (field, value, type, id) => {
-    // Clone the current taxRateData to avoid mutating state directly
-    const updatedData = structuredClone(parentTaxRateData);
+  // Clone the current taxRateData to avoid mutating state directly
+  const updatedData = structuredClone(parentTaxRateData);
 
-    // Determine the target key based on the type (addition or deduction)
-    const taxKey =
-      type === "addition"
-        ? "addition_bid_material_tax_details"
-        : "deduction_bid_material_tax_details";
+  // Determine the target key based on the type (addition or deduction)
+  const taxKey =
+    type === "addition"
+      ? "addition_bid_material_tax_details"
+      : "deduction_bid_material_tax_details";
 
-    // Find the tax entry in the first row by its ID
-    const firstRow = updatedData[0];
-    if (!firstRow || !firstRow[taxKey]) return;
+  // Find the tax entry in the first row by its ID
+  const firstRow = updatedData[0];
+  if (!firstRow || !firstRow[taxKey]) return;
 
-    const taxEntryIndex = firstRow[taxKey].findIndex(
+  const taxEntryIndex = firstRow[taxKey].findIndex(
+    (charge) => charge.id === id
+  );
+  if (taxEntryIndex === -1) return;
+
+  // Update the specific field for the matching tax entry in the first row
+  const taxEntry = firstRow[taxKey][taxEntryIndex];
+  if (field === "taxChargeType") {
+    taxEntry.taxChargeType = value;
+
+    // Update resource_id and resource_type based on the selected tax option
+    const optionsList =
+      type === "addition" ? taxOptions : deductionTaxOptions;
+    const selected = optionsList.find((opt) => opt.value === value);
+
+    taxEntry.resource_id = selected ? selected.id : null;
+    taxEntry.resource_type =
+      selected?.type || (type === "addition" ? "TaxCharge" : "TaxCategory");
+
+    // --- Auto-add CGST if SGST is selected, or SGST if CGST is selected ---
+    if (type === "addition" && (value === "SGST" || value === "CGST")) {
+      const otherType = value === "SGST" ? "CGST" : "SGST";
+      const otherExists = firstRow[taxKey].some(
+        (charge) => charge.taxChargeType === otherType
+      );
+      if (!otherExists) {
+        const otherOption = taxOptions.find((opt) => opt.value === otherType);
+        const samePercentage = taxEntry.taxChargePerUom || "";
+        const newRow = {
+          id: Date.now().toString() + "_" + otherType.toLowerCase(),
+          taxChargeType: otherType,
+          taxChargePerUom: samePercentage,
+          inclusive: false,
+          amount: taxEntry.amount,
+          resource_id: otherOption ? otherOption.id : null,
+          resource_type: otherOption?.type || "TaxCharge",
+        };
+        // Add to firstRow
+        firstRow[taxKey].push(newRow);
+        // Also add to all rows
+        updatedData.forEach((row) => {
+          if (!row[taxKey]) row[taxKey] = [];
+          if (!row[taxKey].some((c) => c.taxChargeType === otherType)) {
+            row[taxKey].push({ ...newRow });
+          }
+        });
+      }
+    }
+  }
+
+  if (field === "taxChargePerUom") {
+    taxEntry.taxChargePerUom = value;
+
+    // Recalculate the amount if applicable
+    if (!taxEntry.inclusive && firstRow.afterDiscountValue) {
+      const amount = calculateTaxAmount(
+        value,
+        firstRow.afterDiscountValue,
+        taxEntry.inclusive
+      );
+      taxEntry.amount = amount.toFixed(2);
+    }
+
+    // --- If SGST or CGST, update the other with the same percentage ---
+    if (
+      type === "addition" &&
+      (taxEntry.taxChargeType === "SGST" || taxEntry.taxChargeType === "CGST")
+    ) {
+      const otherType = taxEntry.taxChargeType === "SGST" ? "CGST" : "SGST";
+      const otherEntry = firstRow[taxKey].find(
+        (charge) => charge.taxChargeType === otherType
+      );
+      if (otherEntry) {
+        otherEntry.taxChargePerUom = value;
+        if (!otherEntry.inclusive && firstRow.afterDiscountValue) {
+          const amount = calculateTaxAmount(
+            value,
+            firstRow.afterDiscountValue,
+            otherEntry.inclusive
+          );
+          otherEntry.amount = amount.toFixed(2);
+        }
+      }
+      // Update in all rows
+      updatedData.forEach((row) => {
+        if (!row[taxKey]) row[taxKey] = [];
+        const otherRow = row[taxKey].find(
+          (charge) => charge.taxChargeType === otherType
+        );
+        if (otherRow) {
+          otherRow.taxChargePerUom = value;
+          if (!otherRow.inclusive && row.afterDiscountValue) {
+            const amount = calculateTaxAmount(
+              value,
+              row.afterDiscountValue,
+              otherRow.inclusive
+            );
+            otherRow.amount = amount.toFixed(2);
+          }
+        }
+      });
+    }
+  }
+
+  if (field === "inclusive") {
+    taxEntry.inclusive = value;
+  }
+
+  // Apply the updated tax entry to all rows
+  updatedData.forEach((row) => {
+    if (!row[taxKey]) row[taxKey] = [];
+
+    // Find the tax entry in the current row by its ID
+    const rowTaxEntryIndex = row[taxKey].findIndex(
       (charge) => charge.id === id
     );
-    if (taxEntryIndex === -1) return;
 
-    // Update the specific field for the matching tax entry in the first row
-    const taxEntry = firstRow[taxKey][taxEntryIndex];
-    if (field === "taxChargeType") {
-      taxEntry.taxChargeType = value;
-
-      // Update resource_id and resource_type based on the selected tax option
-      const optionsList =
-        type === "addition" ? taxOptions : deductionTaxOptions;
-      const selected = optionsList.find((opt) => opt.value === value);
-
-      taxEntry.resource_id = selected ? selected.id : null;
-      taxEntry.resource_type =
-        selected?.type || (type === "addition" ? "TaxCharge" : "TaxCategory");
+    if (rowTaxEntryIndex !== -1) {
+      // Update the existing tax entry
+      row[taxKey][rowTaxEntryIndex] = { ...taxEntry };
+    } else {
+      // Add the tax entry if it doesn't exist
+      row[taxKey].push({ ...taxEntry });
     }
 
-    if (field === "taxChargePerUom") {
-      taxEntry.taxChargePerUom = value;
+    // Recalculate the net cost for the row
+    row.netCost = calculateNetCost(updatedData.indexOf(row), updatedData);
+  });
 
-      // Recalculate the amount if applicable
-      if (!taxEntry.inclusive && firstRow.afterDiscountValue) {
-        const amount = calculateTaxAmount(
-          value,
-          firstRow.afterDiscountValue,
-          taxEntry.inclusive
-        );
-        taxEntry.amount = amount.toFixed(2);
-      }
-    }
-
-    if (field === "inclusive") {
-      taxEntry.inclusive = value;
-    }
-
-    // Apply the updated tax entry to all rows
-    updatedData.forEach((row) => {
-      if (!row[taxKey]) row[taxKey] = [];
-
-      // Find the tax entry in the current row by its ID
-      const rowTaxEntryIndex = row[taxKey].findIndex(
-        (charge) => charge.id === id
-      );
-
-      if (rowTaxEntryIndex !== -1) {
-        // Update the existing tax entry
-        row[taxKey][rowTaxEntryIndex] = { ...taxEntry };
-      } else {
-        // Add the tax entry if it doesn't exist
-        row[taxKey].push({ ...taxEntry });
-      }
-
-      // Recalculate the net cost for the row
-      row.netCost = calculateNetCost(updatedData.indexOf(row), updatedData);
-    });
-
-    console.log(updatedData, "updatedData after bulk update");
-    // Update the state with the modified data
-    setTaxRateData(updatedData);
-    setParentTaxRateData(updatedData); // If you are maintaining a parent state
-    originalTaxRateDataRef.current = structuredClone(updatedData);
-  };
+  // Update the state with the modified data
+  setTaxRateData(updatedData);
+  setParentTaxRateData(updatedData); // If you are maintaining a parent state
+  originalTaxRateDataRef.current = structuredClone(updatedData);
+};
 
   // ✏️ Single Row + Charge Update
   const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
-    if (fromAllUpdateRef.current) {
-      // 🛑 Skip if last update was from bulk
-      fromAllUpdateRef.current = false;
-      return;
+  if (fromAllUpdateRef.current) {
+    fromAllUpdateRef.current = false;
+    return;
+  }
+
+  const updatedData = structuredClone(taxRateData);
+  const targetRow = updatedData[rowIndex];
+  if (!targetRow) return;
+
+  const taxKey =
+    type === "addition"
+      ? "addition_bid_material_tax_details"
+      : "deduction_bid_material_tax_details";
+
+  const taxCharges = [...targetRow[taxKey]];
+  const chargeIndex = taxCharges.findIndex((item) => item.id === id);
+  if (chargeIndex === -1) return;
+
+  const charge = { ...taxCharges[chargeIndex] };
+
+  if (field === "amount") {
+    charge.amount = value;
+    if (!charge.inclusive && targetRow.afterDiscountValue) {
+      const perUOM = (
+        (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
+        100
+      ).toFixed(2);
+      charge.taxChargePerUom = perUOM;
     }
+  } else {
+    charge[field] = value;
+  }
 
-    const updatedData = structuredClone(taxRateData);
-    const originalData = structuredClone(originalTaxRateDataRef.current);
-    const targetRow = updatedData[rowIndex];
-    const originalRow = originalData[rowIndex];
-    if (!targetRow || !originalRow) return;
+  // Auto-add CGST if SGST is selected, or SGST if CGST is selected
+  if (field === "taxChargeType" && type === "addition" && (value === "SGST" || value === "CGST")) {
+    const otherType = value === "SGST" ? "CGST" : "SGST";
+    const otherExists = taxCharges.some((item) => item.taxChargeType === otherType);
+    if (!otherExists) {
+      const otherOption = taxOptions.find((opt) => opt.value === otherType);
+      const samePercentage = charge.taxChargePerUom || "";
+      const newRow = {
+        id: Date.now().toString() + "_" + otherType.toLowerCase(),
+        taxChargeType: otherType,
+        taxChargePerUom: samePercentage,
+        inclusive: false,
+        amount: charge.amount,
+        resource_id: otherOption ? otherOption.id : null,
+        resource_type: otherOption?.type || "TaxCharge",
+      };
+      taxCharges.push(newRow);
+    }
+  }
 
-    const taxKey =
-      type === "addition"
-        ? "addition_bid_material_tax_details"
-        : "deduction_bid_material_tax_details";
-
-    const taxCharges = [...targetRow[taxKey]];
-    const chargeIndex = taxCharges.findIndex((item) => item.id === id);
-    if (chargeIndex === -1) return;
-
-    const charge = { ...taxCharges[chargeIndex] };
-
-    if (field === "amount") {
-      charge.amount = value;
-      if (!charge.inclusive && targetRow.afterDiscountValue) {
-        const perUOM = (
-          (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
-          100
-        ).toFixed(2);
-        charge.taxChargePerUom = perUOM;
+  // Keep percentage in sync between SGST and CGST
+  if (
+    field === "taxChargePerUom" &&
+    type === "addition" &&
+    (charge.taxChargeType === "SGST" || charge.taxChargeType === "CGST")
+  ) {
+    const otherType = charge.taxChargeType === "SGST" ? "CGST" : "SGST";
+    const otherEntry = taxCharges.find((item) => item.taxChargeType === otherType);
+    if (otherEntry) {
+      otherEntry.taxChargePerUom = value;
+      if (!otherEntry.inclusive && targetRow.afterDiscountValue) {
+        const amount = calculateTaxAmount(
+          value,
+          targetRow.afterDiscountValue,
+          otherEntry.inclusive
+        );
+        otherEntry.amount = amount.toFixed(2);
       }
-    } else {
-      charge[field] = value;
     }
+  }
 
-    if (!charge.inclusive && field === "taxChargePerUom") {
-      const taxAmount = calculateTaxAmount(
-        charge.taxChargePerUom,
-        targetRow.afterDiscountValue,
-        charge.inclusive
-      );
-      charge.amount = taxAmount.toFixed(2);
-    }
-
-    taxCharges[chargeIndex] = charge;
-    targetRow[taxKey] = taxCharges;
-    updatedData[rowIndex] = targetRow;
-
-    const recalculated = updatedData.map((row, idx) => ({
-      ...row,
-      netCost: calculateNetCost(idx, updatedData),
-    }));
-
-    // console.log(
-    //   "Updated Tax Data (Single):",
-    //   JSON.stringify(updatedData, null, 2)
-    // );
-
-    // Update matched tax names dynamically
-    const matchedTax = taxOptions.find(
-      (tax) => tax.value === charge.taxChargeType
+  if (!charge.inclusive && field === "taxChargePerUom") {
+    const taxAmount = calculateTaxAmount(
+      charge.taxChargePerUom,
+      targetRow.afterDiscountValue,
+      charge.inclusive
     );
-    if (matchedTax) {
-      console.log(
-        "Matched Tax:EDCFGVTRGH",
-        matchedTax.value,
-        taxOptions,
-        charge
-      );
+    charge.amount = taxAmount.toFixed(2);
+  }
 
-      matchedTaxNamesArray.push(matchedTax?.value); // Push matched tax name to the array
-      // console.log("Matched Tax:", matchedTax, mat);
-    }
+  taxCharges[chargeIndex] = charge;
+  targetRow[taxKey] = taxCharges;
+  updatedData[rowIndex] = targetRow;
 
-    setTaxRateData(recalculated);
-    originalTaxRateDataRef.current = structuredClone(recalculated);
-  };
+  const recalculated = updatedData.map((row, idx) => ({
+    ...row,
+    netCost: calculateNetCost(idx, updatedData),
+  }));
+
+  // Update matched tax names dynamically
+  const matchedTax = taxOptions.find(
+    (tax) => tax.value === charge.taxChargeType
+  );
+  if (matchedTax) {
+    matchedTaxNamesArray.push(matchedTax?.value);
+  }
+
+  setTaxRateData(recalculated);
+  originalTaxRateDataRef.current = structuredClone(recalculated);
+};
 
   // Update the modal tax inputs to use new handler for "Apply All"
   // const [currentIndex, setCurrentIndex] = useState(0);
@@ -4653,7 +4747,7 @@ useEffect(() => {
                                 fontSize: "0.85rem",
                                 fontWeight: "bold",
                                 borderColor: "#ffbb96",
-                                textTransform: "capitalize",
+                                textTransform: "uppercase",
                               }}
                             >
                               {data1?.event_type_detail?.event_type}
@@ -4700,32 +4794,45 @@ useEffect(() => {
                       </div>
                     </div>
 
-                    {counterData > 0 && (
-                      <div className="d-flex justify-content-between align-items-center mx-3 bg-light p-3 rounded-3">
-                        <div className="">
-                          <p>Counter Offer</p>
-                          <p>
-                            A counter is pending on your bid. You cannot make any
-                            further changes to your bid untill your resolve the
-                            counter offer
-                          </p>
-                        </div>
-                        <div className="d-flex">
-                          <button
-                            className="purple-btn1"
-                            onClick={handleDecline}
-                          >
-                            Decline
-                          </button>
-                          <button
-                            className="purple-btn2"
-                            onClick={handleAccept}
-                          >
-                            Accept Offer
-                          </button>
-                        </div>
-                      </div>
-                    )}
+                    {/* {counterData > 0 && ( */}
+                      <div
+  className="d-flex justify-content-between align-items-center mx-3 p-3 rounded-3"
+  style={{
+    background: "linear-gradient(90deg, #fff3cd 0%, #ffeeba 100%)",
+    border: "2px solid #ffc107",
+    boxShadow: "0 2px 8px rgba(255,193,7,0.15)",
+    color: "#856404",
+  }}
+>
+  <div>
+    <p style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: 4 }}>
+      <i className="bi bi-exclamation-triangle-fill me-2" style={{ color: "#856404" }} />
+      Counter Offer
+    </p>
+    <p style={{ marginBottom: 0 }}>
+      A counter is pending on your bid. You cannot make any
+      further changes to your bid until you resolve the
+      counter offer.
+    </p>
+  </div>
+  <div className="d-flex">
+    <button
+      className="purple-btn1 me-2"
+      onClick={handleDecline}
+      style={{ minWidth: 100 }}
+    >
+      Decline
+    </button>
+    <button
+      className="purple-btn2"
+      onClick={handleAccept}
+      style={{ minWidth: 120 }}
+    >
+      Accept Offer
+    </button>
+  </div>
+</div>
+                    {/* )} */}
 
                     <div className="card-body">
                       <div style={tableContainerStyle}>
