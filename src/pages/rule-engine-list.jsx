@@ -181,7 +181,7 @@ const RuleEngineList = () => {
               </div>
             </div>
 
-            <div className="mx-3 mb-5">
+            <div className="mx-3 mb-5 mt-3">
               <div
                 className="tbl-container mt-1"
                 style={{ maxHeight: "410px", overflowY: "auto" }}
@@ -197,7 +197,7 @@ const RuleEngineList = () => {
                       <th className="text-start">Sub Operatives</th>
                       <th className="text-start">Reward Outcome</th>
                       <th className="text-start">Sub Reward Outcome</th>
-                      <th className="text-start">Toggle</th>
+                      {/* <th className="text-start">Toggle</th> */}
                       <th className="text-start">View</th>
                       <th className="text-start">Edit</th>
                     </tr>
@@ -235,7 +235,7 @@ const RuleEngineList = () => {
                               )}
                               {/* For subsequent rows, skip these cells */}
                               {/* Attribute */}
-                              <td className="text-start">{"-"}</td>
+                              <td className="text-start">{condition.model_name || "-"}</td>
                               <td className="text-start">
                                 {toTitleCaseFromSnake(
                                   condition.condition_attribute
@@ -263,12 +263,10 @@ const RuleEngineList = () => {
                               {/* Only show toggle, edit, view for the first condition */}
                               {condIdx === 0 && (
                                 <>
-                                  <td
+                                  {/* <td
                                     className="text-start"
                                     rowSpan={rule.conditions.length}
-                                  >
-                                    {/* <input type="checkbox" checked={rule.active} readOnly /> */}
-                                  </td>
+                                  ></td> */}
                                   <td
                                     className="text-center"
                                     rowSpan={rule.conditions.length}

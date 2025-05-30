@@ -475,7 +475,7 @@ const RuleEngineEdit = () => {
         // e.preventDefault();
         let newErrors = {};
         let hasError = false;
-       
+
 
         // Rule name validation
         if (!ruleName) {
@@ -549,7 +549,7 @@ const RuleEngineEdit = () => {
         }
         console.log("Payload on submisiion:", updatePayload);
         // Send payload to API here
-         setLoading(true);
+        setLoading(true);
         try {
             const response = await axios.patch(
                 "https://marathon.lockated.com/rule_engine/rules/loyalty_re_update.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
@@ -863,9 +863,14 @@ const RuleEngineEdit = () => {
                                             <SingleSelector
                                                 options={masterRewardOptions}
                                                 value={masterRewardOptions.find(opt => opt.value === masterRewardOutcome)}
-                                                onChange={selected =>
-                                                    setMasterRewardOutcome(selected ? selected.value : "")
-                                                }
+                                                // onChange={selected =>
+                                                //     setMasterRewardOutcome(selected ? selected.value : "")
+                                                // }
+
+                                                onChange={selected => {
+                                                    setMasterRewardOutcome(selected ? selected.value : "");
+                                                    setSubRewardOutcome(""); // <-- Reset sub reward when master changes
+                                                }}
                                                 placeholder={`Select  Master Reward Outcome`}
                                             />
                                             {thenError.masterRewardOutcome && (
@@ -920,7 +925,7 @@ const RuleEngineEdit = () => {
                                 <button className="purple-btn2 w-100" onClick={handleUpdate}>Update</button>
                             </div>
                             <div className="col-md-2">
-                                <button className="purple-btn1 w-100"  onClick={() => navigate("/rule-engine-list")}>Cancel</button>
+                                <button className="purple-btn1 w-100" onClick={() => navigate("/rule-engine-list")}>Cancel</button>
                             </div>
                         </div>
                     </div>

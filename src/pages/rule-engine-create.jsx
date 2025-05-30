@@ -234,7 +234,7 @@ const RuleEngineCreate = () => {
 
     const rule_engine_conditions_attributes = conditions.map(cond => ({
         ...cond,
-         condition_selected_model: Number(cond.condition_selected_model),
+        condition_selected_model: Number(cond.condition_selected_model),
         // compare_value: cond.compare_value !== "" && !isNaN(cond.compare_value)
         // ? Number(cond.compare_value)
         // : cond.compare_value
@@ -254,7 +254,7 @@ const RuleEngineCreate = () => {
         rule_engine_available_function_id: Number(masterRewardOutcome),
         action_selected_model: Number(subRewardOutcome)
     }));
-// console.log("sub reward:",subRewardOutcome)
+    // console.log("sub reward:",subRewardOutcome)
 
     const payload = {
         rule_engine_rule: {
@@ -628,9 +628,15 @@ const RuleEngineCreate = () => {
                                             <SingleSelector
                                                 options={masterRewardOptions}
                                                 value={masterRewardOptions.find(opt => opt.value === masterRewardOutcome)}
-                                                onChange={selected =>
-                                                    setMasterRewardOutcome(selected ? selected.value : "")
-                                                }
+                                                // onChange={selected =>
+                                                //     setMasterRewardOutcome(selected ? selected.value : "");
+                                                //     setSubRewardOutcome("");
+                                                // }
+
+                                                onChange={selected => {
+                                                    setMasterRewardOutcome(selected ? selected.value : "");
+                                                    setSubRewardOutcome(""); // <-- Reset sub reward when master changes
+                                                }}
                                                 placeholder={`Select  Master Reward Outcome`}
                                             />
                                             {thenError.masterRewardOutcome && (
