@@ -8,65 +8,65 @@ import "../styles/mor.css";
 import { useNavigate } from "react-router-dom";
 
 const staticRuleData = {
-  id: 8,
-  name: "rule test",
-  active: true,
-  created_at: "2025-05-28T16:46:14.752+05:30",
-  conditions: [
-    {
-      id: 10,
-      model_id: 1,
-      condition_attribute: "refferal_code",
-      operator: "greater_than",
-      compare_value: "100",
-      action_type: "created",
-      condition_selected_model: null,
-      condition_type: "",
-      master_operator: "Common Operator1",
-      model_name: "No applicable model"
-    },
-    {
-      id: 11,
-      model_id: 1,
-      condition_attribute: "user_type",
-      operator: "greater_than",
-      compare_value: "200",
-      action_type: "created",
-      condition_selected_model: null,
-      condition_type: "AND",
-      master_operator: "Common Operator1",
-      model_name: "No applicable model"
-    },
-    {
-      id: 12,
-      model_id: 1,
-      condition_attribute: "refferal_code",
-      operator: "greater_than",
-      compare_value: "300",
-      action_type: "created",
-      condition_selected_model: null,
-      condition_type: "OR",
-      master_operator: "Common Operator1",
-      model_name: "No applicable model"
-    }
-  ],
-  actions: [
-    {
-      id: 9,
-      lock_model_name: "refferal_code",
-      action_method: "calculate_loyalty_points",
-      parameters: "100",
-      rule_engine_available_function_id: 1,
-    }
-  ]
+    id: 8,
+    name: "rule test",
+    active: true,
+    created_at: "2025-05-28T16:46:14.752+05:30",
+    conditions: [
+        {
+            id: 10,
+            model_id: 1,
+            condition_attribute: "refferal_code",
+            operator: "greater_than",
+            compare_value: "100",
+            action_type: "created",
+            condition_selected_model: null,
+            condition_type: "",
+            master_operator: "Common Operator1",
+            model_name: "No applicable model"
+        },
+        {
+            id: 11,
+            model_id: 1,
+            condition_attribute: "user_type",
+            operator: "greater_than",
+            compare_value: "200",
+            action_type: "created",
+            condition_selected_model: null,
+            condition_type: "AND",
+            master_operator: "Common Operator1",
+            model_name: "No applicable model"
+        },
+        {
+            id: 12,
+            model_id: 1,
+            condition_attribute: "refferal_code",
+            operator: "greater_than",
+            compare_value: "300",
+            action_type: "created",
+            condition_selected_model: null,
+            condition_type: "OR",
+            master_operator: "Common Operator1",
+            model_name: "No applicable model"
+        }
+    ],
+    actions: [
+        {
+            id: 9,
+            lock_model_name: "refferal_code",
+            action_method: "calculate_loyalty_points",
+            parameters: "100",
+            rule_engine_available_function_id: 1,
+        }
+    ]
 };
 
 const RuleEngineEdit = () => {
     const navigate = useNavigate();
-     const { id } = useParams();
-        const [ruleData, setRuleData] = useState(null);
-        const [loading, setLoading] = useState(true);
-        const [error, setError] = useState(null);
+    const { id } = useParams();
+    const [ruleData, setRuleData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [errors, setErrors] = useState({});
     const [thenError, setThenError] = useState({});
     const options = [
@@ -134,7 +134,7 @@ const RuleEngineEdit = () => {
             })
             .catch((err) => {
                 setLoading(false);
-                setRuleData(null);
+                // setRuleData(null);
             });
     }, [id]);
 
@@ -177,31 +177,31 @@ const RuleEngineEdit = () => {
     }, []);
 
     useEffect(() => {
-    // For each condition, if model_id exists, fetch sub-attributes
-    conditions.forEach((condition, idx) => {
-        if (condition.condition_selected_model) {
-            axios
-                .get(`https://marathon.lockated.com/rule_engine/available_attributes.json?q[available_model_id_eq]=${condition.condition_selected_model}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-                .then((response) => {
-                    const options = response.data.map(item => ({
-                        value: toSnakeCase(item.display_name),
-                        label: item.display_name
-                    }));
-                    setSubAttributeOptions(prev => ({
-                        ...prev,
-                        [idx]: options
-                    }));
-                })
-                .catch(() => {
-                    setSubAttributeOptions(prev => ({
-                        ...prev,
-                        [idx]: []
-                    }));
-                });
-        }
-    });
-    // eslint-disable-next-line
-}, []);
+        // For each condition, if model_id exists, fetch sub-attributes
+        conditions.forEach((condition, idx) => {
+            if (condition.condition_selected_model) {
+                axios
+                    .get(`https://marathon.lockated.com/rule_engine/available_attributes.json?q[available_model_id_eq]=${condition.condition_selected_model}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+                    .then((response) => {
+                        const options = response.data.map(item => ({
+                            value: toSnakeCase(item.display_name),
+                            label: item.display_name
+                        }));
+                        setSubAttributeOptions(prev => ({
+                            ...prev,
+                            [idx]: options
+                        }));
+                    })
+                    .catch(() => {
+                        setSubAttributeOptions(prev => ({
+                            ...prev,
+                            [idx]: []
+                        }));
+                    });
+            }
+        });
+        // eslint-disable-next-line
+    }, [conditions]);
     // Fetch sub-attributes when master attribute changes for a condition
     const handleMasterAttributeChange = (idx, selectedValue) => {
         handleConditionChange(idx, "condition_selected_model", selectedValue);
@@ -301,39 +301,39 @@ const RuleEngineEdit = () => {
     }, []);
 
     useEffect(() => {
-  conditions.forEach((condition, idx) => {
-    if (condition.master_operator) {
-      axios
-        .get(`https://marathon.lockated.com/rule_engine/conditions.json?q[rule_id]=${condition.master_operator}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-        .then((response) => {
-          const options = response.data
-            .map(item => {
-              if (!item.operator) return null;
-              const label = item.operator
-                .split('_')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(' ');
-              return {
-                value: item.operator,
-                label
-              };
-            })
-            .filter((op, idx2, arr) => op && arr.findIndex(o => o.value === op.value) === idx2);
-          setSubOperatorOptions(prev => ({
-            ...prev,
-            [idx]: options
-          }));
-        })
-        .catch(() => {
-          setSubOperatorOptions(prev => ({
-            ...prev,
-            [idx]: []
-          }));
+        conditions.forEach((condition, idx) => {
+            if (condition.master_operator) {
+                axios
+                    .get(`https://marathon.lockated.com/rule_engine/conditions.json?q[rule_id]=${condition.master_operator}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+                    .then((response) => {
+                        const options = response.data
+                            .map(item => {
+                                if (!item.operator) return null;
+                                const label = item.operator
+                                    .split('_')
+                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                    .join(' ');
+                                return {
+                                    value: item.operator,
+                                    label
+                                };
+                            })
+                            .filter((op, idx2, arr) => op && arr.findIndex(o => o.value === op.value) === idx2);
+                        setSubOperatorOptions(prev => ({
+                            ...prev,
+                            [idx]: options
+                        }));
+                    })
+                    .catch(() => {
+                        setSubOperatorOptions(prev => ({
+                            ...prev,
+                            [idx]: []
+                        }));
+                    });
+            }
         });
-    }
-  });
-  // eslint-disable-next-line
-}, []);
+        // eslint-disable-next-line
+    }, [conditions]);
 
     // Fetch sub operators when master operator changes for a condition
     const handleMasterOperatorChange = (idx, selectedValue) => {
@@ -415,13 +415,67 @@ const RuleEngineEdit = () => {
             rule_engine_actions_attributes,
         }
     };
-    console.log("Payload:", payload);
+
+
+    const updatePayload = {
+        rule_engine_rule: {
+            id: ruleData?.id, // use the current rule id
+            name: ruleName,
+            active: true,
+            model_id: Number(conditions[0]?.condition_selected_model) || 1,
+            // rule_engine_conditions_attributes: conditions.map((cond, idx) => ({
+            //     id: cond.id, // must include id for update
+            //     condition_selected_model: Number(cond.condition_selected_model),
+            //     condition_attribute: cond.condition_attribute,
+            //     master_operator: cond.master_operator,
+            //     operator: cond.operator,
+            //     compare_value: cond.compare_value,
+            //     action_type: cond.action_type || "updated"
+            // })),
+
+            rule_engine_conditions_attributes: conditions.map((cond) => {
+                const base = {
+                    condition_selected_model: Number(cond.condition_selected_model),
+                    condition_attribute: cond.condition_attribute,
+                    master_operator: cond.master_operator,
+                    operator: cond.operator,
+                    compare_value: cond.compare_value,
+                    condition_type: cond.condition_type,
+                    action_type: cond.action_type || "updated"
+                };
+                // Only include id if it exists (i.e., it's an existing condition)
+                if (cond.id) base.id = cond.id;
+                return base;
+            }),
+            rule_engine_actions_attributes: conditions.map((condition, idx) => {
+                const action = {
+                    lock_model_name: condition.condition_attribute,
+                    action_method: getMasterRewardOutcomeName(masterRewardOutcome),
+                    parameters: Number(parameter) || 0,
+                    rule_engine_applicable_model_id: Number(condition.condition_selected_model),
+                    rule_engine_available_function_id: Number(masterRewardOutcome),
+                    action_selected_model: Number(subRewardOutcome)
+                };
+                // If the original action exists and has an id, include it
+                if (ruleData?.actions?.[idx]?.id) {
+                    action.id = ruleData.actions[idx].id;
+                }
+                return action;
+            })
+
+
+
+
+        }
+    }
+    console.log("Payload:", updatePayload);
 
     // Handle submit
-    const handleSubmit = async () => {
+    const handleUpdate = async () => {
         // e.preventDefault();
         let newErrors = {};
         let hasError = false;
+       
 
         // Rule name validation
         if (!ruleName) {
@@ -453,31 +507,61 @@ const RuleEngineEdit = () => {
 
         if (hasError || Object.keys(thenErr).length > 0) return;
         // Build payload
-        const payload = {
+        const updatePayload = {
             rule_engine_rule: {
+                id: ruleData?.id, // use the current rule id
                 name: ruleName,
                 active: true,
                 model_id: Number(conditions[0]?.condition_selected_model) || 1,
-                rule_engine_conditions_attributes,
-                rule_engine_actions_attributes,
+
+
+                rule_engine_conditions_attributes: conditions.map((cond) => {
+                    const base = {
+                        condition_selected_model: Number(cond.condition_selected_model),
+                        condition_attribute: cond.condition_attribute,
+                        master_operator: cond.master_operator,
+                        operator: cond.operator,
+                        compare_value: cond.compare_value,
+                        condition_type: cond.condition_type,
+                        action_type: cond.action_type || "updated"
+                    };
+                    // Only include id if it exists (i.e., it's an existing condition)
+                    if (cond.id) base.id = cond.id;
+                    return base;
+                }),
+                rule_engine_actions_attributes: conditions.map((condition, idx) => {
+                    const action = {
+                        lock_model_name: condition.condition_attribute,
+                        action_method: getMasterRewardOutcomeName(masterRewardOutcome),
+                        parameters: Number(parameter) || 0,
+                        rule_engine_applicable_model_id: Number(condition.condition_selected_model),
+                        rule_engine_available_function_id: Number(masterRewardOutcome),
+                        action_selected_model: Number(subRewardOutcome)
+                    };
+                    // If the original action exists and has an id, include it
+                    if (ruleData?.actions?.[idx]?.id) {
+                        action.id = ruleData.actions[idx].id;
+                    }
+                    return action;
+                })
 
             }
-        };
-        console.log("Payload on submisiion:", payload);
+        }
+        console.log("Payload on submisiion:", updatePayload);
         // Send payload to API here
+         setLoading(true);
         try {
-            const response = await axios.post(
-                "https://marathon.lockated.com/rule_engine/rules.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
-                payload
+            const response = await axios.patch(
+                "https://marathon.lockated.com/rule_engine/rules/loyalty_re_update.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+                updatePayload
             );
-            // Handle success (show message, redirect, etc.)
-            console.log("Rule created:", response.data);
-            alert("Rule created successfully!");
-            navigate("/rule-engine-list")
+            alert("Rule updated successfully!");
+            setLoading(false);
+            navigate("/rule-engine-list");
         } catch (error) {
-            // Handle error
-            console.error("Error creating rule:", error);
-            alert("Failed to create rule.");
+            console.error("Error updating rule:", error);
+            setLoading(false);
+            alert("Failed to update rule.");
         }
     };
 
@@ -497,7 +581,7 @@ const RuleEngineEdit = () => {
                                     <div className="form-group">
                                         <label>New Rule <span>*</span></label>
                                         <input
-                                              disabled
+                                            disabled
                                             value={ruleName}
                                             onChange={e => setRuleName(e.target.value)}
                                             className="form-control"
@@ -528,7 +612,7 @@ const RuleEngineEdit = () => {
                                                     viewBox="0 0 16 16"
                                                 ></svg>
                                             </span>
-                                            {idx > 0 && (
+                                            {!condition.id && (
                                                 <button
                                                     className="purple-btn2"
                                                     onClick={() => removeCondition(idx)}
@@ -626,6 +710,7 @@ const RuleEngineEdit = () => {
                                                             <SingleSelector
                                                                 options={subAttributeOptions[idx] || []}
                                                                 value={(subAttributeOptions[idx] || []).find(opt => opt.value === condition.condition_attribute)}
+                                                                // value={(subAttributeOptions[idx] || []).find(opt => String(opt.value) === String(condition.condition_attribute))}
                                                                 onChange={selected =>
                                                                     handleConditionChange(idx, "condition_attribute", selected ? selected.value : "")
                                                                 }
@@ -832,15 +917,30 @@ const RuleEngineEdit = () => {
                         </div>
                         <div className="row mt-4 mb-5 justify-content-center w-100">
                             <div className="col-md-2">
-                                <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
+                                <button className="purple-btn2 w-100" onClick={handleUpdate}>Update</button>
                             </div>
                             <div className="col-md-2">
-                                <button className="purple-btn1 w-100">Cancel</button>
+                                <button className="purple-btn1 w-100"  onClick={() => navigate("/rule-engine-list")}>Cancel</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            {loading && (
+                <div className="loader-container">
+                    <div className="lds-ring">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <p>Loading...</p>
+                </div>
+            )}
         </>
     );
 };
