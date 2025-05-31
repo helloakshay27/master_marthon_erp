@@ -1533,7 +1533,7 @@ export default function ResponseTab({ isCounterOffer }) {
       </DynamicModalBox>
 
       <DynamicModalBox
-  show={true}
+  show={showCounterOfferPopup}
   onHide={() => setShowCounterOfferPopup(false)} // Close popup
   size="lg"
   title="Revise Offer Details"
