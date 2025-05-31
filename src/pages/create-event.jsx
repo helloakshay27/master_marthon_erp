@@ -1168,10 +1168,11 @@ export default function CreateEvent() {
                     <span>Add</span>
                   </button>
                 </div>
-
+                {/* Show filename in a separate column, like edit event */}
                 <Table
                   columns={[
                     { label: "Sr No", key: "srNo" },
+                    { label: "File Name", key: "fileName" },
                     { label: "Upload File", key: "upload" },
                     { label: "Action", key: "action" },
                   ]}
@@ -1179,26 +1180,28 @@ export default function CreateEvent() {
                   resetSelectedRows={undefined}
                   onResetComplete={undefined}
                   data={documentRows.map((row, index) => ({
+                    srNo: row.srNo,
+                    fileName: (
+                      <td>
+                        {row?.upload?.filename || row.filename || "No File Selected"}
+                      </td>
+                    ),
                     upload: (
                       <td style={{ border: "none" }}>
-                        {/* Hidden file input */}
                         <input
                           type="file"
                           id={`file-input-${index}`}
                           key={row?.srNo}
-                          style={{ display: "none" }} // Hide input
-                          onChange={(e) =>
-                            handleFileChange(index, e.target.files[0])
-                          }
+                          style={{ display: "none" }}
+                          onChange={(e) => handleFileChange(index, e.target.files[0])}
                           accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
                         />
-
                         <label
                           htmlFor={`file-input-${index}`}
                           style={{
                             display: "inline-block",
-                            width: "300px",
-                            padding: "10px",
+                            width: "120px",
+                            padding: "8px",
                             border: "1px solid #ccc",
                             borderRadius: "4px",
                             cursor: "pointer",
@@ -1207,9 +1210,7 @@ export default function CreateEvent() {
                             textAlign: "center",
                           }}
                         >
-                          {row.upload?.filename
-                            ? row.upload.filename
-                            : "Choose File"}
+                          Upload
                         </label>
                       </td>
                     ),
