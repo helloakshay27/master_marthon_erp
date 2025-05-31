@@ -39,6 +39,100 @@ export default function BulkCounterOfferModalTwo({
   const [taxRateData, setTaxRateData] = useState([]);
   const [taxPercentageOptions, setTaxPercentageOptions] = useState([]);
   const { eventId } = useParams();
+  const [minBidPrice, setMinBidPrice] = useState(null); // Store min bid price
+  const [userPriceEdited, setUserPriceEdited] = useState({}); // Track if user edited price per row
+
+  // Fetch min bid price on mount or when eventId changes
+  useEffect(() => {
+    async function fetchMinBidPrice() {
+      if (!eventId) return;
+      try {
+        const res = await fetch(
+          `https://marathon.lockated.com/rfq/events/${eventId}/min_bid_price?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        const data = await res.json();
+        if (data && typeof data.price !== "undefined") {
+          setMinBidPrice(data.price);
+        }
+      } catch (err) {
+        setMinBidPrice(null);
+      }
+    }
+    fetchMinBidPrice();
+  }, [eventId]);
+
+  // Set default price to minBidPrice if not set or not edited by user
+  useEffect(() => {
+    if (
+      minBidPrice !== null &&
+      formData?.event_materials &&
+      Array.isArray(formData.event_materials)
+    ) {
+      let updatedMaterials = formData.event_materials.map((mat, idx) => {
+        // Only set if price is not set or not edited by user
+        if (
+          (!mat.price || mat.price === "") &&
+          !userPriceEdited[idx]
+        ) {
+          return { ...mat, price: minBidPrice };
+        }
+        return mat;
+      });
+
+      // Recalculate all dependent fields for each material if price is set by default
+      updatedMaterials = updatedMaterials.map((mat, idx) => {
+        // Only recalculate if price is set by default and not edited by user
+        if (
+          (!userPriceEdited[idx]) &&
+          (mat.price === minBidPrice || mat.price === "" || typeof mat.price === "undefined")
+        ) {
+          const price = parseFloat(minBidPrice) || 0;
+          const quantityAvail =
+            mat.quantity_available !== undefined &&
+            mat.quantity_available !== null &&
+            mat.quantity_available !== ""
+              ? parseFloat(mat.quantity_available) || 0
+              : parseFloat(mat.quantity) || 0;
+          const discount = parseFloat(mat.discount) || 0;
+          const gst = parseFloat(mat.gst) || 0;
+
+          const total = price * quantityAvail;
+          const realisedPrice = price - (price * discount) / 100;
+          const realisedDiscount = (total * discount) / 100;
+          const landedAmount = total - realisedDiscount;
+          let realisedGst = 0;
+          if (gst > 0) {
+            realisedGst = (landedAmount * gst) / 100;
+          }
+          const finalTotal = landedAmount + realisedGst;
+
+          return {
+            ...mat,
+            price: minBidPrice,
+            realised_discount: realisedDiscount.toFixed(2),
+            realised_price: realisedPrice.toFixed(2),
+            landed_amount: landedAmount.toFixed(2),
+            realised_gst: realisedGst.toFixed(2),
+            total_amount: finalTotal.toFixed(2),
+          };
+        }
+        return mat;
+      });
+
+      // Update sumTotal as well
+      const newSumTotal = updatedMaterials.reduce(
+        (acc, item) => acc + parseFloat(item.total_amount || 0),
+        0
+      );
+      setSumTotal(newSumTotal);
+
+      setFormData((prev) => ({
+        ...prev,
+        event_materials: updatedMaterials,
+      }));
+    }
+    // eslint-disable-next-line
+  }, [minBidPrice]);
 
   useEffect(() => {
     const fetchTaxes = async () => {
@@ -313,6 +407,12 @@ export default function BulkCounterOfferModalTwo({
   const handleMaterialInputChange = (e, field, index) => {
     const value = e.target.value;
     const updatedMaterials = [...formData.event_materials];
+
+    // If user edits price, mark as edited
+    if (field === "price") {
+      setUserPriceEdited((prev) => ({ ...prev, [index]: true }));
+    }
+
     updatedMaterials[index][field] = value;
 
     const price = parseFloat(updatedMaterials[index].price) || 0;
@@ -445,7 +545,14 @@ export default function BulkCounterOfferModalTwo({
           type="number"
           min="0"
           className="form-control"
-          value={eventMaterial.price || ""}
+          value={
+            // Show minBidPrice if not edited and price is empty
+            (!userPriceEdited[eventIndex] &&
+              (!eventMaterial.price || eventMaterial.price === "") &&
+              minBidPrice !== null)
+              ? minBidPrice
+              : eventMaterial.price || ""
+          }
           style={{ width: "auto" }}
           onChange={(e) => handleMaterialInputChange(e, "price", eventIndex)}
         />
@@ -1542,7 +1649,7 @@ export default function BulkCounterOfferModalTwo({
                                 );
                               }}
                               readOnly
-                              disabled={true}
+                              disabled
                             />
                           </td>
                         </tr>
@@ -2134,7 +2241,7 @@ export default function BulkCounterOfferModalTwo({
                                 item.id,
                                 "inclusive",
                                 e.target.checked,
-                                "deduction" // Pass either "addition" or "deduction"
+                                "deduction"
                               )
                             }
                           />
