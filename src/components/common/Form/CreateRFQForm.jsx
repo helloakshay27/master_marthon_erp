@@ -1295,18 +1295,7 @@ export default function CreateRFQForm({
                 label={"Select Template"}
                 options={templateOptions}
                 onChange={handleTemplateChange}
-                defaultValue={selectedTemplate} // Set value instead of defaultValue
-              />
-            </div>
-            <div className="col-md-3">
-              <label htmlFor="">
-                MOR Number
-              </label>
-              <input 
-              className="form-control"
-              type="text"
-              value={morNumber}
-              disabled={true}
+                defaultValue={selectedTemplate}
               />
             </div>
             {isMorChecked && (
@@ -1319,7 +1308,6 @@ export default function CreateRFQForm({
                 />
               </div>
             )}
-
             {isMor && (
               <div className="col-md-2 d-flex align-items-center">
                 <input
@@ -1495,7 +1483,7 @@ export default function CreateRFQForm({
                       <div className="col-md-8 col-sm-12 d-flex gap-3">
                         <div className="flex-grow-1">
                           <SelectBox
-                            label={"Select Material Type"}
+                            label={"Material Type"}
                             options={sectionOptions}
                             defaultValue={
                               section?.sectionData?.some((row) => row?._destroy)
@@ -1512,7 +1500,7 @@ export default function CreateRFQForm({
                         </div>
                         <div className="flex-grow-1">
                           <SelectBox
-                            label={"Select Sub Material Type"}
+                            label={"Sub Material Type"}
                             options={subSectionOptions}
                             defaultValue={
                               subSectionOptions?.find(
@@ -1544,6 +1532,33 @@ export default function CreateRFQForm({
                                 );
                               setSections(updatedSections);
                             }}
+                          />
+                        </div>
+                        {/* MOR Number input right to Location and Sub Material Type */}
+                        <div className="flex-grow-1">
+                          <label htmlFor="">
+                            MOR Number
+                          </label>
+                          <input
+                            className="form-control"
+                            type="text"
+                            value={
+                              (() => {
+                                if (existingData && typeof existingData === "object") {
+                                  for (const materialType of Object.keys(existingData)) {
+                                    const subMaterials = existingData[materialType];
+                                    for (const subType of Object.keys(subMaterials)) {
+                                      const arr = subMaterials[subType];
+                                      if (Array.isArray(arr) && arr.length > 0 && arr[0].mor_no) {
+                                        return arr[0].mor_no;
+                                      }
+                                    }
+                                  }
+                                }
+                                return "";
+                              })()
+                            }
+                            disabled={true}
                           />
                         </div>
                       </div>
