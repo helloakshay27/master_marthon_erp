@@ -6,6 +6,7 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import "../styles/mor.css";
 import { useNavigate } from "react-router-dom";
+import { baseURL } from "../confi/apiDomain";
 
 const RuleEngineCreate = () => {
     const navigate = useNavigate();
@@ -74,7 +75,7 @@ const RuleEngineCreate = () => {
     // Fetch master attribute options on mount
     useEffect(() => {
         axios
-            .get("https://marathon.lockated.com/rule_engine/available_models.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414")
+            .get(`${baseURL}rule_engine/available_models.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
             .then((response) => {
                 // Assuming response.data is an array of objects with 'id' and 'name'
                 const options = response.data.map(item => ({
@@ -94,7 +95,7 @@ const RuleEngineCreate = () => {
 
         if (selectedValue) {
             axios
-                .get(`https://marathon.lockated.com/rule_engine/available_attributes.json?q[available_model_id_eq]=${selectedValue}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+                .get(`${baseURL}rule_engine/available_attributes.json?q[available_model_id_eq]=${selectedValue}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
                 .then((response) => {
                     const options = response.data.map(item => ({
                         value: toSnakeCase(item.display_name),
@@ -128,7 +129,7 @@ const RuleEngineCreate = () => {
     // Fetch Master Reward Outcome options on mount
     useEffect(() => {
         axios
-            .get("https://marathon.lockated.com/rule_engine/available_functions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414")
+            .get(`${baseURL}rule_engine/available_functions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
             .then((response) => {
                 // Assuming response.data is an array of objects with 'id' and 'display_name'
                 const options = response.data.map(item => ({
@@ -146,7 +147,7 @@ const RuleEngineCreate = () => {
     useEffect(() => {
         if (masterRewardOutcome) {
             axios
-                .get(`https://marathon.lockated.com/rule_engine/available_functions.json?q[available_model_id]=${masterRewardOutcome}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+                .get(`${baseURL}rule_engine/available_functions.json?q[available_model_id]=${masterRewardOutcome}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
                 .then((response) => {
                     const options = response.data.map(item => ({
                         value: item.id,
@@ -168,7 +169,7 @@ const RuleEngineCreate = () => {
     // Fetch master operator options on mount
     useEffect(() => {
         axios
-            .get("https://marathon.lockated.com/rule_engine/conditions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414")
+            .get(`${baseURL}rule_engine/conditions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
             .then((response) => {
                 // Filter out unique master_operator values and ignore null/empty
                 const operators = response.data
@@ -195,7 +196,7 @@ const RuleEngineCreate = () => {
             const selectedOperator = masterOperatorOptions.find(op => op.value === selectedValue);
             if (selectedOperator) {
                 axios
-                    .get(`https://marathon.lockated.com/rule_engine/conditions.json?q[rule_id]=${selectedValue}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+                    .get(`${baseURL}rule_engine/conditions.json?q[rule_id]=${selectedValue}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
                     .then((response) => {
                         // Map sub operators from response (assuming 'operator' field)
                         const options = response.data
@@ -234,7 +235,7 @@ const RuleEngineCreate = () => {
 
     const rule_engine_conditions_attributes = conditions.map(cond => ({
         ...cond,
-         condition_selected_model: Number(cond.condition_selected_model),
+        condition_selected_model: Number(cond.condition_selected_model),
         // compare_value: cond.compare_value !== "" && !isNaN(cond.compare_value)
         // ? Number(cond.compare_value)
         // : cond.compare_value
@@ -254,7 +255,7 @@ const RuleEngineCreate = () => {
         rule_engine_available_function_id: Number(masterRewardOutcome),
         action_selected_model: Number(subRewardOutcome)
     }));
-// console.log("sub reward:",subRewardOutcome)
+    // console.log("sub reward:",subRewardOutcome)
 
     const payload = {
         rule_engine_rule: {
@@ -317,7 +318,7 @@ const RuleEngineCreate = () => {
         // Send payload to API here
         try {
             const response = await axios.post(
-                "https://marathon.lockated.com/rule_engine/rules.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+                `${baseURL}rule_engine/rules.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
                 payload
             );
             // Handle success (show message, redirect, etc.)
@@ -628,9 +629,15 @@ const RuleEngineCreate = () => {
                                             <SingleSelector
                                                 options={masterRewardOptions}
                                                 value={masterRewardOptions.find(opt => opt.value === masterRewardOutcome)}
-                                                onChange={selected =>
-                                                    setMasterRewardOutcome(selected ? selected.value : "")
-                                                }
+                                                // onChange={selected =>
+                                                //     setMasterRewardOutcome(selected ? selected.value : "");
+                                                //     setSubRewardOutcome("");
+                                                // }
+
+                                                onChange={selected => {
+                                                    setMasterRewardOutcome(selected ? selected.value : "");
+                                                    setSubRewardOutcome(""); // <-- Reset sub reward when master changes
+                                                }}
                                                 placeholder={`Select  Master Reward Outcome`}
                                             />
                                             {thenError.masterRewardOutcome && (

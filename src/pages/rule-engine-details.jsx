@@ -18,12 +18,13 @@ const RuleEngineDetails = () => {
     const [ruleData, setRuleData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+   
 
     useEffect(() => {
         const fetchRuleData = async () => {
             try {
                 const response = await axios.get(
-                    `https://marathon.lockated.com/rule_engine/rules/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                    `${baseURL}rule_engine/rules/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
                 );
                 setRuleData(response.data);
                 setLoading(false);
@@ -37,10 +38,6 @@ const RuleEngineDetails = () => {
         fetchRuleData();
     }, [id]);
 
-
-
-
-
     function toTitleCaseFromSnake(str) {
         if (!str) return "";
         return str
@@ -49,69 +46,47 @@ const RuleEngineDetails = () => {
             .replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
     }
 
-    const staticRuleData = {
-        id: 8,
-        name: "rule test",
-        active: true,
-        created_at: "2025-05-28T16:46:14.752+05:30",
-        conditions: [
-            {
-                id: 10,
-                condition_attribute: "refferal_code",
-                operator: "greater_than",
-                compare_value: "100",
-                action_type: "created",
-                condition_selected_model: null,
-                condition_type: "",
-                master_operator: "Common Operator1",
-                model_name: "No applicable model"
-            },
-            {
-                id: 11,
-                condition_attribute: "user_type",
-                operator: "greater_than",
-                compare_value: "200",
-                action_type: "created",
-                condition_selected_model: null,
-                condition_type: "AND",
-                master_operator: "Common Operator1",
-                model_name: "No applicable model"
-            },
-            {
-                id: 12,
-                condition_attribute: "refferal_code",
-                operator: "greater_than",
-                compare_value: "300",
-                action_type: "created",
-                condition_selected_model: null,
-                condition_type: "OR",
-                master_operator: "Common Operator1",
-                model_name: "No applicable model"
-            }
-        ],
-        actions: [
-            {
-                id: 9,
-                lock_model_name: "refferal_code",
-                action_method: "calculate_loyalty_points",
-                parameters: null
-            },
-            {
-                id: 10,
-                lock_model_name: "user_type",
-                action_method: "calculate_loyalty_points",
-                parameters: null
-            },
-            {
-                id: 11,
-                lock_model_name: "refferal_code",
-                action_method: "calculate_loyalty_points",
-                parameters: null
-            }
-        ]
-    };
-    // const ruleData = staticRuleData;
+    // Add these states at the top of your component
+    const [masterRewardOptions, setMasterRewardOptions] = useState({});
+    const [subRewardMapping, setSubRewardMapping] = useState({});
 
+    // Add this useEffect to fetch and store the mappings
+    useEffect(() => {
+        // Fetch master reward options
+        axios
+            .get(
+                `${baseURL}rule_engine/available_functions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            )
+            .then((response) => {
+                // Create mapping of id to display_name
+                const mapping = {};
+                response.data.forEach((item) => {
+                    mapping[item.id] = {
+                        name: item.display_name,
+                        subOptions: {},
+                    };
+                    // Fetch sub-options for each master option
+                    axios
+                        .get(
+                            `${baseURL}rule_engine/available_functions.json?q[available_model_id]=${item.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                        )
+                        .then((subResponse) => {
+                            const subMapping = {};
+                            subResponse.data.forEach((subItem) => {
+                                subMapping[subItem.id] = subItem.display_name;
+                            });
+                            setSubRewardMapping((prev) => ({
+                                ...prev,
+                                [item.id]: subMapping,
+                            }));
+                        });
+                });
+                setMasterRewardOptions(mapping);
+            })
+            .catch((error) => {
+                console.error("Error fetching reward mappings:", error);
+            });
+    }, []);
 
     return (
         <>
@@ -139,28 +114,6 @@ const RuleEngineDetails = () => {
                                                                 </label>
                                                             </div>
                                                         </div>
-                                                        {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                              <div className="col-6 ">
-                                <label>Status</label>
-                              </div>
-                              <div className="col-6">
-                                <label className="text">
-                                  <span className="me-3"><span className="text-dark">:</span></span>
-                                  {ruleData.active ? "Active" : "Inactive"}
-                                </label>
-                              </div>
-                            </div> */}
-                                                        {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                              <div className="col-6 ">
-                                <label>Created At</label>
-                              </div>
-                              <div className="col-6">
-                                <label className="text">
-                                  <span className="me-3"><span className="text-dark">:</span></span>
-                                  {ruleData.created_at ? new Date(ruleData.created_at).toLocaleString() : "-"}
-                                </label>
-                              </div>
-                            </div> */}
                                                     </div>
                                                 </div>
                                             </div>
@@ -178,7 +131,7 @@ const RuleEngineDetails = () => {
                                                             </div>
                                                             <div className="col-lg-4 col-md-6 col-sm-12 row px-3">
                                                                 <div className="col-6"><label>Master Attribute</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>{condition.model_name||"-"}</label></div>
+                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>{condition.model_name || "-"}</label></div>
                                                             </div>
                                                             <div className="col-lg-4 col-md-6 col-sm-12 row px-3">
                                                                 <div className="col-6"><label>Sub Attribute</label></div>
@@ -196,11 +149,6 @@ const RuleEngineDetails = () => {
                                                                 <div className="col-6"><label>Value</label></div>
                                                                 <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>{condition.compare_value || "-"}</label></div>
                                                             </div>
-                                                            {/* <div className="col-lg-4 col-md-6 col-sm-12 row px-3">
-                                <div className="col-6"><label>Action Type</label></div>
-                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>{toTitleCaseFromSnake(condition.action_type) || "-"}</label></div>
-                              </div> */}
-
                                                             <div className="col-lg-4 col-md-6 col-sm-12 row px-3">
                                                                 <div className="col-6"><label>Condition Type</label></div>
                                                                 <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>{condition.condition_type || "-"}</label></div>
@@ -233,7 +181,12 @@ const RuleEngineDetails = () => {
                                                                 <div className="col-6">
                                                                     <label className="text">
                                                                         <span className="me-3"><span className="text-dark">:</span></span>
-                                                                        {"-"}
+                                                                       
+                                                                        {(ruleData.actions[0].action_selected_model &&
+                                                                            subRewardMapping[
+                                                                            ruleData.actions[0].rule_engine_available_function_id
+                                                                            ]?.[ruleData.actions[0].action_selected_model]) ||
+                                                                            ruleData.actions[0].action_selected_model}
                                                                     </label>
                                                                 </div>
                                                             </div>
@@ -251,8 +204,6 @@ const RuleEngineDetails = () => {
                                                 </div>
                                             </div>
                                         </div>
-
-
                                     </section>
                                 </div>
                             </div>

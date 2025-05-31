@@ -21,6 +21,7 @@ export default function CreateRFQForm({
   updateAdditionalFields, // Rename this prop
   isMor,
   isMorSelected,
+  morNumber
 }) {
   const [materials, setMaterials] = useState([]);
   const [sections, setSections] = useState([
@@ -869,7 +870,7 @@ export default function CreateRFQForm({
       { label: "Brand", key: "pms_brand_id" }, // Add brand column
       { label: "Colour", key: "pms_colour_id" }, // Add PMS Colour column
       { label: "Generic Info", key: "generic_info_id" }, // Add Generic Info column
-      { label: "Location", key: "location" },
+      // { label: "Location", key: "location" }, // REMOVE location column
       { label: "Rate", key: "rate" },
       { label: "Amount", key: "amount" },
       { label: "Actions", key: "actions" },
@@ -936,16 +937,6 @@ export default function CreateRFQForm({
       return (
         <SelectBox
           options={uomOptions}
-          value={fieldValue}
-          onChange={(value) => handleFieldChange(value)}
-        />
-      );
-    }
-
-    if (field.field_name === "location") {
-      return (
-        <SelectBox
-          options={locationOptions}
           value={fieldValue}
           onChange={(value) => handleFieldChange(value)}
         />
@@ -1072,25 +1063,6 @@ export default function CreateRFQForm({
           disabled={isDisabled}
           // className={disabledClass}
         />
-      );
-    }
-
-    if (fieldName === "location") {
-      return (
-        <>
-          <SelectBox
-            options={locationOptions}
-            defaultValue={
-              locationOptions.find((option) => option.label === fieldValue)
-                ?.value || fieldValue
-            }
-            onChange={(value) =>
-              handleInputChange(value, rowIndex, fieldName, sectionIndex)
-            }
-            disabled={isDisabled}
-            // className={disabledClass}
-          />
-        </>
       );
     }
 
@@ -1317,13 +1289,24 @@ export default function CreateRFQForm({
           </h3>
         </div>
         <div className="d-flex justify-content-between px-3 py-3">
-          <div className="d-flex w-100 gap-3">
+          <div className="d-flex w-100 gap-3 mt-3">
             <div className="col-md-3">
               <SelectBox
                 label={"Select Template"}
                 options={templateOptions}
                 onChange={handleTemplateChange}
                 defaultValue={selectedTemplate} // Set value instead of defaultValue
+              />
+            </div>
+            <div className="col-md-3">
+              <label htmlFor="">
+                MOR Number
+              </label>
+              <input 
+              className="form-control"
+              type="text"
+              value={morNumber}
+              disabled={true}
               />
             </div>
             {isMorChecked && (
@@ -1399,14 +1382,6 @@ export default function CreateRFQForm({
                     />
                   ),
                   type: (cell, rowIndex) => (
-                    <input
-                      className="form-control"
-                      type="text"
-                      value={cell}
-                      disabled
-                    />
-                  ),
-                  location: (cell, rowIndex) => (
                     <input
                       className="form-control"
                       type="text"
@@ -1547,6 +1522,28 @@ export default function CreateRFQForm({
                             onChange={(selected) =>
                               handleSubSectionChange(selected, sectionIndex)
                             }
+                          />
+                        </div>
+                        {/* Location SelectBox always visible to the right */}
+                        <div className="flex-grow-1">
+                          <SelectBox
+                            label={"Location"}
+                            options={locationOptions}
+                            defaultValue={
+                              section?.sectionData?.[0]?.location || ""
+                            }
+                            onChange={(value) => {
+                              // Update location for all rows in this section
+                              const updatedSections = [...sections];
+                              updatedSections[sectionIndex].sectionData =
+                                updatedSections[sectionIndex].sectionData.map(
+                                  (row) => ({
+                                    ...row,
+                                    location: value,
+                                  })
+                                );
+                              setSections(updatedSections);
+                            }}
                           />
                         </div>
                       </div>
@@ -1995,23 +1992,6 @@ export default function CreateRFQForm({
                                 handleUnitChange(value, rowIndex, sectionIndex)
                               }
                               value={section?.sectionData[rowIndex]?.unit || ""}
-                            />
-                          );
-                        },
-                        location: (cell, rowIndex) => {
-                          return (
-                            <SelectBox
-                              options={locationOptions}
-                              onChange={(value) =>
-                                handleLocationChange(
-                                  value,
-                                  rowIndex,
-                                  sectionIndex
-                                )
-                              }
-                              value={
-                                section?.sectionData[rowIndex]?.location || ""
-                              }
                             />
                           );
                         },

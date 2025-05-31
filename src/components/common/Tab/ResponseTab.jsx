@@ -1533,74 +1533,90 @@ export default function ResponseTab({ isCounterOffer }) {
       </DynamicModalBox>
 
       <DynamicModalBox
-        show={showCounterOfferPopup}
-        onHide={() => setShowCounterOfferPopup(false)} // Close popup
-        size="md"
-        title="Revise Offer Details"
-        footerButtons={[
-          {
-            label: "Decline",
-            onClick: () => {
-              const pendingBid = materialData?.bids_values?.find(
-                (bid) => bid.status === "pending"
-              );
-              if (pendingBid && pendingBid.id) {
-                console.log("pendingBid:---", pendingBid);
+  show={true}
+  onHide={() => setShowCounterOfferPopup(false)} // Close popup
+  size="lg"
+  title="Revise Offer Details"
+  footerButtons={[
+    {
+      label: "Decline",
+      onClick: () => {
+        const pendingBid = materialData?.bids_values?.find(
+          (bid) => bid.status === "pending"
+        );
+        if (pendingBid && pendingBid.id) {
+          console.log("pendingBid:---", pendingBid);
 
-                acceptOffer(
-                  pendingBid.id,
-                  pendingBid.original_bid_id,
-                  "rejected"
-                );
-              }
-            },
-            props: { className: "purple-btn1" },
-          },
-          {
-            label: "Accept Offer",
-            onClick: () => {
-              const pendingBid = materialData?.bids_values?.find(
-                (bid) => bid.status === "pending"
-              );
-              {
-                console.log("pendingBid:---", pendingBid);
-              }
+          acceptOffer(
+            pendingBid.id,
+            pendingBid.original_bid_id,
+            "rejected"
+          );
+        }
+      },
+      props: { className: "purple-btn1" },
+    },
+    {
+      label: "Accept Offer",
+      onClick: () => {
+        const pendingBid = materialData?.bids_values?.find(
+          (bid) => bid.status === "pending"
+        );
+        {
+          console.log("pendingBid:---", pendingBid);
+        }
 
-              if (pendingBid && pendingBid.id) {
-                acceptOffer(
-                  pendingBid.id,
-                  pendingBid.original_bid_id,
-                  "accepted"
-                );
-              } else {
-                toast.error("No pending bid found to accept.");
-              }
-            },
-            props: { className: "purple-btn2" },
-          },
-        ]}
-        centered={true}
-      >
-        {isLoadingOffer ? (
-          <div className="loader-container">
-            <div className="lds-ring">
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-            </div>
-            <p>Loading...</p>
-          </div>
-        ) : (
-          <div>
-            <p>{`Revise Offer for ${materialData?.material_name} of ${materialData?.vendor_name}`}</p>
-            <p>
-              A Revise is pending on your bid. You cannot make any further
-              changes to your bid until you resolve the revise offer.
-            </p>
-          </div>
-        )}
-      </DynamicModalBox>
+        if (pendingBid && pendingBid.id) {
+          acceptOffer(
+            pendingBid.id,
+            pendingBid.original_bid_id,
+            "accepted"
+          );
+        } else {
+          toast.error("No pending bid found to accept.");
+        }
+      },
+      props: { className: "purple-btn2" },
+    },
+  ]}
+  centered={true}
+>
+  {isLoadingOffer ? (
+    <div className="loader-container">
+      <div className="lds-ring">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      <p>Loading...</p>
+    </div>
+  ) : (
+    <div
+      className="d-flex align-items-center p-3 rounded-3"
+      style={{
+        background: "linear-gradient(90deg, #fff3cd 0%, #ffeeba 100%)",
+        border: "2px solid #ffc107",
+        color: "#856404",
+        boxShadow: "0 2px 8px rgba(255,193,7,0.15)",
+      }}
+    >
+      <i
+        className="bi bi-exclamation-triangle-fill me-3"
+        style={{ fontSize: 32, color: "#856404" }}
+      />
+      <div>
+        <p style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: 4 }}>
+          {`Revise Offer for ${materialData?.material_name} of ${materialData?.vendor_name}`}
+        </p>
+        <p style={{ marginBottom: 0 }}>
+          A Revise is pending on your bid. You cannot make any further
+          changes to your bid until you resolve the revise offer.
+        </p>
+      </div>
+    </div>
+  )}
+</DynamicModalBox>
 
       <DynamicModalBox
         show={showChargesTaxModal}

@@ -89,6 +89,7 @@ export default function EditEvent() {
   const [selectedRows, setSelectedRows] = useState([]);
   const [eventNo, setEventNo] = useState("");
   const [eventName, seteventName] = useState("");
+  const [eventNumber, seteventNumber] = useState("");
   const [textareaId, setTextareaId] = useState(0);
   const [textareas, setTextareas] = useState([{ id: Date.now(), value: "" }]);
   const documentRowsRef = useRef([{ srNo: 1, upload: null }]);
@@ -442,6 +443,7 @@ export default function EditEvent() {
   useEffect(() => {
     if (eventDetails) {
       seteventName(eventDetails?.event_title);
+      seteventNumber(eventDetails?.event_no);
       setSelectedTemplate(eventDetails?.applied_event_template?.event_template_id);
       setEventStatus(eventDetails?.status);
       setEventTypeText(eventDetails?.event_type_detail?.event_type);
@@ -1469,16 +1471,15 @@ export default function EditEvent() {
                 <div className="col-md-4 col-sm-6 mt-0 mb-2">
                   <div className="form-group">
                     <label className="po-fontBold">
-                      Event Type <span style={{ color: "red" }}>*</span>
+                      Event Number <span style={{ color: "red" }}>*</span>
                     </label>
                   </div>
                   <input
                     className="form-control"
-                    style={{ textTransform: "uppercase" }}
-                    onClick={handleEventTypeModalShow}
-                    placeholder="Configure The Event"
-                    value={eventTypeText}
-                    readOnly
+                    placeholder="Enter Event Name"
+                    value={eventNumber}
+                    onChange={(e) => seteventName(e.target.value)}
+                    disabled
                   />
                 </div>
                 <div className="col-md-4 col-sm-6 mt-0 mb-2">
@@ -1493,6 +1494,22 @@ export default function EditEvent() {
                     />
                   </div>
                 </div>
+                <div className="col-md-4 col-sm-6 mt-0 mb-2">
+                  <div className="form-group">
+                    <label className="po-fontBold">
+                      Event Type <span style={{ color: "red" }}>*</span>
+                    </label>
+                  </div>
+                  <input
+                    className="form-control"
+                    style={{ textTransform: "uppercase" }}
+                    onClick={handleEventTypeModalShow}
+                    placeholder="Configure The Event"
+                    value={eventTypeText}
+                    readOnly
+                  />
+                </div>
+                
                 <div className="col-md-4 col-sm-6 mt-2">
                   <div className="form-group">
                     <label className="po-fontBold">
@@ -1553,6 +1570,7 @@ export default function EditEvent() {
                 updateBidTemplateFields={setBidTemplateFields}
                 updateAdditionalFields={setAdditionalFields}
                 isMor={false}
+                morNumber={eventDetails?.event_title}
               />
               <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
                 <h5 className=" ">
