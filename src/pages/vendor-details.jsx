@@ -896,22 +896,22 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
           
           // Map the row data
           const rowData = {
-            pmsBrand: item.pms_brand_name,
-            pmsColour: item.pms_colour_name,
-            genericInfo: item.generic_info_name,
-            eventMaterialId: item.id,
-            descriptionOfItem: item.inventory_name,
-            quantity: item.quantity,
-            quantityAvail: bidMaterial?.quantity_available || "", // Placeholder for user input
-            unit: item.uom_name || item.unit || item.uom_short_name || item.uom,
-            location: item.location,
-            rate: item.rate || "", // Placeholder if rate is not available
-            section: item.material_type,
-            subSection: item.inventory_sub_type,
-            amount: item.amount,
-            totalAmt: bidMaterial?.total_amount || "", // Placeholder for calculated total amount
-            attachment: null, // Placeholder for attachment
-            varient: item.material_type, // Use extracted material_type
+            pmsBrand: item.pms_brand_name || "-",
+            pmsColour: item.pms_colour_name || "-",
+            genericInfo: item.generic_info_name || "-",
+            eventMaterialId: item.id || "-",
+            descriptionOfItem: item.inventory_name || "-",
+            quantity: item.quantity || "-",
+            quantityAvail: bidMaterial?.quantity_available || "" || "-", // Placeholder for user input
+            unit: item.uom_name || item.unit || item.uom_short_name || item.uom || "-",
+            location: item.location || "-",
+            rate: item.rate || "" || "-", // Placeholder if rate is not available
+            section: item.material_type || "-",
+            subSection: item.inventory_sub_type || "-",
+            amount: item.amount || "-",
+            totalAmt: bidMaterial?.total_amount || "" || "-", // Placeholder for calculated total amount
+            attachment: null || "-", // Placeholder for attachment
+            varient: item.material_type || "-", // Use extracted material_type
             extra_data: flatExtraData,
             revised_bid: initialResponse.data?.revised_bid, // Placeholder for bid ID
           };
