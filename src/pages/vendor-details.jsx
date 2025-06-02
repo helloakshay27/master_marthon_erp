@@ -3308,7 +3308,7 @@ useEffect(() => {
                       </div>
 
                       <div className="d-flex justify-content-end mt-2 mx-2">
-                        <h4>Sum Total: ₹{grossTotal2}</h4>
+                        <h4>Sum Total: ₹{Number(grossTotal2).toFixed(2)}</h4>
                       </div>
                     </div>
                   </div>
