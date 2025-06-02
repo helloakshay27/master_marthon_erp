@@ -4805,7 +4805,7 @@ useEffect(() => {
                       </div>
                     </div>
 
-                    {/* {counterData > 0 && ( */}
+                    {counterData > 0 && (
                       <div
   className="d-flex justify-content-between align-items-center mx-3 p-3 rounded-3"
   style={{
@@ -4842,7 +4842,7 @@ useEffect(() => {
     </button>
   </div>
 </div>
-                    {/* )}  */}
+                     )} 
 
                     <div className="card-body">
                       <div style={tableContainerStyle}>
