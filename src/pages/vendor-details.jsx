@@ -892,7 +892,8 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
             {}
           );
           const bidMaterial = item.bid_materials?.[0];
-
+          console.log("item:-",item);
+          
           // Map the row data
           const rowData = {
             pmsBrand: item.pms_brand_name,
@@ -902,7 +903,7 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
             descriptionOfItem: item.inventory_name,
             quantity: item.quantity,
             quantityAvail: bidMaterial?.quantity_available || "", // Placeholder for user input
-            unit: item.uom_name || item.unit,
+            unit: item.uom_name || item.unit || item.uom_short_name,
             location: item.location,
             rate: item.rate || "", // Placeholder if rate is not available
             section: item.material_type,
