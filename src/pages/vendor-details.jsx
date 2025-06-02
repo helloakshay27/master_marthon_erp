@@ -26,6 +26,7 @@ export default function VendorDetails() {
   // Set the initial bid index to 0 (first bid in the array)
   const effectRan = useRef(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [bidIdForCounter, setBidIdForCounter] = useState(0);
   const [bids, setBids] = useState([]); // State to store the bids
   const [isBid, setIsBid] = useState(false);
   const [allBids, setAllBids] = useState([]);
@@ -892,7 +893,6 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
             {}
           );
           const bidMaterial = item.bid_materials?.[0];
-          console.log("item:-",item);
           
           // Map the row data
           const rowData = {
@@ -1011,10 +1011,12 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
           bidResponse.data?.bids[currentIndex]?.counter_bids.length
         );
         setCounterId(
-          bidResponse.data?.bids[currentIndex]?.counter_bids[currentIndex]?.id
+          bidResponse.data?.bids[currentIndex]?.counter_bids[0]?.id
         );
         console.log("bidResponse.data.bids", bidResponse.data.bids[currentIndex].id);
-        
+        if(bidResponse.data?.bids[currentIndex]?.counter_bids.length > 0){
+          setBidIdForCounter(bidResponse.data.bids[currentIndex].id);
+        }
         setBidIds(bidResponse.data.bids[currentIndex].id);
 
         // const bids = bidResponse.data.bids;
@@ -1051,10 +1053,15 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
     const bid = allBids[currentIndex];
     if (!bid) return;
 
-    const counterBid = bid.counter_bids?.[currentIndex];
+    const counterBid = bid.counter_bids?.[0];
 
     setCounterData(bid.counter_bids?.length || 0);
     setCounterId(counterBid?.id || "");
+    if(bid?.counter_bids.length > 0){
+          // console.log("njnj", bid)
+          setBidIdForCounter(bid?.id);
+          // console.log("bidIdForCounter", bidIdForCounter);
+        }
     setGrossTotal(bid.gross_total || "");
 
     // Process freightData
@@ -1482,10 +1489,14 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
       }, 1000);
     } catch (error) {
       console.error("Error submitting bid:", error);
-      toast.error("Failed to create bid. Please try again.", {
-        // position: toast.POSITION.TOP_CENTER,
+      toast.error(
+      !vendorId || vendorId === "" || vendorId === "null" || vendorId === "undefined"
+        ? "No vendor has been selected."
+        : "Failed to create bid. Please try again.",
+      {
         autoClose: 1000,
-      });
+      }
+    );
     } finally {
       setLoading(false);
       setSubmitted(false);
@@ -1497,6 +1508,16 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
   const handleReviseBid = async () => {
     setLoading(true);
     setSubmitted(true);
+
+    // Check for vendorId before proceeding
+  if (!vendorId || vendorId === "" || vendorId === "null" || vendorId === "undefined") {
+    toast.error("No vendor has been selected.", {
+      autoClose: 1000,
+    });
+    setLoading(false);
+    setSubmitted(false);
+    return;
+  }
 
     const userConfirmed = window.confirm(
       "Are you sure you want to revise this bid?"
@@ -1841,7 +1862,7 @@ const [orderConfigOpen, setOrderConfigOpen] = useState(false); // for collapse
     const payload = { status: "rejected" };
     try {
       const response = await fetch(
-        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}/rfq/events/${eventId}/bids/${bidIdForCounter}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         {
           method: "POST",
           headers: {
@@ -1951,7 +1972,7 @@ const [orderConfigOpen, setOrderConfigOpen] = useState(false); // for collapse
     try {
       // API call to update status
       const response = await fetch(
-        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}/rfq/events/${eventId}/bids/${bidIdForCounter}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
