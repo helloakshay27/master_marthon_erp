@@ -49,6 +49,7 @@ export default function VendorDetails() {
 const [openDynamicRows, setOpenDynamicRows] = useState({});
 const [openAttachmentsRows, setOpenAttachmentsRows] = useState({});
 const [sectionOptions, setSectionOptions] = useState([]); // To store section options
+  // const [offerLoading, setOfferLoading] = useState(false);
 
   const [terms, setTerms] = useState([]); // To store terms and
   const [shortTableData, setShortTableData] = useState({});
@@ -999,6 +1000,7 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
         setBidTemplate(formattedData);
 
         setData(processedData);
+        console.log("Processed Data:", processedData);
       } else {
         // Step 2: Fetch the bid data if `revised_bid` is true
         const bidResponse = await axios.get(
@@ -1010,6 +1012,8 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
         setCounterId(
           bidResponse.data?.bids[currentIndex]?.counter_bids[currentIndex]?.id
         );
+        console.log("bidResponse.data.bids", bidResponse.data.bids[currentIndex].id);
+        
         setBidIds(bidResponse.data.bids[currentIndex].id);
 
         // const bids = bidResponse.data.bids;
@@ -1832,6 +1836,7 @@ const [orderConfigOpen, setOrderConfigOpen] = useState(false); // for collapse
   };
 
   const handleDecline = async () => {
+    setLoading(true);
     const payload = { status: "rejected" };
     try {
       const response = await fetch(
@@ -1930,14 +1935,18 @@ const [orderConfigOpen, setOrderConfigOpen] = useState(false); // for collapse
       }
     } catch (error) {
       console.error("Error declining counter offer:", error);
+    } finally{
+      setLoading(false);
     }
   };
 
   const handleAccept = async () => {
+    setLoading(true);
     const payload = { status: "accepted" };
 
     // console.log("Payload being sent:", payload);
-
+    console.log("Event ID:", eventId, "Bid IDs:", bidIds, "Counter ID:", counterId);
+    
     try {
       // API call to update status
       const response = await fetch(
@@ -2042,6 +2051,8 @@ const [orderConfigOpen, setOrderConfigOpen] = useState(false); // for collapse
       }
     } catch (error) {
       console.error("Error during API call:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -4808,6 +4819,7 @@ useEffect(() => {
     <p style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: 4 }}>
       <i className="bi bi-exclamation-triangle-fill me-2" style={{ color: "#856404" }} />
       Counter Offer
+
     </p>
     <p style={{ marginBottom: 0 }}>
       A counter is pending on your bid. You cannot make any
@@ -4819,20 +4831,18 @@ useEffect(() => {
     <button
       className="purple-btn1 me-2"
       onClick={handleDecline}
-      style={{ minWidth: 100 }}
     >
       Decline
     </button>
     <button
       className="purple-btn2"
       onClick={handleAccept}
-      style={{ minWidth: 120 }}
     >
       Accept Offer
     </button>
   </div>
 </div>
-                    {/* )} */}
+                    {/* )}  */}
 
                     <div className="card-body">
                       <div style={tableContainerStyle}>
@@ -6078,20 +6088,20 @@ useEffect(() => {
                       <h5 className="fw-bold head-material">
                         Terms and Conditions
                       </h5>
-                      <p className="head-material  text-muted ">
+                      <p className="head-material text-muted">
                         Please find below the terms and conditions associated
                         with the orders
                       </p>
-                      <ul
-                        className="head-material  "
-                        style={{ fontSize: "13px", marginLeft: "0px" }}
+                      <ol
+                        className="head-material"
+                        style={{ fontSize: "13px", marginLeft: "0px", paddingLeft:'10px !important' }}
                       >
                         {terms.map((term) => (
                           <li key={term.id} className="mb-3 mt-3">
                             {term.condition}
                           </li>
                         ))}
-                      </ul>
+                      </ol>
                     </div>
 
                     <div className=" d-flex justify-content-end">
@@ -6107,7 +6117,7 @@ useEffect(() => {
                             <div></div>
                             <div></div>
                           </div>
-                          <p>Submitting your bid...</p>
+                          <p>Loading...</p>
                         </div>
                       )}
 
