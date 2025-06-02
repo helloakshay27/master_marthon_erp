@@ -43,9 +43,7 @@ export default function VendorDetails() {
   const [taxOptions, setTaxOptions] = useState([]);
   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]);
   const [matchedTaxNamesArray, setMatchedTaxNamesArray] = useState([]);
-  const [matchedParentTaxNamesArray, setMatchedParentTaxNamesArray] = useState(
-    []
-  );
+  const [matchedParentTaxNamesArray, setMatchedParentTaxNamesArray] = useState([]);
   const [openDeliveryRows, setOpenDeliveryRows] = useState({});
 const [openDynamicRows, setOpenDynamicRows] = useState({});
 const [openAttachmentsRows, setOpenAttachmentsRows] = useState({});
@@ -65,6 +63,9 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
   const [specification, setSpecification] = useState(false);
   const [auditLogData, setAuditLogData] = useState([]);
   const [auditLog, setAuditLog] = useState(false);
+  const [activityLogAccordion, setActivityLogAccordion] = useState(false);
+    const [activityLogs, setActivityLogs] = useState([]);
+    const [activityLogsLoading, setActivityLogsLoading] = useState(false);
   const handledeliverySchedule = () => {
     setDeliverySchedule(!deliverySchedule);
   };
@@ -1688,6 +1689,20 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
       setSubmitted(false);
     }
   };
+
+  useEffect(() => {
+    if (!activityLogAccordion) return;
+    setActivityLogsLoading(true);
+    axios
+      .get(
+        `${baseURL}rfq/events/${eventId}/activity_logs?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      )
+      .then((res) => {
+        setActivityLogs(res.data.activity_logs || []);
+      })
+      .catch(() => setActivityLogs([]))
+      .finally(() => setActivityLogsLoading(false));
+  }, [activityLogAccordion, eventId]);
 
   useEffect(() => {
     if (!endTime) return;
@@ -4701,6 +4716,69 @@ useEffect(() => {
                             </div>
                           )}
                         </div>
+                        <div className="col-12 pb-4 pt-3"
+                        style={{
+                            // borderTop: "1px solid #ccc",
+                            borderBottom: "1px solid #ccc",
+                            // padding: "20px 0", // Optional padding to add spacing between content and borders
+                            paddingTop: "20px ",
+                            paddingBottom: "20px ",
+                          }}
+                        >
+          <a
+            className="btn"
+            data-bs-toggle="collapse"
+            href="#activity-logs"
+            role="button"
+            aria-expanded={activityLogAccordion}
+            aria-controls="activity-logs"
+            onClick={() => setActivityLogAccordion((prev) => !prev)}
+            style={{ fontSize: "16px", fontWeight: "normal" }}
+          >
+            <span id="activity-logs-icon" className="icon-1" style={{
+                                marginRight: "8px",
+                                border: "1px solid #dee2e6",
+                                paddingTop: "10px",
+                                paddingBottom: "10px",
+                                paddingLeft: "8px",
+                                paddingRight: "8px",
+                                fontSize: "12px",
+                              }}>
+              {activityLogAccordion ? (
+                <i className="bi bi-dash-lg"></i>
+              ) : (
+                <i className="bi bi-plus-lg"></i>
+              )}
+            </span>
+            Activity Logs
+          </a>
+          {activityLogAccordion && (
+            <div id="activity-logs" className="mx-5">
+              <div className="card card-body p-4">
+                {activityLogsLoading ? (
+                  <div>Loading...</div>
+                ) : activityLogs.length > 0 ? (
+                  <Table
+                    columns={[
+                      { label: "Activity Name", key: "activity_name" },
+                      { label: "Activity Type", key: "activity_type" },
+                      { label: "Created By", key: "created_by_name" },
+                      { label: "Created Date", key: "created_at" },
+                    ]}
+                    data={activityLogs.map((log, idx) => ({
+                      ...log,
+                      created_at: new Date(log.created_at).toLocaleString(),
+                    }))}
+                  />
+                ) : (
+                  <p className="text-center mt-4">
+                    No Activity Logs available for this event.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
                       </div>
                     </div>
                   </div>
