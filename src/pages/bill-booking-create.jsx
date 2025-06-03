@@ -2151,14 +2151,6 @@ const BillBookingCreate = () => {
                         className="form-control"
                         type="number"
                         value={getSelectedGRNsAllIncTax()}
-                        // value={formData.currentAdvanceDeduction}
-                        // onChange={(e) =>
-                        //   setFormData((prev) => ({
-                        //     ...prev,
-                        //     currentAdvanceDeduction: e.target.value,
-                        //   }))
-                        // all inclusive cost should be grn seleted all inclusive cost
-                        // }
                         placeholder="Enter advance deduction amount"
                         disabled
                       />
