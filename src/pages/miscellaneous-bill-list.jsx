@@ -100,7 +100,7 @@ const MiscellaneousBillList = () => {
             // );
             const response = await axios.get(url);
             console.log("res:",response.data)
-            const transformedData = response.data.map(
+            const transformedData = response.data.bills.map(
                 (entry, index) => {
                     // console.log("created_at raw:", entry.created_at);
                     let formattedDate = "-";
