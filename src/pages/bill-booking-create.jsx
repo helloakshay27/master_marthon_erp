@@ -384,35 +384,82 @@ const BillBookingCreate = () => {
   // ...existing imports...
   // Add this useEffect after your billEntryOptions and selectedBillEntry state
 
+  // useEffect(() => {
+  //   const fetchAndSelectBillEntry = async () => {
+  //     if (id) {
+  //       try {
+  //         // First fetch bill entry details
+  //         const response = await axios.get(
+  //           `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //         );
+
+  //         // Get bill entry options
+  //         const billEntryResponse = await axios.get(
+  //           `${baseURL}bill_bookings/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //         );
+
+  //         if (
+  //           billEntryResponse.data &&
+  //           Array.isArray(billEntryResponse.data.be_list)
+  //         ) {
+  //           setBillEntryOptions(
+  //             billEntryResponse.data.be_list.map((item) => ({
+  //               value: item.value,
+  //               label: item.name,
+  //             }))
+  //           );
+
+  //           // Find and set the matching bill entry option
+  //           const matchingEntry = billEntryResponse.data.be_list.find(
+  //             (item) => item.value === parseInt(id)
+  //           );
+  //           if (matchingEntry) {
+  //             setSelectedBillEntry({
+  //               value: matchingEntry.value,
+  //               label: matchingEntry.name,
+  //             });
+  //           }
+  //         }
+  //       } catch (error) {
+  //         console.error("Error fetching bill entry:", error);
+  //       }
+  //     }
+  //   };
+
+  //   fetchAndSelectBillEntry();
+  // }, [id]);
+
   useEffect(() => {
     const fetchAndSelectBillEntry = async () => {
-      if (id) {
-        try {
-          // First fetch bill entry details
-          const response = await axios.get(
-            `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      try {
+        // Always fetch bill entry options
+        const billEntryResponse = await axios.get(
+          `${baseURL}bill_bookings/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+
+        if (
+          billEntryResponse.data &&
+          Array.isArray(billEntryResponse.data.be_list)
+        ) {
+          setBillEntryOptions(
+            billEntryResponse.data.be_list.map((item) => ({
+              value: item.value,
+              label: item.name,
+            }))
           );
 
-          // Get bill entry options
-          const billEntryResponse = await axios.get(
-            `${baseURL}bill_bookings/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-          );
-
-          if (
-            billEntryResponse.data &&
-            Array.isArray(billEntryResponse.data.be_list)
-          ) {
-            setBillEntryOptions(
-              billEntryResponse.data.be_list.map((item) => ({
-                value: item.value,
-                label: item.name,
-              }))
+          // If ID is available, find and set the matching entry
+          if (id) {
+            // First fetch specific bill entry details
+            const response = await axios.get(
+              `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
             );
 
             // Find and set the matching bill entry option
             const matchingEntry = billEntryResponse.data.be_list.find(
               (item) => item.value === parseInt(id)
             );
+
             if (matchingEntry) {
               setSelectedBillEntry({
                 value: matchingEntry.value,
@@ -420,15 +467,16 @@ const BillBookingCreate = () => {
               });
             }
           }
-        } catch (error) {
-          console.error("Error fetching bill entry:", error);
         }
+      } catch (error) {
+        console.error("Error fetching bill entries:", error);
+        // Clear selected bill entry in case of error
+        setSelectedBillEntry(null);
       }
     };
 
     fetchAndSelectBillEntry();
   }, [id]);
-
   // Rest of your component code...
 
   useEffect(() => {
