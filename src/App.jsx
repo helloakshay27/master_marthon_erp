@@ -299,7 +299,7 @@ function App() {
             <Route path="/bill-booking-list" element={<BillBookingList />} />
 
             <Route
-              path="/bill-booking-create"
+              path="/bill-booking-create/:id"
               element={<BillBookingCreate />}
             />
             <Route
