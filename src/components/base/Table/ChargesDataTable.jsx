@@ -113,47 +113,91 @@ export default function ChargesDataTable({
   };
 
   const handleTaxChargeChange = (rowIndex, id, field, value) => {
-    const updatedData = { ...chargesTaxRate };
-    const targetRow = updatedData[rowIndex];
-    if (!targetRow) return;
+  const updatedData = { ...chargesTaxRate };
+  const targetRow = updatedData[rowIndex];
+  if (!targetRow) return;
 
-    const taxCharges = [...targetRow.taxes_and_charges];
-    const chargeIndex = taxCharges.findIndex((item) => item.id === id);
-    if (chargeIndex === -1) return;
+  const taxCharges = [...targetRow.taxes_and_charges];
+  const chargeIndex = taxCharges.findIndex((item) => item.id === id);
+  if (chargeIndex === -1) return;
 
-    const charge = { ...taxCharges[chargeIndex] };
+  const charge = { ...taxCharges[chargeIndex] };
 
-    if (field === "amount") {
-      charge.amount = value;
-      if (!charge.inclusive && targetRow.afterDiscountValue) {
-        const perUOM = (
-          (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
-          100
-        ).toFixed(2);
-        charge.percentage = perUOM;
+  if (field === "amount") {
+    charge.amount = value;
+    if (!charge.inclusive && targetRow.afterDiscountValue) {
+      const perUOM = (
+        (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
+        100
+      ).toFixed(2);
+      charge.percentage = perUOM;
+    }
+  } else {
+    charge[field] = value;
+  }
+
+  // Auto-add CGST if SGST is selected, or SGST if CGST is selected
+  if (
+    field === "resource_id" &&
+    (value === 18 || value === 19) // 18: SGST, 19: CGST (adjust IDs as per your data)
+  ) {
+    const otherType = value === 18 ? 19 : 18;
+    const otherExists = taxCharges.some((item) => item.resource_id === otherType && item.addition);
+    if (!otherExists) {
+      // Find the label for the other tax type
+      const otherOption = additionalTaxOptions.find((opt) => opt.value === otherType);
+      // Use the same percentage as the current charge, or empty
+      const samePercentage = charge.percentage || "";
+      const newRow = {
+        id: Date.now().toString() + "_" + otherType,
+        resource_id: otherType,
+        percentage: samePercentage,
+        inclusive: false,
+        amount: charge.amount,
+        addition: true,
+      };
+      taxCharges.push(newRow);
+    }
+  }
+
+  // Keep percentage in sync between SGST and CGST
+  if (
+    field === "percentage" &&
+    (charge.resource_id === 18 || charge.resource_id === 19)
+  ) {
+    const otherType = charge.resource_id === 18 ? 19 : 18;
+    const otherEntry = taxCharges.find((item) => item.resource_id === otherType && item.addition);
+    if (otherEntry) {
+      otherEntry.percentage = value;
+      if (!otherEntry.inclusive && targetRow.afterDiscountValue) {
+        const amount = calculateTaxAmount(
+          value,
+          targetRow.afterDiscountValue,
+          otherEntry.inclusive
+        );
+        otherEntry.amount = amount.toFixed(2);
       }
-    } else {
-      charge[field] = value;
     }
+  }
 
-    if (!charge.inclusive && field === "percentage") {
-      const taxAmount = calculateTaxAmount(
-        charge.percentage,
-        targetRow.afterDiscountValue,
-        charge.inclusive
-      );
-      charge.amount = taxAmount.toFixed(2);
-    }
+  if (!charge.inclusive && field === "percentage") {
+    const taxAmount = calculateTaxAmount(
+      charge.percentage,
+      targetRow.afterDiscountValue,
+      charge.inclusive
+    );
+    charge.amount = taxAmount.toFixed(2);
+  }
 
-    taxCharges[chargeIndex] = charge;
-    targetRow.taxes_and_charges = taxCharges;
-    updatedData[rowIndex] = targetRow;
+  taxCharges[chargeIndex] = charge;
+  targetRow.taxes_and_charges = taxCharges;
+  updatedData[rowIndex] = targetRow;
 
-    const recalculatedNetCost = calculateNetCost(rowIndex, updatedData);
-    updatedData[rowIndex].netCost = recalculatedNetCost;
+  const recalculatedNetCost = calculateNetCost(rowIndex, updatedData);
+  updatedData[rowIndex].netCost = recalculatedNetCost;
 
-    setChargesTaxRate(updatedData);
-  };
+  setChargesTaxRate(updatedData);
+};
 
   const handleSaveTaxChanges = () => {
     const updatedData = [...data];
