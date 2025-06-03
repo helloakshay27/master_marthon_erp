@@ -992,68 +992,102 @@ export default function BulkCounterOfferModalTwo({
   };
 
   const handleTaxChargeChange = (rowIndex, id, field, value, type) => {
-    // if (fromAllUpdateRef.current) {
-    //   // 🛑 Skip if last update was from bulk
-    //   fromAllUpdateRef.current = false;
-    //   return;
-    // }
+  const updatedData = structuredClone(taxRateData);
+  const originalData = structuredClone(originalTaxRateDataRef.current);
+  const targetRow = updatedData[rowIndex];
+  const originalRow = originalData[rowIndex];
+  if (!targetRow || !originalRow) return;
 
-    const updatedData = structuredClone(taxRateData);
-    const originalData = structuredClone(originalTaxRateDataRef.current);
-    const targetRow = updatedData[rowIndex];
-    const originalRow = originalData[rowIndex];
-    if (!targetRow || !originalRow) return;
+  const taxKey =
+    type === "addition"
+      ? "addition_bid_material_tax_details"
+      : "deduction_bid_material_tax_details";
 
-    const taxKey =
-      type === "addition"
-        ? "addition_bid_material_tax_details"
-        : "deduction_bid_material_tax_details";
+  const taxCharges = [...targetRow[taxKey]];
+  const chargeIndex = taxCharges.findIndex((item) => item.id === id);
+  if (chargeIndex === -1) return;
 
-    const taxCharges = [...targetRow[taxKey]];
-    const chargeIndex = taxCharges.findIndex((item) => item.id === id);
-    if (chargeIndex === -1) return;
+  const charge = { ...taxCharges[chargeIndex] };
 
-    const charge = { ...taxCharges[chargeIndex] };
+  if (field === "amount") {
+    charge.amount = value;
+    if (!charge.inclusive && targetRow.afterDiscountValue) {
+      const perUOM = (
+        (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
+        100
+      ).toFixed(2);
+      charge.taxChargePerUom = perUOM;
+    }
+  } else {
+    charge[field] = value;
+  }
 
-    if (field === "amount") {
-      charge.amount = value;
-      if (!charge.inclusive && targetRow.afterDiscountValue) {
-        const perUOM = (
-          (parseFloat(value) / parseFloat(targetRow.afterDiscountValue)) *
-          100
-        ).toFixed(2);
-        charge.taxChargePerUom = perUOM;
+  // Auto-add CGST if SGST is selected, or SGST if CGST is selected
+  if (
+    field === "taxChargeType" &&
+    type === "addition" &&
+    (value === "SGST" || value === "CGST")
+  ) {
+    const otherType = value === "SGST" ? "CGST" : "SGST";
+    const otherExists = taxCharges.some((item) => item.taxChargeType === otherType);
+    if (!otherExists) {
+      const otherOption = taxOptions.find((opt) => opt.value === otherType);
+      const samePercentage = charge.taxChargePerUom || "";
+      const newRow = {
+        id: Date.now().toString() + "_" + otherType.toLowerCase(),
+        taxChargeType: otherType,
+        taxChargePerUom: samePercentage,
+        inclusive: false,
+        amount: charge.amount,
+        resource_id: otherOption ? otherOption.id : null,
+        resource_type: otherOption?.type || "TaxCharge",
+      };
+      taxCharges.push(newRow);
+    }
+  }
+
+  // Keep percentage in sync between SGST and CGST
+  if (
+    field === "taxChargePerUom" &&
+    type === "addition" &&
+    (charge.taxChargeType === "SGST" || charge.taxChargeType === "CGST")
+  ) {
+    const otherType = charge.taxChargeType === "SGST" ? "CGST" : "SGST";
+    const otherEntry = taxCharges.find((item) => item.taxChargeType === otherType);
+    if (otherEntry) {
+      otherEntry.taxChargePerUom = value;
+      if (!otherEntry.inclusive && targetRow.afterDiscountValue) {
+        const amount = calculateTaxAmount(
+          value,
+          targetRow.afterDiscountValue,
+          otherEntry.inclusive
+        );
+        otherEntry.amount = amount.toFixed(2);
       }
-    } else {
-      charge[field] = value;
     }
+  }
 
-    if (!charge.inclusive && field === "taxChargePerUom") {
-      const taxAmount = calculateTaxAmount(
-        charge.taxChargePerUom,
-        targetRow.afterDiscountValue,
-        charge.inclusive
-      );
-      charge.amount = taxAmount.toFixed(2);
-    }
+  if (!charge.inclusive && field === "taxChargePerUom") {
+    const taxAmount = calculateTaxAmount(
+      charge.taxChargePerUom,
+      targetRow.afterDiscountValue,
+      charge.inclusive
+    );
+    charge.amount = taxAmount.toFixed(2);
+  }
 
-    taxCharges[chargeIndex] = charge;
-    targetRow[taxKey] = taxCharges;
-    updatedData[rowIndex] = targetRow;
+  taxCharges[chargeIndex] = charge;
+  targetRow[taxKey] = taxCharges;
+  updatedData[rowIndex] = targetRow;
 
-    const recalculated = updatedData.map((row, idx) => ({
-      ...row,
-      netCost: calculateNetCost(idx, updatedData),
-    }));
+  const recalculated = updatedData.map((row, idx) => ({
+    ...row,
+    netCost: calculateNetCost(idx, updatedData),
+  }));
 
-    // console.log(
-    //   "Updated Tax Data (Single):",
-    //   JSON.stringify(updatedData, null, 2)
-    // );
-
-    setTaxRateData(recalculated);
-    originalTaxRateDataRef.current = structuredClone(recalculated);
-  };
+  setTaxRateData(recalculated);
+  originalTaxRateDataRef.current = structuredClone(recalculated);
+};
 
   const handleOpenModal = (rowIndex) => {
     console.log("Opening modal for row:", rowIndex);
@@ -2102,7 +2136,7 @@ export default function BulkCounterOfferModalTwo({
                                     : [];
                                 })()
                               }
-                              defaultValue={item?.percentage || ""}
+                              defaultValue={item?.percentage || item?.taxChargePerUom || ""}
                               onChange={(value) =>
                                 // handleTaxChargeChange(
                                 //   tableId,
