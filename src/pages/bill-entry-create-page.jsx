@@ -548,6 +548,7 @@ const BillEntryListSubPage = () => {
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
+    if (!file) return;
     const reader = new FileReader();
     reader.onload = (event) => {
       setNewDocument((prev) => ({
@@ -583,6 +584,7 @@ const BillEntryListSubPage = () => {
     due_date: "",
     bill_amount: "",
     vendor_remark: "",
+    bill_received_date: "",
   });
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -626,6 +628,7 @@ const BillEntryListSubPage = () => {
         bill_no: formData.bill_no,
         bill_date: formData.bill_date,
         due_date: formData.due_date,
+        bill_received_date: formData.bill_received_date,
         bill_amount: parseFloat(formData.bill_amount),
         status: "open",
         mode_of_submission: "Offline",
@@ -823,6 +826,20 @@ const BillEntryListSubPage = () => {
                       placeholder="DD/MM/YY"
                       readOnly
                       disabled
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-3 mt-2 ">
+                  <div className="form-group">
+                    <label>Bill Recieved Date</label>
+                    <input
+                      className="form-control"
+                      type="date"
+                      name="bill_received_date"
+                      value={formData.bill_received_date}
+                      onChange={handleInputChange}
+                      placeholder=""
                     />
                   </div>
                 </div>
@@ -1118,6 +1135,87 @@ const BillEntryListSubPage = () => {
         </Modal.Body>
       </Modal>
 
+      {/* <Modal
+        centered
+        size="l"
+        show={attachModal}
+        onHide={closeattachModal}
+        backdrop="true"
+        keyboard={true}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Attach Document</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row">
+            <div className="col-md-12">
+              <div className="form-group">
+                <label>Name of the Document</label>
+                {newDocument.document_type &&
+                documents.find(
+                  (doc) =>
+                    doc.isDefault &&
+                    doc.document_type === newDocument.document_type
+                ) ? (
+                  // For default document types - show as disabled input
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.document_type}
+                    disabled
+                  />
+                ) : (
+                  // For new document types - allow input
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.document_type}
+                    onChange={(e) =>
+                      setNewDocument((prev) => ({
+                        ...prev,
+                        document_type: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter document name"
+                  />
+                )}
+              </div>
+            </div>
+            <div className="col-md-12 mt-2">
+              <div className="form-group">
+                <label>Upload File</label>
+                <input
+                  type="file"
+                  className="form-control"
+                  onChange={handleFileUpload}
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-4">
+              <button
+                className="purple-btn2 w-100"
+                onClick={handleAttachDocument}
+                disabled={
+                  !newDocument.document_type ||
+                  newDocument.attachments.length === 0
+                }
+              >
+                Attach
+              </button>
+            </div>
+            <div className="col-md-4">
+              <button className="purple-btn1 w-100" onClick={closeattachModal}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal> */}
+
       <Modal
         centered
         size="l"
@@ -1176,6 +1274,31 @@ const BillEntryListSubPage = () => {
                 />
               </div>
             </div>
+            {/* Add this new section for file name editing */}
+            {newDocument.attachments.length > 0 && (
+              <div className="col-md-12 mt-2">
+                <div className="form-group">
+                  <label>File Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.attachments[0].filename}
+                    onChange={(e) => {
+                      setNewDocument((prev) => ({
+                        ...prev,
+                        attachments: [
+                          {
+                            ...prev.attachments[0],
+                            filename: e.target.value,
+                          },
+                        ],
+                      }));
+                    }}
+                    placeholder="Enter file name"
+                  />
+                </div>
+              </div>
+            )}
           </div>
           <div className="row mt-2 justify-content-center">
             <div className="col-md-4">

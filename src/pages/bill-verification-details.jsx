@@ -717,14 +717,16 @@ const BillVerificationDetails = () => {
                 </div>
               </div>
               <div className="row mt-2 justify-content-end">
-                <div className="col-md-2">
-                  <button
-                    className="purple-btn2 w-100"
-                    onClick={handleBillBookingClick}
-                  >
-                    Bill Booking
-                  </button>
-                </div>
+                {status.toLowerCase() === "verified" && (
+                  <div className="col-md-2">
+                    <button
+                      className="purple-btn2 w-100"
+                      onClick={handleBillBookingClick}
+                    >
+                      Bill Booking
+                    </button>
+                  </div>
+                )}
                 <div className="col-md-2">
                   <button
                     className="purple-btn2 w-100"

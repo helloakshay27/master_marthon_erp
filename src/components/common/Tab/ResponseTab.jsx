@@ -17,6 +17,7 @@ import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import SelectBox from "../../base/Select/SelectBox";
 import { set } from "lodash";
 import { toast, ToastContainer } from "react-toastify"; // Ensure toast is imported
+import Table from "../../base/Table/Table"
 
 export default function ResponseTab({ isCounterOffer }) {
   const [isVendor, setIsVendor] = useState(false);
@@ -53,6 +54,9 @@ export default function ResponseTab({ isCounterOffer }) {
   const [isOfferAccepted, setIsOfferAccepted] = useState(false); // State to track offer acceptance
   const [taxModalData, setTaxModalData] = useState([]); // State for tax modal data
   const [chargesTaxModalData, setChargesTaxModalData] = useState([]); // State for tax modal data
+  const [activityLogAccordion, setActivityLogAccordion] = useState(false);
+  const [activityLogs, setActivityLogs] = useState([]);
+  const [activityLogsLoading, setActivityLogsLoading] = useState(false);
 
   const [participants, setParticipants] = useState([]);
   const [currentReminderPage, setCurrentReminderPage] = useState(1);
@@ -183,6 +187,20 @@ export default function ResponseTab({ isCounterOffer }) {
 
     fetchTaxes();
   }, []);
+
+  useEffect(() => {
+    // if (!activityLogAccordion) return;
+    setActivityLogsLoading(true);
+    axios
+      .get(
+        `${baseURL}rfq/events/${eventId}/activity_logs?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      )
+      .then((res) => {
+        setActivityLogs(res.data.activity_logs || []);
+      })
+      .catch(() => setActivityLogs([]))
+      .finally(() => setActivityLogsLoading(false));
+  }, [activityLogAccordion, eventId]);
 
   useEffect(() => {
     const fetchDeductionTaxes = async () => {
@@ -1054,7 +1072,24 @@ export default function ResponseTab({ isCounterOffer }) {
                   No Bid Details found
                 </h4>
               )}
+
+               
             </div>
+          )}
+          {activityLogs.length > 0 && eventVendors.length > 0 && (
+
+          <Table
+                    columns={[
+                      { label: "Activity Name", key: "activity_name" },
+                      { label: "Activity Type", key: "activity_type" },
+                      { label: "Created By", key: "created_by_name" },
+                      { label: "Created Date", key: "created_at" },
+                    ]}
+                    data={activityLogs.map((log, idx) => ({
+                      ...log,
+                      created_at: new Date(log.created_at).toLocaleString(),
+                    }))}
+                  />
           )}
         </FullScreen>
       )}

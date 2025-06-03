@@ -657,7 +657,7 @@ const BillVerificationList = () => {
       renderCell: (params) => (
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {params.value}
-          {params.row.id && (
+          {params.row.id && params.row.status.toLowerCase() === "verified" && (
             <button
               className="purple-button2"
               title="Go to Bill Booking" // Add this line

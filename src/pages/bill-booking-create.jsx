@@ -384,35 +384,82 @@ const BillBookingCreate = () => {
   // ...existing imports...
   // Add this useEffect after your billEntryOptions and selectedBillEntry state
 
+  // useEffect(() => {
+  //   const fetchAndSelectBillEntry = async () => {
+  //     if (id) {
+  //       try {
+  //         // First fetch bill entry details
+  //         const response = await axios.get(
+  //           `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //         );
+
+  //         // Get bill entry options
+  //         const billEntryResponse = await axios.get(
+  //           `${baseURL}bill_bookings/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //         );
+
+  //         if (
+  //           billEntryResponse.data &&
+  //           Array.isArray(billEntryResponse.data.be_list)
+  //         ) {
+  //           setBillEntryOptions(
+  //             billEntryResponse.data.be_list.map((item) => ({
+  //               value: item.value,
+  //               label: item.name,
+  //             }))
+  //           );
+
+  //           // Find and set the matching bill entry option
+  //           const matchingEntry = billEntryResponse.data.be_list.find(
+  //             (item) => item.value === parseInt(id)
+  //           );
+  //           if (matchingEntry) {
+  //             setSelectedBillEntry({
+  //               value: matchingEntry.value,
+  //               label: matchingEntry.name,
+  //             });
+  //           }
+  //         }
+  //       } catch (error) {
+  //         console.error("Error fetching bill entry:", error);
+  //       }
+  //     }
+  //   };
+
+  //   fetchAndSelectBillEntry();
+  // }, [id]);
+
   useEffect(() => {
     const fetchAndSelectBillEntry = async () => {
-      if (id) {
-        try {
-          // First fetch bill entry details
-          const response = await axios.get(
-            `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      try {
+        // Always fetch bill entry options
+        const billEntryResponse = await axios.get(
+          `${baseURL}bill_bookings/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+
+        if (
+          billEntryResponse.data &&
+          Array.isArray(billEntryResponse.data.be_list)
+        ) {
+          setBillEntryOptions(
+            billEntryResponse.data.be_list.map((item) => ({
+              value: item.value,
+              label: item.name,
+            }))
           );
 
-          // Get bill entry options
-          const billEntryResponse = await axios.get(
-            `${baseURL}bill_bookings/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-          );
-
-          if (
-            billEntryResponse.data &&
-            Array.isArray(billEntryResponse.data.be_list)
-          ) {
-            setBillEntryOptions(
-              billEntryResponse.data.be_list.map((item) => ({
-                value: item.value,
-                label: item.name,
-              }))
+          // If ID is available, find and set the matching entry
+          if (id) {
+            // First fetch specific bill entry details
+            const response = await axios.get(
+              `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
             );
 
             // Find and set the matching bill entry option
             const matchingEntry = billEntryResponse.data.be_list.find(
               (item) => item.value === parseInt(id)
             );
+
             if (matchingEntry) {
               setSelectedBillEntry({
                 value: matchingEntry.value,
@@ -420,15 +467,16 @@ const BillBookingCreate = () => {
               });
             }
           }
-        } catch (error) {
-          console.error("Error fetching bill entry:", error);
         }
+      } catch (error) {
+        console.error("Error fetching bill entries:", error);
+        // Clear selected bill entry in case of error
+        setSelectedBillEntry(null);
       }
     };
 
     fetchAndSelectBillEntry();
   }, [id]);
-
   // Rest of your component code...
 
   useEffect(() => {
@@ -1214,10 +1262,10 @@ const BillBookingCreate = () => {
       if (formData.pms_supplier_id) {
         try {
           // Fetch Credit Notes
-          const creditResponse = await axios.get(
-            `${baseURL}credit_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-          );
-          setCreditNotes(creditResponse.data.credit_notes || []);
+          // const creditResponse = await axios.get(
+          //   `${baseURL}credit_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          // );
+          // setCreditNotes(creditResponse.data.credit_notes || []);
 
           // Fetch Debit Notes
           const debitResponse = await axios.get(
@@ -1227,7 +1275,7 @@ const BillBookingCreate = () => {
           console.log("Supplier ID for debit notes:", formData.pms_supplier_id);
         } catch (error) {
           console.error("Error fetching credit or debit notes:", error);
-          setCreditNotes([]);
+          // setCreditNotes([]);
           setDebitNotes([]);
         }
       }
@@ -1238,13 +1286,13 @@ const BillBookingCreate = () => {
 
   // Add these handler functions if not already present
 
-  const handleSelectAllCreditNotes = (e) => {
-    if (e.target.checked) {
-      setSelectedCreditNotes(creditNotes);
-    } else {
-      setSelectedCreditNotes([]);
-    }
-  };
+  // const handleSelectAllCreditNotes = (e) => {
+  //   if (e.target.checked) {
+  //     setSelectedCreditNotes(creditNotes);
+  //   } else {
+  //     setSelectedCreditNotes([]);
+  //   }
+  // };
 
   const handleSelectAllDebitNotes = (e) => {
     if (e.target.checked) {
@@ -1254,17 +1302,17 @@ const BillBookingCreate = () => {
     }
   };
 
-  const validateCreditRecovery = (note, value) => {
-    const recovery = parseFloat(value) || 0;
-    const creditAmount = parseFloat(note.credit_note_amount) || 0;
+  // const validateCreditRecovery = (note, value) => {
+  //   const recovery = parseFloat(value) || 0;
+  //   const creditAmount = parseFloat(note.credit_note_amount) || 0;
 
-    // const outstandingAmount = parseFloat(note.outstanding_current_date) || 0;
-    if (recovery > creditAmount) {
-      alert("Recovery amount cannot exceed credit amount");
-      return false;
-    }
-    return true;
-  };
+  //   // const outstandingAmount = parseFloat(note.outstanding_current_date) || 0;
+  //   if (recovery > creditAmount) {
+  //     alert("Recovery amount cannot exceed credit amount");
+  //     return false;
+  //   }
+  //   return true;
+  // };
 
   const validateDebitRecovery = (note, value) => {
     const recovery = parseFloat(value) || 0;
@@ -1296,7 +1344,7 @@ const BillBookingCreate = () => {
     const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
     const otherDed = parseFloat(otherDeductions) || 0;
     const otherAdd = parseFloat(otherAdditions) || 0;
-    const creditAdjustment = parseFloat(calculateCreditNoteAdjustment()) || 0;
+    // const creditAdjustment = parseFloat(calculateCreditNoteAdjustment()) || 0;
     const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
     const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0; // Add this line
 
@@ -1305,7 +1353,7 @@ const BillBookingCreate = () => {
       retentionAmount -
       otherDed +
       otherAdd +
-      creditAdjustment -
+      // creditAdjustment -
       debitAdjustment -
       advanceAdjustment
     ) // Subtract advance adjustment
@@ -2113,6 +2161,117 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
+
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Debit Note Adjustment</label>
+                      <input
+                        className="form-control"
+                        type="number"
+                        value={calculateDebitNoteAdjustment()}
+                        disabled
+                        placeholder="Debit note adjustment amount"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Total Amount</label>
+
+                      <input
+                        className="form-control"
+                        type="number"
+                        // value={selectedGRNs.reduce(
+                        //   (acc, grn) =>
+                        //     acc + (parseFloat(grn.all_inc_tax) || 0),
+                        //   0
+                        // )}
+                        value={calculateTotalAmount()}
+                        // value={formData.totalAmount}
+                        // onChange={(e) =>
+                        //   setFormData((prev) => ({
+                        //     ...prev,
+                        //     totalAmount: e.target.value,
+                        //     invoiceAmount: e.target.value, // keep in sync
+                        //   }))
+                        // }
+                        placeholder="Enter other addition amount"
+                        disabled
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label> Amount Payable</label>
+
+                      <input
+                        className="form-control"
+                        type="number"
+                        // value={otherAdditions}
+                        // onChange={(e) => setOtherAdditions(e.target.value)}
+                        value={calculateAmountPayable()}
+                        readOnly
+                        placeholder="Enter other addition amount"
+                        // amount payable should be total amount - retention amount
+                        disabled
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Round Of Amount</label>
+
+                      <input
+                        className="form-control"
+                        type="number"
+                        // value={otherAdditions}
+                        // onChange={(e) => setOtherAdditions(e.target.value)}
+                        placeholder="Enter other addition amount"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Favouring / Payee</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        // value={formData.payeeName}
+                        // onChange={(e) =>
+                        //   setFormData((prev) => ({
+                        //     ...prev,
+                        //     payeeName: e.target.value,
+                        //   }))
+                        value={supplierName}
+                        disabled
+                        placeholder="Enter payee name"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Payment Due Date</label>
+                      <input
+                        className="form-control"
+                        type="date"
+                        value={formData.paymentDueDate}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            paymentDueDate: e.target.value,
+                          }))
+                        }
+                        disabled
+                      />
+                    </div>
+                  </div>
+
                   {/* </div> */}
                   {/* <div className="row"> */}
                   <div className="col-md-4 mt-2">
@@ -2136,7 +2295,6 @@ const BillBookingCreate = () => {
                           }
                         }}
                         placeholder="Enter other deduction amount"
-                        min="0"
                       />
                     </div>
                   </div>
@@ -2204,7 +2362,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4 mt-2">
+                  {/* <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Credit Note Adjustment</label>
                       <input
@@ -2215,47 +2373,8 @@ const BillBookingCreate = () => {
                         placeholder="Credit note adjustment amount"
                       />
                     </div>
-                  </div>
+                  </div> */}
 
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Debit Note Adjustment</label>
-                      <input
-                        className="form-control"
-                        type="number"
-                        value={calculateDebitNoteAdjustment()}
-                        disabled
-                        placeholder="Debit note adjustment amount"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Total Amount</label>
-
-                      <input
-                        className="form-control"
-                        type="number"
-                        // value={selectedGRNs.reduce(
-                        //   (acc, grn) =>
-                        //     acc + (parseFloat(grn.all_inc_tax) || 0),
-                        //   0
-                        // )}
-                        value={calculateTotalAmount()}
-                        // value={formData.totalAmount}
-                        // onChange={(e) =>
-                        //   setFormData((prev) => ({
-                        //     ...prev,
-                        //     totalAmount: e.target.value,
-                        //     invoiceAmount: e.target.value, // keep in sync
-                        //   }))
-                        // }
-                        placeholder="Enter other addition amount"
-                        disabled
-                      />
-                    </div>
-                  </div>
                   {formData.typeOfCertificate === "Retention" && (
                     <>
                       <div className="col-md-4 mt-2">
@@ -2297,58 +2416,6 @@ const BillBookingCreate = () => {
 
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
-                      <label> Amount Payable</label>
-
-                      <input
-                        className="form-control"
-                        type="number"
-                        // value={otherAdditions}
-                        // onChange={(e) => setOtherAdditions(e.target.value)}
-                        value={calculateAmountPayable()}
-                        readOnly
-                        placeholder="Enter other addition amount"
-                        // amount payable should be total amount - retention amount
-                        disabled
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Round Of Amount</label>
-
-                      <input
-                        className="form-control"
-                        type="number"
-                        // value={otherAdditions}
-                        // onChange={(e) => setOtherAdditions(e.target.value)}
-                        placeholder="Enter other addition amount"
-                        min="0"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Favouring / Payee</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        // value={formData.payeeName}
-                        // onChange={(e) =>
-                        //   setFormData((prev) => ({
-                        //     ...prev,
-                        //     payeeName: e.target.value,
-                        //   }))
-                        value={supplierName}
-                        disabled
-                        placeholder="Enter payee name"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
                       <label>Payment Mode</label>
                       <SingleSelector
                         options={paymentModeOptions}
@@ -2371,23 +2438,6 @@ const BillBookingCreate = () => {
 
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
-                      <label>Payment Due Date</label>
-                      <input
-                        className="form-control"
-                        type="date"
-                        value={formData.paymentDueDate}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            paymentDueDate: e.target.value,
-                          }))
-                        }
-                        disabled
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
                       <label>Total Certified Till Date</label>
                       <input
                         className="form-control"
@@ -2402,7 +2452,7 @@ const BillBookingCreate = () => {
                       <label>Remark</label>
                       <textarea
                         className="form-control"
-                        rows={2}
+                        rows={1}
                         placeholder="Enter ..."
                         defaultValue={""}
                         value={formData.remark} // Bind to formData.remark
@@ -2709,7 +2759,7 @@ const BillBookingCreate = () => {
                     </tbody>
                   </table>
                 </div>
-                <div className="d-flex justify-content-between mt-3 me-2">
+                {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Credit Note</h5>
                   <button className="purple-btn2" onClick={openCreditNoteModal}>
                     <svg
@@ -2747,50 +2797,7 @@ const BillBookingCreate = () => {
                         <th className="text-start">This Recovery</th>
                       </tr>
                     </thead>
-                    {/* <tbody>
-                      {creditNotes.length > 0 ? (
-                        creditNotes.map((note, index) => (
-                          <tr key={index}>
-                            <td className="text-start">
-                              {note.credit_note_no || "-"}
-                            </td>
-                            <td className="text-start">
-                              {note.po_number || "-"}
-                            </td>
-                            <td className="text-start">
-                              {note.project_name || "-"}
-                            </td>
-                            <td className="text-start">
-                              {note.credit_note_amount || "-"}
-                            </td>
-                            <td className="text-start">
-                              {note.recovery_till_date || "-"}
-                            </td>
-                            <td className="text-start">
-                              {note.waive_off_till_date || "-"}
-                            </td>
-                            <td className="text-start">
-                              {note.outstanding_certificate_date || "-"}
-                            </td>
-                            <td className="text-start">
-                              {note.outstanding_current_date || "-"}
-                            </td>
-                            <td className="text-start">
-                              {note.reason_type || "-"}
-                            </td>
-                            <td className="text-start">
-                              {note.this_recovery || "-"}
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td className="text-start" colSpan="10">
-                            No credit notes found.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody> */}
+                   
                     <tbody>
                       {selectedCreditNotes.length > 0 ? (
                         selectedCreditNotes.map((note, index) => (
@@ -2855,7 +2862,7 @@ const BillBookingCreate = () => {
                       )}
                     </tbody>
                   </table>
-                </div>
+                </div> */}
                 {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Document Attachment</h5>
                   <div
@@ -3610,8 +3617,8 @@ const BillBookingCreate = () => {
         </Modal.Body>
       </Modal>
       {/* Credit Note Modal */}
-      // Update the Credit Note Modal table structure
-      <Modal
+      {/* // Update the Credit Note Modal table structure */}
+      {/* <Modal
         centered
         size="xl"
         show={creditNoteModal}
@@ -3728,7 +3735,7 @@ const BillBookingCreate = () => {
             </div>
           </div>
         </Modal.Body>
-      </Modal>
+      </Modal> */}
       {/* Update the Debit Note Modal with similar structure */}
       <Modal
         centered
