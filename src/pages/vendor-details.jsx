@@ -6036,9 +6036,6 @@ useEffect(() => {
                     {/* </div> */}
                   {/* </div> */}
 
-                  <hr
-                    style={{ borderTop: "2px solid #ccc", margin: "20px 0" }}
-                  />
 
                   <div style={{ marginTop: "10px" }}>
                     {/* bid button */}
