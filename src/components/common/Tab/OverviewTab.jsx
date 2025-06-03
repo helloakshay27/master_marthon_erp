@@ -1328,6 +1328,7 @@ export default function OverviewTab({
                     data={auditLogData.map((item, index) => ({
                       ...item,
                       srNo: index + 1, // Add serial number to each row
+                      created_at: new Date(item.created_at).toLocaleString(),
                     }))}
                   />
                 ) : (

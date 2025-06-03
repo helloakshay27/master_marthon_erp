@@ -267,6 +267,7 @@ export const auditLogColumns = [
   { label: "Status", key: "status" },
   { label: "Remark", key: "remarks" },
   { label: "Comment", key: "comments" },
+  { label: "Created at", key: "created_at" }
 ];
 
 export const auditLogData = [
