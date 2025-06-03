@@ -93,6 +93,9 @@ import RuleEngineList from "./pages/rule-engine-list";
 import RuleEngineCreate from "./pages/rule-engine-create";
 import RuleEngineDetails from "./pages/rule-engine-details";
 import RuleEngineEdit from "./pages/rule-engine-edit";
+import MiscellaneousBillCreate from "./pages/miscellaneous-bill-create";
+import MiscellaneousBillList from "./pages/miscellaneous-bill-list";
+import MiscellaneousBillDetails from "./pages/miscellaneous-bill-details";
 
 function App() {
   return (
@@ -296,7 +299,7 @@ function App() {
             <Route path="/bill-booking-list" element={<BillBookingList />} />
 
             <Route
-              path="/bill-booking-create"
+              path="/bill-booking-create/:id"
               element={<BillBookingCreate />}
             />
             <Route
@@ -484,6 +487,18 @@ function App() {
            <Route
             path="/rule-engine-edit/:id"
             element={<RuleEngineEdit/>}
+          />
+          <Route
+            path="/miscellaneous-bill-create"
+            element={<MiscellaneousBillCreate/>}
+          />
+           <Route
+            path="/miscellaneous-bill-list"
+            element={<MiscellaneousBillList/>}
+          />
+          <Route
+            path="/miscellaneous-bill-details/:id"
+            element={<MiscellaneousBillDetails/>}
           />
         </Routes>
       </div>

@@ -1818,6 +1818,7 @@ export default function EditEvent() {
                         <th>Remark</th>
                         <th>Status</th>
                         <th>Created By</th>
+                        <th>Created at</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1831,6 +1832,7 @@ export default function EditEvent() {
                             <td>{item.remark || "-"}</td>
                             <td>{item.status || "-"}</td>
                             <td>{item.created_by_name || "-"}</td>
+                            <td>{new Date(item.created_at).toLocaleString() || "-"}</td>
                           </tr>
                         );
                       })}

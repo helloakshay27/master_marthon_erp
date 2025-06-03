@@ -69,6 +69,7 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
   const handledeliverySchedule = () => {
     setDeliverySchedule(!deliverySchedule);
   };
+  
 
   const handleSpecification = () => {
     setSpecification(!specification);
@@ -1691,7 +1692,7 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
   };
 
   useEffect(() => {
-    if (!activityLogAccordion) return;
+    // if (!activityLogAccordion) return;
     setActivityLogsLoading(true);
     axios
       .get(
@@ -4705,6 +4706,7 @@ useEffect(() => {
                                     data={auditLogData.map((item, index) => ({
                                       ...item,
                                       srNo: index + 1, // Add serial number to each row
+                                      created_at: new Date(item.created_at).toLocaleString(),
                                     }))}
                                   />
                                 ) : (
@@ -6279,6 +6281,20 @@ useEffect(() => {
                         {revisedBid ? "Revise Bid" : "Submit"}
                       </button>
                     </div>
+                        
+                    <Table
+                    columns={[
+                      { label: "Activity Name", key: "activity_name" },
+                      { label: "Activity Type", key: "activity_type" },
+                      { label: "Created By", key: "created_by_name" },
+                      { label: "Created Date", key: "created_at" },
+                    ]}
+                    data={activityLogs.map((log, idx) => ({
+                      ...log,
+                      created_at: new Date(log.created_at).toLocaleString(),
+                    }))}
+                  />    
+
                   </div>
                 </div>
               </div>

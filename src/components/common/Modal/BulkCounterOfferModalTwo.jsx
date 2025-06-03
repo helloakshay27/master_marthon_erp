@@ -41,6 +41,24 @@ export default function BulkCounterOfferModalTwo({
   const { eventId } = useParams();
   const [minBidPrice, setMinBidPrice] = useState(null); // Store min bid price
   const [userPriceEdited, setUserPriceEdited] = useState({}); // Track if user edited price per row
+  const [activityLogAccordion, setActivityLogAccordion] = useState(false);
+  const [activityLogs, setActivityLogs] = useState([]);
+  const [activityLogsLoading, setActivityLogsLoading] = useState(false);
+
+  useEffect(() => {
+    // if (!activityLogAccordion) return;
+    setActivityLogsLoading(true);
+    axios
+      .get(
+        `${baseURL}rfq/events/${eventId}/activity_logs?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      )
+      .then((res) => {
+        setActivityLogs(res.data.activity_logs || []);
+      })
+      .catch(() => setActivityLogs([]))
+      .finally(() => setActivityLogsLoading(false));
+  }, [activityLogAccordion, eventId]);
+
 
   // Fetch min bid price on mount or when eventId changes
   useEffect(() => {
@@ -487,7 +505,7 @@ export default function BulkCounterOfferModalTwo({
 
   const productTableData =
     formData?.event_materials?.map((eventMaterial, eventIndex) => ({
-      Srno: <span>{eventIndex + 1}</span>,
+      SrNo: <span>{eventIndex + 1}</span>,
       product: (
         // <span>{eventMaterial.inventory_name || "_"}</span>
         <input
@@ -1272,6 +1290,19 @@ export default function BulkCounterOfferModalTwo({
             id="counterOfferRemarks"
           />
         </div>
+
+        <Table
+              columns={[
+                { label: "Activity Name", key: "activity_name" },
+                { label: "Activity Type", key: "activity_type" },
+                { label: "Created By", key: "created_by_name" },
+                { label: "Created Date", key: "created_at" },
+              ]}
+              data={activityLogs.map((log) => ({
+                ...log,
+                created_at: new Date(log.created_at).toLocaleString(),
+              }))}
+            />
       </DynamicModalBox>
       {/* <DynamicModalBox
         show={showOtherChargesModal}

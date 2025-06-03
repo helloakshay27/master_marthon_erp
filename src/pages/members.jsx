@@ -254,7 +254,7 @@ function Members() {
             style={{ marginBottom: "200px" }}
           >
             <div className="m-3">
-               <h1>Rule engine</h1>
+              <h1>Rule engine</h1>
               <ul>
                 <li>
                   <Link to="/rule-engine-list">Rule engine list </Link>
@@ -415,7 +415,7 @@ function Members() {
                 </li>
 
                 <li>
-                  <Link to="/bill-booking-create">Bill Booking Create</Link>
+                  <Link to="/bill-booking-create/:id">Bill Booking Create</Link>
                 </li>
 
                 <h5>___Credit Note___</h5>
@@ -440,6 +440,13 @@ function Members() {
                 </li> */}
                 <li>
                   <Link to="/debit-note-list">Debit Note List</Link>
+                </li>
+                 <h5>___Miscellaneous Bill___</h5>
+                <li>
+                  <Link to="/miscellaneous-bill-create">Miscellaneous Bill Create</Link>
+                </li>
+                 <li>
+                  <Link to="/miscellaneous-bill-list">Miscellaneous Bill List</Link>
                 </li>
                 <h5>___PO Advance___</h5>
                 <li>

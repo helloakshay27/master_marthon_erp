@@ -18,7 +18,6 @@ const BillVerificationDetails = () => {
   const [remark, setRemark] = useState(""); // State to store the remark
   const [showValidation, setShowValidation] = useState(false); // State to control validation message
 
-
   const [loading, setLoading] = useState(false); // Add loading state
   const [billDetails, setBillDetails] = useState(null);
   const [attachModal, setattachModal] = useState(false);
@@ -45,6 +44,10 @@ const BillVerificationDetails = () => {
   const [editableBillNo, setEditableBillNo] = useState("");
   const [editableBillDate, setEditableBillDate] = useState("");
   const [editableBillAmount, setEditableBillAmount] = useState("");
+
+  const handleBillBookingClick = () => {
+    navigate(`/bill-booking-create/${id}`);
+  };
 
   useEffect(() => {
     // Fetch data from the API
@@ -505,7 +508,9 @@ const BillVerificationDetails = () => {
                               type="text"
                               placeholder="Default input"
                               value={editableBillNo}
-                              onChange={e => setEditableBillNo(e.target.value)}
+                              onChange={(e) =>
+                                setEditableBillNo(e.target.value)
+                              }
                             />
                           </div>
                         </div>
@@ -517,7 +522,9 @@ const BillVerificationDetails = () => {
                               type="date"
                               placeholder="Default input"
                               value={editableBillDate}
-                              onChange={e => setEditableBillDate(e.target.value)}
+                              onChange={(e) =>
+                                setEditableBillDate(e.target.value)
+                              }
                             />
                           </div>
                         </div>
@@ -529,7 +536,9 @@ const BillVerificationDetails = () => {
                               type="text"
                               placeholder="Default input"
                               value={editableBillAmount}
-                              onChange={e => setEditableBillAmount(e.target.value)}
+                              onChange={(e) =>
+                                setEditableBillAmount(e.target.value)
+                              }
                             />
                           </div>
                         </div>
@@ -711,6 +720,14 @@ const BillVerificationDetails = () => {
                 <div className="col-md-2">
                   <button
                     className="purple-btn2 w-100"
+                    onClick={handleBillBookingClick}
+                  >
+                    Bill Booking
+                  </button>
+                </div>
+                <div className="col-md-2">
+                  <button
+                    className="purple-btn2 w-100"
                     onClick={handleUpdateBillEntry}
                   >
                     Submit
@@ -766,7 +783,7 @@ const BillVerificationDetails = () => {
                             <td className="text-start">
                               {log.status
                                 ? log.status.charAt(0).toUpperCase() +
-                                log.status.slice(1)
+                                  log.status.slice(1)
                                 : ""}
                             </td>
                             <td className="text-start">{log.remarks || ""}</td>
@@ -919,10 +936,7 @@ const BillVerificationDetails = () => {
               </button>
             </div>
             <div className="col-md-4">
-              <button
-                className="purple-btn1 w-100"
-                onClick={closeremarkModal}
-              >
+              <button className="purple-btn1 w-100" onClick={closeremarkModal}>
                 Cancel
               </button>
             </div>
@@ -1050,7 +1064,7 @@ const BillVerificationDetails = () => {
                           <DownloadIcon />
                         </button> */}
 
-                      <td >
+                      <td>
                         <a
                           href={
                             // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}

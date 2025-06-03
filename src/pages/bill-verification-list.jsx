@@ -23,7 +23,7 @@ const BillVerificationList = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [settingShow, setSettingShow] = useState(false);
   const [show, setShow] = useState(false);
-  const [activeSearch, setActiveSearch] = useState('');
+  const [activeSearch, setActiveSearch] = useState("");
   const [filterCompanyId, setFilterCompanyId] = useState("");
   const [filterProjectId, setFilterProjectId] = useState("");
   const [filterSiteId, setFilterSiteId] = useState("");
@@ -51,11 +51,11 @@ const BillVerificationList = () => {
   const [billEntries, setBillEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [meta, setMeta] = useState(null)
+  const [meta, setMeta] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10; // Items per page
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState("");
 
   const fetchBillEntries = async (page) => {
     try {
@@ -68,46 +68,50 @@ const BillVerificationList = () => {
       if (activeSearch) {
         url += `&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_cont]=${activeSearch}`;
       }
-      if (filterCompanyId) url += `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${filterCompanyId}`;
-      if (filterProjectId) url += `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${filterProjectId}`;
-      if (filterSiteId) url += `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_in]=${filterSiteId}`;
+      if (filterCompanyId)
+        url += `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${filterCompanyId}`;
+      if (filterProjectId)
+        url += `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${filterProjectId}`;
+      if (filterSiteId)
+        url += `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_in]=${filterSiteId}`;
       const response = await axios.get(url);
-      const transformedData = response.data.bill_entries.map(
-        (entry, index) => {
-          // console.log("created_at raw:", entry.created_at);
-          let formattedDate = "-";
-          if (entry.created_at) {
-            try {
-              formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
-            } catch (e) {
-              formattedDate = "-";
-            }
+      const transformedData = response.data.bill_entries.map((entry, index) => {
+        // console.log("created_at raw:", entry.created_at);
+        let formattedDate = "-";
+        if (entry.created_at) {
+          try {
+            formattedDate = new Date(entry.created_at)
+              .toISOString()
+              .slice(0, 10);
+          } catch (e) {
+            formattedDate = "-";
           }
-          let formattedDue = "-";
-          if (entry.due_date) {
-            try {
-              formattedDue = new Date(entry.due_date).toISOString().slice(0, 10);
-            } catch (e) {
-              formattedDue = "-";
-            }
+        }
+        let formattedDue = "-";
+        if (entry.due_date) {
+          try {
+            formattedDue = new Date(entry.due_date).toISOString().slice(0, 10);
+          } catch (e) {
+            formattedDue = "-";
           }
-          let status = entry.status;
-          if (status && typeof status === "string") {
-            status = status.replace(/_/g, " ");
-            status = status.charAt(0).toUpperCase() + status.slice(1);
-          }
-          return {
-            id: entry.id,
-            srNo: (page - 1) * pageSize + index + 1,
-            ...entry,
-            created_at: formattedDate,
-            due_date: formattedDue,
-            status,
-          }
-        })
-      console.log("transform data:", transformedData)
+        }
+        let status = entry.status;
+        if (status && typeof status === "string") {
+          status = status.replace(/_/g, " ");
+          status = status.charAt(0).toUpperCase() + status.slice(1);
+        }
+        return {
+          id: entry.id,
+          srNo: (page - 1) * pageSize + index + 1,
+          ...entry,
+          created_at: formattedDate,
+          due_date: formattedDue,
+          status,
+        };
+      });
+      console.log("transform data:", transformedData);
       setBillEntries(transformedData);
-      setMeta(response.data.meta)
+      setMeta(response.data.meta);
       setTotalPages(response.data.meta.total_pages); // Set total pages
       setTotalEntries(response.data.meta.total_count);
     } catch (err) {
@@ -121,7 +125,6 @@ const BillVerificationList = () => {
   const [totalEntries, setTotalEntries] = useState(0);
 
   useEffect(() => {
-
     fetchBillEntries(currentPage);
   }, [currentPage]);
 
@@ -132,7 +135,7 @@ const BillVerificationList = () => {
     }
   };
 
-  //company quick filter 
+  //company quick filter
 
   const [companies, setCompanies] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -219,10 +222,10 @@ const BillVerificationList = () => {
     setFilterCompanyId(companyId);
     setFilterProjectId(projectId);
     setFilterSiteId(siteId);
-    console.log("ids filter:", companyId, projectId, siteId)
+    console.log("ids filter:", companyId, projectId, siteId);
     const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${companyId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${projectId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_cont]=${siteId}`;
 
-    console.log("url:", url)
+    console.log("url:", url);
     axios
       .get(url)
       .then((response) => {
@@ -232,7 +235,9 @@ const BillVerificationList = () => {
             let formattedDate = "-";
             if (entry.created_at) {
               try {
-                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                formattedDate = new Date(entry.created_at)
+                  .toISOString()
+                  .slice(0, 10);
               } catch (e) {
                 formattedDate = "-";
               }
@@ -240,7 +245,9 @@ const BillVerificationList = () => {
             let formattedDue = "-";
             if (entry.due_date) {
               try {
-                formattedDue = new Date(entry.due_date).toISOString().slice(0, 10);
+                formattedDue = new Date(entry.due_date)
+                  .toISOString()
+                  .slice(0, 10);
               } catch (e) {
                 formattedDue = "-";
               }
@@ -257,12 +264,13 @@ const BillVerificationList = () => {
               created_at: formattedDate,
               due_date: formattedDue,
               status,
-            }
-          })
+            };
+          }
+        );
         setBillEntries(transformedData);
         setTotalPages(response.data.meta.total_pages); // Set total pages
         setTotalEntries(response.data.meta.total_count);
-        setMeta(response.data.meta)
+        setMeta(response.data.meta);
       })
       .catch((error) => {
         console.error("Error fetching filtered data:", error);
@@ -282,7 +290,9 @@ const BillVerificationList = () => {
 
     // Fetch unfiltered data
     axios
-      .get(`${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      .get(
+        `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      )
       .then((response) => {
         const transformedData = response.data.bill_entries.map(
           (entry, index) => {
@@ -290,7 +300,9 @@ const BillVerificationList = () => {
             let formattedDate = "-";
             if (entry.created_at) {
               try {
-                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                formattedDate = new Date(entry.created_at)
+                  .toISOString()
+                  .slice(0, 10);
               } catch (e) {
                 formattedDate = "-";
               }
@@ -298,7 +310,9 @@ const BillVerificationList = () => {
             let formattedDue = "-";
             if (entry.due_date) {
               try {
-                formattedDue = new Date(entry.due_date).toISOString().slice(0, 10);
+                formattedDue = new Date(entry.due_date)
+                  .toISOString()
+                  .slice(0, 10);
               } catch (e) {
                 formattedDue = "-";
               }
@@ -315,25 +329,25 @@ const BillVerificationList = () => {
               created_at: formattedDate,
               due_date: formattedDue,
               status,
-            }
-          })
+            };
+          }
+        );
         setBillEntries(transformedData);
         setTotalPages(response.data.meta.total_pages); // Set total pages
         setTotalEntries(response.data.meta.total_count);
-        setMeta(response.data.meta)
+        setMeta(response.data.meta);
       })
       .catch((error) => {
         console.error("Error resetting data:", error);
       });
   };
 
-
-  //  bulk action 
-  //bulkaction options 
+  //  bulk action
+  //bulkaction options
   const options = [
     {
-      label: 'Select Status',
-      value: '',
+      label: "Select Status",
+      value: "",
     },
 
     {
@@ -348,7 +362,6 @@ const BillVerificationList = () => {
     //   label: "All",
     //   value: "all",
     // },
-
   ];
 
   const [fromStatus, setFromStatus] = useState("");
@@ -372,7 +385,6 @@ const BillVerificationList = () => {
     setToStatus(selectedOption.value);
   };
 
-
   const handleRemarkChange = (e) => {
     setRemark(e.target.value);
   };
@@ -394,7 +406,7 @@ const BillVerificationList = () => {
       to_status: toStatus,
       comments: remark,
     };
-    console.log("data for bulk action", data)
+    console.log("data for bulk action", data);
 
     // Send data to API using axios
     axios
@@ -403,23 +415,26 @@ const BillVerificationList = () => {
         data
       )
       .then((response) => {
-        console.log('Success:', response.data);
-        alert('Status updated successfully ....')
-        fetchBillEntries(currentPage)
+        console.log("Success:", response.data);
+        alert("Status updated successfully ....");
+        fetchBillEntries(currentPage);
         // Handle success (e.g., show a success message, update UI, etc.)
       })
       .catch((error) => {
-        console.error('Error:', error);
+        console.error("Error:", error);
         // Handle error (e.g., show an error message)
       });
   };
 
   // Fetch the data when 'fromStatus' changes
   useEffect(() => {
-    if (fromStatus) { // Only fetch data if a status is selected
+    if (fromStatus) {
+      // Only fetch data if a status is selected
       setLoading(true); // Show loading state while fetching
       axios
-        .get(`${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[status_eq]=${fromStatus}`)
+        .get(
+          `${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[status_eq]=${fromStatus}`
+        )
         .then((response) => {
           const transformedData = response.data.bill_entries.map(
             (entry, index) => {
@@ -427,7 +442,9 @@ const BillVerificationList = () => {
               let formattedDate = "-";
               if (entry.created_at) {
                 try {
-                  formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                  formattedDate = new Date(entry.created_at)
+                    .toISOString()
+                    .slice(0, 10);
                 } catch (e) {
                   formattedDate = "-";
                 }
@@ -435,7 +452,9 @@ const BillVerificationList = () => {
               let formattedDue = "-";
               if (entry.due_date) {
                 try {
-                  formattedDue = new Date(entry.due_date).toISOString().slice(0, 10);
+                  formattedDue = new Date(entry.due_date)
+                    .toISOString()
+                    .slice(0, 10);
                 } catch (e) {
                   formattedDue = "-";
                 }
@@ -452,11 +471,12 @@ const BillVerificationList = () => {
                 created_at: formattedDate,
                 due_date: formattedDue,
                 status,
-              }
-            })
+              };
+            }
+          );
           // setBillData(response.data.bill_bookings); // Set fetched data
           setBillEntries(transformedData);
-          setMeta(response.data.meta)
+          setMeta(response.data.meta);
           setTotalPages(response.data.meta.total_pages); // Reset total pages
           setTotalEntries(response.data.meta.total_count); // Reset total entries
         })
@@ -467,14 +487,14 @@ const BillVerificationList = () => {
           setLoading(false); // Stop loading when request is complete
         });
     }
-  }, [fromStatus]);  // This will run every time 'fromStatus' changes
-
-
+  }, [fromStatus]); // This will run every time 'fromStatus' changes
 
   // State to track selected bill detail IDs
   const handleCheckboxChange = (boqDetailId) => {
     setSelectedBoqDetails((prevSelected) => {
-      const selectedArray = prevSelected ? prevSelected.split(",").map(Number) : [];
+      const selectedArray = prevSelected
+        ? prevSelected.split(",").map(Number)
+        : [];
       if (selectedArray.includes(boqDetailId)) {
         // If already selected, remove it from the string
         const updatedArray = selectedArray.filter((id) => id !== boqDetailId);
@@ -487,13 +507,13 @@ const BillVerificationList = () => {
     });
   };
 
-  console.log("selected bill id array :", selectedBoqDetails)
-
+  console.log("selected bill id array :", selectedBoqDetails);
 
   //card filter
   const fetchFilteredData2 = (status) => {
-    const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${status ? `&q[status_eq]=${status}` : ""
-      }`;
+    const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${
+      status ? `&q[status_eq]=${status}` : ""
+    }`;
 
     axios
       .get(url)
@@ -504,7 +524,9 @@ const BillVerificationList = () => {
             let formattedDate = "-";
             if (entry.created_at) {
               try {
-                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                formattedDate = new Date(entry.created_at)
+                  .toISOString()
+                  .slice(0, 10);
               } catch (e) {
                 formattedDate = "-";
               }
@@ -512,7 +534,9 @@ const BillVerificationList = () => {
             let formattedDue = "-";
             if (entry.due_date) {
               try {
-                formattedDue = new Date(entry.due_date).toISOString().slice(0, 10);
+                formattedDue = new Date(entry.due_date)
+                  .toISOString()
+                  .slice(0, 10);
               } catch (e) {
                 formattedDue = "-";
               }
@@ -528,9 +552,10 @@ const BillVerificationList = () => {
               ...entry,
               created_at: formattedDate,
               due_date: formattedDue,
-              status
-            }
-          })
+              status,
+            };
+          }
+        );
         setBillEntries(transformedData);
         setTotalPages(response.data.meta.total_pages); // Set total pages
         setTotalEntries(response.data.meta.total_count);
@@ -547,39 +572,40 @@ const BillVerificationList = () => {
       const response = await axios.get(
         `${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_cont]=${searchKeyword}`
       );
-      const transformedData = response.data.bill_entries.map(
-        (entry, index) => {
-          // console.log("created_at raw:", entry.created_at);
-          let formattedDate = "-";
-          if (entry.created_at) {
-            try {
-              formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
-            } catch (e) {
-              formattedDate = "-";
-            }
+      const transformedData = response.data.bill_entries.map((entry, index) => {
+        // console.log("created_at raw:", entry.created_at);
+        let formattedDate = "-";
+        if (entry.created_at) {
+          try {
+            formattedDate = new Date(entry.created_at)
+              .toISOString()
+              .slice(0, 10);
+          } catch (e) {
+            formattedDate = "-";
           }
-          let formattedDue = "-";
-          if (entry.due_date) {
-            try {
-              formattedDue = new Date(entry.due_date).toISOString().slice(0, 10);
-            } catch (e) {
-              formattedDue = "-";
-            }
+        }
+        let formattedDue = "-";
+        if (entry.due_date) {
+          try {
+            formattedDue = new Date(entry.due_date).toISOString().slice(0, 10);
+          } catch (e) {
+            formattedDue = "-";
           }
-          let status = entry.status;
-          if (status && typeof status === "string") {
-            status = status.replace(/_/g, " ");
-            status = status.charAt(0).toUpperCase() + status.slice(1);
-          }
-          return {
-            id: entry.id,
-            srNo: (currentPage - 1) * pageSize + index + 1,
-            ...entry,
-            created_at: formattedDate,
-            due_date: formattedDue,
-            status,
-          }
-        })
+        }
+        let status = entry.status;
+        if (status && typeof status === "string") {
+          status = status.replace(/_/g, " ");
+          status = status.charAt(0).toUpperCase() + status.slice(1);
+        }
+        return {
+          id: entry.id,
+          srNo: (currentPage - 1) * pageSize + index + 1,
+          ...entry,
+          created_at: formattedDate,
+          due_date: formattedDue,
+          status,
+        };
+      });
       setBillEntries(transformedData);
       setMeta(response.data.meta);
       setTotalPages(response.data.meta.total_pages);
@@ -592,11 +618,11 @@ const BillVerificationList = () => {
     }
   };
 
-  //   column sort and setting 
+  //   column sort and setting
   const [columnVisibility, setColumnVisibility] = useState({
     srNo: true,
     bill_id: true,
-   
+
     mode_of_submission: true,
     company_name: true,
     project_name: true,
@@ -606,7 +632,7 @@ const BillVerificationList = () => {
     po_number: true,
     created_at: true,
     accepted_at: true,
-     bill_no: true,
+    bill_no: true,
     bill_date: true,
     bill_amount: true,
     bill_copies: true,
@@ -624,26 +650,57 @@ const BillVerificationList = () => {
   });
 
   const allColumns = [
-
     {
       field: "srNo",
       headerName: "Sr. No.",
       width: 100,
+      renderCell: (params) => (
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {params.value}
+          {params.row.id && (
+            <button
+              className="purple-button2"
+              title="Go to Bill Booking" // Add this line
+              style={{
+                border: "none",
+                background: "none",
+                padding: 0,
+                cursor: "pointer",
+                color: "#8B0203",
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/bill-booking-create/${params.row.id}`);
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+              >
+                <path d="M8 0L6.59 1.41L12.17 7H0V9H12.17L6.59 14.59L8 16L16 8L8 0Z" />
+              </svg>
+            </button>
+          )}
+        </div>
+      ),
     },
-     {
-          field: "bill_id",
-          headerName: "Bill Id",
-          width: 150,
-          renderCell: (params) =>
-            params.value && params.row.id ? (
-              <Link to={`/bill-verification-details/${params.row.id}`}>
-                <span className="boq-id-link">{params.value}</span>
-              </Link>
-            ) : (
-              "-"
-            ),
-        },
-    
+    {
+      field: "bill_id",
+      headerName: "Bill Id",
+      width: 150,
+      renderCell: (params) =>
+        params.value && params.row.id ? (
+          <Link to={`/bill-verification-details/${params.row.id}`}>
+            <span className="boq-id-link">{params.value}</span>
+          </Link>
+        ) : (
+          "-"
+        ),
+    },
+
     {
       field: "mode_of_submission",
       headerName: "Mode of Submission",
@@ -693,7 +750,6 @@ const BillVerificationList = () => {
     { field: "overdue", headerName: "Overdue", width: 150 },
     { field: "assign_to", headerName: "Assign to", width: 150 },
     { field: "tat", headerName: "TAT", width: 150 },
-
   ];
 
   const columns = allColumns.filter((col) => columnVisibility[col.field]);
@@ -753,7 +809,7 @@ const BillVerificationList = () => {
   const startEntry = (currentPage - 1) * pageSize + 1;
   const endEntry = Math.min(currentPage * pageSize, totalEntries);
 
-  console.log("selected bill id array :", selectedBoqDetails)
+  console.log("selected bill id array :", selectedBoqDetails);
 
   return (
     <>
@@ -817,10 +873,12 @@ const BillVerificationList = () => {
                   <div
                     // className="content-box tab-button active"
                     data-tab="total"
-                    className={`content-box tab-button ${activeTab === "total" ? "active" : ""}`}
+                    className={`content-box tab-button ${
+                      activeTab === "total" ? "active" : ""
+                    }`}
                     onClick={() => {
-                      setActiveTab("total")
-                      fetchFilteredData2("")
+                      setActiveTab("total");
+                      fetchFilteredData2("");
                     }} // Fetch all data (no status filter)
                   >
                     <h4 className="content-box-title fw-semibold">Bill List</h4>
@@ -829,45 +887,52 @@ const BillVerificationList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    // className="content-box tab-button" 
+                    // className="content-box tab-button"
                     data-tab="open"
-                    className={`content-box tab-button ${activeTab === "open" ? "active" : ""}`}
+                    className={`content-box tab-button ${
+                      activeTab === "open" ? "active" : ""
+                    }`}
                     onClick={() => {
-                      setActiveTab("open")
-                      fetchFilteredData2("open")
+                      setActiveTab("open");
+                      fetchFilteredData2("open");
                     }}
                   >
                     <h4 className="content-box-title fw-semibold">
                       Open Bills
                     </h4>
-                    <p className="content-box-sub">
-                      {meta?.draft_count}</p>
+                    <p className="content-box-sub">{meta?.draft_count}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
                   <div
                     // className="content-box tab-button"
                     data-tab="pending-approval"
-                    className={`content-box tab-button ${activeTab === "recieved_for_verification" ? "active" : ""}`}
+                    className={`content-box tab-button ${
+                      activeTab === "recieved_for_verification" ? "active" : ""
+                    }`}
                     onClick={() => {
-                      setActiveTab("recieved_for_verification")
-                      fetchFilteredData2("recieved_for_verification")
+                      setActiveTab("recieved_for_verification");
+                      fetchFilteredData2("recieved_for_verification");
                     }}
                   >
                     <h4 className="content-box-title fw-semibold">
                       Received for Verification
                     </h4>
-                    <p className="content-box-sub">{meta?.recieved_for_verification_count}</p>
+                    <p className="content-box-sub">
+                      {meta?.recieved_for_verification_count}
+                    </p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
                   <div
                     // className="content-box tab-button"
                     data-tab="self-overdue"
-                    className={`content-box tab-button ${activeTab === "verified" ? "active" : ""}`}
+                    className={`content-box tab-button ${
+                      activeTab === "verified" ? "active" : ""
+                    }`}
                     onClick={() => {
-                      setActiveTab("verified")
-                      fetchFilteredData2("verified")
+                      setActiveTab("verified");
+                      fetchFilteredData2("verified");
                     }}
                   >
                     <h4 className="content-box-title fw-semibold">Verified</h4>
@@ -880,7 +945,6 @@ const BillVerificationList = () => {
           <div className="tab-content1 active mb-5" id="total-content">
             {/* Total Content Here */}
             <div className="card mt-3 pb-4">
-
               <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
                 <div className="row">
                   <div className="col-md-3">
@@ -929,19 +993,12 @@ const BillVerificationList = () => {
                     </div>
                   </div>
                   <div className="col-md-1 mt-4 d-flex justify-content-center">
-                    <button
-                      className="purple-btn2"
-                      onClick={fetchFilteredData}
-
-                    >
+                    <button className="purple-btn2" onClick={fetchFilteredData}>
                       Go
                     </button>
                   </div>
                   <div className="col-md-1 mt-4 d-flex justify-content-center">
-                    <button
-                      className="purple-btn2"
-                      onClick={handleReset}
-                    >
+                    <button className="purple-btn2" onClick={handleReset}>
                       Reset
                     </button>
                   </div>
@@ -955,10 +1012,11 @@ const BillVerificationList = () => {
                       <div className="form-group">
                         <label>From Status</label>
                         <SingleSelector
-
                           options={options}
                           // value={options.value}
-                          value={options.find(option => option.value === fromStatus)}
+                          value={options.find(
+                            (option) => option.value === fromStatus
+                          )}
                           onChange={handleStatusChange}
                           placeholder={`Select Status`} // Dynamic placeholder
                           classNamePrefix="react-select"
@@ -970,7 +1028,9 @@ const BillVerificationList = () => {
                           options={options}
                           // value={options.value}
                           onChange={handleToStatusChange}
-                          value={options.find(option => option.value === toStatus)}
+                          value={options.find(
+                            (option) => option.value === toStatus
+                          )}
                           placeholder={`Select Status`} // Dynamic placeholder
                           classNamePrefix="react-select"
                         />
@@ -1016,12 +1076,26 @@ const BillVerificationList = () => {
                         placeholder="Type your keywords here"
                       />
                       <div className="input-group-append">
-                        <button type="button" className="btn btn-md btn-default"
+                        <button
+                          type="button"
+                          className="btn btn-md btn-default"
                           onClick={() => fetchSearchResults()} // Call the search function
                         >
-                          <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203" />
-                            <path d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z" fill="#8B0203" />
+                          <svg
+                            width={16}
+                            height={16}
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
+                              fill="#8B0203"
+                            />
+                            <path
+                              d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
+                              fill="#8B0203"
+                            />
                           </svg>
                         </button>
                       </div>
@@ -1086,7 +1160,6 @@ const BillVerificationList = () => {
                   overflowY: "hidden",
                 }}
               >
-
                 <DataGrid
                   rows={getTransformedRows()}
                   columns={columns}
@@ -1106,7 +1179,6 @@ const BillVerificationList = () => {
                     setSelectedBoqDetails(ids.map(String));
                     console.log("Selected Row IDs:", ids); // This will log the selected row ids array
                   }}
-
                   onRowSelectionModelChange={(ids) => {
                     setSelectedBoqDetails(ids);
                     console.log("Selected Row IDs: 2", ids);
@@ -1134,9 +1206,10 @@ const BillVerificationList = () => {
                       color: "#8b0203",
                     },
                     // Black for header (select all) checkbox, even when checked
-                    "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root": {
-                      color: "#fff",
-                    },
+                    "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root":
+                      {
+                        color: "#fff",
+                      },
                     // Make checkboxes smaller
                     "& .MuiCheckbox-root .MuiSvgIcon-root": {
                       fontSize: "1.1rem", // adjust as needed (default is 1.5rem)
@@ -1150,7 +1223,11 @@ const BillVerificationList = () => {
               </div>
               <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                 <ul className="pagination justify-content-center d-flex">
-                  <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
                     <button
                       className="page-link"
                       onClick={() => handlePageChange(1)}
@@ -1159,7 +1236,11 @@ const BillVerificationList = () => {
                       First
                     </button>
                   </li>
-                  <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
                     <button
                       className="page-link"
                       onClick={() => handlePageChange(currentPage - 1)}
@@ -1172,7 +1253,9 @@ const BillVerificationList = () => {
                   {Array.from({ length: totalPages }, (_, index) => (
                     <li
                       key={index + 1}
-                      className={`page-item ${currentPage === index + 1 ? "active" : ""}`}
+                      className={`page-item ${
+                        currentPage === index + 1 ? "active" : ""
+                      }`}
                     >
                       <button
                         className="page-link"
@@ -1184,7 +1267,9 @@ const BillVerificationList = () => {
                   ))}
 
                   <li
-                    className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -1195,7 +1280,9 @@ const BillVerificationList = () => {
                     </button>
                   </li>
                   <li
-                    className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -1208,8 +1295,8 @@ const BillVerificationList = () => {
                 </ul>
                 <div>
                   Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                  {Math.min(currentPage * itemsPerPage, totalEntries)} of {totalEntries}{" "}
-                  entries
+                  {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
+                  {totalEntries} entries
                 </div>
               </div>
             </div>
@@ -1232,7 +1319,6 @@ const BillVerificationList = () => {
           <p>Loading...</p>
         </div>
       )}
-
 
       {/* Settings Modal */}
       <Modal

@@ -10,6 +10,7 @@ import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import MultiSelector from "../components/base/Select/MultiSelector";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const BillBookingCreate = () => {
   const [actionDetails, setactionDetails] = useState(false);
@@ -86,6 +87,7 @@ const BillBookingCreate = () => {
     // },
   ]);
   const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
+  const { id } = useParams();
 
   // Fetch tax types from API
   useEffect(() => {
@@ -358,29 +360,76 @@ const BillBookingCreate = () => {
     return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
   };
 
-  useEffect(() => {
-    const fetchBillEntries = async () => {
-      try {
-        const response = await axios.get(
-          "https://marathon.lockated.com/bill_bookings/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
-        );
-        if (response.data && Array.isArray(response.data.be_list)) {
-          setBillEntryOptions(
-            response.data.be_list.map((item) => ({
-              value: item.value,
-              label: item.name,
-            }))
-          );
-        }
-      } catch (error) {
-        console.error("Error fetching bill entries:", error);
-      }
-    };
-    fetchBillEntries();
-  }, []);
+  // useEffect(() => {
+  //   const fetchBillEntries = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         "https://marathon.lockated.com/bill_bookings/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+  //       );
+  //       if (response.data && Array.isArray(response.data.be_list)) {
+  //         setBillEntryOptions(
+  //           response.data.be_list.map((item) => ({
+  //             value: item.value,
+  //             label: item.name,
+  //           }))
+  //         );
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching bill entries:", error);
+  //     }
+  //   };
+  //   fetchBillEntries();
+  // }, []);
 
   // ...existing imports...
   // Add this useEffect after your billEntryOptions and selectedBillEntry state
+
+  useEffect(() => {
+    const fetchAndSelectBillEntry = async () => {
+      if (id) {
+        try {
+          // First fetch bill entry details
+          const response = await axios.get(
+            `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+
+          // Get bill entry options
+          const billEntryResponse = await axios.get(
+            `${baseURL}bill_bookings/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+
+          if (
+            billEntryResponse.data &&
+            Array.isArray(billEntryResponse.data.be_list)
+          ) {
+            setBillEntryOptions(
+              billEntryResponse.data.be_list.map((item) => ({
+                value: item.value,
+                label: item.name,
+              }))
+            );
+
+            // Find and set the matching bill entry option
+            const matchingEntry = billEntryResponse.data.be_list.find(
+              (item) => item.value === parseInt(id)
+            );
+            if (matchingEntry) {
+              setSelectedBillEntry({
+                value: matchingEntry.value,
+                label: matchingEntry.name,
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching bill entry:", error);
+        }
+      }
+    };
+
+    fetchAndSelectBillEntry();
+  }, [id]);
+
+  // Rest of your component code...
 
   useEffect(() => {
     if (selectedBillEntry && selectedBillEntry.value) {
