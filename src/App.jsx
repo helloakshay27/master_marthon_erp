@@ -96,6 +96,7 @@ import RuleEngineEdit from "./pages/rule-engine-edit";
 import MiscellaneousBillCreate from "./pages/miscellaneous-bill-create";
 import MiscellaneousBillList from "./pages/miscellaneous-bill-list";
 import MiscellaneousBillDetails from "./pages/miscellaneous-bill-details";
+import MiscellaneousBillEdit from "./pages/miscellaneous-bill-edit";
 
 function App() {
   return (
@@ -499,6 +500,10 @@ function App() {
           <Route
             path="/miscellaneous-bill-details/:id"
             element={<MiscellaneousBillDetails/>}
+          />
+           <Route
+            path="/miscellaneous-bill-edit/:id"
+            element={<MiscellaneousBillEdit/>}
           />
         </Routes>
       </div>

@@ -10,6 +10,7 @@ import { useParams } from "react-router-dom";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { baseURL } from "../confi/apiDomain";
 import { DownloadIcon } from "../components";
+import { Link } from "react-router-dom";
 const MiscellaneousBillDetails = () => {
   const { id } = useParams();
   const [showRows, setShowRows] = useState(false);
@@ -194,7 +195,24 @@ const MiscellaneousBillDetails = () => {
           <a href="">Home &gt; Billing &amp; Accounts &gt; Miscellaneous Bill</a>
           <h5 className="mt-3">Miscellaneous Bill </h5>
           <div className="row container-fluid my-4 align-items-center">
+             
             <div className="col-md-12 px-2">
+                <div className="d-flex justify-content-end m-2">
+                       
+                          <Link
+                            to={`/miscellaneous-bill-edit/${id}`}
+                            className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+            
+                            <button class="purple-btn1" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="#8b0203" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z" fill="#8b0203" />
+                                <path d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#8b0203" />
+                              </svg>
+                            </button>
+            
+                          </Link>
+                      
+                      </div>
               <div
                 className="tab-content mor-content active"
                 id="pills-tabContent"
@@ -371,7 +389,7 @@ const MiscellaneousBillDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {creditNoteData.supplier.organization_name || "-"}
+                                  {/* {creditNoteData.supplier.organization_name || "-"} */}
                                 </label>
                               </div>
                             </div>
@@ -436,7 +454,7 @@ const MiscellaneousBillDetails = () => {
 
 
 
-                        {/* <div className="tbl-container mt-3">
+                        <div className="tbl-container mt-3">
                           <table className="w-100">
                             <thead>
                               <tr>
@@ -453,7 +471,7 @@ const MiscellaneousBillDetails = () => {
                                 <th className="text-start">Total Base Cost</th>
                                 <td className="text-start" />
                                 <td className="text-start" />
-                                <td className="text-start">{creditNoteData.credit_note_amount}</td>
+                                <td className="text-start">{creditNoteData.amount}</td>
                                 <td />
                               </tr>
 
@@ -491,7 +509,7 @@ const MiscellaneousBillDetails = () => {
                                 <td className="" />
                                 <td className="text-start">
                                   {creditNoteData.taxes_and_charges
-                                    .filter((tax) => tax.addition)
+                                    .filter((tax) => tax.addition&& !tax.inclusive)
                                     .reduce((total, tax) => total + parseFloat(tax.amount), 0)
                                     .toFixed(2)}
                                 </td>
@@ -506,9 +524,9 @@ const MiscellaneousBillDetails = () => {
                                 <td className="text-start">
                                   {(
                                     creditNoteData.taxes_and_charges
-                                      .filter((tax) => tax.addition)
+                                      .filter((tax) => tax.addition && !tax.inclusive)
                                       .reduce((total, tax) => total + parseFloat(tax.amount), 0) +
-                                    parseFloat(creditNoteData.credit_note_amount || 0)
+                                    parseFloat(creditNoteData.amount || 0)
                                   ).toFixed(2)}
                                 </td>
                                 <td />
@@ -556,7 +574,7 @@ const MiscellaneousBillDetails = () => {
                               </tr>
 
                              
-                              <tr>
+                              {/* <tr>
                                 <th className="text-start">Payable Amount</th>
                                 <td className="text-start" />
                                 <td className="" />
@@ -566,14 +584,39 @@ const MiscellaneousBillDetails = () => {
                                       (total, tax) =>
                                         total + (tax.addition ? parseFloat(tax.amount) : -parseFloat(tax.amount)),
                                       0
-                                    ) + creditNoteData.credit_note_amount
+                                    ) + creditNoteData.amount
                                   ).toFixed(2)}
                                 </td>
                                 <td />
-                              </tr>
+                              </tr> */}
+
+                              <tr>
+  <th className="text-start">Payable Amount</th>
+  <td className="text-start" />
+  <td className="" />
+  <td className="text-start">
+    {(
+      creditNoteData.taxes_and_charges.reduce(
+        (total, tax) => {
+          if (tax.addition && !tax.inclusive) {
+            // Add only non-inclusive addition taxes
+            return total + parseFloat(tax.amount);
+          } else if (!tax.addition && !tax.inclusive) {
+            // Subtract only non-inclusive deduction taxes
+            return total - parseFloat(tax.amount);
+          }
+          // Ignore inclusive taxes for both addition and deduction
+          return total;
+        },
+        parseFloat(creditNoteData.amount || 0)
+      )
+    ).toFixed(2)}
+  </td>
+  <td />
+</tr>
                             </tbody>
                           </table>
-                        </div> */}
+                        </div>
                         <div className="d-flex justify-content-between mt-3 me-2">
                           <h5 className=" ">Document Attachment</h5>
                         </div>
