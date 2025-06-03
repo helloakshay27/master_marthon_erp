@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
 import DropdownCollapseIcon from "../../common/Icon/DropdownCollapseIcon";
 import { se } from "date-fns/locale";
 
@@ -11,7 +12,36 @@ const transposeData = (data, columns) => {
   }));
 };
 
+// InfoTooltip component for cell hover
+const InfoTooltip = ({ content, anchorEl }) => {
+  if (!anchorEl) return null;
+  const rect = anchorEl.getBoundingClientRect();
+  const style = {
+    position: "fixed",
+    top: rect.top + rect.height / 2,
+    left: rect.right + 10,
+    transform: "translateY(-50%)",
+    background: "linear-gradient(to bottom, white, #f0f0f0)",
+    border: "1px solid #f3f3f3",
+    borderBottom: "4px solid #8b0203",
+    borderRadius: "8px",
+    boxShadow: "0 3px 6px rgba(0,0,0,0.1)",
+    padding: "10px",
+    fontSize: "11px",
+    zIndex: 9999,
+    minWidth: "100px",
+    maxWidth: "200px",
+    color: "#000",
+    whiteSpace: "pre-wrap",
+  };
+  return ReactDOM.createPortal(
+    <div style={style}>{content}</div>,
+    document.body
+  );
+};
+
 export default function Table({
+  isLowSpace = false,
   columns,
   data = [], // Ensure data is always an array
   isAccordion = false,
@@ -40,6 +70,8 @@ export default function Table({
   const [selectedRows, setSelectedRows] = useState([]);
   const [loadedSerializedData, setLoadedSerializedData] = useState([]);
   const [openAccordionIndex, setOpenAccordionIndex] = useState(null);
+  const [tooltipAnchor, setTooltipAnchor] = useState(null);
+  const [tooltipContent, setTooltipContent] = useState("");
 
   const toggleAccordion = (index) => {
     setOpenAccordionIndex(openAccordionIndex === index ? null : index);
@@ -87,7 +119,6 @@ export default function Table({
     }, 200); // Wait for 200ms to ensure serializedData is stable
 
     return () => clearTimeout(timer); // Cleanup timeout on component unmount or serializedData change
-    
   }, [serializedData]);
 
   if (!loadedSerializedData.length && serializedData.length > 0) {
@@ -214,7 +245,8 @@ export default function Table({
                     </td>
                     {row.values.map((value, valueIndex) => {
                       // --- Begin: robust serialized comparison logic ---
-                      const serializedEntry = loadedSerializedData[valueIndex] || {};
+                      const serializedEntry =
+                        loadedSerializedData[valueIndex] || {};
                       const originalValue = value === "_" ? "" : value;
 
                       // Map tableColumn keys to serializedEntry keys if needed
@@ -233,7 +265,9 @@ export default function Table({
                       // Try direct key, mapped key, or fallback to undefined
                       let serializedValue =
                         serializedEntry[
-                          keyMapping[columnKey] ? keyMapping[columnKey] : columnKey
+                          keyMapping[columnKey]
+                            ? keyMapping[columnKey]
+                            : columnKey
                         ];
 
                       // If not found, try inside charges or bid_materials for special keys
@@ -315,7 +349,11 @@ export default function Table({
                           }
                         >
                           {customRender[columnKey] ? (
-                            customRender[columnKey](value, valueIndex, data[valueIndex])
+                            customRender[columnKey](
+                              value,
+                              valueIndex,
+                              data[valueIndex]
+                            )
                           ) : shouldCompare && serializedValue !== "" ? (
                             <div
                               style={{
@@ -352,11 +390,10 @@ export default function Table({
 
   return (
     <div
-      className="tbl-container px-0 mt-3"
-      
+      className="px-0 mt-3 max-h-none"
       {...rest}
     >
-      <table className="w-100">
+      <table className="w-100 tbl-container">
         <thead>
           <tr>
             {showCheckbox && (
@@ -373,11 +410,13 @@ export default function Table({
             {columns.map((col, index) => (
               <th
                 key={index}
-                className="main2-th"
                 style={{
                   whiteSpace: "nowrap",
                   textTransform: "capitalize",
-                  width: col.label === "srNo" ? "100px !important" : "70px",
+                  width:
+                    col.label === "srNo"
+                      ? "100px !important"
+                      : "70px !important",
                 }}
               >
                 {col.label}
@@ -389,7 +428,7 @@ export default function Table({
         <tbody>
           {data.map((row, rowIndex) => (
             <>
-              <tr key={rowIndex}>
+              <tr key={rowIndex} style={{ margin: "0", padding: "0" }}>
                 {showCheckbox && (
                   <td>
                     <input
@@ -409,7 +448,17 @@ export default function Table({
                   const cellContent = customRender[col.key]
                     ? customRender[col.key](cell, rowIndex, row)
                     : cell;
-
+                  // Tooltip logic for low space: show for all except srNo
+                  const showTooltip = isLowSpace && col.key !== "srNo";
+                  // Tooltip content: try to stringify if not string
+                  const tooltipValue =
+                    typeof cellContent === "string"
+                      ? cellContent
+                      : typeof cell === "string"
+                      ? cell
+                      : cell !== undefined && cell !== null
+                      ? String(cell)
+                      : "";
                   return (
                     <td
                       key={cellIndex}
@@ -417,13 +466,31 @@ export default function Table({
                         textAlign: "left",
                         whiteSpace: enableOverflowScroll ? "nowrap" : "normal",
                         overflow: enableOverflowScroll ? "hidden" : "visible",
-                        textOverflow: enableOverflowScroll
-                          ? "ellipsis"
-                          : "clip",
-                        width: col.key === "srNo" ? "100px !important" : "70px", // Set width for srNo column
-                        minWidth:
-                          isMinWidth && col.key !== "srNo" ? isWidth ? "150px" :  "300px" : "70px", // Set minimum width if minWidth prop is true
+                        textOverflow: enableOverflowScroll ? "ellipsis" : "clip",
+                        width:
+                          col.key === "srNo"
+                            ? "100px !important"
+                            : isLowSpace
+                            ? "10px !important"
+                            : "70px !important",
+                        padding: isLowSpace ? "0 5px" : "",
                       }}
+                      onMouseEnter={
+                        showTooltip
+                          ? (e) => {
+                              setTooltipAnchor(e.currentTarget);
+                              setTooltipContent(tooltipValue);
+                            }
+                          : undefined
+                      }
+                      onMouseLeave={
+                        showTooltip
+                          ? () => {
+                              setTooltipAnchor(null);
+                              setTooltipContent("");
+                            }
+                          : undefined
+                      }
                     >
                       {col.key === "srNo" ? (
                         <div className="d-flex align-items-center gap-2">
@@ -431,21 +498,21 @@ export default function Table({
                             {(currentPage - 1) * pageSize + rowIndex + 1}
                           </span>
                           {isAccordion && (
-                          <button
-                            className="purple-btn2 d-flex align-items-center"
-                            style={{
-                              borderRadius: "50%", // Fully rounded border
-                              width: "32px", // Equal width
-                              height: "32px", // Equal height
-                              padding: "0", // Remove padding for a perfect circle
-                            }}
-                            onClick={() => toggleAccordion(rowIndex)}
-                          >
-                            <DropdownCollapseIcon
-                              isCollapsed={openAccordionIndex !== rowIndex}
-                            />
-                          </button>
-                            )}
+                            <button
+                              className="purple-btn2 d-flex align-items-center"
+                              style={{
+                                borderRadius: "50%", // Fully rounded border
+                                width: "32px", // Equal width
+                                height: "32px", // Equal height
+                                padding: "0", // Remove padding for a perfect circle
+                              }}
+                              onClick={() => toggleAccordion(rowIndex)}
+                            >
+                              <DropdownCollapseIcon
+                                isCollapsed={openAccordionIndex !== rowIndex}
+                              />
+                            </button>
+                          )}
                         </div>
                       ) : (
                         cellContent
@@ -483,7 +550,10 @@ export default function Table({
               </tr>
               {openAccordionIndex === rowIndex && accordionRender && (
                 <tr style={{ border: "none" }}>
-                  <td colSpan={columns.length + 1} style={{ padding: "0", margin: "0" }}>
+                  <td
+                    colSpan={columns.length + 1}
+                    style={{ padding: "0", margin: "0" }}
+                  >
                     <div style={{ textAlign: "left" }}>
                       {accordionRender(row, rowIndex)}
                     </div>
@@ -494,6 +564,10 @@ export default function Table({
           ))}
         </tbody>
       </table>
+      {/* Tooltip for low space cell */}
+      {isLowSpace && tooltipContent !== "" && tooltipContent !== "-" && (
+        <InfoTooltip content={tooltipContent} anchorEl={tooltipAnchor} />
+      )}
     </div>
   );
 }
