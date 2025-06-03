@@ -4815,14 +4815,14 @@ useEffect(() => {
             {/* user list data */}
             <div className="main-content ">
               <div
-                className="p-3  "
+                className="p-3"
                 style={{
                   overflowX: "auto",
                   //   height: "calc(100vh - 100px)",
                   //   // height: "100vh"
                 }}
               >
-                  <div className="d-flex flex-row-reverse">
+                  <div className="d-flex flex-row-reverse mb-3" >
                     <div className=" d-flex align-items-center gap-1 py-3 mx-1 " style={{
                                 backgroundColor: "#fff2e8",
                                 color: "#8b0203",
