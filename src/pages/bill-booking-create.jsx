@@ -355,9 +355,32 @@ const BillBookingCreate = () => {
   const formatDateForInput = (dateString) => {
     if (!dateString) return "";
 
-    // If date is in DD-MM-YYYY format, convert to YYYY-MM-DD
-    const [day, month, year] = dateString.split("-");
-    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    try {
+      // Handle ISO date string from API
+      if (dateString.includes("T")) {
+        const date = new Date(dateString);
+        return date.toISOString().split("T")[0];
+      }
+
+      // Handle DD/MM/YYYY format
+      if (dateString.includes("/")) {
+        const [day, month, year] = dateString.split("/");
+        return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+      }
+
+      // Handle DD-MM-YYYY format
+      if (dateString.includes("-")) {
+        const [day, month, year] = dateString.split("-");
+        if (year && month && day) {
+          return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+        }
+      }
+
+      return "";
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "";
+    }
   };
 
   // useEffect(() => {
@@ -499,8 +522,8 @@ const BillBookingCreate = () => {
 
             totalAmount: data.bill_amount || "", // <-- Add this line
             invoiceNumber: data.bill_no || "", // Auto-populate from bill_no
-            paymentDueDate:
-              formatDateForInput(data.purchase_order?.due_date) || "",
+            paymentDueDate: formatDateForInput(data.due_date) || "",
+
             // data.due_date || "", // Add this line to get due date
           }));
 
@@ -2128,14 +2151,6 @@ const BillBookingCreate = () => {
                         className="form-control"
                         type="number"
                         value={getSelectedGRNsAllIncTax()}
-                        // value={formData.currentAdvanceDeduction}
-                        // onChange={(e) =>
-                        //   setFormData((prev) => ({
-                        //     ...prev,
-                        //     currentAdvanceDeduction: e.target.value,
-                        //   }))
-                        // all inclusive cost should be grn seleted all inclusive cost
-                        // }
                         placeholder="Enter advance deduction amount"
                         disabled
                       />
@@ -2260,7 +2275,15 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="date"
-                        value={formData.paymentDueDate}
+                        // value={formData.paymentDueDate}
+                        value={formData.paymentDueDate} // Keep the ISO format for the value
+                        // value={
+                        //   formData.paymentDueDate
+                        //     ? new Date(
+                        //         formData.paymentDueDate
+                        //       ).toLocaleDateString("en-GB")
+                        //     : ""
+                        // }
                         onChange={(e) =>
                           setFormData((prev) => ({
                             ...prev,
