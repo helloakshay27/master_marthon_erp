@@ -441,6 +441,13 @@ function Members() {
                 <li>
                   <Link to="/debit-note-list">Debit Note List</Link>
                 </li>
+                 <h5>___Miscellaneous Bill___</h5>
+                <li>
+                  <Link to="/miscellaneous-bill-create">Miscellaneous Bill Create</Link>
+                </li>
+                 <li>
+                  <Link to="/miscellaneous-bill-list">Miscellaneous Bill List</Link>
+                </li>
                 <h5>___PO Advance___</h5>
                 <li>
                   <Link to="/po-advance-note-details/:id">
