@@ -2136,7 +2136,7 @@ export default function BulkCounterOfferModalTwo({
                                     : [];
                                 })()
                               }
-                              defaultValue={item?.percentage || ""}
+                              defaultValue={item?.percentage || item?.taxChargePerUom || ""}
                               onChange={(value) =>
                                 // handleTaxChargeChange(
                                 //   tableId,
