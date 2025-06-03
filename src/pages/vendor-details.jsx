@@ -455,7 +455,6 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
   const tableContainerStyle = {
     overflowX: "auto", // Enable horizontal scrolling
     maxWidth: "100%", // Ensure the table doesn't overflow its container
-    marginTop: "10px",
   };
 
   const fixedColumnStyle = {
@@ -468,8 +467,8 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
   };
 
   const otherColumnsStyle = {
-    minWidth: "120px", // Set a fixed minimum width for other columns
-    width: "auto", // Allow the other columns to take up available space
+    minWidth: "10px", // Set a fixed minimum width for other columns
+    width: "120px", // Allow the other columns to take up available space
   };
 
   const [loading, setLoading] = useState(true);
@@ -3149,7 +3148,7 @@ useEffect(() => {
                     <div className="card-body">
                       {/* {console.log("Linked Event Data:", linkedEventData)} */}
                       {linkedEventData.length > 0 ? (
-                        <div style={tableContainerStyle}>
+                        <div>
                           <Table
                             columns={[
                               { label: "Material", key: "descriptionOfItem" },
@@ -4718,7 +4717,7 @@ useEffect(() => {
                             </div>
                           )}
                         </div>
-                        {/* <div className="col-12 pb-4 pt-3"
+                        <div className="col-12 pb-4 pt-3"
                         style={{
                             // borderTop: "1px solid #ccc",
                             borderBottom: "1px solid #ccc",
@@ -4780,7 +4779,7 @@ useEffect(() => {
               </div>
             </div>
           )}
-        </div> */}
+        </div>
                       </div>
                     </div>
                   </div>
@@ -4823,9 +4822,18 @@ useEffect(() => {
                   //   // height: "100vh"
                 }}
               >
-                <div className="card mx-3 p-4 mt-3 pb-4 mb-2 ">
                   <div className="d-flex flex-row-reverse">
-                    <div className="eventList-child1 d-flex align-items-center gap-1 py-3 mx-1 ">
+                    <div className=" d-flex align-items-center gap-1 py-3 mx-1 " style={{
+                                backgroundColor: "#fff2e8",
+                                color: "#8b0203",
+                                padding: "5px 10px",
+                                borderRadius: "5px",
+                                marginLeft: "25px",
+                                fontSize: "0.85rem",
+                                fontWeight: "bold",
+                                borderColor: "#ffbb96",
+                                textTransform: "uppercase",
+                              }}>
                       {/* {event.endsIn ? ( */}
 
                       <div className="d-flex align-items-center gap-1 ">
@@ -4840,8 +4848,8 @@ useEffect(() => {
                       {/* )} */}
                     </div>
                   </div>
-                  <div className="card p-2 m-1">
-                    <div className="card-header4">
+                  {/* <div className="card p-2 m-1"> */}
+                    <div className="" style={{ padding: "10px 0px !important" }}>
                       <div className="d-flex justify-content-between align-items-center ">
                         <div className="d-flex justify-content-between">
                           {/* <pre>{JSON.stringify(additionalColumns, null, 2)}</pre>
@@ -4945,7 +4953,7 @@ useEffect(() => {
 </div>
                      )} 
 
-                    <div className="card-body">
+                    {/* <div className="card-body"> */}
                       <div style={tableContainerStyle}>
                         <Table
                           columns={[
@@ -4975,10 +4983,10 @@ useEffect(() => {
                             },
                             { label: "Landed Amount", key: "landedAmount" },
                             { label: "Total", key: "total" },
-                            {
-                              label: "Participant Attachment",
-                              key: "attachment",
-                            },
+                            // {
+                            //   label: "Participant Attachment",
+                            //   key: "attachment",
+                            // },
                             { label: "Vendor Remark", key: "vendorRemark" },
                             { label: "Tax Rate", key: "taxRate" },
                             ...additionalColumns, // Dynamically add extra columns
@@ -5981,6 +5989,7 @@ useEffect(() => {
                               return acc;
                             }, {}),
                           }}
+                          isLowSpace={true}
                         />
                       </div>
                       <div className="d-flex justify-content-end align-items-start gap-3 w-100">
@@ -6024,8 +6033,8 @@ useEffect(() => {
                         </h5>
                       </div>
                       {/* <pre>{JSON.stringify(payload, null, 2)}</pre> */}
-                    </div>
-                  </div>
+                    {/* </div> */}
+                  {/* </div> */}
 
                   <hr
                     style={{ borderTop: "2px solid #ccc", margin: "20px 0" }}
@@ -6281,7 +6290,7 @@ useEffect(() => {
                       </button>
                     </div>
                         
-                    <Table
+                    {/* <Table
                     columns={[
                       { label: "Activity Name", key: "activity_name" },
                       { label: "Activity Type", key: "activity_type" },
@@ -6292,10 +6301,9 @@ useEffect(() => {
                       ...log,
                       created_at: new Date(log.created_at).toLocaleString(),
                     }))}
-                  />    
+                  />     */}
 
                   </div>
-                </div>
               </div>
             </div>
           </div>
