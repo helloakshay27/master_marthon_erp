@@ -376,7 +376,7 @@ const MiscellaneousBillEdit = () => {
     console.log("payload:", payload)
 
     const handleUpdate = async () => {
-    // setLoading2(true)
+    setLoading(true)
     const payload = {
     miscellaneous_bill: {
           
@@ -416,22 +416,36 @@ const MiscellaneousBillEdit = () => {
       console.log("Response:", response.data);
     //   if (response.status === 201) {
         alert("Miscellaneous Bill updated successfully!");
-        // setLoading2(false)
+        setLoading(false)
         navigate(`/miscellaneous-bill-details/${id}`); // Navigate to the list page
     //   }
     } catch (error) {
       console.error("Error submitting Miscellaneous Bill:", error);
-    //   setLoading2(false)
+      setLoading(false)
       alert("Failed to update Miscellaneous Bill. Please try again.");
     } finally {
-    //   setLoading2(false)
+      setLoading(false)
     }
   };
 
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
-    if (!creditNoteData) return <div>No data found</div>;
+    // if (loading) return <div>Loading...</div>;
+    // if (error) return <div>Error: {error}</div>;
+    if (!creditNoteData) return <div> {loading && (
+                <div className="loader-container">
+                    <div className="lds-ring">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <p>Loading...</p>
+                </div>
+            )}</div>;
 
     return (
         <>

@@ -154,7 +154,7 @@ const MiscellaneousBillDetails = () => {
 
     try {
       const response = await axios.patch(
-        `${baseURL}credit_notes/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}miscellaneous_bills/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         payload, // The request body containing status and remarks
         {
           headers: {
@@ -184,9 +184,23 @@ const MiscellaneousBillDetails = () => {
   };
 
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!creditNoteData) return <div>No data found</div>;
+  // if (loading) return <div>Loading...</div>;
+  // if (error) return <div>Error: {error}</div>;
+  if (!creditNoteData) return <div> {loading && (
+                <div className="loader-container">
+                    <div className="lds-ring">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <p>Loading...</p>
+                </div>
+            )}</div>;
 
   return (
     <>
