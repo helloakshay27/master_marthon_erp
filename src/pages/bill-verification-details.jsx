@@ -336,7 +336,7 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.company_name || ""}
+                          {billDetails?.company_name || "-"}
                         </label>
                       </div>
                     </div>
@@ -349,7 +349,7 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.project_name || ""}
+                          {billDetails?.project_name || "-"}
                         </label>
                       </div>
                     </div>
@@ -362,7 +362,7 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.site_name || ""}
+                          {billDetails?.site_name || "-"}
                         </label>
                       </div>
                     </div>
@@ -375,7 +375,7 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.pms_supplier || ""}
+                          {billDetails?.pms_supplier || "-"}
                         </label>
                       </div>
                     </div>
@@ -388,7 +388,7 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.po_number || ""}
+                          {billDetails?.po_number || "-"}
                         </label>
                       </div>
                     </div>
@@ -414,6 +414,7 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
+                          {"-"}
                         </label>
                       </div>
                     </div>
@@ -439,6 +440,11 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
+                          {billDetails.created_at
+                                    ? new Date(
+                                      billDetails.created_at
+                                    ).toLocaleDateString()
+                                    : "-"}
                         </label>
                       </div>
                     </div>
@@ -451,7 +457,7 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.mode_of_submission || ""}
+                          {billDetails?.mode_of_submission || "-"}
                         </label>
                       </div>
                     </div>
@@ -477,7 +483,7 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.bill_date || ""}
+                          {billDetails?.bill_date || "-"}
                         </label>
                       </div>
                     </div>
@@ -490,7 +496,7 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.vendor_remark || ""}
+                          {billDetails?.vendor_remark || "-"}
                         </label>
                       </div>
                     </div>
@@ -580,7 +586,7 @@ const BillVerificationDetails = () => {
                     </div>
                   </div>
                 </div>
-                <div className="tbl-container mt-3">
+                {/* <div className="tbl-container mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -643,6 +649,61 @@ const BillVerificationDetails = () => {
                           </tr>
                         ))
                       )}
+                    </tbody>
+                  </table>
+                </div> */}
+
+
+                <div className="tbl-container mt-3">
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th className="text-start">Sr. No.</th>
+                        <th className="text-start">Document Name</th>
+                        <th className="text-start">No. of Documents</th>
+                        <th className="text-start">Attach Additional Copy</th>
+                      </tr>
+                    </thead>
+                    {/* // Replace your existing table body with this */}
+                    <tbody>
+                      {documents.map((doc, index) => (
+                        <tr key={index}>
+                          <td className="text-start">{index + 1}</td>
+                          <td className="text-start">{doc.document_type}</td>
+                          <td
+                            className="text-start"
+                            style={{
+                              color: "#8b0203",
+                              textDecoration: "underline",
+                              cursor: "pointer",
+                            }}
+                            onClick={() =>
+                              handleDocumentCountClick(doc.document_type)
+                            }
+                          >
+                            {doc.attachments.length}
+                          </td>
+                          <td className="text-start">
+                            <button
+                              className="text-decoration-underline border-0 bg-transparent"
+                              style={{
+                                color: "#8b0203",
+                                textDecoration: "underline",
+                                cursor: "pointer",
+                              }}
+                              onClick={() => {
+                                setNewDocument((prev) => ({
+                                  ...prev,
+                                  document_type: doc.document_type,
+                                }));
+                                openattachModal();
+                              }}
+                            >
+                              + Attach
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -785,7 +846,7 @@ const BillVerificationDetails = () => {
                             <td className="text-start">
                               {log.status
                                 ? log.status.charAt(0).toUpperCase() +
-                                  log.status.slice(1)
+                                log.status.slice(1)
                                 : ""}
                             </td>
                             <td className="text-start">{log.remarks || ""}</td>
@@ -843,25 +904,41 @@ const BillVerificationDetails = () => {
         className="modal-centered-custom"
       >
         <Modal.Header closeButton>
-          <h5>Attach Other Document</h5>
+          <h5>Attach Document</h5>
         </Modal.Header>
         <Modal.Body>
           <div className="row">
             <div className="col-md-12">
               <div className="form-group">
                 <label>Name of the Document</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={newDocument.document_type}
-                  onChange={(e) =>
-                    setNewDocument((prev) => ({
-                      ...prev,
-                      document_type: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter document name"
-                />
+                {newDocument.document_type &&
+                  documents.find(
+                    (doc) =>
+                      doc.isDefault &&
+                      doc.document_type === newDocument.document_type
+                  ) ? (
+                  // For default document types - show as disabled input
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.document_type}
+                    disabled
+                  />
+                ) : (
+                  // For new document types - allow input
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.document_type}
+                    onChange={(e) =>
+                      setNewDocument((prev) => ({
+                        ...prev,
+                        document_type: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter document name"
+                  />
+                )}
               </div>
             </div>
             <div className="col-md-12 mt-2">
@@ -875,26 +952,75 @@ const BillVerificationDetails = () => {
                 />
               </div>
             </div>
+            {/* Add this new section for file name editing */}
+            {newDocument.attachments.length > 0 && (
+              <div className="col-md-12 mt-2">
+                <div className="form-group">
+                  <label>File Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.attachments[0].filename}
+                    onChange={(e) => {
+                      setNewDocument((prev) => ({
+                        ...prev,
+                        attachments: [
+                          {
+                            ...prev.attachments[0],
+                            filename: e.target.value,
+                          },
+                        ],
+                      }));
+                    }}
+                    placeholder="Enter file name"
+                  />
+                </div>
+              </div>
+            )}
           </div>
-          <div className="row mt-2 justify-content-center">
-            <div className="col-md-4">
-              <button
-                className="purple-btn2 w-100"
-                onClick={handleAttachDocument}
-                disabled={
-                  !newDocument.document_type ||
-                  newDocument.attachments.length === 0
-                }
-              >
-                Attach
-              </button>
-            </div>
-            <div className="col-md-4">
-              <button className="purple-btn1 w-100" onClick={closeattachModal}>
-                Cancel
-              </button>
+
+          <div className="row mt-3 justify-content-center">
+            <div className="col-md-8 d-flex justify-content-center align-items-center gap-4">
+              <div className="col-md-4">
+                <button
+                  className="purple-btn2 w-100"
+                  onClick={handleAttachDocument}
+                  disabled={
+                    !newDocument.document_type ||
+                    newDocument.attachments.length === 0
+                  }
+                >
+                  Attach
+                </button>
+              </div>
+              <div className="col-md-4 ">
+                <button className="purple-btn1 w-100" onClick={closeattachModal}>
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
+          {/* <div className="row mt-3 justify-content-center">
+                 <div className="col-md-4">
+                   <button
+                     className="purple-btn2 w-100"
+                     onClick={handleAttachDocument}
+                     disabled={
+                       !newDocument.document_type ||
+                       newDocument.attachments.length === 0
+                     }
+                   >
+                     Attach
+                   </button>
+                 </div>
+                 <div className="col-md-4">
+                   <button className="purple-btn1 w-100" onClick={closeattachModal}>
+                     Cancel
+                   </button>
+                 </div>
+               </div> */}
+
+
         </Modal.Body>
       </Modal>
       {/* attach document */}
@@ -1002,7 +1128,7 @@ const BillVerificationDetails = () => {
                     <th>Attachment Name</th>
                     <th>Upload Date</th>
                     <th>Uploaded By</th>
-                    <th>Action</th>
+                    <th>Document Preview</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1025,6 +1151,8 @@ const BillVerificationDetails = () => {
                             // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
                             `${baseURL}bill_entries/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
                           }
+  //                          target="_blank"
+  // rel="noopener noreferrer"
                           download={attachment.filename}
                         >
                           <DownloadIcon />
@@ -1047,7 +1175,7 @@ const BillVerificationDetails = () => {
                     <th>Attachment Name</th>
                     <th>Upload Date</th>
                     <th>Uploaded By</th>
-                    <th>Action</th>
+                    <th>Document Preview</th>
                   </tr>
                 </thead>
                 <tbody>
