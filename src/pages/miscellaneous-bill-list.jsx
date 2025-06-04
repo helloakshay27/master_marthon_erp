@@ -84,17 +84,17 @@ const MiscellaneousBillList = () => {
     }, []);
 
 
-    const fetchCreditNotes = async () => {
+    const fetchCreditNotes = async (page) => {
 
         try {
             setLoading(true); // Start loading
-            let url = `${baseURL}miscellaneous_bills?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+            let url = `${baseURL}miscellaneous_bills?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
             // if (activeSearch) {
             //     url += `&q[credit_note_no_or_credit_note_date_or_credit_note_amount_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_purchase_order_supplier_full_name_cont]=${activeSearch}`;
             // }
-            // if (filterCompanyId) url += `&q[company_id_eq]=${filterCompanyId}`;
-            // if (filterProjectId) url += `&q[project_id_eq]=${filterProjectId}`;
-            // if (filterSiteId) url += `&q[site_id_eq]=${filterSiteId}`;
+            if (filterCompanyId) url += `&q[company_id_eq]=${filterCompanyId}`;
+            if (filterProjectId) url += `&q[project_id_eq]=${filterProjectId}`;
+            if (filterSiteId) url += `&q[site_id_eq]=${filterSiteId}`;
             // const response = await axios.get(
             //     `${baseURL}credit_notes?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
             // );
@@ -117,7 +117,7 @@ const MiscellaneousBillList = () => {
                     }
                     return {
                         id: entry.id,
-                        srNo: index + 1,
+                        srNo: (page - 1) * pageSize + index + 1,
                         ...entry,
                         created_at: formattedDate,
                         pms_supplier: entry.supplier?.organization_name || "-", // <-- add this line
@@ -126,9 +126,9 @@ const MiscellaneousBillList = () => {
                 })
             console.log("transform data:", transformedData)
             setCreditNotes(transformedData);
-            // setMeta(response.data.meta)
-            // setTotalPages(response.data.meta.total_pages); // Set total pages
-            // setTotalEntries(response.data.meta.total_count);
+            setMeta(response.data.meta)
+            setTotalPages(response.data.meta.total_pages); // Set total pages
+            setTotalEntries(response.data.meta.total_count);
             setLoading(false);
         } catch (err) {
             setError(err.message);
@@ -140,8 +140,8 @@ const MiscellaneousBillList = () => {
     useEffect(() => {
 
 
-        fetchCreditNotes();
-    }, []);
+        fetchCreditNotes(currentPage);
+    }, [currentPage]);
     console.log("miss list:",creditNotes)
 
 
@@ -207,103 +207,103 @@ const MiscellaneousBillList = () => {
         label: company.company_name,
     }));
     // filter
-    // const fetchFilteredData = () => {
-    //     const companyId = selectedCompany?.value || "";
-    //     const projectId = selectedProject?.value || "";
-    //     const siteId = selectedSite?.value || "";
-    //     const search = searchKeyword || "";
-    //     setFilterCompanyId(companyId);
-    //     setFilterProjectId(projectId);
-    //     setFilterSiteId(siteId);
-    //     console.log("ids filter:", companyId, projectId, siteId)
-    //     const url = `${baseURL}miscellaneous_bills?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
+    const fetchFilteredData = () => {
+        const companyId = selectedCompany?.value || "";
+        const projectId = selectedProject?.value || "";
+        const siteId = selectedSite?.value || "";
+        const search = searchKeyword || "";
+        setFilterCompanyId(companyId);
+        setFilterProjectId(projectId);
+        setFilterSiteId(siteId);
+        console.log("ids filter:", companyId, projectId, siteId)
+        const url = `${baseURL}miscellaneous_bills?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
 
-    //     // console.log("url:",url)
-    //     axios
-    //         .get(url)
-    //         .then((response) => {
-    //             const transformedData = response.data.credit_notes.map(
-    //                 (entry, index) => {
-    //                     // console.log("created_at raw:", entry.created_at);
-    //                     let formattedDate = "-";
-    //                     if (entry.created_at) {
-    //                         try {
-    //                             formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
-    //                         } catch (e) {
-    //                             formattedDate = "-";
-    //                         }
-    //                     }
-    //                     let status = entry.status;
-    //                     if (status && typeof status === "string") {
-    //                         status = status.charAt(0).toUpperCase() + status.slice(1);
-    //                     }
-    //                     return {
-    //                         id: entry.id,
-    //                         srNo: (currentPage - 1) * pageSize + index + 1,
-    //                         ...entry,
-    //                         created_at: formattedDate,
-    //                         status,
-    //                     }
-    //                 })
-    //             setCreditNotes(transformedData);
-    //             setTotalPages(response.data.meta.total_pages); // Set total pages
-    //             setTotalEntries(response.data.meta.total_count);
-    //             setMeta(response.data.meta)
-    //         })
-    //         .catch((error) => {
-    //             console.error("Error fetching filtered data:", error);
-    //         });
-    // };
-    // const handleReset = () => {
-    //     // Clear selected filters
-    //     setSelectedCompany(null);
-    //     setSelectedProject(null);
-    //     setSelectedSite(null);
-    //     setFilterCompanyId("");
-    //     setFilterProjectId("");
-    //     setFilterSiteId("");
-    //     setActiveSearch("");
-    //     setSearchKeyword("");
-    //     setCurrentPage(1); // Go to first page
+        // console.log("url:",url)
+        axios
+            .get(url)
+            .then((response) => {
+                const transformedData = response.data.bills.map(
+                    (entry, index) => {
+                        // console.log("created_at raw:", entry.created_at);
+                        let formattedDate = "-";
+                        if (entry.created_at) {
+                            try {
+                                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                            } catch (e) {
+                                formattedDate = "-";
+                            }
+                        }
+                        let status = entry.status;
+                        if (status && typeof status === "string") {
+                            status = status.charAt(0).toUpperCase() + status.slice(1);
+                        }
+                        return {
+                            id: entry.id,
+                            srNo: (currentPage - 1) * pageSize + index + 1,
+                            ...entry,
+                            created_at: formattedDate,
+                            status,
+                        }
+                    })
+                setCreditNotes(transformedData);
+                setTotalPages(response.data.meta.total_pages); // Set total pages
+                setTotalEntries(response.data.meta.total_count);
+                setMeta(response.data.meta)
+            })
+            .catch((error) => {
+                console.error("Error fetching filtered data:", error);
+            });
+    };
+    const handleReset = () => {
+        // Clear selected filters
+        setSelectedCompany(null);
+        setSelectedProject(null);
+        setSelectedSite(null);
+        setFilterCompanyId("");
+        setFilterProjectId("");
+        setFilterSiteId("");
+        setActiveSearch("");
+        setSearchKeyword("");
+        setCurrentPage(1); // Go to first page
 
-    //     // Fetch unfiltered data
-    //     axios
-    //         .get(`${baseURL}miscellaneous_bills?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-    //         .then((response) => {
-    //             const transformedData = response.data.credit_notes.map(
-    //                 (entry, index) => {
-    //                     // console.log("created_at raw:", entry.created_at);
-    //                     let formattedDate = "-";
-    //                     if (entry.created_at) {
-    //                         try {
-    //                             formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
-    //                         } catch (e) {
-    //                             formattedDate = "-";
-    //                         }
-    //                     }
-    //                     let status = entry.status;
-    //                     if (status && typeof status === "string") {
-    //                         status = status.charAt(0).toUpperCase() + status.slice(1);
-    //                     }
-    //                     return {
-    //                         id: entry.id,
-    //                         srNo: (currentPage - 1) * pageSize + index + 1,
-    //                         ...entry,
-    //                         created_at: formattedDate,
-    //                         status,
-    //                     }
-    //                 })
-    //             setCreditNotes(transformedData);
+        // Fetch unfiltered data
+        axios
+            .get(`${baseURL}miscellaneous_bills?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+            .then((response) => {
+                const transformedData = response.data.bills.map(
+                    (entry, index) => {
+                        // console.log("created_at raw:", entry.created_at);
+                        let formattedDate = "-";
+                        if (entry.created_at) {
+                            try {
+                                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                            } catch (e) {
+                                formattedDate = "-";
+                            }
+                        }
+                        let status = entry.status;
+                        if (status && typeof status === "string") {
+                            status = status.charAt(0).toUpperCase() + status.slice(1);
+                        }
+                        return {
+                            id: entry.id,
+                            srNo: (currentPage - 1) * pageSize + index + 1,
+                            ...entry,
+                            created_at: formattedDate,
+                            status,
+                        }
+                    })
+                setCreditNotes(transformedData);
 
-    //             // setCreditNotes(response.data.credit_notes);
-    //             setTotalPages(response.data.meta.total_pages); // Set total pages
-    //             setTotalEntries(response.data.meta.total_count);
-    //             setMeta(response.data.meta)
-    //         })
-    //         .catch((error) => {
-    //             console.error("Error resetting data:", error);
-    //         });
-    // };
+                // setCreditNotes(response.data.credit_notes);
+                setTotalPages(response.data.meta.total_pages); // Set total pages
+                setTotalEntries(response.data.meta.total_count);
+                setMeta(response.data.meta)
+            })
+            .catch((error) => {
+                console.error("Error resetting data:", error);
+            });
+    };
 
     //  bulk action 
     //bulkaction options 
@@ -367,126 +367,126 @@ const MiscellaneousBillList = () => {
 
     console.log("data for bulk action")
 
-    // const handleSubmit = () => {
-    //     console.log("data for bulk action");
+    const handleSubmit = () => {
+        console.log("data for bulk action");
 
-    //     if (!fromStatus || !toStatus) {
-    //         alert("Please select both 'From Status' and 'To Status'.");
-    //         return;
-    //     }
+        if (!fromStatus || !toStatus) {
+            alert("Please select both 'From Status' and 'To Status'.");
+            return;
+        }
 
-    //     // Prepare data to send
-    //     const data = {
-    //         credit_ids: selectedBoqDetails,
-    //         to_status: toStatus,
-    //         comments: remark,
-    //     };
-    //     console.log("data for bulk action", data);
+        // Prepare data to send
+        const data = {
+            credit_ids: selectedBoqDetails,
+            to_status: toStatus,
+            comments: remark,
+        };
+        console.log("data for bulk action", data);
 
-    //     // Send data to API using axios
-    //     axios
-    //         .patch(
-    //             `${baseURL}miscellaneous_bills/update_bulk_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-    //             data
-    //         )
-    //         .then((response) => {
-    //             console.log('Success:', response.data);
-    //             alert('Status updated successfully ....');
-    //             // Fetch data again after successful update
-    //             fetchCreditNotes(currentPage);
-    //         })
-    //         .catch((error) => {
-    //             console.error('Error:', error);
-    //         });
-    // };
+        // Send data to API using axios
+        axios
+            .patch(
+                `${baseURL}miscellaneous_bills/update_bulk_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                data
+            )
+            .then((response) => {
+                console.log('Success:', response.data);
+                alert('Status updated successfully ....');
+                // Fetch data again after successful update
+                fetchCreditNotes(currentPage);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    };
 
     // Fetch the data when 'fromStatus' changes
-    // useEffect(() => {
-    //     if (fromStatus) { // Only fetch data if a status is selected
-    //         setLoading(true); // Show loading state while fetching
-    //         axios
-    //             .get(`${baseURL}miscellaneous_bills?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[status_eq]=${fromStatus}`)
-    //             .then((response) => {
-    //                 const transformedData = response.data.credit_notes.map(
-    //                     (entry, index) => {
-    //                         // console.log("created_at raw:", entry.created_at);
-    //                         let formattedDate = "-";
-    //                         if (entry.created_at) {
-    //                             try {
-    //                                 formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
-    //                             } catch (e) {
-    //                                 formattedDate = "-";
-    //                             }
-    //                         }
-    //                         let status = entry.status;
-    //                         if (status && typeof status === "string") {
-    //                             status = status.charAt(0).toUpperCase() + status.slice(1);
-    //                         }
-    //                         return {
-    //                             id: entry.id,
-    //                             srNo: (currentPage - 1) * pageSize + index + 1,
-    //                             ...entry,
-    //                             created_at: formattedDate,
-    //                             status,
-    //                         }
-    //                     })
-    //                 setCreditNotes(transformedData);
-    //                 //   setCreditNotes(response.data.credit_notes);
-    //                 setTotalPages(response.data.meta.total_pages); // Set total pages
-    //                 setTotalEntries(response.data.meta.total_count);
-    //                 setMeta(response.data.meta)
-    //             })
-    //             .catch((error) => {
-    //                 console.error("Error resetting data:", error);
-    //             })
-    //             .finally(() => {
-    //                 setLoading(false); // Stop loading when request is complete
-    //             });
-    //     }
-    // }, [fromStatus]);  // This will run every time 'fromStatus' changes
+    useEffect(() => {
+        if (fromStatus) { // Only fetch data if a status is selected
+            setLoading(true); // Show loading state while fetching
+            axios
+                .get(`${baseURL}miscellaneous_bills?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[status_eq]=${fromStatus}`)
+                .then((response) => {
+                    const transformedData = response.data.bills.map(
+                        (entry, index) => {
+                            // console.log("created_at raw:", entry.created_at);
+                            let formattedDate = "-";
+                            if (entry.created_at) {
+                                try {
+                                    formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                                } catch (e) {
+                                    formattedDate = "-";
+                                }
+                            }
+                            let status = entry.status;
+                            if (status && typeof status === "string") {
+                                status = status.charAt(0).toUpperCase() + status.slice(1);
+                            }
+                            return {
+                                id: entry.id,
+                                srNo: (currentPage - 1) * pageSize + index + 1,
+                                ...entry,
+                                created_at: formattedDate,
+                                status,
+                            }
+                        })
+                    setCreditNotes(transformedData);
+                    //   setCreditNotes(response.data.credit_notes);
+                    setTotalPages(response.data.meta.total_pages); // Set total pages
+                    setTotalEntries(response.data.meta.total_count);
+                    setMeta(response.data.meta)
+                })
+                .catch((error) => {
+                    console.error("Error resetting data:", error);
+                })
+                .finally(() => {
+                    setLoading(false); // Stop loading when request is complete
+                });
+        }
+    }, [fromStatus]);  // This will run every time 'fromStatus' changes
 
 
     //card filter
-    // const fetchFilteredData2 = (status) => {
-    //     const url = `${baseURL}miscellaneous_bills?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${status ? `&q[status_eq]=${status}` : ""
-    //         }`;
+    const fetchFilteredData2 = (status) => {
+        const url = `${baseURL}miscellaneous_bills?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${status ? `&q[status_eq]=${status}` : ""
+            }`;
 
-    //     axios
-    //         .get(url)
-    //         .then((response) => {
-    //             const transformedData = response.data.credit_notes.map(
-    //                 (entry, index) => {
-    //                     // console.log("created_at raw:", entry.created_at);
-    //                     let formattedDate = "-";
-    //                     if (entry.created_at) {
-    //                         try {
-    //                             formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
-    //                         } catch (e) {
-    //                             formattedDate = "-";
-    //                         }
-    //                     }
-    //                     let status = entry.status;
-    //                     if (status && typeof status === "string") {
-    //                         status = status.charAt(0).toUpperCase() + status.slice(1);
-    //                     }
-    //                     return {
-    //                         id: entry.id,
-    //                         srNo: (currentPage - 1) * pageSize + index + 1,
-    //                         ...entry,
-    //                         created_at: formattedDate,
-    //                         status,
-    //                     }
-    //                 })
-    //             setCreditNotes(transformedData);
-    //             // setCreditNotes(response.data.credit_notes);
-    //             setTotalPages(response.data.meta.total_pages); // Set total pages
-    //             setTotalEntries(response.data.meta.total_count);
-    //             // setMeta(response.data.meta);
-    //         })
-    //         .catch((error) => {
-    //             console.error("Error fetching filtered data:", error);
-    //         });
-    // };
+        axios
+            .get(url)
+            .then((response) => {
+                const transformedData = response.data.bills.map(
+                    (entry, index) => {
+                        // console.log("created_at raw:", entry.created_at);
+                        let formattedDate = "-";
+                        if (entry.created_at) {
+                            try {
+                                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                            } catch (e) {
+                                formattedDate = "-";
+                            }
+                        }
+                        let status = entry.status;
+                        if (status && typeof status === "string") {
+                            status = status.charAt(0).toUpperCase() + status.slice(1);
+                        }
+                        return {
+                            id: entry.id,
+                            srNo: (currentPage - 1) * pageSize + index + 1,
+                            ...entry,
+                            created_at: formattedDate,
+                            status,
+                        }
+                    })
+                setCreditNotes(transformedData);
+                // setCreditNotes(response.data.credit_notes);
+                setTotalPages(response.data.meta.total_pages); // Set total pages
+                setTotalEntries(response.data.meta.total_count);
+                // setMeta(response.data.meta);
+            })
+            .catch((error) => {
+                console.error("Error fetching filtered data:", error);
+            });
+    };
 
     // const fetchSearchResults = async (page = 1) => {
     //     try {
@@ -699,7 +699,7 @@ const MiscellaneousBillList = () => {
                                         data-tab="total"
                                         onClick={() => {
                                             setActiveTab("total")
-                                            // fetchFilteredData2("")
+                                            fetchFilteredData2("")
                                         }} // Fetch all data (no status filter)
                                     >
                                         <h4 className="content-box-title fw-semibold">Total</h4>
@@ -711,7 +711,7 @@ const MiscellaneousBillList = () => {
                                     <div className={`content-box tab-button ${activeTab === "draft" ? "active" : ""}`} data-tab="draft"
                                         onClick={() => {
                                             setActiveTab("draft")
-                                            // fetchFilteredData2("draft")
+                                            fetchFilteredData2("draft")
                                         }} // Fetch data with status "draft"
                                     >
                                         <h4 className="content-box-title fw-semibold">
@@ -724,7 +724,7 @@ const MiscellaneousBillList = () => {
                                     <div className={`content-box tab-button ${activeTab === "verified" ? "active" : ""}`} data-tab="draft"
                                         onClick={() => {
                                             setActiveTab("verified"); 
-                                            // fetchFilteredData2("verified")
+                                            fetchFilteredData2("verified")
                                         }}>
                                         <h4 className="content-box-title fw-semibold">
                                             Verified
@@ -738,7 +738,7 @@ const MiscellaneousBillList = () => {
                                         data-tab="pending-approval"
                                         onClick={() => {
                                             setActiveTab("submited");
-                                            // fetchFilteredData2("submited")
+                                            fetchFilteredData2("submited")
                                         }}
                                     >
                                         <h4 className="content-box-title fw-semibold">Submit</h4>
@@ -751,7 +751,7 @@ const MiscellaneousBillList = () => {
                                         data-tab="self-overdue"
                                         onClick={() => {
                                             setActiveTab("approved");
-                                            // fetchFilteredData2("approved")
+                                            fetchFilteredData2("approved")
                                         }}
                                     >
                                         <h4 className="content-box-title fw-semibold">Approved</h4>
@@ -764,7 +764,7 @@ const MiscellaneousBillList = () => {
                                         data-tab="self-overdue"
                                         onClick={() => {
                                             setActiveTab("proceed"); 
-                                            // fetchFilteredData2("proceed")
+                                            fetchFilteredData2("proceed")
                                         }}
                                     >
                                         <h4 className="content-box-title fw-semibold">Proceed</h4>
@@ -827,7 +827,7 @@ const MiscellaneousBillList = () => {
                                     <div className="col-md-1 mt-4 d-flex justify-content-center">
                                         <button
                                             className="purple-btn2"
-                                            // onClick={fetchFilteredData}
+                                            onClick={fetchFilteredData}
 
                                         >
                                             Go
@@ -836,7 +836,7 @@ const MiscellaneousBillList = () => {
                                     <div className="col-md-1 mt-4 d-flex justify-content-center">
                                         <button
                                             className="purple-btn2"
-                                            // onClick={handleReset}
+                                            onClick={handleReset}
                                         >
                                             Reset
                                         </button>
@@ -854,7 +854,7 @@ const MiscellaneousBillList = () => {
                                                     options={options}
                                                     // value={options.value}
                                                     value={options.find(option => option.value === fromStatus)}
-                                                    // onChange={handleStatusChange}
+                                                    onChange={handleStatusChange}
                                                     // onChange={handleStatusChange}
                                                     // options.find(option => option.value === status)
                                                     // value={filteredOptions.find(option => option.value === status)}
@@ -871,7 +871,7 @@ const MiscellaneousBillList = () => {
                                                     // value={options.value}
                                                     // onChange={handleToStatusChange}
                                                     value={options.find(option => option.value === toStatus)}
-                                                    // onChange={handleStatusChange}
+                                                    onChange={handleStatusChange}
                                                     // options.find(option => option.value === status)
                                                     // value={filteredOptions.find(option => option.value === status)}
                                                     // value={options.find(option => option.value === status)}
@@ -898,7 +898,7 @@ const MiscellaneousBillList = () => {
                                             <button
                                                 className="purple-btn2 m-0"
                                                 style={{ color: "white" }}
-                                                // onClick={handleSubmit}
+                                                onClick={handleSubmit}
                                             >
                                                 Submit
                                             </button>
