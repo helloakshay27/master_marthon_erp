@@ -17,6 +17,8 @@ const BillVerificationDetails = () => {
   const navigate = useNavigate();
   const [remark, setRemark] = useState(""); // State to store the remark
   const [showValidation, setShowValidation] = useState(false); // State to control validation message
+   const [remarks, setRemarks] = useState("");
+const [comments, setComments] = useState("");
 
   const [loading, setLoading] = useState(false); // Add loading state
   const [billDetails, setBillDetails] = useState(null);
@@ -224,9 +226,13 @@ const BillVerificationDetails = () => {
   };
   console.log("status:", status);
 
+ 
+
   const payload = {
     bill_entry: {
       status: status || "",
+       remarks: remarks,
+    comments: comments,
       bill_no: editableBillNo,
       bill_date: editableBillDate,
       bill_amount: editableBillAmount,
@@ -250,6 +256,8 @@ const BillVerificationDetails = () => {
       const payload = {
         bill_entry: {
           status: status || "",
+           remarks: remarks,
+    comments: comments,
           bill_no: editableBillNo,
           bill_date: editableBillDate,
           bill_amount: editableBillAmount,
@@ -718,6 +726,8 @@ const BillVerificationDetails = () => {
                       rows={3}
                       placeholder="Enter ..."
                       defaultValue={""}
+                       value={remarks}
+        onChange={(e) => setRemarks(e.target.value)}
                     />
                   </div>
                 </div>
@@ -731,6 +741,8 @@ const BillVerificationDetails = () => {
                       rows={2}
                       placeholder="Enter ..."
                       defaultValue={""}
+                         value={comments}
+        onChange={(e) => setComments(e.target.value)}
                     />
                   </div>
                 </div>
