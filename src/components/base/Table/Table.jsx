@@ -389,181 +389,186 @@ export default function Table({
   }
 
   return (
-    <div
-      className="px-0 mt-3 max-h-none"
-      {...rest}
-    >
-      <table className="w-100 tbl-container">
-        <thead>
-          <tr>
-            {showCheckbox && (
-              <th style={{ width: "50px", textAlign: "center" }}>
-                <input
-                  type="checkbox"
-                  checked={data.every((vendor) =>
-                    selectedRows.some((row) => row.id === vendor.id)
-                  )}
-                  onChange={handleSelectAllChange}
-                />
-              </th>
-            )}
-            {columns.map((col, index) => (
-              <th
-                key={index}
-                style={{
-                  whiteSpace: "nowrap",
-                  textTransform: "capitalize",
-                  width:
-                    col.label === "srNo"
-                      ? "100px !important"
-                      : "70px !important",
-                }}
-              >
-                {col.label}
-              </th>
-            ))}
-            {actionIcon && <th>Action</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row, rowIndex) => (
-            <>
-              <tr key={rowIndex} style={{ margin: "0", padding: "0" }}>
-                {showCheckbox && (
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={selectedRows.some(
-                        (selectedRow) => selectedRow.id === row.id
-                      )}
-                      onChange={() => handleRowSelection(rowIndex)}
-                    />
-                  </td>
-                )}
-                {columns.map((col, cellIndex) => {
-                  const cell =
-                    col.key === "srNo"
-                      ? (currentPage - 1) * pageSize + rowIndex + 1
-                      : row[col.key];
-                  const cellContent = customRender[col.key]
-                    ? customRender[col.key](cell, rowIndex, row)
-                    : cell;
-                  // Tooltip logic for low space: show for all except srNo
-                  const showTooltip = isLowSpace && col.key !== "srNo";
-                  // Tooltip content: try to stringify if not string
-                  const tooltipValue =
-                    typeof cellContent === "string"
-                      ? cellContent
-                      : typeof cell === "string"
-                      ? cell
-                      : cell !== undefined && cell !== null
-                      ? String(cell)
-                      : "";
-                  return (
-                    <td
-                      key={cellIndex}
-                      style={{
-                        textAlign: "left",
-                        whiteSpace: enableOverflowScroll ? "nowrap" : "normal",
-                        overflow: enableOverflowScroll ? "hidden" : "visible",
-                        textOverflow: enableOverflowScroll ? "ellipsis" : "clip",
-                        width:
-                          col.key === "srNo"
-                            ? "100px !important"
-                            : isLowSpace
-                            ? "10px !important"
-                            : "70px !important",
-                        padding: isLowSpace ? "0 5px" : "",
-                      }}
-                      onMouseEnter={
-                        showTooltip
-                          ? (e) => {
-                              setTooltipAnchor(e.currentTarget);
-                              setTooltipContent(tooltipValue);
-                            }
-                          : undefined
-                      }
-                      onMouseLeave={
-                        showTooltip
-                          ? () => {
-                              setTooltipAnchor(null);
-                              setTooltipContent("");
-                            }
-                          : undefined
-                      }
-                    >
-                      {col.key === "srNo" ? (
-                        <div className="d-flex align-items-center gap-2">
-                          <span>
-                            {(currentPage - 1) * pageSize + rowIndex + 1}
-                          </span>
-                          {isAccordion && (
-                            <button
-                              className="purple-btn2 d-flex align-items-center"
-                              style={{
-                                borderRadius: "50%", // Fully rounded border
-                                width: "32px", // Equal width
-                                height: "32px", // Equal height
-                                padding: "0", // Remove padding for a perfect circle
-                              }}
-                              onClick={() => toggleAccordion(rowIndex)}
-                            >
-                              <DropdownCollapseIcon
-                                isCollapsed={openAccordionIndex !== rowIndex}
-                              />
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        cellContent
-                      )}
-                    </td>
-                  );
-                })}
-                {actionIcon && onActionClick && (
-                  <td>
-                    <button
-                      className="p-2 bg-white border"
-                      style={{
-                        color: "#8b0203",
-                        backgroundColor: "transparent", // Remove background
-                        border: "none", // Remove border
-                        padding: "0", // Optional: Adjust padding
-                        cursor: "pointer", // Ensure pointer cursor for interactivity
-                      }}
-                      onClick={() => onActionClick(row)} // Pass the row data
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        className="bi bi-eye"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
-                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
-                      </svg>
-                    </button>
-                  </td>
-                )}
-              </tr>
-              {openAccordionIndex === rowIndex && accordionRender && (
-                <tr style={{ border: "none" }}>
-                  <td
-                    colSpan={columns.length + 1}
-                    style={{ padding: "0", margin: "0" }}
-                  >
-                    <div style={{ textAlign: "left" }}>
-                      {accordionRender(row, rowIndex)}
-                    </div>
-                  </td>
-                </tr>
+    <div className="px-0 mt-3 max-h-none" {...rest}>
+      <div style={isMinWidth ? { width: "100%", overflowX: "auto" } : {}}>
+        <table
+          className="w-100 tbl-container"
+          style={isMinWidth ? { minWidth: "1200px", tableLayout: "auto" } : {}}
+        >
+          <thead>
+            <tr>
+              {showCheckbox && (
+                <th style={{ width: "50px", textAlign: "center" }}>
+                  <input
+                    type="checkbox"
+                    checked={data.every((vendor) =>
+                      selectedRows.some((row) => row.id === vendor.id)
+                    )}
+                    onChange={handleSelectAllChange}
+                  />
+                </th>
               )}
-            </>
-          ))}
-        </tbody>
-      </table>
+              {columns.map((col, index) => (
+                <th
+                  key={index}
+                  style={{
+                    whiteSpace: "nowrap",
+                    textTransform: "capitalize",
+                    width:
+                      col.label === "srNo"
+                        ? "100px !important"
+                        : "70px !important",
+                  }}
+                >
+                  {col.label}
+                </th>
+              ))}
+              {actionIcon && <th>Action</th>}
+            </tr>
+          </thead>
+          <tbody >
+            {data.map((row, rowIndex) => (
+              <>
+                <tr key={rowIndex} style={{ margin: "0", padding: "0" }}>
+                  {showCheckbox && (
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedRows.some(
+                          (selectedRow) => selectedRow.id === row.id
+                        )}
+                        onChange={() => handleRowSelection(rowIndex)}
+                      />
+                    </td>
+                  )}
+                  {columns.map((col, cellIndex) => {
+                    const cell =
+                      col.key === "srNo"
+                        ? (currentPage - 1) * pageSize + rowIndex + 1
+                        : row[col.key];
+                    const cellContent = customRender[col.key]
+                      ? customRender[col.key](cell, rowIndex, row)
+                      : cell;
+                    // Tooltip logic for low space: show for all except srNo
+                    const showTooltip = isLowSpace && col.key !== "srNo";
+                    // Tooltip content: try to stringify if not string
+                    const tooltipValue =
+                      typeof cellContent === "string"
+                        ? cellContent
+                        : typeof cell === "string"
+                        ? cell
+                        : cell !== undefined && cell !== null
+                        ? String(cell)
+                        : "";
+                        console.log("col",col);
+                        
+                    return (
+                      <td
+                        key={cellIndex}
+                        style={{
+                          textAlign: "left",
+                          whiteSpace: enableOverflowScroll ? "nowrap" : "normal",
+                          overflow: enableOverflowScroll ? "hidden" : "visible",
+                          textOverflow: enableOverflowScroll ? "ellipsis" : "clip",
+                          width:
+                            col.key == "srNo"
+                              ? "100px !important"
+                              : isLowSpace
+                              ? "10px !important"
+                              : "70px !important",
+                          padding: isLowSpace ? "0 5px" : "",
+                          minWidth: isMinWidth && col.key !== "srNo" ? "180px" : "",
+                        }}
+                        onMouseEnter={
+                          showTooltip && isLowSpace
+                            ? (e) => {
+                                setTooltipAnchor(e.currentTarget);
+                                setTooltipContent(tooltipValue);
+                              }
+                            : undefined
+                        }
+                        onMouseLeave={
+                          showTooltip && isLowSpace
+                            ? () => {
+                                setTooltipAnchor(null);
+                                setTooltipContent("");
+                              }
+                            : undefined
+                        }
+                      >
+                        {col.key === "srNo" ? (
+                          <div className="d-flex align-items-center gap-2">
+                            <span>
+                              {(currentPage - 1) * pageSize + rowIndex + 1}
+                            </span>
+                            {isAccordion && (
+                              <button
+                                className="purple-btn2 d-flex align-items-center"
+                                style={{
+                                  borderRadius: "50%", // Fully rounded border
+                                  width: "32px", // Equal width
+                                  height: "32px", // Equal height
+                                  padding: "0", // Remove padding for a perfect circle
+                                }}
+                                onClick={() => toggleAccordion(rowIndex)}
+                              >
+                                <DropdownCollapseIcon
+                                  isCollapsed={openAccordionIndex !== rowIndex}
+                                />
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          cellContent
+                        )}
+                      </td>
+                    );
+                  })}
+                  {actionIcon && onActionClick && (
+                    <td>
+                      <button
+                        className="p-2 bg-white border"
+                        style={{
+                          color: "#8b0203",
+                          backgroundColor: "transparent", // Remove background
+                          border: "none", // Remove border
+                          padding: "0", // Optional: Adjust padding
+                          cursor: "pointer", // Ensure pointer cursor for interactivity
+                        }}
+                        onClick={() => onActionClick(row)} // Pass the row data
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          fill="currentColor"
+                          className="bi bi-eye"
+                          viewBox="0 0 16 16"
+                        >
+                          <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
+                          <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
+                        </svg>
+                      </button>
+                    </td>
+                  )}
+                </tr>
+                {openAccordionIndex === rowIndex && accordionRender && (
+                  <tr style={{ border: "none" }}>
+                    <td
+                      colSpan={columns.length + 1}
+                      style={{ padding: "0", margin: "0" }}
+                    >
+                      <div style={{ textAlign: "left" }}>
+                        {accordionRender(row, rowIndex)}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </>
+            ))}
+          </tbody>
+        </table>
+      </div>
       {/* Tooltip for low space cell */}
       {isLowSpace && tooltipContent !== "" && tooltipContent !== "-" && (
         <InfoTooltip content={tooltipContent} anchorEl={tooltipAnchor} />
