@@ -354,7 +354,7 @@ const MiscellaneousBillCreate = () => {
     const fetchSuppliers = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/miscellaneous_bills/suppliers_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}miscellaneous_bills/suppliers_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setSuppliers(response.data);
       } catch (error) {

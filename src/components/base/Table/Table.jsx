@@ -388,6 +388,14 @@ export default function Table({
     );
   }
 
+  // Reorder columns so srNo, descriptionOfItem, section are first and in order
+  const reorderedColumns = [
+    ...columns.filter((col) => col.key === "srNo"),
+    ...columns.filter((col) => col.key === "descriptionOfItem"),
+    ...columns.filter((col) => col.key === "section"),
+    ...columns.filter((col) => col.key !== "srNo" && col.key !== "descriptionOfItem" && col.key !== "section"),
+  ];
+
   return (
     <div className="px-0 mt-3 max-h-none" {...rest}>
       <div style={isMinWidth ? { width: "100%", overflowX: "auto" } : {}}>
@@ -408,16 +416,44 @@ export default function Table({
                   />
                 </th>
               )}
-              {columns.map((col, index) => (
+              {reorderedColumns.map((col, index) => (
                 <th
                   key={index}
                   style={{
                     whiteSpace: "nowrap",
                     textTransform: "capitalize",
                     width:
-                      col.label === "srNo"
+                      col.key === "srNo"
                         ? "100px !important"
                         : "70px !important",
+                    position:
+                      isLowSpace && col.key === "srNo"
+                        ? "sticky"
+                        : isLowSpace && col.key === "descriptionOfItem"
+                        ? "sticky"
+                        : isLowSpace && col.key === "section"
+                        ? "sticky"
+                        : undefined,
+                    left:
+                      isLowSpace && col.key === "srNo"
+                        ? 0
+                        : isLowSpace && col.key === "descriptionOfItem"
+                        ? 50
+                        : isLowSpace && col.key === "section"
+                        ? 180
+                        : undefined,
+                    zIndex:
+                      isLowSpace && ["srNo", "descriptionOfItem", "section"].includes(col.key)
+                        ? 2
+                        : undefined,
+                    background:
+                      isLowSpace && ["srNo", "descriptionOfItem", "section"].includes(col.key)
+                        ? "#fff"
+                        : undefined,
+                    boxShadow:
+                      isLowSpace && ["srNo", "descriptionOfItem", "section"].includes(col.key)
+                        ? "2px 0 2px -1px #eee"
+                        : undefined,
                   }}
                 >
                   {col.label}
@@ -441,7 +477,7 @@ export default function Table({
                       />
                     </td>
                   )}
-                  {columns.map((col, cellIndex) => {
+                  {reorderedColumns.map((col, cellIndex) => {
                     const cell =
                       col.key === "srNo"
                         ? (currentPage - 1) * pageSize + rowIndex + 1
@@ -471,13 +507,41 @@ export default function Table({
                           overflow: enableOverflowScroll ? "hidden" : "visible",
                           textOverflow: enableOverflowScroll ? "ellipsis" : "clip",
                           width:
-                            col.key == "srNo"
+                            col.key === "srNo"
                               ? "100px !important"
                               : isLowSpace
                               ? "10px !important"
                               : "70px !important",
                           padding: isLowSpace ? "0 5px" : "",
                           minWidth: isMinWidth && col.key !== "srNo" ? "180px" : "",
+                          position:
+                            isLowSpace && col.key === "srNo"
+                              ? "sticky"
+                              : isLowSpace && col.key === "descriptionOfItem"
+                              ? "sticky"
+                              : isLowSpace && col.key === "section"
+                              ? "sticky"
+                              : undefined,
+                          left:
+                            isLowSpace && col.key === "srNo"
+                              ? 0
+                              : isLowSpace && col.key === "descriptionOfItem"
+                              ? 50
+                              : isLowSpace && col.key === "section"
+                              ? 180
+                              : undefined,
+                          zIndex:
+                            isLowSpace && ["srNo", "descriptionOfItem", "section"].includes(col.key)
+                              ? 1
+                              : undefined,
+                          background:
+                            isLowSpace && ["srNo", "descriptionOfItem", "section"].includes(col.key)
+                              ? "#fff"
+                              : undefined,
+                          boxShadow:
+                            isLowSpace && ["srNo", "descriptionOfItem", "section"].includes(col.key)
+                              ? "2px 0 2px -1px #eee"
+                              : undefined,
                         }}
                         onMouseEnter={
                           showTooltip && isLowSpace
