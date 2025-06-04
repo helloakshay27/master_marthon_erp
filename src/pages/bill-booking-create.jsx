@@ -1356,12 +1356,6 @@ const BillBookingCreate = () => {
       0
     );
 
-  // const calculateAmountPayable = () =>
-  //   calculateTotalAmount() +
-  //   parseFloat(otherAdditions || 0) -
-  //   parseFloat(otherDeductions || 0);
-  // ...existing code...
-
   const calculateAmountPayable = () => {
     const totalAmount = parseFloat(calculateTotalAmount()) || 0;
     const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
