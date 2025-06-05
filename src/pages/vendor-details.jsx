@@ -66,6 +66,9 @@ const [sectionOptions, setSectionOptions] = useState([]); // To store section op
   const [activityLogAccordion, setActivityLogAccordion] = useState(false);
     const [activityLogs, setActivityLogs] = useState([]);
     const [activityLogsLoading, setActivityLogsLoading] = useState(false);
+const [currentPage, setCurrentPage] = useState(1);
+const pageSize = 10; // Change as needed
+
   const handledeliverySchedule = () => {
     setDeliverySchedule(!deliverySchedule);
   };
@@ -2935,6 +2938,31 @@ useEffect(() => {
     })
     .filter((name) => name !== null);
 
+    
+
+// Calculate total pages
+const totalPages = Math.ceil(data.length / pageSize);
+
+// Get current page data
+const paginatedData = data.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+// Generate page numbers (show up to 5 pages for better UX)
+const getPageNumbers = () => {
+  const maxPagesToShow = 5;
+  let start = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+  let end = Math.min(totalPages, start + maxPagesToShow - 1);
+  if (end - start < maxPagesToShow - 1) {
+    start = Math.max(1, end - maxPagesToShow + 1);
+  }
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+};
+const pageNumbers = getPageNumbers();
+
+const handlePageChange = (page) => {
+  if (page < 1 || page > totalPages || page === currentPage) return;
+  setCurrentPage(page);
+};
+
   return (
     <div className="">
       <div className="styles_projectTabsHeader__148No" id="project-header">
@@ -4955,6 +4983,7 @@ useEffect(() => {
 
                     {/* <div className="card-body"> */}
                       <div style={tableContainerStyle}>
+                      {console.log("data:-",data)}
                         <Table
                           columns={[
                             { label: "Sr No", key: "srNo" },
@@ -4991,7 +5020,10 @@ useEffect(() => {
                             { label: "Tax Rate", key: "taxRate" },
                             ...additionalColumns, // Dynamically add extra columns
                           ]}
-                          data={data}
+                          data={paginatedData.map((row, idx) => ({
+      ...row,
+      srNo: (currentPage - 1) * pageSize + idx + 1,
+    }))}
                           customRender={{
                             realisedPrice: (cell, rowIndex) => {
                               return (
@@ -5991,7 +6023,52 @@ useEffect(() => {
                           }}
                           isLowSpace={true}
                         />
+
                       </div>
+                        <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+    <ul className="pagination justify-content-center d-flex mb-0">
+      {/* First */}
+      <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+        <button className="page-link" onClick={() => handlePageChange(1)} disabled={currentPage === 1}>
+          First
+        </button>
+      </li>
+      {/* Prev */}
+      <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+        <button className="page-link" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+          Prev
+        </button>
+      </li>
+      {/* Page numbers */}
+      {pageNumbers.map((pageNumber) => (
+        <li key={pageNumber} className={`page-item ${currentPage === pageNumber ? "active" : ""}`}>
+          <button className="page-link" onClick={() => handlePageChange(pageNumber)}>
+            {pageNumber}
+          </button>
+        </li>
+      ))}
+      {/* Next */}
+      <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+        <button className="page-link" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+          Next
+        </button>
+      </li>
+      {/* Last */}
+      <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+        <button className="page-link" onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages}>
+          Last
+        </button>
+      </li>
+    </ul>
+    {/* Showing entries count */}
+    <div>
+      <p className="mb-0" style={{ fontSize: "14px" }}>
+        Showing{" "}
+        {data.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to{" "}
+        {Math.min(currentPage * pageSize, data.length)} of {data.length} entries
+      </p>
+    </div>
+  </div>
                       <div className="d-flex justify-content-end align-items-start gap-3 w-100">
                         <div className="d-flex flex-column align-items-end w-100">
                           <ShortDataTable
