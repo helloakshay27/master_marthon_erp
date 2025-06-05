@@ -17,8 +17,8 @@ const BillVerificationDetails = () => {
   const navigate = useNavigate();
   const [remark, setRemark] = useState(""); // State to store the remark
   const [showValidation, setShowValidation] = useState(false); // State to control validation message
-   const [remarks, setRemarks] = useState("");
-const [comments, setComments] = useState("");
+  const [remarks, setRemarks] = useState("");
+  const [comments, setComments] = useState("");
 
   const [loading, setLoading] = useState(false); // Add loading state
   const [billDetails, setBillDetails] = useState(null);
@@ -226,13 +226,13 @@ const [comments, setComments] = useState("");
   };
   console.log("status:", status);
 
- 
+
 
   const payload = {
     bill_entry: {
       status: status || "",
-       remarks: remarks,
-    comments: comments,
+      remarks: remarks,
+      comments: comments,
       bill_no: editableBillNo,
       bill_date: editableBillDate,
       bill_amount: editableBillAmount,
@@ -256,8 +256,8 @@ const [comments, setComments] = useState("");
       const payload = {
         bill_entry: {
           status: status || "",
-           remarks: remarks,
-    comments: comments,
+          remarks: remarks,
+          comments: comments,
           bill_no: editableBillNo,
           bill_date: editableBillDate,
           bill_amount: editableBillAmount,
@@ -413,7 +413,7 @@ const [comments, setComments] = useState("");
                         </label>
                       </div>
                     </div> */}
-                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                    {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Acceptance Date</label>
                       </div>
@@ -425,7 +425,7 @@ const [comments, setComments] = useState("");
                           {"-"}
                         </label>
                       </div>
-                    </div>
+                    </div> */}
                     {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Bill Date</label>
@@ -449,10 +449,10 @@ const [comments, setComments] = useState("");
                             <span className="text-dark">:</span>
                           </span>
                           {billDetails.created_at
-                                    ? new Date(
-                                      billDetails.created_at
-                                    ).toLocaleDateString()
-                                    : "-"}
+                            ? new Date(
+                              billDetails.created_at
+                            ).toLocaleDateString()
+                            : "-"}
                         </label>
                       </div>
                     </div>
@@ -726,8 +726,8 @@ const [comments, setComments] = useState("");
                       rows={3}
                       placeholder="Enter ..."
                       defaultValue={""}
-                       value={remarks}
-        onChange={(e) => setRemarks(e.target.value)}
+                      value={remarks}
+                      onChange={(e) => setRemarks(e.target.value)}
                     />
                   </div>
                 </div>
@@ -741,8 +741,8 @@ const [comments, setComments] = useState("");
                       rows={2}
                       placeholder="Enter ..."
                       defaultValue={""}
-                         value={comments}
-        onChange={(e) => setComments(e.target.value)}
+                      value={comments}
+                      onChange={(e) => setComments(e.target.value)}
                     />
                   </div>
                 </div>
@@ -1163,9 +1163,9 @@ const [comments, setComments] = useState("");
                             // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
                             `${baseURL}bill_entries/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
                           }
-  //                          target="_blank"
-  // rel="noopener noreferrer"
-                          download={attachment.filename}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        // download={attachment.filename}
                         >
                           <DownloadIcon />
                         </a>
@@ -1212,7 +1212,9 @@ const [comments, setComments] = useState("");
                             // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
                             `${baseURL}bill_entries/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
                           }
-                          download={attachment.filename}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        // download={attachment.filename}
                         >
                           <DownloadIcon />
                         </a>

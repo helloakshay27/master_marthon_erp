@@ -301,7 +301,7 @@ const RuleEngineCreate = () => {
 
             }
         };
-        console.log("Payload on submisiion:", payload);
+        console.log("Payload on submisiion----:", payload);
         // Send payload to API here
         try {
             const response = await axios.post(

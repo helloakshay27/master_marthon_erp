@@ -403,7 +403,7 @@ const MiscellaneousBillDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {/* {creditNoteData.supplier.organization_name || "-"} */}
+                                  {creditNoteData.pms_supplier || "-"}
                                 </label>
                               </div>
                             </div>
@@ -417,6 +417,19 @@ const MiscellaneousBillDetails = () => {
                                     <span className="text-dark">:</span>
                                   </span>
                                   {creditNoteData.gstin || "-"}
+                                </label>
+                              </div>
+                            </div>
+                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                              <div className="col-6">
+                                <label>Organization Name</label>
+                              </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData.organization_name || "-"}
                                 </label>
                               </div>
                             </div>

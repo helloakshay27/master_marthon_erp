@@ -11,7 +11,7 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import { baseURL } from "../confi/apiDomain";
 import { DownloadIcon } from "../components";
 import CreditNoteDetails from "./credit-note-details"
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 const MiscellaneousBillEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -343,11 +343,13 @@ const MiscellaneousBillEdit = () => {
 
     const payload = {
         miscellaneous_bill: {
-          
+
             bill_no: billNumber || "",
             bill_date: billDate || "",
             amount: creditNoteAmount || 0,
             status: status || "draft",
+            remarks: remark || "",
+            comments: comment || "",
             taxes_and_charges: [
                 ...rows.map((row) => ({
                     inclusive: row.inclusive,
@@ -368,7 +370,7 @@ const MiscellaneousBillEdit = () => {
                     resource_type: row.resource_type || ""
                 })),
             ],
-            
+
         }
 
     };
@@ -376,76 +378,78 @@ const MiscellaneousBillEdit = () => {
     console.log("payload:", payload)
 
     const handleUpdate = async () => {
-    setLoading(true)
-    const payload = {
-    miscellaneous_bill: {
-          
-            bill_no: billNumber || "",
-            bill_date: billDate || "",
-            amount: creditNoteAmount || 0,
-            status: status || "draft",
-            taxes_and_charges: [
-                ...rows.map((row) => ({
-                    inclusive: row.inclusive,
-                    amount: parseFloat(row.amount) || 0,
-                    remarks: row.type,
-                    addition: row.addition,
-                    percentage: parseFloat(row.percentage) || 0,
-                    resource_id: row.resource_id || null,
-                    resource_type: row.resource_type || ""
-                })),
-                ...deductionRows.map((row) => ({
-                    inclusive: row.inclusive,
-                    amount: parseFloat(row.amount) || 0,
-                    remarks: row.type,
-                    addition: row.addition || false, // Ensure addition is false for deductions
-                    percentage: parseFloat(row.percentage) || 0,
-                    resource_id: row.resource_id || null,
-                    resource_type: row.resource_type || ""
-                })),
-            ],
-            
+        setLoading(true)
+        const payload = {
+            miscellaneous_bill: {
+
+                bill_no: billNumber || "",
+                bill_date: billDate || "",
+                amount: creditNoteAmount || 0,
+                status: status || "draft",
+                remarks: remark || "",
+                comments: comment || "",
+                taxes_and_charges: [
+                    ...rows.map((row) => ({
+                        inclusive: row.inclusive,
+                        amount: parseFloat(row.amount) || 0,
+                        remarks: row.type,
+                        addition: row.addition,
+                        percentage: parseFloat(row.percentage) || 0,
+                        resource_id: row.resource_id || null,
+                        resource_type: row.resource_type || ""
+                    })),
+                    ...deductionRows.map((row) => ({
+                        inclusive: row.inclusive,
+                        amount: parseFloat(row.amount) || 0,
+                        remarks: row.type,
+                        addition: row.addition || false, // Ensure addition is false for deductions
+                        percentage: parseFloat(row.percentage) || 0,
+                        resource_id: row.resource_id || null,
+                        resource_type: row.resource_type || ""
+                    })),
+                ],
+
+            }
+        };
+
+        try {
+            const response = await axios.put(
+                `${baseURL}miscellaneous_bills/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                payload
+            );
+            console.log("Response:", response.data);
+            //   if (response.status === 201) {
+            alert("Miscellaneous Bill updated successfully!");
+            setLoading(false)
+            navigate(`/miscellaneous-bill-details/${id}`); // Navigate to the list page
+            //   }
+        } catch (error) {
+            console.error("Error submitting Miscellaneous Bill:", error);
+            setLoading(false)
+            alert("Failed to update Miscellaneous Bill. Please try again.");
+        } finally {
+            setLoading(false)
         }
     };
-
-    try {
-      const response = await axios.put(
-        `${baseURL}miscellaneous_bills/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-        payload
-      );
-      console.log("Response:", response.data);
-    //   if (response.status === 201) {
-        alert("Miscellaneous Bill updated successfully!");
-        setLoading(false)
-        navigate(`/miscellaneous-bill-details/${id}`); // Navigate to the list page
-    //   }
-    } catch (error) {
-      console.error("Error submitting Miscellaneous Bill:", error);
-      setLoading(false)
-      alert("Failed to update Miscellaneous Bill. Please try again.");
-    } finally {
-      setLoading(false)
-    }
-  };
 
 
     // if (loading) return <div>Loading...</div>;
     // if (error) return <div>Error: {error}</div>;
     if (!creditNoteData) return <div> {loading && (
-                <div className="loader-container">
-                    <div className="lds-ring">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                    </div>
-                    <p>Loading...</p>
-                </div>
-            )}</div>;
+        <div className="loader-container">
+            <div className="lds-ring">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+            <p>Loading...</p>
+        </div>
+    )}</div>;
 
     return (
         <>
@@ -590,7 +594,7 @@ const MiscellaneousBillEdit = () => {
                                                                     <span className="me-3">
                                                                         <span className="text-dark">:</span>
                                                                     </span>
-                                                                    {/* {creditNoteData.supplier.organization_name || "-"} */}
+                                                                    {creditNoteData.pms_supplier || "-"}
                                                                 </label>
                                                             </div>
                                                         </div>
@@ -604,6 +608,19 @@ const MiscellaneousBillEdit = () => {
                                                                         <span className="text-dark">:</span>
                                                                     </span>
                                                                     {creditNoteData.gstin || "-"}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                                            <div className="col-6">
+                                                                <label>Organization Name</label>
+                                                            </div>
+                                                            <div className="col-6">
+                                                                <label className="text">
+                                                                    <span className="me-3">
+                                                                        <span className="text-dark">:</span>
+                                                                    </span>
+                                                                    {creditNoteData.organization_name || "-"}
                                                                 </label>
                                                             </div>
                                                         </div>

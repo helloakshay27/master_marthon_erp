@@ -120,7 +120,7 @@ const MiscellaneousBillList = () => {
                         srNo: (page - 1) * pageSize + index + 1,
                         ...entry,
                         created_at: formattedDate,
-                        pms_supplier: entry.supplier?.organization_name || "-", // <-- add this line
+                        // pms_supplier: entry.supplier?.organization_name || "-", // <-- add this line
                         status,
                     }
                 })
