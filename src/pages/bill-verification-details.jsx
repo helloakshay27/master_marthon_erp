@@ -90,22 +90,7 @@ const BillVerificationDetails = () => {
       label: "Verified",
       value: "verified",
     },
-    // {
-    //   label: "All",
-    //   value: "all",
-    // },
-    // {
-    //   label: "Submited",
-    //   value: "submited",
-    // },
-    // {
-    //   label: "Proceed",
-    //   value: "proceed",
-    // },
-    // {
-    //   label: "Approved",
-    //   value: "approved",
-    // },
+   
   ];
 
   // Add handleDownload function
