@@ -131,6 +131,20 @@ const RuleEngineEdit = () => {
                     setSubRewardOutcome(res.data.actions[0].action_selected_model || "")
                     setParameter(res.data.actions[0].parameters || "");
                 }
+
+                            // --- Populate subOperatorOptions for each condition ---
+            const subOps = {};
+            (res.data.conditions || []).forEach((condition, idx) => {
+                const masterOp = masterOperators.find(op => op.id === String(condition.master_operator));
+                subOps[idx] = masterOp
+                    ? masterOp.subOptions.map(sub => ({
+                        value: sub.value,
+                        label: sub.name,
+                    }))
+                    : [];
+            });
+            setSubOperatorOptions(subOps);
+            // --------------------------
                 setLoading(false);
             })
             .catch((err) => {
@@ -159,6 +173,8 @@ const RuleEngineEdit = () => {
     // ...existing code...
     const [masterAttributeOptions, setMasterAttributeOptions] = useState([]);
     const [subAttributeOptions, setSubAttributeOptions] = useState({}); // key: condition idx, value: options array
+     const [masterRewardOptions, setMasterRewardOptions] = useState([]);
+    const [subRewardOptions, setSubRewardOptions] = useState([]);
 
     // Fetch master attribute options on mount
     useEffect(() => {
@@ -171,6 +187,7 @@ const RuleEngineEdit = () => {
                     label: item.display_name
                 }));
                 setMasterAttributeOptions(options);
+                setMasterRewardOptions(options)
             })
             .catch((error) => {
                 console.error("Error fetching master attributes:", error);
@@ -239,24 +256,23 @@ const RuleEngineEdit = () => {
 
     // console.log("sub attriL", subAttributeOptions)
 
-    const [masterRewardOptions, setMasterRewardOptions] = useState([]);
-    const [subRewardOptions, setSubRewardOptions] = useState([]);
+   
     // Fetch Master Reward Outcome options on mount
-    useEffect(() => {
-        axios
-            .get(`${baseURL}rule_engine/available_functions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-            .then((response) => {
-                // Assuming response.data is an array of objects with 'id' and 'display_name'
-                const options = response.data.map(item => ({
-                    value: item.id,
-                    label: item.display_name
-                }));
-                setMasterRewardOptions(options);
-            })
-            .catch((error) => {
-                console.error("Error fetching master reward outcomes:", error);
-            });
-    }, []);
+    // useEffect(() => {
+    //     axios
+    //         .get(`${baseURL}rule_engine/available_functions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+    //         .then((response) => {
+    //             // Assuming response.data is an array of objects with 'id' and 'display_name'
+    //             const options = response.data.map(item => ({
+    //                 value: item.id,
+    //                 label: item.display_name
+    //             }));
+    //             setMasterRewardOptions(options);
+    //         })
+    //         .catch((error) => {
+    //             console.error("Error fetching master reward outcomes:", error);
+    //         });
+    // }, []);
 
     // Fetch sub reward options when masterRewardOutcome changes
     useEffect(() => {
@@ -279,109 +295,181 @@ const RuleEngineEdit = () => {
         }
     }, [masterRewardOutcome]);
 
-    const [masterOperatorOptions, setMasterOperatorOptions] = useState([]);
-    const [subOperatorOptions, setSubOperatorOptions] = useState({}); // key: condition idx, value: options array
-    // Fetch master operator options on mount
-    useEffect(() => {
-        axios
-            .get(`${baseURL}rule_engine/conditions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-            .then((response) => {
-                // Filter out unique master_operator values and ignore null/empty
-                const operators = response.data
-                    .map(item => item.master_operator)
-                    .filter((op, idx, arr) => op && arr.indexOf(op) === idx)
-                    .map(op => ({
-                        value: op,
-                        label: op
-                    }));
-                setMasterOperatorOptions(operators);
-            })
-            .catch((error) => {
-                console.error("Error fetching master operators:", error);
-            });
-    }, []);
 
-    useEffect(() => {
-        conditions.forEach((condition, idx) => {
-            if (condition.master_operator) {
-                axios
-                    .get(`${baseURL}rule_engine/conditions.json?q[rule_id]=${condition.master_operator}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-                    .then((response) => {
-                        const options = response.data
-                            .map(item => {
-                                if (!item.operator) return null;
-                                const label = item.operator
-                                    .split('_')
-                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                                    .join(' ');
-                                return {
-                                    value: item.operator,
-                                    label
-                                };
-                            })
-                            .filter((op, idx2, arr) => op && arr.findIndex(o => o.value === op.value) === idx2);
-                        setSubOperatorOptions(prev => ({
-                            ...prev,
-                            [idx]: options
-                        }));
-                    })
-                    .catch(() => {
-                        setSubOperatorOptions(prev => ({
-                            ...prev,
-                            [idx]: []
-                        }));
-                    });
-            }
-        });
-        // eslint-disable-next-line
-    }, [conditions]);
+     // Add this above your component (or in a utils file)
+    const masterOperators = [
+      {
+        id: "0",
+        name: "Common Operatives",
+        subOptions: [
+          { id: "1", name: "Greater than", value: "greater_than" },
+          { id: "2", name: "Less than (<)", value: "less_than" },
+          { id: "3", name: "Equals (=)", value: "equals" },
+          { id: "4", name: "Not equals (!=)", value: "not_equals" },
+          { id: "5", name: "Contains", value: "contains" },
+          { id: "6", name: "Does not contain", value: "does_not_contain" },
+        ],
+      },
+      {
+        id: "1",
+        name: "Logical Operatives",
+        subOptions: [
+          { id: "1", name: "AND", value: "and" },
+          { id: "2", name: "OR", value: "or" },
+          { id: "3", name: "NOT", value: "not" },
+        ],
+      },
+      {
+        id: "2",
+        name: "Date/Time Operatives",
+        subOptions: [
+          { id: "1", name: "Before", value: "before" },
+          { id: "2", name: "After", value: "after" },
+          { id: "3", name: "Between", value: "between" },
+          { id: "4", name: "Within", value: "within" },
+        ],
+      },
+    //   {
+    //     id: "3",
+    //     name: "Tier Operatives",
+    //     subOptions: [
+    //       { id: "1", name: "Is in tier", value: "is_in_tier" },
+    //       { id: "2", name: "Upgrade", value: "upgrade" },
+    //       { id: "3", name: "Downgrade", value: "downgrade" },
+    //     ],
+    //   },
+    ];
+    
+    // In your component state:
+    const [masterOperatorOptions, setMasterOperatorOptions] = useState(
+      masterOperators.map(op => ({
+        value: op.id,
+        label: op.name,
+      }))
+    );
+    const [subOperatorOptions, setSubOperatorOptions] = useState({});
+    
+    // Handler for master operator change
+    const handleMasterOperatorChange = (idx, selectedValue) => {
+      handleConditionChange(idx, "master_operator", selectedValue);
+      handleConditionChange(idx, "operator", ""); // Reset sub-operator
+    
+      // Find sub-operators for selected master operator
+      const selected = masterOperators.find(op => op.id === selectedValue);
+      setSubOperatorOptions(prev => ({
+        ...prev,
+        [idx]: selected
+          ? selected.subOptions.map(sub => ({
+              value: sub.value,
+              label: sub.name,
+            }))
+          : [],
+      }));
+    };
+
+    // const [masterOperatorOptions, setMasterOperatorOptions] = useState([]);
+    // const [subOperatorOptions, setSubOperatorOptions] = useState({}); // key: condition idx, value: options array
+    // Fetch master operator options on mount
+    // useEffect(() => {
+    //     axios
+    //         .get(`${baseURL}rule_engine/conditions.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+    //         .then((response) => {
+    //             // Filter out unique master_operator values and ignore null/empty
+    //             const operators = response.data
+    //                 .map(item => item.master_operator)
+    //                 .filter((op, idx, arr) => op && arr.indexOf(op) === idx)
+    //                 .map(op => ({
+    //                     value: op,
+    //                     label: op
+    //                 }));
+    //             setMasterOperatorOptions(operators);
+    //         })
+    //         .catch((error) => {
+    //             console.error("Error fetching master operators:", error);
+    //         });
+    // }, []);
+
+    // useEffect(() => {
+    //     conditions.forEach((condition, idx) => {
+    //         if (condition.master_operator) {
+    //             axios
+    //                 .get(`${baseURL}rule_engine/conditions.json?q[rule_id]=${condition.master_operator}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+    //                 .then((response) => {
+    //                     const options = response.data
+    //                         .map(item => {
+    //                             if (!item.operator) return null;
+    //                             const label = item.operator
+    //                                 .split('_')
+    //                                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    //                                 .join(' ');
+    //                             return {
+    //                                 value: item.operator,
+    //                                 label
+    //                             };
+    //                         })
+    //                         .filter((op, idx2, arr) => op && arr.findIndex(o => o.value === op.value) === idx2);
+    //                     setSubOperatorOptions(prev => ({
+    //                         ...prev,
+    //                         [idx]: options
+    //                     }));
+    //                 })
+    //                 .catch(() => {
+    //                     setSubOperatorOptions(prev => ({
+    //                         ...prev,
+    //                         [idx]: []
+    //                     }));
+    //                 });
+    //         }
+    //     });
+    //     // eslint-disable-next-line
+    // }, [conditions]);
 
     // Fetch sub operators when master operator changes for a condition
-    const handleMasterOperatorChange = (idx, selectedValue) => {
-        handleConditionChange(idx, "master_operator", selectedValue);
-        handleConditionChange(idx, "operator", ""); // Reset sub-operator
+    // const handleMasterOperatorChange = (idx, selectedValue) => {
+    //     handleConditionChange(idx, "master_operator", selectedValue);
+    //     handleConditionChange(idx, "operator", ""); // Reset sub-operator
 
-        if (selectedValue) {
-            // Find the selected master operator's id (assuming value is id)
-            const selectedOperator = masterOperatorOptions.find(op => op.value === selectedValue);
-            if (selectedOperator) {
-                axios
-                    .get(`${baseURL}rule_engine/conditions.json?q[rule_id]=${selectedValue}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
-                    .then((response) => {
-                        // Map sub operators from response (assuming 'operator' field)
-                        const options = response.data
-                            .map(item => {
-                                if (!item.operator) return null;
-                                const label = item.operator
-                                    .split('_')
-                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                                    .join(' ');
-                                return {
-                                    value: item.operator,
-                                    label
-                                };
-                            })
-                            .filter((op, idx, arr) => op.value && arr.findIndex(o => o.value === op.value) === idx);
-                        setSubOperatorOptions(prev => ({
-                            ...prev,
-                            [idx]: options
-                        }));
-                    })
-                    .catch((error) => {
-                        setSubOperatorOptions(prev => ({
-                            ...prev,
-                            [idx]: []
-                        }));
-                        console.error("Error fetching sub operators:", error);
-                    });
-            }
-        } else {
-            setSubOperatorOptions(prev => ({
-                ...prev,
-                [idx]: []
-            }));
-        }
-    };
+    //     if (selectedValue) {
+    //         // Find the selected master operator's id (assuming value is id)
+    //         const selectedOperator = masterOperatorOptions.find(op => op.value === selectedValue);
+    //         if (selectedOperator) {
+    //             axios
+    //                 .get(`${baseURL}rule_engine/conditions.json?q[rule_id]=${selectedValue}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+    //                 .then((response) => {
+    //                     // Map sub operators from response (assuming 'operator' field)
+    //                     const options = response.data
+    //                         .map(item => {
+    //                             if (!item.operator) return null;
+    //                             const label = item.operator
+    //                                 .split('_')
+    //                                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    //                                 .join(' ');
+    //                             return {
+    //                                 value: item.operator,
+    //                                 label
+    //                             };
+    //                         })
+    //                         .filter((op, idx, arr) => op.value && arr.findIndex(o => o.value === op.value) === idx);
+    //                     setSubOperatorOptions(prev => ({
+    //                         ...prev,
+    //                         [idx]: options
+    //                     }));
+    //                 })
+    //                 .catch((error) => {
+    //                     setSubOperatorOptions(prev => ({
+    //                         ...prev,
+    //                         [idx]: []
+    //                     }));
+    //                     console.error("Error fetching sub operators:", error);
+    //                 });
+    //         }
+    //     } else {
+    //         setSubOperatorOptions(prev => ({
+    //             ...prev,
+    //             [idx]: []
+    //         }));
+    //     }
+    // };
 
     const rule_engine_conditions_attributes = conditions.map(cond => ({
         ...cond,
@@ -405,17 +493,6 @@ const RuleEngineEdit = () => {
         rule_engine_available_function_id: Number(masterRewardOutcome),
         action_selected_model: Number(subRewardOutcome)
     }));
-
-
-    const payload = {
-        rule_engine_rule: {
-            name: ruleName,
-            active: true,
-            model_id: Number(conditions[0]?.condition_selected_model) || 1,
-            rule_engine_conditions_attributes,
-            rule_engine_actions_attributes,
-        }
-    };
 
 
     const updatePayload = {
@@ -859,7 +936,7 @@ const RuleEngineEdit = () => {
                                     <div className="col-md-4 ">
                                         <div className="form-group">
                                             <label>
-                                                Master Reward Outcome <span>*</span>
+                                                Master Outcome <span>*</span>
                                             </label>
                                             <SingleSelector
                                                 options={masterRewardOptions}
@@ -885,7 +962,7 @@ const RuleEngineEdit = () => {
                                     <div className="col-md-4 ">
                                         <div className="form-group">
                                             <label>
-                                                Sub Reward Outcome <span>*</span>
+                                                Sub Outcome <span>*</span>
                                             </label>
                                             <SingleSelector
                                                 options={subRewardOptions}

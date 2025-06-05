@@ -376,8 +376,10 @@ const MiscellaneousBillCreate = () => {
       amount: creditNoteAmount || 0,
       remark: remark2 || "",
       status: status || "draft",
+      remarks: remark || "",
+      comments: comment || "",
       // created_by_id: 1,
-      pms_supplier_id:selectedSupplier?.id || "",
+      pms_supplier_id: selectedSupplier?.id || "",
       taxes_and_charges: [
         ...rows.map((row) => ({
           inclusive: row.inclusive,
@@ -413,44 +415,46 @@ const MiscellaneousBillCreate = () => {
   const handleSubmit = async () => {
     setLoading2(true)
     const payload = {
- miscellaneous_bill: {
-      company_id: selectedCompany?.value || "",
-      site_id: selectedSite?.value || "",
-      project_id: selectedProject?.value || "",
-      //   purchase_order_id: selectedPO?.id || "",
-      bill_no: billNumber || "",
-      bill_date: billDate || "",
-      amount: creditNoteAmount || 0,
-      remark: remark2 || "",
-      status: status || "draft",
-      // created_by_id: 1,
-      pms_supplier_id:selectedSupplier?.id || "",
-      taxes_and_charges: [
-        ...rows.map((row) => ({
-          inclusive: row.inclusive,
-          amount: parseFloat(row.amount) || 0,
-          remarks: row.type,
-          addition: row.addition,
-          percentage: parseFloat(row.percentage) || 0,
-          resource_id: row.resource_id || null,
-          resource_type: row.resource_type || ""
+      miscellaneous_bill: {
+        company_id: selectedCompany?.value || "",
+        site_id: selectedSite?.value || "",
+        project_id: selectedProject?.value || "",
+        //   purchase_order_id: selectedPO?.id || "",
+        bill_no: billNumber || "",
+        bill_date: billDate || "",
+        amount: creditNoteAmount || 0,
+        remark: remark2 || "",
+        status: status || "draft",
+        remarks: remark || "",
+        comments: comment || "",
+        // created_by_id: 1,
+        pms_supplier_id: selectedSupplier?.id || "",
+        taxes_and_charges: [
+          ...rows.map((row) => ({
+            inclusive: row.inclusive,
+            amount: parseFloat(row.amount) || 0,
+            remarks: row.type,
+            addition: row.addition,
+            percentage: parseFloat(row.percentage) || 0,
+            resource_id: row.resource_id || null,
+            resource_type: row.resource_type || ""
+          })),
+          ...deductionRows.map((row) => ({
+            inclusive: row.inclusive,
+            amount: parseFloat(row.amount) || 0,
+            remarks: row.type,
+            addition: row.addition || false, // Ensure addition is false for deductions
+            percentage: parseFloat(row.percentage) || 0,
+            resource_id: row.resource_id || null,
+            resource_type: row.resource_type || ""
+          })),
+        ],
+        attachments: documentRows.map((row) => ({
+          filename: row.upload?.filename || "",
+          content: row.upload?.content || "",
+          content_type: row.upload?.content_type || "",
         })),
-        ...deductionRows.map((row) => ({
-          inclusive: row.inclusive,
-          amount: parseFloat(row.amount) || 0,
-          remarks: row.type,
-          addition: row.addition || false, // Ensure addition is false for deductions
-          percentage: parseFloat(row.percentage) || 0,
-          resource_id: row.resource_id || null,
-          resource_type: row.resource_type || ""
-        })),
-      ],
-      attachments: documentRows.map((row) => ({
-        filename: row.upload?.filename || "",
-        content: row.upload?.content || "",
-        content_type: row.upload?.content_type || "",
-      })),
-    }
+      }
     };
 
     try {
