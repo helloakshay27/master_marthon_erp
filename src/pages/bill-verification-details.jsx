@@ -862,7 +862,7 @@ const BillVerificationDetails = () => {
                                 : ""}
                             </td>
                             <td className="text-start">{log.remarks || ""}</td>
-                            <td className="text-start">{""}</td>
+                            <td className="text-start">{log.comments || ""}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1163,9 +1163,9 @@ const BillVerificationDetails = () => {
                             // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
                             `${baseURL}bill_entries/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
                           }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        // download={attachment.filename}
+                          // target="_blank"
+                          // rel="noopener noreferrer"
+                          download={attachment.filename}
                         >
                           <DownloadIcon />
                         </a>
@@ -1212,9 +1212,9 @@ const BillVerificationDetails = () => {
                             // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
                             `${baseURL}bill_entries/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
                           }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        // download={attachment.filename}
+                          // target="_blank"
+                          // rel="noopener noreferrer"
+                          download={attachment.filename}
                         >
                           <DownloadIcon />
                         </a>
