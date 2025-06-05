@@ -126,7 +126,7 @@ const BillBookingCreate = () => {
       type: "",
       percentage: "0",
       inclusive: false,
-      amount: "",
+      amount: "0",
       isEditable: false, // Set to false to prevent editing
       addition: true,
     };
@@ -290,22 +290,62 @@ const BillBookingCreate = () => {
     { value: "TDS", label: "TDS" },
   ];
 
-  // Add this at the top with other state declarations
-  const getFormattedDate = () => {
+  // // Add this at the top with other state declarations
+  // const getFormattedDate = () => {
+  //   const today = new Date();
+  //   const day = String(today.getDate()).padStart(2, "0");
+  //   const month = String(today.getMonth() + 1).padStart(2, "0");
+  //   const year = today.getFullYear();
+  //   return `${day}-${month}-${year}`;
+  // };
+
+  // // Add this useEffect to ensure date is set and maintained
+  // useEffect(() => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     invoiceDate: getFormattedDate(),
+  //   }));
+  // }, []); // Empty dependency array means this runs once on mount
+
+  // First, modify the getFormattedDate function to support both display and API formats
+  const getFormattedDate = (forAPI = false) => {
     const today = new Date();
     const day = String(today.getDate()).padStart(2, "0");
     const month = String(today.getMonth() + 1).padStart(2, "0");
     const year = today.getFullYear();
-    return `${day}-${month}-${year}`;
+
+    return forAPI
+      ? `${year}-${month}-${day}` // API format: YYYY-MM-DD
+      : `${day}-${month}-${year}`; // Display format: DD-MM-YYYY
+  };
+  // Add a helper function to convert date format
+  const convertDateFormat = (dateStr) => {
+    if (!dateStr) return getFormattedDate(true); // Return today's date in YYYY-MM-DD if no date provided
+
+    try {
+      const [day, month, year] = dateStr.split("-");
+      if (year && month && day) {
+        return `${year}-${month}-${day}`;
+      }
+      return getFormattedDate(true); // Fallback to today's date
+    } catch (error) {
+      console.error("Error converting date:", error);
+      return getFormattedDate(true); // Fallback to today's date
+    }
   };
 
-  // Add this useEffect to ensure date is set and maintained
+  // Update the useEffect
+  //
   useEffect(() => {
-    setFormData((prev) => ({
-      ...prev,
-      invoiceDate: getFormattedDate(),
-    }));
-  }, []); // Empty dependency array means this runs once on mount
+    if (!formData.invoiceDate) {
+      setFormData((prev) => ({
+        ...prev,
+        invoiceDate: getFormattedDate(),
+      }));
+    }
+  }, []);
+
+  // Update the handleSubmit payload section
 
   const [formData, setFormData] = useState({
     poNumber: "",
@@ -888,14 +928,18 @@ const BillBookingCreate = () => {
           bill_entry_id: selectedBillEntry?.value, // Add this line
           invoice_number: formData.invoiceNumber,
           einvoice: selectedEInvoice?.value === "yes",
-          inventory_date: formData.invoiceDate,
+          // inventory_date: convertDateFormat(formData.invoiceDate),
+          // // Convert to YYYY-MM-DD for API,
+          inventory_date: convertDateFormat(
+            formData.invoiceDate || getFormattedDate()
+          ), // Add fallback
           invoice_amount: parseFloat(formData.invoiceAmount),
           type_of_certificate: formData.typeOfCertificate,
           department_id: formData.departmentId,
           base_cost: baseCost,
           all_inclusive_cost: allInclusiveCost,
-          other_deduction: otherDeduction,
-          other_addition: otherAddition,
+          other_deductions: otherDeduction,
+          other_additions: otherAddition,
           total_amount: totalAmount,
           other_deduction_remarks: formData.otherDeductionRemarks,
           other_addition_remarks: formData.otherAdditionRemarks,
@@ -939,7 +983,7 @@ const BillBookingCreate = () => {
       if (response.data) {
         alert("Bill booking created successfully!");
         setLoading(false);
-        navigate("/bill-booking-list"); // Redirect to bill-booking-list
+        // navigate("/bill-booking-list"); // Redirect to bill-booking-list
         // Reset form or redirect as needed
       }
     } catch (error) {
@@ -1469,8 +1513,13 @@ const BillBookingCreate = () => {
       .toFixed(2);
   };
 
-  // Add this validation function at the top of the component
+  // Update the validatePositiveNumber function
+
   const validatePositiveNumber = (value) => {
+    // Allow empty string to clear the field
+    if (value === "") {
+      return true;
+    }
     const num = parseFloat(value);
     return !isNaN(num) && num >= 0;
   };
@@ -1487,7 +1536,7 @@ const BillBookingCreate = () => {
                 <div className="row">
                   <div className="col-md-4">
                     <label htmlFor="event-no-select">Bill Entries</label>
-                    <span> *</span>
+                    <span style={{ color: "#8b0203" }}> *</span>
                     <div className="form-group">
                       <SingleSelector
                         options={billEntryOptions}
@@ -1500,7 +1549,7 @@ const BillBookingCreate = () => {
                   <div className="col-md-4">
                     <div className="form-group">
                       <label>Company</label>
-                      <span> *</span>
+                      <span style={{ color: "#8b0203" }}> *</span>
                       <input
                         className="form-control"
                         type="text"
@@ -1512,7 +1561,7 @@ const BillBookingCreate = () => {
 
                   <div className="col-md-4">
                     <label htmlFor="event-no-select">Project</label>
-                    <span> *</span>
+                    <span style={{ color: "#8b0203" }}> *</span>
                     <div className="form-group">
                       <input
                         className="form-control"
@@ -1525,7 +1574,7 @@ const BillBookingCreate = () => {
 
                   <div className="col-md-4 mt-2">
                     <label htmlFor="event-no-select"> SubProject</label>
-                    <span> *</span>
+                    <span style={{ color: "#8b0203" }}> *</span>
                     <div className="form-group">
                       <input
                         className="form-control"
@@ -1564,7 +1613,7 @@ const BillBookingCreate = () => {
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>PO Type</label>
-                      <span> *</span>
+                      <span style={{ color: "#8b0203" }}> *</span>
                       <SingleSelector
                         options={poTypeOptions}
                         className="form-control form-select"
@@ -1625,7 +1674,7 @@ const BillBookingCreate = () => {
                   <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>Invoice Number</label>
-                      <span> *</span>
+                      <span style={{ color: "#8b0203" }}> *</span>
                       <input
                         className="form-control"
                         type="text"
@@ -1665,7 +1714,7 @@ const BillBookingCreate = () => {
                   <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>Invoice Amount</label>
-                      <span> *</span>
+                      <span style={{ color: "#8b0203" }}> *</span>
                       {/* <input
                         className="form-control"
                         type="number"
@@ -1879,6 +1928,9 @@ const BillBookingCreate = () => {
                       <tr>
                         <th className="text-start">Project</th>
                         <th className="text-start">PO No.</th>
+                        <th className="text-start">Advance Number</th>
+                        <th className="text-start">Advance Amount</th>
+                        <th className="text-start">Status</th>
                         <th className="text-start">Paid Ammount</th>
                         <th className="text-start">Adjusted Amount</th>
                         <th className="text-start">Balance Amount</th>
@@ -1900,6 +1952,15 @@ const BillBookingCreate = () => {
                               {advance.po_number || "-"}
                             </td>
                             <td className="text-start">
+                              {advance.advance_number || "-"}
+                            </td>
+                            <td className="text-start">
+                              {advance.advance_amount || "-"}
+                            </td>
+                            <td className="text-start">
+                              {advance.status || "-"}
+                            </td>
+                            <td className="text-start">
                               {advance.paid_amount || "-"}
                             </td>
                             <td className="text-start">
@@ -1915,7 +1976,7 @@ const BillBookingCreate = () => {
                               {advance.net_amount || "-"}
                             </td>
                             <td className="text-start">
-                              {advance.certificate_no || "-"}
+                              {advance.certificate_number || "-"}
                             </td>
                           </tr>
                         ))
@@ -1926,7 +1987,7 @@ const BillBookingCreate = () => {
                           </td>
                         </tr>
                       )}
-                      <tr>
+                      {/* <tr>
                         <th className="text-start">Total</th>
                         <td />
                         <td />
@@ -1935,7 +1996,7 @@ const BillBookingCreate = () => {
                         <td />
                         <td />
                         <td />
-                      </tr>
+                      </tr> */}
                     </tbody>
                   </table>
                 </div>
@@ -2151,7 +2212,34 @@ const BillBookingCreate = () => {
                     </div>
                   </div>
 
-                  <div className="col-md-4">
+                  <div className="col-md-4 ">
+                    <div className="form-group">
+                      <label>Total Amount</label>
+
+                      <input
+                        className="form-control"
+                        type="number"
+                        // value={selectedGRNs.reduce(
+                        //   (acc, grn) =>
+                        //     acc + (parseFloat(grn.all_inc_tax) || 0),
+                        //   0
+                        // )}
+                        value={calculateTotalAmount()}
+                        // value={formData.totalAmount}
+                        // onChange={(e) =>
+                        //   setFormData((prev) => ({
+                        //     ...prev,
+                        //     totalAmount: e.target.value,
+                        //     invoiceAmount: e.target.value, // keep in sync
+                        //   }))
+                        // }
+                        placeholder="Enter other addition amount"
+                        disabled
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Total advance deduction amount</label>
                       <input
@@ -2180,33 +2268,6 @@ const BillBookingCreate = () => {
                         value={calculateDebitNoteAdjustment()}
                         disabled
                         placeholder="Debit note adjustment amount"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Total Amount</label>
-
-                      <input
-                        className="form-control"
-                        type="number"
-                        // value={selectedGRNs.reduce(
-                        //   (acc, grn) =>
-                        //     acc + (parseFloat(grn.all_inc_tax) || 0),
-                        //   0
-                        // )}
-                        value={calculateTotalAmount()}
-                        // value={formData.totalAmount}
-                        // onChange={(e) =>
-                        //   setFormData((prev) => ({
-                        //     ...prev,
-                        //     totalAmount: e.target.value,
-                        //     invoiceAmount: e.target.value, // keep in sync
-                        //   }))
-                        // }
-                        placeholder="Enter other addition amount"
-                        disabled
                       />
                     </div>
                   </div>
@@ -2304,11 +2365,15 @@ const BillBookingCreate = () => {
                         //     otherDeductions: e.target.value,
                         //   }))
                         // }
-                        value={otherDeductions}
+                        // value={otherDeductions}
+                        value={otherDeductions === "0" ? "" : otherDeductions}
                         onChange={(e) => {
                           const value = e.target.value;
+                          // if (validatePositiveNumber(value)) {
+                          //   setOtherDeductions(value);
+                          // }
                           if (validatePositiveNumber(value)) {
-                            setOtherDeductions(value);
+                            setOtherDeductions(value === "" ? "0" : value); // Set to "0" when cleared
                           }
                         }}
                         placeholder="Enter other deduction amount"
@@ -2350,11 +2415,15 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="number"
-                        value={otherAdditions}
+                        // value={otherAdditions}
+                        value={otherAdditions === "0" ? "" : otherAdditions}
                         onChange={(e) => {
                           const value = e.target.value;
+                          // if (validatePositiveNumber(value)) {
+                          //   setOtherAdditions(value);
+                          // }
                           if (validatePositiveNumber(value)) {
-                            setOtherAdditions(value);
+                            setOtherAdditions(value === "" ? "0" : value); // Set to "0" when cleared
                           }
                         }}
                         placeholder="Enter other addition amount"
@@ -2516,7 +2585,7 @@ const BillBookingCreate = () => {
                     </div>
                   </div> */}
                 {/* </div> */}
-                <div className="d-flex justify-content-between mt-3 me-2">
+                <div className="d-flex justify-content-between mt-4 me-2">
                   <h5 className=" ">Advance Adjusted</h5>
                   <button
                     className="purple-btn2"
@@ -2542,7 +2611,10 @@ const BillBookingCreate = () => {
                         <th className="text-start">ID</th>
                         <th className="text-start">PO Display No.</th>
                         <th className="text-start">Project</th>
+                        <th className="text-start">Advance Number</th>
+
                         <th className="text-start">Advance Amount (INR)</th>
+                        <th className="text-start">Status</th>
                         <th className="text-start">
                           Debit Note For Advance (INR)
                         </th>
@@ -2570,8 +2642,13 @@ const BillBookingCreate = () => {
                               {note.project_name || "-"}
                             </td>
                             <td className="text-start">
+                              {note.advance_number || "-"}
+                            </td>
+                            <td className="text-start">
                               {note.advance_amount || "-"}
                             </td>
+                            <td className="text-start">{note.status || "-"}</td>
+
                             <td className="text-start">
                               {note.debit_note_for_advance || "-"}
                             </td>
@@ -3094,7 +3171,7 @@ const BillBookingCreate = () => {
               </div>
 
               <div className="row mt-2 justify-content-end">
-                <div className="col-md-2">
+                <div className="col-md-2 mt-2">
                   <button
                     className="purple-btn2 w-100"
                     onClick={handleSubmit}
@@ -3187,7 +3264,7 @@ const BillBookingCreate = () => {
       {/*  */}
       <Modal
         centered
-        size="xl"
+        size="lg"
         show={attachThreeModal}
         onHide={closeAttachThreeModal}
         backdrop="static"
@@ -3197,7 +3274,19 @@ const BillBookingCreate = () => {
           <Modal.Title>Tax & Charges</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <div className="tbl-container mx-3 mt-3">
+          <div
+            className="tbl-container mx-3 mt-3 "
+            // style={{ maxHeight: 'none', overflowY: 'visible',
+            //   overflowX: 'visible'
+
+            //  }}
+            style={{
+              maxHeight: "none",
+              overflowY: "visible !important",
+              overflowX: "visible !important",
+              width: "100%",
+            }}
+          >
             <table className="w-100">
               <thead>
                 <tr>
@@ -3211,7 +3300,7 @@ const BillBookingCreate = () => {
               <tbody>
                 {/* Static Rows for Addition Tax */}
                 <tr>
-                  <th className="text-start">Total Base Cost</th>
+                  <th className="text-start ">Total Base Cost</th>
                   <td className="text-start" />
                   <td className="text-start" />
                   <td className="text-start">
@@ -3230,6 +3319,7 @@ const BillBookingCreate = () => {
                         }
                       }}
                       min="0"
+                      disabled
                     />
                   </td>
                   <td />
@@ -3388,7 +3478,12 @@ const BillBookingCreate = () => {
                       <input
                         type="number"
                         className="form-control"
-                        value={row.amount}
+                        // value={row.amount}
+                        value={
+                          row.amount === "0" || row.amount === 0
+                            ? ""
+                            : row.amount
+                        } // Clear if zero
                         disabled={row.percentage !== ""}
                         onChange={(e) => {
                           const value = e.target.value;
@@ -3398,7 +3493,8 @@ const BillBookingCreate = () => {
                                 r.id === row.id
                                   ? {
                                       ...r,
-                                      amount: parseFloat(value) || 0,
+                                      // amount: parseFloat(value) || 0,
+                                      amount: value === "" ? "0" : value, // Set to "0" when cleared
                                     }
                                   : r
                               )
@@ -3406,6 +3502,7 @@ const BillBookingCreate = () => {
                           }
                         }}
                         min="0"
+                        placeholder="Enter amount"
                       />
                     </td>
                     <td
@@ -3907,7 +4004,10 @@ const BillBookingCreate = () => {
                   <th className="text-start">ID</th>
                   <th className="text-start">PO Display No.</th>
                   <th className="text-start">Project</th>
+                  <th className="text-start">Advance Number</th>
+
                   <th className="text-start">Advance Amount (INR)</th>
+                  <th className="text-start">Status</th>
                   <th className="text-start">Debit Note For Advance (INR)</th>
                   <th className="text-start">
                     Advance Adjusted Till Date (INR)
@@ -3938,8 +4038,12 @@ const BillBookingCreate = () => {
                       <td className="text-start">{note.po_number || "-"}</td>
                       <td className="text-start">{note.project_name || "-"}</td>
                       <td className="text-start">
+                        {note.advance_number || "-"}
+                      </td>
+                      <td className="text-start">
                         {note.advance_amount || "-"}
                       </td>
+                      <td className="text-start">{note.status || "-"}</td>
                       <td className="text-start">
                         {note.debit_note_for_advance || "-"}
                       </td>

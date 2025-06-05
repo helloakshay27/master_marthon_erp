@@ -957,7 +957,7 @@ const BillEntryListSubPage = () => {
                 </table>
               </div>
               <div className="row mt-2 justify-content-center">
-                <div className="col-md-2">
+                <div className="col-md-2 mt-2">
                   <button
                     className="purple-btn2 w-100"
                     onClick={handleBillEntrySubmit}
