@@ -101,7 +101,21 @@ const BillEntryList = () => {
     { field: "company_name", headerName: "Company", width: 180 },
     { field: "project_name", headerName: "Project", width: 150 },
     { field: "site_name", headerName: "Sub Project", width: 150 },
-    { field: "pms_supplier", headerName: "Vendor Name", width: 150 },
+    {
+      field: "pms_supplier",
+      headerName: "Vendor Name",
+      width: 150,
+      valueGetter: (params) => {
+        // Check if we have valid params and row data
+        if (!params?.row) return "-";
+
+        // Access the organization_name from pms_supplier
+        const orgName = params.row.pms_supplier?.organization_name;
+
+        // Return organization name if it exists, otherwise return "-"
+        return orgName || "-";
+      },
+    },
     { field: "uam_number", headerName: "UAM No.", width: 150 },
     { field: "po_number", headerName: "PO No.", width: 150 },
     {

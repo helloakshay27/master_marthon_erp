@@ -983,7 +983,7 @@ const BillBookingCreate = () => {
       if (response.data) {
         alert("Bill booking created successfully!");
         setLoading(false);
-        // navigate("/bill-booking-list"); // Redirect to bill-booking-list
+        navigate("/bill-booking-list"); // Redirect to bill-booking-list
         // Reset form or redirect as needed
       }
     } catch (error) {
@@ -2241,7 +2241,7 @@ const BillBookingCreate = () => {
 
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
-                      <label>Total advance deduction amount</label>
+                      <label>Total Deduction Advance</label>
                       <input
                         className="form-control"
                         type="number"
@@ -2586,7 +2586,7 @@ const BillBookingCreate = () => {
                   </div> */}
                 {/* </div> */}
                 <div className="d-flex justify-content-between mt-4 me-2">
-                  <h5 className=" ">Advance Adjusted</h5>
+                  <h5 className=" ">Advance Adjustment</h5>
                   <button
                     className="purple-btn2"
                     onClick={openAdvanceNoteModal}
@@ -2627,7 +2627,9 @@ const BillBookingCreate = () => {
                         <th className="text-start">
                           Advance Outstanding till current Date (INR)
                         </th>
-                        <th className="text-start">This Recovery (INR)</th>
+                        <th className="text-start" style={{ width: "200px" }}>
+                          This Recovery (INR)
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2739,7 +2741,9 @@ const BillBookingCreate = () => {
                           Outstanding Amount (Current Date)
                         </th>
                         <th className="text-start">Debit Note Reason Type</th>
-                        <th className="text-start">This Recovery</th>
+                        <th className="text-start" style={{ width: "200px" }}>
+                          This Recovery
+                        </th>
                       </tr>
                     </thead>
                     {/* <tbody>

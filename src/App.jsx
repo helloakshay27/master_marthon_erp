@@ -127,6 +127,10 @@ function App() {
           />
           <Route path="/bill-booking-create" element={<BillBookingCreate />} />
           <Route
+            path="/bill-booking-create/:id"
+            element={<BillBookingCreate />}
+          />
+          <Route
             path="/bill-booking-details/:id"
             element={<BillBookingDetails />}
           />
@@ -300,10 +304,6 @@ function App() {
             <Route path="/bill-booking-list" element={<BillBookingList />} />
 
             <Route
-              path="/bill-booking-create/:id"
-              element={<BillBookingCreate />}
-            />
-            <Route
               path="/bill-payment-create"
               element={<BillPaymentCreate />}
             />
@@ -469,41 +469,29 @@ function App() {
             element={<AddWorkSubCategory />}
           />
           {/* ... */}
-          <Route
-            path="/test-table"
-            element={<TestTable/>}
-          />
-          <Route
-            path="/rule-engine-list"
-            element={<RuleEngineList/>}
-          />
-          <Route
-            path="/rule-engine-create"
-            element={<RuleEngineCreate/>}
-          />
+          <Route path="/test-table" element={<TestTable />} />
+          <Route path="/rule-engine-list" element={<RuleEngineList />} />
+          <Route path="/rule-engine-create" element={<RuleEngineCreate />} />
           <Route
             path="/rule-engine-details/:id"
-            element={<RuleEngineDetails/>}
+            element={<RuleEngineDetails />}
           />
-           <Route
-            path="/rule-engine-edit/:id"
-            element={<RuleEngineEdit/>}
-          />
+          <Route path="/rule-engine-edit/:id" element={<RuleEngineEdit />} />
           <Route
             path="/miscellaneous-bill-create"
-            element={<MiscellaneousBillCreate/>}
+            element={<MiscellaneousBillCreate />}
           />
-           <Route
+          <Route
             path="/miscellaneous-bill-list"
-            element={<MiscellaneousBillList/>}
+            element={<MiscellaneousBillList />}
           />
           <Route
             path="/miscellaneous-bill-details/:id"
-            element={<MiscellaneousBillDetails/>}
+            element={<MiscellaneousBillDetails />}
           />
-           <Route
+          <Route
             path="/miscellaneous-bill-edit/:id"
-            element={<MiscellaneousBillEdit/>}
+            element={<MiscellaneousBillEdit />}
           />
         </Routes>
       </div>
