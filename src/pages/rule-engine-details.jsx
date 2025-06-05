@@ -18,7 +18,7 @@ const RuleEngineDetails = () => {
     const [ruleData, setRuleData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-   
+
 
     useEffect(() => {
         const fetchRuleData = async () => {
@@ -88,6 +88,49 @@ const RuleEngineDetails = () => {
             });
     }, []);
 
+    const masterOperators = [
+        {
+            id: "0",
+            name: "Common Operatives",
+            subOptions: [
+                { id: "1", name: "Greater than", value: "greater_than" },
+                { id: "2", name: "Less than (<)", value: "less_than" },
+                { id: "3", name: "Equals (=)", value: "equals" },
+                { id: "4", name: "Not equals (!=)", value: "not_equals" },
+                { id: "5", name: "Contains", value: "contains" },
+                { id: "6", name: "Does not contain", value: "does_not_contain" },
+            ],
+        },
+        {
+            id: "1",
+            name: "Logical Operatives",
+            subOptions: [
+                { id: "1", name: "AND", value: "and" },
+                { id: "2", name: "OR", value: "or" },
+                { id: "3", name: "NOT", value: "not" },
+            ],
+        },
+        {
+            id: "2",
+            name: "Date/Time Operatives",
+            subOptions: [
+                { id: "1", name: "Before", value: "before" },
+                { id: "2", name: "After", value: "after" },
+                { id: "3", name: "Between", value: "between" },
+                { id: "4", name: "Within", value: "within" },
+            ],
+        },
+        //   {
+        //     id: "3",
+        //     name: "Tier Operatives",
+        //     subOptions: [
+        //       { id: "1", name: "Is in tier", value: "is_in_tier" },
+        //       { id: "2", name: "Upgrade", value: "upgrade" },
+        //       { id: "3", name: "Downgrade", value: "downgrade" },
+        //     ],
+        //   },
+    ];
+
     return (
         <>
             <div className="website-content overflow-auto">
@@ -139,7 +182,12 @@ const RuleEngineDetails = () => {
                                                             </div>
                                                             <div className="col-lg-4 col-md-6 col-sm-12 row px-3">
                                                                 <div className="col-6"><label>Master Operator</label></div>
-                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>{toTitleCaseFromSnake(condition.master_operator) || "-"}</label></div>
+                                                                <div className="col-6"><label className="text"><span className="me-3"><span className="text-dark">:</span></span>
+                                                                    {/* {toTitleCaseFromSnake(condition.master_operator) || "-"} */}
+                                                                    {
+                                                                        masterOperators.find(op => op.id === String(condition.master_operator))?.name || "-"
+                                                                    }
+                                                                </label></div>
                                                             </div>
                                                             <div className="col-lg-4 col-md-6 col-sm-12 row px-3">
                                                                 <div className="col-6"><label>Sub Operator</label></div>
@@ -181,7 +229,7 @@ const RuleEngineDetails = () => {
                                                                 <div className="col-6">
                                                                     <label className="text">
                                                                         <span className="me-3"><span className="text-dark">:</span></span>
-                                                                       
+
                                                                         {(ruleData.actions[0].action_selected_model &&
                                                                             subRewardMapping[
                                                                             ruleData.actions[0].rule_engine_available_function_id
