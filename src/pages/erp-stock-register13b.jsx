@@ -16,8 +16,9 @@ import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import axios, { all } from "axios";
 import SingleSelector from "../components/base/Select/SingleSelector"; // Adjust path as needed
+import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 
 import { baseURL, baseURL1 } from "../confi/apiDomain";
 import MultiSelector from "../components/base/Select/MultiSelector";
@@ -38,6 +39,7 @@ const ErpStockRegister13B = () => {
   const [errors, setErrors] = useState({});
   const [pagination, setPagination] = useState({});
 
+  // Update columnVisibility to the correct fields and remove duplicate/conflicting declarations
   const [columnVisibility, setColumnVisibility] = useState({
     srNo: true,
     material: true,
@@ -59,6 +61,53 @@ const ErpStockRegister13B = () => {
     grn_number: true, //
   });
 
+  const allColumns = [
+    { field: "srNo", headerName: "Sr.No.", width: 80, sortable: true },
+    { field: "material", headerName: "Material Category", width: 150, sortable: true },
+    { field: "material_name", headerName: "Material Name", width: 180, sortable: true },
+    { field: "material_type", headerName: "Material Type", width: 150, sortable: true },
+    { field: "materialSubType", headerName: "Material Sub Type", width: 150, sortable: true },
+    { field: "materialDescription", headerName: "Material Description", width: 200, sortable: true },
+    { field: "specification", headerName: "Specification", width: 180, sortable: true },
+    { field: "lastReceived", headerName: "Last Received On", width: 150, sortable: true },
+    { field: "total_received", headerName: "Total Received", width: 130, sortable: true },
+    { field: "total_issued", headerName: "Total Issued", width: 120, sortable: true },
+    { field: "stock_as_on", headerName: "Stock As On", width: 120, sortable: true },
+    { field: "stockStatus", headerName: "Stock Status", width: 120, sortable: true },
+    { field: "deadstockQty", headerName: "Deadstock Qty", width: 120, sortable: true },
+    { field: "theftMissing", headerName: "Theft/Missing Qty", width: 140, sortable: true },
+    { field: "uom_name", headerName: "UOM", width: 100, sortable: true },
+    { field: "Star", headerName: "Star", width: 80, sortable: false },
+    { field: "mor", headerName: "MOR Number", width: 120, sortable: true },
+    { field: "grn_number", headerName: "GRN Number", width: 120, sortable: true },
+  ];
+
+  // Column settings modal handlers (keep only one set, remove duplicates below)
+  const handleToggleColumn = (field) => {
+    setColumnVisibility((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
+  const handleShowAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+  const handleHideAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = false;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+  const handleReset = () => {
+    const defaultVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(defaultVisibility);
+  };
+
   const location = useLocation();
 
   const handleSettingClose = () => setSettingShow(false);
@@ -68,6 +117,8 @@ const ErpStockRegister13B = () => {
 
   // Calculate displayed rows for the current page
   const startEntry = (page - 1) * pageSize + 1;
+  console.log("pagination:-",pagination);
+  
   const endEntry = Math.min(
     pagination.current_page * pageSize,
     pagination.total_count
@@ -75,84 +126,7 @@ const ErpStockRegister13B = () => {
 
 
 
-  const allColumns = [
-    { field: "srNo", headerName: "Sr. No.", width: 100 },
-    {
-      field: "Star",
-      headerName: "Star",
-      width: 90,
-      renderCell: (params) => (
-        <button
-          className="btn btn-sm"
-          onClick={() => handlePinRow(params.row.id)}
-        >
-          {pinnedRows.includes(params.row.id) ? (
-            <svg
-              class="star-icon pinned-star"
-              data-id="259"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-              width="27"
-              height="27"
-              fill="#8B0203"
-              stroke="#8B0203"
-            >
-              <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
-            </svg>
-          ) : (
-            <svg
-              class="star-icon"
-              data-id="260"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-              width="27"
-              height="27"
-              fill="#cccccc"
-              stroke="#cccccc"
-            >
-              <path d="M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z"></path>
-            </svg>
-          )}
-        </button>
-      ),
-    },
-
-    { field: "material", headerName: "Material / Asset", width: 200 },
-
-    {
-      field: "material_name",
-      headerName: "Material",
-      width: 300,
-      renderCell: (params) => (
-        <a href={params.row.materialUrl} rel="noopener noreferrer">
-          {params.value}
-        </a>
-      ),
-    },
-
-    { field: "mor", headerName: "MOR Number", width: 150 }, // Added Mor Number column
-    { field: "grn_number", headerName: "GRN Number", width: 150 }, // Added Grn Number column
-
-    { field: "lastReceived", headerName: "Last Received On", width: 200 },
-
-    { field: "total_received", headerName: "Total Received", width: 150 },
-
-    { field: "total_issued", headerName: "Total Issued", width: 150 },
-
-    { field: "stock_as_on", headerName: "Stock As On", width: 150 },
-
-    { field: "deadstockQty", headerName: "Deadstock Qty", width: 150 },
-
-    { field: "theftMissing", headerName: "Theft / Missing", width: 150 },
-
-    { field: "uom_name", headerName: "UOM", width: 100 },
-  ];
-
-  const handlePageChange = (event, newPage) => {
-    setPage(newPage - 1); // MUI Pagination starts at 1, DataGrid at 0
-  };
-
-  const columns = allColumns.filter((col) => columnVisibility[col.field]);
+  // (Removed duplicate columns declaration)
 
   const handlePinRow = (rowId) => {
     setPinnedRows((prev) =>
@@ -178,33 +152,7 @@ const ErpStockRegister13B = () => {
     saveAs(blob, "Stock_Data.xlsx");
   };
 
-  const handleToggleColumn = (field) => {
-    setColumnVisibility((prev) => ({ ...prev, [field]: !prev[field] }));
-  };
 
-  const handleShowAll = () => {
-    const updatedVisibility = allColumns.reduce((acc, column) => {
-      acc[column.field] = true;
-      return acc;
-    }, {});
-    setColumnVisibility(updatedVisibility);
-  };
-
-  const handleHideAll = () => {
-    const updatedVisibility = allColumns.reduce((acc, column) => {
-      acc[column.field] = false;
-      return acc;
-    }, {});
-    setColumnVisibility(updatedVisibility);
-  };
-
-  const handleReset = () => {
-    const defaultVisibility = allColumns.reduce((acc, column) => {
-      acc[column.field] = true;
-      return acc;
-    }, {});
-    setColumnVisibility(defaultVisibility);
-  };
   const [companies, setCompanies] = useState([]);
   const [projects, setProjects] = useState([]);
   const [subProjects, setSubProjects] = useState([]);
@@ -253,7 +201,8 @@ const ErpStockRegister13B = () => {
     const fetchData = async () => {
       try {
         const urlParams = new URLSearchParams(location.search);
-        const token = urlParams.get("token");
+        // const token = urlParams.get("token");
+        const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
 
         const response = await fetch(
           `${baseURL}/stock_details.json?token=${token}&search=${encodeURIComponent(
@@ -272,7 +221,7 @@ const ErpStockRegister13B = () => {
 
         const result = await response.json();
         console.log(result);
-        const transformedData = result?.mor_inventories.map((item, index) => {
+        const transformedData = result?.mor_inventories?.map((item, index) => {
           const materialUrl =
             item.id && token
               ? `/stock_register_detail/${item.id}/?token=${token}`
@@ -339,9 +288,7 @@ const ErpStockRegister13B = () => {
   };
 
   const getTransformedRows = () => {
-    let rowsToShow = showOnlyPinned
-      ? data.filter((row) => pinnedRows.includes(row.id))
-      : data;
+    let rowsToShow = data
 
     // Apply search filter
     const normalizedSearchTerm = searchTerm.trim().toLowerCase();
@@ -354,11 +301,7 @@ const ErpStockRegister13B = () => {
       );
     }
 
-    return rowsToShow.map((row, index) => ({
-      ...row,
-      id: row.id || `row-${index}`, // Ensure unique `id`
-      srNo: index + 1,
-    }));
+    return rowsToShow
   };
 
   const bulkToggleCardBody = () => {
@@ -473,140 +416,118 @@ const ErpStockRegister13B = () => {
     return options.filter((option) => selectedIds[key].includes(option.value));
   };
 
+  // Pagination logic for custom UI
+const totalPages = Number.isInteger(pagination?.total_pages) ? pagination.total_pages : 1;
+const currentPage = Number.isInteger(pagination?.current_page) ? pagination.current_page : 1;
+const pageNumbers = [];
+for (let i = 1; i <= totalPages; i++) {
+  pageNumbers.push(i);
+}
+const handlePageChange = (pageNumber) => {
+  if (pageNumber < 1 || pageNumber > totalPages) return;
+  setLoading(true); // Show loader immediately
+  setPage(pageNumber);
+};
+
   if (loading) return <div>Loading...</div>;
   return (
     <>
       <style type="text/css">
-        {`
+        {`.tbl-container {
 
-.tbl-container {
-
-height: 350px !important;
+height: auto !important;
+max-height: 100% !important;
 
 }
 .css-5n0k77:last-child{
 display:none !important;
 }
-
-
-
-`}
+.MuiDataGrid-cell, .MuiDataGrid-cell > div {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+        `}
       </style>
+      {console.log("columnVisibility", columnVisibility, allColumns)}
       <div className="website-content overflow-auto">
         <div className="module-data-section px-3">
           <p>Home &gt; Store &gt; Store Operations &gt; Stock Register</p>
           <h5 className="mt-2">Stock Register</h5>
 
           <div className="card mt-3 pb-4">
-            <div className="card mx-3 mt-3">
-              <div className="card-header3">
-                <h3 className="card-title">Quick Filter</h3>
-                <div className="card-tools">
-                  <button
-                    type="button"
-                    className="btn btn-tool"
-                    onClick={toggleCardBody}
-                  >
-                    <svg
-                      width={32}
-                      height={32}
-                      viewBox="0 0 32 32"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                      <path
-                        d={
-                          isCollapsed
-                            ? "M16 24L9.0718 12L22.9282 12L16 24Z"
-                            : "M16 8L22.9282 20L9.0718 20L16 8Z"
-                        }
-                        fill="white"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
 
-              {!isCollapsed && (
-                <div className="card-body pt-0 mt-0">
-                  <div className="row my-2 align-items-end">
-                    <div className="col-md-3">
-                      <div className="form-group">
-                        <label>
-                          Company <span>*</span>
-                        </label>
-                        <SingleSelector
-                          options={companies.map((c) => ({
-                            value: c.id,
-                            label: c.company_name,
-                          }))}
-                          onChange={(option) =>
-                            handleCompanyChange(option.value)
-                          } // Pass only the ID
-                          value={
-                            companies.find((c) => c.id === selectedCompany)
-                              ? {
+              <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={false}>
+                <div className="row my-2 align-items-end">
+                  <div className="col-md-3">
+                    <div className="form-group">
+                      <label>
+                        Company <span>*</span>
+                      </label>
+                      <SingleSelector
+                        options={companies.map((c) => ({
+                          value: c.id,
+                          label: c.company_name,
+                        }))}
+                        onChange={(option) => handleCompanyChange(option.value)}
+                        value={
+                          companies.find((c) => c.id === selectedCompany)
+                            ? {
                                 value: selectedCompany,
                                 label: companies.find(
                                   (c) => c.id === selectedCompany
                                 ).company_name,
                               }
-                              : null
-                          }
-                          placeholder="Select Company"
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-3">
-                      <div className="form-group">
-                        <label>
-                          Project <span>*</span>
-                        </label>
-                        <SingleSelector
-                          options={projects}
-                          onChange={(option) =>
-                            handleProjectChange(option.value)
-                          } // Pass only the ID
-                          value={
-                            projects.find((p) => p.value === selectedProject) ||
-                            null
-                          } // Ensure correct value format
-                          placeholder="Select Project"
-                          isDisabled={!selectedCompany}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-3">
-                      <div className="form-group">
-                        <label>Sub-project</label>
-                        <SingleSelector
-                          options={subProjects}
-                          onChange={(option) =>
-                            handleSubProjectChange(option.value)
-                          } // Pass only the ID
-                          value={
-                            subProjects.find(
-                              (s) => s.value === selectedSubProject
-                            ) || null
-                          } // Ensure correct value format
-                          placeholder="Select Sub-project"
-                          isDisabled={!selectedProject}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-2">
-                      <button
-                        className="purple-btn2 m-0"
-                        onClick={handleResets}
-                      >
-                        Reset
-                      </button>
+                            : null
+                        }
+                        placeholder="Select Company"
+                      />
                     </div>
                   </div>
+                  <div className="col-md-3">
+                    <div className="form-group">
+                      <label>
+                        Project <span>*</span>
+                      </label>
+                      <SingleSelector
+                        options={projects}
+                        onChange={(option) => handleProjectChange(option.value)}
+                        value={
+                          projects.find((p) => p.value === selectedProject) || null
+                        }
+                        placeholder="Select Project"
+                        isDisabled={!selectedCompany}
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="form-group">
+                      <label>Sub-project</label>
+                      <SingleSelector
+                        options={subProjects}
+                        onChange={(option) => handleSubProjectChange(option.value)}
+                        value={
+                          subProjects.find(
+                            (s) => s.value === selectedSubProject
+                          ) || null
+                        }
+                        placeholder="Select Sub-project"
+                        isDisabled={!selectedProject}
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-2">
+                    <button
+                      className="purple-btn2 m-0"
+                      onClick={handleResets}
+                    >
+                      Reset
+                    </button>
+                  </div>
                 </div>
-              )}
-            </div>
+              </CollapsibleCard>
             <div className="d-flex mt-3 align-items-end px-3">
               <div className="col-md-6">
                 <form>
@@ -766,39 +687,114 @@ display:none !important;
                 boxShadow: "unset",
               }}
             >
-              <DataGrid
-                rows={getTransformedRows()}
-                columns={columns}
-                pageSize={pageSize}
-                autoHeight={false} // IMPORTANT: disable autoHeight for scroll
-                getRowId={(row) => row.id}
-              />
-
+              {getTransformedRows().length > 0 ? (
+                <DataGrid
+                  rows={getTransformedRows()}
+                  columns={allColumns}
+                  columnVisibilityModel={columnVisibility}
+                  onColumnVisibilityModelChange={setColumnVisibility}
+                  pageSize={pageSize}
+                  getRowId={(row) => row.id}
+                  sx={{
+                    flexGrow: 1,
+                    width: "100%",
+                    "& .MuiDataGrid-columnHeaders": {
+                      backgroundColor: "#f8f9fa",
+                      color: "#000",
+                      fontWeight: "bold",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 1,
+                    },
+                    "& .MuiDataGrid-cell": {
+                      borderColor: "#dee2e6",
+                    },
+                    "& .MuiDataGrid-columnHeader": {
+                      borderColor: "#dee2e6",
+                    },
+                    "& .MuiDataGrid-virtualScroller": {
+                      overflowY: "auto",
+                    },
+                    // You can add more custom styles here if needed
+                  }}
+                  components={{
+                    NoRowsOverlay: () => (
+                      <div style={{ padding: "2rem", textAlign: "center" }}>
+                        No records found.
+                      </div>
+                    ),
+                  }}
+                />
+              ) : (
+                <div className="text-center mt-5">
+                  <p>No records found for the selected filters.</p>
+                </div>
+              )}
             </div>
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              padding={2}
-            >
-              <Pagination
-                count={pagination.total_pages || 1} // Use API's total pages
-                page={page}
-                onChange={(event, value) => setPage(value)} // Update page state
-                siblingCount={1}
-                boundaryCount={1}
-                color="primary"
-                showFirstButton
-                showLastButton
-                disabled={pagination.total_pages <= 1} // Disable if only one page
-              />
-
-              {/* Dynamic Entries Info */}
-              <Typography variant="body2">
-                Showing {startEntry} to {endEntry} of {pagination.total_count}{" "}
-                entries
-              </Typography>
-            </Stack>
+            <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+  <ul className="pagination justify-content-center d-flex">
+    {/* First Button */}
+    <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+      <button className="page-link" onClick={() => handlePageChange(1)}>
+        First
+      </button>
+    </li>
+    {/* Previous Button */}
+    <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+      <button
+        className="page-link"
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        Prev
+      </button>
+    </li>
+    {/* Dynamic Page Numbers */}
+    {pageNumbers.map((pageNumber) => (
+      <li
+        key={pageNumber}
+        className={`page-item ${currentPage === pageNumber ? "active" : ""}`}
+      >
+        <button
+          className="page-link"
+          onClick={() => handlePageChange(pageNumber)}
+        >
+          {pageNumber}
+        </button>
+      </li>
+    ))}
+    {/* Next Button */}
+    <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+      <button
+        className="page-link"
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        Next
+      </button>
+    </li>
+    {/* Last Button */}
+    <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+      <button
+        className="page-link"
+        onClick={() => handlePageChange(totalPages)}
+        disabled={currentPage === totalPages}
+      >
+        Last
+      </button>
+    </li>
+  </ul>
+  {/* Showing entries count */}
+  <div>
+    <p>
+      Showing{" "}
+      {Math.min((currentPage - 1) * pageSize + 1, pagination?.total_count || 0)}{" "}
+      to{" "}
+      {Math.min(currentPage * pageSize, pagination?.total_count || 0)} of{" "}
+      {pagination?.total_count || 0} entries
+    </p>
+  </div>
+</div>
           </div>
         </div>
       </div>
