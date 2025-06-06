@@ -895,6 +895,37 @@ const BillBookingCreate = () => {
       return;
     }
 
+    if (
+      parseFloat(otherDeductions) > 0 &&
+      !formData.otherDeductionRemarks?.trim()
+    ) {
+      toast.error("Please provide remarks for Other Deductions", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
+    }
+
+    // Add validation for other additions remark
+    if (
+      parseFloat(otherAdditions) > 0 &&
+      !formData.otherAdditionRemarks?.trim()
+    ) {
+      toast.error("Please provide remarks for Other Additions", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
+    }
+
     // Invoice amount check
     const baseCost = getSelectedGRNsBaseCost();
     const allInclusiveCost = getSelectedGRNsAllIncTax();
@@ -2345,6 +2376,28 @@ const BillBookingCreate = () => {
 
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
+                      <label>Payment Mode</label>
+                      <SingleSelector
+                        options={paymentModeOptions}
+                        className="form-control form-select"
+                        value={
+                          paymentModeOptions.find(
+                            (opt) => opt.value === formData.paymentMode
+                          ) || null
+                        }
+                        onChange={(selected) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            paymentMode: selected ? selected.value : "",
+                          }))
+                        }
+                        placeholder="Select Payment Mode"
+                      />
+                    </div>
+                  </div>
+
+                  {/* <div className="col-md-4 mt-2">
+                    <div className="form-group">
                       <label>Round Of Amount</label>
 
                       <input
@@ -2356,7 +2409,7 @@ const BillBookingCreate = () => {
                         min="0"
                       />
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
@@ -2553,7 +2606,7 @@ const BillBookingCreate = () => {
                     </>
                   )}
 
-                  <div className="col-md-4 mt-2">
+                  {/* <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Payment Mode</label>
                       <SingleSelector
@@ -2573,7 +2626,7 @@ const BillBookingCreate = () => {
                         placeholder="Select Payment Mode"
                       />
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
@@ -3079,7 +3132,7 @@ const BillBookingCreate = () => {
                   <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
                     <h5 className="mt-3">
                       Document Attachments{" "}
-                      <span style={{ color: "red", fontSize: "16px" }}>*</span>
+                      {/* <span style={{ color: "red", fontSize: "16px" }}>*</span> */}
                     </h5>
                     <button
                       className="purple-btn2 mt-3"

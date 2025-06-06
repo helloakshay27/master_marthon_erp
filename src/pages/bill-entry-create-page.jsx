@@ -810,6 +810,35 @@ const BillEntryListSubPage = () => {
     return `${year}-${month}-${day}`;
   };
 
+  // Update the existing handleInputChange function or add a new one
+  const handleBillAmountChange = (e) => {
+    const newBillAmount = parseFloat(e.target.value) || 0;
+
+    if (activeTab !== "misc" && selectedPO) {
+      const poValue = parseFloat(selectedPO.total_value) || 0;
+
+      if (newBillAmount > poValue) {
+        toast.error("Bill amount cannot be greater than PO value", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        // Reset to previous valid value or empty
+        setFormData((prev) => ({
+          ...prev,
+          bill_amount: "",
+        }));
+        return;
+      }
+    }
+
+    // If validation passes or in misc tab, update the value
+    handleInputChange(e);
+  };
+
   return (
     <div className="website-content">
       {/* <ToastContainer /> */}
@@ -1120,7 +1149,7 @@ const BillEntryListSubPage = () => {
                       type="number"
                       name="bill_amount"
                       value={formData.bill_amount}
-                      onChange={handleInputChange}
+                      onChange={handleBillAmountChange}
                       placeholder=""
                     />
                   </div>
