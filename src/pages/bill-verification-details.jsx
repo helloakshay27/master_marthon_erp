@@ -551,6 +551,19 @@ const BillVerificationDetails = () => {
                         </label>
                       </div>
                     </div>
+                      <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Bill ID</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {billDetails?.bill_id || "-"}
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="row mt-4">
@@ -894,6 +907,7 @@ const BillVerificationDetails = () => {
                         <tr>
                           <th>Sr.No.</th>
                           <th>Created By</th>
+                          <th>Created At</th>
                           {/* <th>Date</th> */}
                           <th>Status</th>
                           <th>Remark</th>
@@ -906,6 +920,26 @@ const BillVerificationDetails = () => {
                             <td className="text-start">{index + 1}</td>
                             <td className="text-start">
                               {log.created_by_name || ""}
+                            </td>
+                             <td className="text-start">
+                              {/* {log.created_at || ""} */}
+                               {log.created_at
+                              ? `${new Date(log.created_at).toLocaleDateString(
+                                  "en-GB",
+                                  {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  }
+                                )}      ${new Date(
+                                  log.created_at
+                                ).toLocaleTimeString("en-GB", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  // second: "2-digit",
+                                  hour12: true,
+                                })}`
+                              : ""}
                             </td>
                             {/* <td className="text-start">
                                   {log.created_at
