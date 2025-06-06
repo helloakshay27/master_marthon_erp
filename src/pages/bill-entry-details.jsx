@@ -86,7 +86,7 @@ const BillEntryDetails = () => {
           `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setBillDetails(response.data);
-         setStatus(response.data.status);
+        setStatus(response.data.status);
         console.log("API Bill Entry Data:", response.data); // <-- Console log full API response
         if (response.data.documents) {
           setDocuments(response.data.documents);
@@ -179,7 +179,7 @@ const BillEntryDetails = () => {
       })),
     },
   };
-  console.log("bill entry update payload:", payload)
+  console.log("bill entry update payload:", payload);
 
   const handleUpdateBillEntry = async () => {
     try {
@@ -339,7 +339,9 @@ const BillEntryDetails = () => {
                           <span className="me-3">:-</span>
                           {/* {billDetails?.due_date || "-"} */}
                           {billDetails?.due_date
-                            ? new Date(billDetails.due_date).toISOString().slice(0, 10)
+                            ? new Date(billDetails.due_date)
+                                .toISOString()
+                                .slice(0, 10)
                             : "-"}
                         </label>
                       </div>
@@ -377,6 +379,17 @@ const BillEntryDetails = () => {
                         </label>
                       </div>
                     </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Bill Id</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">:-</span>
+                          {billDetails?.bill_id || "-"}
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -392,7 +405,7 @@ const BillEntryDetails = () => {
                             type="text"
                             placeholder="Default input"
                             value={editableBillNo}
-                            onChange={e => setEditableBillNo(e.target.value)}
+                            onChange={(e) => setEditableBillNo(e.target.value)}
                           />
                         </div>
                       </div>
@@ -404,7 +417,9 @@ const BillEntryDetails = () => {
                             type="date"
                             placeholder="Default input"
                             value={editableBillDate}
-                            onChange={e => setEditableBillDate(e.target.value)}
+                            onChange={(e) =>
+                              setEditableBillDate(e.target.value)
+                            }
                           />
                         </div>
                       </div>
@@ -416,7 +431,9 @@ const BillEntryDetails = () => {
                             type="text"
                             placeholder="Default input"
                             value={editableBillAmount}
-                            onChange={e => setEditableBillAmount(e.target.value)}
+                            onChange={(e) =>
+                              setEditableBillAmount(e.target.value)
+                            }
                           />
                         </div>
                       </div>
@@ -540,7 +557,6 @@ const BillEntryDetails = () => {
                       // isDisabled={true} // Disable the selector
                       classNamePrefix="react-select"
                     />
-
                   </div>
                 </div>
               </div>
@@ -563,8 +579,7 @@ const BillEntryDetails = () => {
                 <Table columns={auditLogColumns} data={auditLogData} />
               </div> */}
 
-
-                 <div className=" mb-5">
+              <div className=" mb-5">
                 <h5>Audit Log</h5>
                 <div className="mx-0">
                   <div className="tbl-container mt-1">
@@ -575,6 +590,7 @@ const BillEntryDetails = () => {
                           <th>Created By</th>
                           {/* <th>Date</th> */}
                           <th>Status</th>
+                          <th>Created At</th>
                           <th>Remark</th>
                           <th>Comment</th>
                         </tr>
@@ -603,9 +619,13 @@ const BillEntryDetails = () => {
                             <td className="text-start">
                               {log.status
                                 ? log.status.charAt(0).toUpperCase() +
-                                log.status.slice(1)
+                                  log.status.slice(1)
                                 : ""}
                             </td>
+                            <td className="text-start">
+                              {log.created_at || ""}
+                            </td>
+
                             <td className="text-start">{log.remarks || ""}</td>
                             <td className="text-start">{""}</td>
                           </tr>
@@ -802,7 +822,7 @@ const BillEntryDetails = () => {
                           <DownloadIcon />
                         </button> */}
 
-                      <td >
+                      <td>
                         <a
                           href={
                             // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
