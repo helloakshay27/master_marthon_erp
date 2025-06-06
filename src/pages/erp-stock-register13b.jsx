@@ -535,7 +535,7 @@ display:none !important;
           <h5 className="mt-2">Stock Register</h5>
 
           <div className="card mt-3 pb-4">
-            <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={false}>
+            {/* <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={false}>
               <div className="row my-2 align-items-end">
                 <div className="col-md-3">
                   <div className="form-group">
@@ -603,7 +603,7 @@ display:none !important;
                   </button>
                 </div>
               </div>
-            </CollapsibleCard>
+            </CollapsibleCard> */}
             <div className="d-flex mt-3 align-items-end px-3">
               <div className="col-md-6">
                 <form>
