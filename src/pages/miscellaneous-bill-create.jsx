@@ -7,12 +7,14 @@ import { auditLogColumns, auditLogData } from "../constant/data";
 import { useState, useEffect, useRef } from "react";
 import { Modal, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useParams } from "react-router-dom";
 
 import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 const MiscellaneousBillCreate = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [showRows, setShowRows] = useState(false);
   const [taxesRowDetails, settaxesRowDetails] = useState(false);
   const [selectPOModal, setselectPOModal] = useState(false);
@@ -20,7 +22,10 @@ const MiscellaneousBillCreate = () => {
   const [selectedPO, setSelectedPO] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loading2, setLoading2] = useState(false);
-
+  const [withBillEntry, setWithBillEntry] = useState(false);
+  const [withoutBillEntry, setWithoutBillEntry] = useState(true);
+  // ...existing code...
+  const [billEntryData, setBillEntryData] = useState({});
   const taxesRowDropdown = () => {
     settaxesRowDetails(!taxesRowDetails);
   };
@@ -364,22 +369,103 @@ const MiscellaneousBillCreate = () => {
     fetchSuppliers();
   }, []);
 
+  const [billEntryOptions, setBillEntryOptions] = useState([]);
+  const [selectedBillEntry, setSelectedBillEntry] = useState(null);
+  useEffect(() => {
+    const fetchAndSelectBillEntry = async () => {
+      console.log("..........bill id in misc:", typeof id, id)
+      try {
+        // Always fetch bill entry options
+        const billEntryResponse = await axios.get(
+          `${baseURL}bill_bookings/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        console.log("bill entry res:", billEntryResponse.data.be_list)
+        if (
+          billEntryResponse.data &&
+          Array.isArray(billEntryResponse.data.be_list)
+        ) {
+          setBillEntryOptions(
+            billEntryResponse.data.be_list.map((item) => ({
+              value: item.value,
+              label: item.name,
+            }))
+          );
+
+          // If ID is available, find and set the matching entry
+          if (id) {
+            setWithBillEntry(true);        // <-- Set with bill entry true
+            setWithoutBillEntry(false);
+            // First fetch specific bill entry details
+            const response = await axios.get(
+              `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            );
+
+            console.log("res with id :", response.data)
+            console.log("data ", billEntryResponse.data.be_list)
+            // Find and set the matching bill entry option
+            const matchingEntry = billEntryResponse.data.be_list.find(
+              // (item) => String(item.value) === String(id)
+              (item) => Number(item.value) === Number(id)
+            );
+            console.log("matching :", matchingEntry)
+            if (matchingEntry) {
+              setSelectedBillEntry({
+                value: matchingEntry.value,
+                label: matchingEntry.name,
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching bill entries:", error);
+        // Clear selected bill entry in case of error
+        setSelectedBillEntry(null);
+      }
+    };
+
+    fetchAndSelectBillEntry();
+  }, [id]);
+
+  console.log("selected bill entry:", selectedBillEntry)
+  useEffect(() => {
+    if (selectedBillEntry && selectedBillEntry.value) {
+      console.log("selected bill entry:", selectedBillEntry)
+      const fetchBillEntryDetails = async () => {
+        try {
+          const response = await axios.get(
+            `https://marathon.lockated.com/bill_entries/${selectedBillEntry.value}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+          const data = response.data;
+          console.log("bill entry all data:", data)
+          setBillEntryData(data || {});
+          setCreditNoteAmount(data.bill_amount || 0);
+
+        } catch (error) {
+          console.error("Error fetching bill entry or PO GRN details:", error);
+        }
+      };
+      fetchBillEntryDetails();
+    }
+  }, [selectedBillEntry]);
+
   const payload = {
 
     miscellaneous_bill: {
-      company_id: selectedCompany?.value || "",
-      site_id: selectedSite?.value || "",
-      project_id: selectedProject?.value || "",
+      company_id: selectedCompany?.value || billEntryData?.company_id || "",
+      site_id: selectedSite?.value || billEntryData?.site_id || "",
+      project_id: selectedProject?.value || billEntryData?.project_id || "",
       //   purchase_order_id: selectedPO?.id || "",
-      bill_no: billNumber || "",
-      bill_date: billDate || "",
+      bill_no: billNumber || billEntryData?.bill_no || "",
+      bill_date: billDate || billEntryData?.bill_date || "",
       amount: creditNoteAmount || 0,
       remark: remark2 || "",
       status: status || "draft",
       remarks: remark || "",
       comments: comment || "",
       // created_by_id: 1,
-      pms_supplier_id: selectedSupplier?.id || "",
+      // pms_supplier_id: selectedSupplier?.id || billEntryData?.pms_supplier_id || null,
+      pms_supplier_id: selectedSupplier?.id ?? billEntryData?.pms_supplier_id ?? null,
+      bill_entry_id: selectedBillEntry?.value || billEntryData?.id || "", // <-- Add this line
       taxes_and_charges: [
         ...rows.map((row) => ({
           inclusive: row.inclusive,
@@ -416,19 +502,21 @@ const MiscellaneousBillCreate = () => {
     setLoading2(true)
     const payload = {
       miscellaneous_bill: {
-        company_id: selectedCompany?.value || "",
-        site_id: selectedSite?.value || "",
-        project_id: selectedProject?.value || "",
+        company_id: selectedCompany?.value || billEntryData?.company_id || "",
+        site_id: selectedSite?.value || billEntryData?.site_id || "",
+        project_id: selectedProject?.value || billEntryData?.project_id || "",
         //   purchase_order_id: selectedPO?.id || "",
-        bill_no: billNumber || "",
-        bill_date: billDate || "",
+        bill_no: billNumber || billEntryData?.bill_no || "",
+        bill_date: billDate || billEntryData?.bill_date || "",
         amount: creditNoteAmount || 0,
         remark: remark2 || "",
         status: status || "draft",
         remarks: remark || "",
         comments: comment || "",
         // created_by_id: 1,
-        pms_supplier_id: selectedSupplier?.id || "",
+        // pms_supplier_id: selectedSupplier?.id || billEntryData?.pms_supplier_id || null,
+        pms_supplier_id: selectedSupplier?.id ?? billEntryData?.pms_supplier_id ?? null,
+        bill_entry_id: selectedBillEntry?.value || billEntryData?.id || "", // <-- Add this line
         taxes_and_charges: [
           ...rows.map((row) => ({
             inclusive: row.inclusive,
@@ -557,50 +645,258 @@ const MiscellaneousBillCreate = () => {
                               Existing Allocated PO &amp; Advance
                             </a>
                           </div> */}
-                          <div className="row mt-2">
-                            <div className="col-md-4 ">
-                              <div className="form-group">
-                                <label>
-                                  Company <span>*</span>
-                                </label>
-                                <SingleSelector
-                                  options={companies}
-                                  value={selectedCompany}
-                                  onChange={handleCompanyChange}
-                                  placeholder="Select Company"
-                                />
-                              </div>
+                          <div className="row mb-3">
+                            <div className="col-md-2 d-flex align-items-center">
+                              <input
+                                type="checkbox"
+                                id="without-bill-entry"
+                                checked={withoutBillEntry}
+                                onChange={() => {
+                                  setWithBillEntry(false);
+                                  setWithoutBillEntry(true);
+                                }}
+                                className="me-2"
+                              />
+                              <label htmlFor="without-bill-entry" className="mb-0">Without Bill Entry</label>
                             </div>
-                            <div className="col-md-4  ">
-                              <div className="form-group">
-                                <label>
-                                  Project <span>*</span>
-                                </label>
-                                <SingleSelector
-                                  options={projects}
-                                  value={selectedProject}
-                                  onChange={handleProjectChange}
-                                  placeholder="Select Project"
-                                  isDisabled={!selectedCompany}
-                                />
-                              </div>
+                            <div className="col-md-2 d-flex align-items-center">
+                              <input
+                                type="checkbox"
+                                id="with-bill-entry"
+                                checked={withBillEntry}
+                                onChange={() => {
+                                  setWithBillEntry(true);
+                                  setWithoutBillEntry(false);
+                                }}
+                                className="me-2"
+                              />
+                              <label htmlFor="with-bill-entry" className="mb-0">With Bill Entry</label>
                             </div>
-                            <div className="col-md-4 ">
-                              <div className="form-group">
-                                <label>
-                                  Sub-Project <span>*</span>
-                                </label>
 
-                                <SingleSelector
-                                  options={sites}
-                                  onChange={handleSiteChange}
-                                  value={selectedSite}
-                                  placeholder={`Select Sub-Project`} // Dynamic placeholder
-                                  isDisabled={!selectedCompany}
-                                />
+                          </div>
+
+                          {withBillEntry && !withoutBillEntry && (
+                            <div className="row">
+                              <div className="col-md-4">
+                                <label htmlFor="event-no-select">Bill Entries</label>
+                                <span style={{ color: "#8b0203" }}> *</span>
+                                <div className="form-group">
+                                  <SingleSelector
+                                    options={billEntryOptions}
+                                    onChange={setSelectedBillEntry}
+                                    value={selectedBillEntry}
+                                    placeholder="Select Bill Entry"
+                                  />
+                                </div>
                               </div>
+                              <div className="col-md-4">
+                                <div className="form-group">
+                                  <label>Company</label>
+                                  <span style={{ color: "#8b0203" }}> *</span>
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    value={billEntryData.company_name || ""}
+                                    disabled
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="col-md-4">
+                                <label htmlFor="event-no-select">Project</label>
+                                <span style={{ color: "#8b0203" }}> *</span>
+                                <div className="form-group">
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    value={billEntryData.project_name || ""}
+                                    disabled
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="col-md-4 mt-2">
+                                <label htmlFor="event-no-select"> SubProject</label>
+                                <span style={{ color: "#8b0203" }}> *</span>
+                                <div className="form-group">
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    value={billEntryData.site_name || ""}
+                                    disabled
+                                  />
+                                </div>
+                              </div>
+                              <div className="col-md-4 mt-2">
+                                <div className="form-group">
+                                  <label>Bill Number</label>
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    value={billEntryData.bill_no || ""}
+                                    placeholder=""
+                                    fdprocessedid="qv9ju9"
+                                    disabled
+                                  />
+                                </div>
+                              </div>
+                              <div className="col-md-4 mt-2">
+                                <div className="form-group">
+                                  <label>Bill Date</label>
+                                  <div
+                                    id="datepicker"
+                                    className="input-group date"
+                                    data-date-format="mm-dd-yyyy"
+                                  >
+                                    <input className="form-control" type="date"
+                                      value={billEntryData.bill_date || ""}
+                                      disabled
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="col-md-4 mt-2">
+                                <div className="form-group">
+                                  <label>Bill Amount</label>
+                                  <input
+                                    className="form-control"
+                                    type="number"
+                                    placeholder=""
+                                    fdprocessedid="qv9ju9"
+                                    value={creditNoteAmount} // Bind to state
+                                    // onChange={(e) => setCreditNoteAmount(Number(e.target.value) || 0)} // Update state on change
+                                    disabled
+                                  />
+                                </div>
+                              </div>
+                              <div className="col-md-4 mt-2">
+                                <div className="form-group">
+                                  <label>Created On</label>
+                                  <div
+                                    id="datepicker"
+                                    className="input-group date"
+                                    data-date-format="mm-dd-yyyy"
+                                  >
+                                    <input className="form-control" type="text"
+                                      value={new Date().toLocaleDateString("en-GB")} // Format: DD/MM/YYYY
+                                      disabled // Makes the input field non-editable
+                                    />
+
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="col-md-4  mt-2">
+                                <div className="form-group">
+                                  <label>Supplier</label>
+                                  {/* <SingleSelector
+                        options={supplierOptions}
+                        className="form-control form-select"
+                        // value={selectedSupplier}
+                        // onChange={(selected) => setSelectedSupplier(selected)}
+                        placeholder="Select Supplier"
+                        
+                      /> */}
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    value={billEntryData.pms_supplier || ""}
+                                    disabled
+                                  />
+                                </div>
+                              </div>
+                              {/* <div className="col-md-1 pt-2 mt-4">
+                    <p className="mt-2 text-decoration-underline">
+                      View Details
+                    </p>
+                  </div> */}
+                              <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                  <label>GSTIN</label>
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    value={billEntryData.gstin || ""}
+                                    disabled
+                                    readOnly
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="col-md-4 mt-2">
+                                <div className="form-group">
+                                  <label>PAN</label>
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    value={billEntryData.pan_no || ""}
+                                    disabled
+                                    readOnly
+                                  />
+                                </div>
+                              </div>
+                              <div className="col-md-4 mt-2">
+                                <div className="form-group">
+                                  <label>Remark</label>
+                                  <textarea
+                                    className="form-control"
+                                    rows={3}
+                                    placeholder="Enter ..."
+                                    defaultValue={""}
+                                    value={remark2}
+                                    onChange={handleRemarkChange2}
+                                  />
+                                </div>
+                              </div>
+
                             </div>
-                            {/* <div className="col-md-4 mt-2">
+                          )}
+
+                          {withoutBillEntry && !withBillEntry && (
+                            <div className="row mt-2">
+                              <div className="col-md-4 ">
+                                <div className="form-group">
+                                  <label>
+                                    Company <span>*</span>
+                                  </label>
+                                  <SingleSelector
+                                    options={companies}
+                                    value={selectedCompany}
+                                    onChange={handleCompanyChange}
+                                    placeholder="Select Company"
+                                  />
+                                </div>
+                              </div>
+                              <div className="col-md-4  ">
+                                <div className="form-group">
+                                  <label>
+                                    Project <span>*</span>
+                                  </label>
+                                  <SingleSelector
+                                    options={projects}
+                                    value={selectedProject}
+                                    onChange={handleProjectChange}
+                                    placeholder="Select Project"
+                                    isDisabled={!selectedCompany}
+                                  />
+                                </div>
+                              </div>
+                              <div className="col-md-4 ">
+                                <div className="form-group">
+                                  <label>
+                                    Sub-Project <span>*</span>
+                                  </label>
+
+                                  <SingleSelector
+                                    options={sites}
+                                    onChange={handleSiteChange}
+                                    value={selectedSite}
+                                    placeholder={`Select Sub-Project`} // Dynamic placeholder
+                                    isDisabled={!selectedCompany}
+                                  />
+                                </div>
+                              </div>
+                              {/* <div className="col-md-4 mt-2">
                               <div className="form-group">
                                 <label>Credit Note Number</label>
                                 <input
@@ -613,137 +909,138 @@ const MiscellaneousBillCreate = () => {
                             </div> */}
 
 
-                            <div className="col-md-4 mt-2">
-                              <div className="form-group">
-                                <label>Bill Number</label>
-                                <input
-                                  className="form-control"
-                                  type="text"
-                                  value={billNumber}
-                                  onChange={e => setBillNumber(e.target.value)}
-                                  placeholder=""
-                                  fdprocessedid="qv9ju9"
-                                />
+                              <div className="col-md-4 mt-2">
+                                <div className="form-group">
+                                  <label>Bill Number</label>
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    value={billNumber}
+                                    onChange={e => setBillNumber(e.target.value)}
+                                    placeholder=""
+                                    fdprocessedid="qv9ju9"
+                                  />
+                                </div>
                               </div>
-                            </div>
 
-                            <div className="col-md-4 mt-2">
-                              <div className="form-group">
-                                <label>Bill Date</label>
-                                <div
-                                  id="datepicker"
-                                  className="input-group date"
-                                  data-date-format="mm-dd-yyyy"
-                                >
-                                  <input className="form-control" type="date"
-                                    value={billDate}
-                                    onChange={e => setBillDate(e.target.value)}
+                              <div className="col-md-4 mt-2">
+                                <div className="form-group">
+                                  <label>Bill Date</label>
+                                  <div
+                                    id="datepicker"
+                                    className="input-group date"
+                                    data-date-format="mm-dd-yyyy"
+                                  >
+                                    <input className="form-control" type="date"
+                                      value={billDate}
+                                      onChange={e => setBillDate(e.target.value)}
 
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="col-md-4 mt-2">
+                                <div className="form-group">
+                                  <label>Bill Amount</label>
+                                  <input
+                                    className="form-control"
+                                    type="number"
+                                    placeholder=""
+                                    fdprocessedid="qv9ju9"
+                                    value={creditNoteAmount} // Bind to state
+                                    onChange={(e) => setCreditNoteAmount(Number(e.target.value) || 0)} // Update state on change
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="col-md-4 mt-2">
+                                <div className="form-group">
+                                  <label>Created On</label>
+                                  <div
+                                    id="datepicker"
+                                    className="input-group date"
+                                    data-date-format="mm-dd-yyyy"
+                                  >
+                                    <input className="form-control" type="text"
+                                      value={new Date().toLocaleDateString("en-GB")} // Format: DD/MM/YYYY
+                                      disabled // Makes the input field non-editable
+                                    />
+
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="col-md-4 mt-2">
+                                <div className="form-group">
+                                  <label>Supplier Name</label>
+
+                                  <SingleSelector
+                                    options={suppliers.map(s => ({
+                                      label: s.organization_name,
+                                      value: s.id,
+                                      gstin: s.gstin,
+                                      pan_number: s.pan_number,
+                                    }))}
+                                    value={
+                                      selectedSupplier
+                                        ? {
+                                          label: selectedSupplier.organization_name,
+                                          value: selectedSupplier.id,
+                                          gstin: selectedSupplier.gstin,
+                                          pan_number: selectedSupplier.pan_number,
+                                        }
+                                        : null
+                                    }
+                                    onChange={option => {
+                                      const supplier = suppliers.find(s => s.id === option.value);
+                                      setSelectedSupplier(supplier || null);
+                                    }}
+                                    placeholder="Select Supplier"
+                                  />
+                                </div>
+                              </div>
+                              <div className="col-md-4 mt-2">
+                                <div className="form-group">
+                                  <label>GSTIN Number</label>
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    value={selectedSupplier?.gstin || ""}
+                                    placeholder=""
+                                    fdprocessedid="qv9ju9"
+                                    disabled
+                                  />
+                                </div>
+                              </div>
+                              <div className="col-md-4 mt-2">
+                                <div className="form-group">
+                                  <label>PAN Number</label>
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    value={selectedSupplier?.pan_number || ""}
+                                    placeholder=""
+                                    fdprocessedid="qv9ju9"
+                                    disabled
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="col-md-4 mt-2">
+                                <div className="form-group">
+                                  <label>Remark</label>
+                                  <textarea
+                                    className="form-control"
+                                    rows={3}
+                                    placeholder="Enter ..."
+                                    defaultValue={""}
+                                    value={remark2}
+                                    onChange={handleRemarkChange2}
                                   />
                                 </div>
                               </div>
                             </div>
-
-                            <div className="col-md-4 mt-2">
-                              <div className="form-group">
-                                <label>Bill Amount</label>
-                                <input
-                                  className="form-control"
-                                  type="number"
-                                  placeholder=""
-                                  fdprocessedid="qv9ju9"
-                                  value={creditNoteAmount} // Bind to state
-                                  onChange={(e) => setCreditNoteAmount(Number(e.target.value) || 0)} // Update state on change
-                                />
-                              </div>
-                            </div>
-
-                            <div className="col-md-4 mt-2">
-                              <div className="form-group">
-                                <label>Created On</label>
-                                <div
-                                  id="datepicker"
-                                  className="input-group date"
-                                  data-date-format="mm-dd-yyyy"
-                                >
-                                  <input className="form-control" type="text"
-                                    value={new Date().toLocaleDateString("en-GB")} // Format: DD/MM/YYYY
-                                    disabled // Makes the input field non-editable
-                                  />
-
-                                </div>
-                              </div>
-                            </div>
-                            <div className="col-md-4 mt-2">
-                              <div className="form-group">
-                                <label>Supplier Name</label>
-
-                                <SingleSelector
-                                  options={suppliers.map(s => ({
-                                    label: s.organization_name,
-                                    value: s.id,
-                                    gstin: s.gstin,
-                                    pan_number: s.pan_number,
-                                  }))}
-                                  value={
-                                    selectedSupplier
-                                      ? {
-                                        label: selectedSupplier.organization_name,
-                                        value: selectedSupplier.id,
-                                        gstin: selectedSupplier.gstin,
-                                        pan_number: selectedSupplier.pan_number,
-                                      }
-                                      : null
-                                  }
-                                  onChange={option => {
-                                    const supplier = suppliers.find(s => s.id === option.value);
-                                    setSelectedSupplier(supplier || null);
-                                  }}
-                                  placeholder="Select Supplier"
-                                />
-                              </div>
-                            </div>
-                            <div className="col-md-4 mt-2">
-                              <div className="form-group">
-                                <label>GSTIN Number</label>
-                                <input
-                                  className="form-control"
-                                  type="text"
-                                  value={selectedSupplier?.gstin || ""}
-                                  placeholder=""
-                                  fdprocessedid="qv9ju9"
-                                  disabled
-                                />
-                              </div>
-                            </div>
-                            <div className="col-md-4 mt-2">
-                              <div className="form-group">
-                                <label>PAN Number</label>
-                                <input
-                                  className="form-control"
-                                  type="text"
-                                  value={selectedSupplier?.pan_number || ""}
-                                  placeholder=""
-                                  fdprocessedid="qv9ju9"
-                                  disabled
-                                />
-                              </div>
-                            </div>
-
-                            <div className="col-md-4 mt-2">
-                              <div className="form-group">
-                                <label>Remark</label>
-                                <textarea
-                                  className="form-control"
-                                  rows={3}
-                                  placeholder="Enter ..."
-                                  defaultValue={""}
-                                  value={remark2}
-                                  onChange={handleRemarkChange2}
-                                />
-                              </div>
-                            </div>
-                          </div>
+                          )}
                           <div className="d-flex justify-content-between mt-3 me-2">
                             <h5 className=" ">Tax Details</h5>
                           </div>

@@ -482,6 +482,10 @@ function App() {
             element={<MiscellaneousBillCreate />}
           />
           <Route
+            path="/miscellaneous-bill-create/:id"
+            element={<MiscellaneousBillCreate />}
+          />
+          <Route
             path="/miscellaneous-bill-list"
             element={<MiscellaneousBillList />}
           />

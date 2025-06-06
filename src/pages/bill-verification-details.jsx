@@ -19,6 +19,7 @@ const BillVerificationDetails = () => {
   const [showValidation, setShowValidation] = useState(false); // State to control validation message
   const [remarks, setRemarks] = useState("");
   const [comments, setComments] = useState("");
+  const [activeTab, setActiveTab] = useState("material"); // default
 
   const [loading, setLoading] = useState(false); // Add loading state
   const [billDetails, setBillDetails] = useState(null);
@@ -58,11 +59,16 @@ const BillVerificationDetails = () => {
         `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       )
       .then((response) => {
-        setBillDetails(response.data);
-        setStatus(response.data.status);
+        console.log("res:",response.data)
+        setBillDetails(response?.data);
+        setStatus(response?.data.status);
         if (response.data.documents) {
           setDocuments(response.data.documents);
         }
+         // Set active tab based on bill_type
+      if (response.data.bill_type === "material") setActiveTab("material");
+      else if (response.data.bill_type === "service") setActiveTab("service");
+      else if (response.data.bill_type === "miscellaneous") setActiveTab("misc");
       })
       .catch((error) => {
         console.error("Error fetching bill details:", error);
@@ -71,9 +77,9 @@ const BillVerificationDetails = () => {
 
   useEffect(() => {
     if (billDetails) {
-      setEditableBillNo(billDetails.bill_no || "");
-      setEditableBillDate(billDetails.bill_date || "");
-      setEditableBillAmount(billDetails.bill_amount || "");
+      setEditableBillNo(billDetails?.bill_no || "");
+      setEditableBillDate(billDetails?.bill_date || "");
+      setEditableBillAmount(billDetails?.bill_amount || "");
     }
   }, [billDetails]);
 
@@ -129,23 +135,23 @@ const BillVerificationDetails = () => {
     }
   };
 
-  if (!billDetails) {
-    return (
-      <div className="loader-container">
-        <div className="lds-ring">
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-          <div></div>
-        </div>
-        <p>loading..</p>
-      </div>
-    );
-  }
+  // if (!billDetails) {
+  //   return (
+  //     <div className="loader-container">
+  //       <div className="lds-ring">
+  //         <div></div>
+  //         <div></div>
+  //         <div></div>
+  //         <div></div>
+  //         <div></div>
+  //         <div></div>
+  //         <div></div>
+  //         <div></div>
+  //       </div>
+  //       <p>loading..</p>
+  //     </div>
+  //   );
+  // }
 
   const handleStatusChange = (selectedOption) => {
     // setStatus(e.target.value);
@@ -316,6 +322,45 @@ const BillVerificationDetails = () => {
           </a>
           <h5 className="mt-3">Update Bill Information (Details)</h5>
           <div className="row my-4 align-items-center container-fluid mb-5">
+            <div className="mor-tabs mt-4">
+         <ul
+  className="nav nav-pills mb-3 justify-content-center"
+  id="pills-tab"
+  role="tablist"
+>
+  <li className="nav-item" role="presentation">
+    <button
+      className={`nav-link ${activeTab === "material" ? "active" : ""}`}
+      onClick={() => setActiveTab("material")}
+      type="button"
+      disabled={activeTab !== "material"}
+    >
+      Material
+    </button>
+  </li>
+  <li className="nav-item" role="presentation">
+    <button
+      className={`nav-link ${activeTab === "service" ? "active" : ""}`}
+      onClick={() => setActiveTab("service")}
+      type="button"
+       disabled={activeTab !== "service"}
+    >
+      Service
+    </button>
+  </li>
+  <li className="nav-item" role="presentation">
+    <button
+      className={`nav-link ${activeTab === "misc" ? "active" : ""}`}
+      onClick={() => setActiveTab("misc")}
+      type="button"
+       disabled={activeTab !== "misc"}
+    >
+      Misc.
+    </button>
+  </li>
+  <li className="nav-item" role="presentation" />
+</ul>
+        </div>
             <div className="col-md-12 ">
               <div className="card p-3">
                 <div className="details_page">
@@ -368,7 +413,7 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.pms_supplier || "-"}
+                          {billDetails?.pms_supplier?.organization_name || "-"}
                         </label>
                       </div>
                     </div>
@@ -433,7 +478,7 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails.created_at
+                          {billDetails?.created_at
                             ? new Date(
                               billDetails.created_at
                             ).toLocaleDateString()
@@ -775,7 +820,7 @@ const BillVerificationDetails = () => {
                 </div>
               </div>
               <div className="row mt-2 justify-content-end">
-                {status.toLowerCase() === "verified" && (
+                {/* {status.toLowerCase() === "verified" && billDetails?.bill_type === "material"(
                   <div className="col-md-2">
                     <button
                       className="purple-btn2 w-100"
@@ -784,7 +829,30 @@ const BillVerificationDetails = () => {
                       Bill Booking
                     </button>
                   </div>
-                )}
+                )} */}
+{/* 
+                {status.toLowerCase() === "verified" && billDetails?.bill_type === "material" && (
+  <div className="col-md-2">
+    <button
+      className="purple-btn2 w-100"
+      onClick={handleBillBookingClick}
+    >
+      Bill Booking
+    </button>
+  </div>
+)} */}
+                {status.toLowerCase() === "verified"
+                //  && billDetails?.bill_type === "miscellaneous" 
+                 && (
+  <div className="col-md-2">
+    <button
+      className="purple-btn2 w-100"
+      onClick={() => navigate(`/miscellaneous-bill-create/${id}`)}
+    >
+      Misc. Bill Booking
+    </button>
+  </div>
+)}
                 <div className="col-md-2">
                   <button
                     className="purple-btn2 w-100"

@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import { baseURL } from "../confi/apiDomain";
 import { DataGrid } from "@mui/x-data-grid";
 
+
 const BillVerificationList = () => {
   const navigate = useNavigate();
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
@@ -27,6 +28,7 @@ const BillVerificationList = () => {
   const [filterCompanyId, setFilterCompanyId] = useState("");
   const [filterProjectId, setFilterProjectId] = useState("");
   const [filterSiteId, setFilterSiteId] = useState("");
+
 
   // Handle value change in SingleSelector
   const handleChange = (value) => {
@@ -105,6 +107,7 @@ const BillVerificationList = () => {
           srNo: (page - 1) * pageSize + index + 1,
           ...entry,
           created_at: formattedDate,
+          pms_supplier: entry.supplier?.organization_name || "-",
           due_date: formattedDue,
           status,
         };
@@ -436,7 +439,7 @@ const BillVerificationList = () => {
           `${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[status_eq]=${fromStatus}`
         )
         .then((response) => {
-          const transformedData = response.data.bill_entries.map(
+          const transformedData = response?.data?.bill_entries.map(
             (entry, index) => {
               // console.log("created_at raw:", entry.created_at);
               let formattedDate = "-";
@@ -511,9 +514,8 @@ const BillVerificationList = () => {
 
   //card filter
   const fetchFilteredData2 = (status) => {
-    const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${
-      status ? `&q[status_eq]=${status}` : ""
-    }`;
+    const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${status ? `&q[status_eq]=${status}` : ""
+      }`;
 
     axios
       .get(url)
@@ -657,7 +659,7 @@ const BillVerificationList = () => {
       renderCell: (params) => (
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {params.value}
-          {params.row.id && params.row.status.toLowerCase() === "verified" && (
+          {/* {params.row.id && params.row.status.toLowerCase() === "verified" && (
             <button
               className="purple-button2"
               title="Go to Bill Booking" // Add this line
@@ -683,6 +685,65 @@ const BillVerificationList = () => {
                 <path d="M8 0L6.59 1.41L12.17 7H0V9H12.17L6.59 14.59L8 16L16 8L8 0Z" />
               </svg>
             </button>
+          )} */}
+
+          {params.row.id && params.row.status.toLowerCase() === "verified" && (
+            <>
+              {params.row.bill_type === "material" && (
+                <button
+                  className="purple-button2"
+                  title="Go to Bill Booking"
+                  style={{
+                    border: "none",
+                    background: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    color: "#8B0203",
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/bill-booking-create/${params.row.id}`);
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                  >
+                    <path d="M8 0L6.59 1.41L12.17 7H0V9H12.17L6.59 14.59L8 16L16 8L8 0Z" />
+                  </svg>
+                </button>
+              )}
+              {params.row.bill_type === "miscellaneous" && (
+                <button
+                  className="purple-button2"
+                  title="Go to Misc Bill Booking"
+                  style={{
+                    border: "none",
+                    background: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    color: "#8B0203",
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/miscellaneous-bill-create/${params.row.id}`);
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                  >
+                    <path d="M8 0L6.59 1.41L12.17 7H0V9H12.17L6.59 14.59L8 16L16 8L8 0Z" />
+                  </svg>
+                </button>
+              )}
+            </>
           )}
         </div>
       ),
@@ -709,7 +770,7 @@ const BillVerificationList = () => {
     { field: "company_name", headerName: "Company", width: 200 },
     { field: "project_name", headerName: "Project", width: 180 },
     { field: "site_name", headerName: "Sub Project", width: 150 },
-    { field: "pms_supplier", headerName: "Vendor Name", width: 150 },
+    { field: "pms_supplier", headerName: "Vendor Name", width: 200 },
     { field: "is_msme", headerName: "Is MSME", width: 150 },
     { field: "po_number", headerName: "PO No.", width: 150 },
     {
@@ -873,9 +934,8 @@ const BillVerificationList = () => {
                   <div
                     // className="content-box tab-button active"
                     data-tab="total"
-                    className={`content-box tab-button ${
-                      activeTab === "total" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "total" ? "active" : ""
+                      }`}
                     onClick={() => {
                       setActiveTab("total");
                       fetchFilteredData2("");
@@ -889,9 +949,8 @@ const BillVerificationList = () => {
                   <div
                     // className="content-box tab-button"
                     data-tab="open"
-                    className={`content-box tab-button ${
-                      activeTab === "open" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "open" ? "active" : ""
+                      }`}
                     onClick={() => {
                       setActiveTab("open");
                       fetchFilteredData2("open");
@@ -907,9 +966,8 @@ const BillVerificationList = () => {
                   <div
                     // className="content-box tab-button"
                     data-tab="pending-approval"
-                    className={`content-box tab-button ${
-                      activeTab === "recieved_for_verification" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "recieved_for_verification" ? "active" : ""
+                      }`}
                     onClick={() => {
                       setActiveTab("recieved_for_verification");
                       fetchFilteredData2("recieved_for_verification");
@@ -927,9 +985,8 @@ const BillVerificationList = () => {
                   <div
                     // className="content-box tab-button"
                     data-tab="self-overdue"
-                    className={`content-box tab-button ${
-                      activeTab === "verified" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "verified" ? "active" : ""
+                      }`}
                     onClick={() => {
                       setActiveTab("verified");
                       fetchFilteredData2("verified");
@@ -1207,9 +1264,9 @@ const BillVerificationList = () => {
                     },
                     // Black for header (select all) checkbox, even when checked
                     "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root":
-                      {
-                        color: "#fff",
-                      },
+                    {
+                      color: "#fff",
+                    },
                     // Make checkboxes smaller
                     "& .MuiCheckbox-root .MuiSvgIcon-root": {
                       fontSize: "1.1rem", // adjust as needed (default is 1.5rem)
@@ -1224,9 +1281,8 @@ const BillVerificationList = () => {
               <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                 <ul className="pagination justify-content-center d-flex">
                   <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === 1 ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1237,9 +1293,8 @@ const BillVerificationList = () => {
                     </button>
                   </li>
                   <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === 1 ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1253,9 +1308,8 @@ const BillVerificationList = () => {
                   {Array.from({ length: totalPages }, (_, index) => (
                     <li
                       key={index + 1}
-                      className={`page-item ${
-                        currentPage === index + 1 ? "active" : ""
-                      }`}
+                      className={`page-item ${currentPage === index + 1 ? "active" : ""
+                        }`}
                     >
                       <button
                         className="page-link"
@@ -1267,9 +1321,8 @@ const BillVerificationList = () => {
                   ))}
 
                   <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1280,9 +1333,8 @@ const BillVerificationList = () => {
                     </button>
                   </li>
                   <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
