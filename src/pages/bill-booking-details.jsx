@@ -296,7 +296,6 @@ const BillBookingDetails = () => {
 
   // Add handleDownload function
   const handleDownload = async (blobId) => {
-
     try {
       const response = await axios.get(
         `${baseURL}bill_bookings/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${blobId}`,
@@ -426,7 +425,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.po_number || "-" }
+                          {details?.po_number || "-"}
                         </label>
                       </div>
                     </div>
@@ -439,7 +438,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {"Domestic"  || "-"}
+                          {"Domestic" || "-"}
                         </label>
                       </div>
                     </div>
@@ -452,7 +451,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.invoice_number  || "-"}
+                          {details?.invoice_number || "-"}
                         </label>
                       </div>
                     </div>
@@ -482,12 +481,12 @@ const BillBookingDetails = () => {
                           </span>
                           {details?.inventory_date
                             ? new Date(
-                              details.inventory_date
-                            ).toLocaleDateString("en-GB", {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            })
+                                details.inventory_date
+                              ).toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              })
                             : "-"}
                         </label>
                       </div>
@@ -501,7 +500,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.invoice_amount  || "-"}
+                          {details?.invoice_amount || "-"}
                         </label>
                       </div>
                     </div>
@@ -553,11 +552,11 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.type_of_certificate  || "-"}
+                          {details?.type_of_certificate || "-"}
                         </label>
                       </div>
                     </div>
-                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Bill Entry Number</label>
                       </div>
@@ -605,7 +604,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                           {"-"}
+                          {"-"}
                         </label>
                       </div>
                     </div>
@@ -790,7 +789,6 @@ const BillBookingDetails = () => {
                   </table>
                 </div>
 
-
                 {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Advance Adjusted</h5>
                 </div> */}
@@ -870,7 +868,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.base_cost ||"-"}
+                          {details?.base_cost || "-"}
                         </label>
                       </div>
                     </div>
@@ -883,7 +881,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.all_inclusive_cost ||"-"}
+                          {details?.all_inclusive_cost || "-"}
                         </label>
                       </div>
                     </div>
@@ -896,7 +894,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.other_deductions ||"-"}
+                          {details?.other_deductions || "-"}
                         </label>
                       </div>
                     </div>
@@ -909,7 +907,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.other_deduction_remarks ||"-"}
+                          {details?.other_deduction_remarks || "-"}
                         </label>
                       </div>
                     </div>
@@ -922,7 +920,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.other_additions ||"-"}
+                          {details?.other_additions || "-"}
                         </label>
                       </div>
                     </div>
@@ -935,7 +933,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.other_addition_remarks ||"-"}
+                          {details?.other_addition_remarks || "-"}
                         </label>
                       </div>
                     </div>
@@ -961,7 +959,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.total_amount ||"-"}
+                          {details?.total_amount || "-"}
                         </label>
                       </div>
                     </div>
@@ -974,7 +972,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.retention_per ||"-"}
+                          {details?.retention_per || "-"}
                         </label>
                       </div>
                     </div>
@@ -987,7 +985,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.retention_amount ||"-"}
+                          {details?.retention_amount || "-"}
                         </label>
                       </div>
                     </div>
@@ -1000,7 +998,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.payable_amount ||"-"}
+                          {details?.payable_amount || "-"}
                         </label>
                       </div>
                     </div>
@@ -1026,7 +1024,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.payee_name ||"-"}
+                          {details?.payee_name || "-"}
                         </label>
                       </div>
                     </div>
@@ -1039,7 +1037,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.payment_mode ||"-"}
+                          {details?.payment_mode || "-"}
                         </label>
                       </div>
                     </div>
@@ -1054,12 +1052,12 @@ const BillBookingDetails = () => {
                           </span>
                           {details?.payment_due_date
                             ? new Date(
-                              details.payment_due_date
-                            ).toLocaleDateString("en-GB", {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            })
+                                details.payment_due_date
+                              ).toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              })
                             : "-"}
                         </label>
                       </div>
@@ -1086,7 +1084,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.remark ||"-"}
+                          {details?.remark || "-"}
                         </label>
                       </div>
                     </div>
@@ -1125,7 +1123,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.status ||"-"}
+                          {details?.status || "-"}
                         </label>
                       </div>
                     </div>
@@ -1158,25 +1156,47 @@ const BillBookingDetails = () => {
                       </tr>
                     </thead>
                     <tbody>
-
-                      {details?.bill_advance_notes && details.bill_advance_notes.length > 0 ? (
+                      {details?.bill_advance_notes &&
+                      details.bill_advance_notes.length > 0 ? (
                         details.bill_advance_notes.map((note, idx) => (
                           <tr key={note.id}>
-                            <td className="text-start">{note.advance_note?.advance_number || "-"}</td>
-                            <td className="text-start">{note.advance_note?.po_number || "-"}</td>
-                            <td className="text-start">{note.advance_note?.project_name || "-"}</td>
-                            <td className="text-start">{note.advance_note?.advance_amount || "-"}</td>
-                            <td className="text-start">{/* Credit Note Recovery Till Date (add logic if available) */ "-"}</td>
-                            <td className="text-start">{/* Waive off Till Date (add logic if available) */ "-"}</td>
-                            <td className="text-start">{/* Outstanding Amount (Certificate Date) */ "-"}</td>
-                            <td className="text-start">{/* Outstanding Amount (Current Date) */ "-"}</td>
+                            <td className="text-start">
+                              {note.advance_note?.advance_number || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.advance_note?.po_number || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.advance_note?.project_name || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.advance_note?.advance_amount || "-"}
+                            </td>
+                            <td className="text-start">
+                              {
+                                /* Credit Note Recovery Till Date (add logic if available) */ "-"
+                              }
+                            </td>
+                            <td className="text-start">
+                              {
+                                /* Waive off Till Date (add logic if available) */ "-"
+                              }
+                            </td>
+                            <td className="text-start">
+                              {/* Outstanding Amount (Certificate Date) */ "-"}
+                            </td>
+                            <td className="text-start">
+                              {/* Outstanding Amount (Current Date) */ "-"}
+                            </td>
                             {/* <td className="text-start">{"-"}</td> */}
                             <td className="text-start">{note.amount || ""}</td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td className="text-center" colSpan={10}>No Advance Notes Found</td>
+                          <td className="text-center" colSpan={10}>
+                            No Advance Notes Found
+                          </td>
                         </tr>
                       )}
                     </tbody>
@@ -1243,72 +1263,53 @@ const BillBookingDetails = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {details?.bill_debit_notes && details.bill_debit_notes.length > 0 ? (
+                      {details?.bill_debit_notes &&
+                      details.bill_debit_notes.length > 0 ? (
                         details.bill_debit_notes.map((note, idx) => (
                           <tr key={note.id}>
-                            <td className="text-start">{note.debit_note?.debit_note_no || "-"}</td>
-                            <td className="text-start">{note.debit_note?.po_number || "-"}</td>
-                            <td className="text-start">{note.debit_note?.project_name || "-"}</td>
-                            <td className="text-start">{note.debit_note?.debit_note_amount || "-"}</td>
-                            <td className="text-start">{/* Credit Note Recovery Till Date (add logic if available) */ "-"}</td>
-                            <td className="text-start">{/* Waive off Till Date (add logic if available) */ "-"}</td>
-                            <td className="text-start">{/* Outstanding Amount (Certificate Date) */ "-"}</td>
-                            <td className="text-start">{/* Outstanding Amount (Current Date) */ "-"}</td>
+                            <td className="text-start">
+                              {note.debit_note?.debit_note_no || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.debit_note?.po_number || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.debit_note?.project_name || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.debit_note?.debit_note_amount || "-"}
+                            </td>
+                            <td className="text-start">
+                              {
+                                /* Credit Note Recovery Till Date (add logic if available) */ "-"
+                              }
+                            </td>
+                            <td className="text-start">
+                              {
+                                /* Waive off Till Date (add logic if available) */ "-"
+                              }
+                            </td>
+                            <td className="text-start">
+                              {/* Outstanding Amount (Certificate Date) */ "-"}
+                            </td>
+                            <td className="text-start">
+                              {/* Outstanding Amount (Current Date) */ "-"}
+                            </td>
                             <td className="text-start">{"-"}</td>
                             <td className="text-start">{note.amount || ""}</td>
                           </tr>
                         ))
                       ) : (
                         <tr>
-                          <td className="text-center" colSpan={10}>No Debit Notes Found</td>
+                          <td className="text-center" colSpan={10}>
+                            No Debit Notes Found
+                          </td>
                         </tr>
                       )}
                     </tbody>
                   </table>
                 </div>
-                <div className="d-flex justify-content-between mt-3 me-2">
-                  <h5 className=" ">Credit Note</h5>
-                </div>
-                <div className="tbl-container mx-1 mt-3">
-                  <table className="w-100">
-                    <thead>
-                      <tr>
-                        <th className="text-start">Credit Note No.</th>
-                        <th className="text-start">PO Display No.</th>
-                        <th className="text-start">Project</th>
-                        <th className="text-start">Credit Note Amount</th>
-                        <th className="text-start">Credit Note Recovery Till Date</th>
-                        <th className="text-start">Waive off Till Date</th>
-                        <th className="text-start">Outstanding Amount (Certificate Date)</th>
-                        <th className="text-start">Outstanding Amount (Current Date)</th>
-                        <th className="text-start">Credit Note Reason Type</th>
-                        <th className="text-start">This Recovery</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {details?.bill_credit_notes && details.bill_credit_notes.length > 0 ? (
-                        details.bill_credit_notes.map((note, idx) => (
-                          <tr key={note.id}>
-                            <td className="text-start">{note.credit_note?.credit_note_no || "-"}</td>
-                            <td className="text-start">{note.credit_note?.po_number || "-"}</td>
-                            <td className="text-start">{note.credit_note?.project_name || "-"}</td>
-                            <td className="text-start">{note.credit_note?.credit_note_amount || "-"}</td>
-                            <td className="text-start">{/* Credit Note Recovery Till Date (add logic if available) */ "-"}</td>
-                            <td className="text-start">{/* Waive off Till Date (add logic if available) */ "-"}</td>
-                            <td className="text-start">{/* Outstanding Amount (Certificate Date) */ "-"}</td>
-                            <td className="text-start">{/* Outstanding Amount (Current Date) */ "-"}</td>
-                            <td className="text-start">{"-"}</td>
-                            <td className="text-start">{note.amount || ""}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td className="text-center" colSpan={10}>No Credit Notes Found</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Document Attachment</h5>
                 </div>
@@ -1340,8 +1341,8 @@ const BillBookingDetails = () => {
                           <td className="text-start">
                             {attachment.created_at
                               ? new Date(
-                                attachment.created_at
-                              ).toLocaleDateString()
+                                  attachment.created_at
+                                ).toLocaleDateString()
                               : ""}
                           </td>
                           <td className="text-start">
@@ -1451,19 +1452,29 @@ const BillBookingDetails = () => {
                           <td>{""}</td>
                           <td>
                             {log.created_at
-                              ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                              })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                // second: "2-digit",
-                                hour12: true,
-                              })}`
+                              ? `${new Date(log.created_at).toLocaleDateString(
+                                  "en-GB",
+                                  {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  }
+                                )}      ${new Date(
+                                  log.created_at
+                                ).toLocaleTimeString("en-GB", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  // second: "2-digit",
+                                  hour12: true,
+                                })}`
                               : ""}
                           </td>
-                          <td>{log.status ? log.status.charAt(0).toUpperCase() + log.status.slice(1) : ""}</td>
+                          <td>
+                            {log.status
+                              ? log.status.charAt(0).toUpperCase() +
+                                log.status.slice(1)
+                              : ""}
+                          </td>
                           <td>{log.remarks || ""}</td>
                         </tr>
                       ))}
@@ -1516,7 +1527,7 @@ const BillBookingDetails = () => {
                   data-bs-dismiss="modal"
                   data-bs-target="#secModal"
                   fdprocessedid="xn3e6n"
-                // onClick={openAttachTwoModal}
+                  // onClick={openAttachTwoModal}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
