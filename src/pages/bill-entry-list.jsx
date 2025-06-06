@@ -45,7 +45,8 @@ const BillEntryList = () => {
     company_name: true,
     project_name: true,
     site_name: true,
-    pms_supplier: true,
+    // pms_supplier: true,
+    supplier_name: true,
     uam_number: true,
     po_number: true,
     created_at: true,
@@ -53,6 +54,7 @@ const BillEntryList = () => {
     bill_no: true,
     bill_date: true,
     bill_amount: true,
+    bill_type: true,
     bill_copies: true,
     due: true,
     due_date: true,
@@ -102,19 +104,19 @@ const BillEntryList = () => {
     { field: "project_name", headerName: "Project", width: 150 },
     { field: "site_name", headerName: "Sub Project", width: 150 },
     {
-      field: "pms_supplier",
+      field: "supplier_name",
       headerName: "Vendor Name",
       width: 150,
-      valueGetter: (params) => {
-        // Check if we have valid params and row data
-        if (!params?.row) return "-";
+      // valueGetter: (params) => {
+      //   // Check if we have valid params and row data
+      //   if (!params?.row) return "-";
 
-        // Access the organization_name from pms_supplier
-        const orgName = params.row.pms_supplier?.organization_name;
+      //   // Access the organization_name from pms_supplier
+      //   const orgName = params.row.pms_supplier?.organization_name;
 
-        // Return organization name if it exists, otherwise return "-"
-        return orgName || "-";
-      },
+      //   // Return organization name if it exists, otherwise return "-"
+      //   return orgName || "-";
+      // },
     },
     { field: "uam_number", headerName: "UAM No.", width: 150 },
     { field: "po_number", headerName: "PO No.", width: 150 },
@@ -143,6 +145,7 @@ const BillEntryList = () => {
     },
     { field: "bill_date", headerName: "Bill Date", width: 200 },
     { field: "bill_amount", headerName: "Bill Amount", width: 150 },
+    { field: "bill_type", headerName: "Bill Type", width: 150 },
     { field: "bill_copies", headerName: "Bill Copies", width: 150 },
     { field: "due", headerName: "Due", width: 150 },
     { field: "due_date", headerName: "Due Date", width: 200 },

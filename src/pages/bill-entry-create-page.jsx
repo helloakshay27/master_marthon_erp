@@ -67,6 +67,13 @@ const BillEntryListSubPage = () => {
   // Add tab change handler
   const handleTabClick = (tabName) => {
     setActiveTab(tabName);
+
+    if (tabName === "misc") {
+      setFormData((prev) => ({
+        ...prev,
+        due_date: "", // Reset due date when switching to misc tab
+      }));
+    }
   };
 
   // add row & delete row
@@ -365,59 +372,88 @@ const BillEntryListSubPage = () => {
 
   // tax table functionality
 
-  const handleProjectChange = (selectedOption) => {
-    if (!selectedOption) {
-      setSelectedProject(null);
-      setSelectedSite(null);
-      setSites([]);
-      return;
-    }
+  // const handleProjectChange = (selectedOption) => {
+  //   if (!selectedOption) {
+  //     setSelectedProject(null);
+  //     setSelectedSite(null);
+  //     setSites([]);
+  //     return;
+  //   }
 
-    setSelectedProject(selectedOption);
-    setSelectedSite(null);
+  //   setSelectedProject(selectedOption);
+  //   setSelectedSite(null);
 
-    if (selectedCompany?.value) {
-      const selectedCompanyData = companies.find(
-        (company) => company?.id === selectedCompany.value
-      );
-      const selectedProjectData = selectedCompanyData?.projects?.find(
-        (project) => project?.id === selectedOption.value
-      );
+  //   if (selectedCompany?.value) {
+  //     const selectedCompanyData = companies.find(
+  //       (company) => company?.id === selectedCompany.value
+  //     );
+  //     const selectedProjectData = selectedCompanyData?.projects?.find(
+  //       (project) => project?.id === selectedOption.value
+  //     );
 
-      setSites(
-        selectedProjectData?.pms_sites?.map((site) => ({
-          value: site?.id || "",
-          label: site?.name || "",
-        })) || []
-      );
-    }
-  };
-
-  const handleSiteChange = (selectedOption) => {
-    setSelectedSite(selectedOption || null);
-  };
+  //     setSites(
+  //       selectedProjectData?.pms_sites?.map((site) => ({
+  //         value: site?.id || "",
+  //         label: site?.name || "",
+  //       })) || []
+  //     );
+  //   }
+  // };
 
   const handleCompanyChange = (selectedOption) => {
-    if (!selectedOption) {
-      setSelectedCompany(null);
-      setSelectedProject(null);
-      setSelectedSite(null);
-      setProjects([]);
-      setSites([]);
-      return;
-    }
-
     setSelectedCompany(selectedOption);
     setSelectedProject(null);
     setSelectedSite(null);
     setProjects(
-      selectedOption?.projects?.map((prj) => ({
-        value: prj?.id || "",
-        label: prj?.name || "",
+      selectedOption?.projects?.map((project) => ({
+        value: project.id,
+        label: project.name,
+        sites: project.pms_sites,
       })) || []
     );
     setSites([]);
   };
+
+  const handleProjectChange = (value) => {
+    setSelectedProject(value);
+    setSelectedSite(null);
+    setSites(
+      value?.sites?.map((site) => ({
+        value: site.id,
+        label: site.name,
+      })) || []
+    );
+  };
+
+  const handleSiteChange = (value) => {
+    setSelectedSite(value);
+  };
+
+  // const handleSiteChange = (selectedOption) => {
+  //   setSelectedSite(selectedOption || null);
+  // };
+
+  // const handleCompanyChange = (selectedOption) => {
+  //   if (!selectedOption) {
+  //     setSelectedCompany(null);
+  //     setSelectedProject(null);
+  //     setSelectedSite(null);
+  //     setProjects([]);
+  //     setSites([]);
+  //     return;
+  //   }
+
+  //   setSelectedCompany(selectedOption);
+  //   setSelectedProject(null);
+  //   setSelectedSite(null);
+  //   setProjects(
+  //     selectedOption?.projects?.map((prj) => ({
+  //       value: prj?.id || "",
+  //       label: prj?.name || "",
+  //     })) || []
+  //   );
+  //   setSites([]);
+  // };
 
   const fetchProjects = async (companyId) => {
     try {
@@ -440,6 +476,7 @@ const BillEntryListSubPage = () => {
       const response = await axios.get(
         `${baseURL}sites.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[project_id_eq]=${projectId}`
       );
+      console.log("Sites response:", response.data.sites);
       setSites(
         response.data.sites.map((site) => ({
           value: site.id,
@@ -616,6 +653,7 @@ const BillEntryListSubPage = () => {
     vendor_remark: "",
     bill_received_date: "",
   });
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -670,6 +708,9 @@ const BillEntryListSubPage = () => {
         bill_entry: {
           // purchase_order_id: selectedPO.id,
           purchase_order_id: activeTab !== "misc" ? selectedPO?.id : null,
+          company_id: selectedCompany?.value || null,
+          project_id: selectedProject?.value || null,
+          site_id: selectedSite?.value || null,
           bill_no: formData.bill_no,
           bill_date: formData.bill_date,
           due_date: formData.due_date,
@@ -750,6 +791,52 @@ const BillEntryListSubPage = () => {
       ...prev,
       poType: selected.value || "",
     }));
+  };
+
+  console.log("forma data:", formData);
+
+  const formatDateForDisplay = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear().toString();
+    return `${year}-${month}-${day}`;
+  };
+
+  const formatDateForAPI = (dateString) => {
+    if (!dateString) return null;
+    const [year, month, day] = dateString.split("-");
+    return `${year}-${month}-${day}`;
+  };
+
+  // Update the existing handleInputChange function or add a new one
+  const handleBillAmountChange = (e) => {
+    const newBillAmount = parseFloat(e.target.value) || 0;
+
+    if (activeTab !== "misc" && selectedPO) {
+      const poValue = parseFloat(selectedPO.total_value) || 0;
+
+      if (newBillAmount > poValue) {
+        toast.error("Bill amount cannot be greater than PO value", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        // Reset to previous valid value or empty
+        setFormData((prev) => ({
+          ...prev,
+          bill_amount: "",
+        }));
+        return;
+      }
+    }
+
+    // If validation passes or in misc tab, update the value
+    handleInputChange(e);
   };
 
   return (
@@ -879,7 +966,97 @@ const BillEntryListSubPage = () => {
                   </>
                 ) : (
                   // Show Supplier fields for Misc tab
+                  // <>
+                  //   <div className="col-md-3">
+                  //     <div className="form-group">
+                  //       <label>Supplier Name</label>
+                  //       <SingleSelector
+                  //         options={suppliers.map((s) => ({
+                  //           label: s.organization_name,
+                  //           value: s.id,
+                  //           gstin: s.gstin,
+                  //           pan_number: s.pan_number,
+                  //         }))}
+                  //         value={
+                  //           selectedSupplier
+                  //             ? {
+                  //                 label: selectedSupplier.organization_name,
+                  //                 value: selectedSupplier.id,
+                  //                 gstin: selectedSupplier.gstin,
+                  //                 pan_number: selectedSupplier.pan_number,
+                  //               }
+                  //             : null
+                  //         }
+                  //         onChange={(option) => {
+                  //           const supplier = suppliers.find(
+                  //             (s) => s.id === option.value
+                  //           );
+                  //           setSelectedSupplier(supplier || null);
+                  //         }}
+                  //         placeholder="Select Supplier"
+                  //       />
+                  //     </div>
+                  //   </div>
+                  //   <div className="col-md-3">
+                  //     <div className="form-group">
+                  //       <label>GSTIN</label>
+                  //       <input
+                  //         className="form-control"
+                  //         type="text"
+                  //         value={selectedSupplier?.gstin || ""}
+                  //         disabled
+                  //       />
+                  //     </div>
+                  //   </div>
+                  //   <div className="col-md-3">
+                  //     <div className="form-group">
+                  //       <label>PAN</label>
+                  //       <input
+                  //         className="form-control"
+                  //         type="text"
+                  //         value={selectedSupplier?.pan_number || ""}
+                  //         disabled
+                  //       />
+                  //     </div>
+                  //   </div>
+                  // </>
+                  // In the JSX where you show Supplier fields for Misc tab
                   <>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Company</label>
+                        <SingleSelector
+                          options={companies}
+                          value={selectedCompany}
+                          onChange={handleCompanyChange}
+                          placeholder="Select Company"
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Project</label>
+                        <SingleSelector
+                          options={projects}
+                          value={selectedProject}
+                          onChange={handleProjectChange}
+                          placeholder="Select Project"
+                          isDisabled={!selectedCompany}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Sub-Project</label>
+                        <SingleSelector
+                          options={sites}
+                          value={selectedSite}
+                          onChange={handleSiteChange}
+                          placeholder="Select Sub-Project"
+                          isDisabled={!selectedProject}
+                        />
+                      </div>
+                    </div>
                     <div className="col-md-3">
                       <div className="form-group">
                         <label>Supplier Name</label>
@@ -910,7 +1087,7 @@ const BillEntryListSubPage = () => {
                         />
                       </div>
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-3 mt-2">
                       <div className="form-group">
                         <label>GSTIN</label>
                         <input
@@ -921,7 +1098,7 @@ const BillEntryListSubPage = () => {
                         />
                       </div>
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-3 mt-2">
                       <div className="form-group">
                         <label>PAN</label>
                         <input
@@ -935,7 +1112,7 @@ const BillEntryListSubPage = () => {
                   </>
                 )}
 
-                <div className="col-md-3 ">
+                <div className="col-md-3 mt-2 ">
                   <div className="form-group">
                     <label>Bill Date</label>
                     <input
@@ -969,10 +1146,10 @@ const BillEntryListSubPage = () => {
                     <label>Bill Amount</label>
                     <input
                       className="form-control"
-                      type="text"
+                      type="number"
                       name="bill_amount"
                       value={formData.bill_amount}
-                      onChange={handleInputChange}
+                      onChange={handleBillAmountChange}
                       placeholder=""
                     />
                   </div>
@@ -983,13 +1160,25 @@ const BillEntryListSubPage = () => {
                     <label>Due Date</label>
                     <input
                       className="form-control"
-                      type="text"
+                      type="date"
                       name="due_date"
-                      value={formData.due_date}
-                      onChange={handleInputChange}
+                      // value={formData.due_date}
+                      // onChange={handleInputChange}
+                      value={formatDateForDisplay(formData.due_date)}
+                      onChange={(e) => {
+                        const formattedDate = formatDateForAPI(e.target.value);
+                        handleInputChange({
+                          target: {
+                            name: "due_date",
+                            value: formattedDate,
+                          },
+                        });
+                      }}
                       placeholder="DD/MM/YY"
-                      readOnly
-                      disabled
+                      // readOnly
+                      // disabled
+                      disabled={activeTab !== "misc"} // Only enable for misc tab
+                      readOnly={activeTab !== "misc"} // Only enable for misc tab
                     />
                   </div>
                 </div>
@@ -1594,7 +1783,7 @@ const BillEntryListSubPage = () => {
             </div>
           </div>
           <div className="row mt-3 justify-content-center">
-            <div className="col-md-3">
+            <div className="col-md-3 mt-2">
               <button className="purple-btn2 w-100" onClick={handleSearch}>
                 Search
               </button>

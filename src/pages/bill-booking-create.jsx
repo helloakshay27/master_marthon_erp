@@ -11,6 +11,8 @@ import { baseURL } from "../confi/apiDomain";
 import MultiSelector from "../components/base/Select/MultiSelector";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const BillBookingCreate = () => {
   const [actionDetails, setactionDetails] = useState(false);
@@ -94,7 +96,7 @@ const BillBookingCreate = () => {
     const fetchTaxTypes = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setTaxTypes(response.data.taxes); // Assuming the API returns an array of tax types
       } catch (error) {
@@ -156,7 +158,7 @@ const BillBookingCreate = () => {
     const fetchTaxTypes = async () => {
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setDeductionTypes(response.data.taxes); // Assuming the API returns an array of tax types
       } catch (error) {
@@ -547,7 +549,7 @@ const BillBookingCreate = () => {
       const fetchBillEntryDetails = async () => {
         try {
           const response = await axios.get(
-            `https://marathon.lockated.com/bill_entries/${selectedBillEntry.value}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}/bill_entries/${selectedBillEntry.value}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           );
           const data = response.data;
 
@@ -567,7 +569,7 @@ const BillBookingCreate = () => {
             // data.due_date || "", // Add this line to get due date
           }));
 
-          setSupplierName(data.pms_supplier || "");
+          setSupplierName(data.supplier_name || "");
           setDisplayCompany(data.company_name || "");
           setDisplayProject(data.project_name || "");
           setDisplaySite(data.site_name || "");
@@ -578,7 +580,7 @@ const BillBookingCreate = () => {
           // Fetch PO GRN details using purchase_order.id
           if (data.purchase_order?.id) {
             const grnResponse = await axios.get(
-              `https://marathon.lockated.com/purchase_orders/grn_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&per_page=10&q[id_in]=${data.purchase_order.id}`
+              `${baseURL}/purchase_orders/grn_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&per_page=10&q[id_in]=${data.purchase_order.id}`
             );
 
             // Set the selected PO with GRN materials
@@ -880,7 +882,47 @@ const BillBookingCreate = () => {
       !formData.invoiceNumber || // Invoice Number mandatory
       !formData.invoiceAmount // Invoice Amount mandatory
     ) {
-      alert("Please fill in all required fields");
+      // alert("Please fill in all required fields");
+      // return;
+      toast.error("Please fill in all required fields", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
+    }
+
+    if (
+      parseFloat(otherDeductions) > 0 &&
+      !formData.otherDeductionRemarks?.trim()
+    ) {
+      toast.error("Please provide remarks for Other Deductions", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
+    }
+
+    // Add validation for other additions remark
+    if (
+      parseFloat(otherAdditions) > 0 &&
+      !formData.otherAdditionRemarks?.trim()
+    ) {
+      toast.error("Please provide remarks for Other Additions", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       return;
     }
 
@@ -895,7 +937,16 @@ const BillBookingCreate = () => {
     const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
 
     if (invoiceAmount < payableAmount) {
-      alert("Invoice Amount should not be less than Payable Amount.");
+      // alert("Invoice Amount should not be less than Payable Amount.");
+      // return;
+      toast.error("Invoice Amount should not be less than Payable Amount.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       return;
     }
 
@@ -981,14 +1032,37 @@ const BillBookingCreate = () => {
       );
 
       if (response.data) {
-        alert("Bill booking created successfully!");
-        setLoading(false);
-        navigate("/bill-booking-list"); // Redirect to bill-booking-list
+        // alert("Bill booking created successfully!");
+        // setLoading(false);
+        // navigate("/bill-booking-list"); // Redirect to bill-booking-list
         // Reset form or redirect as needed
+        toast.success("Bill booking created successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+
+        // Add delay before navigation
+        setTimeout(() => {
+          setLoading(false);
+          navigate("/bill-booking-list");
+        }, 1000);
       }
     } catch (error) {
       console.error("Error creating bill booking:", error);
-      alert("Failed to create bill booking. Please try again.");
+      // alert("Failed to create bill booking. Please try again.");
+      toast.error("Failed to create bill booking. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      setLoading(false);
     } finally {
       setLoading(false);
     }
@@ -1170,7 +1244,7 @@ const BillBookingCreate = () => {
     const fetchTaxPercentages = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/tax_percentage?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}/rfq/events/tax_percentage?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
 
         if (response.data) {
@@ -1273,7 +1347,16 @@ const BillBookingCreate = () => {
     const advanceAmount = parseFloat(note.advance_amount) || 0;
 
     if (recovery > advanceAmount) {
-      alert("Recovery amount cannot exceed advance amount");
+      // alert("Recovery amount cannot exceed advance amount");
+      // return false;
+      toast.error("Recovery amount cannot exceed advance amount", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       return false;
     }
     return true;
@@ -1588,6 +1671,7 @@ const BillBookingCreate = () => {
                   <div className="col-md-4  mt-2">
                     <div className="form-group">
                       <label>Supplier</label>
+                      <span style={{ color: "#8b0203" }}> *</span>
                       {/* <SingleSelector
                         options={supplierOptions}
                         className="form-control form-select"
@@ -1756,7 +1840,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-3 mt-3">
+                  <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>GSTIN</label>
                       <input
@@ -1768,9 +1852,9 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-1 pt-4 mt-3">
+                  {/* <div className="col-md-1 pt-4 mt-3">
                     <p className="mt-2 text-decoration-underline">Verify</p>
-                  </div>
+                  </div> */}
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>PAN</label>
@@ -2292,6 +2376,28 @@ const BillBookingCreate = () => {
 
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
+                      <label>Payment Mode</label>
+                      <SingleSelector
+                        options={paymentModeOptions}
+                        className="form-control form-select"
+                        value={
+                          paymentModeOptions.find(
+                            (opt) => opt.value === formData.paymentMode
+                          ) || null
+                        }
+                        onChange={(selected) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            paymentMode: selected ? selected.value : "",
+                          }))
+                        }
+                        placeholder="Select Payment Mode"
+                      />
+                    </div>
+                  </div>
+
+                  {/* <div className="col-md-4 mt-2">
+                    <div className="form-group">
                       <label>Round Of Amount</label>
 
                       <input
@@ -2303,7 +2409,7 @@ const BillBookingCreate = () => {
                         min="0"
                       />
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
@@ -2500,7 +2606,7 @@ const BillBookingCreate = () => {
                     </>
                   )}
 
-                  <div className="col-md-4 mt-2">
+                  {/* <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Payment Mode</label>
                       <SingleSelector
@@ -2520,7 +2626,7 @@ const BillBookingCreate = () => {
                         placeholder="Select Payment Mode"
                       />
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
@@ -3026,7 +3132,7 @@ const BillBookingCreate = () => {
                   <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
                     <h5 className="mt-3">
                       Document Attachments{" "}
-                      <span style={{ color: "red", fontSize: "16px" }}>*</span>
+                      {/* <span style={{ color: "red", fontSize: "16px" }}>*</span> */}
                     </h5>
                     <button
                       className="purple-btn2 mt-3"
@@ -3246,7 +3352,7 @@ const BillBookingCreate = () => {
           <div className="row mt-2 justify-content-center">
             <div className="col-md-3">
               <button
-                className="purple-btn2 w-100"
+                className="purple-btn2 w-100 mt-2"
                 onClick={handleGRNSubmit}
                 disabled={selectedGRNs.length === 0}
               >
@@ -4096,6 +4202,18 @@ const BillBookingCreate = () => {
           </div>
         </Modal.Body>
       </Modal>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 };

@@ -37,11 +37,8 @@ const MiscellaneousBillCreate = () => {
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [companies, setCompanies] = useState([]);
 
-
-
   const [billNumber, setBillNumber] = useState("");
   const [billDate, setBillDate] = useState("");
-
 
   // tax table functionality
 
@@ -199,9 +196,39 @@ const MiscellaneousBillCreate = () => {
   };
 
   const [rows, setRows] = useState([
-    { id: 1, type: "Handling Charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, resource_id: 2, resource_type: "TaxCharge" },
-    { id: 2, type: "Other charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, resource_id: 4, resource_type: "TaxCharge" },
-    { id: 3, type: "Freight", percentage: "", inclusive: false, amount: ' ', isEditable: false, addition: true, resource_id: 5, resource_type: "TaxCharge" },
+    {
+      id: 1,
+      type: "Handling Charges",
+      percentage: "",
+      inclusive: false,
+      amount: "",
+      isEditable: false,
+      addition: true,
+      resource_id: 2,
+      resource_type: "TaxCharge",
+    },
+    {
+      id: 2,
+      type: "Other charges",
+      percentage: "",
+      inclusive: false,
+      amount: "",
+      isEditable: false,
+      addition: true,
+      resource_id: 4,
+      resource_type: "TaxCharge",
+    },
+    {
+      id: 3,
+      type: "Freight",
+      percentage: "",
+      inclusive: false,
+      amount: " ",
+      isEditable: false,
+      addition: true,
+      resource_id: 5,
+      resource_type: "TaxCharge",
+    },
   ]);
   const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
 
@@ -239,7 +266,8 @@ const MiscellaneousBillCreate = () => {
   const calculateSubTotal = () => {
     return rows
       .filter((row) => !row.inclusive)
-      .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
+      .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0)
+      .toFixed(2);
   };
 
   // Delete a row
@@ -288,7 +316,14 @@ const MiscellaneousBillCreate = () => {
   const addDeductionRow = () => {
     if (deductionRows.length === 0) {
       setDeductionRows([
-        { id: 1, type: "", percentage: "", inclusive: false, amount: "", addition: false, },
+        {
+          id: 1,
+          type: "",
+          percentage: "",
+          inclusive: false,
+          amount: "",
+          addition: false,
+        },
       ]);
     }
   };
@@ -296,11 +331,13 @@ const MiscellaneousBillCreate = () => {
   const calculateDeductionSubTotal = () => {
     return deductionRows
       .filter((row) => !row.inclusive)
-      .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
+      .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0)
+      .toFixed(2);
   };
   // Function to calculate the payable amount
   const calculatePayableAmount = () => {
-    const grossAmount = parseFloat(calculateSubTotal()) + (parseFloat(creditNoteAmount) || 0);
+    const grossAmount =
+      parseFloat(calculateSubTotal()) + (parseFloat(creditNoteAmount) || 0);
     const deductionSubTotal = parseFloat(calculateDeductionSubTotal()) || 0;
     return (grossAmount - deductionSubTotal).toFixed(2);
   };
@@ -322,7 +359,6 @@ const MiscellaneousBillCreate = () => {
       label: "Submitted",
       value: "submitted",
     },
-
   ];
 
   const [status, setStatus] = useState("");
@@ -373,13 +409,13 @@ const MiscellaneousBillCreate = () => {
   const [selectedBillEntry, setSelectedBillEntry] = useState(null);
   useEffect(() => {
     const fetchAndSelectBillEntry = async () => {
-      console.log("..........bill id in misc:", typeof id, id)
+      console.log("..........bill id in misc:", typeof id, id);
       try {
         // Always fetch bill entry options
         const billEntryResponse = await axios.get(
-          `${baseURL}bill_bookings/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}miscellaneous_bills/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
-        console.log("bill entry res:", billEntryResponse.data.be_list)
+        console.log("bill entry res:", billEntryResponse.data.be_list);
         if (
           billEntryResponse.data &&
           Array.isArray(billEntryResponse.data.be_list)
@@ -393,21 +429,21 @@ const MiscellaneousBillCreate = () => {
 
           // If ID is available, find and set the matching entry
           if (id) {
-            setWithBillEntry(true);        // <-- Set with bill entry true
+            setWithBillEntry(true); // <-- Set with bill entry true
             setWithoutBillEntry(false);
             // First fetch specific bill entry details
             const response = await axios.get(
               `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
             );
 
-            console.log("res with id :", response.data)
-            console.log("data ", billEntryResponse.data.be_list)
+            console.log("res with id :", response.data);
+            console.log("data ", billEntryResponse.data.be_list);
             // Find and set the matching bill entry option
             const matchingEntry = billEntryResponse.data.be_list.find(
               // (item) => String(item.value) === String(id)
               (item) => Number(item.value) === Number(id)
             );
-            console.log("matching :", matchingEntry)
+            console.log("matching :", matchingEntry);
             if (matchingEntry) {
               setSelectedBillEntry({
                 value: matchingEntry.value,
@@ -426,20 +462,19 @@ const MiscellaneousBillCreate = () => {
     fetchAndSelectBillEntry();
   }, [id]);
 
-  console.log("selected bill entry:", selectedBillEntry)
+  console.log("selected bill entry:", selectedBillEntry);
   useEffect(() => {
     if (selectedBillEntry && selectedBillEntry.value) {
-      console.log("selected bill entry:", selectedBillEntry)
+      console.log("selected bill entry:", selectedBillEntry);
       const fetchBillEntryDetails = async () => {
         try {
           const response = await axios.get(
-            `https://marathon.lockated.com/bill_entries/${selectedBillEntry.value}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}bill_entries/${selectedBillEntry.value}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           );
           const data = response.data;
-          console.log("bill entry all data:", data)
+          console.log("bill entry all data:", data);
           setBillEntryData(data || {});
           setCreditNoteAmount(data.bill_amount || 0);
-
         } catch (error) {
           console.error("Error fetching bill entry or PO GRN details:", error);
         }
@@ -449,7 +484,6 @@ const MiscellaneousBillCreate = () => {
   }, [selectedBillEntry]);
 
   const payload = {
-
     miscellaneous_bill: {
       company_id: selectedCompany?.value || billEntryData?.company_id || "",
       site_id: selectedSite?.value || billEntryData?.site_id || "",
@@ -464,7 +498,8 @@ const MiscellaneousBillCreate = () => {
       comments: comment || "",
       // created_by_id: 1,
       // pms_supplier_id: selectedSupplier?.id || billEntryData?.pms_supplier_id || null,
-      pms_supplier_id: selectedSupplier?.id ?? billEntryData?.pms_supplier_id ?? null,
+      pms_supplier_id:
+        selectedSupplier?.id ?? billEntryData?.pms_supplier_id ?? null,
       bill_entry_id: selectedBillEntry?.value || billEntryData?.id || "", // <-- Add this line
       taxes_and_charges: [
         ...rows.map((row) => ({
@@ -474,7 +509,7 @@ const MiscellaneousBillCreate = () => {
           addition: row.addition,
           percentage: parseFloat(row.percentage) || 0,
           resource_id: row.resource_id || null,
-          resource_type: row.resource_type || ""
+          resource_type: row.resource_type || "",
         })),
         ...deductionRows.map((row) => ({
           inclusive: row.inclusive,
@@ -483,7 +518,7 @@ const MiscellaneousBillCreate = () => {
           addition: row.addition || false, // Ensure addition is false for deductions
           percentage: parseFloat(row.percentage) || 0,
           resource_id: row.resource_id || null,
-          resource_type: row.resource_type || ""
+          resource_type: row.resource_type || "",
         })),
       ],
       attachments: documentRows.map((row) => ({
@@ -491,15 +526,14 @@ const MiscellaneousBillCreate = () => {
         content: row.upload?.content || "",
         content_type: row.upload?.content_type || "",
       })),
-    }
-
+    },
   };
 
-  console.log("payload:", payload)
+  console.log("payload:", payload);
   // console.log("addition tax rows:", rows)
 
   const handleSubmit = async () => {
-    setLoading2(true)
+    setLoading2(true);
     const payload = {
       miscellaneous_bill: {
         company_id: selectedCompany?.value || billEntryData?.company_id || "",
@@ -515,7 +549,8 @@ const MiscellaneousBillCreate = () => {
         comments: comment || "",
         // created_by_id: 1,
         // pms_supplier_id: selectedSupplier?.id || billEntryData?.pms_supplier_id || null,
-        pms_supplier_id: selectedSupplier?.id ?? billEntryData?.pms_supplier_id ?? null,
+        pms_supplier_id:
+          selectedSupplier?.id ?? billEntryData?.pms_supplier_id ?? null,
         bill_entry_id: selectedBillEntry?.value || billEntryData?.id || "", // <-- Add this line
         taxes_and_charges: [
           ...rows.map((row) => ({
@@ -525,7 +560,7 @@ const MiscellaneousBillCreate = () => {
             addition: row.addition,
             percentage: parseFloat(row.percentage) || 0,
             resource_id: row.resource_id || null,
-            resource_type: row.resource_type || ""
+            resource_type: row.resource_type || "",
           })),
           ...deductionRows.map((row) => ({
             inclusive: row.inclusive,
@@ -534,7 +569,7 @@ const MiscellaneousBillCreate = () => {
             addition: row.addition || false, // Ensure addition is false for deductions
             percentage: parseFloat(row.percentage) || 0,
             resource_id: row.resource_id || null,
-            resource_type: row.resource_type || ""
+            resource_type: row.resource_type || "",
           })),
         ],
         attachments: documentRows.map((row) => ({
@@ -542,7 +577,7 @@ const MiscellaneousBillCreate = () => {
           content: row.upload?.content || "",
           content_type: row.upload?.content_type || "",
         })),
-      }
+      },
     };
 
     try {
@@ -553,22 +588,24 @@ const MiscellaneousBillCreate = () => {
       console.log("Response:", response.data);
       if (response.status === 201) {
         alert("Miscellaneous Bill submitted successfully!");
-        setLoading2(false)
+        setLoading2(false);
         navigate("/miscellaneous-bill-list"); // Navigate to the list page
       }
     } catch (error) {
       console.error("Error submitting Miscellaneous Bill:", error);
-      setLoading2(false)
+      setLoading2(false);
       alert("Failed to submit Miscellaneous Bill. Please try again.");
     } finally {
-      setLoading2(false)
+      setLoading2(false);
     }
   };
   return (
     <>
       <div className="website-content overflow-auto">
         <div className="module-data-section ms-2">
-          <a href="">Home &gt; Billing &amp; Accounts &gt; Miscellaneous Bill </a>
+          <a href="">
+            Home &gt; Billing &amp; Accounts &gt; Miscellaneous Bill{" "}
+          </a>
           <h5 className="mt-3">Miscellaneous Bill </h5>
           <div className="row container-fluid my-4 align-items-center">
             <div className="col-md-12 ">
@@ -657,7 +694,12 @@ const MiscellaneousBillCreate = () => {
                                 }}
                                 className="me-2"
                               />
-                              <label htmlFor="without-bill-entry" className="mb-0">Without Bill Entry</label>
+                              <label
+                                htmlFor="without-bill-entry"
+                                className="mb-0"
+                              >
+                                Without Bill Entry
+                              </label>
                             </div>
                             <div className="col-md-2 d-flex align-items-center">
                               <input
@@ -670,15 +712,18 @@ const MiscellaneousBillCreate = () => {
                                 }}
                                 className="me-2"
                               />
-                              <label htmlFor="with-bill-entry" className="mb-0">With Bill Entry</label>
+                              <label htmlFor="with-bill-entry" className="mb-0">
+                                With Bill Entry
+                              </label>
                             </div>
-
                           </div>
 
                           {withBillEntry && !withoutBillEntry && (
                             <div className="row">
                               <div className="col-md-4">
-                                <label htmlFor="event-no-select">Bill Entries</label>
+                                <label htmlFor="event-no-select">
+                                  Bill Entries
+                                </label>
                                 <span style={{ color: "#8b0203" }}> *</span>
                                 <div className="form-group">
                                   <SingleSelector
@@ -716,7 +761,10 @@ const MiscellaneousBillCreate = () => {
                               </div>
 
                               <div className="col-md-4 mt-2">
-                                <label htmlFor="event-no-select"> SubProject</label>
+                                <label htmlFor="event-no-select">
+                                  {" "}
+                                  SubProject
+                                </label>
                                 <span style={{ color: "#8b0203" }}> *</span>
                                 <div className="form-group">
                                   <input
@@ -748,7 +796,9 @@ const MiscellaneousBillCreate = () => {
                                     className="input-group date"
                                     data-date-format="mm-dd-yyyy"
                                   >
-                                    <input className="form-control" type="date"
+                                    <input
+                                      className="form-control"
+                                      type="date"
                                       value={billEntryData.bill_date || ""}
                                       disabled
                                     />
@@ -777,11 +827,14 @@ const MiscellaneousBillCreate = () => {
                                     className="input-group date"
                                     data-date-format="mm-dd-yyyy"
                                   >
-                                    <input className="form-control" type="text"
-                                      value={new Date().toLocaleDateString("en-GB")} // Format: DD/MM/YYYY
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      value={new Date().toLocaleDateString(
+                                        "en-GB"
+                                      )} // Format: DD/MM/YYYY
                                       disabled // Makes the input field non-editable
                                     />
-
                                   </div>
                                 </div>
                               </div>
@@ -800,7 +853,7 @@ const MiscellaneousBillCreate = () => {
                                   <input
                                     className="form-control"
                                     type="text"
-                                    value={billEntryData.pms_supplier || ""}
+                                    value={billEntryData.supplier_name || ""}
                                     disabled
                                   />
                                 </div>
@@ -848,7 +901,6 @@ const MiscellaneousBillCreate = () => {
                                   />
                                 </div>
                               </div>
-
                             </div>
                           )}
 
@@ -908,7 +960,6 @@ const MiscellaneousBillCreate = () => {
                               </div>
                             </div> */}
 
-
                               <div className="col-md-4 mt-2">
                                 <div className="form-group">
                                   <label>Bill Number</label>
@@ -916,7 +967,9 @@ const MiscellaneousBillCreate = () => {
                                     className="form-control"
                                     type="text"
                                     value={billNumber}
-                                    onChange={e => setBillNumber(e.target.value)}
+                                    onChange={(e) =>
+                                      setBillNumber(e.target.value)
+                                    }
                                     placeholder=""
                                     fdprocessedid="qv9ju9"
                                   />
@@ -931,10 +984,13 @@ const MiscellaneousBillCreate = () => {
                                     className="input-group date"
                                     data-date-format="mm-dd-yyyy"
                                   >
-                                    <input className="form-control" type="date"
+                                    <input
+                                      className="form-control"
+                                      type="date"
                                       value={billDate}
-                                      onChange={e => setBillDate(e.target.value)}
-
+                                      onChange={(e) =>
+                                        setBillDate(e.target.value)
+                                      }
                                     />
                                   </div>
                                 </div>
@@ -949,7 +1005,11 @@ const MiscellaneousBillCreate = () => {
                                     placeholder=""
                                     fdprocessedid="qv9ju9"
                                     value={creditNoteAmount} // Bind to state
-                                    onChange={(e) => setCreditNoteAmount(Number(e.target.value) || 0)} // Update state on change
+                                    onChange={(e) =>
+                                      setCreditNoteAmount(
+                                        Number(e.target.value) || 0
+                                      )
+                                    } // Update state on change
                                   />
                                 </div>
                               </div>
@@ -962,11 +1022,14 @@ const MiscellaneousBillCreate = () => {
                                     className="input-group date"
                                     data-date-format="mm-dd-yyyy"
                                   >
-                                    <input className="form-control" type="text"
-                                      value={new Date().toLocaleDateString("en-GB")} // Format: DD/MM/YYYY
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      value={new Date().toLocaleDateString(
+                                        "en-GB"
+                                      )} // Format: DD/MM/YYYY
                                       disabled // Makes the input field non-editable
                                     />
-
                                   </div>
                                 </div>
                               </div>
@@ -975,7 +1038,7 @@ const MiscellaneousBillCreate = () => {
                                   <label>Supplier Name</label>
 
                                   <SingleSelector
-                                    options={suppliers.map(s => ({
+                                    options={suppliers.map((s) => ({
                                       label: s.organization_name,
                                       value: s.id,
                                       gstin: s.gstin,
@@ -984,15 +1047,19 @@ const MiscellaneousBillCreate = () => {
                                     value={
                                       selectedSupplier
                                         ? {
-                                          label: selectedSupplier.organization_name,
-                                          value: selectedSupplier.id,
-                                          gstin: selectedSupplier.gstin,
-                                          pan_number: selectedSupplier.pan_number,
-                                        }
+                                            label:
+                                              selectedSupplier.organization_name,
+                                            value: selectedSupplier.id,
+                                            gstin: selectedSupplier.gstin,
+                                            pan_number:
+                                              selectedSupplier.pan_number,
+                                          }
                                         : null
                                     }
-                                    onChange={option => {
-                                      const supplier = suppliers.find(s => s.id === option.value);
+                                    onChange={(option) => {
+                                      const supplier = suppliers.find(
+                                        (s) => s.id === option.value
+                                      );
                                       setSelectedSupplier(supplier || null);
                                     }}
                                     placeholder="Select Supplier"
@@ -1049,9 +1116,15 @@ const MiscellaneousBillCreate = () => {
                             <table className="w-100">
                               <thead>
                                 <tr>
-                                  <th className="text-start">Tax / Charge Type</th>
-                                  <th className="text-start">Tax / Charges per UOM (INR)</th>
-                                  <th className="text-start">Inclusive / Exclusive</th>
+                                  <th className="text-start">
+                                    Tax / Charge Type
+                                  </th>
+                                  <th className="text-start">
+                                    Tax / Charges per UOM (INR)
+                                  </th>
+                                  <th className="text-start">
+                                    Inclusive / Exclusive
+                                  </th>
                                   <th className="text-start">Amount</th>
                                   <th className="text-start">Action</th>
                                 </tr>
@@ -1059,14 +1132,21 @@ const MiscellaneousBillCreate = () => {
                               <tbody>
                                 {/* Static Rows for Addition Tax */}
                                 <tr>
-                                  <th className="text-start">Total Base Cost</th>
+                                  <th className="text-start">
+                                    Total Base Cost
+                                  </th>
                                   <td className="text-start" />
                                   <td className="text-start" />
-                                  <td className="text-start"> {creditNoteAmount || ""}</td>
+                                  <td className="text-start">
+                                    {" "}
+                                    {creditNoteAmount || ""}
+                                  </td>
                                   <td />
                                 </tr>
                                 <tr>
-                                  <th className="text-start">Addition Tax & Charges</th>
+                                  <th className="text-start">
+                                    Addition Tax & Charges
+                                  </th>
                                   <td className="text-start" />
                                   <td className="text-start" />
                                   <td className="text-start" />
@@ -1079,7 +1159,9 @@ const MiscellaneousBillCreate = () => {
                                       className="bi bi-plus-circle"
                                       viewBox="0 0 16 16"
                                       style={{
-                                        transform: showRows ? "rotate(45deg)" : "none",
+                                        transform: showRows
+                                          ? "rotate(45deg)"
+                                          : "none",
                                         transition: "transform 0.3s ease",
                                       }}
                                     >
@@ -1100,21 +1182,37 @@ const MiscellaneousBillCreate = () => {
                                           tax: type.type,
                                           isDisabled:
                                             // Disable "Handling Charges", "Other charges", "Freight" for all rows
-                                            ["Handling Charges", "Other charges", "Freight"].includes(type.name) ||
-
+                                            [
+                                              "Handling Charges",
+                                              "Other charges",
+                                              "Freight",
+                                            ].includes(type.name) ||
                                             // Disable "IGST" if "SGST" or "CGST" is selected in any row
                                             (type.name === "IGST" &&
-                                              rows.some((r) => ["SGST", "CGST"].includes(r.type) && r.id !== row.id)) ||
+                                              rows.some(
+                                                (r) =>
+                                                  ["SGST", "CGST"].includes(
+                                                    r.type
+                                                  ) && r.id !== row.id
+                                              )) ||
                                             // Disable "SGST" and "CGST" if "IGST" is selected in any row
-                                            (["SGST", "CGST"].includes(type.name) &&
-                                              rows.some((r) => r.type === "IGST" && r.id !== row.id)),
-
+                                            (["SGST", "CGST"].includes(
+                                              type.name
+                                            ) &&
+                                              rows.some(
+                                                (r) =>
+                                                  r.type === "IGST" &&
+                                                  r.id !== row.id
+                                              )),
                                         }))}
-                                        value={{ value: row.type, label: row.type }}
+                                        value={{
+                                          value: row.type,
+                                          label: row.type,
+                                        }}
                                         // onChange={(selectedOption) =>
                                         //   setRows((prevRows) =>
                                         //     prevRows.map((r) =>
-                                        //       r.id === row.id ? { ...r, 
+                                        //       r.id === row.id ? { ...r,
                                         //         type: selectedOption.value,
                                         //         resource_id: selectedOption.value, // Set the selected tax ID
                                         //         resource_type: taxTypes.find((t) => t.id === selectedOption.value)?.type || "", // Set the tax type
@@ -1139,16 +1237,24 @@ const MiscellaneousBillCreate = () => {
                                         // }
 
                                         onChange={(selectedOption) => {
-                                          console.log("Selected Option:", selectedOption); // Log the selected option
+                                          console.log(
+                                            "Selected Option:",
+                                            selectedOption
+                                          ); // Log the selected option
                                           setRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
                                                 ? {
-                                                  ...r,
-                                                  type: selectedOption?.value || "", // Handle null or undefined
-                                                  resource_id: selectedOption?.id || null, // Handle null or undefined
-                                                  resource_type: selectedOption?.tax || "", // Handle null or undefined
-                                                }
+                                                    ...r,
+                                                    type:
+                                                      selectedOption?.value ||
+                                                      "", // Handle null or undefined
+                                                    resource_id:
+                                                      selectedOption?.id ||
+                                                      null, // Handle null or undefined
+                                                    resource_type:
+                                                      selectedOption?.tax || "", // Handle null or undefined
+                                                  }
                                                 : r
                                             )
                                           );
@@ -1178,13 +1284,22 @@ const MiscellaneousBillCreate = () => {
                                           className="form-control form-select"
                                           value={row.percentage}
                                           onChange={(e) => {
-                                            const percentage = parseFloat(e.target.value) || 0;
-                                            const amount = ((creditNoteAmount || 0) * percentage) / 100;
+                                            const percentage =
+                                              parseFloat(e.target.value) || 0;
+                                            const amount =
+                                              ((creditNoteAmount || 0) *
+                                                percentage) /
+                                              100;
 
                                             setRows((prevRows) =>
                                               prevRows.map((r) =>
                                                 r.id === row.id
-                                                  ? { ...r, percentage: e.target.value, amount: amount.toFixed(2) }
+                                                  ? {
+                                                      ...r,
+                                                      percentage:
+                                                        e.target.value,
+                                                      amount: amount.toFixed(2),
+                                                    }
                                                   : r
                                               )
                                             );
@@ -1213,7 +1328,10 @@ const MiscellaneousBillCreate = () => {
                                           setRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
-                                                ? { ...r, inclusive: e.target.checked }
+                                                ? {
+                                                    ...r,
+                                                    inclusive: e.target.checked,
+                                                  }
                                                 : r
                                             )
                                           )
@@ -1230,7 +1348,13 @@ const MiscellaneousBillCreate = () => {
                                           setRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
-                                                ? { ...r, amount: parseFloat(e.target.value) || 0 }
+                                                ? {
+                                                    ...r,
+                                                    amount:
+                                                      parseFloat(
+                                                        e.target.value
+                                                      ) || 0,
+                                                  }
                                                 : r
                                             )
                                           )
@@ -1240,7 +1364,10 @@ const MiscellaneousBillCreate = () => {
                                     <td
                                       className="text-start"
                                       onClick={() => deleteRow(row.id)}
-                                      style={{ cursor: "pointer", color: "black" }}
+                                      style={{
+                                        cursor: "pointer",
+                                        color: "black",
+                                      }}
                                     >
                                       <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -1261,17 +1388,27 @@ const MiscellaneousBillCreate = () => {
                                 ))}
 
                                 <tr>
-                                  <th className="text-start">Sub Total A (Addition)</th>
+                                  <th className="text-start">
+                                    Sub Total A (Addition)
+                                  </th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start">{calculateSubTotal()}</td>
+                                  <td className="text-start">
+                                    {calculateSubTotal()}
+                                  </td>
                                   <td />
                                 </tr>
                                 <tr>
                                   <th className="text-start">Gross Amount</th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start">  {(parseFloat(calculateSubTotal()) + (parseFloat(creditNoteAmount) || 0)).toFixed(2)}</td>
+                                  <td className="text-start">
+                                    {" "}
+                                    {(
+                                      parseFloat(calculateSubTotal()) +
+                                      (parseFloat(creditNoteAmount) || 0)
+                                    ).toFixed(2)}
+                                  </td>
                                   <td />
                                 </tr>
                                 {/* Deduction Tax Section */}
@@ -1309,16 +1446,26 @@ const MiscellaneousBillCreate = () => {
                                           id: type.id,
                                           tax: type.type,
                                         }))}
-                                        value={{ value: row.type, label: row.type }}
+                                        value={{
+                                          value: row.type,
+                                          label: row.type,
+                                        }}
                                         onChange={(selectedOption) =>
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
-                                              r.id === row.id ? {
-                                                ...r,
-                                                type: selectedOption?.value || "", // Handle null or undefined
-                                                resource_id: selectedOption?.id || null, // Handle null or undefined
-                                                resource_type: selectedOption?.tax || "", // Handle null or undefined
-                                              } : r
+                                              r.id === row.id
+                                                ? {
+                                                    ...r,
+                                                    type:
+                                                      selectedOption?.value ||
+                                                      "", // Handle null or undefined
+                                                    resource_id:
+                                                      selectedOption?.id ||
+                                                      null, // Handle null or undefined
+                                                    resource_type:
+                                                      selectedOption?.tax || "", // Handle null or undefined
+                                                  }
+                                                : r
                                             )
                                           )
                                         }
@@ -1342,19 +1489,30 @@ const MiscellaneousBillCreate = () => {
                                         className="form-control form-select"
                                         value={row.percentage}
                                         onChange={(e) => {
-                                          const percentage = parseFloat(e.target.value) || 0;
-                                          const amount = ((creditNoteAmount || 0) * percentage) / 100;
+                                          const percentage =
+                                            parseFloat(e.target.value) || 0;
+                                          const amount =
+                                            ((creditNoteAmount || 0) *
+                                              percentage) /
+                                            100;
 
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
-                                                ? { ...r, percentage: e.target.value, amount: amount.toFixed(2) }
+                                                ? {
+                                                    ...r,
+                                                    percentage: e.target.value,
+                                                    amount: amount.toFixed(2),
+                                                  }
                                                 : r
                                             )
                                           );
                                         }}
                                       >
-                                        {console.log("percent deduction", row.percentage)}
+                                        {console.log(
+                                          "percent deduction",
+                                          row.percentage
+                                        )}
                                         <option value="">Select Tax</option>
                                         <option value="1%">1%</option>
                                         <option value="2%">2%</option>
@@ -1370,7 +1528,10 @@ const MiscellaneousBillCreate = () => {
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
-                                                ? { ...r, inclusive: e.target.checked }
+                                                ? {
+                                                    ...r,
+                                                    inclusive: e.target.checked,
+                                                  }
                                                 : r
                                             )
                                           )
@@ -1387,7 +1548,13 @@ const MiscellaneousBillCreate = () => {
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
-                                                ? { ...r, amount: parseFloat(e.target.value) || 0 }
+                                                ? {
+                                                    ...r,
+                                                    amount:
+                                                      parseFloat(
+                                                        e.target.value
+                                                      ) || 0,
+                                                  }
                                                 : r
                                             )
                                           )
@@ -1397,7 +1564,10 @@ const MiscellaneousBillCreate = () => {
                                     <td
                                       className="text-start"
                                       onClick={() => deleteDeductionRow(row.id)}
-                                      style={{ cursor: "pointer", color: "black" }}
+                                      style={{
+                                        cursor: "pointer",
+                                        color: "black",
+                                      }}
                                     >
                                       <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -1418,21 +1588,25 @@ const MiscellaneousBillCreate = () => {
                                 ))}
                                 {/* Static Rows */}
                                 <tr>
-                                  <th className="text-start">Sub Total B (Deductions)</th>
+                                  <th className="text-start">
+                                    Sub Total B (Deductions)
+                                  </th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start">{calculateDeductionSubTotal()}</td>
+                                  <td className="text-start">
+                                    {calculateDeductionSubTotal()}
+                                  </td>
                                   <td />
                                 </tr>
                                 <tr>
                                   <th className="text-start">Payable Amount</th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start">{calculatePayableAmount()}</td>
+                                  <td className="text-start">
+                                    {calculatePayableAmount()}
+                                  </td>
                                   <td />
                                 </tr>
-
-
                               </tbody>
                             </table>
                           </div>
@@ -1554,7 +1728,6 @@ const MiscellaneousBillCreate = () => {
                   </div>
                 </div>
 
-
                 <div className="row mt-4 justify-content-end align-items-center mx-2">
                   <div className="col-md-3">
                     <div className="form-group d-flex gap-3 align-items-center mx-3">
@@ -1564,7 +1737,9 @@ const MiscellaneousBillCreate = () => {
                       <SingleSelector
                         options={statusOptions}
                         onChange={handleStatusChange}
-                        value={statusOptions.find((option) => option.value === status)} // Set "Draft" as the selected status
+                        value={statusOptions.find(
+                          (option) => option.value === status
+                        )} // Set "Draft" as the selected status
                         placeholder="Select Status"
                         isClearable={false}
                         // isDisabled={true} // Disable the selector
@@ -1578,7 +1753,12 @@ const MiscellaneousBillCreate = () => {
                     <button className="purple-btn2 w-100">Print</button>
                   </div> */}
                   <div className="col-md-2">
-                    <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
+                    <button
+                      className="purple-btn2 w-100"
+                      onClick={handleSubmit}
+                    >
+                      Submit
+                    </button>
                   </div>
                   <div className="col-md-2">
                     <button className="purple-btn1 w-100">Cancel</button>
@@ -1628,8 +1808,6 @@ const MiscellaneousBillCreate = () => {
           <p>Submitting...</p>
         </div>
       )}
-
-
     </>
   );
 };
