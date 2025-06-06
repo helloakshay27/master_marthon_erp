@@ -1220,7 +1220,7 @@ const MiscellaneousBillEdit = () => {
                                                         <tr>
                                                             <th>Sr.No.</th>
                                                             <th>User</th>
-                                                            <th>Date</th>
+                                                            <th>Created At</th>
                                                             <th>Status</th>
                                                             <th>Remark</th>
                                                         </tr>
