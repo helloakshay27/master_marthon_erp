@@ -837,7 +837,7 @@ const BillBookingCreate = () => {
           const response = await axios.get(
             `${baseURL}bill_bookings/deduction_data?grns=[${grnIds.join(
               ","
-            )}]&token=653002727bac82324277efbb6279fcf97683048e44a7a839`
+            )}]&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           );
           setTaxDeductionData(response.data);
         } catch (error) {
@@ -850,6 +850,25 @@ const BillBookingCreate = () => {
   }, [selectedGRNs]);
 
   // Add useEffect to fetch tax details data when GRNs change
+  // useEffect(() => {
+  //   const fetchTaxDetailsData = async () => {
+  //     if (selectedGRNs.length > 0) {
+  //       try {
+  //         const grnIds = selectedGRNs.map((grn) => grn.id);
+  //         const response = await axios.get(
+  //           `${baseURL}bill_bookings/taxes_data?grns=[${grnIds.join(
+  //             ","
+  //           )}]&token=653002727bac82324277efbb6279fcf97683048e44a7a839`
+  //         );
+  //         setTaxDetailsData(response.data);
+  //       } catch (error) {
+  //         console.error("Error fetching tax details data:", error);
+  //       }
+  //     }
+  //   };
+
+  //   fetchTaxDetailsData();
+  // }, [selectedGRNs]);
   useEffect(() => {
     const fetchTaxDetailsData = async () => {
       if (selectedGRNs.length > 0) {
@@ -860,10 +879,15 @@ const BillBookingCreate = () => {
               ","
             )}]&token=653002727bac82324277efbb6279fcf97683048e44a7a839`
           );
-          setTaxDetailsData(response.data);
+          setTaxDetailsData({
+            tax_data: response.data?.tax_data || {}, // Add null check and default empty object
+          });
         } catch (error) {
           console.error("Error fetching tax details data:", error);
+          setTaxDetailsData({ tax_data: {} }); // Set empty object on error
         }
+      } else {
+        setTaxDetailsData({ tax_data: {} }); // Reset to empty object when no GRNs selected
       }
     };
 
@@ -2142,7 +2166,16 @@ const BillBookingCreate = () => {
                           {taxDeductionData.total_material_cost}
                         </td>
                       </tr>
-                      {Object.entries(taxDetailsData.tax_data).map(
+                      {/* {Object.entries(taxDetailsData.tax_data).map(
+                        ([taxType, amount]) => (
+                          <tr key={taxType}>
+                            <td className="text-start">{taxType}</td>
+                            <td className="text-start">{amount}</td>
+                          </tr>
+                        )
+                      )} */}
+                      {/* Replace the existing tax details mapping code with this: */}
+                      {Object.entries(taxDetailsData?.tax_data || {}).map(
                         ([taxType, amount]) => (
                           <tr key={taxType}>
                             <td className="text-start">{taxType}</td>
@@ -4182,9 +4215,9 @@ const BillBookingCreate = () => {
             </table>
           </div>
           <div className="row mt-2 justify-content-center">
-            <div className="col-md-3">
+            <div className="col-md-3 ">
               <button
-                className="purple-btn2 w-100"
+                className="purple-btn2 w-100 mt-2"
                 onClick={closeAdvanceNoteModal}
                 disabled={selectedAdvanceNotes.length === 0}
               >
