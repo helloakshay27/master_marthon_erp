@@ -9,6 +9,7 @@ import { DownloadIcon } from "../components";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { baseURL } from "../confi/apiDomain";
 
 import { useEffect } from "react";
 import axios from "axios";
@@ -69,7 +70,7 @@ const POAdvanceNoteDetails = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/advance_notes/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}advance_notes/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         const data = response.data;
         console.log("data", data);
@@ -128,7 +129,7 @@ const POAdvanceNoteDetails = () => {
     const fetchTaxTypes = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com/rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setTaxTypes(response.data.taxes); // Assuming the API returns an array of tax types
       } catch (error) {
@@ -184,7 +185,7 @@ const POAdvanceNoteDetails = () => {
     const fetchTaxTypes = async () => {
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setDeductionTypes(response.data.taxes); // Assuming the API returns an array of tax types
       } catch (error) {
@@ -276,7 +277,7 @@ const POAdvanceNoteDetails = () => {
     try {
       const response = await axios.patch(
         // "https://marathon.lockated.com/advance_notes/3/update_status",
-        `https://marathon.lockated.com/advance_notes/${advanceNote.id}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`, // Use the dynamic ID here
+        `${baseURL}advance_notes/${advanceNote.id}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`, // Use the dynamic ID here
 
         payload
       );
