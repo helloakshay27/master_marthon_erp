@@ -107,7 +107,7 @@ const BillVerificationList = () => {
           srNo: (page - 1) * pageSize + index + 1,
           ...entry,
           created_at: formattedDate,
-          pms_supplier: entry.supplier?.organization_name || "-",
+          // pms_supplier: entry.supplier?.organization_name || "-",
           due_date: formattedDue,
           status,
         };
@@ -629,7 +629,7 @@ const BillVerificationList = () => {
     company_name: true,
     project_name: true,
     site_name: true,
-    pms_supplier: true,
+    supplier_name: true,
     is_msme: true,
     po_number: true,
     created_at: true,
@@ -637,6 +637,7 @@ const BillVerificationList = () => {
     bill_no: true,
     bill_date: true,
     bill_amount: true,
+    bill_type:true,
     bill_copies: true,
     due: true,
     due_date: true,
@@ -692,7 +693,7 @@ const BillVerificationList = () => {
               {params.row.bill_type === "material" && (
                 <button
                   className="purple-button2"
-                  title="Go to Bill Booking"
+                  // title="Go to Bill Booking"
                   style={{
                     border: "none",
                     background: "none",
@@ -719,7 +720,7 @@ const BillVerificationList = () => {
               {params.row.bill_type === "miscellaneous" && (
                 <button
                   className="purple-button2"
-                  title="Go to Misc Bill Booking"
+                  // title="Go to Misc Bill Booking"
                   style={{
                     border: "none",
                     background: "none",
@@ -770,7 +771,7 @@ const BillVerificationList = () => {
     { field: "company_name", headerName: "Company", width: 200 },
     { field: "project_name", headerName: "Project", width: 180 },
     { field: "site_name", headerName: "Sub Project", width: 150 },
-    { field: "pms_supplier", headerName: "Vendor Name", width: 200 },
+    { field: "supplier_name", headerName: "Vendor Name", width: 200 },
     { field: "is_msme", headerName: "Is MSME", width: 150 },
     { field: "po_number", headerName: "PO No.", width: 150 },
     {
@@ -799,6 +800,7 @@ const BillVerificationList = () => {
 
     { field: "bill_date", headerName: "Bill Date", width: 150 },
     { field: "bill_amount", headerName: "Bill Amount", width: 150 },
+    { field: "bill_type", headerName: "Bill Type", width: 150 },
     { field: "bill_copies", headerName: "Bill Copies", width: 150 },
     { field: "due", headerName: "Due", width: 150 },
     { field: "due_date", headerName: "Due Date", width: 150 },

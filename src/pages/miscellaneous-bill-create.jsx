@@ -433,7 +433,7 @@ const MiscellaneousBillCreate = () => {
       const fetchBillEntryDetails = async () => {
         try {
           const response = await axios.get(
-            `https://marathon.lockated.com/bill_entries/${selectedBillEntry.value}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}bill_entries/${selectedBillEntry.value}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
           );
           const data = response.data;
           console.log("bill entry all data:", data)
@@ -800,7 +800,7 @@ const MiscellaneousBillCreate = () => {
                                   <input
                                     className="form-control"
                                     type="text"
-                                    value={billEntryData.pms_supplier || ""}
+                                    value={billEntryData.supplier_name || ""}
                                     disabled
                                   />
                                 </div>

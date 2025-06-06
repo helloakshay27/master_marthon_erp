@@ -249,7 +249,7 @@ const BillEntryDetails = () => {
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3">:-</span>
-                          {billDetails?.pms_supplier?.organization_name || "-"}
+                          {billDetails?.supplier_name || "-"}
                         </label>
                       </div>
                     </div>

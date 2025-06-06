@@ -413,7 +413,7 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.pms_supplier?.organization_name || "-"}
+                          {billDetails?.supplier_name || "-"}
                         </label>
                       </div>
                     </div>
@@ -535,6 +535,19 @@ const BillVerificationDetails = () => {
                             <span className="text-dark">:</span>
                           </span>
                           {billDetails?.vendor_remark || "-"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>Bill Type</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {billDetails?.bill_type || "-"}
                         </label>
                       </div>
                     </div>
@@ -830,8 +843,8 @@ const BillVerificationDetails = () => {
                     </button>
                   </div>
                 )} */}
-{/* 
-                {status.toLowerCase() === "verified" && billDetails?.bill_type === "material" && (
+
+                {billDetails?.status?.toLowerCase() === "verified" && billDetails?.bill_type === "material" && (
   <div className="col-md-2">
     <button
       className="purple-btn2 w-100"
@@ -840,9 +853,9 @@ const BillVerificationDetails = () => {
       Bill Booking
     </button>
   </div>
-)} */}
-                {status.toLowerCase() === "verified"
-                //  && billDetails?.bill_type === "miscellaneous" 
+)}
+                {billDetails?.status?.toLowerCase() === "verified"
+                 && billDetails?.bill_type === "miscellaneous" 
                  && (
   <div className="col-md-2">
     <button
