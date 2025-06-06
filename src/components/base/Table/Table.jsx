@@ -496,7 +496,7 @@ export default function Table({
                         : cell !== undefined && cell !== null
                         ? String(cell)
                         : "";
-                        console.log("col",col);
+                        // console.log("col",col);
                         
                     return (
                       <td

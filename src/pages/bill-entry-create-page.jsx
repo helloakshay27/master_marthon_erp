@@ -9,6 +9,8 @@ import { baseURL } from "../confi/apiDomain";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { useNavigate } from "react-router-dom";
 import MultiSelector from "../components/base/Select/MultiSelector";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const BillEntryListSubPage = () => {
   const [selectPOModal, setselectPOModal] = useState(false);
@@ -38,6 +40,34 @@ const BillEntryListSubPage = () => {
     { value: "ROPO", label: "ROPO" },
     { value: "Import", label: "Import" },
   ]);
+
+  // Add these at the top with other state declarations
+  const [suppliers, setSuppliers] = useState([]);
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
+
+  const [activeTab, setActiveTab] = useState("material"); // Default to material tab
+
+  // Add this useEffect for fetching suppliers
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      if (activeTab === "misc") {
+        try {
+          const response = await axios.get(
+            `${baseURL}miscellaneous_bills/suppliers_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+          setSuppliers(response.data);
+        } catch (error) {
+          console.error("Error fetching suppliers:", error);
+        }
+      }
+    };
+    fetchSuppliers();
+  }, [activeTab]);
+
+  // Add tab change handler
+  const handleTabClick = (tabName) => {
+    setActiveTab(tabName);
+  };
 
   // add row & delete row
 
@@ -595,73 +625,110 @@ const BillEntryListSubPage = () => {
   };
 
   const handleBillEntrySubmit = async () => {
-    setLoading(true);
-    if (!selectedPO) {
-      alert("Please select a Purchase Order.");
-      return;
-    }
-    // const documentsWithAttachments = documents.filter(
-    //   (doc) => doc.attachments.length > 0
-    // );
-    // Map through all initialDocumentTypes
-    const allDocuments = initialDocumentTypes.map((docType) => {
-      // Find corresponding document from documents state
-      const existingDoc = documents.find(
-        (doc) => doc.document_type === docType.name
-      );
-
-      return {
-        document_type: docType.name,
-        id: null,
-        attachments:
-          existingDoc?.attachments?.map((attachment) => ({
-            filename: attachment.filename,
-            content_type: attachment.content_type,
-            content: attachment.content,
-          })) || [], // If no attachments, pass empty array
-      };
-    });
-
-    const payload = {
-      bill_entry: {
-        purchase_order_id: selectedPO.id,
-        bill_no: formData.bill_no,
-        bill_date: formData.bill_date,
-        due_date: formData.due_date,
-        bill_received_date: formData.bill_received_date,
-        bill_amount: parseFloat(formData.bill_amount),
-        status: "open",
-        mode_of_submission: "Offline",
-        vendor_remark: formData.vendor_remark,
-        // documents: documentsWithAttachments.map((doc) => ({
-        //   document_type: doc.document_type,
-        //   attachments: doc.attachments.map((attachment) => ({
-        //     filename: attachment.filename,
-        //     content_type: attachment.content_type,
-        //     content: attachment.content,
-        //   })),
-        // })),
-        documents: allDocuments,
-      },
-    };
-
     try {
+      setLoading(true);
+      // if (!selectedPO) {
+      //   alert("Please select a Purchase Order.");
+      //   return;
+      // }
+      // const documentsWithAttachments = documents.filter(
+      //   (doc) => doc.attachments.length > 0
+      // );
+      // Map through all initialDocumentTypes
+      const allDocuments = initialDocumentTypes.map((docType) => {
+        // Find corresponding document from documents state
+        const existingDoc = documents.find(
+          (doc) => doc.document_type === docType.name
+        );
+
+        return {
+          document_type: docType.name,
+          id: null,
+          attachments:
+            existingDoc?.attachments?.map((attachment) => ({
+              filename: attachment.filename,
+              content_type: attachment.content_type,
+              content: attachment.content,
+            })) || [], // If no attachments, pass empty array
+        };
+      });
+
+      const getBillType = (tab) => {
+        switch (tab) {
+          case "material":
+            return "material";
+          case "service":
+            return "service";
+          case "misc":
+            return "miscellaneous";
+          default:
+            return "material";
+        }
+      };
+
+      const payload = {
+        bill_entry: {
+          // purchase_order_id: selectedPO.id,
+          purchase_order_id: activeTab !== "misc" ? selectedPO?.id : null,
+          bill_no: formData.bill_no,
+          bill_date: formData.bill_date,
+          due_date: formData.due_date,
+          bill_received_date: formData.bill_received_date,
+          bill_amount: parseFloat(formData.bill_amount),
+          status: "open",
+          pms_supplier_id: selectedSupplier?.id || "",
+          mode_of_submission: "Offline",
+          vendor_remark: formData.vendor_remark,
+          bill_type: getBillType(activeTab), // Add bill_type based on selected tab
+          // documents: documentsWithAttachments.map((doc) => ({
+          //   document_type: doc.document_type,
+          //   attachments: doc.attachments.map((attachment) => ({
+          //     filename: attachment.filename,
+          //     content_type: attachment.content_type,
+          //     content: attachment.content,
+          //   })),
+          // })),
+          documents: allDocuments,
+        },
+      };
+
       const response = await axios.post(
         `${baseURL}bill_entries?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         payload
       );
       // alert("Bill entry submitted successfully!");
       // Navigate("/bill-entry-list")
-      if (response.data) {
-        alert("Bill entry created successfully!");
-        setLoading(false);
-        navigate("/bill-entry-list"); // Redirect to bill-booking-list
+      if (response.status === 201) {
+        // alert("Bill entry created successfully!");
+        toast.success("Bill entry created successfully!", {
+          position: "top-right",
+          autoClose: 3500,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        setTimeout(() => {
+          navigate("/bill-entry-list");
+        }, 1500); // 2 second delay
+        // setLoading(false);
+        // navigate("/bill-entry-list"); // Redirect to bill-booking-list
         // Reset form or redirect as needed
       }
       console.log("Response:", response.data);
     } catch (error) {
       console.error("Error submitting bill entry:", error);
-      alert("Failed to submit bill entry. Please try again.");
+      toast.error("Failed to submit bill entry. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+
+      setLoading(false);
+      // alert("Failed to submit bill entry. Please try again.");
     } finally {
       setLoading(false); // Set loading to false after the API call
     }
@@ -687,91 +754,188 @@ const BillEntryListSubPage = () => {
 
   return (
     <div className="website-content">
+      {/* <ToastContainer /> */}
       <div className="module-data-section ms-2 mt-1">
         <a href="">
           Home &gt; Security &gt; Bill Entry List &gt; Bill Submission (For
           Billing User)
         </a>
         <h5 className="mt-3"> Bill Submission (For Billing User)</h5>
+        <div className="mor-tabs mt-4">
+          <ul
+            className="nav nav-pills mb-3 justify-content-center"
+            id="pills-tab"
+            role="tablist"
+          >
+            <li className="nav-item" role="presentation">
+              <button
+                className={`nav-link ${
+                  activeTab === "material" ? "active" : ""
+                }`}
+                onClick={() => handleTabClick("material")}
+                type="button"
+              >
+                Material
+              </button>
+            </li>
+            <li className="nav-item" role="presentation">
+              <button
+                className={`nav-link ${
+                  activeTab === "service" ? "active" : ""
+                }`}
+                onClick={() => handleTabClick("service")}
+                type="button"
+              >
+                Service
+              </button>
+            </li>
+            <li className="nav-item" role="presentation">
+              <button
+                className={`nav-link ${activeTab === "misc" ? "active" : ""}`}
+                onClick={() => handleTabClick("misc")}
+                type="button"
+              >
+                Misc.
+              </button>
+            </li>
+            <li className="nav-item" role="presentation" />
+          </ul>
+        </div>
         <div className="row align-items-center container-fluid">
           <div className="col-md-12">
             <div className="card p-3 mt-2">
               <div className="row">
-                <div className="col-md-2">
-                  <div className="form-group">
-                    <label>PO Number</label>
-                    <input
-                      className="form-control"
-                      type="text"
-                      value={selectedPO?.po_number || ""}
-                      placeholder=""
-                      fdprocessedid="qv9ju9"
-                      disabled
-                    />
-                  </div>
-                </div>
-                <div className="col-md-1 pt-4">
-                  <p
-                    className="mt-2 text-decoration-underline"
-                    onClick={openSelectPOModal}
-                  >
-                    Select
-                  </p>
-                </div>
-                <div className="col-md-3">
-                  <div className="form-group">
-                    <label>Vendor Name</label>
-                    <input
-                      className="form-control"
-                      type="text"
-                      placeholder=""
-                      fdprocessedid="qv9ju9"
-                      value={selectedPO?.supplier_name || ""}
-                      disabled
-                    />
-                  </div>
-                </div>
+                {activeTab !== "misc" ? (
+                  // Show PO related fields for Material and Service tabs
+                  <>
+                    <div className="col-md-2">
+                      <div className="form-group">
+                        <label>PO Number</label>
+                        <input
+                          className="form-control"
+                          type="text"
+                          value={selectedPO?.po_number || ""}
+                          placeholder=""
+                          disabled
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-1 pt-4">
+                      <p
+                        className="mt-2 text-decoration-underline"
+                        onClick={openSelectPOModal}
+                      >
+                        Select
+                      </p>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Vendor Name</label>
+                        <input
+                          className="form-control"
+                          type="text"
+                          placeholder=""
+                          value={selectedPO?.supplier_name || ""}
+                          disabled
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>PO Value</label>
+                        <input
+                          className="form-control"
+                          type="number"
+                          value={selectedPO?.total_value || ""}
+                          disabled
+                          readOnly
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>GSTIN</label>
+                        <input
+                          className="form-control"
+                          type="text"
+                          value={selectedPO?.gstin || ""}
+                          disabled
+                          readOnly
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3 mt-2">
+                      <div className="form-group">
+                        <label>PAN</label>
+                        <input
+                          className="form-control"
+                          type="text"
+                          value={selectedPO?.pan || ""}
+                          disabled
+                          readOnly
+                        />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  // Show Supplier fields for Misc tab
+                  <>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Supplier Name</label>
+                        <SingleSelector
+                          options={suppliers.map((s) => ({
+                            label: s.organization_name,
+                            value: s.id,
+                            gstin: s.gstin,
+                            pan_number: s.pan_number,
+                          }))}
+                          value={
+                            selectedSupplier
+                              ? {
+                                  label: selectedSupplier.organization_name,
+                                  value: selectedSupplier.id,
+                                  gstin: selectedSupplier.gstin,
+                                  pan_number: selectedSupplier.pan_number,
+                                }
+                              : null
+                          }
+                          onChange={(option) => {
+                            const supplier = suppliers.find(
+                              (s) => s.id === option.value
+                            );
+                            setSelectedSupplier(supplier || null);
+                          }}
+                          placeholder="Select Supplier"
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>GSTIN</label>
+                        <input
+                          className="form-control"
+                          type="text"
+                          value={selectedSupplier?.gstin || ""}
+                          disabled
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>PAN</label>
+                        <input
+                          className="form-control"
+                          type="text"
+                          value={selectedSupplier?.pan_number || ""}
+                          disabled
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
 
-                <div className="col-md-3">
-                  <div className="form-group">
-                    <label>PO Value</label>
-                    <input
-                      className="form-control"
-                      type="number"
-                      value={selectedPO?.total_value || ""}
-                      disabled
-                      readOnly
-                    />
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="form-group">
-                    <label>GSTIN</label>
-                    <input
-                      className="form-control"
-                      type="text"
-                      // value={formData.gstin}
-                      value={selectedPO?.gstin || ""}
-                      disabled
-                      readOnly
-                    />
-                  </div>
-                </div>
-
-                <div className="col-md-3 mt-2">
-                  <div className="form-group">
-                    <label>PAN</label>
-                    <input
-                      className="form-control"
-                      type="text"
-                      // value={formData.pan}
-                      value={selectedPO?.pan || ""}
-                      disabled
-                      readOnly
-                    />
-                  </div>
-                </div>
-                <div className="col-md-3 mt-2 ">
+                <div className="col-md-3 ">
                   <div className="form-group">
                     <label>Bill Date</label>
                     <input
@@ -1599,6 +1763,19 @@ const BillEntryListSubPage = () => {
           </div>
         </Modal.Body>
       </Modal>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
   );
 };
