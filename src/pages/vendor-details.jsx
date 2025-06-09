@@ -5355,7 +5355,6 @@ const handlePageChange = (page) => {
                                 disabled={isBid}
                               />
                             ),
-
                             gst: (cell, rowIndex) => {
                               const previousGst =
                                 previousData[rowIndex]?.gst || cell;
@@ -5433,7 +5432,6 @@ const handlePageChange = (page) => {
                                 />
                               );
                             },
-
                             quantityAvail: (cell, rowIndex) => {
                               const row = data[rowIndex];
                               const quantityRequested =
@@ -5570,7 +5568,6 @@ const handlePageChange = (page) => {
                                 />
                               );
                             },
-
                             realisedDiscount: (cell, rowIndex) => {
                               const previousRealisedDiscount =
                                 previousData[rowIndex]?.realisedDiscount ||
@@ -5652,7 +5649,6 @@ const handlePageChange = (page) => {
                                 />
                               );
                             },
-
                             realisedGst: (cell, rowIndex) => {
                               const previousRealisedGst =
                                 previousData[rowIndex]?.realisedGst || cell;
@@ -5728,7 +5724,6 @@ const handlePageChange = (page) => {
                                 />
                               );
                             },
-
                             total: (cell, rowIndex) => {
                               const previousTotal =
                                 previousData[rowIndex]?.total || cell;
@@ -5807,7 +5802,6 @@ const handlePageChange = (page) => {
                                 />
                               );
                             },
-
                             vendorRemark: (cell, rowIndex) => (
                               <textarea
                                 className="form-control"
@@ -5824,7 +5818,6 @@ const handlePageChange = (page) => {
                                 disabled={isBid}
                               />
                             ),
-
                             bestAmount: (cell, rowIndex) => {
                               const quantity =
                                 parseFloat(data[rowIndex].quantityAvail) || 0;
@@ -6101,22 +6094,14 @@ const handlePageChange = (page) => {
                         </div>
                       </div>
 
-                      {/* <pre>{JSON.stringify(payload, null, 2)}</pre> */}
-
                       <div className="d-flex justify-content-end mt-2 mx-2">
                         <h5>
                           <strong>Gross Total:</strong> ₹
                           {Number(grossTotal || 0).toFixed(2)}
                         </h5>
                       </div>
-                      {/* <pre>{JSON.stringify(payload, null, 2)}</pre> */}
-                    {/* </div> */}
-                  {/* </div> */}
-
 
                   <div style={{ marginTop: "10px" }}>
-                    {/* bid button */}
-
                     {revisedBid && (
                       <div className="d-flex justify-content-center align-items-center">
                         <div className="d-flex align-items-center">

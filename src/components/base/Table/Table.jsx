@@ -393,7 +393,8 @@ export default function Table({
     ...columns.filter((col) => col.key === "srNo"),
     ...columns.filter((col) => col.key === "descriptionOfItem"),
     ...columns.filter((col) => col.key === "section"),
-    ...columns.filter((col) => col.key !== "srNo" && col.key !== "descriptionOfItem" && col.key !== "section"),
+    ...columns.filter((col) => col.key === "subSection"),
+    ...columns.filter((col) => col.key !== "srNo" && col.key !== "descriptionOfItem" && col.key !== "section" && col.key !== "subSection"),
   ];
 
   return (
@@ -433,6 +434,8 @@ export default function Table({
                         ? "sticky"
                         : isLowSpace && col.key === "section"
                         ? "sticky"
+                        : isLowSpace && col.key === "subSection"
+                        ? "sticky"
                         : undefined,
                     left:
                       isLowSpace && col.key === "srNo"
@@ -441,17 +444,19 @@ export default function Table({
                         ? 50
                         : isLowSpace && col.key === "section"
                         ? 180
+                        : isLowSpace && col.key === "subSection"
+                        ? 300
                         : undefined,
                     zIndex:
-                      isLowSpace && ["srNo", "descriptionOfItem", "section"].includes(col.key)
+                      isLowSpace && ["srNo", "descriptionOfItem", "section", "subSection"].includes(col.key)
                         ? 2
                         : undefined,
                     background:
-                      isLowSpace && ["srNo", "descriptionOfItem", "section"].includes(col.key)
+                      isLowSpace && ["srNo", "descriptionOfItem", "section", "subSection"].includes(col.key)
                         ? "#fff"
                         : undefined,
                     boxShadow:
-                      isLowSpace && ["srNo", "descriptionOfItem", "section"].includes(col.key)
+                      isLowSpace && ["srNo", "descriptionOfItem", "section", "subSection"].includes(col.key)
                         ? "2px 0 2px -1px #eee"
                         : undefined,
                   }}
@@ -521,6 +526,8 @@ export default function Table({
                               ? "sticky"
                               : isLowSpace && col.key === "section"
                               ? "sticky"
+                              : isLowSpace && col.key === "subSection"
+                              ? "sticky"
                               : undefined,
                           left:
                             isLowSpace && col.key === "srNo"
@@ -529,17 +536,19 @@ export default function Table({
                               ? 50
                               : isLowSpace && col.key === "section"
                               ? 180
+                              : isLowSpace && col.key === "subSection"
+                              ? 300
                               : undefined,
                           zIndex:
-                            isLowSpace && ["srNo", "descriptionOfItem", "section"].includes(col.key)
+                            isLowSpace && ["srNo", "descriptionOfItem", "section", "subSection"].includes(col.key)
                               ? 1
                               : undefined,
                           background:
-                            isLowSpace && ["srNo", "descriptionOfItem", "section"].includes(col.key)
+                            isLowSpace && ["srNo", "descriptionOfItem", "section", "subSection"].includes(col.key)
                               ? "#fff"
                               : undefined,
                           boxShadow:
-                            isLowSpace && ["srNo", "descriptionOfItem", "section"].includes(col.key)
+                            isLowSpace && ["srNo", "descriptionOfItem", "section", "subSection"].includes(col.key)
                               ? "2px 0 2px -1px #eee"
                               : undefined,
                         }}
