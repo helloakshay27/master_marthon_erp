@@ -80,11 +80,29 @@ const ApprovalEdit = () => {
     invoice_approval_levels: [],
   });
 
+  // const handleAddLevel = () => {
+  //   setApprovalLevels([
+  //     ...approvalLevels,
+  //     { id: "", order: "1", name: "", users: [], type: "users" }, // Default new level to "users"
+  //   ]);
+  // };
   const handleAddLevel = () => {
-    setApprovalLevels([
-      ...approvalLevels,
-      { id: "", order: "", name: "", users: [], type: "users" }, // Default new level to "users"
-    ]);
+    setApprovalLevels((prevLevels) => {
+      // Filter out deleted levels and get next order number
+      const activeLevels = prevLevels.filter((level) => !level._destroy);
+      const nextOrder = (activeLevels.length + 1).toString();
+
+      return [
+        ...prevLevels,
+        {
+          id: "",
+          order: nextOrder,
+          name: "",
+          users: [],
+          type: "users",
+        },
+      ];
+    });
   };
 
   const [userGroups, setUserGroups] = useState([]);
@@ -163,12 +181,25 @@ const ApprovalEdit = () => {
   //   );
   // };
 
+  // const handleRemoveLevel = (index) => {
+  //   setApprovalLevels((prevLevels) =>
+  //     prevLevels.map((level, i) =>
+  //       i === index ? { ...level, _destroy: true } : level
+  //     )
+  //   );
+  // };
+
   const handleRemoveLevel = (index) => {
-    setApprovalLevels((prevLevels) =>
-      prevLevels.map((level, i) =>
-        i === index ? { ...level, _destroy: true } : level
-      )
-    );
+    setApprovalLevels((prevLevels) => {
+      // Remove the selected level
+      const updatedLevels = prevLevels.filter((_, i) => i !== index);
+
+      // Reorder remaining active levels
+      return updatedLevels.map((level, idx) => ({
+        ...level,
+        order: (idx + 1).toString(),
+      }));
+    });
   };
 
   const handleInputChange = (index, field, value) => {
@@ -343,6 +374,8 @@ const ApprovalEdit = () => {
 
   const [approvalLevelsRaw, setApprovalLevelsRaw] = useState([]);
 
+  const [status_logs, setStatusLogs] = useState([]);
+
   useEffect(() => {
     const fetchApprovalData = async () => {
       try {
@@ -354,6 +387,7 @@ const ApprovalEdit = () => {
 
         const data = await response.json();
         console.log("Fetched Approval Data:", data);
+        setStatusLogs(data.status_logs || []);
 
         // Ensure department_id is always an array
         const fetchedDepartmentIds = Array.isArray(data.department_id)
@@ -1525,19 +1559,20 @@ const ApprovalEdit = () => {
                                 <fieldset className="border">
                                   <legend className="float-none">
                                     Order{" "}
-                                    <span style={{ color: "red" }}>*</span>
+                                    {/* <span style={{ color: "red" }}>*</span> */}
                                   </legend>
                                   <input
                                     className="form-group order"
                                     placeholder="Enter Order"
                                     value={level.order}
-                                    onChange={(e) =>
-                                      handleInputChange(
-                                        index,
-                                        "order",
-                                        e.target.value
-                                      )
-                                    }
+                                    // onChange={(e) =>
+                                    //   handleInputChange(
+                                    //     index,
+                                    //     "order",
+                                    //     e.target.value
+                                    //   )
+                                    // }
+                                    readOnly
                                     required
                                   />
                                 </fieldset>
@@ -1706,6 +1741,48 @@ const ApprovalEdit = () => {
                         >
                           Update
                         </button>
+                      </div>
+                      <div className="mb-5">
+                        <h5>Audit Log</h5>
+                        <div className="mx-0">
+                          <div className="tbl-container mt-1">
+                            <table className="w-100">
+                              <thead>
+                                <tr>
+                                  <th>Sr.No.</th>
+                                  <th>Created By</th>
+                                  {/* <th>Status</th> */}
+                                  <th>Created At</th>
+                                  <th>Remark</th>
+                                  {/* <th>Comment</th> */}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {status_logs?.map((log, index) => (
+                                  <tr key={log.id}>
+                                    <td className="text-start">{index + 1}</td>
+                                    <td className="text-start">
+                                      {log.created_by_name || ""}
+                                    </td>
+                                    {/* <td className="text-start">
+                                      {log.status
+                                        ? log.status.charAt(0).toUpperCase() +
+                                          log.status.slice(1)
+                                        : ""}
+                                    </td> */}
+                                    <td className="text-start">
+                                      {log.created_at || ""}
+                                    </td>
+                                    <td className="text-start">
+                                      {log.remarks || ""}
+                                    </td>
+                                    {/* <td className="text-start">{""}</td> */}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
