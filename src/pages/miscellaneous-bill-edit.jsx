@@ -672,7 +672,7 @@ const MiscellaneousBillEdit = () => {
                                                             <div className="row mb-3">
                                                                 <div className="col-md-4">
                                                                     <div className="form-group mb-0">
-                                                                        <label>Bill Number</label>
+                                                                        <label>Invoice Number</label>
 
                                                                         <input
                                                                             type="text"
@@ -685,7 +685,7 @@ const MiscellaneousBillEdit = () => {
                                                                 </div>
                                                                 <div className="col-md-4">
                                                                     <div className="form-group mb-0">
-                                                                        <label>Bill Date</label>
+                                                                        <label>Invoice Date</label>
                                                                         <input
                                                                             type="date"
                                                                             className="form-control"

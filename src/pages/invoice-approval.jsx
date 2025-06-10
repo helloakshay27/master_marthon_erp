@@ -82,7 +82,7 @@ const InvoiceApproval = () => {
   const [selectedUsers, setSelectedUsers] = useState([]);
 
   const [approvalLevels, setApprovalLevels] = useState([
-    { order: "", name: "", users: [], type: "users" },
+    { order: "1", name: "", users: [], type: "users" },
   ]);
 
   const [selectedType, setSelectedType] = useState("users");
@@ -133,16 +133,47 @@ const InvoiceApproval = () => {
     invoice_approval_levels: [],
   });
 
+  // const handleAddLevel = () => {
+  //   setApprovalLevels([
+  //     ...approvalLevels,
+  //     { order: "", name: "", users: [], type: "users" }, // Add a new empty level,
+  //   ]);
+  // };
+
   const handleAddLevel = () => {
-    setApprovalLevels([
-      ...approvalLevels,
-      { order: "", name: "", users: [], type: "users" }, // Add a new empty level,
-    ]);
+    setApprovalLevels((prevLevels) => {
+      // Get active (non-destroyed) levels
+      const activeLevels = prevLevels.filter((level) => !level._destroy);
+      // Next order is simply the length + 1
+      const nextOrder = (activeLevels.length + 1).toString();
+
+      return [
+        ...prevLevels,
+        {
+          order: nextOrder,
+          name: "",
+          users: [],
+          type: "users",
+        },
+      ];
+    });
   };
 
+  // const handleRemoveLevel = (index) => {
+  //   const updatedLevels = approvalLevels.filter((_, i) => i !== index);
+  //   setApprovalLevels(updatedLevels);
+  // };
   const handleRemoveLevel = (index) => {
-    const updatedLevels = approvalLevels.filter((_, i) => i !== index);
-    setApprovalLevels(updatedLevels);
+    setApprovalLevels((prevLevels) => {
+      // First, filter out the removed level
+      const updatedLevels = prevLevels.filter((_, i) => i !== index);
+
+      // Then reorder the remaining levels
+      return updatedLevels.map((level, idx) => ({
+        ...level,
+        order: (idx + 1).toString(), // Reassign orders starting from 1
+      }));
+    });
   };
 
   const handleInputChange = (index, field, value) => {
@@ -703,19 +734,63 @@ const InvoiceApproval = () => {
     setLoading(true);
     // Prepare the dynamic payload with data from formData and approvalLevels
 
+    // const errors = [];
+
+    // if (!formData.company_id) errors.push("Company is required.");
+    // // if (!formData.department_id) errors.push("Department is required.");
+    // if (!formData.module_id) errors.push("Module is required.");
+    // if (approvalLevels.length === 0)
+    //   errors.push("At least one Approval Level is required.");
+
+    // if (errors.length > 0) {
+    //   setLoading(false);
+    //   alert("plz fill all required fields"); // Show all errors in an alert
+    //   return; // Stop function execution
+    // }
+
     const errors = [];
 
-    if (!formData.company_id) errors.push("Company is required.");
-    // if (!formData.department_id) errors.push("Department is required.");
-    if (!formData.module_id) errors.push("Module is required.");
-    if (approvalLevels.length === 0)
-      errors.push("At least one Approval Level is required.");
+    // Validate company
+    if (!formData.company_id) {
+      errors.push("Company is required");
+    }
+
+    // Validate module
+    if (!formData.module_id) {
+      errors.push("Module is required");
+    }
+
+    // Validate approval levels
+    if (approvalLevels.length === 0) {
+      errors.push("At least one Approval Level is required");
+    } else {
+      // Check each approval level for required fields
+      approvalLevels.forEach((level, index) => {
+        if (!level.name || level.name.trim() === "") {
+          errors.push(`Name of Level is required for Level ${index + 1}`);
+        }
+
+        // Validate users/groups selection
+        if (level.type === "users") {
+          if (!level.users || level.users.length === 0) {
+            errors.push(`Users selection is required for Level ${index + 1}`);
+          }
+        } else if (level.type === "groups") {
+          if (!level.users || !level.users.value) {
+            errors.push(
+              `User Group selection is required for Level ${index + 1}`
+            );
+          }
+        }
+      });
+    }
 
     if (errors.length > 0) {
       setLoading(false);
-      alert("plz fill all required fields"); // Show all errors in an alert
-      return; // Stop function execution
+      alert(errors.join("\n")); // Show all errors in an alert, one per line
+      return;
     }
+
     const payload = {
       // site_id: formData.site_id,
       approval_type: formData.module_id, // Use dynamic approval_type
@@ -1044,20 +1119,22 @@ const InvoiceApproval = () => {
                             >
                               <fieldset className="border">
                                 <legend className="float-none">
-                                  Order <span style={{ color: "red" }}>*</span>
+                                  Order
+                                  {/* <span style={{ color: "red" }}>*</span> */}
                                 </legend>
                                 <input
                                   className="form-group order"
                                   placeholder="Enter Order"
                                   value={level.order}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      index,
-                                      "order",
-                                      e.target.value
-                                    )
-                                  }
-                                  required
+                                  // onChange={(e) =>
+                                  //   handleInputChange(
+                                  //     index,
+                                  //     "order",
+                                  //     e.target.value
+                                  //   )
+                                  // }
+                                  readOnly
+                                  // required
                                 />
                               </fieldset>
 

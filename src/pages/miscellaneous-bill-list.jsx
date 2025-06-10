@@ -579,7 +579,7 @@ const MiscellaneousBillList = () => {
         { field: "project_name", headerName: "Project", width: 180 },
         { field: "site_name", headerName: "Sub Project", width: 150 },
         {
-            field: "bill_no", headerName: "Bill No.", width: 170,
+            field: "bill_no", headerName: "Invoice No.", width: 170,
             renderCell: (params) =>
                 params.value && params.row.id ? (
                     <Link to={`/miscellaneous-bill-details/${params.row.id}`}
@@ -599,7 +599,7 @@ const MiscellaneousBillList = () => {
             width: 150,
         },
         // { field: "po_number", headerName: "Bill No.", width: 150 },
-        { field: "bill_date", headerName: "Bill Date", width: 150 },
+        { field: "bill_date", headerName: "Invoice Date", width: 150 },
         // { field: "po_value", headerName: "Bill Value", width: 150 },
          { field: "pms_supplier", headerName: "Supplier Name", width: 200 },
 

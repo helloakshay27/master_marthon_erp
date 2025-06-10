@@ -786,7 +786,7 @@ const BillVerificationList = () => {
     },
     {
       field: "bill_no",
-      headerName: "Bill No.",
+      headerName: "Invoice No.",
       width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
@@ -798,7 +798,7 @@ const BillVerificationList = () => {
         ),
     },
 
-    { field: "bill_date", headerName: "Bill Date", width: 150 },
+    { field: "bill_date", headerName: "Invoice Date", width: 150 },
     { field: "bill_amount", headerName: "Bill Amount", width: 150 },
     { field: "bill_type", headerName: "Bill Type", width: 150 },
     { field: "bill_copies", headerName: "Bill Copies", width: 150 },

@@ -353,7 +353,7 @@ const MiscellaneousBillDetails = () => {
                             </div>
                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                               <div className="col-6">
-                                <label>Bill Number</label>
+                                <label>Invoice Number</label>
                               </div>
                               <div className="col-6">
                                 <label className="text">
@@ -366,7 +366,7 @@ const MiscellaneousBillDetails = () => {
                             </div>
                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                               <div className="col-6">
-                                <label>Bill Date</label>
+                                <label>Invoice Date</label>
                               </div>
                               <div className="col-6">
                                 <label className="text">

@@ -640,7 +640,7 @@ const BillBookingList = () => {
       width: 150,
     },
 
-    { field: "inventory_date", headerName: "Bill Date", width: 150 },
+    { field: "inventory_date", headerName: "Invoice Date", width: 150 },
     { field: "total_amount", headerName: "Bill Amount", width: 150 },
     { field: "bill_copies", headerName: "Bill Copies", width: 150 },
     { field: "due", headerName: "Due", width: 150 },
