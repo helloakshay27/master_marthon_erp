@@ -777,7 +777,7 @@ const MiscellaneousBillCreate = () => {
                               </div>
                               <div className="col-md-4 mt-2">
                                 <div className="form-group">
-                                  <label>Bill Number</label>
+                                  <label>Invoice Number</label>
                                   <input
                                     className="form-control"
                                     type="text"
@@ -790,7 +790,7 @@ const MiscellaneousBillCreate = () => {
                               </div>
                               <div className="col-md-4 mt-2">
                                 <div className="form-group">
-                                  <label>Bill Date</label>
+                                  <label>Invoice Date</label>
                                   <div
                                     id="datepicker"
                                     className="input-group date"
@@ -962,7 +962,7 @@ const MiscellaneousBillCreate = () => {
 
                               <div className="col-md-4 mt-2">
                                 <div className="form-group">
-                                  <label>Bill Number</label>
+                                  <label>Invoice Number</label>
                                   <input
                                     className="form-control"
                                     type="text"
@@ -978,7 +978,7 @@ const MiscellaneousBillCreate = () => {
 
                               <div className="col-md-4 mt-2">
                                 <div className="form-group">
-                                  <label>Bill Date</label>
+                                  <label>Invoice Date</label>
                                   <div
                                     id="datepicker"
                                     className="input-group date"

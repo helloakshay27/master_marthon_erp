@@ -399,7 +399,7 @@ const BillEntryDetails = () => {
                     <div className="row mb-3">
                       <div className="col-md-4">
                         <div className="form-group mb-0">
-                          <label>Bill Number</label>
+                          <label>Invoice Number</label>
                           <input
                             className="form-control"
                             type="text"
@@ -411,7 +411,7 @@ const BillEntryDetails = () => {
                       </div>
                       <div className="col-md-4">
                         <div className="form-group mb-0">
-                          <label>Bill Date</label>
+                          <label>Invoice Date</label>
                           <input
                             className="form-control"
                             type="date"
@@ -623,7 +623,19 @@ const BillEntryDetails = () => {
                                 : ""}
                             </td>
                             <td className="text-start">
-                              {log.created_at || ""}
+                              {/* {log.created_at || ""} */}
+                               {log.created_at
+                                    ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                    })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      // second: "2-digit",
+                                      hour12: true,
+                                    })}`
+                                    : ""}
                             </td>
 
                             <td className="text-start">{log.remarks || ""}</td>
