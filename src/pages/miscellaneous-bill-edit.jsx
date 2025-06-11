@@ -12,8 +12,11 @@ import { baseURL } from "../confi/apiDomain";
 import { DownloadIcon } from "../components";
 import CreditNoteDetails from "./credit-note-details"
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 const MiscellaneousBillEdit = () => {
     const { id } = useParams();
+    const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
     const navigate = useNavigate();
     const [showRows, setShowRows] = useState(false);
     const [creditNoteData, setCreditNoteData] = useState(null);
@@ -25,7 +28,7 @@ const MiscellaneousBillEdit = () => {
     const fetchCreditNoteData = async () => {
         try {
             const response = await axios.get(
-                `${baseURL}miscellaneous_bills/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}miscellaneous_bills/${id}?token=${token}`
             );
             setCreditNoteData(response.data);
             setStatus(response.data.status)
@@ -134,7 +137,7 @@ const MiscellaneousBillEdit = () => {
 
     //     try {
     //         const response = await axios.patch(
-    //             `${baseURL}credit_notes/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+    //             `${baseURL}credit_notes/${id}/update_status.json?token=${token}`,
     //             payload, // The request body containing status and remarks
     //             {
     //                 headers: {
@@ -175,7 +178,7 @@ const MiscellaneousBillEdit = () => {
         const fetchTaxTypes = async () => {
             try {
                 const response = await axios.get(
-                    `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                    `${baseURL}rfq/events/taxes_dropdown?token=${token}`
                 );
                 setTaxTypes(response.data.taxes); // Assuming the API returns an array of tax types
             } catch (error) {
@@ -306,7 +309,7 @@ const MiscellaneousBillEdit = () => {
         const fetchTaxTypes = async () => {
             try {
                 const response = await axios.get(
-                    `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                    `${baseURL}rfq/events/deduction_tax_details?token=${token}`
                 );
                 setDeductionTypes(response.data.taxes); // Assuming the API returns an array of tax types
             } catch (error) {
@@ -414,7 +417,7 @@ const MiscellaneousBillEdit = () => {
 
         try {
             const response = await axios.put(
-                `${baseURL}miscellaneous_bills/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                `${baseURL}miscellaneous_bills/${id}?token=${token}`,
                 payload
             );
             console.log("Response:", response.data);
@@ -763,11 +766,11 @@ const MiscellaneousBillEdit = () => {
 
 
 
-                                                            {rows.map((row, index) => (
+                                                            {rows?.map((row, index) => (
                                                                 <tr key={row.id}>
                                                                     <td className="text-start">
                                                                         <SingleSelector
-                                                                            options={taxTypes.map((type) => ({
+                                                                            options={taxTypes?.map((type) => ({
                                                                                 value: type.name,
                                                                                 label: type.name,
                                                                                 id: type.id,
@@ -1123,7 +1126,7 @@ const MiscellaneousBillEdit = () => {
                                                                                 <a
                                                                                     href={
                                                                                        
-                                                                                        `${baseURL}credit_notes/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
+                                                                                        `${baseURL}credit_notes/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
                                                                                     }
                                                                                     download={attachment.filename}
                                                                                 >

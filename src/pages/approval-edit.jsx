@@ -6,7 +6,7 @@ import { MultiSelector } from "../components";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import SingleSelector from "../components/base/Select/SingleSelector";
-import { useNavigate ,useLocation} from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { baseURL } from "../confi/apiDomain";
 
 const ApprovalEdit = () => {
@@ -19,8 +19,6 @@ const ApprovalEdit = () => {
 
     users: [],
   });
-
-
 
   const { id } = useParams(); // Ge
 
@@ -275,9 +273,7 @@ const ApprovalEdit = () => {
           fetch(
             `${baseURL}/pms/admin/invoice_approvals/dropdown_list.json?token=${token}`
           ),
-          fetch(
-            `${baseURL}/pms/inventory_types.json?token=${token}`
-          ),
+          fetch(`${baseURL}/pms/inventory_types.json?token=${token}`),
         ]);
 
         if (!dropdownResponse.ok || !materialTypeResponse.ok) {
@@ -608,9 +604,7 @@ const ApprovalEdit = () => {
 
   useEffect(() => {
     axios
-      .get(
-        `${baseURL}/pms/company_setups.json?token=${token}`
-      )
+      .get(`${baseURL}/pms/company_setups.json?token=${token}`)
       .then((response) => {
         setCompanies(response.data.companies);
       })
@@ -1172,7 +1166,7 @@ const ApprovalEdit = () => {
         alert("Approval updated successfully!");
 
         setTimeout(() => {
-          navigate("/approval-materics");
+          navigate(`/approval-materics?token=${token}`);
         }, 500);
       })
       .catch((error) => {

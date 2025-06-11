@@ -11,10 +11,14 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { baseURL } from "../confi/apiDomain";
 import { DataGrid } from "@mui/x-data-grid";
+import { useLocation } from "react-router-dom";
 
 
 const BillVerificationList = () => {
   const navigate = useNavigate();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
+
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
   const [activeTab, setActiveTab] = useState("total"); // State to track the active tab
 
@@ -63,10 +67,10 @@ const BillVerificationList = () => {
     try {
       setLoading(true);
       // const response = await axios.get(
-      //   `${baseURL}bill_entries?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      //   `${baseURL}bill_entries?page=${page}&per_page=10&token=${token}`
       // );
 
-      let url = `${baseURL}bill_entries?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+      let url = `${baseURL}bill_entries?page=${page}&per_page=10&token=${token}`;
       if (activeSearch) {
         url += `&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_cont]=${activeSearch}`;
       }
@@ -153,7 +157,7 @@ const BillVerificationList = () => {
   useEffect(() => {
     axios
       .get(
-        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}pms/company_setups.json?token=${token}`
       )
       .then((response) => {
         setCompanies(response.data.companies);
@@ -226,7 +230,7 @@ const BillVerificationList = () => {
     setFilterProjectId(projectId);
     setFilterSiteId(siteId);
     console.log("ids filter:", companyId, projectId, siteId);
-    const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${companyId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${projectId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_cont]=${siteId}`;
+    const url = `${baseURL}bill_entries?page=1&token=${token}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${companyId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${projectId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_cont]=${siteId}`;
 
     console.log("url:", url);
     axios
@@ -294,7 +298,7 @@ const BillVerificationList = () => {
     // Fetch unfiltered data
     axios
       .get(
-        `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}bill_entries?page=1&token=${token}`
       )
       .then((response) => {
         const transformedData = response.data.bill_entries.map(
@@ -414,7 +418,7 @@ const BillVerificationList = () => {
     // Send data to API using axios
     axios
       .patch(
-        `${baseURL}bill_entries/update_bulk_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}bill_entries/update_bulk_status.json?token=${token}`,
         data
       )
       .then((response) => {
@@ -436,7 +440,7 @@ const BillVerificationList = () => {
       setLoading(true); // Show loading state while fetching
       axios
         .get(
-          `${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[status_eq]=${fromStatus}`
+          `${baseURL}bill_entries?page=1&per_page=10&token=${token}&q[status_eq]=${fromStatus}`
         )
         .then((response) => {
           const transformedData = response?.data?.bill_entries.map(
@@ -514,7 +518,7 @@ const BillVerificationList = () => {
 
   //card filter
   const fetchFilteredData2 = (status) => {
-    const url = `${baseURL}bill_entries?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${status ? `&q[status_eq]=${status}` : ""
+    const url = `${baseURL}bill_entries?page=1&token=${token}${status ? `&q[status_eq]=${status}` : ""
       }`;
 
     axios
@@ -572,7 +576,7 @@ const BillVerificationList = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${baseURL}bill_entries?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_cont]=${searchKeyword}`
+        `${baseURL}bill_entries?page=1&per_page=10&token=${token}&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_cont]=${searchKeyword}`
       );
       const transformedData = response.data.bill_entries.map((entry, index) => {
         // console.log("created_at raw:", entry.created_at);
@@ -637,7 +641,7 @@ const BillVerificationList = () => {
     bill_no: true,
     bill_date: true,
     bill_amount: true,
-    bill_type:true,
+    bill_type: true,
     bill_copies: true,
     due: true,
     due_date: true,
@@ -703,7 +707,7 @@ const BillVerificationList = () => {
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/bill-booking-create/${params.row.id}`);
+                    navigate(`/bill-booking-create/${params.row.id}?token=${token}`);
                   }}
                 >
                   <svg
@@ -730,7 +734,7 @@ const BillVerificationList = () => {
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/miscellaneous-bill-create/${params.row.id}`);
+                    navigate(`/miscellaneous-bill-create/${params.row.id}?token=${token}`);
                   }}
                 >
                   <svg
@@ -755,7 +759,7 @@ const BillVerificationList = () => {
       width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
-          <Link to={`/bill-verification-details/${params.row.id}`}>
+          <Link to={`/bill-verification-details/${params.row.id}?token=${token}`}>
             <span className="boq-id-link">{params.value}</span>
           </Link>
         ) : (
@@ -790,7 +794,7 @@ const BillVerificationList = () => {
       width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
-          <Link to={`/bill-verification-details/${params.row.id}`}>
+          <Link to={`/bill-verification-details/${params.row.id}?token=${token}`}>
             <span className="boq-id-link">{params.value}</span>
           </Link>
         ) : (

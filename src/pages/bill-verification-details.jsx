@@ -11,9 +11,13 @@ import axios from "axios";
 import { DownloadIcon } from "../components";
 import { baseURL } from "../confi/apiDomain";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useLocation } from "react-router-dom";
+
 
 const BillVerificationDetails = () => {
   const { id } = useParams();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const navigate = useNavigate();
   const [remark, setRemark] = useState(""); // State to store the remark
   const [showValidation, setShowValidation] = useState(false); // State to control validation message
@@ -49,26 +53,26 @@ const BillVerificationDetails = () => {
   const [editableBillAmount, setEditableBillAmount] = useState("");
 
   const handleBillBookingClick = () => {
-    navigate(`/bill-booking-create/${id}`);
+    navigate(`/bill-booking-create/${id}?token=${token}`);
   };
 
   useEffect(() => {
     // Fetch data from the API
     axios
       .get(
-        `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}bill_entries/${id}?token=${token}`
       )
       .then((response) => {
-        console.log("res:",response.data)
+        console.log("res:", response.data)
         setBillDetails(response?.data);
         setStatus(response?.data.status);
         if (response.data.documents) {
           setDocuments(response.data.documents);
         }
-         // Set active tab based on bill_type
-      if (response.data.bill_type === "material") setActiveTab("material");
-      else if (response.data.bill_type === "service") setActiveTab("service");
-      else if (response.data.bill_type === "miscellaneous") setActiveTab("misc");
+        // Set active tab based on bill_type
+        if (response.data.bill_type === "material") setActiveTab("material");
+        else if (response.data.bill_type === "service") setActiveTab("service");
+        else if (response.data.bill_type === "miscellaneous") setActiveTab("misc");
       })
       .catch((error) => {
         console.error("Error fetching bill details:", error);
@@ -96,14 +100,14 @@ const BillVerificationDetails = () => {
       label: "Verified",
       value: "verified",
     },
-   
+
   ];
 
   // Add handleDownload function
   const handleDownload = async (blobId) => {
     try {
       const response = await axios.get(
-        `${baseURL}bill_entries/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${blobId}`,
+        `${baseURL}bill_entries/${id}/download?token=${token}&blob_id=${blobId}`,
         {
           responseType: "blob", // Important for handling binary data
         }
@@ -265,14 +269,14 @@ const BillVerificationDetails = () => {
 
       // Make API call
       const response = await axios.patch(
-        `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}bill_entries/${id}?token=${token}`,
         payload
       );
 
       if (response.data) {
         alert("Bill entry updated successfully");
         setLoading(false);
-        navigate("/bill-verification-list");
+        navigate(`/bill-verification-list?token=${token}`);
         // Reset form
       }
     } catch (error) {
@@ -293,7 +297,7 @@ const BillVerificationDetails = () => {
 
       setLoading(true); // Show loader while submitting
       const response = await axios.post(
-        `${baseURL}bill_entries/${id}/request_for_revision?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}bill_entries/${id}/request_for_revision?token=${token}`,
         {
           remarks: remark, // Send the remark in the request body
         }
@@ -323,44 +327,44 @@ const BillVerificationDetails = () => {
           <h5 className="mt-3">Update Bill Information (Details)</h5>
           <div className="row my-4 align-items-center container-fluid mb-5">
             <div className="mor-tabs mt-4">
-         <ul
-  className="nav nav-pills mb-3 justify-content-center"
-  id="pills-tab"
-  role="tablist"
->
-  <li className="nav-item" role="presentation">
-    <button
-      className={`nav-link ${activeTab === "material" ? "active" : ""}`}
-      onClick={() => setActiveTab("material")}
-      type="button"
-      disabled={activeTab !== "material"}
-    >
-      Material
-    </button>
-  </li>
-  <li className="nav-item" role="presentation">
-    <button
-      className={`nav-link ${activeTab === "service" ? "active" : ""}`}
-      onClick={() => setActiveTab("service")}
-      type="button"
-       disabled={activeTab !== "service"}
-    >
-      Service
-    </button>
-  </li>
-  <li className="nav-item" role="presentation">
-    <button
-      className={`nav-link ${activeTab === "misc" ? "active" : ""}`}
-      onClick={() => setActiveTab("misc")}
-      type="button"
-       disabled={activeTab !== "misc"}
-    >
-      Misc.
-    </button>
-  </li>
-  <li className="nav-item" role="presentation" />
-</ul>
-        </div>
+              <ul
+                className="nav nav-pills mb-3 justify-content-center"
+                id="pills-tab"
+                role="tablist"
+              >
+                <li className="nav-item" role="presentation">
+                  <button
+                    className={`nav-link ${activeTab === "material" ? "active" : ""}`}
+                    onClick={() => setActiveTab("material")}
+                    type="button"
+                    disabled={activeTab !== "material"}
+                  >
+                    Material
+                  </button>
+                </li>
+                <li className="nav-item" role="presentation">
+                  <button
+                    className={`nav-link ${activeTab === "service" ? "active" : ""}`}
+                    onClick={() => setActiveTab("service")}
+                    type="button"
+                    disabled={activeTab !== "service"}
+                  >
+                    Service
+                  </button>
+                </li>
+                <li className="nav-item" role="presentation">
+                  <button
+                    className={`nav-link ${activeTab === "misc" ? "active" : ""}`}
+                    onClick={() => setActiveTab("misc")}
+                    type="button"
+                    disabled={activeTab !== "misc"}
+                  >
+                    Misc.
+                  </button>
+                </li>
+                <li className="nav-item" role="presentation" />
+              </ul>
+            </div>
             <div className="col-md-12 ">
               <div className="card p-3">
                 <div className="details_page">
@@ -551,7 +555,7 @@ const BillVerificationDetails = () => {
                         </label>
                       </div>
                     </div>
-                      <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Bill ID</label>
                       </div>
@@ -858,27 +862,27 @@ const BillVerificationDetails = () => {
                 )} */}
 
                 {billDetails?.status?.toLowerCase() === "verified" && billDetails?.bill_type === "material" && (
-  <div className="col-md-2">
-    <button
-      className="purple-btn2 w-100"
-      onClick={handleBillBookingClick}
-    >
-      Bill Booking
-    </button>
-  </div>
-)}
+                  <div className="col-md-2">
+                    <button
+                      className="purple-btn2 w-100"
+                      onClick={handleBillBookingClick}
+                    >
+                      Bill Booking
+                    </button>
+                  </div>
+                )}
                 {billDetails?.status?.toLowerCase() === "verified"
-                 && billDetails?.bill_type === "miscellaneous" 
-                 && (
-  <div className="col-md-2">
-    <button
-      className="purple-btn2 w-100"
-      onClick={() => navigate(`/miscellaneous-bill-create/${id}`)}
-    >
-      Misc. Bill Booking
-    </button>
-  </div>
-)}
+                  && billDetails?.bill_type === "miscellaneous"
+                  && (
+                    <div className="col-md-2">
+                      <button
+                        className="purple-btn2 w-100"
+                        onClick={() => navigate(`/miscellaneous-bill-create/${id}?token=${token}`)}
+                      >
+                        Misc. Bill Booking
+                      </button>
+                    </div>
+                  )}
                 <div className="col-md-2">
                   <button
                     className="purple-btn2 w-100"
@@ -921,10 +925,10 @@ const BillVerificationDetails = () => {
                             <td className="text-start">
                               {log.created_by_name || ""}
                             </td>
-                             <td className="text-start">
+                            <td className="text-start">
                               {/* {log.created_at || ""} */}
-                               {log.created_at
-                              ? `${new Date(log.created_at).toLocaleDateString(
+                              {log.created_at
+                                ? `${new Date(log.created_at).toLocaleDateString(
                                   "en-GB",
                                   {
                                     day: "2-digit",
@@ -939,7 +943,7 @@ const BillVerificationDetails = () => {
                                   // second: "2-digit",
                                   hour12: true,
                                 })}`
-                              : ""}
+                                : ""}
                             </td>
                             {/* <td className="text-start">
                                   {log.created_at
@@ -1260,8 +1264,8 @@ const BillVerificationDetails = () => {
                         </button> */}
                         <a
                           href={
-                            // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
-                            `${baseURL}bill_entries/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
+                            // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                            `${baseURL}bill_entries/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
                           }
                           // target="_blank"
                           // rel="noopener noreferrer"
@@ -1309,8 +1313,8 @@ const BillVerificationDetails = () => {
                       <td>
                         <a
                           href={
-                            // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
-                            `${baseURL}bill_entries/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
+                            // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                            `${baseURL}bill_entries/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
                           }
                           // target="_blank"
                           // rel="noopener noreferrer"

@@ -11,8 +11,11 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import { baseURL } from "../confi/apiDomain";
 import { DownloadIcon } from "../components";
 import { Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 const MiscellaneousBillDetails = () => {
   const { id } = useParams();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const [showRows, setShowRows] = useState(false);
   const [creditNoteData, setCreditNoteData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,7 +26,7 @@ const MiscellaneousBillDetails = () => {
   const fetchCreditNoteData = async () => {
     try {
       const response = await axios.get(
-        `${baseURL}miscellaneous_bills/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}miscellaneous_bills/${id}?token=${token}`
       );
       setCreditNoteData(response.data);
       setStatus(response.data.status)
@@ -154,7 +157,7 @@ const MiscellaneousBillDetails = () => {
 
     try {
       const response = await axios.patch(
-        `${baseURL}miscellaneous_bills/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}miscellaneous_bills/${id}/update_status.json?token=${token}`,
         payload, // The request body containing status and remarks
         {
           headers: {
@@ -214,7 +217,7 @@ const MiscellaneousBillDetails = () => {
                 <div className="d-flex justify-content-end m-2">
                        
                           <Link
-                            to={`/miscellaneous-bill-edit/${id}`}
+                            to={`/miscellaneous-bill-edit/${id}?token=${token}`}
                             className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
             
                             <button class="purple-btn1" data-bs-toggle="modal" data-bs-target="#exampleModal">
@@ -705,8 +708,8 @@ const MiscellaneousBillDetails = () => {
                                         </a> */}
                                         <a
                                           href={
-                                            // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
-                                            `${baseURL}credit_notes/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
+                                            // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                                            `${baseURL}credit_notes/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
                                           }
                                           download={attachment.filename}
                                         >

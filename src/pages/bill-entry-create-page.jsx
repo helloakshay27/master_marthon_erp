@@ -18,6 +18,10 @@ const BillEntryListSubPage = () => {
   const [selectedPO, setSelectedPO] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
+
   const openSelectPOModal = () => {
     setselectPOModal(true);
   };
@@ -53,7 +57,7 @@ const BillEntryListSubPage = () => {
       if (activeTab === "misc") {
         try {
           const response = await axios.get(
-            `${baseURL}miscellaneous_bills/suppliers_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}miscellaneous_bills/suppliers_list.json?token=${token}`
           );
           setSuppliers(response.data);
         } catch (error) {
@@ -188,7 +192,7 @@ const BillEntryListSubPage = () => {
     const fetchPONumbers = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}purchase_orders/grn_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}purchase_orders/grn_details.json?token=${token}`
         );
         const poNumbers = response.data.purchase_orders.map((po) => ({
           value: po.id,
@@ -219,7 +223,7 @@ const BillEntryListSubPage = () => {
   ) => {
     try {
       setLoading(true);
-      let url = `${baseURL}purchase_orders/grn_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+      let url = `${baseURL}purchase_orders/grn_details.json?token=${token}`;
 
       // Add filters only if they are provided
       if (companyId) url += `&q[company_id_eq]=${companyId}`;
@@ -458,7 +462,7 @@ const BillEntryListSubPage = () => {
   const fetchProjects = async (companyId) => {
     try {
       const response = await axios.get(
-        `${baseURL}projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}`
+        `${baseURL}projects.json?token=${token}&q[company_id_eq]=${companyId}`
       );
       setProjects(
         response.data.projects.map((project) => ({
@@ -474,7 +478,7 @@ const BillEntryListSubPage = () => {
   const fetchSites = async (projectId) => {
     try {
       const response = await axios.get(
-        `${baseURL}sites.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[project_id_eq]=${projectId}`
+        `${baseURL}sites.json?token=${token}&q[project_id_eq]=${projectId}`
       );
       console.log("Sites response:", response.data.sites);
       setSites(
@@ -497,7 +501,7 @@ const BillEntryListSubPage = () => {
   const fetchCompanies = async () => {
     try {
       const response = await axios.get(
-        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}pms/company_setups.json?token=${token}`
       );
       const formattedCompanies = response.data.companies.map((company) => ({
         value: company.id,
@@ -734,7 +738,7 @@ const BillEntryListSubPage = () => {
       };
 
       const response = await axios.post(
-        `${baseURL}bill_entries?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}bill_entries?token=${token}`,
         payload
       );
       // alert("Bill entry submitted successfully!");

@@ -21,19 +21,19 @@ import { useLocation } from "react-router-dom";
 
 const BillBookingList = () => {
   const navigate = useNavigate(); // Initialize navigation
- const location = useLocation();
+  const location = useLocation();
   const urlParams = new URLSearchParams(location.search);
-   const token = urlParams.get("token");
+  const token = urlParams.get("token");
   // const token ="bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
 
   const [billData, setBillData] = useState([]); // State to store fetched data
   const [loading, setLoading] = useState(true); // State for loading
   const [error, setError] = useState(null); // State for error handling
-  const [meta, setMeta] = useState(null)
+  const [meta, setMeta] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10; // Items per page
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [activeTab, setActiveTab] = useState("total"); // State to track the active tab
 
   const [pageSize, setPageSize] = useState(10);
@@ -42,11 +42,10 @@ const BillBookingList = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [settingShow, setSettingShow] = useState(false);
   const [show, setShow] = useState(false);
-  const [activeSearch, setActiveSearch] = useState('');
+  const [activeSearch, setActiveSearch] = useState("");
   const [filterCompanyId, setFilterCompanyId] = useState("");
   const [filterProjectId, setFilterProjectId] = useState("");
   const [filterSiteId, setFilterSiteId] = useState("");
-
 
   // Fetch data from API
   // useEffect(() => {
@@ -71,7 +70,9 @@ const BillBookingList = () => {
           let formattedDate = "-";
           if (entry.created_at) {
             try {
-              formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+              formattedDate = new Date(entry.created_at)
+                .toISOString()
+                .slice(0, 10);
             } catch (e) {
               formattedDate = "-";
             }
@@ -86,11 +87,12 @@ const BillBookingList = () => {
             ...entry,
             created_at: formattedDate,
             status,
-          }
-        })
-      console.log("transform data:", transformedData)
+          };
+        }
+      );
+      console.log("transform data:", transformedData);
       setBillData(transformedData); // Set fetched data
-      setMeta(response.data.meta)
+      setMeta(response.data.meta);
       setTotalPages(response.data.meta.total_pages); // Set total pages
       setTotalEntries(response.data.meta.total_count);
       setLoading(false); // Stop loading
@@ -125,13 +127,10 @@ const BillBookingList = () => {
   const [siteOptions, setSiteOptions] = useState([]);
   // const [wingsOptions, setWingsOptions] = useState([]);
 
-
   // Fetch company data on component mount
   useEffect(() => {
     axios
-      .get(
-        `${baseURL}pms/company_setups.json?token=${token}`
-      )
+      .get(`${baseURL}pms/company_setups.json?token=${token}`)
       .then((response) => {
         setCompanies(response.data.companies);
       })
@@ -232,7 +231,7 @@ const BillBookingList = () => {
     setFilterCompanyId(companyId);
     setFilterProjectId(projectId);
     setFilterSiteId(siteId);
-    console.log("ids filter:", companyId, projectId, siteId)
+    console.log("ids filter:", companyId, projectId, siteId);
     const url = `${baseURL}bill_bookings?page=1&per_page=10&token=${token}&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
 
     // console.log("url:",url)
@@ -245,7 +244,9 @@ const BillBookingList = () => {
             let formattedDate = "-";
             if (entry.created_at) {
               try {
-                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                formattedDate = new Date(entry.created_at)
+                  .toISOString()
+                  .slice(0, 10);
               } catch (e) {
                 formattedDate = "-";
               }
@@ -260,8 +261,9 @@ const BillBookingList = () => {
               ...entry,
               created_at: formattedDate,
               status,
-            }
-          })
+            };
+          }
+        );
         setBillData(transformedData); // Set fetched data
         // setReconciliationData(response.data.data); // Update table data
         setTotalPages(response.data.meta.total_pages); // Update total pages
@@ -283,7 +285,6 @@ const BillBookingList = () => {
     setSearchKeyword("");
     setCurrentPage(1); // Go to first page
 
-
     // Fetch unfiltered data
     axios
       .get(`${baseURL}bill_bookings?page=1&per_page=10&token=${token}`)
@@ -294,7 +295,9 @@ const BillBookingList = () => {
             let formattedDate = "-";
             if (entry.created_at) {
               try {
-                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                formattedDate = new Date(entry.created_at)
+                  .toISOString()
+                  .slice(0, 10);
               } catch (e) {
                 formattedDate = "-";
               }
@@ -309,10 +312,11 @@ const BillBookingList = () => {
               ...entry,
               created_at: formattedDate,
               status,
-            }
-          })
+            };
+          }
+        );
         setBillData(transformedData); // Set fetched data
-        setMeta(response.data.meta)
+        setMeta(response.data.meta);
         setTotalPages(response.data.meta.total_pages); // Reset total pages
         setTotalEntries(response.data.meta.total_count); // Reset total entries
       })
@@ -320,40 +324,38 @@ const BillBookingList = () => {
         console.error("Error resetting data:", error);
       });
   };
-  //  bulk action 
-  //bulkaction options 
+  //  bulk action
+  //bulkaction options
   const options = [
     {
-      label: 'Select Status',
-      value: '',
+      label: "Select Status",
+      value: "",
     },
     {
-      label: 'Draft',
-      value: 'draft',
+      label: "Draft",
+      value: "draft",
     },
     {
-      label: 'Verified',
-      value: 'verified',
+      label: "Verified",
+      value: "verified",
     },
     {
-      label: 'Submitted',
-      value: 'submitted',
+      label: "Submitted",
+      value: "submitted",
     },
     {
-      label: 'Proceed',
-      value: 'proceed',
+      label: "Proceed",
+      value: "proceed",
     },
     {
-      label: 'Approved',
-      value: 'approved',
+      label: "Approved",
+      value: "approved",
     },
-
   ];
 
   const [fromStatus, setFromStatus] = useState("");
   const [toStatus, setToStatus] = useState("");
   const [remark, setRemark] = useState("");
-
 
   // Handle input changes
   const handleStatusChange = (selectedOption) => {
@@ -371,7 +373,6 @@ const BillBookingList = () => {
   const handleToStatusChange = (selectedOption) => {
     setToStatus(selectedOption.value);
   };
-
 
   const handleRemarkChange = (e) => {
     setRemark(e.target.value);
@@ -394,7 +395,7 @@ const BillBookingList = () => {
       to_status: toStatus,
       comments: remark,
     };
-    console.log("data for bulk action", data)
+    console.log("data for bulk action", data);
 
     // Send data to API using axios
     axios
@@ -403,23 +404,26 @@ const BillBookingList = () => {
         data
       )
       .then((response) => {
-        console.log('Success:', response.data);
-        alert('Status updated successfully ....')
+        console.log("Success:", response.data);
+        alert("Status updated successfully ....");
         fetchData(currentPage);
         // Handle success (e.g., show a success message, update UI, etc.)
       })
       .catch((error) => {
-        console.error('Error:', error);
+        console.error("Error:", error);
         // Handle error (e.g., show an error message)
       });
   };
 
   // Fetch the data when 'fromStatus' changes
   useEffect(() => {
-    if (fromStatus) { // Only fetch data if a status is selected
+    if (fromStatus) {
+      // Only fetch data if a status is selected
       setLoading(true); // Show loading state while fetching
       axios
-        .get(`${baseURL}bill_bookings?page=1&per_page=10&token=${token}&q[status_eq]=${fromStatus}`)
+        .get(
+          `${baseURL}bill_bookings?page=1&per_page=10&token=${token}&q[status_eq]=${fromStatus}`
+        )
         .then((response) => {
           const transformedData = response.data.bill_bookings.map(
             (entry, index) => {
@@ -427,7 +431,9 @@ const BillBookingList = () => {
               let formattedDate = "-";
               if (entry.created_at) {
                 try {
-                  formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                  formattedDate = new Date(entry.created_at)
+                    .toISOString()
+                    .slice(0, 10);
                 } catch (e) {
                   formattedDate = "-";
                 }
@@ -442,10 +448,11 @@ const BillBookingList = () => {
                 ...entry,
                 created_at: formattedDate,
                 status,
-              }
-            })
+              };
+            }
+          );
           setBillData(transformedData); // Set fetched data
-          setMeta(response.data.meta)
+          setMeta(response.data.meta);
           setTotalPages(response.data.meta.total_pages); // Reset total pages
           setTotalEntries(response.data.meta.total_count); // Reset total entries
         })
@@ -456,14 +463,14 @@ const BillBookingList = () => {
           setLoading(false); // Stop loading when request is complete
         });
     }
-  }, [fromStatus]);  // This will run every time 'fromStatus' changes
-
-
+  }, [fromStatus]); // This will run every time 'fromStatus' changes
 
   // State to track selected bill detail IDs
   const handleCheckboxChange = (boqDetailId) => {
     setSelectedBoqDetails((prevSelected) => {
-      const selectedArray = prevSelected ? prevSelected.split(",").map(Number) : [];
+      const selectedArray = prevSelected
+        ? prevSelected.split(",").map(Number)
+        : [];
       if (selectedArray.includes(boqDetailId)) {
         // If already selected, remove it from the string
         const updatedArray = selectedArray.filter((id) => id !== boqDetailId);
@@ -476,12 +483,13 @@ const BillBookingList = () => {
     });
   };
 
-  console.log("selected bill id array :", selectedBoqDetails)
+  console.log("selected bill id array :", selectedBoqDetails);
 
   //card filter
   const fetchFilteredData2 = (status) => {
-    const url = `${baseURL}bill_bookings?page=1&token=${token}${status ? `&q[status_eq]=${status}` : ""
-      }`;
+    const url = `${baseURL}bill_bookings?page=1&token=${token}${
+      status ? `&q[status_eq]=${status}` : ""
+    }`;
 
     axios
       .get(url)
@@ -492,7 +500,9 @@ const BillBookingList = () => {
             let formattedDate = "-";
             if (entry.created_at) {
               try {
-                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                formattedDate = new Date(entry.created_at)
+                  .toISOString()
+                  .slice(0, 10);
               } catch (e) {
                 formattedDate = "-";
               }
@@ -507,8 +517,9 @@ const BillBookingList = () => {
               ...entry,
               created_at: formattedDate,
               status,
-            }
-          })
+            };
+          }
+        );
         setBillData(transformedData);
         // setCreditNotes(response.data.credit_notes);
         setTotalPages(response.data.meta.total_pages); // Set total pages
@@ -532,7 +543,9 @@ const BillBookingList = () => {
           let formattedDate = "-";
           if (entry.created_at) {
             try {
-              formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+              formattedDate = new Date(entry.created_at)
+                .toISOString()
+                .slice(0, 10);
             } catch (e) {
               formattedDate = "-";
             }
@@ -547,8 +560,9 @@ const BillBookingList = () => {
             ...entry,
             created_at: formattedDate,
             status,
-          }
-        })
+          };
+        }
+      );
       setBillData(transformedData);
       // setCreditNotes(response.data.credit_notes);
       setMeta(response.data.meta);
@@ -562,10 +576,10 @@ const BillBookingList = () => {
     }
   };
 
-  //   column sort and setting 
+  //   column sort and setting
   const [columnVisibility, setColumnVisibility] = useState({
     srNo: true,
-     bill_id:true,
+    bill_id: true,
     invoice_number: true,
     mode_of_submission: true,
     company_name: true,
@@ -576,7 +590,7 @@ const BillBookingList = () => {
     po_number: true,
     created_at: true,
     accepted_at: true,
-   
+
     inventory_date: true,
     total_amount: true,
     bill_copies: true,
@@ -594,29 +608,33 @@ const BillBookingList = () => {
   });
 
   const allColumns = [
-
     {
       field: "srNo",
       headerName: "Sr. No.",
       width: 100,
     },
-    { field: "bill_id", headerName: "Bill ID", width: 150 ,
-  renderCell: (params) =>
+    {
+      field: "bill_id",
+      headerName: "Bill ID",
+      width: 150,
+      renderCell: (params) =>
         params.value && params.row.bill_entry_id ? (
-          <Link to={`/bill-entry-details/${params.row.bill_entry_id}?token=${token}`}>
+          <Link
+            to={`/bill-entry-details/${params.row.bill_entry_id}?token=${token}`}
+          >
             <span className="boq-id-link">{params.value}</span>
           </Link>
         ) : (
           "-"
         ),
-},
+    },
     {
       field: "invoice_number",
       headerName: "Invoice No.",
       width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
-          <Link to={`/bill-booking-details/${params.row.id}`}>
+          <Link to={`/bill-booking-details/${params.row.id}?token=${token}`}>
             <span className="boq-id-link">{params.value}</span>
           </Link>
         ) : (
@@ -651,7 +669,11 @@ const BillBookingList = () => {
     { field: "due", headerName: "Due", width: 150 },
     { field: "payment_due_date", headerName: "Due Date", width: 150 },
     { field: "certificate_no", headerName: "Certificate No.", width: 150 },
-    { field: "advance_adjust_amount", headerName: "Advance Adjust Amount", width: 200 },
+    {
+      field: "advance_adjust_amount",
+      headerName: "Advance Adjust Amount",
+      width: 200,
+    },
     { field: "payable_amount", headerName: "Payable Amount", width: 150 },
     { field: "paid", headerName: "Paid", width: 150 },
     { field: "balance", headerName: "Balance", width: 150 },
@@ -659,7 +681,6 @@ const BillBookingList = () => {
     { field: "overdue", headerName: "Overdue", width: 150 },
     { field: "assign_to", headerName: "Assign to", width: 150 },
     { field: "tat", headerName: "TAT", width: 150 },
-
   ];
   const columns = allColumns.filter((col) => columnVisibility[col.field]);
 
@@ -718,8 +739,7 @@ const BillBookingList = () => {
   const startEntry = (currentPage - 1) * pageSize + 1;
   const endEntry = Math.min(currentPage * pageSize, totalEntries);
 
-  console.log("selected bill id array :", selectedBoqDetails)
-
+  console.log("selected bill id array :", selectedBoqDetails);
 
   return (
     <>
@@ -734,11 +754,13 @@ const BillBookingList = () => {
                   <div
                     // className="content-box tab-button active"
                     data-tab="total"
-                    className={`content-box tab-button ${activeTab === "total" ? "active" : ""}`}
+                    className={`content-box tab-button ${
+                      activeTab === "total" ? "active" : ""
+                    }`}
                     onClick={() => {
                       if (activeTab !== "total") {
-                        setActiveTab("total")
-                        fetchFilteredData2("")
+                        setActiveTab("total");
+                        fetchFilteredData2("");
                       }
                     }}
                   >
@@ -749,30 +771,32 @@ const BillBookingList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    // className="content-box tab-button" 
+                    // className="content-box tab-button"
                     data-tab="draft"
-                    className={`content-box tab-button ${activeTab === "draft" ? "active" : ""}`}
+                    className={`content-box tab-button ${
+                      activeTab === "draft" ? "active" : ""
+                    }`}
                     onClick={() => {
                       if (activeTab !== "draft") {
-                        setActiveTab("draft")
-                        fetchFilteredData2("draft")
+                        setActiveTab("draft");
+                        fetchFilteredData2("draft");
                       }
                     }}
                   >
-                    <h4 className="content-box-title fw-semibold">
-                      Draft
-                    </h4>
+                    <h4 className="content-box-title fw-semibold">Draft</h4>
                     <p className="content-box-sub">{meta?.draft_count}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    // className="content-box tab-button" 
+                    // className="content-box tab-button"
                     data-tab="verified"
-                    className={`content-box tab-button ${activeTab === "verified" ? "active" : ""}`}
+                    className={`content-box tab-button ${
+                      activeTab === "verified" ? "active" : ""
+                    }`}
                     onClick={() => {
-                      setActiveTab("verified")
-                      fetchFilteredData2("verified")
+                      setActiveTab("verified");
+                      fetchFilteredData2("verified");
                     }}
                   >
                     <h4 className="content-box-title fw-semibold">
@@ -785,10 +809,12 @@ const BillBookingList = () => {
                   <div
                     // className="content-box tab-button"
                     data-tab="submitted"
-                    className={`content-box tab-button ${activeTab === "submitted" ? "active" : ""}`}
+                    className={`content-box tab-button ${
+                      activeTab === "submitted" ? "active" : ""
+                    }`}
                     onClick={() => {
-                      setActiveTab("submitted")
-                      fetchFilteredData2("submitted")
+                      setActiveTab("submitted");
+                      fetchFilteredData2("submitted");
                     }}
                   >
                     <h4 className="content-box-title fw-semibold">Submit</h4>
@@ -799,10 +825,12 @@ const BillBookingList = () => {
                   <div
                     // className="content-box tab-button"
                     data-tab="approved"
-                    className={`content-box tab-button ${activeTab === "approved" ? "active" : ""}`}
+                    className={`content-box tab-button ${
+                      activeTab === "approved" ? "active" : ""
+                    }`}
                     onClick={() => {
-                      setActiveTab("approved")
-                      fetchFilteredData2("approved")
+                      setActiveTab("approved");
+                      fetchFilteredData2("approved");
                     }}
                   >
                     <h4 className="content-box-title fw-semibold">Approved</h4>
@@ -813,10 +841,12 @@ const BillBookingList = () => {
                   <div
                     // className="content-box tab-button"
                     data-tab="proceed"
-                    className={`content-box tab-button ${activeTab === "proceed" ? "active" : ""}`}
+                    className={`content-box tab-button ${
+                      activeTab === "proceed" ? "active" : ""
+                    }`}
                     onClick={() => {
-                      setActiveTab("proceed")
-                      fetchFilteredData2("proceed")
+                      setActiveTab("proceed");
+                      fetchFilteredData2("proceed");
                     }}
                   >
                     <h4 className="content-box-title fw-semibold">Proceed</h4>
@@ -833,9 +863,7 @@ const BillBookingList = () => {
                 <div className="row">
                   <div className="col-md-3">
                     <div className="form-group">
-                      <label>
-                        Company
-                      </label>
+                      <label>Company</label>
 
                       <SingleSelector
                         options={companyOptions}
@@ -850,9 +878,7 @@ const BillBookingList = () => {
                   </div>
                   <div className="col-md-3">
                     <div className="form-group">
-                      <label>
-                        Project
-                      </label>
+                      <label>Project</label>
 
                       <SingleSelector
                         options={projects}
@@ -867,9 +893,7 @@ const BillBookingList = () => {
                   </div>
                   <div className="col-md-3">
                     <div className="form-group">
-                      <label>
-                        Sub-Project
-                      </label>
+                      <label>Sub-Project</label>
                       {/* Pass static data as options */}
                       <SingleSelector
                         options={siteOptions}
@@ -883,18 +907,20 @@ const BillBookingList = () => {
                     </div>
                   </div>
                   <div className="col-md-1 mt-4 d-flex justify-content-center">
-                    <button className="purple-btn2" onClick={fetchFilteredData}>Go</button>
+                    <button className="purple-btn2" onClick={fetchFilteredData}>
+                      Go
+                    </button>
                   </div>
                   <div className="col-md-1 mt-4 d-flex justify-content-center">
-                    <button className="purple-btn2" onClick={handleReset}>Reset</button>
+                    <button className="purple-btn2" onClick={handleReset}>
+                      Reset
+                    </button>
                   </div>
                 </div>
               </CollapsibleCard>
 
               <CollapsibleCard title="Bulk Action" isInitiallyCollapsed={true}>
-                <form
-                  onSubmit={handleSubmit}
-                >
+                <form onSubmit={handleSubmit}>
                   <div className="row align-items-center">
                     <div className="col-md-4">
                       <div className="form-group">
@@ -902,7 +928,9 @@ const BillBookingList = () => {
                         <SingleSelector
                           options={options}
                           // value={options.value}
-                          value={options.find(option => option.value === fromStatus)}
+                          value={options.find(
+                            (option) => option.value === fromStatus
+                          )}
                           onChange={handleStatusChange}
                           placeholder={`Select Status`} // Dynamic placeholder
                           classNamePrefix="react-select"
@@ -916,7 +944,9 @@ const BillBookingList = () => {
                           options={options}
                           // value={options.value}
                           onChange={handleToStatusChange}
-                          value={options.find(option => option.value === toStatus)}
+                          value={options.find(
+                            (option) => option.value === toStatus
+                          )}
                           placeholder={`Select Status`} // Dynamic placeholder
                           classNamePrefix="react-select"
                         />
@@ -957,12 +987,26 @@ const BillBookingList = () => {
                         placeholder="Type your keywords here"
                       />
                       <div className="input-group-append">
-                        <button type="button" className="btn btn-md btn-default"
+                        <button
+                          type="button"
+                          className="btn btn-md btn-default"
                           onClick={() => fetchSearchResults()}
                         >
-                          <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203" />
-                            <path d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z" fill="#8B0203" />
+                          <svg
+                            width={16}
+                            height={16}
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
+                              fill="#8B0203"
+                            />
+                            <path
+                              d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
+                              fill="#8B0203"
+                            />
                           </svg>
                         </button>
                       </div>
@@ -999,8 +1043,11 @@ const BillBookingList = () => {
                     >
                       <SettingIcon />
                     </button>
-                    <button className="purple-btn2"
-                      onClick={() => navigate("/bill-booking-create")}
+                    <button
+                      className="purple-btn2"
+                      onClick={() =>
+                        navigate(`/bill-booking-create?token=${token}`)
+                      }
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -1029,7 +1076,6 @@ const BillBookingList = () => {
                   overflowY: "hidden",
                 }}
               >
-
                 <DataGrid
                   rows={getTransformedRows()}
                   columns={columns}
@@ -1049,7 +1095,6 @@ const BillBookingList = () => {
                     setSelectedBoqDetails(ids.map(String));
                     console.log("Selected Row IDs:", ids); // This will log the selected row ids array
                   }}
-
                   onRowSelectionModelChange={(ids) => {
                     setSelectedBoqDetails(ids);
                     console.log("Selected Row IDs: 2", ids);
@@ -1077,9 +1122,10 @@ const BillBookingList = () => {
                       color: "#8b0203",
                     },
                     // Black for header (select all) checkbox, even when checked
-                    "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root": {
-                      color: "#fff",
-                    },
+                    "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root":
+                      {
+                        color: "#fff",
+                      },
                     // Make checkboxes smaller
                     "& .MuiCheckbox-root .MuiSvgIcon-root": {
                       fontSize: "1.1rem", // adjust as needed (default is 1.5rem)
@@ -1090,7 +1136,11 @@ const BillBookingList = () => {
 
               <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                 <ul className="pagination justify-content-center d-flex">
-                  <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
                     <button
                       className="page-link"
                       onClick={() => handlePageChange(1)}
@@ -1099,7 +1149,11 @@ const BillBookingList = () => {
                       First
                     </button>
                   </li>
-                  <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
                     <button
                       className="page-link"
                       onClick={() => handlePageChange(currentPage - 1)}
@@ -1112,7 +1166,9 @@ const BillBookingList = () => {
                   {Array.from({ length: totalPages }, (_, index) => (
                     <li
                       key={index + 1}
-                      className={`page-item ${currentPage === index + 1 ? "active" : ""}`}
+                      className={`page-item ${
+                        currentPage === index + 1 ? "active" : ""
+                      }`}
                     >
                       <button
                         className="page-link"
@@ -1124,7 +1180,9 @@ const BillBookingList = () => {
                   ))}
 
                   <li
-                    className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -1135,7 +1193,9 @@ const BillBookingList = () => {
                     </button>
                   </li>
                   <li
-                    className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -1148,12 +1208,10 @@ const BillBookingList = () => {
                 </ul>
                 <div>
                   Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                  {Math.min(currentPage * itemsPerPage, totalEntries)} of {totalEntries}{" "}
-                  entries
+                  {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
+                  {totalEntries} entries
                 </div>
               </div>
-
-
             </div>
           </div>
           <div className="tab-content1" id="draft-content"></div>
@@ -1174,7 +1232,6 @@ const BillBookingList = () => {
           <p>Loading...</p>
         </div>
       )}
-
 
       {/* Settings Modal */}
       <Modal
