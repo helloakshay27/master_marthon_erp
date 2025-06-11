@@ -13,6 +13,8 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 const BillEntryVendorList = () => {
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const [selectedValue, setSelectedValue] = useState("");
   const [billEntries, setBillEntries] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -45,7 +47,7 @@ const BillEntryVendorList = () => {
     company_name: true,
     project_name: true,
     site_name: true,
-    pms_supplier: true,
+    supplier_name: true,
     uam_number: true,
     po_number: true,
     created_at: true,
@@ -85,7 +87,7 @@ const BillEntryVendorList = () => {
       width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
-          <Link to={`/bill-entry-details/${params.row.id}`}>
+          <Link to={`/bill-entry-details/${params.row.id}?token=${token}`}>
             <span className="boq-id-link">{params.value}</span>
           </Link>
         ) : (
@@ -101,7 +103,7 @@ const BillEntryVendorList = () => {
     { field: "company_name", headerName: "Company", width: 180 },
     { field: "project_name", headerName: "Project", width: 150 },
     { field: "site_name", headerName: "Sub Project", width: 150 },
-    { field: "pms_supplier", headerName: "Vendor Name", width: 150 },
+    { field: "supplier_name", headerName: "Vendor Name", width: 150 },
     { field: "uam_number", headerName: "UAM No.", width: 150 },
     { field: "po_number", headerName: "PO No.", width: 150 },
     {
@@ -120,7 +122,7 @@ const BillEntryVendorList = () => {
       width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
-          <Link to={`/bill-entry-details/${params.row.id}`}>
+          <Link to={`/bill-entry-details/${params.row.id}?token=${token}`}>
             <span className="boq-id-link">{params.value}</span>
           </Link>
         ) : (
@@ -180,9 +182,7 @@ const BillEntryVendorList = () => {
   // Fetch companies on component mount
   useEffect(() => {
     axios
-      .get(
-        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      )
+      .get(`${baseURL}pms/company_setups.json?token=${token}`)
       .then((response) => {
         setCompanies(response.data.companies);
       })
@@ -251,7 +251,7 @@ const BillEntryVendorList = () => {
   //   const fetchAllBillCount = async () => {
   //     try {
   //       const response = await axios.get(
-  //         `${baseURL}bill_entries?page=1&per_page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //         `${baseURL}bill_entries?page=1&per_page=1&token=${token}`
   //       );
   //       setAllBillCount(response.data.meta.total_count || 0);
   //     } catch (error) {
@@ -271,7 +271,7 @@ const BillEntryVendorList = () => {
 
   //   axios
   //     .get(
-  //       `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${statusQuery}`
+  //       `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=${token}${statusQuery}`
   //     )
   //     .then((response) => {
   //       const transformedData = response.data.bill_entries.map(
@@ -304,7 +304,7 @@ const BillEntryVendorList = () => {
   //   const siteId = selectedSite?.value || "";
   //   const search = searchKeyword || "";
 
-  //   const url = `${baseURL}bill_entries?page=1&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${companyId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${projectId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_cont]=${siteId}`;
+  //   const url = `${baseURL}bill_entries?page=1&per_page=${pageSize}&token=${token}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${companyId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${projectId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_cont]=${siteId}`;
 
   //   axios
   //     .get(url)
@@ -334,7 +334,7 @@ const BillEntryVendorList = () => {
 
   //   axios
   //     .get(
-  //       `${baseURL}bill_entries?page=1&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //       `${baseURL}bill_entries?page=1&per_page=${pageSize}&token=${token}`
   //     )
   //     .then((response) => {
   //       const transformedData = response.data.bill_entries.map(
@@ -365,7 +365,7 @@ const BillEntryVendorList = () => {
       setLoading(true);
       try {
         // Build base URL
-        let url = `${baseURL}bill_entries?page=${currentPage}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+        let url = `${baseURL}bill_entries?page=${currentPage}&per_page=${pageSize}&token=${token}`;
 
         // Add filters
         if (
@@ -513,7 +513,7 @@ const BillEntryVendorList = () => {
   //       setLoading(true);
 
   //       const response = await axios.get(
-  //         `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_ord
+  //         `${baseURL}bill_entries?page=${page}&per_page=${pageSize}&token=${token}&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_ord
   // er_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inve
   // ntories_mor_inventory_material_order_request_company_id_cont]
   //         =${search}`
