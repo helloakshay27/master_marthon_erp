@@ -12,9 +12,12 @@ import { useParams } from "react-router-dom";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
+import { useLocation } from "react-router-dom";
 const MiscellaneousBillCreate = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const [showRows, setShowRows] = useState(false);
   const [taxesRowDetails, settaxesRowDetails] = useState(false);
   const [selectPOModal, setselectPOModal] = useState(false);
@@ -74,7 +77,7 @@ const MiscellaneousBillCreate = () => {
   const fetchProjects = async (companyId) => {
     try {
       const response = await axios.get(
-        `${baseURL}projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}`
+        `${baseURL}projects.json?token=${token}&q[company_id_eq]=${companyId}`
       );
       setProjects(
         response.data.projects.map((project) => ({
@@ -90,7 +93,7 @@ const MiscellaneousBillCreate = () => {
   const fetchSites = async (projectId) => {
     try {
       const response = await axios.get(
-        `${baseURL}sites.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[project_id_eq]=${projectId}`
+        `${baseURL}sites.json?token=${token}&q[project_id_eq]=${projectId}`
       );
       setSites(
         response.data.sites.map((site) => ({
@@ -112,7 +115,7 @@ const MiscellaneousBillCreate = () => {
   const fetchCompanies = async () => {
     try {
       const response = await axios.get(
-        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}pms/company_setups.json?token=${token}`
       );
       const formattedCompanies = response.data.companies.map((company) => ({
         value: company.id,
@@ -237,7 +240,7 @@ const MiscellaneousBillCreate = () => {
     const fetchTaxTypes = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/taxes_dropdown?token=${token}`
         );
         setTaxTypes(response.data.taxes); // Assuming the API returns an array of tax types
       } catch (error) {
@@ -302,7 +305,7 @@ const MiscellaneousBillCreate = () => {
     const fetchTaxTypes = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
         );
         setDeductionTypes(response.data.taxes); // Assuming the API returns an array of tax types
       } catch (error) {
@@ -395,7 +398,7 @@ const MiscellaneousBillCreate = () => {
     const fetchSuppliers = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}miscellaneous_bills/suppliers_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}miscellaneous_bills/suppliers_list.json?token=${token}`
         );
         setSuppliers(response.data);
       } catch (error) {
@@ -413,7 +416,7 @@ const MiscellaneousBillCreate = () => {
       try {
         // Always fetch bill entry options
         const billEntryResponse = await axios.get(
-          `${baseURL}miscellaneous_bills/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}miscellaneous_bills/bill_entry_list?token=${token}`
         );
         console.log("bill entry res:", billEntryResponse.data.be_list);
         if (
@@ -433,7 +436,7 @@ const MiscellaneousBillCreate = () => {
             setWithoutBillEntry(false);
             // First fetch specific bill entry details
             const response = await axios.get(
-              `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+              `${baseURL}bill_entries/${id}?token=${token}`
             );
 
             console.log("res with id :", response.data);
@@ -469,7 +472,7 @@ const MiscellaneousBillCreate = () => {
       const fetchBillEntryDetails = async () => {
         try {
           const response = await axios.get(
-            `${baseURL}bill_entries/${selectedBillEntry.value}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}bill_entries/${selectedBillEntry.value}?token=${token}`
           );
           const data = response.data;
           console.log("bill entry all data:", data);
@@ -582,14 +585,14 @@ const MiscellaneousBillCreate = () => {
 
     try {
       const response = await axios.post(
-        `${baseURL}miscellaneous_bills.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}miscellaneous_bills.json?token=${token}`,
         payload
       );
       console.log("Response:", response.data);
       if (response.status === 201) {
         alert("Miscellaneous Bill submitted successfully!");
         setLoading2(false);
-        navigate("/miscellaneous-bill-list"); // Navigate to the list page
+        navigate(`/miscellaneous-bill-list?token=${token}`); // Navigate to the list page
       }
     } catch (error) {
       console.error("Error submitting Miscellaneous Bill:", error);
