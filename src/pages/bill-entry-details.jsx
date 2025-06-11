@@ -9,12 +9,17 @@ import { baseURL } from "../confi/apiDomain";
 import { useNavigate } from "react-router-dom";
 import { Modal } from "react-bootstrap";
 import { DownloadIcon } from "../components";
+import { useLocation } from "react-router-dom";
 
 // Then use id in your API URL
 
 const BillEntryDetails = () => {
   const [billDetails, setBillDetails] = useState(null);
   const { id } = useParams();
+   const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
+
   const [status, setStatus] = useState(""); // A
   const [loading, setLoading] = useState(false); // Add loading state
   const [editableBillNo, setEditableBillNo] = useState("");
@@ -83,7 +88,7 @@ const BillEntryDetails = () => {
     const fetchBillDetails = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}bill_entries/${id}?token=${token}`
         );
         setBillDetails(response.data);
         setStatus(response.data.status);
@@ -208,7 +213,7 @@ const BillEntryDetails = () => {
       };
 
       const response = await axios.patch(
-        `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}bill_entries/${id}?token=${token}`,
         payload
       );
 
