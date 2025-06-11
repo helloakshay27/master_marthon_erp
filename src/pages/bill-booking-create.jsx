@@ -1864,7 +1864,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4 mt-3">
+                  <div className="col-md-3 mt-3">
                     <div className="form-group">
                       <label>GSTIN</label>
                       <input
@@ -1876,9 +1876,9 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  {/* <div className="col-md-1 pt-4 mt-3">
+                  <div className="col-md-1 pt-4 mt-3">
                     <p className="mt-2 text-decoration-underline">Verify</p>
-                  </div> */}
+                  </div>
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>PAN</label>
@@ -3856,10 +3856,10 @@ const BillBookingCreate = () => {
                   <td className="" />
                   <td className="text-start">{calculatePayableAmount()}</td>
                   <td />
-                </tr>
+                </tr>``
               </tbody>
             </table>
-            <div className="d-flex justify-content-center mt-3">
+            <div className="d-flex justify-content-center mt-3 mb-2">
               <button
                 className="purple-btn2"
                 // onClick={handleSubmit}
@@ -3867,7 +3867,7 @@ const BillBookingCreate = () => {
                 onClick={handleTaxChargesSubmit}
               >
                 {/* {isSubmitting ? "Submitting..." : "Submit"} */}
-                Submitt
+                Submit
               </button>
             </div>
           </div>

@@ -17,9 +17,13 @@ import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import { Link } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
+import { useLocation } from "react-router-dom";
 
 const BillBookingList = () => {
   const navigate = useNavigate(); // Initialize navigation
+ const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
 
   const [billData, setBillData] = useState([]); // State to store fetched data
   const [loading, setLoading] = useState(true); // State for loading
@@ -52,7 +56,7 @@ const BillBookingList = () => {
       // const response = await axios.get(
       //   `${baseURL}bill_bookings?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       // );
-      let url = `${baseURL}bill_bookings?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+      let url = `${baseURL}bill_bookings?page=${page}&per_page=10&token=${token}`;
       if (activeSearch) {
         url += `&q[company_id_or_project_id_or_site_id_or_pms_supplier_id_or_invoice_number_or_einvoice_or_inventory_date_or_invoice_amount_or_type_of_certificate_or_department_id_or_other_deductions_or_other_deduction_remarks_or_other_additions_or_other_addition_remarks_or_retention_per_or_retention_amount_or_total_value_or_status_or_payee_name_or_payment_mode_or_payment_due_date_or_created_by_id_or_created_at_or_updated_at_or_total_amount_or_payable_amount_or_remark_or_base_cost_or_all_inclusive_cost_or_other_deduction_or_po_type_cont]=${activeSearch}`;
       }
@@ -125,7 +129,7 @@ const BillBookingList = () => {
   useEffect(() => {
     axios
       .get(
-        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}pms/company_setups.json?token=${token}`
       )
       .then((response) => {
         setCompanies(response.data.companies);
@@ -228,7 +232,7 @@ const BillBookingList = () => {
     setFilterProjectId(projectId);
     setFilterSiteId(siteId);
     console.log("ids filter:", companyId, projectId, siteId)
-    const url = `${baseURL}bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
+    const url = `${baseURL}bill_bookings?page=1&per_page=10&token=${token}&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
 
     // console.log("url:",url)
     axios
@@ -281,7 +285,7 @@ const BillBookingList = () => {
 
     // Fetch unfiltered data
     axios
-      .get(`${baseURL}bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      .get(`${baseURL}bill_bookings?page=1&per_page=10&token=${token}`)
       .then((response) => {
         const transformedData = response.data.bill_bookings.map(
           (entry, index) => {
@@ -394,7 +398,7 @@ const BillBookingList = () => {
     // Send data to API using axios
     axios
       .patch(
-        `${baseURL}bill_bookings/update_bulk_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}bill_bookings/update_bulk_status.json?token=${token}`,
         data
       )
       .then((response) => {
@@ -414,7 +418,7 @@ const BillBookingList = () => {
     if (fromStatus) { // Only fetch data if a status is selected
       setLoading(true); // Show loading state while fetching
       axios
-        .get(`${baseURL}bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[status_eq]=${fromStatus}`)
+        .get(`${baseURL}bill_bookings?page=1&per_page=10&token=${token}&q[status_eq]=${fromStatus}`)
         .then((response) => {
           const transformedData = response.data.bill_bookings.map(
             (entry, index) => {
@@ -475,7 +479,7 @@ const BillBookingList = () => {
 
   //card filter
   const fetchFilteredData2 = (status) => {
-    const url = `${baseURL}bill_bookings?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${status ? `&q[status_eq]=${status}` : ""
+    const url = `${baseURL}bill_bookings?page=1&token=${token}${status ? `&q[status_eq]=${status}` : ""
       }`;
 
     axios
@@ -519,7 +523,7 @@ const BillBookingList = () => {
     try {
       // setLoading(true);
       const response = await axios.get(
-        `${baseURL}bill_bookings?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_or_project_id_or_site_id_or_pms_supplier_id_or_invoice_number_or_einvoice_or_inventory_date_or_invoice_amount_or_type_of_certificate_or_department_id_or_other_deductions_or_other_deduction_remarks_or_other_additions_or_other_addition_remarks_or_retention_per_or_retention_amount_or_total_value_or_status_or_payee_name_or_payment_mode_or_payment_due_date_or_created_by_id_or_created_at_or_updated_at_or_total_amount_or_payable_amount_or_remark_or_base_cost_or_all_inclusive_cost_or_other_deduction_or_po_type_cont]=${searchKeyword}`
+        `${baseURL}bill_bookings?page=1&per_page=10&token=${token}&q[company_id_or_project_id_or_site_id_or_pms_supplier_id_or_invoice_number_or_einvoice_or_inventory_date_or_invoice_amount_or_type_of_certificate_or_department_id_or_other_deductions_or_other_deduction_remarks_or_other_additions_or_other_addition_remarks_or_retention_per_or_retention_amount_or_total_value_or_status_or_payee_name_or_payment_mode_or_payment_due_date_or_created_by_id_or_created_at_or_updated_at_or_total_amount_or_payable_amount_or_remark_or_base_cost_or_all_inclusive_cost_or_other_deduction_or_po_type_cont]=${searchKeyword}`
       );
       const transformedData = response.data.bill_bookings.map(
         (entry, index) => {

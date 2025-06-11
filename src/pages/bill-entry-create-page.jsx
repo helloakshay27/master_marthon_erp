@@ -1114,7 +1114,7 @@ const BillEntryListSubPage = () => {
 
                 <div className="col-md-3 mt-2 ">
                   <div className="form-group">
-                    <label>Bill Date</label>
+                    <label>Invoice Date</label>
                     <input
                       className="form-control"
                       type="date"
@@ -1128,7 +1128,7 @@ const BillEntryListSubPage = () => {
 
                 <div className="col-md-3 mt-2 ">
                   <div className="form-group">
-                    <label>Bill Number</label>
+                    <label>Invoice Number</label>
                     <input
                       className="form-control"
                       type="text"
