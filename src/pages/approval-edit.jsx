@@ -266,6 +266,37 @@ const ApprovalEdit = () => {
     }
   };
 
+  const formatModuleLabel = (key) => {
+    // Special cases for acronyms
+    const acronyms = {
+      boq: "BOQ",
+      mor: "MOR",
+      po: "PO",
+      grn: "GRN",
+    };
+
+    // Split the string by underscores
+    const words = key.split("_");
+
+    return words
+      .map((word) => {
+        // Check if word is an acronym
+        const lowerWord = word.toLowerCase();
+        if (acronyms[lowerWord]) {
+          return acronyms[lowerWord];
+        }
+
+        // Handle words containing 'mor'
+        if (lowerWord.includes("mor")) {
+          return lowerWord.replace("mor", "MOR").toUpperCase();
+        }
+
+        // Capitalize first letter of other words
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      })
+      .join(" ");
+  };
+
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
@@ -317,7 +348,8 @@ const ApprovalEdit = () => {
             ...(dropdownData.approval_types
               ? Object.entries(dropdownData.approval_types).map(
                   ([key, value]) => ({
-                    label: key.replace(/_/g, " "), // Format label
+                    // label: key.replace(/_/g, " "), // Format label
+                    label: formatModuleLabel(key), // Format the label (e.g.,
                     value: value,
                   })
                 )

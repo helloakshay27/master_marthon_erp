@@ -193,6 +193,36 @@ const InvoiceApproval = () => {
         }))
       : [];
 
+  const formatModuleLabel = (key) => {
+    // Special cases for acronyms
+    const acronyms = {
+      boq: "BOQ",
+      mor: "MOR",
+      po: "PO",
+      grn: "GRN",
+    };
+
+    // Split the string by underscores
+    const words = key.split("_");
+
+    return words
+      .map((word) => {
+        // Check if word is an acronym
+        const lowerWord = word.toLowerCase();
+        if (acronyms[lowerWord]) {
+          return acronyms[lowerWord];
+        }
+
+        // Handle words containing 'mor'
+        if (lowerWord.includes("mor")) {
+          return lowerWord.replace("mor", "MOR").toUpperCase();
+        }
+
+        // Capitalize first letter of other words
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      })
+      .join(" ");
+  };
   /// Empty dependency array to run only once on mount
   useEffect(() => {
     const fetchDropdownData = async () => {
@@ -204,9 +234,7 @@ const InvoiceApproval = () => {
           fetch(
             `${baseURL}/pms/admin/invoice_approvals/dropdown_list.json?token=${token}`
           ),
-          fetch(
-            `${baseURL}/pms/inventory_types.json?token=${token}`
-          ),
+          fetch(`${baseURL}/pms/inventory_types.json?token=${token}`),
         ]);
         // if (!response.ok) throw new Error("Failed to fetch dropdown data");
 
@@ -232,7 +260,8 @@ const InvoiceApproval = () => {
           modules: dropdownData.approval_types
             ? Object.entries(dropdownData.approval_types).map(
                 ([key, value]) => ({
-                  label: key.replace(/_/g, " "), // Format the label (e.g., "material_order_request" → "Material Order Request")
+                  label: formatModuleLabel(key), // Format the label (e.g.,
+                  // label: key.replace(/_/g, " "), // Format the label (e.g., "material_order_request" → "Material Order Request")
                   value: value, // Assign the corresponding value
                 })
               )
@@ -260,9 +289,7 @@ const InvoiceApproval = () => {
 
   useEffect(() => {
     axios
-      .get(
-        `${baseURL}/pms/company_setups.json?token=${token}`
-      )
+      .get(`${baseURL}/pms/company_setups.json?token=${token}`)
       .then((response) => {
         setCompanies(response.data.companies);
       })
@@ -843,7 +870,7 @@ const InvoiceApproval = () => {
         // alert("Approval created successfully!");
 
         setTimeout(() => {
-          navigate("/approval-materics"); // Change route as per your app
+          navigate(`/approval-materics?token=${token}`); // Change route as per your app
         }, 500);
         setTimeout(() => {
           alert("Approval created successfully!");
