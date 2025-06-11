@@ -9,9 +9,12 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { SingleValue } from "react-select/animated";
 import { baseURL } from "../confi/apiDomain";
+import { useLocation } from "react-router-dom";
 
 const ApprovalMatrics = () => {
   const [approvals, setApprovals] = useState([]);
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
 
   const [companies, setCompanies] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -97,7 +100,7 @@ const ApprovalMatrics = () => {
   //   const fetchApprovals = async () => {
   //     try {
   //       const response = await fetch(
-  //         `${baseURL}/pms/admin/invoice_approvals.json?q[approval_type_not_eq]=vendor_category&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${pagination.current_page}&page_size=${pageSize}`
+  //         `${baseURL}/pms/admin/invoice_approvals.json?q[approval_type_not_eq]=vendor_category&token=${token}&page=${pagination.current_page}&page_size=${pageSize}`
   //       );
 
   //       if (!response.ok) {
@@ -154,7 +157,7 @@ const ApprovalMatrics = () => {
         // queryParams.append("page_size", 10);
         queryParams.append("page_size", pageSize);
 
-        const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+        const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=${token}`;
 
         console.log("API URL (Pagination with Filters):", apiUrl);
 
@@ -181,22 +184,51 @@ const ApprovalMatrics = () => {
   }, [pagination.current_page]);
 
   const handleEditClick = (id) => {
-    navigate(`/approval_edit/${id}`);
+    navigate(`/approval_edit/${id}?token=${token}`);
+  };
+
+  const formatModuleLabel = (key) => {
+    // Special cases for acronyms
+    const acronyms = {
+      boq: "BOQ",
+      mor: "MOR",
+      po: "PO",
+      grn: "GRN",
+    };
+
+    // Split the string by underscores
+    const words = key.split("_");
+
+    return words
+      .map((word) => {
+        // Check if word is an acronym
+        const lowerWord = word.toLowerCase();
+        if (acronyms[lowerWord]) {
+          return acronyms[lowerWord];
+        }
+
+        // Handle words containing 'mor'
+        if (lowerWord.includes("mor")) {
+          return lowerWord.replace("mor", "MOR").toUpperCase();
+        }
+
+        // Capitalize first letter of other words
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      })
+      .join(" ");
   };
 
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
         // const response = await fetch(
-        //   "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        //   "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=${token}"
         // );
         const [dropdownResponse, materialTypeResponse] = await Promise.all([
           fetch(
-            `${baseURL}/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}/pms/admin/invoice_approvals/dropdown_list.json?token=${token}`
           ),
-          fetch(
-            `${baseURL}/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-          ),
+          fetch(`${baseURL}/pms/inventory_types.json?token=${token}`),
         ]);
         // if (!response.ok) throw new Error("Failed to fetch dropdown data");
 
@@ -222,7 +254,7 @@ const ApprovalMatrics = () => {
           modules: dropdownData.approval_types
             ? Object.entries(dropdownData.approval_types).map(
                 ([key, value]) => ({
-                  label: key.replace(/_/g, " "), // Format the label (e.g., "material_order_request" → "Material Order Request")
+                  label: formatModuleLabel(key), // Format the label (e.g., "material_order_request" → "Material Order Request")
                   value: value, // Assign the corresponding value
                 })
               )
@@ -250,9 +282,7 @@ const ApprovalMatrics = () => {
 
   useEffect(() => {
     axios
-      .get(
-        `${baseURL}/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      )
+      .get(`${baseURL}/pms/company_setups.json?token=${token}`)
       .then((response) => {
         setCompanies(response.data.companies);
       })
@@ -364,7 +394,7 @@ const ApprovalMatrics = () => {
     queryParams.append("page_size", pageSize); // Adjust page size as needed
 
     // API URL with query params
-    const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+    const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=${token}`;
 
     console.log("API URL:", apiUrl); // Debugging
 
@@ -411,7 +441,7 @@ const ApprovalMatrics = () => {
 
     try {
       const response = await fetch(
-        `${baseURL}/pms/admin/invoice_approvals.json?q[approval_type_not_eq]=vendor_category&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&page_size=${pageSize}`
+        `${baseURL}/pms/admin/invoice_approvals.json?q[approval_type_not_eq]=vendor_category&token=${token}&page=1&page_size=${pageSize}`
       );
       if (!response.ok) throw new Error("Failed to fetch initial data");
 
@@ -500,7 +530,7 @@ const ApprovalMatrics = () => {
   //   queryParams.append("page", page);
   //   queryParams.append("page_size", pageSize);
 
-  //   const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+  //   const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=${token}`;
 
   //   console.log("API URL (Pagination):", apiUrl);
 
@@ -549,7 +579,7 @@ const ApprovalMatrics = () => {
     queryParams.append("page", page);
     queryParams.append("page_size", pageSize);
 
-    const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+    const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=${token}`;
 
     console.log("API URL (Pagination):", apiUrl);
 
