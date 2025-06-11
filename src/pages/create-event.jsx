@@ -10,7 +10,7 @@ import {
 } from "../components";
 import { baseURL } from "../confi/apiDomain";
 import { citiesList, participantsTabColumns } from "../constant/data";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import PopupBox from "../components/base/Popup/Popup";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -92,9 +92,15 @@ export default function CreateEvent() {
   });
   const [companyList, setCompanyList] = useState([]);
 
+  const location = useLocation()
+
+
+
   useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     fetch(
-      `${baseURL}/rfq/events/company_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      `${baseURL}/rfq/events/company_list?token=${token}` // Use the token from URL params
     )
       .then((response) => response.json())
       .then((data) =>
@@ -270,12 +276,14 @@ export default function CreateEvent() {
   const [loading, setLoading] = useState(false);
 
   const fetchData = async (page = 1, searchTerm = "", selectedCity = "") => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     if (searchTerm == "") {
     }
     setLoading(true);
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
+        `${baseURL}rfq/events/vendor_list?token=${token}&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
       );
       const data = await response.json();
 
@@ -654,9 +662,12 @@ export default function CreateEvent() {
       },
     };
 
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
+
     try {
       const response = await fetch(
-        `${baseURL}rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}rfq/events?token=${token}`,
         {
           method: "POST",
           headers: {
@@ -700,8 +711,10 @@ export default function CreateEvent() {
   const [createdEventInfo, setCreatedEventInfo] = useState({ event_title: "", event_no: "" });
 
   const handleSuccessModalClose = () => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     setShowSuccessModal(false);
-    navigate("/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414");
+    navigate(`/event-list?token=${token}`);
   };
 
   useEffect(() => {
@@ -750,9 +763,11 @@ export default function CreateEvent() {
 
   // Fetch terms and conditions from the API
   const fetchTermsAndConditions = async () => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/terms_and_conditions?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+        `${baseURL}rfq/events/terms_and_conditions?token=${token}&page=1`
       );
       const data = await response.json();
       const termsList = data.list.map((term) => ({
@@ -805,10 +820,11 @@ export default function CreateEvent() {
     if (Object.keys(errors).length > 0) return;
 
     setIsInvite(true);
-
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&add_vendor=true&organization_name=${inviteVendorData?.organization}&company_id=${inviteVendorData?.company}`,
+        `${baseURL}rfq/events/3/invite_vendor?token=${token}&add_vendor=true&organization_name=${inviteVendorData?.organization}&company_id=${inviteVendorData?.company}`,
         {
           method: "POST",
           headers: {
@@ -1382,8 +1398,10 @@ export default function CreateEvent() {
                   <button
                     className="purple-btn1 w-100"
                     onClick={() => {
+                      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
                       navigate(
-                        "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414/event-list"
+                        `/event-list?token=${token}/event-list`
                       );
                     }}
                   >

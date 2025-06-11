@@ -83,9 +83,11 @@ export default function OverviewTab({
 
   useEffect(() => {
     const fetchSections = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/material_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/material_types?token=${token}`
         );
 
         if (response.data && Array.isArray(response.data.inventory_types)) {
@@ -106,11 +108,13 @@ export default function OverviewTab({
   }, []);
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     if (!activityLogAccordion) return;
     setActivityLogsLoading(true);
     axios
       .get(
-        `${baseURL}rfq/events/${eventId}/activity_logs?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}rfq/events/${eventId}/activity_logs?token=${token}`
       )
       .then((res) => {
         setActivityLogs(res.data.activity_logs || []);
@@ -169,9 +173,11 @@ export default function OverviewTab({
 
   useEffect(() => {
     const fetchParticipationSummary = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/${eventId}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/event_participate_summary?token=${token}`
         );
         setParticipationSummary(response.data);
       } catch (err) {
@@ -180,9 +186,11 @@ export default function OverviewTab({
     };
 
     const fetchAdditionalFields = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/${eventId}/applied_event_templates?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/applied_event_templates?token=${token}`
         );
         const additionalFields =
           response.data.applied_bid_material_template_fields.map((field) => ({

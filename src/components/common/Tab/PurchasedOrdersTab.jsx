@@ -13,9 +13,11 @@ export default function PurchasedOrdersTab() {
     useEffect(() => {
         const fetchPurchaseOrders = async () => {
             setPurchaseOrdersLoading(true);
+            const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
             try {
                 const response = await axios.get(
-                    `${baseURL}rfq/events/${eventId}/purchase_orders?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                    `${baseURL}rfq/events/${eventId}/purchase_orders?token=${token}`
                 );
                 console.log("Purchase Orders:", response.data);
                 setPurchaseOrders(response.data);

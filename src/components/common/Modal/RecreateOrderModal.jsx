@@ -46,10 +46,12 @@ const RecreateOrderModal = ({ show, handleClose }) => {
   // Fetch data from API
   useEffect(() => {
     const fetchTableData = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         setIsLoading(true);
         const response = await fetch(
-          `${baseURL}rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `${baseURL}rfq/events/${eventId}?token=${token}&page=1`
         );
         const result = await response.json();
         console.log("API Response Structure", result); // Inspect the API response structure
@@ -144,8 +146,10 @@ const RecreateOrderModal = ({ show, handleClose }) => {
     console.log("Dynamic Payload:", payload);
 
     try {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       const response = await fetch(
-        `${baseURL}rfq/events?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}rfq/events?token=${token}`,
         {
           method: "POST",
           headers: {

@@ -23,9 +23,11 @@ const RejectedBidsModal = ({ show, handleClose }) => {
 
   // Fetch the rejected bids data
   const fetchRejectedBids = async () => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/${eventId}/rejected_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`
+        `${baseURL}rfq/events/${eventId}/rejected_bids?token=${token}&event_vendor_id=${vendorId}`
       );
       const data = await response.json();
 

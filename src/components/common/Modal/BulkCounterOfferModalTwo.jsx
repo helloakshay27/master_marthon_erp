@@ -46,11 +46,14 @@ export default function BulkCounterOfferModalTwo({
   const [activityLogsLoading, setActivityLogsLoading] = useState(false);
 
   useEffect(() => {
+    
+const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     // if (!activityLogAccordion) return;
     setActivityLogsLoading(true);
     axios
       .get(
-        `${baseURL}rfq/events/${eventId}/activity_logs?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}rfq/events/${eventId}/activity_logs?token=${token}`
       )
       .then((res) => {
         setActivityLogs(res.data.activity_logs || []);
@@ -64,9 +67,11 @@ export default function BulkCounterOfferModalTwo({
   useEffect(() => {
     async function fetchMinBidPrice() {
       if (!eventId) return;
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const res = await fetch(
-          `https://marathon.lockated.com/rfq/events/${eventId}/min_bid_price?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `https://marathon.lockated.com/rfq/events/${eventId}/min_bid_price?token=${token}`
         );
         const data = await res.json();
         if (data && typeof data.price !== "undefined") {
@@ -154,9 +159,11 @@ export default function BulkCounterOfferModalTwo({
 
   useEffect(() => {
     const fetchTaxes = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/taxes_dropdown?token=${token}`
         );
 
         if (response.data?.taxes) {
@@ -180,7 +187,7 @@ export default function BulkCounterOfferModalTwo({
     async function fetchTaxPercentages() {
       try {
         const res = await fetch(
-          "https://marathon.lockated.com//rfq/events/tax_percentage?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `${baseURL}//rfq/events/tax_percentage?token=${token}`
         );
         const data = await res.json();
         setTaxPercentageOptions(data);
@@ -196,9 +203,11 @@ export default function BulkCounterOfferModalTwo({
 
   useEffect(() => {
     const fetchTaxes = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
         );
 
         if (response.data?.taxes) {
@@ -394,8 +403,10 @@ export default function BulkCounterOfferModalTwo({
     console.log("payload", payload);
 
     try {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       const response = await fetch(
-        `${baseURL}rfq/events/${eventId}/bids/bulk_counter_offer?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}rfq/events/${eventId}/bids/bulk_counter_offer?token=${token}`,
         {
           method: "POST",
           headers: {

@@ -102,9 +102,11 @@ export default function CreateRFQForm({
   };
 
   const fetchMorOptions = async () => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const response = await axios.get(
-        `${baseURL}rfq/events/mor_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}rfq/events/mor_dropdown?token=${token}`
       );
       if (response.data && Array.isArray(response.data.mors)) {
         const options = response.data.mors.map((mor) => ({
@@ -121,9 +123,11 @@ export default function CreateRFQForm({
   };
 
   const fetchMorMaterialData = async (morId) => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const response = await axios.get(
-        `${baseURL}rfq/events/mor_inventory_payload?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&mor_id=${morId}`
+        `${baseURL}rfq/events/mor_inventory_payload?token=${token}&mor_id=${morId}`
       );
       if (response.data && Array.isArray(response.data.materials)) {
         setMorMaterialData(response.data.materials);
@@ -167,7 +171,7 @@ export default function CreateRFQForm({
 
     try {
       const response = await axios.get(
-        `${baseURL}rfq/event_templates/${event}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}rfq/event_templates/${event}?token=${token}`
       );
       if (response.data) {
         const templateData = response.data;
@@ -219,10 +223,12 @@ export default function CreateRFQForm({
   };
 
   const fetchMaterials = async (inventoryTypeId) => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const url = inventoryTypeId
-        ? `${baseURL}rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
-        : `${baseURL}rfq/events/material_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+        ? `${baseURL}rfq/events/material_list?token=${token}&pms_inventory_type_id=${inventoryTypeId}`
+        : `${baseURL}rfq/events/material_list?token=${token}`;
 
       const response = await axios.get(url);
       if (response.data && Array.isArray(response.data.materials)) {
@@ -242,9 +248,11 @@ export default function CreateRFQForm({
 
   const fetchSubSections = async (inventoryTypeId) => {
     try {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       // const url = inventoryTypeId
       //   ? `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_inventory_type_id=${inventoryTypeId}`
-      const url = `${baseURL}rfq/events/material_sub_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+      const url = `${baseURL}rfq/events/material_sub_types?token=${token}`;
 
       const response = await axios.get(url);
 
@@ -265,9 +273,11 @@ export default function CreateRFQForm({
   };
 
   const fetchTemplates = async () => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const response = await axios.get(
-        `${baseURL}rfq/event_templates/template_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}rfq/event_templates/template_dropdown?token=${token}`
       );
       if (response.data && Array.isArray(response.data.event_templates)) {
         const templateOptions = response.data.event_templates.map(
@@ -286,10 +296,12 @@ export default function CreateRFQForm({
   };
 
   const fetchPmsColours = async (materialId) => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
-      let url = `${baseURL}rfq/events/pms_colours?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&material_id=${materialId}`;
+      let url = `${baseURL}rfq/events/pms_colours?token=${token}&material_id=${materialId}`;
       if (!materialId) {
-        url = `${baseURL}rfq/events/pms_colours?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+        url = `${baseURL}rfq/events/pms_colours?token=${token}`;
       }
       const response = await axios.get(url);
 
@@ -308,10 +320,12 @@ export default function CreateRFQForm({
   };
 
   const fetchGenericInfo = async (materialId) => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const url = materialId
-        ? `${baseURL}rfq/events/generic_infos?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&material_id=${materialId}`
-        : `${baseURL}rfq/events/generic_infos?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+        ? `${baseURL}rfq/events/generic_infos?token=${token}&material_id=${materialId}`
+        : `${baseURL}rfq/events/generic_infos?token=${token}`;
 
       const response = await axios.get(url);
 
@@ -384,9 +398,11 @@ export default function CreateRFQForm({
 
   useEffect(() => {
     const fetchSections = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/material_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/material_types?token=${token}`
         );
 
         if (response.data && Array.isArray(response.data.inventory_types)) {
@@ -405,9 +421,11 @@ export default function CreateRFQForm({
     };
 
     const fetchLocations = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/location_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/location_list?token=${token}`
         );
         if (response.data && Array.isArray(response.data.locations_list)) {
           setLocationOptions(
@@ -425,9 +443,11 @@ export default function CreateRFQForm({
     };
 
     const fetchUoms = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/uoms?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/uoms?token=${token}`
         );
         if (response.data && Array.isArray(response.data.unit_of_measures)) {
           const uomOptions = response.data.unit_of_measures.map((uom) => ({
@@ -590,10 +610,12 @@ export default function CreateRFQForm({
   };
 
   const fetchBrands = async (materialId) => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
-      let url = `${baseURL}rfq/events/pms_brands?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&material_id=${materialId}`;
+      let url = `${baseURL}rfq/events/pms_brands?token=${token}&material_id=${materialId}`;
       if (!materialId) {
-        url = `${baseURL}rfq/events/pms_brands?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+        url = `${baseURL}rfq/events/pms_brands?token=${token}`;
       }
       const response = await axios.get(url);
 
@@ -1663,6 +1685,9 @@ export default function CreateRFQForm({
                           setData(updatedData);
                         };
 
+                        const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
+
                         return (
                           <div
                             style={{
@@ -1928,7 +1953,7 @@ export default function CreateRFQForm({
                                                 }}
                                               >
                                                 <a
-                                                  href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                                  href={`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
                                                   download={attachment.filename}
                                                   className="purple-btn2"
                                                   style={{
