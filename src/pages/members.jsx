@@ -297,7 +297,9 @@ function Members() {
                   {/* <Link to="/boq-approval-details">BOQ Approval Details</Link> */}
                 </li>
                 <li>
-                  <Link to="/approval-materics">Approval Matrics</Link>
+                  <Link to="/approval-materics?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    Approval Matrics
+                  </Link>
                 </li>
 
                 <li>
@@ -411,7 +413,9 @@ function Members() {
 
                 <h5>____Bill Booking____</h5>
                 <li>
-                  <Link to="/bill-booking-list">Bill Booking List</Link>
+                  <Link to="/bill-booking-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    Bill Booking List
+                  </Link>
                 </li>
 
                 <li>
@@ -441,12 +445,16 @@ function Members() {
                 <li>
                   <Link to="/debit-note-list">Debit Note List</Link>
                 </li>
-                 <h5>___Miscellaneous Bill___</h5>
+                <h5>___Miscellaneous Bill___</h5>
                 <li>
-                  <Link to="/miscellaneous-bill-create">Miscellaneous Bill Create</Link>
+                  <Link to="/miscellaneous-bill-create">
+                    Miscellaneous Bill Create
+                  </Link>
                 </li>
-                 <li>
-                  <Link to="/miscellaneous-bill-list">Miscellaneous Bill List</Link>
+                <li>
+                  <Link to="/miscellaneous-bill-list">
+                    Miscellaneous Bill List
+                  </Link>
                 </li>
                 <h5>___PO Advance___</h5>
                 <li>

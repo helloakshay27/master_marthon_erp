@@ -19,6 +19,8 @@ const InvoiceApproval = () => {
     approval_types: [],
     users: [],
   });
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
 
   const [companies, setCompanies] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -105,7 +107,7 @@ const InvoiceApproval = () => {
 
     try {
       const response = await axios.get(
-        `${baseURL}/user_groups.json?q[company_id_eq]=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}/user_groups.json?q[company_id_eq]=${companyId}&token=${token}`
       );
 
       // Extract and format user groups
@@ -196,14 +198,14 @@ const InvoiceApproval = () => {
     const fetchDropdownData = async () => {
       try {
         // const response = await fetch(
-        //   "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        //   "https://marathon.lockated.com/pms/admin/invoice_approvals/dropdown_list.json?token=${token}"
         // );
         const [dropdownResponse, materialTypeResponse] = await Promise.all([
           fetch(
-            `${baseURL}/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}/pms/admin/invoice_approvals/dropdown_list.json?token=${token}`
           ),
           fetch(
-            `${baseURL}/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}/pms/inventory_types.json?token=${token}`
           ),
         ]);
         // if (!response.ok) throw new Error("Failed to fetch dropdown data");
@@ -259,7 +261,7 @@ const InvoiceApproval = () => {
   useEffect(() => {
     axios
       .get(
-        `${baseURL}/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}/pms/company_setups.json?token=${token}`
       )
       .then((response) => {
         setCompanies(response.data.companies);
@@ -284,7 +286,7 @@ const InvoiceApproval = () => {
   //     const response = await axios.get(
   //       `${baseURL}/users.json?q[department_id_in]=${departmentQuery}&q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_project_id_eq]=${
   //         projectId || ""
-  //       }&&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //       }&&token=${token}`
   //     );
 
   //     if (response.data && Array.isArray(response.data)) {
@@ -325,7 +327,7 @@ const InvoiceApproval = () => {
   //     const response = await axios.get(
   //       `${baseURL}/users.json?${departmentQuery}q[user_sites_pms_site_project_company_id_eq]=${companyId}&q[user_sites_pms_site_project_id_eq]=${
   //         projectId || ""
-  //       }&q[user_sites_pms_site_id_eq]=${siteId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //       }&q[user_sites_pms_site_id_eq]=${siteId}&token=${token}`
   //     );
 
   //     if (response.data && Array.isArray(response.data)) {
@@ -371,7 +373,7 @@ const InvoiceApproval = () => {
         queryParams.append("q[department_id_in]", departmentIds.join(","));
 
       const response = await axios.get(
-        `${baseURL}/users.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}/users.json?${queryParams.toString()}&token=${token}`
       );
 
       if (response.data && Array.isArray(response.data)) {
@@ -833,7 +835,7 @@ const InvoiceApproval = () => {
     // API call to create the invoice approval
     axios
       .post(
-        `${baseURL}/pms/admin/invoice_approvals.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}/pms/admin/invoice_approvals.json?token=${token}`,
         payload
       )
       .then((response) => {

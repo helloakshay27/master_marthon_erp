@@ -6,7 +6,7 @@ import { MultiSelector } from "../components";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import SingleSelector from "../components/base/Select/SingleSelector";
-import { useNavigate } from "react-router-dom";
+import { useNavigate ,useLocation} from "react-router-dom";
 import { baseURL } from "../confi/apiDomain";
 
 const ApprovalEdit = () => {
@@ -20,7 +20,12 @@ const ApprovalEdit = () => {
     users: [],
   });
 
+
+
   const { id } = useParams(); // Ge
+
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
 
   const [companies, setCompanies] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -130,7 +135,7 @@ const ApprovalEdit = () => {
 
     try {
       const response = await axios.get(
-        `${baseURL}/user_groups.json?q[company_id_eq]=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}/user_groups.json?q[company_id_eq]=${companyId}&token=${token}`
       );
 
       // Extract and format user groups
@@ -235,7 +240,7 @@ const ApprovalEdit = () => {
     }
 
     try {
-      let url = `${baseURL}/users.json?q[user_sites_pms_site_project_company_id_eq]=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+      let url = `${baseURL}/users.json?q[user_sites_pms_site_project_company_id_eq]=${companyId}&token=${token}`;
 
       if (projectId) {
         url += `&q[user_sites_pms_site_project_id_eq]=${projectId}`;
@@ -268,10 +273,10 @@ const ApprovalEdit = () => {
       try {
         const [dropdownResponse, materialTypeResponse] = await Promise.all([
           fetch(
-            `${baseURL}/pms/admin/invoice_approvals/dropdown_list.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}/pms/admin/invoice_approvals/dropdown_list.json?token=${token}`
           ),
           fetch(
-            `${baseURL}/pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}/pms/inventory_types.json?token=${token}`
           ),
         ]);
 
@@ -351,7 +356,7 @@ const ApprovalEdit = () => {
 
       try {
         const response = await axios.get(
-          `${baseURL}/users.json?q[department_id_in]=${selectedDepartment.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}/users.json?q[department_id_in]=${selectedDepartment.value}&token=${token}`
         );
 
         if (response.data && Array.isArray(response.data)) {
@@ -380,7 +385,7 @@ const ApprovalEdit = () => {
     const fetchApprovalData = async () => {
       try {
         const response = await fetch(
-          `${baseURL}/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}/pms/admin/invoice_approvals/${id}.json?token=${token}`
         );
 
         if (!response.ok) throw new Error("Failed to fetch approval data");
@@ -604,7 +609,7 @@ const ApprovalEdit = () => {
   useEffect(() => {
     axios
       .get(
-        `${baseURL}/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}/pms/company_setups.json?token=${token}`
       )
       .then((response) => {
         setCompanies(response.data.companies);
@@ -985,7 +990,7 @@ const ApprovalEdit = () => {
   //   // Send API request if no duplicates found
   //   axios
   //     .patch(
-  //       `${baseURL}/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+  //       `${baseURL}/pms/admin/invoice_approvals/${id}.json?token=${token}`,
   //       payload
   //     )
   //     .then((response) => {
@@ -1159,7 +1164,7 @@ const ApprovalEdit = () => {
     // Send API request
     axios
       .patch(
-        `${baseURL}/pms/admin/invoice_approvals/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}/pms/admin/invoice_approvals/${id}.json?token=${token}`,
         payload
       )
       .then((response) => {
