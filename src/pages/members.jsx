@@ -358,10 +358,12 @@ function Members() {
                   <Link to="/bill-booking-list">Bill Booking List</Link>
                 </li> */}
                 <li>
-                  <Link to="/bill-entry-list">Bill Entry List</Link>
+                  <Link to="/bill-entry-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    Bill Entry List
+                  </Link>
                 </li>
                 <li>
-                  <Link to="/bill-entry-vendor-list">
+                  <Link to="/bill-entry-vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
                     Bill Entry Vendor List
                   </Link>
                 </li>
@@ -385,7 +387,7 @@ function Members() {
                   </Link>
                 </li> */}
                 <li>
-                  <Link to="bill-verification-list">
+                  <Link to="bill-verification-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
                     Bill Verification List
                   </Link>
                 </li>
@@ -452,7 +454,7 @@ function Members() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/miscellaneous-bill-list">
+                  <Link to="/miscellaneous-bill-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
                     Miscellaneous Bill List
                   </Link>
                 </li>

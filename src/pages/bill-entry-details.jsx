@@ -220,7 +220,7 @@ const BillEntryDetails = () => {
       if (response.data) {
         alert("Bill entry updated successfully");
         // Make sure to import navigate from react-router-dom
-        navigate("/bill-entry-list");
+        navigate(`/bill-entry-list?token=${token}`, );
         setLoading(false);
       } else {
         throw new Error("No response data received");
@@ -940,6 +940,7 @@ const BillEntryDetails = () => {
         </Modal.Body>
       </Modal>
       {/* attach document */}
+      
     </>
   );
 };

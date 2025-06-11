@@ -13,6 +13,8 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 const BillEntryList = () => {
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const [selectedValue, setSelectedValue] = useState("");
   const [billEntries, setBillEntries] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -87,7 +89,7 @@ const BillEntryList = () => {
       width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
-          <Link to={`/bill-entry-details/${params.row.id}`}>
+          <Link to={`/bill-entry-details/${params.row.id}?token=${token}`}>
             <span className="boq-id-link">{params.value}</span>
           </Link>
         ) : (
@@ -136,7 +138,7 @@ const BillEntryList = () => {
       width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
-          <Link to={`/bill-entry-details/${params.row.id}`}>
+          <Link to={`/bill-entry-details/${params.row.id}?token=${token}`}>
             <span className="boq-id-link">{params.value}</span>
           </Link>
         ) : (
@@ -197,9 +199,7 @@ const BillEntryList = () => {
   // Fetch companies on component mount
   useEffect(() => {
     axios
-      .get(
-        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      )
+      .get(`${baseURL}pms/company_setups.json?token=${token}`)
       .then((response) => {
         setCompanies(response.data.companies);
       })
@@ -275,7 +275,7 @@ const BillEntryList = () => {
       setLoading(true);
       try {
         // Build base URL
-        let url = `${baseURL}bill_entries?page=${currentPage}&per_page=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+        let url = `${baseURL}bill_entries?page=${currentPage}&per_page=${pageSize}&token=${token}`;
 
         // Add filters
         if (

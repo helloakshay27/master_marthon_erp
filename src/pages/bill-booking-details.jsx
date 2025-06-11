@@ -9,8 +9,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { baseURL } from "../confi/apiDomain";
+import { toast, ToastContainer } from "react-toastify";
 
 const BillBookingDetails = () => {
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
+
   const { id } = useParams();
   const navigate = useNavigate();
   const [actionDetails, setactionDetails] = useState(false);
@@ -83,7 +87,7 @@ const BillBookingDetails = () => {
   const fetchDetails = async () => {
     try {
       const response = await axios.get(
-        `${baseURL}bill_bookings/${id}?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}bill_bookings/${id}?page=1&per_page=10&token=${token}`
       );
       setDetails(response.data); // Update state with API data
       // console.log("get data detail res",response)
@@ -139,7 +143,7 @@ const BillBookingDetails = () => {
     const fetchTaxes = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/deduction_tax_details.json?token=${token}`
         );
         // console.log("Taxes response:", response.data);
         if (response.data && response.data.taxes) {
@@ -264,7 +268,7 @@ const BillBookingDetails = () => {
 
     try {
       const response = await axios.patch(
-        `${baseURL}bill_bookings/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}bill_bookings/${id}/update_status.json?token=${token}`,
         payload, // The request body containing status and remarks
         {
           headers: {
@@ -281,6 +285,7 @@ const BillBookingDetails = () => {
         // alert('Status updated successfully');
         // Handle success (e.g., update the UI, reset fields, etc.)
         toast.success("Status updated successfully!");
+        navigate(`/bill-booking-list?token=${token}`);
       } else {
         console.log("Error updating status:", response.data);
         toast.error("Failed to update status.");
@@ -298,7 +303,7 @@ const BillBookingDetails = () => {
   const handleDownload = async (blobId) => {
     try {
       const response = await axios.get(
-        `${baseURL}bill_bookings/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${blobId}`,
+        `${baseURL}bill_bookings/${id}/download?token=${token}&blob_id=${blobId}`,
         {
           responseType: "blob", // Important for handling binary data
         }
@@ -1355,8 +1360,8 @@ const BillBookingDetails = () => {
 
                             <a
                               href={
-                                // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
-                                `${baseURL}bill_bookings/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
+                                // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                                `${baseURL}bill_bookings/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
                               }
                               download={attachment.filename}
                             >
@@ -1421,7 +1426,7 @@ const BillBookingDetails = () => {
                 </div>
               </div>
               <div className="row mt-2 justify-content-end">
-                <div className="col-md-2">
+                <div className="col-md-2 mt-2">
                   <button className="purple-btn2 w-100" onClick={handleSubmit}>
                     Submit
                   </button>
@@ -1618,6 +1623,18 @@ const BillBookingDetails = () => {
           </div>
         </Modal.Body>
       </Modal>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 };

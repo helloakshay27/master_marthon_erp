@@ -15,6 +15,9 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const BillBookingCreate = () => {
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
+
   const [actionDetails, setactionDetails] = useState(false);
 
   const [selectGRNModal, setselectGRNModal] = useState(false);
@@ -96,7 +99,7 @@ const BillBookingCreate = () => {
     const fetchTaxTypes = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/taxes_dropdown?token=${token}`
         );
         setTaxTypes(response.data.taxes); // Assuming the API returns an array of tax types
       } catch (error) {
@@ -158,7 +161,7 @@ const BillBookingCreate = () => {
     const fetchTaxTypes = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
         );
         setDeductionTypes(response.data.taxes); // Assuming the API returns an array of tax types
       } catch (error) {
@@ -219,7 +222,7 @@ const BillBookingCreate = () => {
     const fetchTaxes = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/deduction_tax_details.json?token=${token}`
         );
         console.log("Taxes response:", response.data);
         if (response.data && response.data.taxes) {
@@ -429,7 +432,7 @@ const BillBookingCreate = () => {
   //   const fetchBillEntries = async () => {
   //     try {
   //       const response = await axios.get(
-  //         "https://marathon.lockated.com/bill_bookings/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+  //         "https://marathon.lockated.com/bill_bookings/bill_entry_list?token=${token}"
   //       );
   //       if (response.data && Array.isArray(response.data.be_list)) {
   //         setBillEntryOptions(
@@ -455,12 +458,12 @@ const BillBookingCreate = () => {
   //       try {
   //         // First fetch bill entry details
   //         const response = await axios.get(
-  //           `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //           `${baseURL}bill_entries/${id}?token=${token}`
   //         );
 
   //         // Get bill entry options
   //         const billEntryResponse = await axios.get(
-  //           `${baseURL}bill_bookings/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //           `${baseURL}bill_bookings/bill_entry_list?token=${token}`
   //         );
 
   //         if (
@@ -499,7 +502,7 @@ const BillBookingCreate = () => {
       try {
         // Always fetch bill entry options
         const billEntryResponse = await axios.get(
-          `${baseURL}bill_bookings/bill_entry_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}bill_bookings/bill_entry_list?token=${token}`
         );
 
         if (
@@ -517,7 +520,7 @@ const BillBookingCreate = () => {
           if (id) {
             // First fetch specific bill entry details
             const response = await axios.get(
-              `${baseURL}bill_entries/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+              `${baseURL}bill_entries/${id}?token=${token}`
             );
 
             // Find and set the matching bill entry option
@@ -549,7 +552,7 @@ const BillBookingCreate = () => {
       const fetchBillEntryDetails = async () => {
         try {
           const response = await axios.get(
-            `${baseURL}/bill_entries/${selectedBillEntry.value}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}/bill_entries/${selectedBillEntry.value}?token=${token}`
           );
           const data = response.data;
 
@@ -580,7 +583,7 @@ const BillBookingCreate = () => {
           // Fetch PO GRN details using purchase_order.id
           if (data.purchase_order?.id) {
             const grnResponse = await axios.get(
-              `${baseURL}/purchase_orders/grn_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&per_page=10&q[id_in]=${data.purchase_order.id}`
+              `${baseURL}/purchase_orders/grn_details.json?token=${token}&page=1&per_page=10&q[id_in]=${data.purchase_order.id}`
             );
 
             // Set the selected PO with GRN materials
@@ -837,7 +840,7 @@ const BillBookingCreate = () => {
           const response = await axios.get(
             `${baseURL}bill_bookings/deduction_data?grns=[${grnIds.join(
               ","
-            )}]&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            )}]&token=${token}`
           );
           setTaxDeductionData(response.data);
         } catch (error) {
@@ -1051,7 +1054,7 @@ const BillBookingCreate = () => {
       console.log("Payload for API:", payload);
 
       const response = await axios.post(
-        `${baseURL}bill_bookings?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}bill_bookings?token=${token}`,
         payload
       );
 
@@ -1072,7 +1075,7 @@ const BillBookingCreate = () => {
         // Add delay before navigation
         setTimeout(() => {
           setLoading(false);
-          navigate("/bill-booking-list");
+          navigate(`/bill-booking-list?token=${token}`);
         }, 1000);
       }
     } catch (error) {
@@ -1268,7 +1271,7 @@ const BillBookingCreate = () => {
     const fetchTaxPercentages = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}/rfq/events/tax_percentage?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}/rfq/events/tax_percentage?token=${token}`
         );
 
         if (response.data) {
@@ -1279,7 +1282,11 @@ const BillBookingCreate = () => {
             TDS: [],
           };
 
-          response.data.forEach((tax) => {
+          const taxData = Array.isArray(response.data)
+            ? response.data
+            : [response.data];
+
+          taxData.forEach((tax) => {
             if (tax.tax_name === "SGST") {
               formattedData.SGST = tax.percentage.map((p) => ({
                 value: `SGST ${p}%`,
@@ -1320,7 +1327,7 @@ const BillBookingCreate = () => {
       if (selectedPO?.id) {
         try {
           const response = await axios.get(
-            `${baseURL}advance_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}advance_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=${token}`
           );
           setPendingAdvances(response.data.advance_notes || []);
         } catch (error) {
@@ -1437,13 +1444,13 @@ const BillBookingCreate = () => {
         try {
           // Fetch Credit Notes
           // const creditResponse = await axios.get(
-          //   `${baseURL}credit_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          //   `${baseURL}credit_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=${token}`
           // );
           // setCreditNotes(creditResponse.data.credit_notes || []);
 
           // Fetch Debit Notes
           const debitResponse = await axios.get(
-            `${baseURL}debit_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}debit_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=${token}`
           );
           setDebitNotes(debitResponse.data.debit_notes || []);
           console.log("Supplier ID for debit notes:", formData.pms_supplier_id);
@@ -3537,11 +3544,14 @@ const BillBookingCreate = () => {
                     </td> */}
                     <td className="text-start">
                       <SingleSelector
-                        options={taxTypes.map((type) => ({
-                          value: type.name,
-                          label: type.name,
-                          isDisabled: true, // Make all options disabled
-                        }))}
+                        options={
+                          taxTypes ||
+                          [].map((type) => ({
+                            value: type.name,
+                            label: type.name,
+                            isDisabled: true, // Make all options disabled
+                          }))
+                        }
                         value={{ value: row.type, label: row.type }}
                         onChange={() => {}} // Empty onChange handler
                         placeholder="Select Type"
@@ -3670,7 +3680,6 @@ const BillBookingCreate = () => {
                     </td>
                   </tr>
                 ))}
-
                 <tr>
                   <th className="text-start">Sub Total A (Addition)</th>
                   <td className="text-start" />
@@ -3856,7 +3865,8 @@ const BillBookingCreate = () => {
                   <td className="" />
                   <td className="text-start">{calculatePayableAmount()}</td>
                   <td />
-                </tr>``
+                </tr>
+                ``
               </tbody>
             </table>
             <div className="d-flex justify-content-center mt-3 mb-2">
