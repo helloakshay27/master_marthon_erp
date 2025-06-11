@@ -23,7 +23,8 @@ const BillBookingList = () => {
   const navigate = useNavigate(); // Initialize navigation
  const location = useLocation();
   const urlParams = new URLSearchParams(location.search);
-  const token ="bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
+   const token = urlParams.get("token");
+  // const token ="bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
 
   const [billData, setBillData] = useState([]); // State to store fetched data
   const [loading, setLoading] = useState(true); // State for loading
