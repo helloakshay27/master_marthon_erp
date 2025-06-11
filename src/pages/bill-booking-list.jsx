@@ -23,7 +23,7 @@ const BillBookingList = () => {
   const navigate = useNavigate(); // Initialize navigation
  const location = useLocation();
   const urlParams = new URLSearchParams(location.search);
-  const token = urlParams.get("token");
+  const token ="bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
 
   const [billData, setBillData] = useState([]); // State to store fetched data
   const [loading, setLoading] = useState(true); // State for loading
@@ -602,7 +602,7 @@ const BillBookingList = () => {
     { field: "bill_id", headerName: "Bill ID", width: 150 ,
   renderCell: (params) =>
         params.value && params.row.bill_entry_id ? (
-          <Link to={`/bill-entry-details/${params.row.bill_entry_id}`}>
+          <Link to={`/bill-entry-details/${params.row.bill_entry_id}?token=${token}`}>
             <span className="boq-id-link">{params.value}</span>
           </Link>
         ) : (
