@@ -57,7 +57,7 @@ const ApprovalMatrics = () => {
   const navigate = useNavigate();
 
   const handleAddClick = () => {
-    navigate("/invoice_approval");
+    navigate(`/invoice_approval?token=${token}`);
   };
 
   const modifiedFilterOptions = {
