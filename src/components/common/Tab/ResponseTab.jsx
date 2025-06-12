@@ -760,7 +760,7 @@ export default function ResponseTab({ isCounterOffer }) {
                                           const fetchedData = response.data;
                                           setBidCounterData(fetchedData);
 
-                                          navigate(`/counter-offer/${bidId}`, {
+                                          navigate(`/counter-offer/${bidId}?token=${token}`, {
                                             state: {
                                               bidCounterData: fetchedData,
                                             },

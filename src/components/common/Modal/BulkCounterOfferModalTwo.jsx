@@ -4,7 +4,7 @@ import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import Table from "../../base/Table/Table";
 import ShortTable from "../../base/Table/ShortTable";
 import { productTableColumns } from "../../../constant/data";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Toast } from "bootstrap";
@@ -44,6 +44,10 @@ export default function BulkCounterOfferModalTwo({
   const [activityLogAccordion, setActivityLogAccordion] = useState(false);
   const [activityLogs, setActivityLogs] = useState([]);
   const [activityLogsLoading, setActivityLogsLoading] = useState(false);
+
+  const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
 
   useEffect(() => {
     
@@ -1294,7 +1298,7 @@ const urlParams = new URLSearchParams(location.search);
         ]}
       >
         <h5 className="mt-5">Product Sheet</h5>
-        <Table columns={productTableColumns} data={productTableData} />
+        <Table columns={productTableColumns} data={productTableData} style={{width:'100%', overflowX:'auto'}} />
 
         <div className="d-flex justify-content-end">
           {/* <ShortTable data={sideTableData} /> */}
@@ -1322,7 +1326,7 @@ const urlParams = new URLSearchParams(location.search);
           }}
           calculateGrossTotal={calculateGrossTotal}
         />
-        <div className="d-flex justify-content-end">
+        <div className="d-flex justify-content-end mt-3">
           <h4>Sum Total : ₹{sumTotal}</h4>
         </div>
 

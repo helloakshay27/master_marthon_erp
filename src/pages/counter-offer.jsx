@@ -12,6 +12,8 @@ import ChargesDataTable from "../components/base/Table/ChargesDataTable";
 export default function CounterOffer() {
   const navigate = useNavigate();
   const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const { id } = useParams();
   const [bidCounterData, setBidCounterData] = useState(
     location.state?.bidCounterData || null
@@ -121,7 +123,7 @@ export default function CounterOffer() {
     const fetchTaxes = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/taxes_dropdown?token=${token}`
         );
 
         if (response.data?.taxes) {
@@ -149,7 +151,7 @@ export default function CounterOffer() {
     const fetchDeductionTaxes = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
         );
 
         if (response.data?.taxes) {
@@ -329,7 +331,7 @@ export default function CounterOffer() {
 
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/${eventId}/bids/${bidId}/counter_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}rfq/events/${eventId}/bids/${bidId}/counter_bids?token=${token}`,
         {
           method: "POST",
           headers: {
@@ -359,7 +361,7 @@ export default function CounterOffer() {
     setActivityLogsLoading(true);
     axios
       .get(
-        `${baseURL}rfq/events/${eventId}/activity_logs?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}rfq/events/${eventId}/activity_logs?token=${token}`
       )
       .then((res) => {
         setActivityLogs(res.data.activity_logs || []);
@@ -1086,7 +1088,7 @@ export default function CounterOffer() {
             </>
           ) : (
             <>
-              <Table columns={productTableColumns} data={productTableData} />
+              <Table columns={productTableColumns} data={productTableData} style={{width:'100%', overflowX:'auto'}} />
               <div className="d-flex justify-content-end">
                 <ShortDataTable
                   data={tableData}
@@ -1114,7 +1116,7 @@ export default function CounterOffer() {
                   calculateGrossTotal={calculateGrossTotal}
                 />
               </div>
-              <div className="d-flex justify-content-end">
+              <div className="d-flex justify-content-end mt-3">
                 <h4>Sum Total : ₹{sumTotal}</h4>
               </div>
 
