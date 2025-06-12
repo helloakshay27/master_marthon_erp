@@ -144,10 +144,11 @@ export default function ParticipantsTab({ id }) {
       setIsInvite(false); // Stop loader
       return;
     }
-
+const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/${id}/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&name=${inviteForm.name}&mobile=${inviteForm.mobile}&email=${inviteForm.email}&add_vendor=true&organization_name=${inviteForm?.organization}&company_id=${inviteForm.company}`,
+        `${baseURL}rfq/events/${id}/invite_vendor?token=${token}&name=${inviteForm.name}&mobile=${inviteForm.mobile}&email=${inviteForm.email}&add_vendor=true&organization_name=${inviteForm?.organization}&company_id=${inviteForm.company}`,
         {
           method: "POST",
         }
@@ -205,8 +206,10 @@ export default function ParticipantsTab({ id }) {
   useEffect(() => {
     const fetchParticipants = async () => {
       try {
+        const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
         const response = await fetch(
-          `${baseURL}rfq/events/${id}/event_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${currentParticipantPage}`
+          `${baseURL}rfq/events/${id}/event_vendors?token=${token}&page=${currentParticipantPage}`
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -258,8 +261,10 @@ export default function ParticipantsTab({ id }) {
   }, [participants]);
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     fetch(
-      `${baseURL}/rfq/events/company_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      `${baseURL}/rfq/events/company_list?token=${token}`
     )
       .then((response) => response.json())
       .then((data) =>
@@ -283,9 +288,11 @@ export default function ParticipantsTab({ id }) {
     if (searchTerm == "") {
     }
     setLoading(true);
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_id=${id}&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
+        `${baseURL}rfq/events/vendor_list?token=${token}&event_id=${id}&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
       );
       const data = await response.json();
 
@@ -366,8 +373,9 @@ export default function ParticipantsTab({ id }) {
     setIsSaving(true);
     setIsVendorLoading(true); // Start loader
     const selectedVendorIds = selectedRows.map((vendor) => vendor.id);
-
-    const url = `${baseURL}rfq/events/${id}/add_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&pms_supplier_ids=[${selectedVendorIds.join(
+const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
+    const url = `${baseURL}rfq/events/${id}/add_vendors?token=${token}&pms_supplier_ids=[${selectedVendorIds.join(
       ","
     )}]`;
 

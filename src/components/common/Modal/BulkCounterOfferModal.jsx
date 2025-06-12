@@ -68,9 +68,11 @@ export default function BulkCounterOfferModal({
 
   useEffect(() => {
     const fetchTaxes = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/taxes_dropdown?token=${token}`
         );
 
         if (response.data?.taxes) {
@@ -96,9 +98,11 @@ export default function BulkCounterOfferModal({
 
   useEffect(() => {
     const fetchDeductionTaxes = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
         );
 
         if (response.data?.taxes) {
@@ -184,8 +188,10 @@ export default function BulkCounterOfferModal({
     };
     
     try {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       const response = await fetch(
-        `${baseURL}rfq/events/${eventId}/bids/${bidId}/counter_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}rfq/events/${eventId}/bids/${bidId}/counter_bids?token=${token}`,
         {
           method: "POST",
           headers: {

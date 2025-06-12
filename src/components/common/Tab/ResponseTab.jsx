@@ -64,9 +64,11 @@ export default function ResponseTab({ isCounterOffer }) {
   const [totalReminderPages, setTotalReminderPages] = useState(1);
 
   const fetchParticipants = async (page = 1) => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/${eventId}/event_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}`
+        `${baseURL}rfq/events/${eventId}/event_vendors?token=${token}&page=${page}`
       );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -162,9 +164,11 @@ export default function ResponseTab({ isCounterOffer }) {
 
   useEffect(() => {
     const fetchTaxes = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/taxes_dropdown?token=${token}`
         );
 
         if (response.data?.taxes) {
@@ -189,11 +193,13 @@ export default function ResponseTab({ isCounterOffer }) {
   }, []);
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     // if (!activityLogAccordion) return;
     setActivityLogsLoading(true);
     axios
       .get(
-        `${baseURL}rfq/events/${eventId}/activity_logs?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}rfq/events/${eventId}/activity_logs?token=${token}`
       )
       .then((res) => {
         setActivityLogs(res.data.activity_logs || []);
@@ -204,9 +210,11 @@ export default function ResponseTab({ isCounterOffer }) {
 
   useEffect(() => {
     const fetchDeductionTaxes = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
         );
 
         if (response.data?.taxes) {
@@ -239,9 +247,11 @@ export default function ResponseTab({ isCounterOffer }) {
     setError(null);
     try {
       let data;
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       if (isCurrent) {
         const response = await fetch(
-          `${baseURL}rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `${baseURL}rfq/events/${eventId}/event_responses?token=${token}&page=1`
         );
 
         if (!response.ok) {
@@ -267,7 +277,7 @@ export default function ResponseTab({ isCounterOffer }) {
       } else {
         // Use revision data
         const response = await axios.get(
-          `${baseURL}rfq/events/${eventId}/bids/bids_by_revision?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&revision_number=${revisionNumber}&q[event_vendor_id_in]=${vendorId}`
+          `${baseURL}rfq/events/${eventId}/bids/bids_by_revision?token=${token}&revision_number=${revisionNumber}&q[event_vendor_id_in]=${vendorId}`
         );
         data = response.data;
 
@@ -295,9 +305,11 @@ export default function ResponseTab({ isCounterOffer }) {
   };
   useEffect(() => {
     const fetchEventResponses = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await fetch(
-          `${baseURL}rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `${baseURL}rfq/events/${eventId}/event_responses?token=${token}&page=1`
         );
 
         if (!response.ok) {
@@ -356,9 +368,11 @@ export default function ResponseTab({ isCounterOffer }) {
 
   useEffect(() => {
     const fetchRemarks = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await fetch(
-          `${baseURL}rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `${baseURL}rfq/events/${eventId}/event_responses?token=${token}&page=1`
         );
 
         if (!response.ok) {
@@ -381,9 +395,11 @@ export default function ResponseTab({ isCounterOffer }) {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/${eventId}/bids/${bidId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/bids/${bidId}?token=${token}`
         );
         setBidCounterData(response.data);
         sessionStorage.setItem("bidCounterData", JSON.stringify(response.data)); // Save data in session storage
@@ -401,9 +417,11 @@ export default function ResponseTab({ isCounterOffer }) {
 
   useEffect(() => {
     const fetchParticipationSummary = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/${eventId}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/event_participate_summary?token=${token}`
         );
         setParticipationSummary(response.data);
       } catch (err) {
@@ -443,9 +461,11 @@ export default function ResponseTab({ isCounterOffer }) {
 
   const acceptOffer = async (bidId, revisedBidId, status) => {
     setIsLoadingOffer(true); // Show loader
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const response = await axios.put(
-        `${baseURL}rfq/events/${eventId}/bids/${revisedBidId}/revised_bids/${bidId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}rfq/events/${eventId}/bids/${revisedBidId}/revised_bids/${bidId}/update_status?token=${token}`,
         { status },
         {
           headers: {
@@ -481,10 +501,12 @@ export default function ResponseTab({ isCounterOffer }) {
 
   const handleSendReminder = async (vendorIds, isSelectAll = false) => {
     setLoading(true); // Show loader
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const url = isSelectAll
-        ? `${baseURL}rfq/events/${eventId}/event_vendors/vendor_reminder?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&select_all=true`
-        : `${baseURL}rfq/events/${eventId}/event_vendors/${vendorIds[0]}/send_reminder?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+        ? `${baseURL}rfq/events/${eventId}/event_vendors/vendor_reminder?page=1&token=${token}&select_all=true`
+        : `${baseURL}rfq/events/${eventId}/event_vendors/${vendorIds[0]}/send_reminder?token=${token}`;
 
       const config = isSelectAll
         ? { headers: { Accept: "application/json" } }
@@ -725,19 +747,20 @@ export default function ResponseTab({ isCounterOffer }) {
                                           vendor.bids[0].bid_materials[0]
                                             .bid_id;
                                         setBidId(bidId);
-
+                                        const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
                                         try {
                                           setLoading(true);
                                           setError(null);
 
                                           const response = await axios.get(
-                                            `${baseURL}rfq/events/${eventId}/bids/${bidId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                                            `${baseURL}rfq/events/${eventId}/bids/${bidId}?token=${token}`
                                           );
 
                                           const fetchedData = response.data;
                                           setBidCounterData(fetchedData);
 
-                                          navigate(`/counter-offer/${bidId}`, {
+                                          navigate(`/counter-offer/${bidId}?token=${token}`, {
                                             state: {
                                               bidCounterData: fetchedData,
                                             },

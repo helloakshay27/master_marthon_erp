@@ -90,6 +90,9 @@ export default function adminList() {
   const [vendorId, setVendorId] = useState("");
   const [vendorOptions, setVendorOptions] = useState([]);
 
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
+
   const InfoTooltip = ({ content, anchorEl }) => {
   if (!anchorEl) return null;
 
@@ -314,7 +317,7 @@ export default function adminList() {
         <button
           className="btn"
           onClick={() =>
-            navigate(`/erp-rfq-detail-price-trends4h/${params.row.id}`)
+            navigate(`/erp-rfq-detail-price-trends4h/${params.row.id}?token=${token}`)
           }
           title="View"
         >
@@ -342,7 +345,7 @@ export default function adminList() {
       renderCell: (params) => (
         <button
           className="btn"
-          onClick={() => navigate(`/edit-event/${params.row.id}`)}
+          onClick={() => navigate(`/edit-event/${params.row.id}?token=${token}`)}
           title="Edit"
         >
           {/* ...existing SVG... */}
@@ -627,8 +630,6 @@ const getTransformedRows = () => {
     return Array.from(uniqueMap.values());
   }, []);
 
-  const token = new URLSearchParams(window.location.search).get("token");
-
   const fetchFilterOptions = async () => {
     setFilterLoading(true);
     try {
@@ -636,7 +637,7 @@ const getTransformedRows = () => {
       const token = urlParams.get("token");
 
       const response = await axios.get(
-        `${baseURL}rfq/events/advance_filter_options?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}rfq/events/advance_filter_options?token=${token}`,
         {
           params: {
             token: token,

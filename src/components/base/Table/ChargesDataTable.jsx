@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import DynamicModalBox from "../Modal/DynamicModalBox";
 import SelectBox from "../Select/SelectBox";
+import { useLocation } from "react-router-dom";
+import { baseUrl } from "../../../confi/apiDomain"
 
 export default function ChargesDataTable({
   data,
@@ -23,6 +25,10 @@ export default function ChargesDataTable({
   const [chargesTaxRate, setChargesTaxRate] = useState({}); // State for tax rate data
   const [selectedTableId, setSelectedTableId] = useState(null); // State for selected table ID
   const [taxPercentageOptions, setTaxPercentageOptions] = useState([]);
+
+  const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
 
   useEffect(() => {
     // Initialize chargesTaxRate with data from props
@@ -253,7 +259,7 @@ export default function ChargesDataTable({
   useEffect(() => {
     // Fetch charges data from the API
     fetch(
-      "https://marathon.lockated.com/rfq/events/charges_only?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      `${baseUrl}/rfq/events/charges_only?token=${token}`
     )
       .then((response) => response.json())
       .then((data) => {
@@ -263,7 +269,7 @@ export default function ChargesDataTable({
 
     // Fetch additional tax options from the API
     fetch(
-      "https://marathon.lockated.com/rfq/events/addition_taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      `${baseUrl}/rfq/events/addition_taxes_dropdown?token=${token}`
     )
       .then((response) => response.json())
       .then((data) => {
@@ -279,7 +285,7 @@ export default function ChargesDataTable({
 
     // Fetch deduction tax options from the API
     fetch(
-      "https://marathon.lockated.com/rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      `${baseUrl}/rfq/events/deduction_tax_details?token=${token}`
     )
       .then((response) => response.json())
       .then((data) => {
@@ -296,7 +302,7 @@ export default function ChargesDataTable({
       async function fetchTaxPercentages() {
     try {
       const res = await fetch(
-        "https://marathon.lockated.com//rfq/events/tax_percentage?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        `${baseUrl}//rfq/events/tax_percentage?token=${token}`
       );
       const data = await res.json();
       setTaxPercentageOptions(data);

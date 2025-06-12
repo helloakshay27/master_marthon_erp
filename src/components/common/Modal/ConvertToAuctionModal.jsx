@@ -15,8 +15,10 @@ const ConvertToAuctionModal = ({ show, handleClose }) => {
 
   const handleSave = async () => {
     setLoading(true);
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
 
-    const apiUrl = `${baseURL}rfq/events/${eventId}/convert_to_auction?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+    const apiUrl = `${baseURL}rfq/events/${eventId}/convert_to_auction?token=${token}`;
 
     const payload = {
       include_bid: useRFQQuotes ? "true" : "false",

@@ -15,6 +15,8 @@ import { baseURL } from '../confi/apiDomain';
 const DebitNoteDetails = () => {
   // const [showRows, setShowRows] = useState(false);
   const { id } = useParams();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const [showRows, setShowRows] = useState(false);
   const [debitNoteData, setDebitNoteData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +28,7 @@ const DebitNoteDetails = () => {
     const fetchCreditNoteData = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}debit_notes/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}debit_notes/${id}?token=${token}`
         );
         setDebitNoteData(response.data);
         setStatus(response.data.status)
@@ -112,7 +114,7 @@ const DebitNoteDetails = () => {
 
     try {
       const response = await axios.patch(
-        `${baseURL}debit_notes/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}debit_notes/${id}/update_status.json?token=${token}`,
         payload, // The request body containing status and remarks
         {
           headers: {
@@ -653,8 +655,8 @@ const DebitNoteDetails = () => {
 
                                         <a
                                           href={
-                                            // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
-                                            `${baseURL}debit_notes/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
+                                            // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                                            `${baseURL}debit_notes/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
                                           }
                                           download={attachment.filename}
                                         >

@@ -22,10 +22,11 @@ export default function AnalyticsTab({ eventId }) {
     const fetchAnalytics = async () => {
       setLoading(true); // Start loading
       setError(null); // Reset error state before fetching
-
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await fetch(
-          `${baseURL}rfq/events/${eventId}/event_analytics?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&filter_type=${selectedFilter}&event_material_id=${selectedMaterialId}`
+          `${baseURL}rfq/events/${eventId}/event_analytics?token=${token}&filter_type=${selectedFilter}&event_material_id=${selectedMaterialId}`
         );
 
         if (!response.ok) {
@@ -49,10 +50,11 @@ export default function AnalyticsTab({ eventId }) {
     const fetchCompanies = async () => {
       setLoading(true); // Set loading state to true before fetching
       setError(null); // Reset the error state before fetching
-
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await fetch(
-          `${baseURL}rfq/events/${eventId}/event_materials_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&filter_type=${selectedFilter}&event_material_id=${selectedMaterialId}`
+          `${baseURL}rfq/events/${eventId}/event_materials_list?token=${token}&filter_type=${selectedFilter}&event_material_id=${selectedMaterialId}`
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

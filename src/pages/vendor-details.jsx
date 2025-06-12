@@ -6,7 +6,7 @@ import { Table, ShortTable, SelectBox } from "../components";
 import ShortDataTable from "../components/base/Table/ShortDataTable";
 import "../styles/mor.css";
 import { mumbaiLocations, product, unitMeasure } from "../constant/data";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import ClockIcon from "../components/common/Icon/ClockIcon";
@@ -24,6 +24,7 @@ import {
 
 export default function VendorDetails() {
   // Set the initial bid index to 0 (first bid in the array)
+  const location = useLocation();
   const effectRan = useRef(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [bidIdForCounter, setBidIdForCounter] = useState(0);
@@ -151,9 +152,11 @@ const pageSize = 10; // Change as needed
 
   useEffect(() => {
     const fetchFreightData = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/${eventId}/applied_event_templates?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/applied_event_templates?token=${token}`
         );
         const data = response.data.applied_bid_template_fields.map((field) => ({
           label: field.field_name,
@@ -173,9 +176,11 @@ const pageSize = 10; // Change as needed
 
   useEffect(() => {
     const fetchAdditionalColumns = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/${eventId}/applied_event_templates?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/applied_event_templates?token=${token}`
         );
         const columns = response.data.applied_bid_material_template_fields.map(
           (field) => ({
@@ -256,9 +261,11 @@ const pageSize = 10; // Change as needed
 
    useEffect(() => {
       const fetchSections = async () => {
+        const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
             try {
               const response = await axios.get(
-                `${baseURL}rfq/events/material_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}rfq/events/material_types?token=${token}`
               );
       
               if (response.data && Array.isArray(response.data.inventory_types)) {
@@ -848,10 +855,12 @@ const pageSize = 10; // Change as needed
   // const nextBid = currentIndex < bids.length - 1 ? currentIndex + 1 : "No bid";
 
   const fetchEventData = async () => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       // Step 1: Fetch the initial API to get `revised_bid`
       const initialResponse = await axios.get(
-        `${baseURL}/rfq/events/${eventId}/event_materials?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[event_vendor_id_cont]=${vendorId}`
+        `${baseURL}/rfq/events/${eventId}/event_materials?token=${token}&page=1&q[event_vendor_id_cont]=${vendorId}`
       );
 
       const initialData = initialResponse.data;
@@ -1009,7 +1018,7 @@ const pageSize = 10; // Change as needed
       } else {
         // Step 2: Fetch the bid data if `revised_bid` is true
         const bidResponse = await axios.get(
-          `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+          `${baseURL}rfq/events/${eventId}/bids?token=${token}&q[event_vendor_pms_supplier_id_in]=${vendorId}`
         );
         setCounterData(
           bidResponse.data?.bids[currentIndex]?.counter_bids.length
@@ -1457,7 +1466,8 @@ const pageSize = 10; // Change as needed
     setSubmitted(true);
     const payload = preparePayload();
     console.log("payload:---", payload);
-
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       // Send POST request
       // Validate mandatory fields
@@ -1468,7 +1478,7 @@ const pageSize = 10; // Change as needed
       const payload = preparePayload();
       // console.log("payload:---", payload);
       const response = await axios.post(
-        `${baseURL}rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`, // Replace with your API endpoint
+        `${baseURL}rfq/events/${eventId}/bids?token=${token}&event_vendor_id=${vendorId}`, // Replace with your API endpoint
         payload,
         {
           headers: {
@@ -1488,7 +1498,7 @@ const pageSize = 10; // Change as needed
       // setData(response.data.bid_materials_attributes || []);
       setTimeout(() => {
         navigate(
-          "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `/vendor-list?token=${token}`
         );
       }, 1000);
     } catch (error) {
@@ -1532,6 +1542,8 @@ const pageSize = 10; // Change as needed
       setSubmitted(false);
       return;
     }
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
 
     try {
       const revisedBidMaterials = data.map((row, index) => {
@@ -1669,7 +1681,7 @@ const pageSize = 10; // Change as needed
       );
 
       const response = await axios.post(
-        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
+        `${baseURL}/rfq/events/${eventId}/bids/${bidIds}/revised_bids?token=${token}&event_vendor_id=${vendorId}`,
         payload
       );
 
@@ -1679,7 +1691,7 @@ const pageSize = 10; // Change as needed
 
       setTimeout(() => {
         navigate(
-          "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `/vendor-list?token=${token}` // Redirect to vendor list after successful revision
         );
       }, 1500);
     } catch (error) {
@@ -1694,11 +1706,13 @@ const pageSize = 10; // Change as needed
   };
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     // if (!activityLogAccordion) return;
     setActivityLogsLoading(true);
     axios
       .get(
-        `${baseURL}rfq/events/${eventId}/activity_logs?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}rfq/events/${eventId}/activity_logs?token=${token}`
       )
       .then((res) => {
         setActivityLogs(res.data.activity_logs || []);
@@ -1870,17 +1884,21 @@ const [orderConfigOpen, setOrderConfigOpen] = useState(false); // for collapse
   // Function to handle button click and navigate
   const handleNavigate = () => {
     // // console.log("vendor list ");
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     navigate(
-      "/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      `/vendor-list?token=${token}`
     ); // Redirect to /vendor-list page
   };
 
   const handleDecline = async () => {
     setLoading(true);
     const payload = { status: "rejected" };
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const response = await fetch(
-        `${baseURL}/rfq/events/${eventId}/bids/${bidIdForCounter}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}/rfq/events/${eventId}/bids/${bidIdForCounter}/counter_bids/${counterId}/update_status?token=${token}`,
         {
           method: "POST",
           headers: {
@@ -1895,7 +1913,7 @@ const [orderConfigOpen, setOrderConfigOpen] = useState(false); // for collapse
 
         // Retrieve the first bid data again (to restore it)
         const bidResponse = await axios.get(
-          `${baseURL}/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+          `${baseURL}/rfq/events/${eventId}/bids?token=${token}&q[event_vendor_pms_supplier_id_in]=${vendorId}`
         );
         const bids = bidResponse.data.bids;
 
@@ -1986,11 +2004,12 @@ const [orderConfigOpen, setOrderConfigOpen] = useState(false); // for collapse
 
     // console.log("Payload being sent:", payload);
     console.log("Event ID:", eventId, "Bid IDs:", bidIds, "Counter ID:", counterId);
-    
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       // API call to update status
       const response = await fetch(
-        `${baseURL}/rfq/events/${eventId}/bids/${bidIdForCounter}/counter_bids/${counterId}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}/rfq/events/${eventId}/bids/${bidIdForCounter}/counter_bids/${counterId}/update_status?token=${token}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -2005,7 +2024,7 @@ const [orderConfigOpen, setOrderConfigOpen] = useState(false); // for collapse
 
         // Fetch bids
         const bidResponse = await axios.get(
-          `${baseURL}/rfq/events/${eventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+          `${baseURL}/rfq/events/${eventId}/bids?token=${token}&q[event_vendor_pms_supplier_id_in]=${vendorId}`
         );
 
         const bids = bidResponse.data.bids;
@@ -2172,9 +2191,11 @@ const [orderConfigOpen, setOrderConfigOpen] = useState(false); // for collapse
 
   useEffect(() => {
     const fetchEventData = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}/rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `${baseURL}/rfq/events/${eventId}?token=${token}&page=1`
         );
 
         const data = response.data;
@@ -2278,6 +2299,8 @@ const [orderConfigOpen, setOrderConfigOpen] = useState(false); // for collapse
   const [grossTotal2, setGrossTotal2] = useState(0);
 
   const fetchLinkedEventData = async (linkedEventId) => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       if (!linkedEventId) {
         console.error("Error: linkedEventId is missing!");
@@ -2285,7 +2308,7 @@ const [orderConfigOpen, setOrderConfigOpen] = useState(false); // for collapse
       }
 
       const response = await axios.get(
-        `${baseURL}/rfq/events/${linkedEventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+        `${baseURL}/rfq/events/${linkedEventId}?token=${token}&page=1`
       );
 
       setLinkedData(response.data);
@@ -2295,7 +2318,7 @@ const [orderConfigOpen, setOrderConfigOpen] = useState(false); // for collapse
       let totalGrossAmount = 0;
 
       const bidResponse = await axios.get(
-        `${baseURL}/rfq/events/${linkedEventId}/bids?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[event_vendor_pms_supplier_id_in]=${vendorId}`
+        `${baseURL}/rfq/events/${linkedEventId}/bids?token=${token}&q[event_vendor_pms_supplier_id_in]=${vendorId}`
       );
 
       const bids2 = bidResponse.data.bids || [];
@@ -2821,9 +2844,11 @@ useEffect(() => {
 
   useEffect(() => {
     const fetchTaxes = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/taxes_dropdown?token=${token}`
         );
 
         if (response.data?.taxes) {
@@ -2850,9 +2875,11 @@ useEffect(() => {
 
   useEffect(() => {
     const fetchTaxes = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
         );
 
         if (response.data?.taxes) {
@@ -2876,7 +2903,7 @@ useEffect(() => {
     async function fetchTaxPercentages() {
     try {
       const res = await fetch(
-        "https://marathon.lockated.com//rfq/events/tax_percentage?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        `${baseURL}/rfq/events/tax_percentage?token=${token}`
       );
       const data = await res.json();
       setTaxPercentageOptions(data);
@@ -2962,6 +2989,9 @@ const handlePageChange = (page) => {
   if (page < 1 || page > totalPages || page === currentPage) return;
   setCurrentPage(page);
 };
+
+const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
 
   return (
     <div className="">
@@ -4272,7 +4302,7 @@ const handlePageChange = (page) => {
                                       }}
                                     >
                                       <a
-                                        href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                        href={`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
                                         download={attachment.filename}
                                         className="purple-btn2"
                                         style={{
@@ -4444,7 +4474,7 @@ const handlePageChange = (page) => {
                                             </td>
                                             <td className="text-start">
                                               <a
-                                                href={`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
+                                                href={`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
                                                 download={attachment.filename}
                                               >
                                                 <svg

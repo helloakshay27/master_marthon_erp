@@ -10,7 +10,7 @@ import {
   SelectBox,
   Table,
 } from "../components";
-import { useParams, useNavigation, useNavigate } from "react-router-dom";
+import { useParams, useNavigation, useNavigate, useLocation } from "react-router-dom";
 import { citiesList, participantsTabColumns } from "../constant/data";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -110,6 +110,12 @@ export default function EditEvent() {
   ]);
   const [statusLogData, setStatusLogData] = useState([]);
   const [specificationData, setSpecificationData] = useState([]);
+
+  const location = useLocation();
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
+    console.log("Token from URL:", token, "Location:", location, "urlParams:", urlParams);
+    
 
   const options = [
     { value: "BUILDING MATERIAL", label: "BUILDING MATERIAL" },
@@ -256,9 +262,11 @@ export default function EditEvent() {
   // }, [materialFormData]); // Triggered when materialFormData changes
 
   const fetchTermsAndConditions = async () => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/terms_and_conditions?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+        `${baseURL}rfq/events/terms_and_conditions?token=${token}&page=1`
       );
       const data = await response.json();
       const termsList = data.list.map((term) => ({
@@ -318,9 +326,11 @@ export default function EditEvent() {
   const [eventStatus, setEventStatus] = useState("pending");
 
   const fetchEventData = async () => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}rfq/events/${id}?token=${token}`
       );
 
       const data = await response.json();
@@ -343,12 +353,13 @@ export default function EditEvent() {
     try {
       let formattedData = [];
       let totalPages = 1;
-
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       // Wait for the inventoryTypeId to settle (with a timeout)
       setTimeout(async () => {
         if (inventoryTypeId.length > 0) {
           const response = await fetch(
-            `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_id=${id}&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(
+            `${baseURL}rfq/events/vendor_list?token=${token}&event_id=${id}&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(
               inventoryTypeId
             )}`
           );
@@ -398,7 +409,7 @@ export default function EditEvent() {
           setTotalPages(totalPages);
         } else {
           const response = await fetch(
-            `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
+            `${baseURL}rfq/events/vendor_list?token=${token}&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
           );
           const data = await response.json();
           const vendors = Array.isArray(data.vendors) ? data.vendors : [];
@@ -745,7 +756,9 @@ export default function EditEvent() {
     fetch(url, options).then((res) => res.json());
 
   const updateEvent = async (id, eventData) => {
-    const url = `${baseURL}rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
+    const url = `${baseURL}rfq/events/${id}?token=${token}`;
     const options = {
       method: "PUT",
       headers: {
@@ -1062,8 +1075,10 @@ export default function EditEvent() {
     console.log("eventData:--", JSON.stringify(eventData, null, 2));
 
     try {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       const response = await fetch(
-        `${baseURL}rfq/events/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}rfq/events/${id}?token=${token}`,
         {
           method: "PUT",
           headers: {
@@ -1079,7 +1094,7 @@ export default function EditEvent() {
         toast.success("Event updated successfully!", { autoClose: 1000 });
         setTimeout(() => {
           navigate(
-            "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+            `/event-list?token=${token}`
           );
         }, 1500);
       } else {
@@ -1156,8 +1171,11 @@ export default function EditEvent() {
         .flatMap((subType) => Object.values(subType))
         .map((item) => item.inventory_id);
 
+        const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
+
       const response = await fetch(
-        `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${query}&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(
+        `${baseURL}rfq/events/vendor_list?token=${token}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${query}&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(
           inventoryIds
         )}`
       );
@@ -1293,8 +1311,10 @@ export default function EditEvent() {
   const [companyList, setCompanyList] = useState([]);
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     fetch(
-      `${baseURL}/rfq/events/company_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      `${baseURL}/rfq/events/company_list?token=${token}`
     )
       .then((response) => response.json())
       .then((data) =>
@@ -1312,10 +1332,11 @@ export default function EditEvent() {
     if (Object.keys(errors).length > 0) return;
 
     setIsInvite(true); // ✅ Start loader
-
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/3/invite_vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&add_vendor=true&organization_name=${inviteVendorData?.organization}&company_id=${inviteVendorData?.company}`,
+        `${baseURL}rfq/events/3/invite_vendor?token=${token}&add_vendor=true&organization_name=${inviteVendorData?.organization}&company_id=${inviteVendorData?.company}`,
         {
           method: "POST",
           headers: {
@@ -1406,9 +1427,11 @@ export default function EditEvent() {
     // console.log("inventoryTypeId changed:", inventoryTypeId); // Debugging line
 
     const fetchMaterialTypes = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await fetch(
-          `${baseURL}rfq/events/material_types?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/material_types?token=${token}`
         );
         const data = await response.json();
 
@@ -1429,6 +1452,7 @@ export default function EditEvent() {
     fetchMaterialTypes();
     // }
   }, [inventoryTypeId]); // Trigger when inventoryTypeId changes
+
   return (
     <>
       <div className="website-content overflowY-auto">
@@ -1437,7 +1461,7 @@ export default function EditEvent() {
             <ol className="breadcrumb mb-0">
               <li className="breadcrumb-item">
                 <a
-                  href="/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+                  href={`/event-list?token=${token}`}
                   className="text-decoration-none text-primary"
                 >
                   Event List
@@ -1876,7 +1900,7 @@ export default function EditEvent() {
                     className="purple-btn1 w-100"
                     onClick={() => {
                       navigate(
-                        "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414/event-list"
+                        `/event-list?token=${token}/event-list`
                       );
                     }}
                   >
@@ -1974,6 +1998,8 @@ export default function EditEvent() {
                             options={materialSelectList}
                             onChange={async (selectedOptions) => {
                               try {
+                                const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
                                 if (
                                   selectedOptions &&
                                   selectedOptions.length > 0
@@ -1983,9 +2009,11 @@ export default function EditEvent() {
                                     (option) => option.value
                                   );
 
+                                  
+
                                   // Call the API with the selected values
                                   const response = await fetch(
-                                    `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(
+                                    `${baseURL}rfq/events/vendor_list?token=${token}&page=1&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(
                                       selectedValues
                                     )}`
                                   );
@@ -2019,7 +2047,7 @@ export default function EditEvent() {
                                 } else {
                                   // If no option is selected, reset to show all vendors
                                   const response = await fetch(
-                                    `${baseURL}rfq/events/vendor_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
+                                    `${baseURL}rfq/events/vendor_list?token=${token}&page=1&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
                                   );
 
                                   const data = await response.json();

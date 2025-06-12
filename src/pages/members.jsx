@@ -425,27 +425,27 @@ function Members() {
                 </li>
 
                 <h5>___Credit Note___</h5>
-                <li>
+                {/* <li>
                   <Link to="/credit-note-create">Credit Note Create</Link>
-                </li>
+                </li> */}
                 <li>
                   {/* <Link to="/credit-note-details">Credit Note Details</Link> */}
                 </li>
                 <li>
-                  <Link to="/credit-note-list">Credit Note List</Link>
+                  <Link to="/credit-note-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">Credit Note List</Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link to="/test-table">Test Table</Link>
-                </li>
+                </li> */}
                 <h5>___Debit Note___</h5>
-                <li>
+                {/* <li>
                   <Link to="/debit-note-create">Debit Note Create</Link>
-                </li>
+                </li> */}
                 {/* <li>
                   <Link to="/debit-note-details">Debit Note Details</Link>
                 </li> */}
                 <li>
-                  <Link to="/debit-note-list">Debit Note List</Link>
+                  <Link to="/debit-note-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">Debit Note List</Link>
                 </li>
                 <h5>___Miscellaneous Bill___</h5>
                 <li>
@@ -551,7 +551,7 @@ function Members() {
               <h1>RFQ Module</h1>
               <ul>
                 <li>
-                  <Link to="/create-event">create_event</Link>
+                  <Link to="/create-event?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">create_event</Link>
                 </li>
                 <li>
                   <Link to="/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
@@ -559,21 +559,27 @@ function Members() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/create-template">create_template</Link>
+                  <Link to="/edit-event?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    edit_event
+                  </Link>
+                </li>
+
+                <li>
+                  <Link to="/create-template?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">create_template</Link>
                 </li>
                 <li>
-                  <Link to="/edit-template">edit_template</Link>
+                  <Link to="/edit-template?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">edit_template</Link>
                 </li>
                 <li>
-                  <Link to="/event-template-list">event_template_list</Link>
+                  <Link to="/event-template-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">event_template_list</Link>
                 </li>
                 <li>
-                  <Link to="/erp-rfq-detail-price-trends4h">
+                  <Link to="/erp-rfq-detail-price-trends4h?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
                     event_details_price
                   </Link>
                 </li>
                 <li>
-                  <Link to="/contract-invitation">contract_invitation</Link>
+                  <Link to="/contract-invitation?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">contract_invitation</Link>
                 </li>
                 <li>
                   <Link to="/section-tab">section_tab</Link>
@@ -603,11 +609,11 @@ function Members() {
                   <Link to="/Wo">Wo list</Link>
                 </li>
                 <li>
-                  <Link to="/user-lists">user_list</Link>
+                  <Link to="/user-lists?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">user_list</Link>
                 </li>
 
                 <li>
-                  <Link to="/user-overview">user_overview</Link>
+                  <Link to="/user-overview?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">user_overview</Link>
                 </li>
 
                 <li>

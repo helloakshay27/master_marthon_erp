@@ -191,9 +191,11 @@ export default function EditTemplate() {
 
   useEffect(() => {
     const fetchDepartments = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/department_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/department_list?token=${token}`
         );
         const options = response.data.list.map((dept) => ({
           value: dept.value,

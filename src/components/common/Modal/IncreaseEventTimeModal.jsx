@@ -69,8 +69,10 @@ const IncreaseEventTimeModal = ({ show, handleClose }) => {
     }
 
     try {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       const response = await fetch(
-        `${baseURL}rfq/events/${eventId}/extend_event_time?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
+        `${baseURL}rfq/events/${eventId}/extend_event_time?token=${token}&event_vendor_id=${vendorId}`,
         {
           method: "PUT",
           headers: {

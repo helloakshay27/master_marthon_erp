@@ -121,9 +121,11 @@ export default function AllocationTab({ isCounterOffer }) {
 
   useEffect(() => {
     const fetchTaxes = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/taxes_dropdown?token=${token}`
         );
 
         if (response.data?.taxes) {
@@ -149,9 +151,11 @@ export default function AllocationTab({ isCounterOffer }) {
 
   useEffect(() => {
     const fetchDeductionTaxes = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
         );
 
         if (response.data?.taxes) {
@@ -177,9 +181,11 @@ export default function AllocationTab({ isCounterOffer }) {
 
   useEffect(() => {
     const fetchRemarks = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await fetch(
-          `${baseURL}rfq/events/${eventId}/event_responses?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `${baseURL}rfq/events/${eventId}/event_responses?token=${token}&page=1`
         );
 
         if (!response.ok) {
@@ -203,9 +209,11 @@ export default function AllocationTab({ isCounterOffer }) {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/${eventId}/bids/${bidId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/bids/${bidId}?token=${token}`
         );
         setBidCounterData(response.data);
       } catch (err) {
@@ -250,7 +258,8 @@ export default function AllocationTab({ isCounterOffer }) {
 
     if (isUpdatingAllocation.current) return;
     isUpdatingAllocation.current = true;
-
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const payload = isBulk
         ? {
@@ -267,7 +276,7 @@ export default function AllocationTab({ isCounterOffer }) {
       const response = await axios.post(
         `${baseURL}rfq/events/${eventId}/event_vendors/${
           isBulk ? data[0].vendor_id : data.vendor_id
-        }/update_allocation?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        }/update_allocation?token=${token}`,
         payload
       );
 
@@ -457,7 +466,8 @@ export default function AllocationTab({ isCounterOffer }) {
         },
       ],
     };
-
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       setTimeout(() => {
         setSelectedData((prevSelectedData) =>
@@ -467,7 +477,7 @@ export default function AllocationTab({ isCounterOffer }) {
         );
       }, 1000);
       const response = await axios.post(
-        `${baseURL}rfq/events/${eventId}/event_po?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}rfq/events/${eventId}/event_po?token=${token}`,
         jsonBody
       );
       toast.success("PO created successfully");
@@ -485,9 +495,11 @@ export default function AllocationTab({ isCounterOffer }) {
 
   useEffect(() => {
     const fetchParticipationSummary = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/${eventId}/event_participate_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/event_participate_summary?token=${token}`
         );
         setParticipationSummary(response.data);
       } catch (err) {

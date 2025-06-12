@@ -32,10 +32,12 @@ const UserOverview = () => {
   useEffect(() => {
     const fetchEventMaterials = async () => {
       console.log("Event ID:", eventId);
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         // Fetch data directly without headers
         const response = await axios.get(
-          `${baseURL}rfq/events/${eventId}/vendor_show?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `${baseURL}rfq/events/${eventId}/vendor_show?token=${token}&page=1`
         );
 
         // Transform the API response into the required table data format

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigation, useNavigate } from "react-router-dom";
+import { useParams, useNavigation, useNavigate, useLocation } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "../styles/event.css";
 import {
@@ -52,6 +52,9 @@ export default function ErpRfqDetailPriceTrends4h() {
   const [loading, setLoading] = useState(true);
   const [isCounter, setIsCounter] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -81,9 +84,11 @@ export default function ErpRfqDetailPriceTrends4h() {
 
   useEffect(() => {
     const fetchCounterOfferData = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await fetch(
-          `${baseURL}rfq/events/${eventId}/event_materials?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}/event_materials?token=${token}`
         );
         const data = await response.json();
         if (data) {
@@ -208,9 +213,11 @@ export default function ErpRfqDetailPriceTrends4h() {
 
   useEffect(() => {
     const fetchRemarks = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await fetch(
-          `${baseURL}rfq/events/${eventId}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/${eventId}?token=${token}`
         );
 
         if (!response.ok) {
@@ -239,9 +246,11 @@ export default function ErpRfqDetailPriceTrends4h() {
 
   useEffect(() => {
     const fetchRemarks = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await fetch(
-          `${baseURL}rfq/events/${eventId}/bidding_summary?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1h`
+          `${baseURL}rfq/events/${eventId}/bidding_summary?token=${token}&page=1h`
         );
 
         if (!response.ok) {
@@ -262,9 +271,11 @@ export default function ErpRfqDetailPriceTrends4h() {
 
   useEffect(() => {
     const fetchRemarks = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await fetch(
-          `${baseURL}rfq/events/${eventId}/event_overview?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1h`
+          `${baseURL}rfq/events/${eventId}/event_overview?token=${token}&page=1h`
         );
 
         if (!response.ok) {
@@ -285,9 +296,11 @@ export default function ErpRfqDetailPriceTrends4h() {
 
   useEffect(() => {
     const fetchRemarks = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await fetch(
-          `${baseURL}rfq/events/${eventId}/event_vendors/event_vendor_remarks?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `${baseURL}rfq/events/${eventId}/event_vendors/event_vendor_remarks?token=${token}&page=1`
         );
 
         if (!response.ok) {
@@ -308,9 +321,11 @@ export default function ErpRfqDetailPriceTrends4h() {
 
   useEffect(() => {
     const fetchParticipants = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
       try {
         const response = await fetch(
-          `${baseURL}rfq/events/${eventId}/event_vendors?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=1`
+          `${baseURL}rfq/events/${eventId}/event_vendors?token=${token}&page=1`
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -327,6 +342,8 @@ export default function ErpRfqDetailPriceTrends4h() {
 
     fetchParticipants();
   }, [eventId]);
+      console.log("Token:", token, urlParams);
+      
 
   return (
     <>
@@ -340,7 +357,7 @@ export default function ErpRfqDetailPriceTrends4h() {
                   className="ant-btn styles_headerCtaLink__2kCN6 ant-btn-link"
                   onClick={() =>
                     navigate(
-                      "/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+                      `/event-list?token=${token}`
                     )
                   }
                 >

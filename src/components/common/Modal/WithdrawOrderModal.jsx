@@ -21,9 +21,11 @@ const WithdrawOrderModal = ({ show, handleClose }) => {
       withdraw_reason: withdrawReason,
     };
 
+    const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
     try {
       const response = await fetch(
-        `${baseURL}rfq/events/${eventId}/event_withdraw?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&event_vendor_id=${vendorId}`,
+        `${baseURL}rfq/events/${eventId}/event_withdraw?token=${token}&event_vendor_id=${vendorId}`,
         {
           method: "PUT",
           headers: {

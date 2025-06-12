@@ -38,6 +38,8 @@ export default function VendorListPage() {
   const [settingShow, setSettingShow] = useState(false);
   const [show, setShow] = useState(false);
   const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
     const containerRef = useRef(null);
     const [containerWidth, setContainerWidth] = useState(0);
   const [activeTab, setActiveTab] = useState("live");
@@ -178,8 +180,6 @@ export default function VendorListPage() {
     fetchFilterOptions();
   }, []);
   const [counts, setCounts] = useState("");
-
-  const token = new URLSearchParams(window.location.search).get("token");
 
   const fetchEventCounts = async () => {
     setLoading(true); // Start loader
@@ -505,7 +505,7 @@ export default function VendorListPage() {
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
       const response = await axios.get(
-        `${baseURL}/rfq/events/event_vendors_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078411&page=1`
+        `${baseURL}/rfq/events/event_vendors_list?token=${token}&page=1`
       );
 
       const vendorData = response.data.list;
@@ -650,10 +650,12 @@ export default function VendorListPage() {
       width: 80,
       sortable: false,
       filterable: false,
-      renderCell: (params) => (
+      renderCell: (params) => {
+        console.log("params.row:-",params.row)
+        return(
         <button
           className="btn"
-          onClick={() => navigate(`/user-list/${params.row.id}`)}
+          onClick={() => navigate(`/user-list/${params.row.id}?token=${token}`)}
           title="View"
         >
           <svg
@@ -667,8 +669,8 @@ export default function VendorListPage() {
             <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"></path>
             <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"></path>
           </svg>
-        </button>
-      ),
+        </button>)
+    },
     },
   ];
 
