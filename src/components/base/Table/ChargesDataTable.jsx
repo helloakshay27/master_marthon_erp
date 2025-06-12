@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import DynamicModalBox from "../Modal/DynamicModalBox";
 import SelectBox from "../Select/SelectBox";
 import { useLocation } from "react-router-dom";
-import baseUrl from "../../../config/apiDomain";
+import baseUrl from "../../../confi/apiDomain"
 
 export default function ChargesDataTable({
   data,
