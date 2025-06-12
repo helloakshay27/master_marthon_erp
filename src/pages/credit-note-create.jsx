@@ -1622,11 +1622,11 @@ const creditnotecreate = () => {
                   {/* <div className="col-md-2">
                     <button className="purple-btn2 w-100">Print</button>
                   </div> */}
-                  <div className="col-md-2">
+                  <div className="col-md-2 mt-2">
                     <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
                   </div>
                   <div className="col-md-2">
-                    <button className="purple-btn1 w-100">Cancel</button>
+                    <button className="purple-btn1 w-100"  onClick={() => navigate(`/credit-note-list?token=${token}`)}>Cancel</button>
                   </div>
                 </div>
                 {/* <div className="row mt-2 w-100">

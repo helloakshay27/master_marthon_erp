@@ -10,8 +10,11 @@ import { useParams } from "react-router-dom";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { baseURL } from "../confi/apiDomain";
 import { DownloadIcon } from "../components";
+import { useNavigate } from "react-router-dom";
 const CreditNoteDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const [showAuditModal, setShowAuditModal] = useState(false);
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
   const [showRows, setShowRows] = useState(false);
@@ -118,7 +121,7 @@ const CreditNoteDetails = () => {
   const handleStatusChange = (selectedOption) => {
     // setStatus(e.target.value);
     setStatus(selectedOption.value);
-    handleStatusChange(selectedOption); // Handle status change
+    // handleStatusChange(selectedOption); // Handle status change
   };
 
   // Step 3: Handle remark change
@@ -168,6 +171,7 @@ const CreditNoteDetails = () => {
       if (response.status === 200) {
         console.log("Status updated successfully:", response.data);
         setRemark("");
+        setComment("")
         // alert('Status updated successfully');
         // Handle success (e.g., update the UI, reset fields, etc.)
         toast.success("Status updated successfully!");
@@ -185,9 +189,23 @@ const CreditNoteDetails = () => {
   };
 
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!creditNoteData) return <div>No data found</div>;
+  // if (loading) return <div>Loading...</div>;
+  // if (error) return <div>Error: {error}</div>;
+  if (!creditNoteData) return <div> {loading && (
+    <div className="loader-container">
+      <div className="lds-ring">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      <p>Loading...</p>
+    </div>
+  )}</div>;
 
   return (
     <>
@@ -745,14 +763,14 @@ const CreditNoteDetails = () => {
                   {/* <div className="col-md-2">
                     <button className="purple-btn2 w-100">Print</button>
                   </div> */}
-                  <div className="col-md-2">
+                  <div className="col-md-2 mt-2">
                     <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
                   </div>
                   <div className="col-md-2">
-                    <button className="purple-btn1 w-100">Cancel</button>
+                    <button className="purple-btn1 w-100"  onClick={() => navigate(`/credit-note-list?token=${token}`)}>Cancel</button>
                   </div>
                 </div>
-                <div className="row mt-2 w-100">
+                {/* <div className="row mt-2 w-100">
                   <div className="col-12 px-4">
                     <h5>Audit Log</h5>
                     <div className="mx-0">
@@ -797,6 +815,69 @@ const CreditNoteDetails = () => {
 
                     </div>
                   </div>
+                </div> */}
+                <div className="row mt-2 w-100">
+                  <div className="col-12 px-4" >
+                    <h5>Audit Log</h5>
+                    <div className="mx-0" >
+                      <div className="tbl-container mt-1" style={{ maxHeight: "450px" }} >
+                        <table className="w-100"  >
+                          <thead>
+                            <tr>
+                              <th>Sr.No.</th>
+                              <th>Created By</th>
+                              <th>Created At</th>
+                              <th>Status</th>
+                              <th>Remark</th>
+                               <th>Comment</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(creditNoteData?.status_logs || [])
+                              .slice(0, 10)
+                              .map((log, index) => (
+                                <tr key={log.id}>
+                                  <td className="text-start">{index + 1}</td>
+                                  <td className="text-start">{""}</td>
+                                  <td className="text-start">
+                                    {log.created_at
+                                      ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric",
+                                      })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: true,
+                                      })}`
+                                      : ""}
+                                  </td>
+                                  <td className="text-start">
+                                    {log.status
+                                      ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                      : ""}
+                                  </td>
+                                  <td className="text-start">{log.remarks || ""}</td>
+                                  <td className="text-start">{log.comments || ""}</td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                        {/* Show "Show More" link if more than 10 records */}
+                        {creditNoteData?.status_logs?.length > 10 && (
+                          <div className="mt-2 text-start">
+                            <span
+                              className="boq-id-link"
+                              style={{ fontWeight: "bold", cursor: "pointer" }}
+                              onClick={() => setShowAuditModal(true)}
+                            >
+                              Show More
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -834,6 +915,57 @@ const CreditNoteDetails = () => {
           <p>Loading...</p>
         </div>
       )}
+
+      {/* Modal for all audit logs */}
+      <Modal show={showAuditModal} onHide={() => setShowAuditModal(false)} size="xl">
+        <Modal.Header closeButton>
+          <Modal.Title>All Audit Logs</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="tbl-container" style={{ maxHeight: "700px" }}>
+            <table className="w-100">
+              <thead>
+                <tr>
+                  <th>Sr.No.</th>
+                  <th>Created By</th>
+                  <th>Created At</th>
+                  <th>Status</th>
+                  <th>Remark</th>
+                   <th>Comment</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(creditNoteData?.status_logs || []).map((log, index) => (
+                  <tr key={log.id}>
+                    <td className="text-start">{index + 1}</td>
+                    <td className="text-start">{""}</td>
+                    <td className="text-start">
+                      {log.created_at
+                        ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })} ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })}`
+                        : ""}
+                    </td>
+                    <td className="text-start">
+                      {log.status
+                        ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                        : ""}
+                    </td>
+                    <td className="text-start">{log.remarks || ""}</td>
+                    <td className="text-start">{log.comments || ""}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Modal.Body>
+      </Modal>
     </>
   );
 };
