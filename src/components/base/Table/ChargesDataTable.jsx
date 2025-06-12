@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import DynamicModalBox from "../Modal/DynamicModalBox";
 import SelectBox from "../Select/SelectBox";
 import { useLocation } from "react-router-dom";
-import baseUrl from "../../../confi/apiDomain"
+import { baseURL } from "../../../confi/apiDomain"
 
 export default function ChargesDataTable({
   data,
@@ -259,7 +259,7 @@ export default function ChargesDataTable({
   useEffect(() => {
     // Fetch charges data from the API
     fetch(
-      `${baseUrl}/rfq/events/charges_only?token=${token}`
+      `${baseURL}/rfq/events/charges_only?token=${token}`
     )
       .then((response) => response.json())
       .then((data) => {
@@ -269,7 +269,7 @@ export default function ChargesDataTable({
 
     // Fetch additional tax options from the API
     fetch(
-      `${baseUrl}/rfq/events/addition_taxes_dropdown?token=${token}`
+      `${baseURL}/rfq/events/addition_taxes_dropdown?token=${token}`
     )
       .then((response) => response.json())
       .then((data) => {
@@ -285,7 +285,7 @@ export default function ChargesDataTable({
 
     // Fetch deduction tax options from the API
     fetch(
-      `${baseUrl}/rfq/events/deduction_tax_details?token=${token}`
+      `${baseURL}/rfq/events/deduction_tax_details?token=${token}`
     )
       .then((response) => response.json())
       .then((data) => {
@@ -302,7 +302,7 @@ export default function ChargesDataTable({
       async function fetchTaxPercentages() {
     try {
       const res = await fetch(
-        `${baseUrl}//rfq/events/tax_percentage?token=${token}`
+        `${baseURL}//rfq/events/tax_percentage?token=${token}`
       );
       const data = await res.json();
       setTaxPercentageOptions(data);
