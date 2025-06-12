@@ -1114,7 +1114,10 @@ const MaterialReconciliationCreate = () => {
           <div className="row mt-4 justify-content-end align-items-center mx-2">
             <div className="col-md-3">
               <div className="form-group d-flex gap-3 align-items-center mx-3">
-                <label style={{ fontSize: "0.95rem", color: "black" }}>
+                <label
+                  className="form-label mt-2"
+                  style={{ fontSize: "0.95rem", color: "black" }}
+                >
                   Status
                 </label>
                 <SingleSelector
@@ -1133,7 +1136,7 @@ const MaterialReconciliationCreate = () => {
             </div>
           </div>
           <div className="row mt-2 justify-content-end">
-            <div className="col-md-2">
+            <div className="col-md-2 mt-2">
               <button className="purple-btn2 w-100" onClick={handleSubmit}>
                 Submit
               </button>
@@ -1142,7 +1145,7 @@ const MaterialReconciliationCreate = () => {
               <button className="purple-btn1 w-100">Cancel</button>
             </div>
           </div>
-          <div className=" ">
+          {/* <div className=" ">
             <h5 className=" ">Audit Log</h5>
           </div>
           <div className="tbl-container px-0">
@@ -1182,7 +1185,7 @@ const MaterialReconciliationCreate = () => {
                 </tr>
               </tbody>
             </table>
-          </div>
+          </div> */}
         </div>
       </div>
       <Modal
@@ -1486,7 +1489,7 @@ const MaterialReconciliationCreate = () => {
           <div className="row mt-3 justify-content-center">
             <div className="col-md-3">
               <button
-                className="purple-btn2 w-100"
+                className="purple-btn2 w-100 mt-2"
                 onClick={handleAcceptSelected}
               >
                 Accept Selected
