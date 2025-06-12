@@ -5,8 +5,13 @@ import MultiSelector from "../components/base/Select/MultiSelector";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { baseURL } from "../confi/apiDomain";
 import { Modal, Button, Form } from "react-bootstrap";
+import { useNavigate } from "react-router-dom"; // Add this import at the top
 
 const MaterialReconciliationCreate = () => {
+  const navigate = useNavigate(); // Add this hook
+
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const [companies, setCompanies] = useState([]);
   const [projects, setProjects] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState(null);
@@ -22,16 +27,19 @@ const MaterialReconciliationCreate = () => {
   const [addMaterialModal, setAddMaterialModal] = useState(false); // State to control modal visibility
   const [stores, setStores] = useState([]);
   const [selectedStore, setSelectedStore] = useState(null);
+  const [selectedWing, setSelectedWing] = useState(null);
+  // const [siteOptions, setSiteOptions] = useState([]);
+  const [wingsOptions, setWingsOptions] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState({
     value: "",
     label: "Select Status",
   });
 
-  // Add reason options
+  // Update the reasonOptions array
   const reasonOptions = [
-    { value: "reason1", label: "Reason 1" },
-    { value: "reason2", label: "Reason 2" },
-    { value: "reason3", label: "Reason 3" },
+    { value: "rmc_production", label: "RMC Production" },
+    { value: "sale_of_scrap", label: "Sale of Scrap" },
+    { value: "stock_adjustment", label: "Stock Adjustment" },
   ];
 
   // Function to close the modal
@@ -94,7 +102,7 @@ const MaterialReconciliationCreate = () => {
   useEffect(() => {
     axios
       .get(
-        "https://marathon.lockated.com/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        `https://marathon.lockated.com/pms/company_setups.json?token=${token}`
       )
       .then((response) => {
         setCompanies(response.data.companies);
@@ -161,7 +169,36 @@ const MaterialReconciliationCreate = () => {
   // Handle site selection
   const handleSiteChange = (selectedOption) => {
     setSelectedSite(selectedOption);
-    console.log("Selected Sub-Project ID:", selectedOption?.value);
+    //   console.log("Selected Sub-Project ID:", selectedOption?.value);
+    // };
+    setSelectedWing(null); // Reset wing selection
+    setWingsOptions([]); // Reset wings options
+
+    if (selectedOption) {
+      // Find the selected project and site data
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedCompany.value
+      );
+      const selectedProjectData = selectedCompanyData.projects.find(
+        (project) => project.id === selectedProject.value
+      );
+      const selectedSiteData = selectedProjectData?.pms_sites.find(
+        (site) => site.id === selectedOption.value
+      );
+
+      // Set wings options based on selected site
+      setWingsOptions(
+        selectedSiteData?.pms_wings.map((wing) => ({
+          value: wing.id,
+          label: wing.name,
+        })) || []
+      );
+    }
+  };
+
+  // Handle wing selection
+  const handleWingChange = (selectedOption) => {
+    setSelectedWing(selectedOption);
   };
 
   // Map companies to options for the dropdown
@@ -200,7 +237,7 @@ const MaterialReconciliationCreate = () => {
   useEffect(() => {
     axios
       .get(
-        `${baseURL}pms/inventory_types.json?q[category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`
       )
       .then((response) => {
         // Map the fetched data to the format required by react-select
@@ -224,7 +261,7 @@ const MaterialReconciliationCreate = () => {
 
       axios
         .get(
-          `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${inventoryTypeIds}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${inventoryTypeIds}&token=${token}`
         )
         .then((response) => {
           // Map the sub-types to options for the select dropdown
@@ -257,9 +294,7 @@ const MaterialReconciliationCreate = () => {
   // Fetch UOMs on component mount
   useEffect(() => {
     axios
-      .get(
-        `${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      )
+      .get(`${baseURL}unit_of_measures.json?token=${token}`)
       .then((response) => {
         const options = response.data.map((uom) => ({
           value: uom.id,
@@ -281,7 +316,7 @@ const MaterialReconciliationCreate = () => {
 
       axios
         .get(
-          `${baseURL}pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[material_category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[material_category_eq]=material&token=${token}`
         )
         .then((response) => {
           // Map the sub-types to options for the select dropdown
@@ -312,7 +347,7 @@ const MaterialReconciliationCreate = () => {
       // Fetch generic specifications
       axios
         .get(
-          `${baseURL}pms/generic_infos.json?q[material_id_eq]=${materialIds}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}pms/generic_infos.json?q[material_id_eq]=${materialIds}&token=${token}`
         )
         .then((response) => {
           const options = response.data.map((spec) => ({
@@ -328,7 +363,7 @@ const MaterialReconciliationCreate = () => {
       // Fetch colors
       axios
         .get(
-          `${baseURL}pms/colours.json?q[material_id_eq]=${materialIds}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}pms/colours.json?q[material_id_eq]=${materialIds}&token=${token}`
         )
         .then((response) => {
           const options = response.data.map((color) => ({
@@ -344,7 +379,7 @@ const MaterialReconciliationCreate = () => {
       // Fetch brands
       axios
         .get(
-          `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${materialIds}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${materialIds}&token=${token}`
         )
         .then((response) => {
           const options = response.data.map((brand) => ({
@@ -627,13 +662,15 @@ const MaterialReconciliationCreate = () => {
     stockAsOn,
     deadstockQty,
     theftQty,
+    wastageQty,
     adjustmentQty
   ) => {
     const stock = parseFloat(stockAsOn) || 0;
     const deadstock = parseFloat(deadstockQty) || 0;
     const theft = parseFloat(theftQty) || 0;
+    const wastage = parseFloat(wastageQty) || 0;
     const adjustment = parseFloat(adjustmentQty) || 0;
-    return stock - deadstock - theft + adjustment;
+    return stock - deadstock - theft - wastage + adjustment;
   };
 
   // Modify handleItemInputChange function
@@ -650,6 +687,7 @@ const MaterialReconciliationCreate = () => {
           if (
             field === "deadstock_qty" ||
             field === "theft_or_missing_qty" ||
+            field === "wastage_qty" ||
             field === "adjustment_qty"
           ) {
             const newDeadstockQty =
@@ -658,6 +696,8 @@ const MaterialReconciliationCreate = () => {
               field === "theft_or_missing_qty"
                 ? value
                 : inventory.theft_or_missing_qty;
+            const newWastageQty =
+              field === "wastage_qty" ? value : inventory.wastage_qty;
             const newAdjustmentQty =
               field === "adjustment_qty" ? value : inventory.adjustment_qty;
 
@@ -665,6 +705,7 @@ const MaterialReconciliationCreate = () => {
               inventory.qty,
               newDeadstockQty,
               newTheftQty,
+              newWastageQty,
               newAdjustmentQty
             );
           }
@@ -686,10 +727,12 @@ const MaterialReconciliationCreate = () => {
           pms_project_id: selectedProject?.value || null,
           pms_site_id: selectedSite?.value || null,
           pms_store_id: selectedStore?.value || null,
+          pms_wing: selectedWing?.value || null,
           created_by_id: 2,
           reco_date: new Date().toISOString().split("T")[0],
           remarks: formData.remarks,
-          status: "draft", // Hardcoded status value
+          status: "draft",
+          // status: selectedStatus?.value || " ", // Get status from dropdown selection
           material_reconciliation_items_attributes: acceptedInventories.map(
             (inventory) => ({
               mor_inventory_id: inventory.id,
@@ -700,6 +743,9 @@ const MaterialReconciliationCreate = () => {
                 : null,
               theft_or_missing_qty: inventory.theft_or_missing_qty
                 ? parseFloat(inventory.theft_or_missing_qty)
+                : null,
+              wastage_qty: inventory.wastage_qty
+                ? parseFloat(inventory.wastage_qty)
                 : null,
               adjustment_qty: inventory.adjustment_qty
                 ? parseFloat(inventory.adjustment_qty)
@@ -723,7 +769,7 @@ const MaterialReconciliationCreate = () => {
       console.log("Submitting payload:", payload);
 
       const response = await axios.post(
-        `${baseURL}material_reconciliations.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}material_reconciliations.json?token=${token}`,
         payload
       );
 
@@ -731,6 +777,7 @@ const MaterialReconciliationCreate = () => {
 
       // Show success alert
       alert("Record created successfully!");
+      navigate("/material-reconciliation-list?token=${token}");
     } catch (error) {
       console.error("Error submitting material reconciliation:", error);
       alert("Error creating record. Please try again.");
@@ -749,7 +796,7 @@ const MaterialReconciliationCreate = () => {
   useEffect(() => {
     axios
       .get(
-        "https://marathon.lockated.com/pms/stores/store_dropdown.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        `https://marathon.lockated.com/pms/stores/store_dropdown.json?token=${token}`
       )
       .then((response) => {
         setStores(response.data);
@@ -824,9 +871,21 @@ const MaterialReconciliationCreate = () => {
                       placeholder={`Select Sub-project`} // Dynamic placeholder
                     />
                   </div>
-                  {/* /.form-group */}
                 </div>
                 <div className="col-md-3">
+                  {/* /.form-group */}
+                  <div className="form-group">
+                    <label>Wings </label>
+                    <SingleSelector
+                      // options={siteOptions}
+                      options={wingsOptions}
+                      value={selectedWing}
+                      onChange={handleWingChange}
+                      placeholder={`Select Wing`} // Dynamic placeholder
+                    />
+                  </div>
+                </div>
+                <div className="col-md-3 mt-2">
                   <div className="form-group">
                     <label>Store</label>
                     <SingleSelector
@@ -865,22 +924,27 @@ const MaterialReconciliationCreate = () => {
                 </button>
               </div>
               <div className="tbl-container mx-2 mt-3">
-                <table className="w-100">
+                <table className="w-100" style={{ minWidth: "1800px" }}>
                   <thead>
                     <tr>
-                      <th>Sr.No.</th>
-                      <th>Material</th>
+                      <th style={{ minWidth: "2px" }}>Sr.No.</th>
+                      <th style={{ minWidth: "150px" }}>Material</th>
                       <th>UOM</th>
-                      <th>Stock As on</th>
+                      <th style={{ minWidth: "80px" }}>Stock As on</th>
                       <th>Rate (Weighted Average)(INR)</th>
-                      <th>Deadstock Qty</th>
+                      {/* <th>Deadstock Qty</th>
                       <th>Theft / Missing Qty</th>
-                      <th>Adjustment Quantity</th>
+                      <th>Wastage Qty</th>
+                      <th>Adjustment Quantity</th> */}
+                      <th style={{ minWidth: "120px" }}>Deadstock Qty</th>
+                      <th style={{ minWidth: "120px" }}>Theft / Missing Qty</th>
+                      <th style={{ minWidth: "120px" }}>Damage Qty</th>
+                      <th style={{ minWidth: "120px" }}>Adjustment Quantity</th>
                       <th>Adjustment Rate(INR)</th>
                       <th>Adjustment Value(INR)</th>
-                      <th>Net Quantity</th>
-                      <th>Remarks</th>
-                      <th>Reason</th>
+                      <th style={{ minWidth: "120px" }}>Net Quantity</th>
+                      <th style={{ minWidth: "100px" }}>Remarks</th>
+                      <th style={{ minWidth: "200px" }}>Reason</th>
                       <th>Action</th>
                     </tr>
                   </thead>
@@ -903,7 +967,8 @@ const MaterialReconciliationCreate = () => {
                                 e.target.value
                               )
                             }
-                            placeholder="Enter Rate"
+                            readOnly
+                            // placeholder="Enter Rate"
                           />
                         </td>
                         <td>
@@ -942,6 +1007,22 @@ const MaterialReconciliationCreate = () => {
                           <input
                             type="number"
                             className="form-control"
+                            value={inventory.wastage_qty || ""}
+                            onChange={(e) =>
+                              handleItemInputChange(
+                                inventory.id,
+                                "wastage_qty",
+                                e.target.value
+                              )
+                            }
+                            placeholder="Enter Wastage Qty"
+                            min="0"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            className="form-control"
                             value={inventory.adjustment_qty || ""}
                             onChange={(e) =>
                               handleItemInputChange(
@@ -965,7 +1046,8 @@ const MaterialReconciliationCreate = () => {
                                 e.target.value
                               )
                             }
-                            placeholder="Enter Adjustment Rate"
+                            disabled
+                            // placeholder="Enter Adjustment Rate"
                           />
                         </td>
                         <td>
@@ -980,7 +1062,8 @@ const MaterialReconciliationCreate = () => {
                                 e.target.value
                               )
                             }
-                            placeholder="Enter Adjustment Value"
+                            disabled
+                            // placeholder="Enter Adjustment Value"
                           />
                         </td>
                         <td>
@@ -1008,24 +1091,23 @@ const MaterialReconciliationCreate = () => {
                           />
                         </td>
                         <td>
-                          <select
-                            className="form-control"
-                            value={inventory.reason || ""}
-                            onChange={(e) =>
+                          <SingleSelector
+                            options={reasonOptions}
+                            value={
+                              reasonOptions.find(
+                                (option) => option.value === inventory.reason
+                              ) || null
+                            }
+                            onChange={(selectedOption) =>
                               handleItemInputChange(
                                 inventory.id,
                                 "reason",
-                                e.target.value
+                                selectedOption ? selectedOption.value : ""
                               )
                             }
-                          >
-                            <option value="">Select Reason</option>
-                            {reasonOptions.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
+                            placeholder="Select Reason"
+                            className="form-control"
+                          />
                         </td>
                         <td>
                           <button
