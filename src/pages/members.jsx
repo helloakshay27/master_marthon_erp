@@ -425,27 +425,27 @@ function Members() {
                 </li>
 
                 <h5>___Credit Note___</h5>
-                <li>
+                {/* <li>
                   <Link to="/credit-note-create">Credit Note Create</Link>
-                </li>
+                </li> */}
                 <li>
                   {/* <Link to="/credit-note-details">Credit Note Details</Link> */}
                 </li>
                 <li>
-                  <Link to="/credit-note-list">Credit Note List</Link>
+                  <Link to="/credit-note-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">Credit Note List</Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link to="/test-table">Test Table</Link>
-                </li>
+                </li> */}
                 <h5>___Debit Note___</h5>
-                <li>
+                {/* <li>
                   <Link to="/debit-note-create">Debit Note Create</Link>
-                </li>
+                </li> */}
                 {/* <li>
                   <Link to="/debit-note-details">Debit Note Details</Link>
                 </li> */}
                 <li>
-                  <Link to="/debit-note-list">Debit Note List</Link>
+                  <Link to="/debit-note-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">Debit Note List</Link>
                 </li>
                 <h5>___Miscellaneous Bill___</h5>
                 <li>

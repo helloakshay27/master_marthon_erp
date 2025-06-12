@@ -13,6 +13,8 @@ import { baseURL } from "../confi/apiDomain";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 const DebitNoteCreate = () => {
   const navigate = useNavigate();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   // const [showRows, setShowRows] = useState(false);
   // const [attachOneModal, setattachOneModal] = useState(false);
   // const [attachTwoModal, setattachTwoModal] = useState(false);
@@ -287,7 +289,7 @@ const DebitNoteCreate = () => {
   ) => {
     try {
       setLoading(true);
-      let url = `${baseURL}purchase_orders/grn_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+      let url = `${baseURL}purchase_orders/grn_details.json?token=${token}`;
 
       // Add filters only if they are provided
       if (companyId) url += `&q[company_id_eq]=${companyId}`;
@@ -456,7 +458,7 @@ const DebitNoteCreate = () => {
   const fetchProjects = async (companyId) => {
     try {
       const response = await axios.get(
-        `${baseURL}projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}`
+        `${baseURL}projects.json?token=${token}&q[company_id_eq]=${companyId}`
       );
       setProjects(
         response.data.projects.map((project) => ({
@@ -472,7 +474,7 @@ const DebitNoteCreate = () => {
   const fetchSites = async (projectId) => {
     try {
       const response = await axios.get(
-        `${baseURL}sites.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[project_id_eq]=${projectId}`
+        `${baseURL}sites.json?token=${token}&q[project_id_eq]=${projectId}`
       );
       setSites(
         response.data.sites.map((site) => ({
@@ -494,7 +496,7 @@ const DebitNoteCreate = () => {
   const fetchCompanies = async () => {
     try {
       const response = await axios.get(
-        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}pms/company_setups.json?token=${token}`
       );
       const formattedCompanies = response.data.companies.map((company) => ({
         value: company.id,
@@ -579,9 +581,9 @@ const DebitNoteCreate = () => {
 
 
   const [rows, setRows] = useState([
-    { id: 1, type: "Handling Charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true,resource_id:2,resource_type: "TaxCharge"  },
-    { id: 2, type: "Other charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true,resource_id:4,resource_type: "TaxCharge" },
-    { id: 3, type: "Freight", percentage: "", inclusive: false, amount: ' ', isEditable: false, addition: true,resource_id:5,resource_type: "TaxCharge"  },
+    { id: 1, type: "Handling Charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, resource_id: 2, resource_type: "TaxCharge" },
+    { id: 2, type: "Other charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, resource_id: 4, resource_type: "TaxCharge" },
+    { id: 3, type: "Freight", percentage: "", inclusive: false, amount: ' ', isEditable: false, addition: true, resource_id: 5, resource_type: "TaxCharge" },
   ]);
   const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
 
@@ -590,7 +592,7 @@ const DebitNoteCreate = () => {
     const fetchTaxTypes = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/taxes_dropdown?token=${token}`
         );
         setTaxTypes(response.data.taxes); // Assuming the API returns an array of tax types
       } catch (error) {
@@ -654,7 +656,7 @@ const DebitNoteCreate = () => {
     const fetchTaxTypes = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
         );
         setDeductionTypes(response.data.taxes); // Assuming the API returns an array of tax types
       } catch (error) {
@@ -764,8 +766,8 @@ const DebitNoteCreate = () => {
           remarks: row.type,
           addition: row.addition,
           percentage: parseFloat(row.percentage) || 0,
-           resource_id: row.resource_id || null,
-            resource_type: row.resource_type || ""
+          resource_id: row.resource_id || null,
+          resource_type: row.resource_type || ""
         })),
         ...deductionRows.map((row) => ({
           inclusive: row.inclusive,
@@ -773,8 +775,8 @@ const DebitNoteCreate = () => {
           remarks: row.type,
           addition: row.addition || false, // Ensure addition is false for deductions
           percentage: parseFloat(row.percentage) || 0,
-           resource_id: row.resource_id || null,
-            resource_type: row.resource_type || ""
+          resource_id: row.resource_id || null,
+          resource_type: row.resource_type || ""
         })),
       ],
 
@@ -811,7 +813,7 @@ const DebitNoteCreate = () => {
             remarks: row.type,
             addition: row.addition,
             percentage: parseFloat(row.percentage) || 0,
-             resource_id: row.resource_id || null,
+            resource_id: row.resource_id || null,
             resource_type: row.resource_type || ""
           })),
           ...deductionRows.map((row) => ({
@@ -820,7 +822,7 @@ const DebitNoteCreate = () => {
             remarks: row.type,
             addition: row.addition || false, // Ensure addition is false for deductions
             percentage: parseFloat(row.percentage) || 0,
-             resource_id: row.resource_id || null,
+            resource_id: row.resource_id || null,
             resource_type: row.resource_type || ""
           })),
         ],
@@ -835,19 +837,19 @@ const DebitNoteCreate = () => {
 
     try {
       const response = await axios.post(
-        `${baseURL}debit_notes.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}debit_notes.json?token=${token}`,
         payload
       );
       console.log("Response:", response.data);
       setLoading2(false)
       alert("debit Note submitted successfully!");
-      navigate("/debit-note-list"); // Navigate to the list page
+      navigate(`/debit-note-list?token=${token}`); // Navigate to the list page
 
     } catch (error) {
       setLoading2(false)
       console.error("Error submitting Credit Note:", error);
       alert("Failed to submit debit Note. Please try again.");
-    }finally{
+    } finally {
       setLoading2(false)
     }
   };
@@ -986,7 +988,7 @@ const DebitNoteCreate = () => {
                                 />
                               </div>
                             </div> */}
-                         
+
                             <div className="col-md-3 mt-2">
                               <div className="form-group">
                                 <label>PO / WO Number</label>
@@ -1039,7 +1041,7 @@ const DebitNoteCreate = () => {
                                 />
                               </div>
                             </div>
-                              <div className="col-md-4 mt-2">
+                            <div className="col-md-4 mt-2">
                               <div className="form-group">
                                 <label>Created On</label>
                                 <div
@@ -1106,7 +1108,7 @@ const DebitNoteCreate = () => {
                                 />
                               </div>
                             </div>
-                               <div className="col-md-4 mt-2">
+                            <div className="col-md-4 mt-2">
                               <div className="form-group">
                                 <label>Debit Note Date</label>
                                 <div
@@ -1122,7 +1124,7 @@ const DebitNoteCreate = () => {
                                 </div>
                               </div>
                             </div>
-                          
+
                             <div className="col-md-4 mt-2">
                               <div className="form-group">
                                 <label>Remark</label>
@@ -1192,8 +1194,8 @@ const DebitNoteCreate = () => {
                                         options={taxTypes.map((type) => ({
                                           value: type.name,
                                           label: type.name,
-                                          id:type.id,
-                                          tax:type.type,
+                                          id: type.id,
+                                          tax: type.type,
                                           isDisabled:
                                             // Disable "Handling Charges", "Other charges", "Freight" for all rows
                                             ["Handling Charges", "Other charges", "Freight"].includes(type.name) ||
@@ -1225,7 +1227,7 @@ const DebitNoteCreate = () => {
                                                   ...r,
                                                   type: selectedOption?.value || "", // Handle null or undefined
                                                   resource_id: selectedOption?.id || null, // Handle null or undefined
-                                                    resource_type: selectedOption?.tax || "", // Handle null or undefined
+                                                  resource_type: selectedOption?.tax || "", // Handle null or undefined
                                                   // resource_id: selectedOption?.value || null, // Handle null or undefined
                                                   // resource_type: taxTypes.find((t) => t.id === selectedOption?.value)?.type || "", // Handle null or undefined
                                                 }
@@ -1385,8 +1387,8 @@ const DebitNoteCreate = () => {
                                         options={deductionTypes.map((type) => ({
                                           value: type.name,
                                           label: type.name,
-                                          id:type.id,
-                                          tax:type.type,
+                                          id: type.id,
+                                          tax: type.type,
                                         }))}
                                         value={{ value: row.type, label: row.type }}
                                         // onChange={(selectedOption) =>
@@ -1401,11 +1403,12 @@ const DebitNoteCreate = () => {
                                         onChange={(selectedOption) =>
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
-                                              r.id === row.id ? { ...r, 
+                                              r.id === row.id ? {
+                                                ...r,
                                                 type: selectedOption?.value || "", // Handle null or undefined
                                                 resource_id: selectedOption?.id || null, // Handle null or undefined
                                                 resource_type: selectedOption?.tax || "", // Handle null or undefined
-                                               } : r
+                                              } : r
                                             )
                                           )
                                         }
@@ -1594,7 +1597,7 @@ const DebitNoteCreate = () => {
                                 </button>
                               ),
                             }))}
-                            isAccordion={false} 
+                            isAccordion={false}
                           />
                         </div>
                       </div>
@@ -2383,7 +2386,7 @@ const DebitNoteCreate = () => {
                         </td>
                       </tr>
                     ) : (
-                      purchaseOrders.map((po,index) => (
+                      purchaseOrders.map((po, index) => (
                         <tr key={po.id}>
                           <td className="text-start">
                             {/* <input
@@ -2391,7 +2394,7 @@ const DebitNoteCreate = () => {
                               checked={selectedPOs.includes(po.id)}
                               onChange={() => handleCheckboxChange(po.id)}
                             /> */}
-                            {index+1}
+                            {index + 1}
                           </td>
                           <td className="text-start">{po.po_number}</td>
                           <td className="text-start">{po.po_date}</td>
@@ -2458,8 +2461,8 @@ const DebitNoteCreate = () => {
                       ))}
                       <li
                         className={`page-item ${pagination.current_page === pagination.total_pages
-                            ? "disabled"
-                            : ""
+                          ? "disabled"
+                          : ""
                           }`}
                       >
                         <button
@@ -2476,8 +2479,8 @@ const DebitNoteCreate = () => {
                       </li>
                       <li
                         className={`page-item ${pagination.current_page === pagination.total_pages
-                            ? "disabled"
-                            : ""
+                          ? "disabled"
+                          : ""
                           }`}
                       >
                         <button

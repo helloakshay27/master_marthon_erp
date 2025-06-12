@@ -15,6 +15,8 @@ import { DownloadIcon, FilterIcon, StarIcon, SettingIcon } from "../components";
 
 const DebitNoteList = () => {
   const navigate = useNavigate(); // Initialize navigation
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
   const [debitNotes, setDebitNotes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -74,7 +76,7 @@ const DebitNoteList = () => {
   useEffect(() => {
     axios
       .get(
-        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}pms/company_setups.json?token=${token}`
       )
       .then((response) => {
         setCompanies(response.data.companies);
@@ -150,10 +152,10 @@ const DebitNoteList = () => {
   const fetchCreditNotes = async (page) => {
     try {
       // const response = await axios.get(
-      //   `${baseURL}debit_notes?page=${page}&per_page=10token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      //   `${baseURL}debit_notes?page=${page}&per_page=10token=${token}`
       // );
 
-      let url = `${baseURL}debit_notes?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+      let url = `${baseURL}debit_notes?page=${page}&per_page=10&token=${token}`;
       if (activeSearch) {
         url += `&q[debit_note_no_or_debit_note_date_or_debit_note_amount_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_purchase_order_supplier_full_name_cont]=${activeSearch}`;
       }
@@ -161,7 +163,7 @@ const DebitNoteList = () => {
       if (filterProjectId) url += `&q[project_id_eq]=${filterProjectId}`;
       if (filterSiteId) url += `&q[site_id_eq]=${filterSiteId}`;
       // const response = await axios.get(
-      //     `${baseURL}credit_notes?page=${page}&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      //     `${baseURL}credit_notes?page=${page}&per_page=10&token=${token}`
       // );
       const response = await axios.get(url);
 
@@ -227,7 +229,7 @@ const DebitNoteList = () => {
     setFilterProjectId(projectId);
     setFilterSiteId(siteId);
     console.log("ids filter:", companyId, projectId, siteId)
-    const url = `${baseURL}debit_notes?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
+    const url = `${baseURL}debit_notes?page=1&token=${token}&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
 
     // console.log("url:",url)
     axios
@@ -280,7 +282,7 @@ const DebitNoteList = () => {
 
     // Fetch unfiltered data
     axios
-      .get(`${baseURL}debit_notes?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      .get(`${baseURL}debit_notes?page=1&token=${token}`)
       .then((response) => {
 
         const transformedData = response.data.debit_notes.map(
@@ -396,7 +398,7 @@ const DebitNoteList = () => {
     // Send data to API using axios
     axios
       .patch(
-        `${baseURL}debit_notes/update_bulk_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}debit_notes/update_bulk_status?token=${token}`,
         data
       )
       .then((response) => {
@@ -415,7 +417,7 @@ const DebitNoteList = () => {
     if (fromStatus) { // Only fetch data if a status is selected
       setLoading(true); // Show loading state while fetching
       axios
-        .get(`${baseURL}debit_notes?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[status_eq]=${fromStatus}`)
+        .get(`${baseURL}debit_notes?page=1&token=${token}&q[status_eq]=${fromStatus}`)
         .then((response) => {
           const transformedData = response.data.debit_notes.map(
             (entry, index) => {
@@ -488,7 +490,7 @@ const DebitNoteList = () => {
 
   //card filter
   const fetchFilteredData2 = (status) => {
-    const url = `${baseURL}debit_notes?page=1&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414${status ? `&q[status_eq]=${status}` : ""
+    const url = `${baseURL}debit_notes?page=1&token=${token}${status ? `&q[status_eq]=${status}` : ""
       }`;
 
     axios
@@ -531,7 +533,7 @@ const DebitNoteList = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${baseURL}debit_notes?page=1&per_page=10&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&q[debit_note_no_or_debit_note_date_or_debit_note_amount_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_purchase_order_supplier_full_name_cont]=${searchKeyword}`
+        `${baseURL}debit_notes?page=1&per_page=10&token=${token}&q[debit_note_no_or_debit_note_date_or_debit_note_amount_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_purchase_order_supplier_full_name_cont]=${searchKeyword}`
       );
       const transformedData = response.data.debit_notes.map(
         (entry, index) => {
@@ -620,7 +622,7 @@ const DebitNoteList = () => {
       field: "debit_note_no", headerName: "Debit Note No.", width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
-          <Link to={`/debit-note-details/${params.row.id}`}
+          <Link to={`/debit-note-details/${params.row.id}?token=${token}`}
 
           >
             <span className="boq-id-link">{params.value}</span>
@@ -994,7 +996,7 @@ const DebitNoteList = () => {
                       <SettingIcon />
                     </button>
                     <button className="purple-btn2"
-                      onClick={() => navigate("/debit-note-create")}
+                      onClick={() => navigate(`/debit-note-create?token=${token}`)}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
