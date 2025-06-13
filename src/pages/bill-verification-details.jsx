@@ -12,11 +12,11 @@ import { DownloadIcon } from "../components";
 import { baseURL } from "../confi/apiDomain";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { useLocation } from "react-router-dom";
-
+import { toast, ToastContainer } from "react-toastify";
 
 const BillVerificationDetails = () => {
   const { id } = useParams();
-   const [showAuditModal, setShowAuditModal] = useState(false);
+  const [showAuditModal, setShowAuditModal] = useState(false);
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
   const navigate = useNavigate();
@@ -58,23 +58,23 @@ const BillVerificationDetails = () => {
   };
 
   // Create a function to fetch bill details
-const fetchBillDetails = async () => {
-  try {
-    const response = await axios.get(`${baseURL}bill_entries/${id}?token=${token}`);
-    console.log("res:", response.data);
-    setBillDetails(response?.data);
-    setStatus(response?.data.status);
-    if (response.data.documents) {
-      setDocuments(response.data.documents);
+  const fetchBillDetails = async () => {
+    try {
+      const response = await axios.get(`${baseURL}bill_entries/${id}?token=${token}`);
+      console.log("res:", response.data);
+      setBillDetails(response?.data);
+      setStatus(response?.data.status);
+      if (response.data.documents) {
+        setDocuments(response.data.documents);
+      }
+      // Set active tab based on bill_type
+      if (response.data.bill_type === "material") setActiveTab("material");
+      else if (response.data.bill_type === "service") setActiveTab("service");
+      else if (response.data.bill_type === "miscellaneous") setActiveTab("misc");
+    } catch (error) {
+      console.error("Error fetching bill details:", error);
     }
-    // Set active tab based on bill_type
-    if (response.data.bill_type === "material") setActiveTab("material");
-    else if (response.data.bill_type === "service") setActiveTab("service");
-    else if (response.data.bill_type === "miscellaneous") setActiveTab("misc");
-  } catch (error) {
-    console.error("Error fetching bill details:", error);
-  }
-};
+  };
 
 
   useEffect(() => {
@@ -99,7 +99,7 @@ const fetchBillDetails = async () => {
     //     console.error("Error fetching bill details:", error);
     //   });
 
-     fetchBillDetails();
+    fetchBillDetails();
 
   }, [id]);
 
@@ -298,14 +298,16 @@ const fetchBillDetails = async () => {
       );
       await fetchBillDetails()
       if (response.data) {
-        alert("Bill verification updated successfully");
+        // alert("Bill verification updated successfully");
         setLoading(false);
+        toast.success("Bill verification updated successfully!");
         // navigate(`/bill-verification-list?token=${token}`);
         // Reset form
       }
     } catch (error) {
       console.error("Error creating bill entry:", error);
-      alert("Failed to update bill entry. Please try again.");
+      // alert("Failed to update bill entry. Please try again.");
+      toast.error("Failed to update bill verification.");
     } finally {
       setLoading(false); // Set loading to false after the API call
     }
@@ -943,34 +945,34 @@ const fetchBillDetails = async () => {
                         </tr>
                       </thead>
                       <tbody>
-                         {(billDetails?.status_logs || [])
-                              .slice(0, 10)
-                              .map((log, index) => (
-                                <tr key={log.id}>
-                                  <td className="text-start">{index + 1}</td>
-                                  <td className="text-start">{""}</td>
-                                  <td className="text-start">
-                                    {log.created_at
-                                      ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
-                                        day: "2-digit",
-                                        month: "2-digit",
-                                        year: "numeric",
-                                      })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                        hour12: true,
-                                      })}`
-                                      : ""}
-                                  </td>
-                                  <td className="text-start">
-                                    {log.status
-                                      ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
-                                      : ""}
-                                  </td>
-                                  <td className="text-start">{log.remarks || ""}</td>
-                                  <td className="text-start">{log.comments || ""}</td>
-                                </tr>
-                              ))}
+                        {(billDetails?.status_logs || [])
+                          .slice(0, 10)
+                          .map((log, index) => (
+                            <tr key={log.id}>
+                              <td className="text-start">{index + 1}</td>
+                              <td className="text-start">{""}</td>
+                              <td className="text-start">
+                                {log.created_at
+                                  ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  })}`
+                                  : ""}
+                              </td>
+                              <td className="text-start">
+                                {log.status
+                                  ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                  : ""}
+                              </td>
+                              <td className="text-start">{log.remarks || ""}</td>
+                              <td className="text-start">{log.comments || ""}</td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                     {billDetails?.status_logs?.length > 10 && (
@@ -1409,6 +1411,19 @@ const fetchBillDetails = async () => {
           </div>
         </Modal.Body>
       </Modal>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 };

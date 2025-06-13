@@ -13,6 +13,7 @@ import axios from 'axios';
 import SingleSelector from '../components/base/Select/SingleSelector';
 import { baseURL } from '../confi/apiDomain';
 import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { toast, ToastContainer } from "react-toastify";
 const DebitNoteDetails = () => {
   // const [showRows, setShowRows] = useState(false);
   const { id } = useParams();
@@ -27,19 +28,19 @@ const DebitNoteDetails = () => {
   const [status, setStatus] = useState(""); // Assuming boqDetails.status is initially available
 
   // Fetch credit note data
-   const fetchCreditNoteData = async () => {
-      try {
-        const response = await axios.get(
-          `${baseURL}debit_notes/${id}?token=${token}`
-        );
-        setDebitNoteData(response.data);
-        setStatus(response.data.status)
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
-      }
-    };
+  const fetchCreditNoteData = async () => {
+    try {
+      const response = await axios.get(
+        `${baseURL}debit_notes/${id}?token=${token}`
+      );
+      setDebitNoteData(response.data);
+      setStatus(response.data.status)
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchCreditNoteData();
@@ -850,7 +851,7 @@ const DebitNoteDetails = () => {
         </div>
       )}
 
-        {/* Modal for all audit logs */}
+      {/* Modal for all audit logs */}
       <Modal show={showAuditModal} onHide={() => setShowAuditModal(false)} size="xl">
         <Modal.Header closeButton>
           <Modal.Title>All Audit Logs</Modal.Title>
@@ -876,14 +877,14 @@ const DebitNoteDetails = () => {
                     <td className="text-start">
                       {log.created_at
                         ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          })} ${new Date(log.created_at).toLocaleTimeString("en-GB", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true,
-                          })}`
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })} ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })}`
                         : ""}
                     </td>
                     <td className="text-start">
@@ -892,7 +893,7 @@ const DebitNoteDetails = () => {
                         : ""}
                     </td>
                     <td className="text-start">{log.remarks || ""}</td>
-                     <td className="text-start">{log.comments || ""}</td>
+                    <td className="text-start">{log.comments || ""}</td>
                   </tr>
                 ))}
               </tbody>
@@ -900,6 +901,18 @@ const DebitNoteDetails = () => {
           </div>
         </Modal.Body>
       </Modal>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   )
 }

@@ -11,6 +11,7 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import { baseURL } from "../confi/apiDomain";
 import { DownloadIcon } from "../components";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 const CreditNoteDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -767,7 +768,7 @@ const CreditNoteDetails = () => {
                     <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
                   </div>
                   <div className="col-md-2">
-                    <button className="purple-btn1 w-100"  onClick={() => navigate(`/credit-note-list?token=${token}`)}>Cancel</button>
+                    <button className="purple-btn1 w-100" onClick={() => navigate(`/credit-note-list?token=${token}`)}>Cancel</button>
                   </div>
                 </div>
                 {/* <div className="row mt-2 w-100">
@@ -829,7 +830,7 @@ const CreditNoteDetails = () => {
                               <th>Created At</th>
                               <th>Status</th>
                               <th>Remark</th>
-                               <th>Comment</th>
+                              <th>Comment</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -931,7 +932,7 @@ const CreditNoteDetails = () => {
                   <th>Created At</th>
                   <th>Status</th>
                   <th>Remark</th>
-                   <th>Comment</th>
+                  <th>Comment</th>
                 </tr>
               </thead>
               <tbody>
@@ -966,6 +967,19 @@ const CreditNoteDetails = () => {
           </div>
         </Modal.Body>
       </Modal>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 };

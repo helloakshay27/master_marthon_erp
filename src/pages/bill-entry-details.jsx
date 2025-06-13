@@ -10,14 +10,15 @@ import { useNavigate } from "react-router-dom";
 import { Modal } from "react-bootstrap";
 import { DownloadIcon } from "../components";
 import { useLocation } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 
 // Then use id in your API URL
 
 const BillEntryDetails = () => {
   const [billDetails, setBillDetails] = useState(null);
   const { id } = useParams();
-   const navigate = useNavigate();
-    const [showAuditModal, setShowAuditModal] = useState(false);
+  const navigate = useNavigate();
+  const [showAuditModal, setShowAuditModal] = useState(false);
   const location = useLocation();
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
@@ -87,23 +88,23 @@ const BillEntryDetails = () => {
   };
 
   const fetchBillDetails = async () => {
-      try {
-        const response = await axios.get(
-          `${baseURL}bill_entries/${id}?token=${token}`
-        );
-        setBillDetails(response.data);
-        setStatus(response.data.status);
-        console.log("API Bill Entry Data:", response.data); // <-- Console log full API response
-        if (response.data.documents) {
-          setDocuments(response.data.documents);
-        }
-      } catch (error) {
-        console.error("Failed to fetch bill entry details", error);
+    try {
+      const response = await axios.get(
+        `${baseURL}bill_entries/${id}?token=${token}`
+      );
+      setBillDetails(response.data);
+      setStatus(response.data.status);
+      console.log("API Bill Entry Data:", response.data); // <-- Console log full API response
+      if (response.data.documents) {
+        setDocuments(response.data.documents);
       }
-    };
+    } catch (error) {
+      console.error("Failed to fetch bill entry details", error);
+    }
+  };
 
   useEffect(() => {
-    
+
     fetchBillDetails();
   }, [id]);
   useEffect(() => {
@@ -223,7 +224,8 @@ const BillEntryDetails = () => {
 
       await fetchBillDetails();
       if (response.data) {
-        alert("Bill entry updated successfully");
+        // alert("Bill entry updated successfully");
+        toast.success("Bill entry updated successfully!");
         // Make sure to import navigate from react-router-dom
         // navigate(`/bill-entry-list?token=${token}`,);
         setLoading(false);
@@ -232,7 +234,8 @@ const BillEntryDetails = () => {
       }
     } catch (error) {
       console.error("Error updating bill entry:", error);
-      alert("Failed to update bill entry. Please try again.");
+      // alert("Failed to update bill entry. Please try again.");
+      toast.error("Failed to update bill entry. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -598,7 +601,7 @@ const BillEntryDetails = () => {
                         <tr>
                           <th>Sr.No.</th>
                           <th>Created By</th>
-                           <th>Created At</th>
+                          <th>Created At</th>
                           <th>Status</th>
                           <th>Remark</th>
                           <th>Comment</th>
@@ -638,46 +641,46 @@ const BillEntryDetails = () => {
                           </tr>
                         ))} */}
                         {(billDetails?.status_logs || [])
-                              .slice(0, 10)
-                              .map((log, index) => (
-                                <tr key={log.id}>
-                                  <td className="text-start">{index + 1}</td>
-                                  <td className="text-start">{""}</td>
-                                  <td className="text-start">
-                                    {log.created_at
-                                      ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
-                                        day: "2-digit",
-                                        month: "2-digit",
-                                        year: "numeric",
-                                      })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                        hour12: true,
-                                      })}`
-                                      : ""}
-                                  </td>
-                                  <td className="text-start">
-                                    {log.status
-                                      ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
-                                      : ""}
-                                  </td>
-                                  <td className="text-start">{log.remarks || ""}</td>
-                                  <td className="text-start">{log.comments || ""}</td>
-                                </tr>
-                              ))}
+                          .slice(0, 10)
+                          .map((log, index) => (
+                            <tr key={log.id}>
+                              <td className="text-start">{index + 1}</td>
+                              <td className="text-start">{""}</td>
+                              <td className="text-start">
+                                {log.created_at
+                                  ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  })}`
+                                  : ""}
+                              </td>
+                              <td className="text-start">
+                                {log.status
+                                  ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                  : ""}
+                              </td>
+                              <td className="text-start">{log.remarks || ""}</td>
+                              <td className="text-start">{log.comments || ""}</td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
-                     {billDetails?.status_logs?.length > 10 && (
-                          <div className="mt-2 text-start">
-                            <span
-                              className="boq-id-link"
-                              style={{ fontWeight: "bold", cursor: "pointer" }}
-                              onClick={() => setShowAuditModal(true)}
-                            >
-                              Show More
-                            </span>
-                          </div>
-                        )}
+                    {billDetails?.status_logs?.length > 10 && (
+                      <div className="mt-2 text-start">
+                        <span
+                          className="boq-id-link"
+                          style={{ fontWeight: "bold", cursor: "pointer" }}
+                          onClick={() => setShowAuditModal(true)}
+                        >
+                          Show More
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1021,6 +1024,19 @@ const BillEntryDetails = () => {
           </div>
         </Modal.Body>
       </Modal>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 };
