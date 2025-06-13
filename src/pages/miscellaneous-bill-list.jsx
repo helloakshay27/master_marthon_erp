@@ -970,7 +970,7 @@ const MiscellaneousBillList = () => {
                                             <SettingIcon />
                                         </button>
                                         {/* Create BOQ Button */}
-                                        <button className="purple-btn2"
+                                        <button className="purple-btn2 me-2"
                                             onClick={() => navigate(`/miscellaneous-bill-create?token=${token}`)}
                                         >
                                             <svg

@@ -222,7 +222,7 @@ const BillEntryListSubPage = () => {
     }
   ) => {
     try {
-      setLoading(true);
+      // setLoading(true);
       let url = `${baseURL}purchase_orders/grn_details.json?token=${token}`;
 
       // Add filters only if they are provided

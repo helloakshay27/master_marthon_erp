@@ -10,13 +10,16 @@ import { useNavigate } from "react-router-dom";
 import { Modal } from "react-bootstrap";
 import { DownloadIcon } from "../components";
 import { useLocation } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 
 // Then use id in your API URL
 
 const BillEntryDetails = () => {
   const [billDetails, setBillDetails] = useState(null);
   const { id } = useParams();
-   const location = useLocation();
+  const navigate = useNavigate();
+  const [showAuditModal, setShowAuditModal] = useState(false);
+  const location = useLocation();
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
 
@@ -41,7 +44,7 @@ const BillEntryDetails = () => {
   const openviewDocumentModal = () => setviewDocumentModal(true);
   const closeviewDocumentModal = () => setviewDocumentModal(false);
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const statusOptions = [
     {
@@ -84,22 +87,24 @@ const BillEntryDetails = () => {
     // handleStatusChange(selectedOption); // Handle status change
   };
 
-  useEffect(() => {
-    const fetchBillDetails = async () => {
-      try {
-        const response = await axios.get(
-          `${baseURL}bill_entries/${id}?token=${token}`
-        );
-        setBillDetails(response.data);
-        setStatus(response.data.status);
-        console.log("API Bill Entry Data:", response.data); // <-- Console log full API response
-        if (response.data.documents) {
-          setDocuments(response.data.documents);
-        }
-      } catch (error) {
-        console.error("Failed to fetch bill entry details", error);
+  const fetchBillDetails = async () => {
+    try {
+      const response = await axios.get(
+        `${baseURL}bill_entries/${id}?token=${token}`
+      );
+      setBillDetails(response.data);
+      setStatus(response.data.status);
+      console.log("API Bill Entry Data:", response.data); // <-- Console log full API response
+      if (response.data.documents) {
+        setDocuments(response.data.documents);
       }
-    };
+    } catch (error) {
+      console.error("Failed to fetch bill entry details", error);
+    }
+  };
+
+  useEffect(() => {
+
     fetchBillDetails();
   }, [id]);
   useEffect(() => {
@@ -217,17 +222,20 @@ const BillEntryDetails = () => {
         payload
       );
 
+      await fetchBillDetails();
       if (response.data) {
-        alert("Bill entry updated successfully");
+        // alert("Bill entry updated successfully");
+        toast.success("Bill entry updated successfully!");
         // Make sure to import navigate from react-router-dom
-        navigate(`/bill-entry-list?token=${token}`, );
+        // navigate(`/bill-entry-list?token=${token}`,);
         setLoading(false);
       } else {
         throw new Error("No response data received");
       }
     } catch (error) {
       console.error("Error updating bill entry:", error);
-      alert("Failed to update bill entry. Please try again.");
+      // alert("Failed to update bill entry. Please try again.");
+      toast.error("Failed to update bill entry. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -345,8 +353,8 @@ const BillEntryDetails = () => {
                           {/* {billDetails?.due_date || "-"} */}
                           {billDetails?.due_date
                             ? new Date(billDetails.due_date)
-                                .toISOString()
-                                .slice(0, 10)
+                              .toISOString()
+                              .slice(0, 10)
                             : "-"}
                         </label>
                       </div>
@@ -566,7 +574,7 @@ const BillEntryDetails = () => {
                 </div>
               </div>
               <div className="row mt-2 justify-content-end">
-                <div className="col-md-2">
+                <div className="col-md-2 mt-2">
                   <button
                     className="purple-btn2 w-100"
                     onClick={handleUpdateBillEntry}
@@ -575,7 +583,7 @@ const BillEntryDetails = () => {
                   </button>
                 </div>
                 <div className="col-md-2">
-                  <button className="purple-btn1 w-100">Cancel</button>
+                  <button className="purple-btn1 w-100" onClick={() => navigate(`/bill-entry-list?token=${token}`)}>Cancel</button>
                 </div>
               </div>
 
@@ -587,68 +595,92 @@ const BillEntryDetails = () => {
               <div className=" mb-5">
                 <h5>Audit Log</h5>
                 <div className="mx-0">
-                  <div className="tbl-container mt-1">
+                  <div className="tbl-container mt-1" style={{ maxHeight: "450px" }}>
                     <table className="w-100">
                       <thead>
                         <tr>
                           <th>Sr.No.</th>
                           <th>Created By</th>
-                          {/* <th>Date</th> */}
-                          <th>Status</th>
                           <th>Created At</th>
+                          <th>Status</th>
                           <th>Remark</th>
                           <th>Comment</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {billDetails?.status_logs?.map((log, index) => (
+                        {/* {billDetails?.status_logs?.map((log, index) => (
                           <tr key={log.id}>
                             <td className="text-start">{index + 1}</td>
                             <td className="text-start">
                               {log.created_by_name || ""}
                             </td>
-                            {/* <td className="text-start">
-                                  {log.created_at
-                                    ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
-                                      day: "2-digit",
-                                      month: "2-digit",
-                                      year: "numeric",
-                                    })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                      // second: "2-digit",
-                                      hour12: true,
-                                    })}`
-                                    : ""}
-                                </td> */}
                             <td className="text-start">
                               {log.status
                                 ? log.status.charAt(0).toUpperCase() +
-                                  log.status.slice(1)
+                                log.status.slice(1)
                                 : ""}
                             </td>
                             <td className="text-start">
-                              {/* {log.created_at || ""} */}
-                               {log.created_at
-                                    ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
-                                      day: "2-digit",
-                                      month: "2-digit",
-                                      year: "numeric",
-                                    })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                      // second: "2-digit",
-                                      hour12: true,
-                                    })}`
-                                    : ""}
+                             
+                              {log.created_at
+                                ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  
+                                  hour12: true,
+                                })}`
+                                : ""}
                             </td>
 
                             <td className="text-start">{log.remarks || ""}</td>
                             <td className="text-start">{""}</td>
                           </tr>
-                        ))}
+                        ))} */}
+                        {(billDetails?.status_logs || [])
+                          .slice(0, 10)
+                          .map((log, index) => (
+                            <tr key={log.id}>
+                              <td className="text-start">{index + 1}</td>
+                              <td className="text-start">{""}</td>
+                              <td className="text-start">
+                                {log.created_at
+                                  ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  })}`
+                                  : ""}
+                              </td>
+                              <td className="text-start">
+                                {log.status
+                                  ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                  : ""}
+                              </td>
+                              <td className="text-start">{log.remarks || ""}</td>
+                              <td className="text-start">{log.comments || ""}</td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
+                    {billDetails?.status_logs?.length > 10 && (
+                      <div className="mt-2 text-start">
+                        <span
+                          className="boq-id-link"
+                          style={{ fontWeight: "bold", cursor: "pointer" }}
+                          onClick={() => setShowAuditModal(true)}
+                        >
+                          Show More
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -940,7 +972,71 @@ const BillEntryDetails = () => {
         </Modal.Body>
       </Modal>
       {/* attach document */}
-      
+
+
+      {/* Modal for all audit logs */}
+      <Modal show={showAuditModal} onHide={() => setShowAuditModal(false)} size="xl">
+        <Modal.Header closeButton>
+          <Modal.Title>All Audit Logs</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="tbl-container" style={{ maxHeight: "700px" }}>
+            <table className="w-100">
+              <thead>
+                <tr>
+                  <th>Sr.No.</th>
+                  <th>Created By</th>
+                  <th>Created At</th>
+                  <th>Status</th>
+                  <th>Remark</th>
+                  <th>Comment</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(billDetails?.status_logs || []).map((log, index) => (
+                  <tr key={log.id}>
+                    <td className="text-start">{index + 1}</td>
+                    <td className="text-start">{""}</td>
+                    <td className="text-start">
+                      {log.created_at
+                        ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })} ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })}`
+                        : ""}
+                    </td>
+                    <td className="text-start">
+                      {log.status
+                        ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                        : ""}
+                    </td>
+                    <td className="text-start">{log.remarks || ""}</td>
+                    <td className="text-start">{log.comments || ""}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Modal.Body>
+      </Modal>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 };

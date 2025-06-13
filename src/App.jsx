@@ -97,6 +97,7 @@ import MiscellaneousBillCreate from "./pages/miscellaneous-bill-create";
 import MiscellaneousBillList from "./pages/miscellaneous-bill-list";
 import MiscellaneousBillDetails from "./pages/miscellaneous-bill-details";
 import MiscellaneousBillEdit from "./pages/miscellaneous-bill-edit";
+import SectionReKYCDetails from "./pages/pms/suppliers/rekyc";
 
 function App() {
   return (
@@ -105,6 +106,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Members />} />
           <Route path="/bill-entry-list" element={<BillEntryList />} />
+          <Route path="/rekyc/:id" element={<SectionReKYCDetails />} />
           <Route
             path="/bill-entry-vendor-list"
             element={<BillEntryVendorList />}

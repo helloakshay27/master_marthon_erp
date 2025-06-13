@@ -966,7 +966,7 @@ const CreditNoteList = () => {
                                             <SettingIcon />
                                         </button>
                                         {/* Create BOQ Button */}
-                                        <button className="purple-btn2"
+                                        <button className="purple-btn2 me-2"
                                             onClick={() => navigate(`/credit-note-create?token=${token}`)}
                                         >
                                             <svg
