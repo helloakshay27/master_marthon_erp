@@ -639,6 +639,9 @@ function Members() {
                 <li>
                   <Link to="/approvals-list">approvals_list</Link>
                 </li>
+                <li>
+                <Link to="/rekyc/:id">Section Re KYC Details</Link>
+              </li>
               </ul>
             </div>
 
