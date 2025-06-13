@@ -18,10 +18,158 @@ import MaterialReconciliationCreate from "./material-reconciliation -create";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { baseURL } from "../confi/apiDomain";
+import { DataGrid } from "@mui/x-data-grid";
+import { Pagination, Stack, Typography } from "@mui/material";
 
 const MaterialReconciliationList = () => {
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
+
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
   const navigate = useNavigate(); // Initialize navigation
+  const [bulkActionDetails, setbulkActionDetails] = useState(true);
+  const [filterModal, setfilterModal] = useState(false);
+  const [layoutModal, setlayoutModal] = useState(false);
+  const [companies, setCompanies] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedSite, setSelectedSite] = useState(null);
+  const [siteOptions, setSiteOptions] = useState([]);
+  const [reconciliationData, setReconciliationData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [totalEntries, setTotalEntries] = useState(0);
+  const [validationErrors, setValidationErrors] = useState({});
+  const [fromStatus, setFromStatus] = useState("");
+  const [toStatus, setToStatus] = useState("");
+  const [remark, setRemark] = useState("");
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [settingShow, setSettingShow] = useState(false);
+  const itemsPerPage = 10; // Add itemsPerPage constant
+
+  const options = [
+    {
+      label: "Select Status",
+      value: "",
+    },
+    {
+      label: "Draft",
+      value: "draft",
+    },
+    {
+      label: "Verified",
+      value: "verified",
+    },
+    {
+      label: "Submitted",
+      value: "submitted",
+    },
+    {
+      label: "Proceed",
+      value: "proceed",
+    },
+    {
+      label: "Approved",
+      value: "approved",
+    },
+  ];
+
+  // Handle status change for 'From Status'
+  const handleStatusChange = (selectedOption) => {
+    setFromStatus(selectedOption.value);
+    // Call fetchFilteredData with the selected status
+    fetchFilteredData({
+      companyId: selectedCompany?.value,
+      projectId: selectedProject?.value,
+      siteId: selectedSite?.value,
+      status: selectedOption.value,
+    });
+  };
+
+  // Handle status change for 'To Status'
+  const handleToStatusChange = (selectedOption) => {
+    setToStatus(selectedOption.value);
+  };
+
+  const handleRemarkChange = (e) => {
+    setRemark(e.target.value);
+  };
+
+  const fetchFilteredData = (filters = {}) => {
+    setLoading(true);
+    const companyId = filters.companyId || selectedCompany?.value || "";
+    const projectId = filters.projectId || selectedProject?.value || "";
+    const siteId = filters.siteId || selectedSite?.value || "";
+    const status = filters.status || fromStatus || "";
+
+    console.log("ids filter:", companyId, projectId, siteId, status);
+
+    let url = `${baseURL}material_reconciliations.json?token=${token}`;
+
+    // Add filters to URL if they exist
+    if (companyId) {
+      url += `&q[pms_company_setup_id_eq]=${companyId}`;
+    }
+    if (projectId) {
+      url += `&q[pms_project_id_eq]=${projectId}`;
+    }
+    if (siteId) {
+      url += `&q[sub_project_id_eq]=${siteId}`;
+    }
+    if (status) {
+      url += `&q[status_eq]=${status}`;
+    }
+
+    axios
+      .get(url)
+      .then((response) => {
+        setReconciliationData(response.data.data); // Update table data
+        setTotalPages(response.data.meta.total_pages); // Update total pages
+        setTotalEntries(response.data.meta.total_count); // Update total entries
+      })
+      .catch((error) => {
+        console.error("Error fetching filtered data:", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  const validateAndFetchFilteredData = () => {
+    // Remove validation and directly fetch filtered data
+    fetchFilteredData({
+      companyId: selectedCompany?.value,
+      projectId: selectedProject?.value,
+      siteId: selectedSite?.value,
+      status: fromStatus,
+    });
+  };
+
+  const handleReset = () => {
+    setLoading(true);
+    // Clear selected filters
+    setSelectedCompany(null);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setFromStatus(""); // Reset status filter
+
+    // Fetch unfiltered data
+    axios
+      .get(`${baseURL}material_reconciliations.json?token=${token}`)
+      .then((response) => {
+        setReconciliationData(response.data.data); // Reset table data
+        setTotalPages(response.data.meta.total_pages); // Reset total pages
+        setTotalEntries(response.data.meta.total_count); // Reset total entries
+      })
+      .catch((error) => {
+        console.error("Error resetting data:", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
   // Static data for SingleSelector (this will be replaced by API data later)
 
@@ -30,9 +178,6 @@ const MaterialReconciliationList = () => {
     setSelectedValue(value);
   };
 
-  const [bulkActionDetails, setbulkActionDetails] = useState(true);
-  const [filterModal, setfilterModal] = useState(false);
-  const [layoutModal, setlayoutModal] = useState(false);
   // Bootstrap collaps
   const bulkActionDropdown = () => {
     setbulkActionDetails(!bulkActionDetails);
@@ -45,21 +190,10 @@ const MaterialReconciliationList = () => {
   const openLayoutModal = () => setlayoutModal(true);
   const closeLayoutModal = () => setlayoutModal(false);
 
-  const [companies, setCompanies] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [selectedCompany, setSelectedCompany] = useState(null);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [selectedSite, setSelectedSite] = useState(null);
-  // const [selectedWing, setSelectedWing] = useState(null);
-  const [siteOptions, setSiteOptions] = useState([]);
-  // const [wingsOptions, setWingsOptions] = useState([]);
-
   // Fetch company data on component mount
   useEffect(() => {
     axios
-      .get(
-        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      )
+      .get(`${baseURL}pms/company_setups.json?token=${token}`)
       .then((response) => {
         setCompanies(response.data.companies);
       })
@@ -130,32 +264,46 @@ const MaterialReconciliationList = () => {
   }));
 
   //get data
-  const [reconciliationData, setReconciliationData] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 10; // Items per page
   const [data, setData] = useState([]);
   // Fetch data from the API
   const fetchData = (page) => {
+    setLoading(true);
     axios
       .get(
-        `${baseURL}material_reconciliations.json?page=${page}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}material_reconciliations.json?page=${page}&token=${token}`
       )
       .then((response) => {
-        setReconciliationData(response.data.data); // Set the data from the API
-        setData(response.data); // Set data
-        setTotalPages(response.data.meta.total_pages); // Set total pages
-        setTotalEntries(response.data.meta.total_count);
+        if (response.data && response.data.data) {
+          setReconciliationData(response.data.data);
+          setData(response.data);
+
+          // Safely access meta data with fallback values
+          const totalPages = response.data.meta?.total_pages || 1;
+          const totalCount = response.data.meta?.total_count || 0;
+
+          setTotalPages(totalPages);
+          setTotalEntries(totalCount);
+        } else {
+          // Handle empty response
+          setReconciliationData([]);
+          setTotalPages(1);
+          setTotalEntries(0);
+        }
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
+        // Set default values on error
+        setReconciliationData([]);
+        setTotalPages(1);
+        setTotalEntries(0);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
   useEffect(() => {
     console.log("Reconciliation Data:", reconciliationData);
   }, [reconciliationData]);
-  // Add a new state to track the total number of entries
-  const [totalEntries, setTotalEntries] = useState(0);
 
   // Fetch data on component mount and when the page changes
   useEffect(() => {
@@ -168,68 +316,148 @@ const MaterialReconciliationList = () => {
       setCurrentPage(pageNumber);
     }
   };
-  const [validationErrors, setValidationErrors] = useState({});
 
-  const validateAndFetchFilteredData = () => {
-    const errors = {};
+  const [columnVisibility, setColumnVisibility] = useState({
+    srNo: true,
+    reconciliation_id: true,
+    company_name: true,
+    project_name: true,
+    site_name: true,
+    store: true,
+    reconciliation_date: true,
+    status: true,
+  });
 
-    if (!selectedCompany) {
-      errors.company = "Please select a company.";
+  const allColumns = [
+    {
+      field: "srNo",
+      headerName: "Sr. No.",
+      width: 100,
+    },
+    {
+      field: "reconciliation_id",
+      headerName: "Material Reco. No.",
+      width: 150,
+      renderCell: (params) =>
+        params.value && params.row.id ? (
+          <Link
+            to={`/material-reconciliation-detail/${params.row.id}?token=${token}`}
+          >
+            <span className="boq-id-link">{params.value}</span>
+          </Link>
+        ) : (
+          "-"
+        ),
+    },
+    { field: "company_name", headerName: "Company", width: 250 },
+    { field: "project_name", headerName: "Project", width: 250 },
+    { field: "site_name", headerName: "Sub Project", width: 250 },
+    { field: "store", headerName: "Store", width: 250 },
+    {
+      field: "reconciliation_date",
+      headerName: "Reconciliation Date",
+      width: 200,
+    },
+    { field: "status", headerName: "Status", width: 200 },
+  ];
+
+  const columns = allColumns.filter((col) => columnVisibility[col.field]);
+
+  const handleSettingClose = () => setSettingShow(false);
+  const handleSettingModalShow = () => setSettingShow(true);
+
+  const handleToggleColumn = (field) => {
+    setColumnVisibility((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
+
+  const handleShowAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+
+  const handleHideAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = false;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+
+  const handleResetColumns = () => {
+    const defaultVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(defaultVisibility);
+  };
+
+  // Transform reconciliation data for DataGrid
+  const getTransformedRows = () => {
+    // Check if any filter is applied
+    const isFiltered =
+      selectedCompany || selectedProject || selectedSite || fromStatus;
+
+    return reconciliationData.map((item, index) => ({
+      id: item.id,
+      srNo: isFiltered
+        ? index + 1 // For filtered data, start from 1
+        : (currentPage - 1) * itemsPerPage + index + 1, // For unfiltered data, use page-based numbering
+      reconciliation_id: item.reco_number,
+      company_name: item.company_name,
+      project_name: item.project,
+      site_name: item.sub_project,
+      store: item.store,
+      reconciliation_date: item.reco_date.split("-").reverse().join("-"),
+      status: item.status.charAt(0).toUpperCase() + item.status.slice(1),
+    }));
+  };
+
+  // Handle bulk status update
+  const handleBulkStatusUpdate = async (e) => {
+    e.preventDefault();
+    console.log("Current selectedIds:", selectedIds);
+
+    if (selectedIds.length === 0) {
+      alert("Please select at least one reconciliation");
+      return;
     }
-    if (!selectedProject) {
-      errors.project = "Please select a project.";
-    }
-    if (!selectedSite) {
-      errors.site = "Please select a sub-project.";
+
+    if (!toStatus) {
+      alert("Please select a target status");
+      return;
     }
 
-    setValidationErrors(errors);
+    const data = {
+      reconciliation_ids: selectedIds,
+      to_status: toStatus,
+      comments: remark,
+    };
+    console.log("data for bulk action", data);
 
-    // If no errors, fetch filtered data
-    if (Object.keys(errors).length === 0) {
-      fetchFilteredData();
+    try {
+      const response = await axios.patch(
+        `${baseURL}material_reconciliations/update_bulk_status?token=${token}`,
+        data
+      );
+
+      console.log("Success:", response.data);
+      alert("Status updated successfully");
+
+      // Refresh data and reset form
+      await fetchData(currentPage);
+      setSelectedIds([]);
+      setToStatus("");
+      setFromStatus("");
+      setRemark("");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error updating status. Please try again.");
     }
   };
 
-  const fetchFilteredData = () => {
-    const companyId = selectedCompany?.value || "";
-    const projectId = selectedProject?.value || "";
-    const siteId = selectedSite?.value || "";
-    console.log("ids filter:", companyId, projectId, siteId);
-    const url = `${baseURL}material_reconciliations.json?q[pms_project_id_eq]=${projectId}&q[sub_project_id_eq]=${siteId}&q[pms_company_setup_id_eq]=${companyId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
-    // console.log("url:",url)
-    axios
-      .get(url)
-      .then((response) => {
-        setReconciliationData(response.data.data); // Update table data
-        setTotalPages(response.data.meta.total_pages); // Update total pages
-        setTotalEntries(response.data.meta.total_count); // Update total entries
-      })
-      .catch((error) => {
-        console.error("Error fetching filtered data:", error);
-      });
-  };
-
-  const handleReset = () => {
-    // Clear selected filters
-    setSelectedCompany(null);
-    setSelectedProject(null);
-    setSelectedSite(null);
-
-    // Fetch unfiltered data
-    axios
-      .get(
-        `${baseURL}material_reconciliations.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      )
-      .then((response) => {
-        setReconciliationData(response.data.data); // Reset table data
-        setTotalPages(response.data.meta.total_pages); // Reset total pages
-        setTotalEntries(response.data.meta.total_count); // Reset total entries
-      })
-      .catch((error) => {
-        console.error("Error resetting data:", error);
-      });
-  };
   return (
     <>
       <div className="website-content overflow-auto">
@@ -294,9 +522,7 @@ const MaterialReconciliationList = () => {
                 <div className="row">
                   <div className="col-md-3">
                     <div className="form-group">
-                      <label>
-                        Company <span>*</span>
-                      </label>
+                      <label>Company</label>
 
                       <SingleSelector
                         options={companyOptions}
@@ -304,18 +530,16 @@ const MaterialReconciliationList = () => {
                         value={selectedCompany}
                         placeholder={`Select Company`} // Dynamic placeholder
                       />
-                      {validationErrors.company && (
+                      {/* {validationErrors.company && (
                         <span className="text-danger">
                           {validationErrors.company}
                         </span>
-                      )}
+                      )} */}
                     </div>
                   </div>
                   <div className="col-md-3">
                     <div className="form-group">
-                      <label>
-                        Project<span>*</span>
-                      </label>
+                      <label>Project</label>
 
                       <SingleSelector
                         options={projects}
@@ -323,17 +547,18 @@ const MaterialReconciliationList = () => {
                         value={selectedProject}
                         placeholder={`Select Project`} // Dynamic placeholder
                       />
-                      {validationErrors.project && (
+                      {/* {validationErrors.project && (
                         <span className="text-danger">
                           {validationErrors.project}
                         </span>
-                      )}
+                      )} */}
                     </div>
                   </div>
                   <div className="col-md-3">
                     <div className="form-group">
                       <label>
-                        Sub-Project <span>*</span>
+                        Sub-Project
+                        {/* <span>*</span> */}
                       </label>
                       {/* Pass static data as options */}
                       <SingleSelector
@@ -342,48 +567,57 @@ const MaterialReconciliationList = () => {
                         value={selectedSite}
                         placeholder={`Select Sub-project`} // Dynamic placeholder
                       />
-                      {validationErrors.site && (
+                      {/* {validationErrors.site && (
                         <span className="text-danger">
                           {validationErrors.site}
                         </span>
-                      )}
+                      )} */}
                     </div>
                   </div>
 
-                  <div className="col-md-1 mt-4 d-flex justify-content-center">
+                  <div className="col-md-2 mt-4">
                     <button
-                      className="purple-btn2 "
+                      className="purple-btn2 m-0 "
                       onClick={validateAndFetchFilteredData}
                     >
                       Go
                     </button>
-                  </div>
-                  <div className="col-md-1 mt-4 d-flex justify-content-center">
-                    <button className="purple-btn2" onClick={handleReset}>
+
+                    {/* <div className="col-md-1 mt-4 d-flex justify-content-center"> */}
+                    <button className="purple-btn2 ms-3" onClick={handleReset}>
                       Reset
                     </button>
                   </div>
+                  {/* </div> */}
                 </div>
               </CollapsibleCard>
 
               <CollapsibleCard title="Bulk Action" isInitiallyCollapsed={true}>
-                <div className="card-body mt-0 pt-0">
+                <form onSubmit={handleBulkStatusUpdate}>
                   <div className="row align-items-center">
                     <div className="col-md-4">
                       <div className="form-group">
                         <label>From Status</label>
                         <SingleSelector
-                          options={companyOptions}
-                          selectedValue={selectedValue}
-                          onChange={handleChange}
+                          options={options}
+                          value={options.find(
+                            (option) => option.value === fromStatus
+                          )}
+                          onChange={handleStatusChange}
+                          placeholder={`Select Status`}
+                          classNamePrefix="react-select"
                         />
                       </div>
                       <div className="form-group mt-3">
                         <label>To Status</label>
                         <SingleSelector
-                          options={companyOptions}
-                          selectedValue={selectedValue} // Passing selected value to SingleSelector
-                          onChange={handleChange} // Handle change event
+                          options={options}
+                          onChange={handleToStatusChange}
+                          value={options.find(
+                            (option) => option.value === toStatus
+                          )}
+                          placeholder={`Select Status`}
+                          classNamePrefix="react-select"
                         />
                       </div>
                     </div>
@@ -391,106 +625,23 @@ const MaterialReconciliationList = () => {
                       <div className="form-group">
                         <label>Remark</label>
                         <textarea
+                          name="remark"
                           className="form-control"
                           rows={4}
                           placeholder="Enter ..."
-                          defaultValue={""}
+                          value={remark}
+                          onChange={handleRemarkChange}
                         />
                       </div>
                     </div>
                     <div className="offset-md-1 col-md-2">
-                      <button
-                        className="purple-btn2 m-0"
-                        style={{ color: "white" }}
-                        onClick={() => (window.location.href = "#")}
-                      >
+                      <button type="submit" className="purple-btn2 m-0">
                         Submit
                       </button>
                     </div>
                   </div>
-                </div>
+                </form>
               </CollapsibleCard>
-
-              {/* <div className="row mt-2">
-                <div className="col-md-5 ms-3">
-                  <form>
-                    <div className="input-group">
-                      <input
-                        type="search"
-                        className="form-control tbl-search"
-                        placeholder="Type your keywords here"
-                      />
-                      <div className="input-group-append">
-                        <button
-                          type="submit"
-                          className="btn btn-md btn-default"
-                        >
-                          <SearchIcon />
-                        </button>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-                <div className="col-md-6">
-                  <div className="row justify-content-end">
-                    <div className="col-md-5">
-                      <div className="row justify-content-end ">
-                        <div className="col-md-2">
-                          <button
-                            className="btn btn-md"
-                            data-bs-toggle="modal"
-                            data-bs-target="#sidebarModal"
-                            onClick={openFilterModal}
-                          >
-                            <FilterIcon />
-                          </button>
-                        </div>
-                        <div className="col-md-2">
-                          <button type="submit" className="btn btn-md">
-                            <StarIcon />
-                          </button>
-                        </div>
-                        <div className="col-md-2">
-                          <button
-                            id="downloadButton"
-                            type="submit"
-                            className="btn btn-md"
-                          >
-                            <DownloadIcon />
-                          </button>
-                        </div>
-                        <div className="col-md-2">
-                          <button
-                            type="submit"
-                            className="btn btn-md"
-                            data-bs-toggle="modal"
-                            data-bs-target="#settings"
-                          >
-                            <SettingIcon />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-md-5">
-                      <div className="d-flex justify-content-end me-3">
-                        <button
-                          className="purple-btn2 m-0 p-1 px-2 mt-2"
-                          onClick={() =>
-                            navigate("/material-reconciliation-create")
-                          } // Navigate to the specified path
-                        >
-                          <div style={{ color: "white" }}>
-                            <span className="material-symbols-outlined align-text-top me-2">
-                              add{" "}
-                            </span>
-                            Add Material Reconciliation
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div> */}
 
               <div className="d-flex justify-content-between align-items-center me-2 mt-4">
                 {/* Search Input */}
@@ -500,8 +651,6 @@ const MaterialReconciliationList = () => {
                       <input
                         type="search"
                         id="searchInput"
-                        // value={searchKeyword}
-                        // onChange={(e) => setSearchKeyword(e.target.value)} // <- Add this line
                         className="form-control tbl-search"
                         placeholder="Type your keywords here"
                       />
@@ -535,30 +684,22 @@ const MaterialReconciliationList = () => {
                 {/* Buttons & Filter Section */}
                 <div className="col-md-6">
                   <div className="d-flex justify-content-end align-items-center gap-3">
-                    {/* Filter Icon */}
-                    {/* <button className="btn btn-md btn-default">
-                      <svg
-                        width={28}
-                        height={28}
-                        viewBox="0 0 32 32"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          clipRule="evenodd"
-                          d="M6.66604 5.64722C6.39997 5.64722 6.15555 5.7938 6.03024 6.02851C5.90494 6.26322 5.91914 6.54788 6.06718 6.76895L13.7378 18.2238V29.0346C13.7378 29.2945 13.8778 29.5343 14.1041 29.6622C14.3305 29.79 14.6081 29.786 14.8307 29.6518L17.9136 27.7927C18.13 27.6622 18.2622 27.4281 18.2622 27.1755V18.225L25.9316 6.76888C26.0796 6.5478 26.0938 6.26316 25.9685 6.02847C25.8432 5.79378 25.5987 5.64722 25.3327 5.64722H6.66604ZM15.0574 17.6037L8.01605 7.08866H23.9829L16.9426 17.6051C16.8631 17.7237 16.8207 17.8633 16.8207 18.006V26.7685L15.1792 27.7584V18.0048C15.1792 17.862 15.1368 17.7224 15.0574 17.6037Z"
-                          fill="#8B0203"
-                        />
-                      </svg>
-                    </button> */}
+                    {/* Column Visibility Setting Icon */}
+                    <button
+                      className="btn btn-md btn-default"
+                      onClick={handleSettingModalShow}
+                    >
+                      <SettingIcon />
+                    </button>
 
-                    {/* Create BOQ Button */}
+                    {/* Create Material Reconciliation Button */}
                     <button
                       className="purple-btn2"
                       onClick={() =>
-                        navigate("/material-reconciliation-create")
-                      } // Navigate to the specified path
+                        navigate(
+                          `/material-reconciliation-create?token=${token}`
+                        )
+                      }
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -576,941 +717,190 @@ const MaterialReconciliationList = () => {
                 </div>
               </div>
 
-              <div className=" mx-3">
-                <div className="tbl-container mt-4">
-                  <table className="w-100">
-                    <thead>
-                      <tr>
-                        <th>Sr.No.</th>
-                        <th>Material Reco. No.</th>
-                        <th>Company</th>
-                        <th>Project</th>
-                        <th>Sub-Project</th>
-                        <th>Store</th>
-                        <th>Reconciliation Date</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {reconciliationData.length > 0 ? (
-                        reconciliationData.map((item, index) => (
-                          <tr key={item.id}>
-                            <td>
-                              {" "}
-                              {(currentPage - 1) * itemsPerPage + index + 1}
-                            </td>
-                            <td className="boq-id-link">
-                              <Link
-                                to={`/material-reconciliation-detail/${item.id}`}
-                                className="d-flex align-items-center"
-                                style={{ borderColor: "#8b0203" }}
-                              >
-                                {item.reco_number}
-                              </Link>
-                            </td>
-                            <td>{item.company_name}</td>
-                            <td>{item.project}</td>
-                            <td>{item.sub_project}</td>
-                            <td>{item.store}</td>
-                            <td>
-                              {item.reco_date.split("-").reverse().join("-")}
-                            </td>
-                            <td>
-                              {item.status.charAt(0).toUpperCase() +
-                                item.status.slice(1)}
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="8" className="text-center">
-                            No data available
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                {/* Pagination Controls */}
-                {/* <div className="d-flex justify-content-between align-items-center px-3 mt-2">
-        <ul className="pagination justify-content-center d-flex">
-          <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-            <button
-              className="page-link"
-              onClick={() => handlePageChange(1)}
-              disabled={currentPage === 1}
-            >
-              First
-            </button>
-          </li>
-          <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-            <button
-              className="page-link"
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              Prev
-            </button>
-          </li>
-
-          {Array.from({ length: totalPages }, (_, index) => (
-            <li
-              key={index + 1}
-              className={`page-item ${
-                currentPage === index + 1 ? "active" : ""
-              }`}
-            >
-              <button
-                className="page-link"
-                onClick={() => handlePageChange(index + 1)}
+              <div
+                className="mx-1 mt-3"
+                style={{
+                  overflowY: "auto",
+                }}
               >
-                {index + 1}
-              </button>
-            </li>
-          ))}
-
-          <li
-            className={`page-item ${
-              currentPage === totalPages ? "disabled" : ""
-            }`}
-          >
-            <button
-              className="page-link"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </button>
-          </li>
-          <li
-            className={`page-item ${
-              currentPage === totalPages ? "disabled" : ""
-            }`}
-          >
-            <button
-              className="page-link"
-              onClick={() => handlePageChange(totalPages)}
-              disabled={currentPage === totalPages}
-            >
-              Last
-            </button>
-          </li>
-        </ul>
-        <div>
-          Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-          {Math.min(currentPage * itemsPerPage, 
-            data.length
-            )} of{" "}
-          {data.length} 
-          entries
-        </div>
-      </div> */}
-
-                <div className="d-flex justify-content-between align-items-center px-3 mt-2">
-                  <ul className="pagination justify-content-center d-flex">
-                    <li
-                      className={`page-item ${
-                        currentPage === 1 ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(1)}
-                        disabled={currentPage === 1}
-                      >
-                        First
-                      </button>
-                    </li>
-                    <li
-                      className={`page-item ${
-                        currentPage === 1 ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                      >
-                        Prev
-                      </button>
-                    </li>
-
-                    {Array.from({ length: totalPages }, (_, index) => (
-                      <li
-                        key={index + 1}
-                        className={`page-item ${
-                          currentPage === index + 1 ? "active" : ""
-                        }`}
-                      >
-                        <button
-                          className="page-link"
-                          onClick={() => handlePageChange(index + 1)}
-                        >
-                          {index + 1}
-                        </button>
-                      </li>
-                    ))}
-
-                    <li
-                      className={`page-item ${
-                        currentPage === totalPages ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                      >
-                        Next
-                      </button>
-                    </li>
-                    <li
-                      className={`page-item ${
-                        currentPage === totalPages ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(totalPages)}
-                        disabled={currentPage === totalPages}
-                      >
-                        Last
-                      </button>
-                    </li>
-                  </ul>
-                  <div>
-                    Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                    {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
-                    {totalEntries} entries
-                  </div>
-                </div>
+                <DataGrid
+                  rows={getTransformedRows()}
+                  columns={columns}
+                  pageSize={itemsPerPage}
+                  autoHeight={false}
+                  getRowId={(row) => row.id}
+                  loading={loading}
+                  checkboxSelection
+                  selectionModel={selectedIds}
+                  onSelectionModelChange={(ids) => {
+                    setSelectedIds(ids.map(String));
+                    console.log("Selected Row IDs:", ids);
+                  }}
+                  onRowSelectionModelChange={(ids) => {
+                    setSelectedIds(ids);
+                    console.log("Selected Row IDs: 2", ids);
+                  }}
+                  components={{
+                    ColumnMenu: () => null,
+                  }}
+                  sx={{
+                    "& .MuiDataGrid-columnHeaders": {
+                      backgroundColor: "#f8f9fa",
+                      color: "#000",
+                      fontWeight: "bold",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 1,
+                    },
+                    "& .MuiDataGrid-cell": {
+                      borderColor: "#dee2e6",
+                    },
+                    "& .MuiDataGrid-columnHeader": {
+                      borderColor: "#dee2e6",
+                    },
+                    "& .MuiCheckbox-root.Mui-checked .MuiSvgIcon-root": {
+                      color: "#8b0203",
+                    },
+                    "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root":
+                      {
+                        color: "#fff",
+                      },
+                    "& .MuiCheckbox-root .MuiSvgIcon-root": {
+                      fontSize: "1.1rem",
+                    },
+                  }}
+                />
               </div>
+
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                padding={2}
+              >
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={(e, page) => handlePageChange(page)}
+                  siblingCount={1}
+                  boundaryCount={1}
+                  color="primary"
+                  showFirstButton
+                  showLastButton
+                  disabled={totalPages <= 1}
+                />
+
+                <Typography variant="body2">
+                  Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                  {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
+                  {totalEntries} entries
+                </Typography>
+              </Stack>
             </div>
           </div>
           <div className="tab-content1" id="draft-content"></div>
         </div>
       </div>
 
-      {/* modal start */}
+      {/* Settings Modal */}
       <Modal
-        centered
-        size="lg"
-        show={filterModal}
-        onHide={closeFilterModal}
-        backdrop="static"
-        keyboard={true}
-        className="modal-centered-custom"
+        show={settingShow}
+        onHide={handleSettingClose}
+        dialogClassName="modal-right"
+        className="setting-modal"
+        backdrop={true}
       >
-        <Modal.Header closeButton>
-          <Modal.Title>Add</Modal.Title>
-        </Modal.Header>
-        <div
-          className="modal-body "
-          style={{ maxHeight: "400px", overflowY: "auto" }}
-        >
-          <div className="row">
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Mode of Submission</label>
-                <SingleSelector
-                  options={companyOptions}
-                  selectedValue={selectedValue}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Company</label>
-                <SingleSelector
-                  options={companyOptions}
-                  selectedValue={selectedValue}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="form-group">
-                <label>Project </label>
-                <SingleSelector
-                  options={companyOptions}
-                  selectedValue={selectedValue}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Sub Project </label>
-                <SingleSelector
-                  options={companyOptions}
-                  selectedValue={selectedValue}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Vendor Name</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Is MSME</label>
-                <SingleSelector
-                  options={companyOptions}
-                  selectedValue={selectedValue}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>PO No.</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Created on From </label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Created on To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Accepted On From</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Accepted On To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Bill No.</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Bill Date From &amp; To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Bill Amount</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Bill Copies</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Due</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Due Date From &amp; To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Certificate No.</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Payable Amount</label>
-                <input
-                  className="form-control"
-                  type="number"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Paid</label>
-                <div className="">
-                  <input
-                    className="form-control"
-                    type="text"
-                    placeholder=""
-                    fdprocessedid="qv9ju9"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Balance</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Status</label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Overdue</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>Assign To</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-            <div className="col-md-4 mt-2">
-              <div className="form-group">
-                <label>TAT</label>
-                <input
-                  className="form-control"
-                  type="date"
-                  placeholder=""
-                  fdprocessedid="qv9ju9"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="modal-footer modal-footer-k justify-content-center">
-          <a
-            className="purple-btn2"
-            href="/pms/admin/task_managements/kanban_list?type="
-          >
-            Go
-          </a>
-        </div>
-      </Modal>
-
-      <Modal
-        centered
-        size="sm"
-        show={layoutModal}
-        onHide={closeLayoutModal}
-        backdrop="static"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Layout</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="row justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
+        <Modal.Header>
+          <div className="container-fluid p-0">
+            <div className="border-0 d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <button
+                  type="button"
+                  className="btn"
+                  aria-label="Close"
+                  onClick={handleSettingClose}
                 >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
+                  <svg
+                    width="10"
+                    height="16"
+                    viewBox="0 0 10 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M8 2L2 8L8 14"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
               </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-between align-items-center">
-            <div className="col-md-6">
-              <button type="submit" className="btn btn-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width={22}
-                  height={22}
-                  viewBox="0 0 48 48"
-                  fill="none"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                    fill="black"
-                  />
-                </svg>
-              </button>
-              <label htmlFor=""> Sr No.</label>
-            </div>
-            <div className="col-md-4">
-              <div className="form-check form-switch mt-1">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckDefault"
-                />
-              </div>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal>
-      <div
-        className="modal fade"
-        id="settings"
-        tabIndex={-1}
-        aria-labelledby="exampleModal2Label"
-        style={{ display: "none" }}
-        aria-hidden="true"
-      >
-        <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm">
-          <div className="modal-content">
-            <div className="modal-header modal-header-k">
-              <h4
-                className="modal-title text-center w-100"
-                id="exampleModalLabel"
-                style={{ fontWeight: 500 }}
+              <Button
+                style={{ textDecoration: "underline" }}
+                variant="alert"
+                onClick={handleResetColumns}
               >
-                Layout
-              </h4>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              />
-            </div>
-            <div className="modal-body">
-              <div className="row justify-content-between align-items-center">
-                <div className="col-md-6">
-                  <button type="submit" className="btn btn-md">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width={22}
-                      height={22}
-                      viewBox="0 0 48 48"
-                      fill="none"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                        fill="black"
-                      />
-                    </svg>
-                  </button>
-                  <label htmlFor=""> Sr No.</label>
-                </div>
-                <div className="col-md-4">
-                  <div className="form-check form-switch mt-1">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      role="switch"
-                      id="flexSwitchCheckDefault"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="row mt-2 justify-content-between align-items-center">
-                <div className="col-md-6">
-                  <button type="submit" className="btn btn-md">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width={22}
-                      height={22}
-                      viewBox="0 0 48 48"
-                      fill="none"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                        fill="black"
-                      />
-                    </svg>
-                  </button>
-                  <label htmlFor=""> Sr No.</label>
-                </div>
-                <div className="col-md-4">
-                  <div className="form-check form-switch mt-1">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      role="switch"
-                      id="flexSwitchCheckDefault"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="row mt-2 justify-content-between align-items-center">
-                <div className="col-md-6">
-                  <button type="submit" className="btn btn-md">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width={22}
-                      height={22}
-                      viewBox="0 0 48 48"
-                      fill="none"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                        fill="black"
-                      />
-                    </svg>
-                  </button>
-                  <label htmlFor=""> Sr No.</label>
-                </div>
-                <div className="col-md-4">
-                  <div className="form-check form-switch mt-1">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      role="switch"
-                      id="flexSwitchCheckDefault"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="row mt-2 justify-content-between align-items-center">
-                <div className="col-md-6">
-                  <button type="submit" className="btn btn-md">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width={22}
-                      height={22}
-                      viewBox="0 0 48 48"
-                      fill="none"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                        fill="black"
-                      />
-                    </svg>
-                  </button>
-                  <label htmlFor=""> Sr No.</label>
-                </div>
-                <div className="col-md-4">
-                  <div className="form-check form-switch mt-1">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      role="switch"
-                      id="flexSwitchCheckDefault"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="row mt-2 justify-content-between align-items-center">
-                <div className="col-md-6">
-                  <button type="submit" className="btn btn-md">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width={22}
-                      height={22}
-                      viewBox="0 0 48 48"
-                      fill="none"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                        fill="black"
-                      />
-                    </svg>
-                  </button>
-                  <label htmlFor=""> Sr No.</label>
-                </div>
-                <div className="col-md-4">
-                  <div className="form-check form-switch mt-1">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      role="switch"
-                      id="flexSwitchCheckDefault"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="row mt-2 justify-content-between align-items-center">
-                <div className="col-md-6">
-                  <button type="submit" className="btn btn-md">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width={22}
-                      height={22}
-                      viewBox="0 0 48 48"
-                      fill="none"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                        fill="black"
-                      />
-                    </svg>
-                  </button>
-                  <label htmlFor=""> Sr No.</label>
-                </div>
-                <div className="col-md-4">
-                  <div className="form-check form-switch mt-1">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      role="switch"
-                      id="flexSwitchCheckDefault"
-                    />
-                  </div>
-                </div>
-              </div>
+                Reset
+              </Button>
             </div>
           </div>
-        </div>
-      </div>
+        </Modal.Header>
+
+        <Modal.Body style={{ height: "400px", overflowY: "auto" }}>
+          {allColumns
+            .filter(
+              (column) => column.field !== "srNo" && column.field !== "Star"
+            )
+            .map((column) => (
+              <div
+                className="row justify-content-between align-items-center mt-2"
+                key={column.field}
+              >
+                <div className="col-md-6">
+                  <button type="submit" className="btn btn-md">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                    </svg>
+                  </button>
+                  <label>{column.headerName}</label>
+                </div>
+                <div className="col-md-4">
+                  <div className="form-check form-switch mt-1">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={columnVisibility[column.field]}
+                      onChange={() => handleToggleColumn(column.field)}
+                      role="switch"
+                      id={`flexSwitchCheckDefault-${column.field}`}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="primary" onClick={handleShowAll}>
+            Show All
+          </Button>
+          <Button variant="danger" onClick={handleHideAll}>
+            Hide All
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };

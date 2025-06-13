@@ -12,8 +12,13 @@ import { baseURL } from "../confi/apiDomain";
 import { DownloadIcon } from "../components";
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+
 const MiscellaneousBillDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const [showAuditModal, setShowAuditModal] = useState(false);
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
   const [showRows, setShowRows] = useState(false);
@@ -170,6 +175,7 @@ const MiscellaneousBillDetails = () => {
       if (response.status === 200) {
         console.log("Status updated successfully:", response.data);
         setRemark("");
+        setComment("")
         // alert('Status updated successfully');
         // Handle success (e.g., update the UI, reset fields, etc.)
         toast.success("Status updated successfully!");
@@ -190,20 +196,20 @@ const MiscellaneousBillDetails = () => {
   // if (loading) return <div>Loading...</div>;
   // if (error) return <div>Error: {error}</div>;
   if (!creditNoteData) return <div> {loading && (
-                <div className="loader-container">
-                    <div className="lds-ring">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                    </div>
-                    <p>Loading...</p>
-                </div>
-            )}</div>;
+    <div className="loader-container">
+      <div className="lds-ring">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      <p>Loading...</p>
+    </div>
+  )}</div>;
 
   return (
     <>
@@ -212,24 +218,24 @@ const MiscellaneousBillDetails = () => {
           <a href="">Home &gt; Billing &amp; Accounts &gt; Miscellaneous Bill</a>
           <h5 className="mt-3">Miscellaneous Bill </h5>
           <div className="row container-fluid my-4 align-items-center">
-             
+
             <div className="col-md-12 px-2">
-                <div className="d-flex justify-content-end m-2">
-                       
-                          <Link
-                            to={`/miscellaneous-bill-edit/${id}?token=${token}`}
-                            className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
-            
-                            <button class="purple-btn1" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                              <svg width="24" height="24" viewBox="0 0 24 24" fill="#8b0203" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z" fill="#8b0203" />
-                                <path d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#8b0203" />
-                              </svg>
-                            </button>
-            
-                          </Link>
-                      
-                      </div>
+              <div className="d-flex justify-content-end m-2">
+
+                <Link
+                  to={`/miscellaneous-bill-edit/${id}?token=${token}`}
+                  className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+
+                  <button class="purple-btn1" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#8b0203" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z" fill="#8b0203" />
+                      <path d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#8b0203" />
+                    </svg>
+                  </button>
+
+                </Link>
+
+              </div>
               <div
                 className="tab-content mor-content active"
                 id="pills-tabContent"
@@ -336,7 +342,7 @@ const MiscellaneousBillDetails = () => {
                                 </label>
                               </div>
                             </div>
-                           
+
                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                               <div className="col-6">
                                 <label>Created On</label>
@@ -397,19 +403,19 @@ const MiscellaneousBillDetails = () => {
                                 </label>
                               </div>
                             </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                      <div className="col-6 ">
-                        <label>Bill ID</label>
-                      </div>
-                      <div className="col-6">
-                        <label className="text">
-                          <span className="me-3">
-                            <span className="text-dark">:</span>
-                          </span>
-                          {creditNoteData?.bill_id || "-"}
-                        </label>
-                      </div>
-                    </div>
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                              <div className="col-6 ">
+                                <label>Bill ID</label>
+                              </div>
+                              <div className="col-6">
+                                <label className="text">
+                                  <span className="me-3">
+                                    <span className="text-dark">:</span>
+                                  </span>
+                                  {creditNoteData?.bill_id || "-"}
+                                </label>
+                              </div>
+                            </div>
                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                               <div className="col-6">
                                 <label>Supplier Name</label>
@@ -436,7 +442,7 @@ const MiscellaneousBillDetails = () => {
                                 </label>
                               </div>
                             </div>
-                              <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                               <div className="col-6">
                                 <label>Organization Name</label>
                               </div>
@@ -462,7 +468,7 @@ const MiscellaneousBillDetails = () => {
                                 </label>
                               </div>
                             </div>
-                           
+
                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                               <div className="col-6">
                                 <label>Status</label>
@@ -509,7 +515,7 @@ const MiscellaneousBillDetails = () => {
                               </tr>
                             </thead>
                             <tbody>
-                             
+
                               <tr>
                                 <th className="text-start">Total Base Cost</th>
                                 <td className="text-start" />
@@ -518,7 +524,7 @@ const MiscellaneousBillDetails = () => {
                                 <td />
                               </tr>
 
-                             
+
                               <tr>
                                 <th className="text-start">Addition Tax & Charges</th>
                                 <td className="text-start" />
@@ -533,7 +539,7 @@ const MiscellaneousBillDetails = () => {
                                     <td className="text-start">{tax.tax_name}</td>
                                     <td className="text-start">{tax.percentage}%</td>
                                     <td className="text-start">
-                                     
+
                                       <input
                                         type="checkbox"
                                         checked={tax.inclusive} // Set checkbox checked based on `inclusive`
@@ -545,21 +551,21 @@ const MiscellaneousBillDetails = () => {
                                   </tr>
                                 ))}
 
-                             
+
                               <tr>
                                 <th className="text-start">Sub Total A (Addition)</th>
                                 <td className="text-start" />
                                 <td className="" />
                                 <td className="text-start">
                                   {creditNoteData.taxes_and_charges
-                                    .filter((tax) => tax.addition&& !tax.inclusive)
+                                    .filter((tax) => tax.addition && !tax.inclusive)
                                     .reduce((total, tax) => total + parseFloat(tax.amount), 0)
                                     .toFixed(2)}
                                 </td>
                                 <td />
                               </tr>
 
-                              
+
                               <tr>
                                 <th className="text-start">Gross Amount</th>
                                 <td className="text-start" />
@@ -575,7 +581,7 @@ const MiscellaneousBillDetails = () => {
                                 <td />
                               </tr>
 
-                              
+
                               <tr>
                                 <th className="text-start">Deduction Tax</th>
                                 <td className="text-start" />
@@ -590,7 +596,7 @@ const MiscellaneousBillDetails = () => {
                                     <td className="text-start">{tax.tax_name}</td>
                                     <td className="text-start">{tax.percentage}%</td>
                                     <td className="text-start">
-                                     
+
                                       <input
                                         type="checkbox"
                                         checked={tax.inclusive} // Set checkbox checked based on `inclusive`
@@ -602,7 +608,7 @@ const MiscellaneousBillDetails = () => {
                                   </tr>
                                 ))}
 
-                             
+
                               <tr>
                                 <th className="text-start">Sub Total B (Deductions)</th>
                                 <td className="text-start" />
@@ -616,7 +622,7 @@ const MiscellaneousBillDetails = () => {
                                 <td />
                               </tr>
 
-                             
+
                               {/* <tr>
                                 <th className="text-start">Payable Amount</th>
                                 <td className="text-start" />
@@ -634,29 +640,29 @@ const MiscellaneousBillDetails = () => {
                               </tr> */}
 
                               <tr>
-  <th className="text-start">Payable Amount</th>
-  <td className="text-start" />
-  <td className="" />
-  <td className="text-start">
-    {(
-      creditNoteData.taxes_and_charges.reduce(
-        (total, tax) => {
-          if (tax.addition && !tax.inclusive) {
-            // Add only non-inclusive addition taxes
-            return total + parseFloat(tax.amount);
-          } else if (!tax.addition && !tax.inclusive) {
-            // Subtract only non-inclusive deduction taxes
-            return total - parseFloat(tax.amount);
-          }
-          // Ignore inclusive taxes for both addition and deduction
-          return total;
-        },
-        parseFloat(creditNoteData.amount || 0)
-      )
-    ).toFixed(2)}
-  </td>
-  <td />
-</tr>
+                                <th className="text-start">Payable Amount</th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start">
+                                  {(
+                                    creditNoteData.taxes_and_charges.reduce(
+                                      (total, tax) => {
+                                        if (tax.addition && !tax.inclusive) {
+                                          // Add only non-inclusive addition taxes
+                                          return total + parseFloat(tax.amount);
+                                        } else if (!tax.addition && !tax.inclusive) {
+                                          // Subtract only non-inclusive deduction taxes
+                                          return total - parseFloat(tax.amount);
+                                        }
+                                        // Ignore inclusive taxes for both addition and deduction
+                                        return total;
+                                      },
+                                      parseFloat(creditNoteData.amount || 0)
+                                    )
+                                  ).toFixed(2)}
+                                </td>
+                                <td />
+                              </tr>
                             </tbody>
                           </table>
                         </div>
@@ -788,11 +794,11 @@ const MiscellaneousBillDetails = () => {
                   {/* <div className="col-md-2">
                     <button className="purple-btn2 w-100">Print</button>
                   </div> */}
-                  <div className="col-md-2">
+                  <div className="col-md-2 mt-2">
                     <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
                   </div>
                   <div className="col-md-2">
-                    <button className="purple-btn1 w-100">Cancel</button>
+                    <button className="purple-btn1 w-100" onClick={() => navigate(`/miscellaneous-bill-list?token=${token}`)}>Cancel</button>
                   </div>
                 </div>
                 <div className="row mt-2 w-100">
@@ -800,19 +806,20 @@ const MiscellaneousBillDetails = () => {
                     <h5>Audit Log</h5>
                     <div className="mx-0">
 
-                      <div className="tbl-container mt-1">
+                      <div className="tbl-container mt-1" style={{ maxHeight: "450px" }}>
                         <table className="w-100">
                           <thead>
                             <tr>
                               <th>Sr.No.</th>
-                              <th>User</th>
+                              <th>Created By</th>
                               <th>Created At</th>
                               <th>Status</th>
                               <th>Remark</th>
+                              <th>Comment</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {creditNoteData?.status_logs?.map((log, index) => (
+                            {/* {creditNoteData?.status_logs?.map((log, index) => (
                               <tr key={log.id}>
                                 <td className="text-start">{index + 1}</td>
                                 <td className="text-start">{""}</td>
@@ -833,9 +840,50 @@ const MiscellaneousBillDetails = () => {
                                 <td className="text-start">{log.status ? log.status.charAt(0).toUpperCase() + log.status.slice(1) : ""}</td>
                                 <td className="text-start">{log.remarks || ""}</td>
                               </tr>
-                            ))}
+                            ))} */}
+
+                            {(creditNoteData?.status_logs || [])
+                              .slice(0, 10)
+                              .map((log, index) => (
+                                <tr key={log.id}>
+                                  <td className="text-start">{index + 1}</td>
+                                  <td className="text-start">{""}</td>
+                                  <td className="text-start">
+                                    {log.created_at
+                                      ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric",
+                                      })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: true,
+                                      })}`
+                                      : ""}
+                                  </td>
+                                  <td className="text-start">
+                                    {log.status
+                                      ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                      : ""}
+                                  </td>
+                                  <td className="text-start">{log.remarks || ""}</td>
+                                  <td className="text-start">{log.comments || ""}</td>
+                                </tr>
+                              ))}
                           </tbody>
                         </table>
+                        {/* Show "Show More" link if more than 10 records */}
+                        {creditNoteData?.status_logs?.length > 10 && (
+                          <div className="mt-2 text-start">
+                            <span
+                              className="boq-id-link"
+                              style={{ fontWeight: "bold", cursor: "pointer" }}
+                              onClick={() => setShowAuditModal(true)}
+                            >
+                              Show More
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                     </div>
@@ -877,6 +925,69 @@ const MiscellaneousBillDetails = () => {
           <p>Loading...</p>
         </div>
       )}
+      {/* Modal for all audit logs */}
+      <Modal show={showAuditModal} onHide={() => setShowAuditModal(false)} size="xl">
+        <Modal.Header closeButton>
+          <Modal.Title>All Audit Logs</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="tbl-container" style={{ maxHeight: "700px" }}>
+            <table className="w-100">
+              <thead>
+                <tr>
+                  <th>Sr.No.</th>
+                  <th>Created By</th>
+                  <th>Created At</th>
+                  <th>Status</th>
+                  <th>Remark</th>
+                  <th>Comment</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(creditNoteData?.status_logs || []).map((log, index) => (
+                  <tr key={log.id}>
+                    <td className="text-start">{index + 1}</td>
+                    <td className="text-start">{""}</td>
+                    <td className="text-start">
+                      {log.created_at
+                        ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })} ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })}`
+                        : ""}
+                    </td>
+                    <td className="text-start">
+                      {log.status
+                        ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                        : ""}
+                    </td>
+                    <td className="text-start">{log.remarks || ""}</td>
+                    <td className="text-start">{log.comments || ""}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Modal.Body>
+      </Modal>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { version } from "react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import SingleSelector from "../components/base/Select/SingleSelector";
@@ -7,6 +7,8 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import { useParams, useNavigate } from "react-router-dom";
 
 const MaterialReconciliationDetail = () => {
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const { id } = useParams();
   const navigate = useNavigate();
   const [details, setDetails] = useState(null);
@@ -31,20 +33,20 @@ const MaterialReconciliationDetail = () => {
     stockAsOn,
     deadstockQty,
     theftQty,
+    damageQty,
     adjustmentQty
   ) => {
     const stock = parseFloat(stockAsOn) || 0;
     const deadstock = parseFloat(deadstockQty) || 0;
     const theft = parseFloat(theftQty) || 0;
+    const damage = parseFloat(damageQty) || 0;
     const adjustment = parseFloat(adjustmentQty) || 0;
-    return stock - deadstock - theft + adjustment;
+    return stock - deadstock - theft - damage + adjustment;
   };
 
   useEffect(() => {
     axios
-      .get(
-        `${baseURL}material_reconciliations/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      )
+      .get(`${baseURL}material_reconciliations/${id}.json?token=${token}`)
       .then((response) => {
         setDetails(response.data);
         setFormData({
@@ -99,6 +101,7 @@ const MaterialReconciliationDetail = () => {
     if (
       field === "deadstock_qty" ||
       field === "theft_or_missing_qty" ||
+      field === "wastage_qty" || // Add damage/wastage field
       field === "adjustment_qty"
     ) {
       const newDeadstockQty =
@@ -107,6 +110,9 @@ const MaterialReconciliationDetail = () => {
         field === "theft_or_missing_qty"
           ? value
           : currentItem.theft_or_missing_qty;
+
+      const newDamageQty = // Add damage quantity
+        field === "wastage_qty" ? value : currentItem.wastage_qty;
       const newAdjustmentQty =
         field === "adjustment_qty" ? value : currentItem.adjustment_qty;
 
@@ -114,10 +120,11 @@ const MaterialReconciliationDetail = () => {
       const stock = parseFloat(currentItem.stock_as_on) || 0;
       const deadstock = parseFloat(newDeadstockQty) || 0;
       const theft = parseFloat(newTheftQty) || 0;
+      const damage = parseFloat(newDamageQty) || 0; // Parse damage quantity
       const adjustment = parseFloat(newAdjustmentQty) || 0;
 
       updatedItems[itemIndex].net_quantity =
-        stock - deadstock - theft + adjustment;
+        stock - deadstock - theft - damage + adjustment;
     }
 
     setFormData({
@@ -130,7 +137,7 @@ const MaterialReconciliationDetail = () => {
     e.preventDefault();
     try {
       const response = await axios.put(
-        `${baseURL}material_reconciliations/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}material_reconciliations/${id}.json?token=${token}`,
         {
           material_reconciliation: {
             ...formData,
@@ -140,7 +147,7 @@ const MaterialReconciliationDetail = () => {
       );
       if (response.status === 200) {
         alert("Material reconciliation updated successfully");
-        navigate("/material-reconciliation");
+        navigate(`/material-reconciliation-list?token=${token}`);
       }
     } catch (error) {
       console.error("Error updating material reconciliation:", error);
@@ -260,6 +267,7 @@ const MaterialReconciliationDetail = () => {
                         <th>Rate (Weighted Average)(INR)</th>
                         <th>Deadstock Qty</th>
                         <th>Theft / Missing Qty</th>
+                        <th> Damage Qty</th>
                         <th>Adjustment Quantity</th>
                         <th>Adjustment Rate(INR)</th>
                         <th>Adjustment Value(INR)</th>
@@ -311,6 +319,21 @@ const MaterialReconciliationDetail = () => {
                               <input
                                 className="form-control"
                                 type="number"
+                                value={item.wastage_qty}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    index,
+                                    "wastage_qty",
+                                    e.target.value
+                                  )
+                                }
+                                min="0"
+                              />
+                            </td>
+                            <td>
+                              <input
+                                className="form-control"
+                                type="number"
                                 value={item.adjustment_qty}
                                 onChange={(e) =>
                                   handleInputChange(
@@ -333,6 +356,7 @@ const MaterialReconciliationDetail = () => {
                                     e.target.value
                                   )
                                 }
+                                disabled
                               />
                             </td>
                             <td>
@@ -347,6 +371,7 @@ const MaterialReconciliationDetail = () => {
                                     e.target.value
                                   )
                                 }
+                                disabled
                               />
                             </td>
                             <td>
@@ -455,7 +480,7 @@ const MaterialReconciliationDetail = () => {
             </div>
             <div className="row mt-2 justify-content-end">
               <div className="col-md-2">
-                <button type="submit" className="purple-btn2 w-100">
+                <button type="submit" className="purple-btn2 w-100 mt-2">
                   Submit
                 </button>
               </div>
@@ -486,11 +511,11 @@ const MaterialReconciliationDetail = () => {
               </thead>
               <tbody>
                 <tr>
-                  <th>1</th>
+                  {/* <th>1</th>
                   <td>Pratham Shastri</td>
                   <td>15-02-2024</td>
                   <td>Verified</td>
-                  <td></td>
+                  <td></td> */}
                 </tr>
               </tbody>
             </table>

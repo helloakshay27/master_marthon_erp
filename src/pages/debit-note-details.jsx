@@ -12,9 +12,13 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import SingleSelector from '../components/base/Select/SingleSelector';
 import { baseURL } from '../confi/apiDomain';
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { toast, ToastContainer } from "react-toastify";
 const DebitNoteDetails = () => {
   // const [showRows, setShowRows] = useState(false);
   const { id } = useParams();
+  const navigate = useNavigate();
+  const [showAuditModal, setShowAuditModal] = useState(false);
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
   const [showRows, setShowRows] = useState(false);
@@ -24,21 +28,21 @@ const DebitNoteDetails = () => {
   const [status, setStatus] = useState(""); // Assuming boqDetails.status is initially available
 
   // Fetch credit note data
-  useEffect(() => {
-    const fetchCreditNoteData = async () => {
-      try {
-        const response = await axios.get(
-          `${baseURL}debit_notes/${id}?token=${token}`
-        );
-        setDebitNoteData(response.data);
-        setStatus(response.data.status)
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
-      }
-    };
+  const fetchCreditNoteData = async () => {
+    try {
+      const response = await axios.get(
+        `${baseURL}debit_notes/${id}?token=${token}`
+      );
+      setDebitNoteData(response.data);
+      setStatus(response.data.status)
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchCreditNoteData();
   }, [id]);
   console.log("status:", status)
@@ -77,7 +81,7 @@ const DebitNoteDetails = () => {
   const handleStatusChange = (selectedOption) => {
     // setStatus(e.target.value);
     setStatus(selectedOption.value);
-    handleStatusChange(selectedOption); // Handle status change
+    // handleStatusChange(selectedOption); // Handle status change
   };
 
   // Step 3: Handle remark change
@@ -127,6 +131,7 @@ const DebitNoteDetails = () => {
       if (response.status === 200) {
         console.log("Status updated successfully:", response.data);
         setRemark("");
+        setComment("")
         // alert('Status updated successfully');
         // Handle success (e.g., update the UI, reset fields, etc.)
         toast.success("Status updated successfully!");
@@ -736,19 +741,77 @@ const DebitNoteDetails = () => {
                   {/* <div className="col-md-2">
                     <button className="purple-btn2 w-100">Print</button>
                   </div> */}
-                  <div className="col-md-2">
+                  <div className="col-md-2 mt-2">
                     <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
                   </div>
                   <div className="col-md-2">
-                    <button className="purple-btn1 w-100">Cancel</button>
+                    <button className="purple-btn1 w-100" onClick={() => navigate(`/debit-note-list?token=${token}`)}>Cancel</button>
                   </div>
                 </div>
                 <div className="row mt-2 w-100 mb-5">
                   <div className="col-12 px-4">
                     <h5>Audit Log</h5>
-                    <div className="mx-0">
-                      <Table columns={auditLogColumns} data={auditLogData} />
+                    <div className="mx-0" >
+                      <div className="tbl-container mt-1" style={{ maxHeight: "450px" }} >
+                        <table className="w-100"  >
+                          <thead>
+                            <tr>
+                              <th>Sr.No.</th>
+                              <th>Created By</th>
+                              <th>Created At</th>
+                              <th>Status</th>
+                              <th>Remark</th>
+                              <th>Comment</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(debitNoteData?.status_logs || [])
+                              .slice(0, 10)
+                              .map((log, index) => (
+                                <tr key={log.id}>
+                                  <td className="text-start">{index + 1}</td>
+                                  <td className="text-start">{""}</td>
+                                  <td className="text-start">
+                                    {log.created_at
+                                      ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric",
+                                      })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: true,
+                                      })}`
+                                      : ""}
+                                  </td>
+                                  <td className="text-start">
+                                    {log.status
+                                      ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                      : ""}
+                                  </td>
+                                  <td className="text-start">{log.remarks || ""}</td>
+                                  <td className="text-start">{log.comments || ""}</td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                        {/* Show "Show More" link if more than 10 records */}
+                        {debitNoteData?.status_logs?.length > 10 && (
+                          <div className="mt-2 text-start">
+                            <span
+                              className="boq-id-link"
+                              style={{ fontWeight: "bold", cursor: "pointer" }}
+                              onClick={() => setShowAuditModal(true)}
+                            >
+                              Show More
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    {/* <div className="mx-0">
+                      <Table columns={auditLogColumns} data={auditLogData} />
+                    </div> */}
                   </div>
                 </div>
               </div>
@@ -787,6 +850,69 @@ const DebitNoteDetails = () => {
           <p>Loading...</p>
         </div>
       )}
+
+      {/* Modal for all audit logs */}
+      <Modal show={showAuditModal} onHide={() => setShowAuditModal(false)} size="xl">
+        <Modal.Header closeButton>
+          <Modal.Title>All Audit Logs</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="tbl-container" style={{ maxHeight: "700px" }}>
+            <table className="w-100">
+              <thead>
+                <tr>
+                  <th>Sr.No.</th>
+                  <th>Created By</th>
+                  <th>Created At</th>
+                  <th>Status</th>
+                  <th>Remark</th>
+                  <th>Comment</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(debitNoteData?.status_logs || []).map((log, index) => (
+                  <tr key={log.id}>
+                    <td className="text-start">{index + 1}</td>
+                    <td className="text-start">{""}</td>
+                    <td className="text-start">
+                      {log.created_at
+                        ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })} ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })}`
+                        : ""}
+                    </td>
+                    <td className="text-start">
+                      {log.status
+                        ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                        : ""}
+                    </td>
+                    <td className="text-start">{log.remarks || ""}</td>
+                    <td className="text-start">{log.comments || ""}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Modal.Body>
+      </Modal>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   )
 }

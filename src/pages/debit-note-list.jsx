@@ -995,7 +995,7 @@ const DebitNoteList = () => {
                     >
                       <SettingIcon />
                     </button>
-                    <button className="purple-btn2"
+                    <button className="purple-btn2 me-2"
                       onClick={() => navigate(`/debit-note-create?token=${token}`)}
                     >
                       <svg
