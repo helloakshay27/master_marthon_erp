@@ -1044,7 +1044,7 @@ const BillBookingList = () => {
                       <SettingIcon />
                     </button>
                     <button
-                      className="purple-btn2"
+                      className="purple-btn2 me-2"
                       onClick={() =>
                         navigate(`/bill-booking-create?token=${token}`)
                       }
