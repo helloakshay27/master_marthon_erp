@@ -30,6 +30,15 @@ const MaterialReconciliationCreate = () => {
   const [selectedWing, setSelectedWing] = useState(null);
   // const [siteOptions, setSiteOptions] = useState([]);
   const [wingsOptions, setWingsOptions] = useState([]);
+  const [showBatchModal, setShowBatchModal] = useState(false);
+  const [selectedInventoryId, setSelectedInventoryId] = useState(null);
+
+  const openBatchPopup = (inventoryId) => {
+    setSelectedInventoryId(inventoryId);
+    // Fetch or set batchList here as needed
+    setShowBatchModal(true);
+  };
+
   const [selectedStatus, setSelectedStatus] = useState({
     value: "",
     label: "Select Status",
@@ -939,7 +948,7 @@ const MaterialReconciliationCreate = () => {
                       <th style={{ minWidth: "120px" }}>Deadstock Qty</th>
                       <th style={{ minWidth: "120px" }}>Theft / Missing Qty</th>
                       <th style={{ minWidth: "120px" }}>Damage Qty</th>
-                      <th style={{ minWidth: "120px" }}>Adjustment Quantity</th>
+                      <th style={{ minWidth: "150px" }}>Adjustment Quantity</th>
                       <th>Adjustment Rate(INR)</th>
                       <th>Adjustment Value(INR)</th>
                       <th style={{ minWidth: "120px" }}>Net Quantity</th>
@@ -956,7 +965,7 @@ const MaterialReconciliationCreate = () => {
                         <td>{inventory.uom}</td>
                         <td>{inventory.qty || 0}</td>
                         <td>
-                          <input
+                          {/* <input
                             type="number"
                             className="form-control"
                             value={inventory.rate || ""}
@@ -969,7 +978,7 @@ const MaterialReconciliationCreate = () => {
                             }
                             readOnly
                             // placeholder="Enter Rate"
-                          />
+                          /> */}
                         </td>
                         <td>
                           <input
@@ -1032,8 +1041,25 @@ const MaterialReconciliationCreate = () => {
                               )
                             }
                             placeholder="Enter Adjustment Qty"
+                            style={{ display: "inline-block", width: "70%" }}
                           />
+                          {Number(inventory.adjustment_qty) < 0 && (
+                            <span
+                              className="boq-id-link mt-1"
+                              style={{
+                                display: "inline-block",
+                                fontWeight: "bold", cursor: "pointer"
+                              }}
+                              onClick={e => {
+                                e.preventDefault();
+                                openBatchPopup(inventory.id); // This should set showBatchModal to true and load batchList
+                              }}
+                            >
+                              Select Batch
+                            </span>
+                          )}
                         </td>
+
                         <td>
                           <input
                             type="number"
@@ -1047,7 +1073,7 @@ const MaterialReconciliationCreate = () => {
                               )
                             }
                             disabled
-                            // placeholder="Enter Adjustment Rate"
+                          // placeholder="Enter Adjustment Rate"
                           />
                         </td>
                         <td>
@@ -1063,7 +1089,7 @@ const MaterialReconciliationCreate = () => {
                               )
                             }
                             disabled
-                            // placeholder="Enter Adjustment Value"
+                          // placeholder="Enter Adjustment Value"
                           />
                         </td>
                         <td>
@@ -1460,9 +1486,8 @@ const MaterialReconciliationCreate = () => {
                 <ul className="pagination justify-content-center d-flex">
                   {/* First Button */}
                   <li
-                    className={`page-item ${
-                      pagination.current_page === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1474,9 +1499,8 @@ const MaterialReconciliationCreate = () => {
 
                   {/* Previous Button */}
                   <li
-                    className={`page-item ${
-                      pagination.current_page === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1493,9 +1517,8 @@ const MaterialReconciliationCreate = () => {
                   {getPageNumbers().map((pageNumber) => (
                     <li
                       key={pageNumber}
-                      className={`page-item ${
-                        pagination.current_page === pageNumber ? "active" : ""
-                      }`}
+                      className={`page-item ${pagination.current_page === pageNumber ? "active" : ""
+                        }`}
                     >
                       <button
                         className="page-link"
@@ -1508,11 +1531,10 @@ const MaterialReconciliationCreate = () => {
 
                   {/* Next Button */}
                   <li
-                    className={`page-item ${
-                      pagination.current_page === pagination.total_pages
-                        ? "disabled"
-                        : ""
-                    }`}
+                    className={`page-item ${pagination.current_page === pagination.total_pages
+                      ? "disabled"
+                      : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1529,11 +1551,10 @@ const MaterialReconciliationCreate = () => {
 
                   {/* Last Button */}
                   <li
-                    className={`page-item ${
-                      pagination.current_page === pagination.total_pages
-                        ? "disabled"
-                        : ""
-                    }`}
+                    className={`page-item ${pagination.current_page === pagination.total_pages
+                      ? "disabled"
+                      : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1584,6 +1605,53 @@ const MaterialReconciliationCreate = () => {
               >
                 Close
               </button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+
+      {/* issue material pop up modal*/}
+      <Modal show={showBatchModal} onHide={() => setShowBatchModal(false)} centered size="xl">
+        <Modal.Header closeButton>
+          <Modal.Title>
+            Issue Material
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="tbl-container">
+            <table className="w-100">
+              <thead>
+                <tr>
+                  <th className="text-start">Type</th>
+                  <th className="text-start">Display No.</th>
+                  <th className="text-start">Material</th>
+                  <th className="text-start">Material Attributes</th>
+                  <th className="text-start">Quantity</th>
+                  <th className="text-start">Current Adjustment QTY</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="text-start">RETURN INVENTORY</td>
+                  <td className="text-start">6020</td>
+                  <td className="text-start">TILE ADHESIVE(KG)</td>
+                  <td className="text-start"></td>
+                  <td className="text-start">50</td>
+                  <td className="text-start">
+                    <input type="text" className="form-control" placeholder="Enter..." />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-2 mt-2">
+              <button className="purple-btn2 w-100">
+                Submit
+              </button>
+            </div>
+            <div className="col-md-2">
+              <button className="purple-btn1 w-100" onClick={() => setShowBatchModal(false)}>Cancel</button>
             </div>
           </div>
         </Modal.Body>
