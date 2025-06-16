@@ -737,7 +737,7 @@ const MaterialReconciliationCreate = () => {
               field === "adjustment_qty" ? value : inventory.adjustment_qty;
 
             updatedInventory.net_quantity = calculateNetQuantity(
-              inventory.qty,
+              inventory.stock_as_on,
               newDeadstockQty,
               newTheftQty,
               newWastageQty,
@@ -793,8 +793,8 @@ const MaterialReconciliationCreate = () => {
               adjustment_value: inventory.adjustment_value
                 ? parseFloat(inventory.adjustment_value)
                 : null,
-              net_quantity: inventory.net_quantity
-                ? parseFloat(inventory.net_quantity)
+              net_quantity: inventory.stock_as_on
+                ? parseFloat(inventory.stock_as_on)
                 : null,
               remarks: inventory.remarks || "",
               reason: inventory.reason || "",
@@ -1133,7 +1133,9 @@ const MaterialReconciliationCreate = () => {
                           <input
                             type="number"
                             className="form-control"
-                            value={inventory.net_quantity || ""}
+                            value={
+                              inventory.net_quantity || inventory.stock_as_on
+                            }
                             readOnly
                             placeholder="Net Qty"
                           />

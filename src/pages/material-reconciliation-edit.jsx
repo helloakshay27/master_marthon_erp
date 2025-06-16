@@ -243,10 +243,10 @@ const MaterialReconciliationEdit = () => {
 
   // Define status options
   const statusOptions = [
+    { value: "", label: "Select Status" },
     { value: "draft", label: "Draft" },
-    { value: "pending", label: "Pending" },
+    { value: "submitted", label: "Submitted" },
     { value: "approved", label: "Approved" },
-    { value: "rejected", label: "Rejected" },
   ];
 
   // Fetching inventory types data from API on component mount
@@ -1282,21 +1282,25 @@ const MaterialReconciliationEdit = () => {
                 >
                   Status
                 </label>
-                <select
-                  name="status"
-                  className="form-control"
-                  value={selectedStatus?.value || ""}
-                  disabled
-                >
-                  {statusOptions.map((option) => (
-                    <option
-                      key={option.value}
-                      value={option.value}
-                      selected={option.value === selectedStatus?.value}
-                    >
-                      {option.label}
-                    </option>
-                  ))}
+                {/* <SingleSelector
+                  options={statusOptions}
+                  value={selectedStatus}
+                  onChange={(selectedOption) => {
+                    setSelectedStatus(
+                      selectedOption || { value: "", label: "Select Status" }
+                    );
+                  }}
+                  placeholder="Select Status"
+                  isClearable={false}
+                  classNamePrefix="react-select"
+                /> */}
+                <select name="status" class="form-control" disabled>
+                  <option value="draft" selected>
+                    Draft
+                  </option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
                 </select>
               </div>
             </div>
