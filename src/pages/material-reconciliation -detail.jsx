@@ -51,6 +51,12 @@ const MaterialReconciliationDetail = () => {
       .get(`${baseURL}material_reconciliations/${id}.json?token=${token}`)
       .then((response) => {
         setDetails(response.data);
+        setSelectedStatus({
+          value: response.data.status,
+          label:
+            response.data.status.charAt(0).toUpperCase() +
+            response.data.status.slice(1),
+        });
         setFormData({
           pms_project_id: response.data.project.id,
           pms_site_id: response.data.sub_project.id,
@@ -544,7 +550,7 @@ const MaterialReconciliationDetail = () => {
               </div>
             </div>
           </form>
-          <div className=" ">
+          <div className=" d-flex justify-content-">
             <h5 className=" ">Audit Log</h5>
           </div>
           <div className="tbl-container px-0">
@@ -559,13 +565,31 @@ const MaterialReconciliationDetail = () => {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  {/* <th>1</th>
-                  <td>Pratham Shastri</td>
-                  <td>15-02-2024</td>
-                  <td>Verified</td>
-                  <td></td> */}
-                </tr>
+                {details?.status_logs?.map((log, index) => (
+                  <tr key={log.id}>
+                    <td>{index + 1}</td>
+                    <td>{log.created_by_name}</td>
+                    <td>
+                      {new Date(log.created_at).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td>
+                      {log.status.charAt(0).toUpperCase() + log.status.slice(1)}
+                    </td>
+                    <td>{log.admin_comment || "-"}</td>
+                    {/* <td>{log.admin_comment || "-"}</td> */}
+                  </tr>
+                ))}
+                {!details?.status_logs?.length && (
+                  <tr>
+                    <td colSpan="6" className="text-center">
+                      No audit log data available
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
