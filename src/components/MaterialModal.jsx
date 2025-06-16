@@ -269,8 +269,8 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
                 />
               </div>
             </div>
-            <div className="row mt-2 justify-content-center mt-3">
-              <div className="col-md-1">
+            <div className="row  justify-content-center">
+              <div className="col-md-1 mt-2">
                 <button type="submit" className="purple-btn2 update_mor" onClick={handleGoButtonClick}>
                   Go
                 </button>

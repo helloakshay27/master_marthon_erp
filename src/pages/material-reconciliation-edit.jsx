@@ -717,6 +717,7 @@ const MaterialReconciliationEdit = () => {
       };
     });
   };
+  const [details, setDetails] = useState(null);
 
   useEffect(() => {
     // Fetch initial data
@@ -725,6 +726,7 @@ const MaterialReconciliationEdit = () => {
       .then((response) => {
         const data = response.data;
 
+        setDetails(data);
         // Set selected values for dropdowns
         setSelectedCompany({
           value: data.company.id,
@@ -912,7 +914,7 @@ const MaterialReconciliationEdit = () => {
                 : null,
               remarks: item.remarks || "",
               reason: item.reason || "",
-              // uom: item.uom, // Add UOM data
+              _destroy: item._destroy || false, // Include destroy flag in payload
             })),
         },
       };
@@ -960,6 +962,18 @@ const MaterialReconciliationEdit = () => {
   };
 
   const handleRemoveInventory = (inventoryId) => {
+    // Mark item for deletion in form data
+    setFormData((prev) => ({
+      ...prev,
+      material_reconciliation_items_attributes:
+        prev.material_reconciliation_items_attributes.map((item) =>
+          item.mor_inventory_id === inventoryId
+            ? { ...item, _destroy: true } // Mark for deletion
+            : item
+        ),
+    }));
+
+    // Remove from accepted inventories for UI
     setAcceptedInventories((prev) =>
       prev.filter((inventory) => inventory.id !== inventoryId)
     );
@@ -1081,9 +1095,10 @@ const MaterialReconciliationEdit = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {formData.material_reconciliation_items_attributes.map(
-                      (item, index) => (
-                        <tr key={item.id}>
+                    {formData.material_reconciliation_items_attributes
+                      .filter((item) => !item._destroy) // Only show non-deleted items
+                      .map((item, index) => (
+                        <tr key={item.mor_inventory_id}>
                           <td>{index + 1}</td>
                           <td>{item.material}</td>
                           <td>{item.uom}</td>
@@ -1221,7 +1236,9 @@ const MaterialReconciliationEdit = () => {
                           <td>
                             <button
                               className="btn"
-                              onClick={() => handleRemoveInventory(item.id)}
+                              onClick={() =>
+                                handleRemoveInventory(item.mor_inventory_id)
+                              }
                             >
                               <svg
                                 width={18}
@@ -1248,8 +1265,7 @@ const MaterialReconciliationEdit = () => {
                             </button>
                           </td>
                         </tr>
-                      )
-                    )}
+                      ))}
                   </tbody>
                 </table>
               </div>
@@ -1313,6 +1329,55 @@ const MaterialReconciliationEdit = () => {
             </div>
             <div className="col-md-2">
               <button className="purple-btn1 w-100">Cancel</button>
+            </div>
+          </div>
+          <div className="row mt-2 w-100">
+            <div className="col-12 px-4">
+              <h5>Audit Log</h5>
+              <div className="mx-0 tbl-container px-0">
+                <table className="w-100 ">
+                  <thead>
+                    <tr>
+                      <th>Sr.No.</th>
+                      <th>User</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                      <th>Remark</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {details?.status_logs?.map((log, index) => (
+                      <tr key={log.id}>
+                        <td>{index + 1}</td>
+                        <td>{log.created_by_name}</td>
+                        <td>
+                          {new Date(log.created_at).toLocaleDateString(
+                            "en-GB",
+                            {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            }
+                          )}
+                        </td>
+                        <td>
+                          {log.status.charAt(0).toUpperCase() +
+                            log.status.slice(1)}
+                        </td>
+                        <td>{log.admin_comment || "-"}</td>
+                        {/* <td>{log.admin_comment || "-"}</td> */}
+                      </tr>
+                    ))}
+                    {!details?.status_logs?.length && (
+                      <tr>
+                        <td colSpan="6" className="text-center">
+                          No audit log data available
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
