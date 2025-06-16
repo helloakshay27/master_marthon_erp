@@ -7,6 +7,8 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import { useParams, useNavigate } from "react-router-dom";
 
 const MaterialReconciliationDetail = () => {
+  const [adminComment, setAdminComment] = useState("");
+
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
   const { id } = useParams();
@@ -133,25 +135,50 @@ const MaterialReconciliationDetail = () => {
     });
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const response = await axios.put(
+  //       `${baseURL}material_reconciliations/${id}/update_status.json?token=${token}`,
+  //       {
+  //         material_reconciliation: {
+  //           ...formData,
+  //           status: "draft",
+  //         },
+  //       }
+  //     );
+  //     if (response.status === 200) {
+  //       alert("Material reconciliation updated successfully");
+  //       navigate(`/material-reconciliation-list?token=${token}`);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error updating material reconciliation:", error);
+  //     alert("Failed to update material reconciliation");
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.put(
-        `${baseURL}material_reconciliations/${id}.json?token=${token}`,
-        {
-          material_reconciliation: {
-            ...formData,
-            status: "draft",
-          },
-        }
+      const payload = {
+        status_log: {
+          status: selectedStatus?.value || "draft",
+          comments: formData.remarks || "",
+          admin_comment: adminComment,
+        },
+      };
+
+      const response = await axios.post(
+        `${baseURL}material_reconciliations/${id}/update_status.json?token=${token}`,
+        payload
       );
-      if (response.status === 200) {
-        alert("Material reconciliation updated successfully");
-        navigate(`/material-reconciliation-list?token=${token}`);
-      }
+
+      console.log("Status update successful:", response.data);
+      alert("Status updated successfully!");
+      navigate(`/material-reconciliation-list?token=${token}`);
     } catch (error) {
-      console.error("Error updating material reconciliation:", error);
-      alert("Failed to update material reconciliation");
+      console.error("Error updating status:", error);
+      alert("Error updating status. Please try again.");
     }
   };
 
@@ -274,11 +301,11 @@ const MaterialReconciliationDetail = () => {
                         <th>Net Quantity</th>
                         <th>Remarks</th>
                         <th>Reason</th>
-                        <th>Action</th>
+                        {/* <th>Action</th> */}
                       </tr>
                     </thead>
                     <tbody>
-                      {formData.material_reconciliation_items_attributes.map(
+                      {/* {formData.material_reconciliation_items_attributes.map(
                         (item, index) => (
                           <tr key={item.id}>
                             <td>{index + 1}</td>
@@ -438,6 +465,26 @@ const MaterialReconciliationDetail = () => {
                             </td>
                           </tr>
                         )
+                      )} */}
+                      {formData.material_reconciliation_items_attributes.map(
+                        (item, index) => (
+                          <tr key={item.id}>
+                            <td>{index + 1}</td>
+                            <td>{item.material}</td>
+                            <td>{item.stock_as_on}</td>
+                            <td>{item.rate}</td>
+                            <td>{item.deadstock_qty}</td>
+                            <td>{item.theft_or_missing_qty}</td>
+                            <td>{item.wastage_qty}</td>
+                            <td>{item.adjustment_qty}</td>
+                            <td>{item.adjustment_rate}</td>
+                            <td>{item.adjustment_value}</td>
+                            <td>{item.net_quantity}</td>
+                            <td>{item.remarks}</td>
+                            <td>{item.reason}</td>
+                            {/* <td>-</td> */}
+                          </tr>
+                        )
                       )}
                     </tbody>
                   </table>
@@ -453,6 +500,8 @@ const MaterialReconciliationDetail = () => {
                     rows={3}
                     placeholder="Enter ..."
                     defaultValue={""}
+                    value={adminComment}
+                    onChange={(e) => setAdminComment(e.target.value)}
                   />
                 </div>
               </div>

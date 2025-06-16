@@ -98,6 +98,7 @@ import MiscellaneousBillList from "./pages/miscellaneous-bill-list";
 import MiscellaneousBillDetails from "./pages/miscellaneous-bill-details";
 import MiscellaneousBillEdit from "./pages/miscellaneous-bill-edit";
 import SectionReKYCDetails from "./pages/pms/suppliers/rekyc";
+import MaterialReconciliationEdit from "./pages/material-reconciliation-edit";
 
 function App() {
   return (
@@ -460,6 +461,10 @@ function App() {
           <Route
             path="/material-reconciliation-detail/:id"
             element={<MaterialReconciliationDetail />}
+          />
+          <Route
+            path="/material-reconciliation-edit/:id"
+            element={<MaterialReconciliationEdit />}
           />
           <Route
             path="/material-reconciliation-list"
