@@ -30,6 +30,8 @@ const MaterialReconciliationDetail = () => {
     value: "",
     label: "Select Status",
   });
+  const [statusList, setStatusList] = useState([]);
+  const [isStatusDisabled, setIsStatusDisabled] = useState(false);
 
   const calculateNetQuantity = (
     stockAsOn,
@@ -51,12 +53,27 @@ const MaterialReconciliationDetail = () => {
       .get(`${baseURL}material_reconciliations/${id}.json?token=${token}`)
       .then((response) => {
         setDetails(response.data);
-        setSelectedStatus({
-          value: response.data.status,
-          label:
-            response.data.status.charAt(0).toUpperCase() +
-            response.data.status.slice(1),
-        });
+
+        // Set status list and selected status from API
+        if (response.data.status_list) {
+          const statusOptions = response.data.status_list.map((status) => ({
+            value: status.toLowerCase(),
+            label: status,
+          }));
+          setStatusList(statusOptions);
+
+          // Set selected status if available
+          if (response.data.selected_status) {
+            setSelectedStatus({
+              value: response.data.selected_status.toLowerCase(),
+              label: response.data.selected_status,
+            });
+          }
+
+          // Set disabled state
+          setIsStatusDisabled(response.data.disabled || false);
+        }
+
         setFormData({
           pms_project_id: response.data.project.id,
           pms_site_id: response.data.sub_project.id,
@@ -188,13 +205,6 @@ const MaterialReconciliationDetail = () => {
       alert("Error updating status. Please try again.");
     }
   };
-
-  const statusOptions = [
-    { value: "", label: "Select Status" },
-    { value: "draft", label: "Draft" },
-    { value: "submitted", label: "Submitted" },
-    { value: "approved", label: "Approved" },
-  ];
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
@@ -520,7 +530,7 @@ const MaterialReconciliationDetail = () => {
                     Status
                   </label>
                   <SingleSelector
-                    options={statusOptions}
+                    options={statusList}
                     value={selectedStatus}
                     onChange={(selectedOption) => {
                       setSelectedStatus(
@@ -529,6 +539,7 @@ const MaterialReconciliationDetail = () => {
                     }}
                     placeholder="Select Status"
                     isClearable={false}
+                    isDisabled={isStatusDisabled}
                     classNamePrefix="react-select"
                   />
                 </div>
