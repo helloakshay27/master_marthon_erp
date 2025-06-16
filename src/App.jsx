@@ -98,6 +98,7 @@ import MiscellaneousBillList from "./pages/miscellaneous-bill-list";
 import MiscellaneousBillDetails from "./pages/miscellaneous-bill-details";
 import MiscellaneousBillEdit from "./pages/miscellaneous-bill-edit";
 import SectionReKYCDetails from "./pages/pms/suppliers/rekyc";
+import RateDetails from "./pages/details-rate";
 import MaterialReconciliationEdit from "./pages/material-reconciliation-edit";
 
 function App() {
@@ -280,6 +281,7 @@ function App() {
             />
             <Route path="/create-rate" element={<CreateRate />} />
             <Route path="/view-rate" element={<ViewRate />} />
+            <Route path="/details-rate/:id" element={<RateDetails />} />
 
             <Route
               path="/estimation-details-wings"

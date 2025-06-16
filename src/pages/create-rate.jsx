@@ -4,13 +4,13 @@ import "../styles/mor.css";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector"; // Adjust path as needed
 import { Modal, Button, Form } from 'react-bootstrap';
-import { Link ,useNavigate} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 // import Modal from "react-bootstrap/Modal";
 
 const CreateRate = () => {
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [rate, setRate] = useState('');
@@ -67,8 +67,9 @@ const CreateRate = () => {
         brand: "",
         effectiveDate: "",
         rate: "",
-        poRate: "",
-        avgRate: "",
+        rateType: "",
+        // poRate: "",
+        // avgRate: "",
         uom: "",
     });
 
@@ -179,46 +180,49 @@ const CreateRate = () => {
             prevData.map((row, index) => {
                 if (index === rowIndex) {
                     const updatedRow = { ...row };
-    
+
                     // Handle INR Rate checkbox
                     if (checkboxType === "rate") {
                         const newRateChecked = !row.rateChecked; // Calculate the new state
                         updatedRow.rateChecked = newRateChecked;
                         updatedRow.avgRateChecked = false;
                         updatedRow.poRateChecked = false;
-    
+
                         // Add or clear the rate value based on the new state
                         updatedRow.rate = newRateChecked ? row.rate : "";
-                        updatedRow.avgRate = ""; // Clear avgRate
-                        updatedRow.poRate = ""; // Clear poRate
+                        // updatedRow.avgRate = ""; // Clear avgRate
+                        // updatedRow.poRate = ""; // Clear poRate
+                        updatedRow.rateType = newRateChecked ? "manual" : ""; // Set rateType
                     }
-    
+
                     // Handle AVG Rate checkbox
                     if (checkboxType === "avgRate") {
                         const newAvgRateChecked = !row.avgRateChecked; // Calculate the new state
                         updatedRow.avgRateChecked = newAvgRateChecked;
                         updatedRow.rateChecked = false;
                         updatedRow.poRateChecked = false;
-    
+
                         // Add or clear the avgRate value based on the new state
-                        updatedRow.avgRate = newAvgRateChecked ? "45" : ""; // Dummy value for avgRate
-                        updatedRow.rate = ""; // Clear rate
-                        updatedRow.poRate = ""; // Clear poRate
+                        updatedRow.rate = newAvgRateChecked ? "0" : ""; // Dummy value for avgRate
+                        // updatedRow.avgRate= ""; // Clear rate
+                        // updatedRow.poRate = ""; // Clear poRate
+                        updatedRow.rateType = newAvgRateChecked ? "average" : ""; // Set rateType
                     }
-    
+
                     // Handle PO Rate checkbox
                     if (checkboxType === "poRate") {
                         const newPoRateChecked = !row.poRateChecked; // Calculate the new state
                         updatedRow.poRateChecked = newPoRateChecked;
                         updatedRow.rateChecked = false;
                         updatedRow.avgRateChecked = false;
-    
+
                         // Add or clear the poRate value based on the new state
-                        updatedRow.poRate = newPoRateChecked ? "67" : ""; // Dummy value for poRate
-                        updatedRow.rate = ""; // Clear rate
-                        updatedRow.avgRate = ""; // Clear avgRate
+                        updatedRow.rate = newPoRateChecked ? "0" : ""; // Dummy value for poRate
+                        // updatedRow.poRate = ""; // Clear rate
+                        // updatedRow.avgRate = ""; // Clear avgRate
+                        updatedRow.rateType = newPoRateChecked ? "last" : ""; // Set rateType
                     }
-    
+
                     return updatedRow;
                 }
                 return row;
@@ -501,6 +505,14 @@ const CreateRate = () => {
         }
     }, [selectedInventoryMaterialTypes2, baseURL]); // Runs when materials or baseURL changes
 
+
+    const handleEffectiveDateChange = (id, value) => {
+        setTableData(prev =>
+            prev.map(row =>
+                row.id === id ? { ...row, effectiveDate: value } : row
+            )
+        );
+    };
     //date  modal
     const [showDateModal, setShowDateModal] = useState(false);
     const formatDate = (date) => {
@@ -519,38 +531,66 @@ const CreateRate = () => {
     console.log("date ranhe:", dateRange)
 
     const payload = {
+        rate_detail:{
         company: selectedCompany?.value || "",
         project: selectedProject?.value || "",
         subProject: selectedSite?.value || "",
         wing: selectedWing?.value || "",
-        material: tableData.map(({ rateChecked, avgRateChecked, poRateChecked, ...rest }) => rest) || []
+        materials: tableData.map(row => ({
+            material_id: row.material,
+            material_sub_type_id: row.materialSubType,
+            generic_info_id: row.genericSpecification || null,
+            colour_id: row.colour || null,
+            brand_id: row.brand || null,
+            uom_id: row.uom || null,
+            effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
+            rate: row.rate,
+            rate_type: row.rateType || null
+        }))
+    }
+        // material: tableData.map(({ rateChecked, avgRateChecked, poRateChecked, ...rest }) => rest) || []
     }
 
     console.log("payload :", payload)
 
     const handleSubmit = () => {
-        const payload = {
-            company: selectedCompany?.value || "",
-            project: selectedProject?.value || "",
-            subProject: selectedSite?.value || "",
-            wing: selectedWing?.value || "",
-            material: tableData.map(({ rateChecked, avgRateChecked, poRateChecked, ...rest }) => rest) || [],
+        const payload = {rate_detail:{
+            company_id: selectedCompany?.value || "",
+            project_id: selectedProject?.value || "",
+            pms_site_id: selectedSite?.value || "",
+            wing_id: selectedWing?.value || "",
+            materials: tableData.map(row => ({
+            material_id: row.material,
+            material_sub_type_id: row.materialSubType,
+            generic_info_id: row.genericSpecification || null,
+            colour_id: row.colour || null,
+            brand_id: row.brand || null,
+            uom_id: row.uom || null,
+            effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
+            rate: row.rate,
+            rate_type: row.rateType || null
+        }))
+    }
+           
         };
 
         console.log("Submitting payload:", payload);
-        navigate("/view-rate");
+
 
         // Simulate API call or handle submission logic
-        // axios
-        //     .post(`${baseURL}your-api-endpoint`, payload)
-        //     .then((response) => {
-        //         console.log("Submission successful:", response.data);
-        //         // Redirect to the list page
-        //         navigate("/list-page"); // Replace "/list-page" with your actual list page route
-        //     })
-        //     .catch((error) => {
-        //         console.error("Error submitting data:", error);
-        //     });
+        axios
+            .post(`${baseURL}rate_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`, payload)
+            .then((response) => {
+                 alert("Submission successful!");
+                console.log("Submission successful:", response.data);
+                // Redirect to the list page
+                // navigate("/list-page"); // Replace "/list-page" with your actual list page route
+                navigate("/view-rate");
+            })
+            .catch((error) => {
+                 alert("Error submitting data!");
+                console.error("Error submitting data:", error);
+            });
     };
     return (
         <>
@@ -618,7 +658,7 @@ const CreateRate = () => {
                         </CollapsibleCard>
 
                         <div className="d-flex justify-content-end mx-2">
-                            <button className="purple-btn2">Bulk Upload</button>
+                            {/* <button className="purple-btn2">Bulk Upload</button> */}
                             <button
                                 className="purple-btn2"
                                 data-bs-toggle="modal"
@@ -638,7 +678,7 @@ const CreateRate = () => {
                                 <span>Add</span>
                             </button>
                         </div>
-                        {/* {(JSON.stringify(tableData, null, 2))} */}
+                        {(JSON.stringify(tableData, null, 2))}
                         <div className="mx-3">
                             <div className="tbl-container  mt-1">
                                 <table className="w-100">
@@ -698,9 +738,17 @@ const CreateRate = () => {
                                                     <td>{row.genericSpecificationLabel}</td>
                                                     <td>{row.colourLabel}</td>
                                                     <td>{row.brandLabel}</td>
-                                                    <td>{row.effectiveDate}</td>
                                                     <td>
-                                                    
+                                                        {/* {row.effectiveDate} */}
+                                                        <input
+                                                            type="date"
+                                                            className="form-control"
+                                                            value={row.effectiveDate || ""}
+                                                            onChange={e => handleEffectiveDateChange(row.id, e.target.value)}
+                                                        />
+                                                    </td>
+                                                    <td>
+
                                                         <div className="d-flex align-items-center gap-2">
                                                             {/* <input
                                                                 className="form-control"
@@ -739,7 +787,7 @@ const CreateRate = () => {
                                                                 disabled={row.rate !== "" || checkbox2}
                                                             />
                                                         </span> */}
-                                                        <span>{row.avgRate || "45"}</span>
+                                                        <span>{row.avgRate || "0"}</span>
                                                         <span className="ms-2 pt-2">
                                                             <input
                                                                 type="checkbox"
@@ -758,7 +806,7 @@ const CreateRate = () => {
                                                                 disabled={row.rate !== "" || checkbox1}
                                                             />
                                                         </span> */}
-                                                        <span>{row.poRate || "67"}</span>
+                                                        <span>{row.poRate || "0"}</span>
                                                         <span className="ms-2 pt-2">
                                                             <input
                                                                 type="checkbox"
@@ -838,8 +886,11 @@ const CreateRate = () => {
 
                     </div>
                     <div className="row mt-2 justify-content-center mb-5 pb-5">
-                        <div className="col-md-2">
+                        <div className="col-md-2 mt-2">
                             <button className="purple-btn2 w-100" onClick={handleSubmit}>Create</button>
+                        </div>
+                         <div className="col-md-2">
+                            <button className="purple-btn1 w-100">Cancle</button>
                         </div>
                     </div>
                 </div>
@@ -956,7 +1007,7 @@ const CreateRate = () => {
                                 </div>
                             </div>
                             <div className="row mt-2 justify-content-center mt-5">
-                                <div className="col-md-3">
+                                <div className="col-md-3 mt-2">
                                     <button className="purple-btn2 w-100" onClick={handleCreate}>Create</button>
                                 </div>
                                 <div className="col-md-3">
