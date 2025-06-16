@@ -697,15 +697,15 @@ const MaterialReconciliationCreate = () => {
     stockAsOn,
     deadstockQty,
     theftQty,
-    wastageQty,
+    damageQty,
     adjustmentQty
   ) => {
     const stock = parseFloat(stockAsOn) || 0;
     const deadstock = parseFloat(deadstockQty) || 0;
     const theft = parseFloat(theftQty) || 0;
-    const wastage = parseFloat(wastageQty) || 0;
+    const damage = parseFloat(damageQty) || 0;
     const adjustment = parseFloat(adjustmentQty) || 0;
-    return stock - deadstock - theft - wastage + adjustment;
+    return stock - deadstock - theft - damage + adjustment;
   };
 
   // Modify handleItemInputChange function
@@ -731,7 +731,7 @@ const MaterialReconciliationCreate = () => {
               field === "theft_or_missing_qty"
                 ? value
                 : inventory.theft_or_missing_qty;
-            const newWastageQty =
+            const newDamageQty =
               field === "damage_qty" ? value : inventory.damage_qty;
             const newAdjustmentQty =
               field === "adjustment_qty" ? value : inventory.adjustment_qty;
@@ -740,7 +740,7 @@ const MaterialReconciliationCreate = () => {
               inventory.stock_as_on,
               newDeadstockQty,
               newTheftQty,
-              newWastageQty,
+              newDamageQty,
               newAdjustmentQty
             );
           }
@@ -782,6 +782,7 @@ const MaterialReconciliationCreate = () => {
                 ? parseFloat(inventory.theft_or_missing_qty)
                 : null,
               damage_qty: inventory.damage_qty
+              
                 ? parseFloat(inventory.damage_qty)
                 : null,
               adjustment_qty: inventory.adjustment_qty
@@ -793,8 +794,8 @@ const MaterialReconciliationCreate = () => {
               adjustment_value: inventory.adjustment_value
                 ? parseFloat(inventory.adjustment_value)
                 : null,
-              net_quantity: inventory.stock_as_on
-                ? parseFloat(inventory.stock_as_on)
+              net_quantity: inventory.net_quantity
+                ? parseFloat(inventory.net_quantity)
                 : null,
               remarks: inventory.remarks || "",
               reason: inventory.reason || "",
