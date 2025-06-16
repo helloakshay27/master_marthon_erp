@@ -678,7 +678,7 @@ const CreateRate = () => {
                                 <span>Add</span>
                             </button>
                         </div>
-                        {(JSON.stringify(tableData, null, 2))}
+                        {/* {(JSON.stringify(tableData, null, 2))} */}
                         <div className="mx-3">
                             <div className="tbl-container  mt-1">
                                 <table className="w-100">

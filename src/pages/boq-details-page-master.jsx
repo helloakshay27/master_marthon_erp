@@ -1178,8 +1178,15 @@ const BOQDetailsPageMaster = () => {
               )}
               {/* ✅ Toast Container */}
               <ToastContainer />
-              <button className="purple-btn2" onClick={handleSubmit}>Submit</button>
-              <button className="purple-btn1" onClick={handleCancel}>Close</button>
+               <div className="row  justify-content-center w-100">
+              <div className="col-md-2 mt-2">
+              <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
+              </div>
+              <div className="col-md-2">
+              <button className="purple-btn1 w-100" onClick={handleCancel}>Close</button>
+</div>
+</div>
+               
             </div>
           </CollapsibleCard>
 

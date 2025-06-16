@@ -3430,7 +3430,7 @@ const CreateBOQ = () => {
 
                 )}
                 <button
-                  className="purple-btn2 w-100"
+                  className="purple-btn2 w-100 mt-2"
                   fdprocessedid="u33pye"
                   onClick={handleSubmit}
                 >
