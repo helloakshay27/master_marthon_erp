@@ -333,12 +333,12 @@ const MaterialReconciliationList = () => {
     {
       field: "srNo",
       headerName: "Sr. No.",
-      width: 100,
+      width: 150,
     },
     {
       field: "reconciliation_id",
       headerName: "Material Reco. No.",
-      width: 150,
+      width: 200,
       renderCell: (params) =>
         params.value && params.row.id ? (
           <Link
@@ -353,18 +353,18 @@ const MaterialReconciliationList = () => {
     { field: "company_name", headerName: "Company", width: 250 },
     { field: "project_name", headerName: "Project", width: 200 },
     { field: "site_name", headerName: "Sub Project", width: 200 },
-    { field: "store", headerName: "Store", width: 200 },
+    { field: "store", headerName: "Store", width: 250 },
     {
       field: "reconciliation_date",
       headerName: "Reconciliation Date",
-      width: 150,
+      width: 250,
     },
-    { field: "status", headerName: "Status", width: 120 },
+    { field: "status", headerName: "Status", width: 200 },
 
     {
       field: "edit",
       headerName: "Edit",
-      width: 80,
+      width: 200,
       sortable: false,
       filterable: false,
       renderCell: (params) => (
