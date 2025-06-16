@@ -15,6 +15,10 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Stack, Pagination, Typography } from "@mui/material";
 
 const PoAdvanceNoteList = () => {
+
+   const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
+
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
@@ -62,7 +66,7 @@ const PoAdvanceNoteList = () => {
   useEffect(() => {
     axios
       .get(
-        `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}pms/company_setups.json?token=${token}`
       )
       .then((response) => {
         setCompanies(response.data.companies);
@@ -153,7 +157,7 @@ const PoAdvanceNoteList = () => {
   const fetchTableData = async (filters = {}) => {
     setLoading(true);
     try {
-      let url = `${baseURL}advance_notes?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+      let url = `${baseURL}advance_notes?token=${token}`;
 
       // Add filters to URL if they exist
       if (filters.companyId) {
@@ -421,7 +425,7 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
 
     try {
       const response = await axios.patch(
-        `${baseURL}advance_notes/update_bulk_status?token=2e86c08136922760d29d4fee6b8ccfccd5f4547d2868ed31`,
+        `${baseURL}advance_notes/update_bulk_status?token=${token}`,
         data
       );
 
@@ -516,7 +520,7 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
       width: 150,
       renderCell: (params) => (
         <Link
-          to={`/po-advance-note-details/${params.row.id}`}
+          to={`/po-advance-note-details/${params.row.id}?token=${token}`}
           // style={{ color: "#8b0203" }}
         >
           <span className="boq-id-link">{params.value}</span>

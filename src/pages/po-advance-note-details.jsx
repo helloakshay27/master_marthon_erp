@@ -15,6 +15,8 @@ import { useEffect } from "react";
 import axios from "axios";
 
 const POAdvanceNoteDetails = () => {
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -50,7 +52,7 @@ const POAdvanceNoteDetails = () => {
   //     try {
   //       const response = await axios.get(
   //         `https://marathon.lockated.com/advance_notes/${id}/
-  //         token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //         token=${token}`
   //       );
   //       const data = response.data; // Assuming you want the first item
   //       console.log("data", data);
@@ -70,7 +72,7 @@ const POAdvanceNoteDetails = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `${baseURL}advance_notes/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}advance_notes/${id}?token=${token}`
         );
         const data = response.data;
         console.log("data", data);
@@ -129,7 +131,7 @@ const POAdvanceNoteDetails = () => {
     const fetchTaxTypes = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/taxes_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/taxes_dropdown?token=${token}`
         );
         setTaxTypes(response.data.taxes); // Assuming the API returns an array of tax types
       } catch (error) {
@@ -185,7 +187,7 @@ const POAdvanceNoteDetails = () => {
     const fetchTaxTypes = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}rfq/events/deduction_tax_details?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
         );
         setDeductionTypes(response.data.taxes); // Assuming the API returns an array of tax types
       } catch (error) {
@@ -277,13 +279,13 @@ const POAdvanceNoteDetails = () => {
     try {
       const response = await axios.patch(
         // "https://marathon.lockated.com/advance_notes/3/update_status",
-        `${baseURL}advance_notes/${advanceNote.id}/update_status?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`, // Use the dynamic ID here
+        `${baseURL}advance_notes/${advanceNote.id}/update_status?token=${token}`, // Use the dynamic ID here
 
         payload
       );
       console.log("Status updated successfully:", response.data);
       alert("Status updated successfully!");
-      navigate("/po-advance-note-list"); // Redirect to bill-booking-list
+      navigate(`/po-advance-note-list?token=${token}`); // Redirect to bill-booking-list
     } catch (error) {
       console.error("Error updating status:", error);
       alert("Failed to update status.");
