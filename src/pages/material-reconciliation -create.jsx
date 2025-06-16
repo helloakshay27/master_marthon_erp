@@ -123,23 +123,36 @@ const MaterialReconciliationCreate = () => {
 
   // Handle company selection
   const handleCompanyChange = (selectedOption) => {
-    setSelectedCompany(selectedOption); // Set selected company
-    setSelectedProject(null); // Reset project selection
-    setSelectedSite(null); // Reset site selection
-
-    console.log("Selected Company ID:", selectedOption?.value);
+    setSelectedCompany(selectedOption);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setSelectedWing(null);
+    setSelectedStore(null);
 
     if (selectedOption) {
       // Find the selected company from the list
       const selectedCompanyData = companies.find(
         (company) => company.id === selectedOption.value
       );
+
+      // Set projects for the selected company
       setProjects(
         selectedCompanyData?.projects.map((prj) => ({
           value: prj.id,
           label: prj.name,
         }))
       );
+
+      // Create filters object with company ID
+      const filters = {
+        company_id: selectedOption.value,
+      };
+
+      // Fetch inventories with company filter
+      fetchAllMorInventories(1, filters);
+    } else {
+      // If no company is selected, fetch all inventories
+      fetchAllMorInventories(1, {});
     }
   };
 
@@ -149,12 +162,11 @@ const MaterialReconciliationCreate = () => {
   // Handle project selection
   const handleProjectChange = (selectedOption) => {
     setSelectedProject(selectedOption);
-    setSelectedSite(null); // Reset site selection
-
-    console.log("Selected Project ID:", selectedOption?.value);
+    setSelectedSite(null);
+    setSelectedWing(null);
+    setSelectedStore(null);
 
     if (selectedOption) {
-      // Find the selected project from the list of projects of the selected company
       const selectedCompanyData = companies.find(
         (company) => company.id === selectedCompany.value
       );
@@ -162,13 +174,27 @@ const MaterialReconciliationCreate = () => {
         (project) => project.id === selectedOption.value
       );
 
-      // Set site options based on selected project
       setSiteOptions(
         selectedProjectData?.pms_sites.map((site) => ({
           value: site.id,
           label: site.name,
         })) || []
       );
+
+      // Create filters object with company and project IDs
+      const filters = {
+        company_id: selectedCompany.value,
+        project_id: selectedOption.value,
+      };
+
+      // Fetch inventories with company and project filters
+      fetchAllMorInventories(1, filters);
+    } else {
+      // If no project is selected, fetch with only company filter
+      const filters = {
+        company_id: selectedCompany.value,
+      };
+      fetchAllMorInventories(1, filters);
     }
   };
 
@@ -178,13 +204,11 @@ const MaterialReconciliationCreate = () => {
   // Handle site selection
   const handleSiteChange = (selectedOption) => {
     setSelectedSite(selectedOption);
-    //   console.log("Selected Sub-Project ID:", selectedOption?.value);
-    // };
-    setSelectedWing(null); // Reset wing selection
-    setWingsOptions([]); // Reset wings options
+    setSelectedWing(null);
+    setSelectedStore(null);
+    setWingsOptions([]);
 
     if (selectedOption) {
-      // Find the selected project and site data
       const selectedCompanyData = companies.find(
         (company) => company.id === selectedCompany.value
       );
@@ -195,19 +219,57 @@ const MaterialReconciliationCreate = () => {
         (site) => site.id === selectedOption.value
       );
 
-      // Set wings options based on selected site
       setWingsOptions(
         selectedSiteData?.pms_wings.map((wing) => ({
           value: wing.id,
           label: wing.name,
         })) || []
       );
+
+      // Create filters object with company, project, and site IDs
+      const filters = {
+        company_id: selectedCompany.value,
+        project_id: selectedProject.value,
+        site_id: selectedOption.value,
+      };
+
+      // Fetch inventories with company, project, and site filters
+      fetchAllMorInventories(1, filters);
+    } else {
+      // If no site is selected, fetch with company and project filters
+      const filters = {
+        company_id: selectedCompany.value,
+        project_id: selectedProject.value,
+      };
+      fetchAllMorInventories(1, filters);
     }
   };
 
   // Handle wing selection
   const handleWingChange = (selectedOption) => {
     setSelectedWing(selectedOption);
+    setSelectedStore(null);
+
+    if (selectedOption) {
+      // Create filters object with company, project, site, and wing IDs
+      const filters = {
+        company_id: selectedCompany.value,
+        project_id: selectedProject.value,
+        site_id: selectedSite.value,
+        wing_id: selectedOption.value,
+      };
+
+      // Fetch inventories with all filters
+      fetchAllMorInventories(1, filters);
+    } else {
+      // If no wing is selected, fetch with company, project, and site filters
+      const filters = {
+        company_id: selectedCompany.value,
+        project_id: selectedProject.value,
+        site_id: selectedSite.value,
+      };
+      fetchAllMorInventories(1, filters);
+    }
   };
 
   // Map companies to options for the dropdown
@@ -288,7 +350,7 @@ const MaterialReconciliationCreate = () => {
 
   // Handler for inventory type selection change
   const handleInventoryChange = (selectedOption) => {
-    setSelectedInventory(selectedOption); // Set the selected inventory type
+    setSelectedInventory(selectedOption);
     setSelectedSubType(null); // Clear the selected sub-type when inventory type changes
     setInventorySubTypes([]); // Reset the sub-types list
     setInventoryMaterialTypes([]);
@@ -454,102 +516,6 @@ const MaterialReconciliationCreate = () => {
     fetchAllMorInventories();
   }, []);
 
-  // Function to fetch MOR inventories with filters
-  // const fetchAllMorInventories = async (page = 1, filters = {}) => {
-  //   setLoading(true);
-  //   try {
-  //     // Start with base URL and page
-  //     let url = `${baseURL}mor_inventories/fetch_all_inventories.json?page=${page}&per_page=${pageSize}`;
-
-  //     // Add filters to URL if they exist
-  //     if (filters.material_type_id) {
-  //       url += `&q[material_type_id]=${filters.material_type_id}`;
-  //     }
-  //     if (filters.material_sub_type_id) {
-  //       url += `&q[material_sub_type_id]=${filters.material_sub_type_id}`;
-  //     }
-  //     if (filters.material_id) {
-  //       url += `&q[material_id]=${filters.material_id}`;
-  //     }
-  //     if (filters.brand_id) {
-  //       url += `&q[brand_id]=${filters.brand_id}`;
-  //     }
-  //     if (filters.uom_id) {
-  //       url += `&q[uom_id]=${filters.uom_id}`;
-  //     }
-  //     if (filters.generic_specification_id) {
-  //       url += `&q[generic_specification_id]=${filters.generic_specification_id}`;
-  //     }
-  //     if (filters.colour_id) {
-  //       url += `&q[colour_id]=${filters.colour_id}`;
-  //     }
-
-  //     console.log("Fetching URL:", url);
-  //     const response = await axios.get(url);
-  //     setMorInventories(response.data.inventories);
-  //     setPagination({
-  //       current_page: response.data.pagination.current_page,
-  //       next_page: response.data.pagination.next_page,
-  //       prev_page: response.data.pagination.prev_page,
-  //       total_pages: response.data.pagination.total_pages,
-  //       total_count: response.data.pagination.total_count,
-  //     });
-  //   } catch (error) {
-  //     console.error("Error fetching MOR inventories:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // const fetchAllMorInventories = async (
-  //   page = 1,
-  //   filters = {},
-  //   pageSizeOverride = pageSize
-  // ) => {
-  //   setLoading(true);
-  //   try {
-  //     // Start with base URL and page
-  //     let url = `${baseURL}mor_inventories/fetch_all_inventories.json?page=${page}&per_page=${pageSizeOverride}`;
-
-  //     // Add filters to URL if they exist
-  //     if (filters.material_type_id) {
-  //       url += `&q[material_type_id]=${filters.material_type_id}`;
-  //     }
-  //     if (filters.material_sub_type_id) {
-  //       url += `&q[material_sub_type_id]=${filters.material_sub_type_id}`;
-  //     }
-  //     if (filters.material_id) {
-  //       url += `&q[material_id]=${filters.material_id}`;
-  //     }
-  //     if (filters.brand_id) {
-  //       url += `&q[brand_id]=${filters.brand_id}`;
-  //     }
-  //     if (filters.uom_id) {
-  //       url += `&q[uom_id]=${filters.uom_id}`;
-  //     }
-  //     if (filters.generic_specification_id) {
-  //       url += `&q[generic_specification_id]=${filters.generic_specification_id}`;
-  //     }
-  //     if (filters.colour_id) {
-  //       url += `&q[colour_id]=${filters.colour_id}`;
-  //     }
-
-  //     console.log("Fetching URL:", url);
-  //     const response = await axios.get(url);
-  //     setMorInventories(response.data.inventories);
-  //     setPagination({
-  //       current_page: response.data.pagination.current_page,
-  //       next_page: response.data.pagination.next_page,
-  //       prev_page: response.data.pagination.prev_page,
-  //       total_pages: response.data.pagination.total_pages,
-  //       total_count: response.data.pagination.total_count,
-  //     });
-  //   } catch (error) {
-  //     console.error("Error fetching MOR inventories:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const fetchAllMorInventories = async (
     page = 1,
     filters = {},
@@ -559,7 +525,24 @@ const MaterialReconciliationCreate = () => {
     try {
       let url = `${baseURL}mor_inventories/fetch_all_inventories.json?page=${page}&per_page=${pageSizeOverride}`;
 
-      // Updated filter keys
+      // Add all filters
+      if (filters.company_id) {
+        url += `&q[material_order_request_company_id_in]=${filters.company_id}`;
+      }
+      if (filters.project_id) {
+        url += `&q[material_order_request_project_id_in]=${filters.project_id}`;
+      }
+      if (filters.site_id) {
+        url += `&q[material_order_request_pms_site_id_in]=${filters.site_id}`;
+      }
+      if (filters.wing_id) {
+        url += `&q[material_order_request_wing_id_in]=${filters.wing_id}`;
+      }
+      if (filters.store_id) {
+        url += `&q[material_order_request_store_id_in]=${filters.store_id}`;
+      }
+
+      // Add other filters
       if (filters.material_type_id) {
         url += `&q[material_order_request_pms_inventory_type_id_in]=${filters.material_type_id}`;
       }
@@ -600,11 +583,6 @@ const MaterialReconciliationCreate = () => {
   };
 
   // Function to handle page size change
-  // const handlePageSizeChange = (e) => {
-  //   const newPageSize = parseInt(e.target.value);
-  //   setPageSize(newPageSize);
-  //   fetchAllMorInventories(1, {}); // Reset to first page with new page size
-  // };
   const handlePageSizeChange = (e) => {
     const newPageSize = parseInt(e.target.value, 10); // Get the new page size
     setPageSize(newPageSize); // Update the page size state
@@ -868,6 +846,29 @@ const MaterialReconciliationCreate = () => {
   // Handle store selection
   const handleStoreChange = (selectedOption) => {
     setSelectedStore(selectedOption);
+
+    if (selectedOption) {
+      // Create filters object with all IDs
+      const filters = {
+        company_id: selectedCompany.value,
+        project_id: selectedProject.value,
+        site_id: selectedSite.value,
+        wing_id: selectedWing.value,
+        store_id: selectedOption.value,
+      };
+
+      // Fetch inventories with all filters
+      fetchAllMorInventories(1, filters);
+    } else {
+      // If no store is selected, fetch with all other filters
+      const filters = {
+        company_id: selectedCompany.value,
+        project_id: selectedProject.value,
+        site_id: selectedSite.value,
+        wing_id: selectedWing.value,
+      };
+      fetchAllMorInventories(1, filters);
+    }
   };
 
   // Function to handle inventory removal
