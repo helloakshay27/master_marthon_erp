@@ -262,14 +262,12 @@ const VendorApprovalList = () => {
     // if (filters.department)
     //   queryParams.append("q[department_id_eq]", filters.department);
     if (filters.department)
-  queryParams.append("q[department_id_eq]", filters.department);
-if (filters.rekycType)
-  queryParams.append("q[approval_function_eq]", filters.rekycType);
+      queryParams.append("q[department_id_eq]", filters.department);
+    if (filters.rekycType)
+      queryParams.append("q[approval_function_eq]", filters.rekycType);
 
     queryParams.append("page", 1);
     queryParams.append("page_size", pagination.per_page || 10);
-
-    
 
     const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
@@ -316,7 +314,7 @@ if (filters.rekycType)
     });
 
     try {
-        const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+      const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?${queryParams.toString()}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
       // const apiUrl = `${baseURL}/pms/admin/invoice_approvals.json?page=1&page_size=${pageSize}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
 
@@ -446,8 +444,8 @@ if (filters.rekycType)
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width={16}
-                    height={16}
+                    width={12}
+                    height={12}
                     fill="currentColor"
                     className="bi bi-plus"
                     viewBox="0 0 16 16"

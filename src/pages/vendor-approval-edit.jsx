@@ -42,39 +42,38 @@ const VendorApprovalEdit = () => {
     const fetchDropdownData = async () => {
       try {
         const [departmentRes, userRes] = await Promise.all([
-          // axios.get("${baseURL}/pms/company_setups.json"),
-          axios.get(`${baseURL}/pms/departments.json`),
-
-          axios.get(`${baseURL}/users.json`),
+          axios.get(
+            `${baseURL}/pms/departments.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          ),
+          axios.get(
+            `${baseURL}/users.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          ),
         ]);
 
-        // console.log("Raw Company Data:", companyRes.data);
         console.log("Raw Department Data:", departmentRes.data);
+        console.log("Raw User Data:", userRes.data);
 
-        // Correctly map company and department data
-        // const companyOptions = companyRes.data.map(([id, name]) => ({
-        //   value: id, // ID is the first element in the array
-        //   label: name, // Name is the second element
-        // }));
-
-        const departmentOptions = departmentRes.data.map(([id, name]) => ({
-          value: id,
-          label: name,
+        // Map departments directly from array of objects
+        const departmentOptions = departmentRes.data.map((dept) => ({
+          value: dept.id,
+          label: dept.name,
         }));
 
-        // console.log("Processed Companies:", companyOptions);
         console.log("Processed Departments:", departmentOptions);
-
-        // setCompanies(companyOptions);
         setDepartments(departmentOptions);
-        setUsers(
-          userRes.data.map(({ id, full_name }) => ({
-            value: id,
-            label: full_name,
-          }))
-        );
+
+        // Map users directly from array of objects
+        const userOptions = userRes.data.map((user) => ({
+          value: user.id,
+          label: user.full_name,
+        }));
+
+        console.log("Processed Users:", userOptions);
+        setUsers(userOptions);
       } catch (error) {
         console.error("Error fetching dropdown data:", error);
+        setDepartments([]);
+        setUsers([]);
       }
     };
 
