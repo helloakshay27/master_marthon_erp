@@ -35,6 +35,32 @@ const MaterialReconciliationEdit = () => {
   const [selectedInventoryId, setSelectedInventoryId] = useState(null);
   const { id } = useParams();
 
+  // Add this state to track select-all status
+  const [selectAll, setSelectAll] = useState(false);
+
+  // Add this function to handle select-all checkbox
+  const handleSelectAll = (checked) => {
+    setSelectAll(checked);
+    if (checked) {
+      // Select all visible inventories
+      const allVisibleIds = morInventories.map((inventory) => inventory);
+      setSelectedInventories((prev) => {
+        // Combine existing selections with new ones, avoiding duplicates
+        const combined = [...prev, ...allVisibleIds];
+        return combined.filter(
+          (item, index, self) =>
+            index === self.findIndex((t) => t.id === item.id)
+        );
+      });
+    } else {
+      // Deselect only visible inventories
+      const visibleIds = morInventories.map((inventory) => inventory.id);
+      setSelectedInventories((prev) =>
+        prev.filter((item) => !visibleIds.includes(item.id))
+      );
+    }
+  };
+
   const openBatchPopup = (inventoryId) => {
     setSelectedInventoryId(inventoryId);
     // Fetch or set batchList here as needed
@@ -65,6 +91,7 @@ const MaterialReconciliationEdit = () => {
 
   const handleReset = () => {
     // Reset all filters and selections
+    setSelectAll(false);
     setSelectedInventory(null);
     setSelectedSubType(null);
     setSelectedInventoryMaterialTypes(null);
@@ -558,6 +585,7 @@ const MaterialReconciliationEdit = () => {
   };
 
   const handlePageChange = (page) => {
+    setSelectAll(false);
     // Create filters object with selected values
     const filters = {};
 
@@ -978,6 +1006,10 @@ const MaterialReconciliationEdit = () => {
       prev.filter((inventory) => inventory.id !== inventoryId)
     );
   };
+
+  useEffect(() => {
+    setSelectAll(false);
+  }, [pagination.current_page]);
 
   return (
     <div className="main-content">
@@ -1508,7 +1540,15 @@ const MaterialReconciliationEdit = () => {
               <table className="w-100 ">
                 <thead>
                   <tr>
-                    <th>Select</th>
+                    <th>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={selectAll}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
+                        style={{ cursor: "pointer" }}
+                      />
+                    </th>
                     <th>Material Type</th>
                     <th>Material Sub-Type</th>
                     <th>Material</th>

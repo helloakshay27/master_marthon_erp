@@ -60,7 +60,9 @@ const BillVerificationDetails = () => {
   // Create a function to fetch bill details
   const fetchBillDetails = async () => {
     try {
-      const response = await axios.get(`${baseURL}bill_entries/${id}?token=${token}`);
+      const response = await axios.get(
+        `${baseURL}bill_entries/${id}?token=${token}`
+      );
       console.log("res:", response.data);
       setBillDetails(response?.data);
       setStatus(response?.data.status);
@@ -70,12 +72,12 @@ const BillVerificationDetails = () => {
       // Set active tab based on bill_type
       if (response.data.bill_type === "material") setActiveTab("material");
       else if (response.data.bill_type === "service") setActiveTab("service");
-      else if (response.data.bill_type === "miscellaneous") setActiveTab("misc");
+      else if (response.data.bill_type === "miscellaneous")
+        setActiveTab("misc");
     } catch (error) {
       console.error("Error fetching bill details:", error);
     }
   };
-
 
   useEffect(() => {
     // Fetch data from the API
@@ -100,7 +102,6 @@ const BillVerificationDetails = () => {
     //   });
 
     fetchBillDetails();
-
   }, [id]);
 
   useEffect(() => {
@@ -111,21 +112,21 @@ const BillVerificationDetails = () => {
     }
   }, [billDetails]);
 
-  const statusOptions = [
-    {
-      label: "Select Status",
-      value: "",
-    },
-    {
-      label: "Open",
-      value: "open",
-    },
-    {
-      label: "Verified",
-      value: "verified",
-    },
+  // const statusOptions = [
+  //   {
+  //     label: "Select Status",
+  //     value: "",
+  //   },
+  //   {
+  //     label: "Open",
+  //     value: "open",
+  //   },
+  //   {
+  //     label: "Verified",
+  //     value: "verified",
+  //   },
 
-  ];
+  // ];
 
   // Add handleDownload function
   const handleDownload = async (blobId) => {
@@ -182,9 +183,8 @@ const BillVerificationDetails = () => {
   // }
 
   const handleStatusChange = (selectedOption) => {
-    // setStatus(e.target.value);
-    setStatus(selectedOption.value);
-    // handleStatusChange(selectedOption); // Handle status change
+    const newStatus = selectedOption?.value || "";
+    setStatus(newStatus);
   };
 
   // const [viewDocumentModal, setviewDocumentModal] = useState(false);
@@ -245,8 +245,6 @@ const BillVerificationDetails = () => {
   };
   console.log("status:", status);
 
-
-
   const payload = {
     bill_entry: {
       status: status || "",
@@ -296,7 +294,7 @@ const BillVerificationDetails = () => {
         `${baseURL}bill_entries/${id}?token=${token}`,
         payload
       );
-      await fetchBillDetails()
+      await fetchBillDetails();
       if (response.data) {
         // alert("Bill verification updated successfully");
         setLoading(false);
@@ -342,6 +340,50 @@ const BillVerificationDetails = () => {
       setLoading(false); // Hide loader after submission
     }
   };
+  const [statusOptions, setStatusOptions] = useState([
+    {
+      label: "Select Status",
+      value: "",
+    },
+  ]);
+  useEffect(() => {
+    const fetchStatusOptions = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}statuses_list?model=BillEntry&token=${token}`
+        );
+
+        // Ensure we're handling the response data safely
+        const statusData = Array.isArray(response.data) ? response.data : [];
+
+        // Map the API response to the format needed for SingleSelector
+        const options = statusData.map((status) => ({
+          value: status.value, // Use the value directly from API
+          label: status.name, // Use the name directly from API
+        }));
+
+        // Add the default "Select Status" option at the beginning
+        setStatusOptions([
+          {
+            label: "Select Status",
+            value: "",
+          },
+          ...options,
+        ]);
+      } catch (error) {
+        console.error("Error fetching status options:", error);
+        setStatusOptions([
+          {
+            label: "Select Status",
+            value: "",
+          },
+        ]);
+      }
+    };
+
+    fetchStatusOptions();
+  }, [token]); // Keep token as dependency
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -360,7 +402,9 @@ const BillVerificationDetails = () => {
               >
                 <li className="nav-item" role="presentation">
                   <button
-                    className={`nav-link ${activeTab === "material" ? "active" : ""}`}
+                    className={`nav-link ${
+                      activeTab === "material" ? "active" : ""
+                    }`}
                     onClick={() => setActiveTab("material")}
                     type="button"
                     disabled={activeTab !== "material"}
@@ -370,7 +414,9 @@ const BillVerificationDetails = () => {
                 </li>
                 <li className="nav-item" role="presentation">
                   <button
-                    className={`nav-link ${activeTab === "service" ? "active" : ""}`}
+                    className={`nav-link ${
+                      activeTab === "service" ? "active" : ""
+                    }`}
                     onClick={() => setActiveTab("service")}
                     type="button"
                     disabled={activeTab !== "service"}
@@ -380,7 +426,9 @@ const BillVerificationDetails = () => {
                 </li>
                 <li className="nav-item" role="presentation">
                   <button
-                    className={`nav-link ${activeTab === "misc" ? "active" : ""}`}
+                    className={`nav-link ${
+                      activeTab === "misc" ? "active" : ""
+                    }`}
                     onClick={() => setActiveTab("misc")}
                     type="button"
                     disabled={activeTab !== "misc"}
@@ -510,8 +558,8 @@ const BillVerificationDetails = () => {
                           </span>
                           {billDetails?.created_at
                             ? new Date(
-                              billDetails.created_at
-                            ).toLocaleDateString()
+                                billDetails.created_at
+                              ).toLocaleDateString()
                             : "-"}
                         </label>
                       </div>
@@ -747,7 +795,6 @@ const BillVerificationDetails = () => {
                   </table>
                 </div> */}
 
-
                 <div className="tbl-container mt-3">
                   <table className="w-100">
                     <thead>
@@ -887,23 +934,27 @@ const BillVerificationDetails = () => {
                   </div>
                 )} */}
 
-                {billDetails?.status?.toLowerCase() === "verified" && billDetails?.bill_type === "material" && (
-                  <div className="col-md-2 mt-2">
-                    <button
-                      className="purple-btn2 w-100"
-                      onClick={handleBillBookingClick}
-                    >
-                      Bill Booking
-                    </button>
-                  </div>
-                )}
-                {billDetails?.status?.toLowerCase() === "verified"
-                  && billDetails?.bill_type === "miscellaneous"
-                  && (
+                {billDetails?.status?.toLowerCase() === "verified" &&
+                  billDetails?.bill_type === "material" && (
                     <div className="col-md-2 mt-2">
                       <button
                         className="purple-btn2 w-100"
-                        onClick={() => navigate(`/miscellaneous-bill-create/${id}?token=${token}`)}
+                        onClick={handleBillBookingClick}
+                      >
+                        Bill Booking
+                      </button>
+                    </div>
+                  )}
+                {billDetails?.status?.toLowerCase() === "verified" &&
+                  billDetails?.bill_type === "miscellaneous" && (
+                    <div className="col-md-2 mt-2">
+                      <button
+                        className="purple-btn2 w-100"
+                        onClick={() =>
+                          navigate(
+                            `/miscellaneous-bill-create/${id}?token=${token}`
+                          )
+                        }
                       >
                         Misc. Bill Booking
                       </button>
@@ -918,7 +969,14 @@ const BillVerificationDetails = () => {
                   </button>
                 </div>
                 <div className="col-md-2">
-                  <button className="purple-btn1 w-100" onClick={() => navigate(`/bill-verification-list?token=${token}`)}>Cancel</button>
+                  <button
+                    className="purple-btn1 w-100"
+                    onClick={() =>
+                      navigate(`/bill-verification-list?token=${token}`)
+                    }
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
               {/* <h5 className=" mt-3">Audit Log</h5>
@@ -931,7 +989,10 @@ const BillVerificationDetails = () => {
               <div className=" mb-5">
                 <h5>Audit Log</h5>
                 <div className="mx-0">
-                  <div className="tbl-container mt-1" style={{ maxHeight: "450px" }}>
+                  <div
+                    className="tbl-container mt-1"
+                    style={{ maxHeight: "450px" }}
+                  >
                     <table className="w-100">
                       <thead>
                         <tr>
@@ -953,24 +1014,33 @@ const BillVerificationDetails = () => {
                               <td className="text-start">{""}</td>
                               <td className="text-start">
                                 {log.created_at
-                                  ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "numeric",
-                                  })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                  })}`
+                                  ? `${new Date(
+                                      log.created_at
+                                    ).toLocaleDateString("en-GB", {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                    })}      ${new Date(
+                                      log.created_at
+                                    ).toLocaleTimeString("en-GB", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      hour12: true,
+                                    })}`
                                   : ""}
                               </td>
                               <td className="text-start">
                                 {log.status
-                                  ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                  ? log.status.charAt(0).toUpperCase() +
+                                    log.status.slice(1)
                                   : ""}
                               </td>
-                              <td className="text-start">{log.remarks || ""}</td>
-                              <td className="text-start">{log.comments || ""}</td>
+                              <td className="text-start">
+                                {log.remarks || ""}
+                              </td>
+                              <td className="text-start">
+                                {log.comments || ""}
+                              </td>
                             </tr>
                           ))}
                       </tbody>
@@ -1043,11 +1113,11 @@ const BillVerificationDetails = () => {
               <div className="form-group">
                 <label>Name of the Document</label>
                 {newDocument.document_type &&
-                  documents.find(
-                    (doc) =>
-                      doc.isDefault &&
-                      doc.document_type === newDocument.document_type
-                  ) ? (
+                documents.find(
+                  (doc) =>
+                    doc.isDefault &&
+                    doc.document_type === newDocument.document_type
+                ) ? (
                   // For default document types - show as disabled input
                   <input
                     type="text"
@@ -1125,7 +1195,10 @@ const BillVerificationDetails = () => {
                 </button>
               </div>
               <div className="col-md-4 ">
-                <button className="purple-btn1 w-100" onClick={closeattachModal}>
+                <button
+                  className="purple-btn1 w-100"
+                  onClick={closeattachModal}
+                >
                   Cancel
                 </button>
               </div>
@@ -1150,8 +1223,6 @@ const BillVerificationDetails = () => {
                    </button>
                  </div>
                </div> */}
-
-
         </Modal.Body>
       </Modal>
       {/* attach document */}
@@ -1362,7 +1433,11 @@ const BillVerificationDetails = () => {
       </Modal>
 
       {/* Modal for all audit logs */}
-      <Modal show={showAuditModal} onHide={() => setShowAuditModal(false)} size="xl">
+      <Modal
+        show={showAuditModal}
+        onHide={() => setShowAuditModal(false)}
+        size="xl"
+      >
         <Modal.Header closeButton>
           <Modal.Title>All Audit Logs</Modal.Title>
         </Modal.Header>
@@ -1386,20 +1461,27 @@ const BillVerificationDetails = () => {
                     <td className="text-start">{""}</td>
                     <td className="text-start">
                       {log.created_at
-                        ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })} ${new Date(log.created_at).toLocaleTimeString("en-GB", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true,
-                        })}`
+                        ? `${new Date(log.created_at).toLocaleDateString(
+                            "en-GB",
+                            {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            }
+                          )} ${new Date(log.created_at).toLocaleTimeString(
+                            "en-GB",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            }
+                          )}`
                         : ""}
                     </td>
                     <td className="text-start">
                       {log.status
-                        ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                        ? log.status.charAt(0).toUpperCase() +
+                          log.status.slice(1)
                         : ""}
                     </td>
                     <td className="text-start">{log.remarks || ""}</td>

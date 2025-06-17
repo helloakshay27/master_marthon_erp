@@ -165,6 +165,10 @@ const GatePassCreate = () => {
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">Home &gt; Store &gt; Store Operations &gt; Gate Pass</a>
+          <h5 className="mt-3">Gate Pass list</h5>
+          <div className="head-material text-center">
+            <h4>Return to Vendor</h4>
+          </div>
           <div className="card card-default mt-5 p-2b-4">
             <div className="card-header3">
               <h3 className="card-title">Create Gate Pass</h3>
