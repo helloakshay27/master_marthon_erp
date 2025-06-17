@@ -42,123 +42,83 @@ const GatePassList = () => {
 
   const [columnVisibility, setColumnVisibility] = useState({
     srNo: true,
-    bill_id: true,
-    mode_of_submission: true,
-    company_name: true,
-    project_name: true,
-    site_name: true,
-    // pms_supplier: true,
-    supplier_name: true,
-    uam_number: true,
-    po_number: true,
-    created_at: true,
-    accepted_at: true,
-    bill_no: true,
-    bill_date: true,
-    bill_amount: true,
-    bill_type: true,
-    bill_copies: true,
-    due: true,
-    due_date: true,
-    certificate_no: true,
-    payable_amount: true,
-    paid: true,
-    balance: true,
+    gate_pass_no: true,
+    gate_pass_type: true,
+    date: true,
+    issued_by: true,
     status: true,
-    overdue: true,
-    assign_to: true,
-    tat: true,
+    action: true,
   });
 
   const allColumns = [
     {
       field: "srNo",
       headerName: "Sr. No.",
-      width: 100,
-      // renderCell: (params) => {
-      //   // params.api.getRowIndex(params.id) gives the index in the current page
-      //   // currentPage is 1-based, pageSize is your page size
-      //   return (
-      //     (currentPage - 1) * pageSize + params.api.getRowIndex(params.id) + 1
-      //   );
-      // },
+      flex: 1,
+      minWidth: 80,
     },
     {
-      field: "bill_id",
-      headerName: "Bill Id",
-      width: 150,
+      field: "gate_pass_no",
+      headerName: "Gate Pass No",
+      flex: 1,
+      minWidth: 120,
       renderCell: (params) =>
         params.value && params.row.id ? (
-          <Link to={`/bill-entry-details/${params.row.id}?token=${token}`}>
+          <Link to={`/gate-pass-details/${params.row.id}?token=${token}`}>
             <span className="boq-id-link">{params.value}</span>
           </Link>
         ) : (
           "-"
         ),
     },
-
     {
-      field: "mode_of_submission",
-      headerName: "Mode of Submission",
-      width: 150,
-    },
-    { field: "company_name", headerName: "Company", width: 180 },
-    { field: "project_name", headerName: "Project", width: 150 },
-    { field: "site_name", headerName: "Sub Project", width: 150 },
-    {
-      field: "supplier_name",
-      headerName: "Vendor Name",
-      width: 150,
-      // valueGetter: (params) => {
-      //   // Check if we have valid params and row data
-      //   if (!params?.row) return "-";
-
-      //   // Access the organization_name from pms_supplier
-      //   const orgName = params.row.pms_supplier?.organization_name;
-
-      //   // Return organization name if it exists, otherwise return "-"
-      //   return orgName || "-";
-      // },
-    },
-    { field: "uam_number", headerName: "UAM No.", width: 150 },
-    { field: "po_number", headerName: "PO No.", width: 150 },
-    {
-      field: "created_at",
-      headerName: "Created On",
-      width: 200,
+      field: "gate_pass_type",
+      headerName: "Gate Pass Type",
+      flex: 1,
+      minWidth: 120,
     },
     {
-      field: "updated_at",
-      headerName: "Accepted On",
-      width: 150,
+      field: "date",
+      headerName: "Date",
+      flex: 1,
+      minWidth: 100,
     },
     {
-      field: "bill_no",
-      headerName: "Bill No.",
-      width: 150,
-      renderCell: (params) =>
-        params.value && params.row.id ? (
-          <Link to={`/bill-entry-details/${params.row.id}?token=${token}`}>
-            <span className="boq-id-link">{params.value}</span>
-          </Link>
-        ) : (
-          "-"
-        ),
+      field: "issued_by",
+      headerName: "Issued By",
+      flex: 1,
+      minWidth: 120,
     },
-    { field: "bill_date", headerName: "Bill Date", width: 200 },
-    { field: "bill_amount", headerName: "Bill Amount", width: 150 },
-    { field: "bill_type", headerName: "Bill Type", width: 150 },
-    { field: "bill_copies", headerName: "Bill Copies", width: 150 },
-    { field: "due", headerName: "Due", width: 150 },
-    { field: "due_date", headerName: "Due Date", width: 200 },
-    { field: "certificate_no", headerName: "Certificate No.", width: 150 },
-    { field: "payable_amount", headerName: "Payable Amount", width: 150 },
-    { field: "paid", headerName: "Paid", width: 150 },
-    { field: "balance", headerName: "Balance", width: 150 },
-    { field: "status", headerName: "Status", width: 200 },
-    { field: "overdue", headerName: "Overdue", width: 150 },
-    { field: "assign_to", headerName: "Assign to", width: 150 },
-    { field: "tat", headerName: "TAT", width: 150 },
+    {
+      field: "status",
+      headerName: "Status",
+      flex: 1,
+      minWidth: 100,
+    },
+    {
+      field: "action",
+      headerName: "Action",
+      flex: 1,
+      minWidth: 150,
+      renderCell: (params) => (
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-sm btn-primary"
+            onClick={() =>
+              navigate(`/gate-pass-edit/${params.row.id}?token=${token}`)
+            }
+          >
+            Edit
+          </button>
+          <button
+            className="btn btn-sm btn-danger"
+            onClick={() => handleDelete(params.row.id)}
+          >
+            Delete
+          </button>
+        </div>
+      ),
+    },
   ];
 
   const columns = allColumns.filter((col) => columnVisibility[col.field]);
@@ -454,66 +414,46 @@ display:none !important;
       </style> */}
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
-          <a href="">Home &gt; Billing &gt; MOR &gt; Bill Entry List</a>
-          <h5 className="mt-4 fw-bold">Bill Entry List</h5>
+          <a href="">Home &gt; Store &gt; Store Operations &gt; Gate Pass</a>
+          <h5 className="mt-4 fw-bold">Gate Pass List</h5>
 
           <div className="material-boxes mt-3">
             <div className="container-fluid">
               <div className="row separteinto6 justify-content-center">
                 <div className="col-md-2 text-center">
-                  <div
-                    className={`content-box tab-button ${
-                      activeTab === "list" ? "active" : ""
-                    }`}
-                    data-tab="list"
-                    onClick={() => handleTabChange("list")}
-                  >
-                    <h4 className="content-box-title fw-semibold">Bill List</h4>
-                    <p className="content-box-sub">{allBillCount}</p>
+                  <div className="content-box tab-button active">
+                    <h4 className="content-box-title fw-semibold">Total</h4>
+                    <p className="content-box-sub">25</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div
-                    className={`content-box tab-button ${
-                      activeTab === "open" ? "active" : ""
-                    }`}
-                    data-tab="open"
-                    onClick={() => handleTabChange("open")}
-                  >
+                  <div className="content-box tab-button">
                     <h4 className="content-box-title fw-semibold">
-                      Open Bills
+                      Returnable
                     </h4>
-                    <p className="content-box-sub">{meta?.draft_count || 0}</p>
+                    <p className="content-box-sub">25</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div
-                    className={`content-box tab-button ${
-                      activeTab === "online" ? "active" : ""
-                    }`}
-                    data-tab="online"
-                    onClick={() => handleTabChange("online")}
-                  >
+                  <div className="content-box tab-button">
                     <h4 className="content-box-title fw-semibold">
-                      Online Bills
+                      Non-Returnable
                     </h4>
-                    <p className="content-box-sub">{meta?.online_count || 0}</p>
+                    <p className="content-box-sub">10</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div
-                    className={`content-box tab-button ${
-                      activeTab === "offline" ? "active" : ""
-                    }`}
-                    data-tab="offline"
-                    onClick={() => handleTabChange("offline")}
-                  >
+                  <div className="content-box tab-button">
                     <h4 className="content-box-title fw-semibold">
-                      Offline Bills
+                      Pending to Return
                     </h4>
-                    <p className="content-box-sub">
-                      {meta?.offline_count || 0}
-                    </p>
+                    <p className="content-box-sub">5</p>
+                  </div>
+                </div>
+                <div className="col-md-2 text-center">
+                  <div className="content-box tab-button">
+                    <h4 className="content-box-title fw-semibold">Value</h4>
+                    <p className="content-box-sub">100200 ₹</p>
                   </div>
                 </div>
               </div>
@@ -692,20 +632,12 @@ display:none !important;
               </div>
             </div>
 
-            <div
-              className=" mx-1 mt-3"
-              style={{
-                // width: "100%",
-                // height: "400px",
-                // boxShadow: "unset",
-                overflowY: "auto",
-              }}
-            >
+            <div className="mx-1 mt-3" style={{ width: "100%" }}>
               <DataGrid
                 rows={getTransformedRows()}
                 columns={columns}
                 pageSize={pageSize}
-                autoHeight={false}
+                autoHeight
                 getRowId={(row) => row.id}
                 loading={loading}
                 disableSelectionOnClick
@@ -727,19 +659,18 @@ display:none !important;
                   "& .MuiDataGrid-columnHeader": {
                     borderColor: "#dee2e6",
                   },
-                  // "& .MuiDataGrid-virtualScroller": {
-                  //   overflowX: "auto",
-                  //   overflowY: "auto",
-                  // },
-                  // "& .MuiDataGrid-virtualScrollerContent": {
-                  //   minWidth: "100%",
-                  // },
-                  // "& .MuiDataGrid-virtualScrollerRenderZone": {
-                  //   position: "relative",
-                  // },
-                  // "& .MuiDataGrid-main": {
-                  //   overflow: "visible",
-                  // },
+                  "& .MuiDataGrid-virtualScroller": {
+                    overflowX: "auto",
+                  },
+                  "& .MuiDataGrid-virtualScrollerContent": {
+                    minWidth: "100%",
+                  },
+                  "& .MuiDataGrid-virtualScrollerRenderZone": {
+                    position: "relative",
+                  },
+                  "& .MuiDataGrid-main": {
+                    overflow: "visible",
+                  },
                 }}
               />
             </div>

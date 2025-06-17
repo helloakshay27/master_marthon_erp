@@ -95,11 +95,23 @@ const GatePassCreate = () => {
     });
   };
 
-  const [documentRows, setDocumentRows] = useState([{ srNo: 1, upload: null }]);
+  const [documentRows, setDocumentRows] = useState([
+    {
+      srNo: 1,
+      upload: null,
+      fileType: "",
+      uploadDate: new Date().toISOString().split("T")[0],
+    },
+  ]);
   const documentRowsRef = useRef(documentRows);
 
   const handleAddDocumentRow = () => {
-    const newRow = { srNo: documentRows.length + 1, upload: null };
+    const newRow = {
+      srNo: documentRows.length + 1,
+      upload: null,
+      fileType: "",
+      uploadDate: new Date().toISOString().split("T")[0],
+    };
     documentRowsRef.current.push(newRow);
     setDocumentRows([...documentRowsRef.current]);
   };
@@ -124,12 +136,17 @@ const GatePassCreate = () => {
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64String = reader.result.split(",")[1];
+      const fileType = file.name.split(".").pop().toUpperCase();
 
       documentRowsRef.current[index].upload = {
         filename: file.name,
         content: base64String,
         content_type: file.type,
       };
+      documentRowsRef.current[index].fileType = fileType;
+      documentRowsRef.current[index].uploadDate = new Date()
+        .toISOString()
+        .split("T")[0];
 
       setDocumentRows([...documentRowsRef.current]);
     };
@@ -489,25 +506,24 @@ const GatePassCreate = () => {
                   columns={[
                     { label: "Sr No", key: "srNo" },
                     { label: "Upload File", key: "upload" },
+                    { label: "File Type", key: "fileType" },
+                    { label: "Upload Date", key: "uploadDate" },
                     { label: "Action", key: "action" },
-                    // { label: "view", key: "view" },
                   ]}
                   data={documentRows.map((row, index) => ({
                     srNo: index + 1,
                     upload: (
                       <td style={{ border: "none" }}>
-                        {/* Hidden file input */}
                         <input
                           type="file"
                           id={`file-input-${index}`}
                           key={row?.srNo}
-                          style={{ display: "none" }} // Hide input
+                          style={{ display: "none" }}
                           onChange={(e) =>
                             handleFileChange(index, e.target.files[0])
                           }
                           accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
                         />
-
                         <label
                           htmlFor={`file-input-${index}`}
                           style={{
@@ -528,6 +544,8 @@ const GatePassCreate = () => {
                         </label>
                       </td>
                     ),
+                    fileType: row.fileType || "-",
+                    uploadDate: row.uploadDate || "-",
                     action: (
                       <button
                         className="btn btn-danger"
