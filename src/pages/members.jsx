@@ -281,6 +281,12 @@ function Members() {
                   <Link to="/gate-pass-list">Gate pass List</Link>
                 </li>
               </ul>
+              <h1>Vendor REkyc</h1>
+              <ul>
+                <li>
+                  <Link to="/rekyc/:id">Section Re KYC Details</Link>
+                </li>
+              </ul>
               <h1>BOQ</h1>
               <ul>
                 <li>

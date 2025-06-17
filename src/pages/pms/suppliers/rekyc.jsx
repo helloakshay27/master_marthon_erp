@@ -237,7 +237,7 @@ const SectionReKYCDetails = () => {
   const fetchGstClassifications = async () => {
     try {
       const response = await axios.get(
-        `${baseURL}/pms/suppliers/gst_classification_dropdown`
+        `${baseURL}/pms/suppliers/gst_classification_dropdown?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
       setGstClassifications(response.data.gst_classifications || []);
     } catch (error) {
