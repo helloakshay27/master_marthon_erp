@@ -102,6 +102,7 @@ import RateDetails from "./pages/details-rate";
 import MaterialReconciliationEdit from "./pages/material-reconciliation-edit";
 import GatePassCreate from "./pages/gate-pass-create";
 import GatePassList from "./pages/gate-pass-list";
+import ConfirmationPage from "./pages/confirmation";
 
 function App() {
   return (
@@ -109,6 +110,7 @@ function App() {
       <div>
         <Routes>
           <Route path="/" element={<Members />} />
+          <Route path="/confirmation" element={<ConfirmationPage />} />
           <Route path="/gate-pass-create" element={<GatePassCreate />} />
           <Route path="/gate-pass-list" element={<GatePassList />} />
           <Route path="/bill-entry-list" element={<BillEntryList />} />

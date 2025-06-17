@@ -4,33 +4,33 @@ import CardBodyKYC from "../../../components/base/Card/CardBodyKYC";
 import CardBodyMsme from "../../../components/base/Card/CardBodyMsme";
 import axios from "axios";
 import { SelectBox } from "../../../components";
-import { useParams, useSearchParams, useLocation } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import SingleSelector from "../../../components/base/Select/SingleSelector";
 import "../../../styles/mor.css";
 import { error } from "jquery";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import CryptoJS from "crypto-js"; // Import crypto-js for encryption
-import { baseURL } from '../../../confi/apiDomain'
+import { baseURL } from "../../../confi/apiDomain";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import TooltipIcon from "../../../components/common/Icon/TooltipIcon";
+
 // import ReactTooltip from "react-tooltip";
 
 const SectionReKYCDetails = () => {
   const navigate = useNavigate(); // Initialize navigate
   const fileInputRef = useRef(null);
 
-  const location = useLocation();
-    const urlParams = new URLSearchParams(location.search);
-    const token = 'bfa5004e7b0175622be8f7e69b37d01290b737f82e078414'
-
-
   const { id } = useParams();
-  console.log("id:",id)
+  console.log("id:", id);
   const [supplierData, setSupplierData] = useState({});
   const [eInvoicingApplicable, setEInvoicingApplicable] = useState("");
   const [searchParams] = useSearchParams(); // Access query parameters
-  const rekyc_id = searchParams.get('rekyc_id');
+  const rekyc_id = searchParams.get("rekyc_id");
   const [rekycId, setRekycId] = useState(null);
   const [rekycType, setRekycType] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [contactNumber, setContactNumber] = useState("");
+  const [emailAddress, setEmailAddress] = useState("");
 
   // Check if the rekycType array is null or empty
   const isRekycTypeEmpty = !rekycType || rekycType.length === 0;
@@ -54,62 +54,6 @@ const SectionReKYCDetails = () => {
   // !rekycType ||
 
   console.log(" re kyc type:", rekycType);
-
-  // Example state to hold dynamic tooltip messages
-  const [tooltipMessages, setTooltipMessages] = useState({
-    bankName:
-      "Enter the name of the bank that holds your organization's business account.This information is required for payment and verification purposes. ",
-    address:
-      "Please provide the complete address of your bank branch,including the street address,city and postal code. ",
-    country: "Please choose your country from the list.",
-    state: "Please choose your state from the list.",
-    city: "Enter the city where your bank branch is located",
-    pincode: "Enter the postal code (Pin Code) for the bank branch location",
-    accountType:
-      "Select the type of bank account your organization holds,such as Savings,Current,or any other relevant type.",
-    accountNumber:
-      "Please provide your organization's bank account number.Make sure it is correct and matches the details at your bank.",
-    confirmAccountNumber:
-      "Re-enter the  bank account number to confirm accuracy.Ensure it matches the original account number entered above.",
-    branchName:
-      "Enter the name of the bank branch where your organization's account is held. ",
-    MICR: "Enter the MICR (Magnetic Ink Character Recognition) number of your  bank branch. This number is typically found on your cheque leaf. ",
-    IFSCCode:
-      "Enter the IFSC (Indian Financial System Code) of your bank branch. This is required for electronic fund transfers like NEFT and RTGS  ",
-    beneficiaryName: "Enter the full legel name of the beneficiary.",
-    cancelledCheque:
-      "Provide a cancelled cheque or a bank statement copy that clearly displays your bank account details.This helps verify your account information. The document must be uploaded in PDF format.",
-    MSMEUdyamNumberApplicable:
-      "Select whether your organization is registered under the MSME (Micro, Small, and Medium Enterprises) or Udyam scheme. Choose 'Yes' if applicable, otherwise select 'No.' By selecting 'No, you confirm that your organization does not hold a valid MSME/Udyam registration number. A declaration is required, and this response will be timestamped to record the submission date and time.",
-    MSMEUdyamNumber:
-      "Enter your organization's valid MSME or Udyam registration number. This number is issued by the Ministry of Micro, Small, and Medium Enterprises (MSME) under the Udyam registration scheme.",
-    MSMEUdyamValidFrom:
-      "Enter the date when your MSME/Udyam registration became valid. This is the start date mentioned on your MSME/Udyam registration certificate for the financial year.",
-    MSMEUdyamValidTill:
-      "Enter the date when your MSME/Udyam registration became valid. This is the end date mentioned on your MSME/Udyam registration certificate for the financial year.",
-    MSMEEnterpriseType:
-      "elect the type of your organization under the MSME (Micro, Small, and Medium Enterprises) scheme. Choose from 'Micro,'Small,' or 'Medium' based on your organization's annual turnover and investment in plant and machinery.",
-    MSMEUdyamAttachment:
-      "Attach a clear, scanned copy or digital image of your MSME/Udyam registration certificate to verify your organization's classification under the MSME scheme. The document must be uploaded in PDF format.",
-    DownloadSpecimen:
-      "If you choose 'No' for e-invoicing, a specimen format will be available for download. This is for businesses not subject to e-invoicing under GST regulations. Please upload a signed declaration stating that your organization is not registered.The document must be uploaded in PDF format.",
-    UploadDeclaration:
-      "If you choose E-Invoice applicable 'No', please upload a signed declaration document to verify the details you have submitted. The document must be uploaded in PDF format.Ensure that the document is clear, legible, and properly signed.",
-    GSTINApplicable:
-      "Indicate whether your organization is registered under the Goods and Services Tax (GST) Act. Select 'Yes' if GSTIN is applicable to your organization.",
-    GSTINAttachment:
-      "Upload a digital copy of the official GSTIN certificate or document showing your GST registration number. Ensure the document is legible and valid.",
-  });
-
-  useEffect(() => {
-    // Initialize all tooltips after component mounts
-    const tooltipTriggerList = document.querySelectorAll(
-      '[data-bs-toggle="tooltip"]'
-    );
-    tooltipTriggerList.forEach((tooltipTriggerEl) => {
-      new window.bootstrap.Tooltip(tooltipTriggerEl);
-    });
-  }, []);
 
   const encryptFileContent = (file) => {
     return new Promise((resolve, reject) => {
@@ -136,21 +80,6 @@ const SectionReKYCDetails = () => {
       };
     });
   };
-
-  // For handling MSME attachments (storing encrypted files)
-  // const handleFileChange = (file) => {
-  //   const reader = new FileReader();
-  //   reader.onloadend = () => {
-  //     const base64String = reader.result.split(",")[1];
-  //     const attachment = {
-  //       filename: file.name,
-  //       content: base64String,
-  //       content_type: file.type,
-  //     };
-  //     setMsmeAttachments([...msmeAttachments, attachment]);
-  //   };
-  //   reader.readAsDataURL(file);
-  // };
 
   const handleFileChange = (file) => {
     const reader = new FileReader();
@@ -184,64 +113,6 @@ const SectionReKYCDetails = () => {
     };
     reader.readAsDataURL(file);
   };
-
-  // const handleFileChangegst = (event) => {
-  //   const files = event.target.files;
-  //   if (!files.length) return;
-
-  //   const newAttachments = [];
-  //   Array.from(files).forEach((file) => {
-  //     if (file.type !== "application/pdf") {
-  //       alert("Only PDF files are allowed.");
-  //       return;
-  //     }
-
-  //     const reader = new FileReader();
-  //     reader.onloadend = () => {
-  //       const base64String = reader.result.split(",")[1];
-  //       newAttachments.push({
-  //         filename: file.name,
-  //         content: base64String,
-  //         content_type: file.type,
-  //       });
-
-  //       // Ensure all files are processed before updating state
-  //       if (newAttachments.length === files.length) {
-  //         setGstinAttachments([...gstinAttachments, ...newAttachments]);
-  //       }
-  //     };
-
-  //     reader.readAsDataURL(file);
-  //   });
-  // };
-
-  // const handleFileChangegst = (event) => {
-  //   const files = event.target.files;
-  //   if (!files.length) return;
-
-  //   const newAttachments = [];
-  //   Array.from(files).forEach((file) => {
-  //     const reader = new FileReader();
-  //     reader.onloadend = () => {
-  //       const base64String = reader.result.split(",")[1];
-  //       newAttachments.push({
-  //         filename: file.name,
-  //         content: base64String,
-  //         content_type: file.type,
-  //       });
-
-  //       // Ensure all files are processed before updating state
-  //       if (newAttachments.length === files.length) {
-  //         setGstinAttachments((prevAttachments) => [
-  //           ...prevAttachments,
-  //           ...newAttachments,
-  //         ]);
-  //       }
-  //     };
-
-  //     reader.readAsDataURL(file);
-  //   });
-  // };
 
   const handleFileChangegst = (event) => {
     const files = event.target.files;
@@ -294,12 +165,15 @@ const SectionReKYCDetails = () => {
   const [gstinAttachments, setGstinAttachments] = useState([]);
   const [gstOptions, setGstOptions] = useState([]);
   const [bankDetailsList, setBankDetailsList] = useState([]);
+  const [majorActivity, setMajorActivity] = useState("");
+  const [classificationYear, setClassificationYear] = useState("");
+  const [classificationDate, setClassificationDate] = useState("");
 
   // Function to fetch supplier data
   const fetchSupplierData = async () => {
     try {
       const response = await axios.get(
-        `${baseURL}/pms/suppliers/${id}/rekyc_by_sections.json?token=${token}&rekyc_id=${rekyc_id}`
+        `${baseURL}/pms/suppliers/${id}/rekyc_by_sections.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&rekyc_id=${rekyc_id}`
       );
 
       // Update the state with the response data
@@ -311,6 +185,15 @@ const SectionReKYCDetails = () => {
       setMsmeNo(response.data?.msme_details?.msme_no);
       setValidFrom(response.data?.msme_details?.valid_from);
       setValidTill(response.data?.msme_details?.valid_till);
+      setMajorActivity(response.data?.msme_details?.major_activity);
+      setClassificationYear(response.data?.msme_details?.classification_year);
+      // setClassificationDate(response.data?.msme_details?.classification_date);
+      setClassificationDate(
+        response.data?.msme_details?.classification_date
+          ? response.data.msme_details.classification_date.split("T")[0]
+          : ""
+      );
+
       setRekycId(response.data?.id);
       setRekycType(response.data?.rekyc_type);
 
@@ -321,6 +204,8 @@ const SectionReKYCDetails = () => {
       // setGstinAttachments(
       //   response.data?.basic_information?.gstin_attachments || []
       // );
+      setContactNumber(response.data?.mobile || ""); // Set Contact Number
+      setEmailAddress(response.data?.email || ""); // Set Email Address
 
       setGstApplicable(
         response.data?.gstin_applicable === "Yes" ? "Yes" : "No"
@@ -372,6 +257,76 @@ const SectionReKYCDetails = () => {
 
   console.log("supplier data:", supplierData);
 
+  const checkGstinExists = async (gstin) => {
+    try {
+      console.log(`Checking GSTIN: ${gstin}`);
+
+      const response = await fetch(
+        `${baseURL}/pms/suppliers/check_existing_pan_gstin?gstin=${gstin}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("API Response:", data);
+
+      if (data.exists) {
+        console.log("GSTIN already exists:", gstin);
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          gstinNumber: "GSTIN already exists!",
+        }));
+      } else {
+        console.log("GSTIN is available:", gstin);
+        setErrors((prevErrors) => {
+          const newErrors = { ...prevErrors };
+          delete newErrors.gstinNumber;
+          return newErrors;
+        });
+      }
+    } catch (error) {
+      console.error("Error checking GSTIN:", error);
+    }
+  };
+
+  // Debounce effect to check GSTIN after user stops typing
+  useEffect(() => {
+    if (gstinNumber.length === 15) {
+      const timer = setTimeout(() => {
+        checkGstinExists(gstinNumber);
+      }, 500); // 500ms delay
+
+      return () => clearTimeout(timer);
+    }
+  }, [gstinNumber]);
+
+  const handleGstinChange = (e) => {
+    const value = e.target.value;
+    setGstinNumber(value);
+
+    if (value.length !== 15) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        gstinNumber: "Enter a valid 15-character GSTIN!",
+      }));
+    } else {
+      setErrors((prevErrors) => {
+        const newErrors = { ...prevErrors };
+        delete newErrors.gstinNumber;
+        return newErrors;
+      });
+    }
+  };
+
   // country and state
 
   const [countries, setCountries] = useState([]);
@@ -382,7 +337,7 @@ const SectionReKYCDetails = () => {
   const fetchCountries = async () => {
     try {
       const response = await axios.get(
-        `${baseURL}/pms/dropdown_countries?token=${token}`
+        `${baseURL}/pms/dropdown_countries?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
 
       const formattedCountries = response.data.countries.map((country) => ({
@@ -403,7 +358,7 @@ const SectionReKYCDetails = () => {
   const fetchStates = async (countryId) => {
     try {
       const response = await axios.get(
-        `${baseURL}/pms/dropdown_states?country_id=${countryId}&&token=${token}`
+        `${baseURL}/pms/dropdown_states?country_id=${countryId}&&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
       );
 
       const formattedStates = response.data.states.map((state) => ({
@@ -420,31 +375,17 @@ const SectionReKYCDetails = () => {
   useEffect(() => {
     if (bankDetailsList.length > 0) {
       const firstBank = bankDetailsList[0];
-      setSelectedCountry(firstBank.country);
-      fetchStates(firstBank.country); // Fetch states when country is set
-      setSelectedState(firstBank.state);
+      setSelectedCountry(firstBank.country_id);
+      fetchStates(firstBank.country_id); // Fetch states when country is set
+      setSelectedState(firstBank.state_id);
     }
   }, [bankDetailsList]);
-
-  // const handleCountryChange = (e, bankId) => {
-  //   const selectedCountryId = e.target.value;
-  //   setSelectedCountry(selectedCountryId);
-  //   fetchStates(selectedCountryId);
-
-  //   setBankDetailsList(
-  //     bankDetailsList.map((bank) =>
-  //       bank.id === bankId
-  //         ? { ...bank, country: selectedCountryId, state: null }
-  //         : bank
-  //     )
-  //   );
-  // };
 
   const handleCountryChange = (selectedOption, bankId) => {
     setBankDetailsList((prevList) =>
       prevList.map((bankDetail) =>
         bankDetail.id === bankId
-          ? { ...bankDetail, country: selectedOption?.value, state: null } // Reset state when country changes
+          ? { ...bankDetail, country_id: selectedOption?.value, state_id: null } // Reset state when country changes
           : bankDetail
       )
     );
@@ -458,7 +399,7 @@ const SectionReKYCDetails = () => {
     setBankDetailsList((prevList) =>
       prevList.map((bankDetail) =>
         bankDetail.id === bankId
-          ? { ...bankDetail, state: selectedOption?.value }
+          ? { ...bankDetail, state_id: selectedOption?.value }
           : bankDetail
       )
     );
@@ -469,13 +410,150 @@ const SectionReKYCDetails = () => {
 
   // Function to handle field changes
 
+  // const handleInputChange = (e, id, field) => {
+  //   const { value } = e.target;
+  //   setBankDetailsList((prevDetails) =>
+  //     prevDetails.map((bankDetail) =>
+  //       bankDetail.id === id ? { ...bankDetail, [field]: value } : bankDetail
+  //     )
+  //   );
+  // };
+  // Add these to your state declarations
+
+  // Add near the top of your component with other constants
+  const accountTypeOptions = [
+    { value: "", label: "Select Account Type" },
+    { value: "Saving Account", label: "Saving Account" },
+    { value: "Current Account", label: "Current Account" },
+    { value: "Overdraft Account", label: "Overdraft Account" },
+  ];
+  const [inputErrors, setInputErrors] = useState({});
+
   const handleInputChange = (e, id, field) => {
     const { value } = e.target;
-    setBankDetailsList((prevDetails) =>
-      prevDetails.map((bankDetail) =>
-        bankDetail.id === id ? { ...bankDetail, [field]: value } : bankDetail
-      )
-    );
+
+    if (field === "pincode") {
+      // Remove non-numeric characters
+      const numericValue = value.replace(/\D/g, "").slice(0, 6);
+
+      // Update bank details list first
+      setBankDetailsList((prevDetails) =>
+        prevDetails.map((bankDetail) =>
+          bankDetail.id === id
+            ? { ...bankDetail, pincode: numericValue }
+            : bankDetail
+        )
+      );
+
+      // Only set input errors if it's a new bank detail
+      const bankDetail = bankDetailsList.find((detail) => detail.id === id);
+      if (bankDetail?.isNew) {
+        if (!numericValue) {
+          setInputErrors((prev) => ({
+            ...prev,
+            [id]: { ...prev[id], pincode: "Pincode is required." },
+          }));
+          // Clear the validation error since we're handling it with input error
+          setErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors.pincode;
+            return newErrors;
+          });
+        } else if (numericValue.length < 6) {
+          setInputErrors((prev) => ({
+            ...prev,
+            [id]: { ...prev[id], pincode: "Pincode must be 6 digits" },
+          }));
+          // Clear the validation error
+          setErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors.pincode;
+            return newErrors;
+          });
+        } else {
+          setInputErrors((prev) => {
+            const newErrors = { ...prev };
+            if (newErrors[id]) {
+              delete newErrors[id].pincode;
+            }
+            return newErrors;
+          });
+        }
+      }
+    } else if (field === "ifsc_code") {
+      // Convert to uppercase
+      const upperValue = value.toUpperCase();
+
+      // IFSC validation regex: First 4 letters + 0 + 6 alphanumeric
+      // const ifscRegex = /^[A-Z]{4}[0-9]{1}[A-Z0-9]{6}$/;
+      const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+
+      // Update bank details list first
+      setBankDetailsList((prevDetails) =>
+        prevDetails.map((bankDetail) =>
+          bankDetail.id === id
+            ? { ...bankDetail, ifsc_code: upperValue }
+            : bankDetail
+        )
+      );
+
+      // Only set input errors if it's a new bank detail
+      const bankDetail = bankDetailsList.find((detail) => detail.id === id);
+      if (bankDetail?.isNew) {
+        if (!upperValue) {
+          setInputErrors((prev) => ({
+            ...prev,
+            [id]: { ...prev[id], ifsc: "IFSC Code is required." },
+          }));
+          // Clear the validation error
+          setErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors.ifsc_code;
+            return newErrors;
+          });
+        } else if (upperValue.length < 11) {
+          setInputErrors((prev) => ({
+            ...prev,
+            [id]: { ...prev[id], ifsc: "IFSC code must be 11 characters" },
+          }));
+          // Clear the validation error
+          setErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors.ifsc_code;
+            return newErrors;
+          });
+        } else if (!ifscRegex.test(upperValue)) {
+          setInputErrors((prev) => ({
+            ...prev,
+            [id]: {
+              ...prev[id],
+              ifsc: "Invalid IFSC format. First 4 characters must be capital letters, followed by '0' and 6 alphanumeric characters",
+            },
+          }));
+          // Clear the validation error
+          setErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors.ifsc_code;
+            return newErrors;
+          });
+        } else {
+          setInputErrors((prev) => {
+            const newErrors = { ...prev };
+            if (newErrors[id]) {
+              delete newErrors[id].ifsc;
+            }
+            return newErrors;
+          });
+        }
+      }
+    } else {
+      // Handle other fields normally
+      setBankDetailsList((prevDetails) =>
+        prevDetails.map((bankDetail) =>
+          bankDetail.id === id ? { ...bankDetail, [field]: value } : bankDetail
+        )
+      );
+    }
   };
 
   // Function to add a new bank detail
@@ -488,9 +566,12 @@ const SectionReKYCDetails = () => {
         address: null,
         country_id: null,
         state_id: null,
-        city: null,
-        pin_code: null,
-        account_type: null,
+        // city: null,
+        city_name: null,
+        // pin_code: null,
+        pincode: null,
+        // account_type: null,
+        account_type: "", // Initialize with empty string for dropdown
         account_number: null,
         confirm_account_number: null,
         branch_name: null,
@@ -509,19 +590,6 @@ const SectionReKYCDetails = () => {
   // Function to delete bank details
   const deleteBankDetails = (id) => {
     setBankDetailsList(bankDetailsList.filter((item) => item.id !== id));
-    // // setFormSubmitted(false)
-
-    // setBankDetailsList(bankDetailsList.map((item) =>
-    //   item.id === id
-    //     ? { ...item, _destroy: true } // Mark this bank detail as deleted
-    //     : item
-    // ));
-
-    // setBankDetailsList(bankDetailsList.map((item) =>
-    //   item.id === id
-    //     ? { ...item, _destroy: true } // Mark this bank detail as deleted
-    //     : item
-    // ));
 
     // Store deleted bank details separately
     const deletedItem = bankDetailsList.find((item) => item.id === id);
@@ -573,7 +641,30 @@ const SectionReKYCDetails = () => {
     setMsmeNo(e.target.value);
   };
 
-  // Handler for Valid From date
+  const handleClassificationYearChange = (selectedOption) => {
+    if (!selectedOption) {
+      setClassificationYear("");
+      setValidFrom("");
+      setValidTill("");
+      return;
+    }
+
+    const selectedYear = selectedOption.value; // ✅ Correct way to get value
+    setClassificationYear(selectedYear);
+
+    let validFromDate = "";
+    let validTillDate = "";
+
+    if (selectedYear) {
+      const [startYear, endYear] = selectedYear.split("-");
+      validFromDate = `${startYear}-04-01`;
+      validTillDate = `20${endYear}-03-31`;
+    }
+
+    setValidFrom(validFromDate);
+    setValidTill(validTillDate);
+  };
+
   const handleValidFromChange = (e) => {
     setValidFrom(e.target.value);
   };
@@ -583,24 +674,6 @@ const SectionReKYCDetails = () => {
     setValidTill(e.target.value);
   };
 
-  // Handle eInvoicing File Change
-  // const handleEinvoicingFileChange = (event) => {
-  //   const file = event.target.files[0]; // Get the selected file
-
-  //   if (file) {
-  //     const attachment = {
-  //       content_type: file.type, // Content type (e.g., "application/pdf")
-  //       contect: file, // The file object itself
-  //       filename: file.name, // File name
-  //     };
-
-  //     // Update the eInvoicing attachments state
-  //     setEinvoicingAttachments([...einvoicingAttachments, attachment]);
-  //   }
-  // };
-
-  // edit pay load
-
   const payload = {
     authenticity_token: "[FILTERED]", // No quotes for the token value, but the key is a string
     vendor_re_kyc: {
@@ -608,11 +681,20 @@ const SectionReKYCDetails = () => {
     },
     pms_supplier: {
       rekyc_id: rekyc_id,
+      mobile: contactNumber, // Add Contact Number
+      email: emailAddress,
       msme: msmeUdyamApplicable || "",
-      msme_no: msmeUdyamApplicable === "No" ? "" : msmeNo || "",
-      valid_from: msmeUdyamApplicable === "No" ? "" : validFrom || "",
-      valid_till: msmeUdyamApplicable === "No" ? "" : validTill || "",
-      enterprise: msmeUdyamApplicable === "No" ? "" : msmeEnterpriseType || "",
+      msme_no: msmeUdyamApplicable === "No" ? "" : msmeNo || null,
+      valid_from: msmeUdyamApplicable === "No" ? "" : validFrom || null,
+      valid_till: msmeUdyamApplicable === "No" ? "" : validTill || null,
+      enterprise:
+        msmeUdyamApplicable === "No" ? "" : msmeEnterpriseType || null,
+      major_activity: msmeUdyamApplicable === "No" ? "" : majorActivity || null,
+      classification_year:
+        msmeUdyamApplicable === "No" ? "" : classificationYear || null,
+      classification_date:
+        msmeUdyamApplicable === "No" ? "" : classificationDate || null,
+
       msme_attachments: msmeUdyamApplicable === "No" ? [] : msmeAttachments,
       einvoicing: eInvoicingApplicable || "",
       einvoicing_attachments:
@@ -642,16 +724,86 @@ const SectionReKYCDetails = () => {
       // // gstin_attachments: gstinAttachments || [],
       // gstin_attachments: gstinAttachments,
 
-      gstin_applicable: gstApplicable || "",
+      gstin_applicable: gstApplicable || null,
       ...(gstApplicable === "Yes" && {
-        gst_classification_id: gstClassification?.value || "",
+        gst_classification_id: gstClassification?.value || null,
         gstin: gstinNumber || "",
         gstin_attachments: gstinAttachments,
       }),
     },
   };
 
+  const payloadCondition = {
+    authenticity_token: "[FILTERED]", // No quotes for the token value, but the key is a string
+    vendor_re_kyc: {
+      status: "details_submitted_by_vendor",
+    },
+    pms_supplier: {
+      rekyc_id: rekyc_id,
+    },
+  };
+
+  // If the condition is met, include only GSTN-related fields
+  if (isRekycTypeEmpty || isGstinRekyc) {
+    payloadCondition.pms_supplier = {
+      ...payloadCondition.pms_supplier, // Keep existing keys
+      gstin_applicable: gstApplicable || null,
+      ...(gstApplicable === "Yes" && {
+        gst_classification_id: gstClassification?.value || null,
+        gstin: gstinNumber || "",
+        gstin_attachments: gstinAttachments || [],
+      }),
+    };
+  }
+
+  // If the condition is met, include only Bank Details
+  if (isRekycTypeEmpty || isBankRekyc) {
+    payloadCondition.pms_supplier = {
+      ...payloadCondition.pms_supplier, // Keep existing keys
+      bank_details_attributes: bankDetailsList.map((item) => ({
+        ...item,
+        id: item.isNew ? null : item.id,
+
+        attachment: item.isNew
+          ? bankAttachments[item.id] || null // If new attachment exists, pass it; otherwise, null
+          : bankAttachments[item.id] || (item.attachment ? null : null), // If existing, only pass null if no new file is uploaded
+      })),
+
+      deletedBankDetails: deletedBankDetails || [], // Deleted bank details, if any
+    };
+  }
+
+  // If the condition is met, include only MSME-related fields
+  if (isRekycTypeEmpty || isMsmeRekyc) {
+    payloadCondition.pms_supplier = {
+      ...payloadCondition.pms_supplier, // Keep existing keys
+      msme: msmeUdyamApplicable || "",
+      msme_no: msmeUdyamApplicable === "No" ? "" : msmeNo || null,
+      valid_from: msmeUdyamApplicable === "No" ? "" : validFrom || null,
+      valid_till: msmeUdyamApplicable === "No" ? "" : validTill || null,
+      enterprise:
+        msmeUdyamApplicable === "No" ? "" : msmeEnterpriseType || null,
+      major_activity: msmeUdyamApplicable === "No" ? "" : majorActivity || null,
+      classification_year:
+        msmeUdyamApplicable === "No" ? "" : classificationYear || null,
+      classification_date:
+        msmeUdyamApplicable === "No" ? "" : classificationDate || null,
+      msme_attachments: msmeUdyamApplicable === "No" ? [] : msmeAttachments,
+    };
+  }
+
+  // If the condition is met, include only E-Invoicing-related fields
+  if (isRekycTypeEmpty || isEnvoiceRekyc) {
+    payloadCondition.pms_supplier = {
+      ...payloadCondition.pms_supplier, // Keep existing keys
+      einvoicing: eInvoicingApplicable || "",
+      einvoicing_attachments:
+        eInvoicingApplicable === "No" ? einvoicingAttachments || [] : [],
+    };
+  }
+
   console.log("payload:", payload);
+  console.log("payload condition:", payloadCondition);
 
   // update api
 
@@ -664,65 +816,200 @@ const SectionReKYCDetails = () => {
   };
 
   // Handle the Update Button Click
-  const handleUpdate = async (bankDetail) => {
-    console.log("bank details:", bankDetail);
+  const handleUpdate = async () => {
+    console.log("rekyc_type:", rekycType);
 
     // console.log('formSubmitted:', formSubmitted);
 
     let validationErrors = {};
+    // if (isRekycTypeEmpty || isBankRekyc) {
+    //   bankDetailsList.forEach((bankDetail) => {
+    //     if (bankDetail.isNew) {
+    //       // Only validate if it's a new entry
+    //       if (!bankDetail.bank_name) {
+    //         validationErrors.bank_name = "Bank Name is required.";
+    //       }
+    //       if (!bankDetail.address) {
+    //         validationErrors.address = "Address is required.";
+    //       }
+    //       if (!bankDetail.country_id) {
+    //         validationErrors.country_id = "Country is required.";
+    //       }
+    //       if (!bankDetail.state_id) {
+    //         validationErrors.state_id = "State is required.";
+    //       }
+    //       if (!bankDetail.city_name) {
+    //         validationErrors.city_name = "City is required.";
+    //       }
+    //       // {
+    //       // }
 
-    bankDetailsList.forEach((bankDetail) => {
-      if (bankDetail.isNew) {
+    //       // if (!bankDetail.pincode || isNaN(bankDetail.pincode)) {
+    //       //   validationErrors.pincode = "Valid Pin Code is required.";
+    //       // }
+    //       // For pincode, only validate if there's no input error
+    //       if (!bankDetail.pincode || isNaN(bankDetail.pincode)) {
+    //         if (!inputErrors[bankDetail.id]?.pincode) {
+    //           validationErrors.pincode = "Valid Pin Code is required.";
+    //         }
+    //       }
+
+    //       // if (!bankDetail.account_type) {
+    //       //   validationErrors.account_type = "Account Type is required.";
+    //       // }
+    //       // In your validation section within handleUpdate
+    //       if (!bankDetail.account_type || bankDetail.account_type === "") {
+    //         validationErrors.account_type = "Account Type is required.";
+    //       }
+    //       if (!bankDetail.account_number) {
+    //         validationErrors.account_number = "Account Number is required.";
+    //       }
+    //       // if (!bankDetail.confirm_account_number) {
+    //       //   validationErrors.confirm_account_number =
+    //       //     "Confirm Account Number is required.";
+    //       // }
+    //       if (!bankDetail.confirm_account_number) {
+    //         validationErrors.confirm_account_number =
+    //           "Confirm Account Number is required.";
+    //       } else if (
+    //         bankDetail.account_number !== bankDetail.confirm_account_number
+    //       ) {
+    //         validationErrors.confirm_account_number =
+    //           "Account numbers must match";
+    //         // Show popup alert
+    //         alert("Account Number and Confirm Account Number must match!");
+    //       }
+
+    //       if (bankDetail.account_number !== bankDetail.confirm_account_number) {
+    //         validationErrors.account_match =
+    //           "Account Number and Confirm Account Number must match.";
+    //       }
+    //       if (!bankDetail.branch_name) {
+    //         validationErrors.branch_name = "Branch Name is required.";
+    //       }
+    //       if (!bankDetail.micr_number) {
+    //         validationErrors.micr_number = "MICR Number is required.";
+    //       }
+    //       // if (!bankDetail.ifsc_code) {
+    //       //   validationErrors.ifsc_code = "IFSC Code is required.";
+    //       // } else if (bankDetail.ifsc_code.length > 11) {
+    //       //   validationErrors.ifsc_code =
+    //       //     "IFSC Code cannot be longer than 11 characters.";
+    //       // }
+    //       if (!bankDetail.ifsc_code) {
+    //         if (!inputErrors[bankDetail.id]?.ifsc) {
+    //           validationErrors.ifsc_code = "IFSC Code is required.";
+    //         }
+    //       }
+
+    //       if (!bankDetail.benficary_name) {
+    //         validationErrors.benficary_name = "Beneficiary Name is required.";
+    //       }
+    //       // if (!bankDetail.cancelled_cheque) {
+    //       //   validationErrors.cancelled_cheque =
+    //       //     "Cancelled Cheque / Bank Copy is required.";
+    //       // }
+    //       if (!bankAttachments[bankDetail.id]) {
+    //         validationErrors.cancelled_cheque =
+    //           "Cancelled Cheque / Bank Copy is required.";
+    //       }
+
+    //       // Add other validation checks here
+    //     }
+    //   });
+    // }
+    // In handleUpdate function, modify the bank details validation:
+    if (isRekycTypeEmpty || isBankRekyc) {
+      let hasNewBankDetails = false;
+
+      bankDetailsList.forEach((bankDetail) => {
         // Only validate if it's a new entry
-        if (!bankDetail.bank_name)
-          validationErrors.bank_name = "Bank Name is required.";
-        if (!bankDetail.address)
-          validationErrors.address = "Address is required.";
-        if (!bankDetail.country) {
-          validationErrors.country = "Country is required.";
-        }
-        if (!bankDetail.state) {
-          validationErrors.state = "State is required.";
-        }
-        if (!bankDetail.city) {
-          validationErrors.city = "City is required.";
-        }
-        {
-        }
-        if (!bankDetail.pin_code || isNaN(bankDetail.pin_code)) {
-          validationErrors.pin_code = "Valid Pin Code is required.";
-        }
-        if (!bankDetail.account_type) {
-          validationErrors.account_type = "Account Type is required.";
-        }
-        if (!bankDetail.account_number) {
-          validationErrors.account_number = "Account Number is required.";
-        }
-        if (!bankDetail.confirm_account_number) {
-          validationErrors.confirm_account_number =
-            "Confirm Account Number is required.";
-        }
-        if (bankDetail.account_number !== bankDetail.confirm_account_number) {
-          validationErrors.account_match =
-            "Account Number and Confirm Account Number must match.";
-        }
-        if (!bankDetail.branch_name) {
-          validationErrors.branch_name = "Branch Name is required.";
-        }
-        if (!bankDetail.micr_number) {
-          validationErrors.micr_number = "MICR Number is required.";
-        }
-        if (!bankDetail.ifsc_code) {
-          validationErrors.ifsc_code = "IFSC Code is required.";
-        }
-        if (!bankDetail.benficiary_name) {
-          validationErrors.benficiary_name = "Beneficiary Name is required.";
-        }
-        // if (!bankDetail.cancelled_cheque) { validationErrors.cancelled_cheque = "Cancelled Cheque / Bank Copy is required." };
+        if (bankDetail.isNew) {
+          hasNewBankDetails = true;
 
-        // Add other validation checks here
+          if (!bankDetail.bank_name) {
+            validationErrors.bank_name = "Bank Name is required.";
+          }
+          if (!bankDetail.address) {
+            validationErrors.address = "Address is required.";
+          }
+          if (!bankDetail.country_id) {
+            validationErrors.country_id = "Country is required.";
+          }
+          if (!bankDetail.state_id) {
+            validationErrors.state_id = "State is required.";
+          }
+          if (!bankDetail.city_name) {
+            validationErrors.city_name = "City is required.";
+          }
+
+          // For pincode, only validate if it's a new entry and there's no input error
+          if (!bankDetail.pincode || isNaN(bankDetail.pincode)) {
+            if (!inputErrors[bankDetail.id]?.pincode) {
+              validationErrors.pincode = "Valid Pin Code is required.";
+            }
+          }
+
+          if (!bankDetail.account_type || bankDetail.account_type === "") {
+            validationErrors.account_type = "Account Type is required.";
+          }
+          if (!bankDetail.account_number) {
+            validationErrors.account_number = "Account Number is required.";
+          }
+          if (!bankDetail.confirm_account_number) {
+            validationErrors.confirm_account_number =
+              "Confirm Account Number is required.";
+          } else if (
+            bankDetail.account_number !== bankDetail.confirm_account_number
+          ) {
+            validationErrors.confirm_account_number =
+              "Account numbers must match";
+          }
+
+          if (!bankDetail.branch_name) {
+            validationErrors.branch_name = "Branch Name is required.";
+          }
+          if (!bankDetail.micr_number) {
+            validationErrors.micr_number = "MICR Number is required.";
+          }
+
+          // For IFSC code, only validate if it's a new entry and there's no input error
+          if (!bankDetail.ifsc_code) {
+            if (!inputErrors[bankDetail.id]?.ifsc) {
+              validationErrors.ifsc_code = "IFSC Code is required.";
+            }
+          }
+
+          if (!bankDetail.benficary_name) {
+            validationErrors.benficary_name = "Beneficiary Name is required.";
+          }
+
+          if (!bankAttachments[bankDetail.id]) {
+            validationErrors.cancelled_cheque =
+              "Cancelled Cheque / Bank Copy is required.";
+          }
+        }
+      });
+
+      // If there are no new bank details, don't show validation errors
+      if (!hasNewBankDetails) {
+        validationErrors = {};
       }
-    });
+    }
+
+    if (!contactNumber) {
+      validationErrors.contactNumber = "Contact Number is required.";
+    } else if (!/^\d{10}$/.test(contactNumber)) {
+      validationErrors.contactNumber = "Enter a valid 10-digit Contact Number.";
+    }
+
+    if (!emailAddress) {
+      validationErrors.emailAddress = "Email Address is required.";
+    } else if (
+      !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(emailAddress)
+    ) {
+      validationErrors.emailAddress = "Enter a valid Email Address.";
+    }
 
     if (isRekycTypeEmpty || isMsmeRekyc) {
       // Validate MSME/Udyam Number Applicable
@@ -752,17 +1039,22 @@ const SectionReKYCDetails = () => {
           "MSME Enterprise Type is required.";
       }
 
-      // // Validate MSME/Udyam Attachment if MSME/Udyam is applicable
-      // if (msmeUdyamApplicable === "Yes" && supplierData?.msme_details?.msme_attachments?.length ===0) {
-      //   validationErrors.msmeAttachments = "MSME/Udyam Attachment is required.";
-      // }
+      // Validate Major Activity
+      if (msmeUdyamApplicable === "Yes" && !majorActivity) {
+        validationErrors.majorActivity = "Major Activity is required.";
+      }
 
-      // if (
-      //   msmeUdyamApplicable === "Yes" &&
-      //   supplierData?.msme_details?.msme_attachments?.length === 0
-      // ) {
-      //   validationErrors.msmeAttachments = "MSME/Udyam Attachment is required.";
-      // }
+      if (msmeUdyamApplicable === "Yes" && !classificationYear) {
+        validationErrors.classificationYear =
+          "Classification Year is required.";
+      }
+
+      // Validate Classification Date
+      if (msmeUdyamApplicable === "Yes" && !classificationDate) {
+        validationErrors.classificationDate =
+          "Classification Date is required.";
+      }
+
       if (
         msmeUdyamApplicable === "Yes" &&
         supplierData?.msme_details?.msme_attachments?.length === 0 &&
@@ -770,20 +1062,27 @@ const SectionReKYCDetails = () => {
       ) {
         validationErrors.msmeAttachments = "MSME/Udyam Attachment is required.";
       }
-      
     }
 
     if (isRekycTypeEmpty || isGstinRekyc) {
-    if (!gstApplicable) {
-      validationErrors.gstApplicable = "GST Applicable is required.";
-    } else if (gstApplicable === "Yes") {
-      if (!gstClassification?.value)
-        validationErrors.gstClassification = "GST Classification is required.";
-      if (!gstinNumber)
-        validationErrors.gstinNumber = "GSTIN Number is required.";
-      if (supplierData?.basic_information?.gstin_attachments.length === 0)
-        validationErrors.gstinAttachments = "GSTIN Attachment is required.";
-    }
+      if (!gstApplicable) {
+        validationErrors.gstApplicable = "GST Applicable is required.";
+      } else if (gstApplicable === "Yes") {
+        // if (!gstClassification?.value)
+        //   validationErrors.gstClassification =
+        //     "GST Classification is required.";
+        if (!gstinNumber)
+          validationErrors.gstinNumber = "GSTIN Number is required.";
+        // if (supplierData?.basic_information?.gstin_attachments.length === 0)
+        //   validationErrors.gstinAttachments = "GSTIN Attachment is required.";
+        if (
+          (supplierData?.basic_information?.gstin_attachments.length === 0 ||
+            !supplierData?.basic_information?.gstin_attachments) &&
+          gstinAttachments.length === 0
+        ) {
+          validationErrors.gstinAttachments = "GSTIN Attachment is required.";
+        }
+      }
     }
 
     // Add this inside your validation logic
@@ -796,37 +1095,13 @@ const SectionReKYCDetails = () => {
     // setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) {
       // return false; // Return false if there are validation errors
+      console.log("Validation Errors:", validationErrors);
       return setErrors(validationErrors);
     } else {
-      // const payload = {
-      //   authenticity_token: "[FILTERED]", // Add your actual token or logic to get it
-      //   vendor_re_kyc: {
-      //     status: "details_submitted_by_vendor",
-      //   },
-      //   pms_supplier: {
-      //     rekyc_id: rekycId,
-      //     msme: msmeUdyamApplicable || "",
-      //     msme_no: msmeUdyamApplicable === "No" ? "" : msmeNo || "",
-      //     valid_from: msmeUdyamApplicable === "No" ? "" : validFrom || "",
-      //     valid_till: msmeUdyamApplicable === "No" ? "" : validTill || "",
-      //     enterprise:
-      //       msmeUdyamApplicable === "No" ? "" : msmeEnterpriseType || "",
-      //     msme_attachments: msmeUdyamApplicable === "No" ? [] : msmeAttachments,
-      //     einvoicing: eInvoicingApplicable || "",
-      //     einvoicing_attachments:
-      //       eInvoicingApplicable === "No" ? einvoicingAttachments : [],
-      //     bank_details_attributes: bankDetailsList,
-
-      //     gstin_applicable: gstApplicable || "",
-      //     gst_classification_id: gstClassification?.value || "",
-      //     gstin: gstApplicable === "No" ? "" : gstinNumber || "",
-      //     gstin_attachments:
-      //       gstApplicable === "No" ? [] : gstinAttachments || [],
-      //   },
-      // };
-
       setLoading(true);
+      console.log("Validation passed. Sending API request...");
 
+      // condition wise payload
       const payload = {
         authenticity_token: "[FILTERED]", // No quotes for the token value, but the key is a string
         vendor_re_kyc: {
@@ -834,59 +1109,77 @@ const SectionReKYCDetails = () => {
         },
         pms_supplier: {
           rekyc_id: rekyc_id,
-          msme: msmeUdyamApplicable || "",
-          msme_no: msmeUdyamApplicable === "No" ? "" : msmeNo || "",
-          valid_from: msmeUdyamApplicable === "No" ? "" : validFrom || "",
-          valid_till: msmeUdyamApplicable === "No" ? "" : validTill || "",
-          enterprise:
-            msmeUdyamApplicable === "No" ? "" : msmeEnterpriseType || "",
-          msme_attachments: msmeUdyamApplicable === "No" ? [] : msmeAttachments,
-          einvoicing: eInvoicingApplicable || "",
-          einvoicing_attachments:
-            eInvoicingApplicable === "No" ? einvoicingAttachments : [], //added
-          // bank_details_attributes: bankDetailsList,
+          mobile: contactNumber, // Add Contact Number
+          email: emailAddress, // Add Email Address
+        },
+      };
+      // If the condition is met, include only GSTN-related fields
+      if (isRekycTypeEmpty || isGstinRekyc) {
+        payload.pms_supplier = {
+          ...payload.pms_supplier, // Keep existing keys
+          gstin_applicable: gstApplicable || null,
+          ...(gstApplicable === "Yes" && {
+            gst_classification_id: gstClassification?.value || null,
+            gstin: gstinNumber || "",
+            gstin_attachments: gstinAttachments || [],
+          }),
+        };
+      }
+
+      // If the condition is met, include only Bank Details
+      if (isRekycTypeEmpty || isBankRekyc) {
+        payload.pms_supplier = {
+          ...payload.pms_supplier, // Keep existing keys
           bank_details_attributes: bankDetailsList.map((item) => ({
             ...item,
-            id: item.isNew ? null : item.id, // Set id to null if it's a new entry
-
-            // attachment: item.isNew ? bankAttachments : null,
-            // _destroy: item._destroy ? true : null, // Convert _destroy to boolean or null
+            id: item.isNew ? null : item.id,
+            account_type: item.account_type || "", // Ensure account_type is included
 
             attachment: item.isNew
               ? bankAttachments[item.id] || null // If new attachment exists, pass it; otherwise, null
               : bankAttachments[item.id] || (item.attachment ? null : null), // If existing, only pass null if no new file is uploaded
           })),
 
-          deletedBankDetails: deletedBankDetails, //deleted details
+          deletedBankDetails: deletedBankDetails || [], // Deleted bank details, if any
+        };
+      }
 
-          gstin_applicable: gstApplicable || "",
-          gst_classification_id: gstClassification?.value || "",
-          gstin: gstinNumber || "",
-          // gstin_attachments: gstinAttachments || [],
-          gstin_attachments: gstinAttachments,
-          // gstinAttachments.length > 0
-          //   ? gstinAttachments // If new files are uploaded, send them
-          //   : supplierData?.basic_information?.gstin_attachments?.length > 0
-          //     ? null // If existing files are present, pass null
-          //     : [], // Otherwise, send an empty array
-        },
-      };
+      // If the condition is met, include only MSME-related fields
+      if (isRekycTypeEmpty || isMsmeRekyc) {
+        payload.pms_supplier = {
+          ...payload.pms_supplier, // Keep existing keys
+          msme: msmeUdyamApplicable || "",
+          msme_no: msmeUdyamApplicable === "No" ? "" : msmeNo || null,
+          valid_from: msmeUdyamApplicable === "No" ? "" : validFrom || null,
+          valid_till: msmeUdyamApplicable === "No" ? "" : validTill || null,
+          enterprise:
+            msmeUdyamApplicable === "No" ? "" : msmeEnterpriseType || null,
+          major_activity:
+            msmeUdyamApplicable === "No" ? "" : majorActivity || null,
+          classification_year:
+            msmeUdyamApplicable === "No" ? "" : classificationYear || null,
+          classification_date:
+            msmeUdyamApplicable === "No" ? "" : classificationDate || null,
+          msme_attachments: msmeUdyamApplicable === "No" ? [] : msmeAttachments,
+        };
+      }
 
-      console.log("payload submition", payload);
-      // console.log("rekyc id")
+      // If the condition is met, include only E-Invoicing-related fields
+      if (isRekycTypeEmpty || isEnvoiceRekyc) {
+        payload.pms_supplier = {
+          ...payload.pms_supplier, // Keep existing keys
+          einvoicing: eInvoicingApplicable || "",
+          einvoicing_attachments:
+            eInvoicingApplicable === "No" ? einvoicingAttachments || [] : [],
+        };
+      }
+
+      console.log("payload submition with conditions:", payload);
 
       try {
         const response = await axios.patch(
-          `${baseURL}/pms/suppliers/${id}/update_rekyc_by_sections.json?token=${token}&rekyc_id=${rekyc_id}`,
+          `${baseURL}/pms/suppliers/${id}/update_rekyc_by_sections.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&rekyc_id=${rekyc_id}`,
           payload
-          // {
-          //   headers: {
-          //     // 'Accept': 'application/json',
-          //     // 'Content-Type': 'application/json',
-          //     'token': 'bfa5004e7b0175622be8f7e69b37d01290b737f82e078414', // Token should be valid
-          //      // Replace with the actual session ID
-          //   }
-          // }
         );
 
         console.log("Response:", response.data); // Check the response data
@@ -911,6 +1204,36 @@ const SectionReKYCDetails = () => {
       }
     }
   };
+
+  const options = [
+    { value: "", label: "Select" },
+    { value: "Yes", label: "Yes" },
+    { value: "No", label: "No" },
+  ];
+
+  const optionsEnterPrise = [
+    { value: "", label: "Select option" },
+    { value: "Micro", label: "Micro" },
+    { value: "Small", label: "Small" },
+    { value: "Medium", label: "Medium" },
+    { value: "Not_applicable", label: "Not Applicable" },
+  ];
+
+  const optionsMajorActivity = [
+    { value: "", label: "Select option" },
+    { value: "services", label: "Services" },
+    { value: "trader", label: "Trader" },
+    { value: "manufacture", label: "Manufacture" },
+    { value: "others", label: "Others" },
+  ];
+
+  const optionsClassificationYear = [
+    { value: "", label: "Select Option" },
+    { value: "2021-22", label: "2021-22" },
+    { value: "2022-23", label: "2022-23" },
+    { value: "2023-24", label: "2023-24" },
+    { value: "2024-25", label: "2024-25" },
+  ];
 
   return (
     <>
@@ -943,7 +1266,8 @@ const SectionReKYCDetails = () => {
                     <span className="me-3">
                       <span className="text-dark">:</span>
                     </span>
-                    {supplierData?.organization_details?.certifying_company_gstin || ""}
+                    {supplierData?.organization_details
+                      ?.certifying_company_gstin || ""}
                   </label>
                 </div>
               </div>
@@ -1237,6 +1561,69 @@ const SectionReKYCDetails = () => {
               </div>
             </div>
           </div>
+
+          <div className="card mx-4 pb-4 mt-4">
+            <div className="card-header3">
+              <h3 className="card-title">Contact Imformation</h3>
+            </div>
+            <div className="card-body mt-0">
+              <div className="row ">
+                {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 "> */}
+                <div className="col-md-4 mt-2">
+                  <div className="form-group">
+                    <label
+                    // data-bs-toggle="tooltip"
+                    // data-bs-placement="top"
+                    // title={tooltipMessages.branchName}
+                    >
+                      Contact Number
+                      <span> *</span>
+                      {/* <TooltipIcon message="Enter the name of the bank branch where your organization's account is held. " /> */}
+                    </label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      placeholder="Enter Contact Number"
+                      value={contactNumber}
+                      onChange={(e) => setContactNumber(e.target.value)}
+                    />
+                    {/* {errors.branch_name && !bankDetail.branch_name && (
+                          <div className="ValidationColor">
+                            {errors.branch_name}
+                          </div>
+                        )} */}
+                    {errors.contactNumber && (
+                      <div className="ValidationColor">
+                        {errors.contactNumber}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="col-md-4 mt-2 ms-2">
+                  <div className="form-group">
+                    <label>Email Address</label>
+                    <span style={{ color: "#DE7008" }}> *</span>
+                    <input
+                      className="form-control"
+                      type="text"
+                      placeholder="Email Address"
+                      value={emailAddress}
+                      onChange={(e) => setEmailAddress(e.target.value)}
+                    />
+                    {errors.emailAddress && (
+                      <div className="ValidationColor">
+                        {errors.emailAddress}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/*               
+              </div> */}
+            </div>
+          </div>
+
           {(isRekycTypeEmpty || isGstinRekyc) && (
             <div className="card mx-3 pb-4 mt-4">
               <div className="card-header3">
@@ -1251,9 +1638,10 @@ const SectionReKYCDetails = () => {
                       <label
                         data-bs-toggle="tooltip"
                         data-bs-placement="top"
-                        title={tooltipMessages.GSTINApplicable}
+                        // title={tooltipMessages.GSTINApplicable}
                       >
                         GSTIN Applicable<span></span>
+                        <TooltipIcon message="Indicate whether your organization is registered under the Goods and Services Tax (GST) Act." />
                       </label>
                       <SingleSelector
                         options={[
@@ -1283,11 +1671,9 @@ const SectionReKYCDetails = () => {
                     <>
                       {/* GSTIN Classification */}
                       <div className="col-md-4 mt-2">
-                        <div className="form-group">
+                        {/* <div className="form-group">
                           <label
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            title={tooltipMessages.MSMEUdyamNumber}
+
                           >
                             GSTIN Classification<span></span>
                           </label>
@@ -1312,6 +1698,37 @@ const SectionReKYCDetails = () => {
                               </option>
                             ))}
                           </select>
+                        </div> */}
+                        <div className="form-group">
+                          <label>
+                            GSTIN Classification<span></span>
+                          </label>
+                          <div style={{ position: "relative" }}>
+                            <select
+                              className="form-control"
+                              style={{ width: "100%", appearance: "menulist" }}
+                              value={gstClassification?.value || ""}
+                              onChange={(e) => {
+                                const selectedValue = parseInt(
+                                  e.target.value,
+                                  10
+                                );
+                                const selectedOption = gstClassifications.find(
+                                  (item) => item.value === selectedValue
+                                );
+                                setGstClassification(selectedOption || null);
+                              }}
+                            >
+                              <option value="">
+                                Select GST Classification
+                              </option>
+                              {gstClassifications.map((item) => (
+                                <option key={item.value} value={item.value}>
+                                  {item.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                         </div>
                       </div>
 
@@ -1319,18 +1736,20 @@ const SectionReKYCDetails = () => {
                       <div className="col-md-4 mt-2">
                         <div className="form-group">
                           <label
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            title={tooltipMessages.MSMEEnterpriseType}
+                          // data-bs-toggle="tooltip"
+                          // data-bs-placement="top"
+                          // title={tooltipMessages.MSMEEnterpriseType}
                           >
                             GSTIN No.<span>*</span>
+                            <TooltipIcon message="Enter a valid 15-character GSTIN (numbers and uppercase letters only, e.g., 29ABCDE1234F1Z5)" />
                           </label>
                           <input
                             className="form-control"
                             type="text"
                             name="gstin_no"
                             value={gstinNumber}
-                            onChange={(e) => setGstinNumber(e.target.value)}
+                            // onChange={(e) => setGstinNumber(e.target.value)}
+                            onChange={handleGstinChange}
                           />
                           {errors.gstinNumber && (
                             <div className="ValidationColor">
@@ -1344,11 +1763,12 @@ const SectionReKYCDetails = () => {
                       <div className="col-md-4 mt-2">
                         <div className="form-group">
                           <label
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            title={tooltipMessages.GSTINAttachment}
+                          // data-bs-toggle="tooltip"
+                          // data-bs-placement="top"
+                          // title={tooltipMessages.GSTINAttachment}
                           >
                             GSTIN Attachment<span>*</span>
+                            <TooltipIcon message="Upload a digital copy of the official GSTIN certificate or document showing your GST registration number. Ensure the document is legible and valid." />
                           </label>
 
                           {/* Display existing attachments dynamically */}
@@ -1394,6 +1814,7 @@ const SectionReKYCDetails = () => {
                             className="form-control mt-2"
                             // multiple
                             type="file"
+                            accept=".pdf"
                             name="pms_supplier[gstin_attachments][]"
                             onChange={handleFileChangegst}
                           />
@@ -1424,11 +1845,12 @@ const SectionReKYCDetails = () => {
                     <div className="col-md-4">
                       <div className="form-group">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.bankName}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.bankName}
                         >
                           Bank Name <span>*</span>
+                          <TooltipIcon message="Enter the name of the bank that holds your organization's business account.This information is required for payment and verification purposes." />
                         </label>
                         <input
                           className="form-control"
@@ -1438,27 +1860,35 @@ const SectionReKYCDetails = () => {
                           onChange={(e) =>
                             handleInputChange(e, bankDetail.id, "bank_name")
                           }
+                          disabled={!bankDetail.isNew}
                         />
-                        {bankDetail.isNew && errors.bank_name && (
-                          <span className="ValidationColor">
+                        {/* {errors.bank_name && !bankDetail.bank_name && (
+                          <div className="ValidationColor">
                             {errors.bank_name}
-                          </span>
-                        )}
+                          </div>
+                        )} */}
+                        {bankDetail.isNew &&
+                          errors.bank_name &&
+                          !bankDetail.bank_name && (
+                            <div className="ValidationColor">
+                              {errors.bank_name}
+                            </div>
+                          )}
 
                         {/* {errors.bank_name && <div className="invalid-feedback">{errors.bank_name}</div>} */}
                         {/* {console.log(errors.bank_name)} */}
                       </div>
                     </div>
-
                     {/* Address */}
                     <div className="col-md-4">
                       <div className="form-group">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.address}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.address}
                         >
                           Address <span>*</span>
+                          <TooltipIcon message="Please provide the complete address of your bank branch,including the street address,city and postal code." />
                         </label>
                         <input
                           className="form-control"
@@ -1468,25 +1898,33 @@ const SectionReKYCDetails = () => {
                           onChange={(e) =>
                             handleInputChange(e, bankDetail.id, "address")
                           }
+                          disabled={!bankDetail.isNew}
                         />
-                        {bankDetail.isNew && errors.address && (
+                        {bankDetail.isNew &&
+                          errors.address &&
+                          !bankDetail.address && (
+                            <div className="ValidationColor">
+                              {errors.address}
+                            </div>
+                          )}
+                        {/* {errors.address && !bankDetail.address && (
                           <div className="ValidationColor">
                             {errors.address}
                           </div>
-                        )}
+                        )} */}
                       </div>
                     </div>
-
                     {/* Country */}
                     <div className="col-md-4">
                       <div className="form-group">
                         {/* Label with Tooltip */}
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.country}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.country}
                         >
                           Country <span>*</span>
+                          <TooltipIcon message="Please choose your country from the list" />
                         </label>
 
                         {/* Country Dropdown */}
@@ -1517,32 +1955,41 @@ const SectionReKYCDetails = () => {
                           options={countries}
                           value={
                             countries.find(
-                              (c) => c.value === bankDetail.country
+                              (c) => c.value === bankDetail.country_id
                             ) || null
                           }
                           onChange={(selectedOption) =>
                             handleCountryChange(selectedOption, bankDetail.id)
                           }
+                          // disabled={!bankDetail.isNew}
                           placeholder="Select Country"
+                          isDisabled={!bankDetail.isNew}
                         />
 
                         {/* Validation Error Message */}
-                        {bankDetail.isNew && errors.country && (
+                        {bankDetail.isNew &&
+                          errors.country_id &&
+                          !bankDetail.country_id && (
+                            <div className="ValidationColor">
+                              {errors.country_id}
+                            </div>
+                          )}
+                        {/* {errors.country_id && !bankDetail.country_id && (
                           <div className="ValidationColor">
-                            {errors.country}
+                            {errors.country_id}
                           </div>
-                        )}
+                        )} */}
                       </div>
                     </div>
-
                     <div className="col-md-4">
-                      <div className="form-group">
+                      <div className="form-group mt-2">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.state}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.state}
                         >
                           State <span>*</span>
+                          <TooltipIcon message="Please choose your State from the list" />
                         </label>
 
                         {/* <select
@@ -1561,84 +2008,122 @@ const SectionReKYCDetails = () => {
                         <SingleSelector
                           options={states}
                           value={
-                            states.find((s) => s.value === bankDetail.state) ||
-                            null
+                            states.find(
+                              (s) => s.value === bankDetail.state_id
+                            ) || null
                           }
                           onChange={(selectedOption) =>
                             handleStateChange(selectedOption, bankDetail.id)
                           }
                           placeholder="Select State"
-                          isDisabled={!bankDetail.country} // Disable if no country selected
+                          // isDisabled={!bankDetail.country_id},
+                          isDisabled={!bankDetail.isNew}
                         />
-                        {bankDetail.isNew && errors.state && (
-                          <div className="ValidationColor">{errors.state}</div>
-                        )}
+                        {/* {errors.state_id && !bankDetail.state_id && (
+                          <div className="ValidationColor">
+                            {errors.state_id}
+                          </div>
+                        )} */}
+                        {bankDetail.isNew &&
+                          errors.state_id &&
+                          !bankDetail.state_id && (
+                            <div className="ValidationColor">
+                              {errors.state_id}
+                            </div>
+                          )}
                       </div>
                     </div>
-
                     {/* City */}
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.city}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.city_name}
                         >
                           City <span>*</span>
+                          <TooltipIcon message="Enter the city where your bank branch is located" />
                         </label>
                         <input
                           className="form-control"
                           type="text"
                           placeholder="Enter City Name"
-                          value={bankDetail.city}
+                          value={bankDetail.city_name}
                           onChange={(e) =>
-                            handleInputChange(e, bankDetail.id, "city")
+                            handleInputChange(e, bankDetail.id, "city_name")
                           }
+                          disabled={!bankDetail.isNew}
                         />
-                        {bankDetail.isNew && errors.city && (
-                          <div className="ValidationColor">{errors.city}</div>
-                        )}
+                        {bankDetail.isNew &&
+                          errors.city_name &&
+                          !bankDetail.city_name && (
+                            <div className="ValidationColor">
+                              {errors.city_name}
+                            </div>
+                          )}
                       </div>
                     </div>
-
                     {/* Pin Code */}
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.pincode}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.pincode}
                         >
                           Pin Code <span>*</span>
+                          <TooltipIcon message="Enter the postal code (Pin Code) for the bank branch location" />
                         </label>
                         <input
                           className="form-control"
                           type="number"
                           placeholder="Enter Pin Code"
-                          value={bankDetail.pin_code}
+                          value={bankDetail.pincode}
                           onChange={(e) =>
-                            handleInputChange(e, bankDetail.id, "pin_code")
+                            handleInputChange(e, bankDetail.id, "pincode")
                           }
+                          disabled={!bankDetail.isNew}
                         />
-                        {bankDetail.isNew && errors.pin_code && (
+                        {/* {errors.pin_code && !bankDetail.pin_code && (
                           <div className="ValidationColor">
                             {errors.pin_code}
                           </div>
+                        )} */}
+                        {/* {bankDetail.isNew &&
+                          errors.pincode &&
+                          !bankDetail.pincode && (
+                            <div className="ValidationColor">
+                              {errors.pincode}
+                            </div>
+                          )} */}
+                        {bankDetail.isNew && (
+                          <>
+                            {inputErrors[bankDetail.id]?.pincode && (
+                              <div className="ValidationColor">
+                                {inputErrors[bankDetail.id].pincode}
+                              </div>
+                            )}
+                            {errors.pincode && !bankDetail.pincode && (
+                              <div className="ValidationColor">
+                                {errors.pincode}
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
-
                     {/* Account Type */}
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.accountType}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.accountType}
                         >
                           Account Type <span>*</span>
+                          <TooltipIcon message="Select the type of bank account your organization holds,such as Savings,Current,or any other relevant type" />
                         </label>
-                        <input
+                        {/* <input
                           className="form-control"
                           type="text"
                           placeholder="Enter Account Type"
@@ -1646,24 +2131,46 @@ const SectionReKYCDetails = () => {
                           onChange={(e) =>
                             handleInputChange(e, bankDetail.id, "account_type")
                           }
+                          disabled={!bankDetail.isNew}
+                        /> */}
+
+                        <SingleSelector
+                          options={accountTypeOptions}
+                          value={
+                            accountTypeOptions.find(
+                              (option) =>
+                                option.value === bankDetail.account_type
+                            ) || null
+                          }
+                          onChange={(selected) =>
+                            handleInputChange(
+                              { target: { value: selected?.value || "" } },
+                              bankDetail.id,
+                              "account_type"
+                            )
+                          }
+                          placeholder="Select Account Type"
+                          isDisabled={!bankDetail.isNew}
                         />
-                        {bankDetail.isNew && errors.account_type && (
-                          <div className="ValidationColor">
-                            {errors.account_type}
-                          </div>
-                        )}
+                        {bankDetail.isNew &&
+                          errors.account_type &&
+                          !bankDetail.account_type && (
+                            <div className="ValidationColor">
+                              {errors.account_type}
+                            </div>
+                          )}
                       </div>
                     </div>
-
                     {/* Account Number */}
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.accountNumber}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.accountNumber}
                         >
                           Account Number <span>*</span>
+                          <TooltipIcon message="Please provide your organization's bank account number.Make sure it is correct and matches the details at your bank" />
                         </label>
                         <input
                           className="form-control"
@@ -1677,25 +2184,28 @@ const SectionReKYCDetails = () => {
                               "account_number"
                             )
                           }
+                          disabled={!bankDetail.isNew}
                         />
 
-                        {bankDetail.isNew && errors.account_number && (
-                          <div className="ValidationColor">
-                            {errors.account_number}
-                          </div>
-                        )}
+                        {bankDetail.isNew &&
+                          errors.account_number &&
+                          !bankDetail.account_number && (
+                            <div className="ValidationColor">
+                              {errors.account_number}
+                            </div>
+                          )}
                       </div>
                     </div>
-
                     {/* Confirm Account Number */}
-                    <div className="col-md-4 mt-2">
+                    {/* <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.confirmAccountNumber}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.confirmAccountNumber}
                         >
                           Confirm Account Number <span>*</span>
+                          <TooltipIcon message="Re-enter the  bank account number to confirm accuracy.Ensure it matches the original account number entered above." />
                         </label>
                         <input
                           className="form-control"
@@ -1710,7 +2220,7 @@ const SectionReKYCDetails = () => {
                             )
                           }
                         />
-                        {bankDetail.isNew && errors.confirm_account_number && (
+                        {/* {bankDetail.isNew && errors.confirm_account_number && (
                           <div className="ValidationColor">
                             {errors.confirm_account_number}
                           </div>
@@ -1719,19 +2229,124 @@ const SectionReKYCDetails = () => {
                           <div className="ValidationColor">
                             {errors.account_match}
                           </div>
+                        )} */}
+                    {/* {errors.confirm_account_number &&
+                          !bankDetail.confirm_account_number && (
+                            <div className="ValidationColor">
+                              {errors.confirm_account_number}
+                            </div>
+                          )}
+                        {errors.account_match &&
+                          bankDetail.account_number !==
+                            bankDetail.confirm_account_number && (
+                            <div className="ValidationColor">
+                              {errors.account_match}
+                            </div>
+                          )}
+                      </div>
+                    </div> */}
+                    {/* <div className="col-md-4 mt-2">
+                      <div className="form-group">
+                        <label>
+                          Confirm Account Number <span>*</span>
+                          <TooltipIcon message="Re-enter the bank account number to confirm accuracy. Ensure it matches the original account number entered above." />
+                        </label>
+                        <input
+                          className="form-control"
+                          type="text"
+                          placeholder="Enter Confirm Account Number"
+                          value={bankDetail.confirm_account_number}
+                          onChange={(e) => {
+                            handleInputChange(
+                              e,
+                              bankDetail.id,
+                              "confirm_account_number"
+                            );
+                            // Trigger validation when the user starts typing
+                            if (e.target.value !== bankDetail.account_number) {
+                              setErrors((prevErrors) => ({
+                                ...prevErrors,
+                                confirm_account_number:
+                                  "Confirm Account Number must match Account Number.",
+                              }));
+                            } else {
+                              setErrors((prevErrors) => {
+                                const newErrors = { ...prevErrors };
+                                delete newErrors.confirm_account_number;
+                                return newErrors;
+                              });
+                            }
+                          }}
+                          disabled={!bankDetail.isNew}
+                        />
+                        {bankDetail.isNew && errors.confirm_account_number && (
+                          <div className="ValidationColor">
+                            {errors.confirm_account_number}
+                          </div>
+                        )}
+                      </div>
+                    </div> */}
+                    {/* // Add this to your component's return JSX where the confirm
+                    account number input is */}
+                    <div className="col-md-4 mt-2">
+                      <div className="form-group">
+                        <label>
+                          Confirm Account Number <span>*</span>
+                          <TooltipIcon message="Re-enter the bank account number to confirm accuracy. Ensure it matches the original account number entered above." />
+                        </label>
+                        <input
+                          className="form-control"
+                          type="text"
+                          placeholder="Enter Confirm Account Number"
+                          value={bankDetail.confirm_account_number}
+                          onChange={(e) => {
+                            const newValue = e.target.value;
+                            handleInputChange(
+                              e,
+                              bankDetail.id,
+                              "confirm_account_number"
+                            );
+
+                            // Validate on change
+                            if (newValue !== bankDetail.account_number) {
+                              setErrors((prev) => ({
+                                ...prev,
+                                confirm_account_number:
+                                  "Account numbers must match",
+                              }));
+                            } else {
+                              setErrors((prev) => {
+                                const newErrors = { ...prev };
+                                delete newErrors.confirm_account_number;
+                                return newErrors;
+                              });
+                            }
+                          }}
+                          onPaste={(e) => {
+                            e.preventDefault();
+                            alert(
+                              "Pasting is not allowed for security reasons. Please type the account number."
+                            );
+                          }}
+                          disabled={!bankDetail.isNew}
+                        />
+                        {bankDetail.isNew && errors.confirm_account_number && (
+                          <div className="ValidationColor">
+                            {errors.confirm_account_number}
+                          </div>
                         )}
                       </div>
                     </div>
-
                     {/* Branch Name */}
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.branchName}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.branchName}
                         >
                           Branch Name <span>*</span>
+                          <TooltipIcon message="Enter the name of the bank branch where your organization's account is held. " />
                         </label>
                         <input
                           className="form-control"
@@ -1741,24 +2356,27 @@ const SectionReKYCDetails = () => {
                           onChange={(e) =>
                             handleInputChange(e, bankDetail.id, "branch_name")
                           }
+                          disabled={!bankDetail.isNew}
                         />
-                        {bankDetail.isNew && errors.branch_name && (
-                          <div className="ValidationColor">
-                            {errors.branch_name}
-                          </div>
-                        )}
+                        {bankDetail.isNew &&
+                          errors.branch_name &&
+                          !bankDetail.branch_name && (
+                            <div className="ValidationColor">
+                              {errors.branch_name}
+                            </div>
+                          )}
                       </div>
                     </div>
-
                     {/* MICR No. */}
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.MICR}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.MICR}
                         >
                           MICR No. <span>*</span>
+                          <TooltipIcon message="MICR: Enter the MICR (Magnetic Ink Character Recognition) number of your  bank branch. This number is typically found on your cheque leaf" />
                         </label>
                         <input
                           className="form-control"
@@ -1768,51 +2386,70 @@ const SectionReKYCDetails = () => {
                           onChange={(e) =>
                             handleInputChange(e, bankDetail.id, "micr_number")
                           }
+                          disabled={!bankDetail.isNew}
                         />
-                        {bankDetail.isNew && errors.micr_number && (
+                        {errors.micr_number && !bankDetail.micr_number && (
                           <div className="ValidationColor">
                             {errors.micr_number}
                           </div>
                         )}
                       </div>
                     </div>
-
                     {/* IFSC Code */}
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.IFSCCode}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.IFSCCode}
                         >
                           IFSC Code <span>*</span>
+                          <TooltipIcon message="Enter the IFSC (Indian Financial System Code) of your bank branch. This is required for electronic fund transfers like NEFT and RTGS" />
                         </label>
                         <input
                           className="form-control"
                           type="text"
                           placeholder="Enter IFSC Code"
                           value={bankDetail.ifsc_code}
+                          maxLength={11}
                           onChange={(e) =>
                             handleInputChange(e, bankDetail.id, "ifsc_code")
                           }
+                          disabled={!bankDetail.isNew}
                         />
-                        {bankDetail.isNew && errors.ifsc_code && (
-                          <div className="ValidationColor">
-                            {errors.ifsc_code}
-                          </div>
+                        {/* {bankDetail.isNew &&
+                          errors.ifsc_code &&
+                          !bankDetail.ifsc_code && (
+                            <div className="ValidationColor">
+                              {errors.ifsc_code}
+                            </div>
+                          )} */}
+                        {bankDetail.isNew && (
+                          <>
+                            {inputErrors[bankDetail.id]?.ifsc && (
+                              <div className="ValidationColor">
+                                {inputErrors[bankDetail.id].ifsc}
+                              </div>
+                            )}
+                            {errors.ifsc_code && !bankDetail.ifsc_code && (
+                              <div className="ValidationColor">
+                                {errors.ifsc_code}
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
-
                     {/* Beneficiary Name */}
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.beneficiaryName}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.beneficiaryName}
                         >
                           Beneficiary Name <span>*</span>
+                          <TooltipIcon message="Enter the full legel name of the beneficiary." />
                         </label>
                         <input
                           className="form-control"
@@ -1827,24 +2464,27 @@ const SectionReKYCDetails = () => {
                               "benficary_name"
                             )
                           }
+                          disabled={!bankDetail.isNew}
                         />
-                        {bankDetail.isNew && errors.benficary_name && (
-                          <div className="ValidationColor">
-                            {errors.benficary_name}
-                          </div>
-                        )}
+                        {bankDetail.isNew &&
+                          errors.benficary_name &&
+                          !bankDetail.benficary_name && (
+                            <div className="ValidationColor">
+                              {errors.benficary_name}
+                            </div>
+                          )}
                       </div>
                     </div>
-
                     {/* Cancelled Cheque / Bank Copy */}
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.cancelledCheque}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.cancelledCheque}
                         >
                           Cancelled Cheque / Bank Copy <span>*</span>
+                          <TooltipIcon message="Provide a cancelled cheque or a bank statement copy that clearly displays your bank account details.This helps verify your account information. The document must be uploaded in PDF format" />
                         </label>
 
                         {/* Conditionally Render Existing File Download Link */}
@@ -1856,6 +2496,8 @@ const SectionReKYCDetails = () => {
                               className="text-primary d-flex align-items-center"
                             >
                               <span className="me-2">Existing File:</span>
+                              {/* <TooltipIcon message="Indicate whether your organization is registered under the Goods and Services Tax (GST) Act."
+                               /> */}
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width={24}
@@ -1864,8 +2506,14 @@ const SectionReKYCDetails = () => {
                                 className="bi bi-download"
                                 viewBox="0 0 16 16"
                               >
-                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
-                                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z" />
+                                <path
+                                  d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
+                                  // style={{ fill: "#de7008!important" }}
+                                />
+                                <path
+                                  d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"
+                                  // style={{ fill: "#de7008!important" }}
+                                />
                               </svg>
                             </a>
                           </span>
@@ -1883,18 +2531,32 @@ const SectionReKYCDetails = () => {
                           }
                           ref={fileInputRef}
                           multiple
-                          accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
+                          accept=".pdf"
+                          disabled={!bankDetail.isNew}
                         />
 
                         {/* Validation Message */}
-                        {bankDetail.isNew && errors.cancelled_cheque && (
+                        {/* {bankDetail.isNew && errors.cancelled_cheque && (
                           <div className="ValidationColor">
                             {errors.cancelled_cheque}
                           </div>
-                        )}
+                        )} */}
+                        {/* {bankDetail.isNew &&
+                          errors.cancelled_cheque &&
+                          !bankDetail.attachment && (
+                            <div className="ValidationColor">
+                              {errors.cancelled_cheque}
+                            </div>
+                          )} */}
+                        {bankDetail.isNew &&
+                          errors.cancelled_cheque &&
+                          !bankDetail.attachment && (
+                            <div className="ValidationColor">
+                              {errors.cancelled_cheque}
+                            </div>
+                          )}
                       </div>
                     </div>
-
                     {/* Remark */}
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
@@ -1910,6 +2572,7 @@ const SectionReKYCDetails = () => {
                           onChange={(e) =>
                             handleInputChange(e, bankDetail.id, "remark")
                           }
+                          disabled={!bankDetail.isNew}
                         />
                       </div>
                     </div>
@@ -1942,13 +2605,14 @@ const SectionReKYCDetails = () => {
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title={tooltipMessages.MSMEUdyamNumberApplicable}
+                      // data-bs-toggle="tooltip"
+                      // data-bs-placement="top"
+                      // title={tooltipMessages.MSMEUdyamNumberApplicable}
                       >
                         MSME/Udyam Number Applicable <span>*</span>
+                        <TooltipIcon message="Select whether your organization is registered under the MSME (Micro, Small, and Medium Enterprises) or Udyam scheme. Choose 'Yes' if applicable, otherwise select 'No.' By selecting 'No, you confirm that your organization does not hold a valid MSME/Udyam registration number. A declaration is required, and this response will be timestamped to record the submission date and time." />
                       </label>
-                      <select
+                      {/* <select
                         value={msmeUdyamApplicable}
                         onChange={handleMsmeUdyamChange}
                         className="form-control"
@@ -1956,7 +2620,20 @@ const SectionReKYCDetails = () => {
                         <option value="">select</option>
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
-                      </select>
+                      </select> */}
+                      <SingleSelector
+                        value={options.find(
+                          (option) => option.value === msmeUdyamApplicable
+                        )}
+                        onChange={(selected) =>
+                          handleMsmeUdyamChange({
+                            target: { value: selected.value },
+                          })
+                        }
+                        options={options}
+                        className="form-control"
+                        placeholder="Select..."
+                      />
                       {errors.msmeUdyamApplicable && (
                         <div className="ValidationColor">
                           {errors.msmeUdyamApplicable}
@@ -1966,20 +2643,71 @@ const SectionReKYCDetails = () => {
                     </div>
                   </div>
 
+                  {msmeUdyamApplicable === "Yes" && (
+                    <div className="col-md-4 mt-2">
+                      <div className="form-group">
+                        <label
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.MSMEEnterpriseType}
+                        >
+                          Major Activity <span>*</span>
+                        </label>
+                        {/* <select
+                          // className="form-control"
+                          // value={supplierData?.msme_details?.enterprise}
+
+                          onChange={(e) => setMajorActivity(e.target.value)}
+                          className="form-control"
+                          value={majorActivity}
+                        >
+                          <option value="">select option</option>
+                          <option value="services">Services</option>
+                          <option value="trader">Trader</option>
+                          <option value="manufacture">manufacture</option>
+                          <option value="others">Others</option>
+                        </select> */}
+                        {/* {errors.msmeEnterpriseType && (
+                          <div className="ValidationColor">
+                            {errors.msmeEnterpriseType}
+                          </div>
+                        )}{" "}
+                        {/* Show error */}
+
+                        <SingleSelector
+                          value={optionsMajorActivity.find(
+                            (option) => option.value === majorActivity
+                          )}
+                          onChange={(selected) =>
+                            setMajorActivity(selected.value)
+                          }
+                          options={optionsMajorActivity}
+                          className="form-control"
+                          placeholder="Select Major Activity"
+                        />
+                        {console.log("majorActivity", majorActivity)}
+
+                        {errors.majorActivity && (
+                          <div className="ValidationColor">
+                            {errors.majorActivity}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* MSME/Udyam Valid Till */}
                   {/* MSME/Udyam Number */}
                   {msmeUdyamApplicable === "Yes" && (
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label
-                          //  data-bs-toggle="tooltip"
-                          //  data-bs-placement="top"
-                          //  title={tooltipMessages.MSMEUdyamNumber}
-
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.MSMEUdyamNumber}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.MSMEUdyamNumber}
                         >
                           MSME/Udyam Number <span>*</span>
+                          <TooltipIcon message="Enter your organization's valid MSME or Udyam registration number. This number is issued by the Ministry of Micro, Small, and Medium Enterprises (MSME) under the Udyam registration scheme" />
                         </label>
                         <input
                           className="form-control"
@@ -1998,16 +2726,66 @@ const SectionReKYCDetails = () => {
                     </div>
                   )}
 
+                  {msmeUdyamApplicable === "Yes" && (
+                    <div className="col-md-4 mt-2">
+                      <div className="form-group">
+                        <label
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.MSMEEnterpriseType}
+                        >
+                          Classifiction Year <span>*</span>
+                        </label>
+                        {/* <select
+                          // onChange={(e) =>
+                          //   setClassificationYear(e.target.value)
+                          // }
+                          onChange={handleClassificationYearChange}
+                          className="form-control"
+                          value={classificationYear}
+                        >
+                          <option value="">Select Option</option>
+                          <option value="2021-22">2021-22</option>
+                          <option value="2022-23">2022-23</option>
+                          <option value="2023-24">2023-24</option>
+                          <option value="2024-25">2024-25</option>
+                        </select> */}
+                        <SingleSelector
+                          value={optionsClassificationYear.find(
+                            (option) => option.value === classificationYear
+                          )}
+                          onChange={handleClassificationYearChange}
+                          options={optionsClassificationYear}
+                          className="form-control"
+                          placeholder="Select Classification Year"
+                        />
+
+                        {/* {errors.msmeEnterpriseType && (
+                          <div className="ValidationColor">
+                            {errors.msmeEnterpriseType}
+                          </div>
+                        )}{" "} */}
+                        {/* Show error */}
+                        {errors.classificationYear && (
+                          <div className="ValidationColor">
+                            {errors.classificationYear}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* MSME/Udyam Valid From */}
                   {msmeUdyamApplicable === "Yes" && (
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.MSMEUdyamValidFrom}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.MSMEUdyamValidFrom}
                         >
                           MSME/Udyam Valid From <span>*</span>
+                          <TooltipIcon message="Enter the date when your MSME/Udyam registration became valid. This is the start date mentioned on your MSME/Udyam registration certificate for the financial year." />
                         </label>
                         <input
                           className="form-control"
@@ -2015,6 +2793,7 @@ const SectionReKYCDetails = () => {
                           name="name"
                           placeholder=""
                           value={validFrom}
+                          disabled={!!classificationYear} // Disable when classification year is selected
                           onChange={handleValidFromChange} // Add onChange handler here
                           // value={supplierData?.msme_details?.valid_from}
                         />
@@ -2033,11 +2812,12 @@ const SectionReKYCDetails = () => {
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.MSMEUdyamValidTill}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.MSMEUdyamValidTill}
                         >
                           MSME/Udyam Valid Till <span>*</span>
+                          <TooltipIcon message="Enter the date when your MSME/Udyam registration became valid. This is the end date mentioned on your MSME/Udyam registration certificate for the financial year." />
                         </label>
                         <input
                           className="form-control"
@@ -2045,6 +2825,7 @@ const SectionReKYCDetails = () => {
                           name="name"
                           placeholder=""
                           value={validTill}
+                          disabled={!!classificationYear} // Disable when classification year is selected
                           onChange={handleValidTillChange}
                           // value={supplierData?.msme_details?.valid_till}
                         />
@@ -2063,13 +2844,14 @@ const SectionReKYCDetails = () => {
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.MSMEEnterpriseType}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.MSMEEnterpriseType}
                         >
                           MSME Enterprise Type <span>*</span>
+                          <TooltipIcon message="Select the type of your organization under the MSME (Micro, Small, and Medium Enterprises) scheme. Choose from 'Micro,'Small,' or 'Medium' based on your organization's annual turnover and investment in plant and machinery." />
                         </label>
-                        <select
+                        {/* <select
                           // className="form-control"
                           // value={supplierData?.msme_details?.enterprise}
 
@@ -2082,7 +2864,20 @@ const SectionReKYCDetails = () => {
                           <option value="Small">Small</option>
                           <option value="Medium">Medium</option>
                           <option value="Not_applicable">Not Applicable</option>
-                        </select>
+                        </select> */}
+                        <SingleSelector
+                          value={optionsEnterPrise.find(
+                            (option) => option.value === msmeEnterpriseType
+                          )}
+                          onChange={(selected) =>
+                            handleMsmeEnterpriseChange({
+                              target: { value: selected.value },
+                            })
+                          }
+                          options={optionsEnterPrise}
+                          className="form-control"
+                          placeholder="Select option..."
+                        />
                         {errors.msmeEnterpriseType && (
                           <div className="ValidationColor">
                             {errors.msmeEnterpriseType}
@@ -2092,6 +2887,52 @@ const SectionReKYCDetails = () => {
                       </div>
                     </div>
                   )}
+
+                  {msmeUdyamApplicable === "Yes" && (
+                    <div className="col-md-4 mt-2">
+                      <div className="form-group">
+                        <label
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.MSMEEnterpriseType}
+                        >
+                          Classifiction Date <span>*</span>
+                        </label>
+                        {/* <input
+                          className="form-control"
+                          type="date"
+                          name="name"
+                          placeholder=""
+                          value={validTill}
+                          onChange={handleValidTillChange}
+                          // value={supplierData?.msme_details?.valid_till}
+                        /> */}
+
+                        <input
+                          className="form-control"
+                          type="date"
+                          name="classificationDate"
+                          value={classificationDate}
+                          onChange={(e) =>
+                            setClassificationDate(e.target.value)
+                          }
+                        />
+
+                        {/* {errors.msmeEnterpriseType && (
+                          <div className="ValidationColor">
+                            {errors.msmeEnterpriseType}
+                          </div>
+                        )}{" "} */}
+                        {/* Show error */}
+                        {errors.classificationDate && (
+                          <div className="ValidationColor">
+                            {errors.classificationDate}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/*  */}
                   {msmeUdyamApplicable === "Yes" && (
                     <div className="col-md-4 mt-2">
@@ -2133,11 +2974,12 @@ const SectionReKYCDetails = () => {
                     <div className="col-md-4 mt-2">
                       <div className="form-group">
                         <label
-                          data-bs-toggle="tooltip"
-                          data-bs-placement="top"
-                          title={tooltipMessages.MSMEUdyamAttachment}
+                        // data-bs-toggle="tooltip"
+                        // data-bs-placement="top"
+                        // title={tooltipMessages.MSMEUdyamAttachment}
                         >
                           MSME/Udyam Attachment <span>*</span>
+                          <TooltipIcon message="Attach a clear, scanned copy or digital image of your MSME/Udyam registration certificate to verify your organization's classification under the MSME scheme. The document must be uploaded in PDF format." />
                         </label>
 
                         {supplierData?.msme_details?.msme_attachments?.length >
@@ -2184,7 +3026,7 @@ const SectionReKYCDetails = () => {
                           onChange={(e) => handleFileChange(e.target.files[0])}
                           ref={fileInputRef}
                           multiple
-                          accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
+                          accept=".pdf"
                         />
                         {errors.msmeAttachments && (
                           <div className="ValidationColor">
@@ -2203,16 +3045,18 @@ const SectionReKYCDetails = () => {
                   <div className="col-md-4 mt-2 ms-3">
                     <div className="form-group">
                       <label
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title={tooltipMessages.DownloadSpecimen}
+                      // data-bs-toggle="tooltip"
+                      // data-bs-placement="top"
+                      // title={tooltipMessages.DownloadSpecimen}
                       >
                         Download Specimen <span>*</span>
                       </label>
+                      <TooltipIcon message="If you choose 'No' for e-invoicing, a specimen format will be available for download. This is for businesses not subject to e-invoicing under GST regulations. Please upload a signed declaration stating that your organization is not registered.The document must be uploaded in PDF format" />
                       <a
                         download="Specimen_E-Invoicing_Declaration.docx"
                         className="text-primary d-flex align-items-center"
-                        href={`${baseURL}/assets/Yes%20_%20msme.pdf`}
+                        href={`${baseURL}/assets/NO_%20MSME.pdf`}
+                        target="_self" // Ensure it doesn't open in a new tab
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -2231,8 +3075,9 @@ const SectionReKYCDetails = () => {
                             style={{ fill: "#de7008!important" }}
                           />
                         </svg>
+
                         <span className="mt-2 ms-2">
-                          Specimen For E-Invoicing Declaration.pdf
+                          Specimen For No Msme.pdf
                         </span>
                       </a>
                     </div>
@@ -2243,40 +3088,27 @@ const SectionReKYCDetails = () => {
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title={tooltipMessages.UploadDeclaration}
+                      // data-bs-toggle="tooltip"
+                      // data-bs-placement="top"
+                      // title={tooltipMessages.UploadDeclaration}
                       >
                         Upload Declaration <span>*</span>
                       </label>
 
                       <span className="ms-2">
-                        <a
+                        {/* <a
                           href={
                             supplierData?.msme_details?.msme_attachments[0]
                               ?.file_url
-                          } // PDF file URL
+                          } // PDF file URL */}
+
+                        <a
+                          href={`${baseURL}${supplierData?.msme_details?.msme_attachments[0]?.file_url}`} // Prepend baseURL to the file URL
                           download // Trigger download when clicked
                           className="text-primary d-flex align-items-center"
                         >
                           <span className="me-2">Existing Files:</span>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width={24}
-                            height={24}
-                            fill="#DE7008"
-                            className="bi bi-download"
-                            viewBox="0 0 16 16"
-                          >
-                            <path
-                              d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"
-                              // style={{ fill: "#de7008!important" }}
-                            />
-                            <path
-                              d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"
-                              // style={{ fill: "#de7008!important" }}
-                            />
-                          </svg>
+                          <TooltipIcon message="If you choose E-Invoice applicable 'No', please upload a signed declaration document to verify the details you have submitted. The document must be uploaded in PDF format.Ensure that the document is clear, legible, and properly signed." />
 
                           {supplierData?.msme_details?.msme_attachments
                             ?.length > 0
@@ -2290,6 +3122,7 @@ const SectionReKYCDetails = () => {
                       <input
                         className="form-control"
                         type="file"
+                        accept=".pdf"
                         name=""
                         onChange={handleFileChange}
                       />
@@ -2316,7 +3149,7 @@ const SectionReKYCDetails = () => {
                       <label>
                         E-invoicing Applicable <span>*</span>
                       </label>
-                      <select
+                      {/* <select
                         // value={eInvoicingApplicable}
                         // onChange={handleEInvoicingChange}
                         // className="form-control"
@@ -2328,7 +3161,25 @@ const SectionReKYCDetails = () => {
                       >
                         <option value="Yes">Yes</option>
                         <option value="No">No</option>
-                      </select>
+                      </select> */}
+                      <SingleSelector
+                        options={[
+                          { value: "Yes", label: "Yes" },
+                          { value: "No", label: "No" },
+                        ]}
+                        value={
+                          eInvoicingApplicable
+                            ? {
+                                value: eInvoicingApplicable,
+                                label: eInvoicingApplicable,
+                              }
+                            : null
+                        }
+                        onChange={(selected) =>
+                          setEInvoicingApplicable(selected?.value || "")
+                        }
+                        className="form-control"
+                      />
                     </div>
                   </div>
                 </div>
@@ -2382,15 +3233,15 @@ const SectionReKYCDetails = () => {
                           name=""
                           onChange={handleEinvoicingFileChange}
                         /> */}
-
                         <input
                           className="form-control mt-2"
                           type="file"
                           onChange={(e) => handleFileChange2(e.target.files[0])}
                           ref={fileInputRef}
                           multiple
-                          accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
+                          accept=".pdf"
                         />
+                        Major Activity *
                       </div>
                     </div>
                   </div>
@@ -2407,7 +3258,7 @@ const SectionReKYCDetails = () => {
           <a
             download="Specimen_MSME_Udyam_Declaration.docx"
             className="text-primary d-flex align-items-center"
-            href="https://vendor.panchshil.com/assets/Specimen_MSME_Udyam_Declaration.docx"
+            href="${baseURL}/assets/Specimen_MSME_Udyam_Declaration.docx"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -2456,7 +3307,7 @@ const SectionReKYCDetails = () => {
           <div className="row mt-4 mx-3">
             <div className="col-md-12">
               <h5 className=" ">
-                Declaration <span>*</span>
+                Declaration <span style={{ color: " #DE7008" }}>*</span>
               </h5>
               <p>
                 <span className="me-2 mt-2">
