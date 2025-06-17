@@ -33,6 +33,31 @@ const MaterialReconciliationCreate = () => {
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [selectedInventoryId, setSelectedInventoryId] = useState(null);
 
+  const [selectAll, setSelectAll] = useState(false);
+
+  // Add this function to handle select-all checkbox
+  const handleSelectAll = (checked) => {
+    setSelectAll(checked);
+    if (checked) {
+      // Select all visible inventories
+      const allVisibleIds = morInventories.map((inventory) => inventory);
+      setSelectedInventories((prev) => {
+        // Combine existing selections with new ones, avoiding duplicates
+        const combined = [...prev, ...allVisibleIds];
+        return combined.filter(
+          (item, index, self) =>
+            index === self.findIndex((t) => t.id === item.id)
+        );
+      });
+    } else {
+      // Deselect only visible inventories
+      const visibleIds = morInventories.map((inventory) => inventory.id);
+      setSelectedInventories((prev) =>
+        prev.filter((item) => !visibleIds.includes(item.id))
+      );
+    }
+  };
+
   const openBatchPopup = (inventoryId) => {
     setSelectedInventoryId(inventoryId);
     // Fetch or set batchList here as needed
@@ -62,6 +87,7 @@ const MaterialReconciliationCreate = () => {
   };
 
   const handleReset = () => {
+    setSelectAll(false);
     // Reset all filters and selections
     setSelectedInventory(null);
     setSelectedSubType(null);
@@ -633,6 +659,7 @@ const MaterialReconciliationCreate = () => {
 
   // Function to handle page change
   const handlePageChange = (page) => {
+    setSelectAll(false);
     // Create filters object with selected values
     const filters = {};
 
@@ -782,7 +809,6 @@ const MaterialReconciliationCreate = () => {
                 ? parseFloat(inventory.theft_or_missing_qty)
                 : null,
               damage_qty: inventory.damage_qty
-              
                 ? parseFloat(inventory.damage_qty)
                 : null,
               adjustment_qty: inventory.adjustment_qty
@@ -878,6 +904,10 @@ const MaterialReconciliationCreate = () => {
       prev.filter((inventory) => inventory.id !== inventoryId)
     );
   };
+
+  useEffect(() => {
+    setSelectAll(false);
+  }, [pagination.current_page]);
 
   return (
     <div className="main-content">
@@ -1477,7 +1507,15 @@ const MaterialReconciliationCreate = () => {
               <table className="w-100 ">
                 <thead>
                   <tr>
-                    <th>Select</th>
+                    <th>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={selectAll}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
+                        style={{ cursor: "pointer" }}
+                      />
+                    </th>
                     <th>Material Type</th>
                     <th>Material Sub-Type</th>
                     <th>Material</th>

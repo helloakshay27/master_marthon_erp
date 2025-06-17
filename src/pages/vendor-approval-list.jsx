@@ -171,37 +171,23 @@ const VendorApprovalList = () => {
   useEffect(() => {
     const fetchDropdownData = async () => {
       try {
-        const [
-          ,
-          // companyRes
-          departmentRes,
-          userRes,
-        ] = await Promise.all([
-          axios.get(`${baseURL}/pms/company_setups.json`),
-          axios.get(`${baseURL}/pms/departments.json`),
-        ]);
+        const response = await axios.get(`${baseURL}/pms/departments.json`);
+        console.log("Raw Department Data:", response.data);
 
-        // console.log("Raw Company Data:", companyRes.data);
-        console.log("Raw Department Data:", departmentRes.data);
+        // Handle the response data safely - map directly from array of objects
+        let departmentOptions = [];
+        if (response.data && Array.isArray(response.data)) {
+          departmentOptions = response.data.map((dept) => ({
+            value: dept.id,
+            label: dept.name,
+          }));
+        }
 
-        // Correctly map company and department data
-        // const companyOptions = companyRes.data.map(([id, name]) => ({
-        //   value: id, // ID is the first element in the array
-        //   label: name, // Name is the second element
-        // }));
-
-        const departmentOptions = departmentRes.data.map(([id, name]) => ({
-          value: id,
-          label: name,
-        }));
-
-        // console.log("Processed Companies:", companyOptions);
         console.log("Processed Departments:", departmentOptions);
-
-        // setCompanies(companyOptions);
         setDepartments(departmentOptions);
       } catch (error) {
         console.error("Error fetching dropdown data:", error);
+        setDepartments([]);
       }
     };
 
@@ -437,10 +423,18 @@ const VendorApprovalList = () => {
                   <span>Add</span>
                 </button>
                 <button
-                  className="purple-btn2"
+                  className="purple-btn2 mt-2"
                   fdprocessedid="xn3e6n"
                   data-bs-toggle="modal"
                   data-bs-target="#importModal"
+                  style={{
+                    padding: "6px 12px",
+                    fontSize: "14px",
+                    height: "30px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                  }}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -455,7 +449,7 @@ const VendorApprovalList = () => {
                   <span>Import</span>
                 </button>
                 <a
-                  className="d-flex btn-sm purple-btn1 my-2"
+                  className="d-flex btn-sm purple-btn1 ms-2"
                   href={`${baseURL}/pms/admin/invoice_approvals/export_rekyc.xlsx?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078411`}
                 >
                   Export to Excel
