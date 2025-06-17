@@ -622,7 +622,7 @@ const isDuplicateCombination = (newRow) => {
 
     // console.log("date ranhe:", dateRange)
 
-    // Add this function in your component
+    // Add this function in your component for po avg rate
 const handleApplyDateRange = async () => {
   try {
     // Prepare the payload
@@ -723,27 +723,56 @@ console.log("updated table data:",updatedTableData)
 //     setShowDateModal(false);
 //   }
 // };
-    const payload = {
-        rate_detail:{
-        company: selectedCompany?.value || "",
-        project: selectedProject?.value || "",
-        subProject: selectedSite?.value || "",
-        wing: selectedWing?.value || "",
-        materials: tableData.map(row => ({
-            material_id: row.material,
-            material_sub_type_id: row.materialSubType,
-            generic_info_id: row.genericSpecification || null,
-            colour_id: row.colour || null,
-            brand_id: row.brand || null,
-            uom_id: row.uom || null,
-            effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
-            rate: row.rate,
-            rate_type: row.rateType || null
-        }))
-    }
-        // material: tableData.map(({ rateChecked, avgRateChecked, poRateChecked, ...rest }) => rest) || []
-    }
+    // const payload = {
+    //     rate_detail:{
+    //     company: selectedCompany?.value || "",
+    //     project: selectedProject?.value || "",
+    //     subProject: selectedSite?.value || "",
+    //     wing: selectedWing?.value || "",
+    //     materials: tableData.map(row => ({
+    //         material_id: row.material,
+    //         material_sub_type_id: row.materialSubType,
+    //         generic_info_id: row.genericSpecification || null,
+    //         colour_id: row.colour || null,
+    //         brand_id: row.brand || null,
+    //         uom_id: row.uom || null,
+    //         effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
+    //         rate: row.rate,
+    //         rate_type: row.rateType || null
+    //     }))
+    // }
+    //     // material: tableData.map(({ rateChecked, avgRateChecked, poRateChecked, ...rest }) => rest) || []
+    // }
 
+    const payload = {
+  rate_detail: {
+    company: selectedCompany?.value || "",
+    project: selectedProject?.value || "",
+    subProject: selectedSite?.value || "",
+    wing: selectedWing?.value || "",
+    materials: tableData.map(row => {
+      const material = {
+        material_id: row.material,
+        material_sub_type_id: row.materialSubType,
+        generic_info_id: row.genericSpecification || null,
+        colour_id: row.colour || null,
+        brand_id: row.brand || null,
+        uom_id: row.uom || null,
+        effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
+        rate: row.rate,
+        rate_type: row.rateType || null
+      };
+      if (row.rateType === "average") {
+        material.avg_rate_from = dateRange.from||""; // or your dynamic value
+        material.avg_rate_to = dateRange.to||"";   // or your dynamic value
+      }
+    //   console.log("material add:",material)
+      return material;
+    })
+  }
+};
+
+console.log("payload :", payload);
     // console.log("payload :", payload)
 
     const handleSubmit = () => {
@@ -850,9 +879,9 @@ console.log("updated table data:",updatedTableData)
                             </div>
                         </CollapsibleCard>
 
-{tableData.map((row, idx) => (
+{/* {tableData.map((row, idx) => (
   <pre key={idx}>{JSON.stringify(row, null, 2)}</pre>
-))}
+))} */}
                         <div className="d-flex justify-content-end mx-2">
                             {/* <button className="purple-btn2">Bulk Upload</button> */}
                             <button

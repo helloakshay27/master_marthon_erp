@@ -16,7 +16,7 @@ const RateDetails = () => {
     const [showModal, setShowModal] = useState(false);
 
     const [rateDetails, setRateDetails] = useState(null);
-     const [tableData, setTableData] = useState([]);
+    const [tableData, setTableData] = useState([]);
     const [status, setStatus] = useState('');
     const [remark, setRemark] = useState('');
     const [loading2, setLoading2] = useState(false);  // State for loading indicator
@@ -30,15 +30,44 @@ const RateDetails = () => {
             setRateDetails(response.data);
             setStatus(response.data.selected_status || "");
             if (response.data.materials) {
-          setTableData(
-            response.data.materials.map((mat) => ({
-              ...mat,
-              rateChecked: mat.rate_type === "manual",
-              avgRateChecked: mat.rate_type === "average",
-              poRateChecked: mat.rate_type === "last",
-            }))
-          );
-        }
+                //   setTableData(
+                //     response.data.materials.map((mat) => ({
+                //       ...mat,
+                //       rateChecked: mat.rate_type === "manual",
+                //       avgRateChecked: mat.rate_type === "average",
+                //       poRateChecked: mat.rate_type === "last",
+                //     }))
+                //   );
+
+
+                setTableData(
+                    response.data.materials.map((mat) => {
+                        let rate = "";
+                        let avgRate = "";
+                        let poRate = "";
+
+                        if (mat.rate_type === "manual") {
+                            rate = mat.rate || "";
+                        } else if (mat.rate_type === "average") {
+                            avgRate = mat.rate;
+                            console.log("avg rate:", avgRate)
+                        } else if (mat.rate_type === "last") {
+                            poRate = mat.rate;
+                        }
+
+                        return {
+                            ...mat,
+                            rate,
+                            avgRate,
+                            poRate,
+                            rateChecked: mat.rate_type === "manual",
+                            avgRateChecked: mat.rate_type === "average",
+                            poRateChecked: mat.rate_type === "last",
+                        };
+                    })
+                );
+
+            }
         } catch (error) {
             console.error("Error fetching rate details:", error);
         }
@@ -139,22 +168,24 @@ const RateDetails = () => {
                         <a href="">Setup &gt; Engineering Setup &gt; Rate</a>
                     </a>
                     <h5 class="mt-4">Rate Details</h5>
-                    <div className="d-flex justify-content-end m-2">
+                    {status && status.toLowerCase() === "draft" && (
+                        <div className="d-flex justify-content-end m-2">
 
-                        <Link
-                            to={`/edit-rate/${id}`}
-                            className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+                            <Link
+                                to={`/edit-rate/${id}`}
+                                className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
 
-                            <button class="purple-btn1" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="#8b0203" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z" fill="#8b0203" />
-                                    <path d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#8b0203" />
-                                </svg>
-                            </button>
+                                <button class="purple-btn1" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#8b0203" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z" fill="#8b0203" />
+                                        <path d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#8b0203" />
+                                    </svg>
+                                </button>
 
-                        </Link>
+                            </Link>
 
-                    </div>
+                        </div>
+                    )}
                     <div className="mb-5">
 
                         <div
@@ -203,13 +234,24 @@ const RateDetails = () => {
                                                 </label>
                                             </div>
                                         </div>
-
+                                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                            <div className="col-6">
+                                                <label>Wing</label>
+                                            </div>
+                                            <div className="col-6">
+                                                <label className="text">
+                                                    <span className="me-3">
+                                                        <span className="text-dark">:</span>
+                                                    </span>
+                                                    {rateDetails?.wing_name || "-"}
+                                                </label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                            </div>
-                        </div>
-                        <div className="mt-5 mb-5">
+ <div className="mt-5 mb-4 mx-3">
+     {/* <h5 className="mb-3">Materials</h5> */}
                             <div className="tbl-container  mt-1">
                                 <table className="w-100">
                                     <thead>
@@ -289,59 +331,62 @@ const RateDetails = () => {
                                         )} */}
 
 
- {tableData.length > 0 ? (
-            tableData.map((row, index) => (
-              <tr key={index}>
-                <td className="text-start">{index + 1}</td>
-                <td className="text-start">{row.material_type}</td>
-                <td className="text-start">{row.material_name}</td>
-                <td className="text-start">{row.material_sub_type}</td>
-                <td className="text-start">{row.generic_info}</td>
-                <td className="text-start">{row.color}</td>
-                <td className="text-start">{row.brand}</td>
-                <td className="text-start">{row.effective_date}</td>
-                <td className="text-start">
-                  {row.rate}
-                  <input
-                    type="checkbox"
-                    checked={row.rateChecked || false}
-                    disabled
-                    style={{ marginLeft: 8 }}
-                  />
-                </td>
-                <td className="text-start">
-                  {row.avg_po_rate || "0"}
-                  <input
-                    type="checkbox"
-                    checked={row.avgRateChecked || false}
-                    disabled
-                    style={{ marginLeft: 8 }}
-                  />
-                </td>
-                <td className="text-start">
-                  {row.last_po_rate || "0"}
-                  <input
-                    type="checkbox"
-                    checked={row.poRateChecked || false}
-                    disabled
-                    style={{ marginLeft: 8 }}
-                  />
-                </td>
-                <td className="text-start">{row.uom}</td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="12" className="text-center">
-                No data found.
-              </td>
-            </tr>
-          )}
+                                        {tableData.length > 0 ? (
+                                            tableData.map((row, index) => (
+                                                <tr key={index}>
+                                                    <td className="text-start">{index + 1}</td>
+                                                    <td className="text-start">{row.material_type}</td>
+                                                    <td className="text-start">{row.material_name}</td>
+                                                    <td className="text-start">{row.material_sub_type}</td>
+                                                    <td className="text-start">{row.generic_info}</td>
+                                                    <td className="text-start">{row.color}</td>
+                                                    <td className="text-start">{row.brand}</td>
+                                                    <td className="text-start">{row.effective_date}</td>
+                                                    <td className="text-start">
+                                                        {row.rate}
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={row.rateChecked || false}
+                                                            disabled
+                                                            style={{ marginLeft: 8 }}
+                                                        />
+                                                    </td>
+                                                    <td className="text-start">
+                                                        {row.avgRate || "0"}
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={row.avgRateChecked || false}
+                                                            disabled
+                                                            style={{ marginLeft: 8 }}
+                                                        />
+                                                    </td>
+                                                    <td className="text-start">
+                                                        {row.poRate || "0"}
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={row.poRateChecked || false}
+                                                            disabled
+                                                            style={{ marginLeft: 8 }}
+                                                        />
+                                                    </td>
+                                                    <td className="text-start">{row.uom}</td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="12" className="text-center">
+                                                    No data found.
+                                                </td>
+                                            </tr>
+                                        )}
 
                                     </tbody>
                                 </table>
                             </div>
                         </div>
+                            </div>
+                        </div>
+                       
 
                         <div className="row w-100 ">
                             <div className="col-md-12 ">
@@ -401,7 +446,7 @@ const RateDetails = () => {
                                 <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
                             </div>
                             <div className="col-md-2">
-                                <button className="purple-btn1 w-100">Cancle</button>
+                                <button className="purple-btn1 w-100" onClick={() => navigate("/view-rate")}>Cancle</button>
                             </div>
                         </div>
 

@@ -16,7 +16,22 @@ const EditRate = () => {
     const [checkbox1, setCheckbox1] = useState(false);
     const [checkbox2, setCheckbox2] = useState(false);
     const [rateDetails, setRateDetails] = useState(null);
-
+    const [tableData, setTableData] = useState([]);
+    // State for table rows
+    const [formData, setFormData] = useState({
+        materialType: "",
+        materialSubType: "",
+        material: "",
+        genericSpecification: "",
+        colour: "",
+        brand: "",
+        effectiveDate: "",
+        rate: "",
+        rateType: "",
+        poRate: "",
+        avgRate: "",
+        uom: "",
+    });
     const fetchRateDetails = async (id) => {
         try {
             const response = await axios.get(
@@ -26,26 +41,76 @@ const EditRate = () => {
             // setStatus(response.data.selected_status || "");
             // Map API materials to your table row structure
             if (response.data.materials) {
-                setTableData(response.data.materials.map((mat, idx) => ({
-                    id: mat.id,
-                    materialTypeLabel: mat.material_type || "",
-                    materialLabel: mat.material_name || "",
-                    materialSubTypeLabel: mat.material_sub_type || "",
-                    genericSpecificationLabel: mat.generic_info || "",
-                    colourLabel: mat.color || "",
-                    brandLabel: mat.brand || "",
-                    effectiveDate: mat.effective_date || "",
-                    rate: mat.rate || "",
-                    rateType: mat.rate_type,
-                    avgRate: mat.avg_po_rate || "",
-                    poRate: mat.last_po_rate || "",
-                    uomLabel: mat.uom || "",
+                // setTableData(response.data.materials.map((mat, idx) => ({
+                //     id: mat.id,
+                //     materialTypeLabel: mat.material_type || "",
+                //     material:mat.material_id|| "",
+                //     materialLabel: mat.material_name || "",
+                //     materialSubType: mat.material_sub_type_id || "",
+                //     materialSubTypeLabel: mat.material_sub_type || "",
+                //     genericSpecification: mat.generic_info_id || "",
+                //     genericSpecificationLabel: mat.generic_info || "",
+                //     colour: mat.color_id || "",
+                //     colourLabel: mat.color || "",
+                //     brand: mat.brand_id || "",
+                //     brandLabel: mat.brand || "",
+                //     effectiveDate: mat.effective_date || "",
+                //     rate: mat.rate || "",
+                //     rateType: mat.rate_type,
+                //     avgRate: mat.avg_po_rate || "",
+                //     poRate: mat.last_po_rate || "",
+                //     uomLabel: mat.uom || "",
 
-                    rateChecked: mat.rate_type === "manual",
-                    avgRateChecked: mat.rate_type === "average",
-                    poRateChecked: mat.rate_type === "last",
-                    // Add any other fields you need for editing
-                })));
+                //     rateChecked: mat.rate_type === "manual",
+                //     avgRateChecked: mat.rate_type === "average",
+                //     poRateChecked: mat.rate_type === "last",
+                //     // Add any other fields you need for editing
+                // })));
+
+                setTableData(
+                    response.data.materials.map((mat) => {
+                        let rate = "";
+                        let avgRate = "";
+                        let poRate = "";
+
+                        if (mat.rate_type === "manual" || "") {
+                            rate = mat.rate || "";
+                        } else if (mat.rate_type === "average") {
+                            avgRate = mat.rate;
+                            rate = mat.rate
+                            // console.log("avg :", avgRate)
+                        } else if (mat.rate_type === "last") {
+                            poRate = mat.rate;
+                            rate = mat.rate
+                        }
+
+                        return {
+                            id: mat.id,
+                            materialTypeLabel: mat.material_type || "",
+                            material: mat.material_id || "",
+                            materialLabel: mat.material_name || "",
+                            materialSubType: mat.material_sub_type_id || "",
+                            materialSubTypeLabel: mat.material_sub_type || "",
+                            genericSpecification: mat.generic_info_id || "",
+                            genericSpecificationLabel: mat.generic_info || "",
+                            colour: mat.color_id || "",
+                            colourLabel: mat.color || "",
+                            brand: mat.brand_id || "",
+                            brandLabel: mat.brand || "",
+                            effectiveDate: mat.effective_date || "",
+                            rateType: mat.rate_type,
+                            rate,
+                            avgRate,
+                            poRate,
+                            uomLabel: mat.uom || "",
+                            rateChecked: mat.rate_type === "manual",
+                            avgRateChecked: mat.rate_type === "average",
+                            poRateChecked: mat.rate_type === "last",
+                            // Add any other fields you need for editing
+                        };
+                    })
+                );
+
             }
         } catch (error) {
             console.error("Error fetching rate details:", error);
@@ -55,6 +120,8 @@ const EditRate = () => {
         fetchRateDetails(id);
     }, [id]);
 
+
+    // console.log("table data", tableData)
 
     // Handle rate input change
     const handleRateChange = (e, rowIndex) => {
@@ -91,21 +158,7 @@ const EditRate = () => {
     // };
 
     // modal data dd to table 
-    const [tableData, setTableData] = useState([]); // State for table rows
-    const [formData, setFormData] = useState({
-        materialType: "",
-        materialSubType: "",
-        material: "",
-        genericSpecification: "",
-        colour: "",
-        brand: "",
-        effectiveDate: "",
-        rate: "",
-        rateType: "",
-        // poRate: "",
-        // avgRate: "",
-        uom: "",
-    });
+
 
     // Handle input/select changes
     const handleInputChange = (e) => {
@@ -627,7 +680,7 @@ const EditRate = () => {
         );
     };
 
-   
+
 
     //date  modal
     const [showDateModal, setShowDateModal] = useState(false);
@@ -644,65 +697,138 @@ const EditRate = () => {
         to: formatDate(new Date()), // Today's date
     });
 
-    console.log("date ranhe:", dateRange)
+    // console.log("date ranhe:", dateRange)
+    //  console.log("rate details:",rateDetails.company_id)
+    // Add this function in your component for po avg rate
+    const handleApplyDateRange = async () => {
+        try {
+            // Prepare the payload
+            const payload = {
+                rate_detail: {
+                    company_id: rateDetails?.company_id || null, // Replace with your actual company id state/variable
+                    from: dateRange.from,
+                    to: dateRange.to,
+                    materials: tableData.map(row => ({
+                        material_id: row.material,
+                        material_sub_type_id: row.materialSubType,
+                        generic_info_id: row.genericSpecification || "",
+                        colour_id: row.colour || "",
+                        brand_id: row.brand || "",
+                        uom_id: row.uom || ""
+                    }))
+                }
+            };
+            console.log("payload detail porate:", payload)
+
+            // Call the API
+            const response = await axios.post(
+                "https://marathon.lockated.com/rate_details/get_avg_po_rate.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+                payload,
+                { headers: { "Content-Type": "application/json" } }
+            );
+
+
+            console.log("responce:", response.data)
+            // Update tableData with avg_rate and last_rate from response
+            const updatedTableData = tableData.map(row => {
+                const found = response.data.data.find(
+                    item =>
+                        item.material_id === row.material &&
+                        item.material_sub_type_id === row.materialSubType
+                );
+                return found
+                    ? { ...row, avgRate: found.avg_rate, poRate: found.last_rate }
+                    : row;
+            });
+            console.log("updated table data:", updatedTableData)
+            setTableData(updatedTableData);
+            setShowDateModal(false); // Close modal
+        } catch (error) {
+            console.error("Error fetching avg/po rates:", error);
+            setShowDateModal(false);
+        }
+    };
+
+
+
 
     const payload = {
         rate_detail: {
-            company: selectedCompany?.value || "",
-            project: selectedProject?.value || "",
-            subProject: selectedSite?.value || "",
-            wing: selectedWing?.value || "",
-            materials: tableData.map(row => ({
-                material_id: row.material,
-                material_sub_type_id: row.materialSubType,
-                generic_info_id: row.genericSpecification || null,
-                colour_id: row.colour || null,
-                brand_id: row.brand || null,
-                uom_id: row.uom || null,
-                effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
-                rate: row.rate,
-                rate_type: row.rateType || null
-            }))
-        }
-        // material: tableData.map(({ rateChecked, avgRateChecked, poRateChecked, ...rest }) => rest) || []
-    }
+            materials: tableData.map(row => {
+                // For edited rows, use id; for new rows, use material_id etc.
+                const base = row.id
+                    ? { id: row.id }
+                    : {
+                        material_id: row.material,
+                        material_sub_type_id: row.materialSubType,
+                        generic_info_id: row.genericSpecification || "",
+                        colour_id: row.colour || "",
+                        brand_id: row.brand || "",
+                        uom_id: row.uom || ""
+                    };
 
-    console.log("payload :", payload)
+                // Add common fields
+                base.effective_date = row.effectiveDate;
+                base.rate = row.rate;
+                base.rate_type = row.rateType;
+
+                // Add avg_rate_from and avg_rate_to if rate_type is average
+                if (row.rateType === "average") {
+                    base.avg_rate_from = dateRange.from || "";
+                    base.avg_rate_to = dateRange.to || "";
+                }
+
+                return base;
+            })
+        }
+    };
+
+    console.log(" update payload :", payload)
 
     const handleSubmit = () => {
-        const payload = {
-            rate_detail: {
-                company_id: selectedCompany?.value || "",
-                project_id: selectedProject?.value || "",
-                pms_site_id: selectedSite?.value || "",
-                wing_id: selectedWing?.value || "",
-                materials: tableData.map(row => ({
-                    material_id: row.material,
-                    material_sub_type_id: row.materialSubType,
-                    generic_info_id: row.genericSpecification || null,
-                    colour_id: row.colour || null,
-                    brand_id: row.brand || null,
-                    uom_id: row.uom || null,
-                    effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
-                    rate: row.rate,
-                    rate_type: row.rateType || null
-                }))
-            }
+ const payload = {
+        rate_detail: {
+            materials: tableData.map(row => {
+                // For edited rows, use id; for new rows, use material_id etc.
+                const base = row.id
+                    ? { id: row.id }
+                    : {
+                        material_id: row.material,
+                        material_sub_type_id: row.materialSubType,
+                        generic_info_id: row.genericSpecification || "",
+                        colour_id: row.colour || "",
+                        brand_id: row.brand || "",
+                        uom_id: row.uom || ""
+                    };
 
-        };
+                // Add common fields
+                base.effective_date = row.effectiveDate;
+                base.rate = row.rate;
+                base.rate_type = row.rateType;
 
-        console.log("Submitting payload:", payload);
+                // Add avg_rate_from and avg_rate_to if rate_type is average
+                if (row.rateType === "average") {
+                    base.avg_rate_from = dateRange.from || "";
+                    base.avg_rate_to = dateRange.to || "";
+                }
+
+                return base;
+            })
+        }
+    };
+
+        console.log("Submitting payload update:", payload);
 
 
         // Simulate API call or handle submission logic
         axios
-            .post(`${baseURL}rate_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`, payload)
+            .patch(`${baseURL}rate_details/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`, payload)
             .then((response) => {
                 alert("Submission successful!");
-                console.log("Submission successful:", response.data);
+                console.log("Update successful:", response.data);
                 // Redirect to the list page
                 // navigate("/list-page"); // Replace "/list-page" with your actual list page route
-                navigate("/view-rate");
+                navigate(`/details-rate/${response.data.id}`);
             })
             .catch((error) => {
                 alert("Error submitting data!");
@@ -718,7 +844,7 @@ const EditRate = () => {
                     <a href="">
                         <a href="">Setup &gt; Engineering Setup &gt; Rate</a>
                     </a>
-                    <h5 class="mt-4">Create Rate</h5>
+                    <h5 class="mt-4">Edit Rate</h5>
                     <div className="card mt-3 pb-3">
                         <div className="card-body">
                             <div className="details_page">
@@ -780,13 +906,13 @@ const EditRate = () => {
                             </div>
 
                         </div>
-{tableData.map((row, idx) => (
-  <pre key={idx}>{JSON.stringify(row, null, 2)}</pre>
-))}
+                        {/* {tableData.map((row, idx) => (
+                            <pre key={idx}>{JSON.stringify(row, null, 2)}</pre>
+                        ))} */}
                         <div className="d-flex justify-content-end mx-2">
                             {/* <button className="purple-btn2">Bulk Upload</button> */}
                             <button
-                                className="purple-btn2"
+                                className="purple-btn2 me-2"
                                 data-bs-toggle="modal"
                                 data-bs-target="#addnewModal"
                                 onClick={() => setShowModal(true)}
@@ -805,8 +931,8 @@ const EditRate = () => {
                             </button>
                         </div>
                         {/* {(JSON.stringify(tableData, null, 2))} */}
-                        
-                        <div className="mx-3">
+
+                        <div className="mx-3 mt-3 mb-3">
                             <div className="tbl-container  mt-1">
                                 <table className="w-100">
                                     <thead>
@@ -858,7 +984,7 @@ const EditRate = () => {
                                             tableData.map((row, index) => (
                                                 <tr key={index}>
                                                     <td className="text-start"> {index + 1}</td>
-                                                    {console.log("materail type:", row.materialType)}
+                                                    {/* {console.log("materail type:", row.materialType)} */}
                                                     <td className="text-start">{row.materialTypeLabel}</td>
                                                     <td className="text-start">{row.materialLabel}
                                                         {row.isDuplicate && (
@@ -944,7 +1070,8 @@ const EditRate = () => {
                                                                 disabled={row.rate !== "" || checkbox2}
                                                             />
                                                         </span> */}
-                                                        <span>{row.avgRate || "0"}</span>
+                                                        <span>{row.avgRate}</span>
+                                                        {/* {console.log("avg rate :", row.avgRate)} */}
                                                         <span className="ms-2 pt-2">
                                                             <input
                                                                 type="checkbox"
@@ -963,7 +1090,7 @@ const EditRate = () => {
                                                                 disabled={row.rate !== "" || checkbox1}
                                                             />
                                                         </span> */}
-                                                        <span>{row.poRate || "0"}</span>
+                                                        <span>{row.poRate}</span>
                                                         <span className="ms-2 pt-2">
                                                             <input
                                                                 type="checkbox"
@@ -1220,10 +1347,11 @@ const EditRate = () => {
                 <Modal.Footer>
                     <button
                         className="purple-btn2"
-                        onClick={() => {
-                            console.log("Selected Date Range:", dateRange);
-                            setShowDateModal(false); // Close modal
-                        }}
+                        // onClick={() => {
+                        //     console.log("Selected Date Range:", dateRange);
+                        //     setShowDateModal(false); // Close modal
+                        // }}
+                        onClick={handleApplyDateRange}
                     >
                         Apply
                     </button>
