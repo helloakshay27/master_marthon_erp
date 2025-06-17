@@ -286,6 +286,15 @@ function Members() {
                 <li>
                   <Link to="/rekyc/:id">Section Re KYC Details</Link>
                 </li>
+                <li>
+                  <Link to="/vendor-approval-create">Vendor approval create</Link>
+                </li>
+                <li>
+                  <Link to="/vendor-approval-list">Vendor approval list</Link>
+                </li>
+                <li>
+                  <Link to="/vendor-approval-create">Vendor approval edit</Link>
+                </li>
               </ul>
               <h1>BOQ</h1>
               <ul>

@@ -7,21 +7,54 @@ import { Modal, Button, Form } from 'react-bootstrap';
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
-// import Modal from "react-bootstrap/Modal";
+import { useParams } from "react-router-dom";
 
-const CreateRate = () => {
+const EditRate = () => {
     const navigate = useNavigate();
+    const { id } = useParams();
     const [showModal, setShowModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
-    const [rate, setRate] = useState('');
     const [checkbox1, setCheckbox1] = useState(false);
     const [checkbox2, setCheckbox2] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);  // State to manage edit mode
-    const [validationMsg, setValidationMsg] = useState("");
-    // // Handle edit button click
-    // const handleEditClick = () => {
-    //     setIsEditing(!isEditing);  // Toggle edit mode
-    // };
+    const [rateDetails, setRateDetails] = useState(null);
+
+    const fetchRateDetails = async (id) => {
+        try {
+            const response = await axios.get(
+                `https://marathon.lockated.com/rate_details/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            );
+            setRateDetails(response.data);
+            // setStatus(response.data.selected_status || "");
+            // Map API materials to your table row structure
+            if (response.data.materials) {
+                setTableData(response.data.materials.map((mat, idx) => ({
+                    id: mat.id,
+                    materialTypeLabel: mat.material_type || "",
+                    materialLabel: mat.material_name || "",
+                    materialSubTypeLabel: mat.material_sub_type || "",
+                    genericSpecificationLabel: mat.generic_info || "",
+                    colourLabel: mat.color || "",
+                    brandLabel: mat.brand || "",
+                    effectiveDate: mat.effective_date || "",
+                    rate: mat.rate || "",
+                    rateType: mat.rate_type,
+                    avgRate: mat.avg_po_rate || "",
+                    poRate: mat.last_po_rate || "",
+                    uomLabel: mat.uom || "",
+
+                    rateChecked: mat.rate_type === "manual",
+                    avgRateChecked: mat.rate_type === "average",
+                    poRateChecked: mat.rate_type === "last",
+                    // Add any other fields you need for editing
+                })));
+            }
+        } catch (error) {
+            console.error("Error fetching rate details:", error);
+        }
+    };
+    useEffect(() => {
+        fetchRateDetails(id);
+    }, [id]);
+
 
     // Handle rate input change
     const handleRateChange = (e, rowIndex) => {
@@ -69,8 +102,8 @@ const CreateRate = () => {
         effectiveDate: "",
         rate: "",
         rateType: "",
-        poRate: "",
-        avgRate: "",
+        // poRate: "",
+        // avgRate: "",
         uom: "",
     });
 
@@ -172,65 +205,65 @@ const CreateRate = () => {
 
 
     const handleCreate = (e) => {
-    e.preventDefault();
+        e.preventDefault();
 
-    // Add the new row
-    const newTableData = [...tableData, formData];
+        // Add the new row
+        const newTableData = [...tableData, formData];
 
-    // Find if the new row is a duplicate of any previous row
-   const isDuplicate = tableData.some(row =>
-        row.materialSubType === formData.materialSubType &&
-        row.material === formData.material &&
-        row.genericSpecification === formData.genericSpecification &&
-        row.colour === formData.colour &&
-        row.brand === formData.brand
-    );
-    // Mark only the last (newly added) row as duplicate if needed
-    const updatedTableData = newTableData.map((row, idx) => {
-        // if (idx === newTableData.length - 1) {
+        // Find if the new row is a duplicate of any previous row
+        const isDuplicate = tableData.some(row =>
+            row.materialSubType === formData.materialSubType &&
+            row.material === formData.material &&
+            row.genericSpecification === formData.genericSpecification &&
+            row.colour === formData.colour &&
+            row.brand === formData.brand
+        );
+        // Mark only the last (newly added) row as duplicate if needed
+        const updatedTableData = newTableData.map((row, idx) => {
+            // if (idx === newTableData.length - 1) {
+            //     return { ...row, isDuplicate };
+            // }
+            // // Remove duplicate flag from previous rows
+            // const { isDuplicate, ...rest } = row;
+            // return rest;
+
+            if (idx === newTableData.length - 1) {
+                return { ...row, isDuplicate };
+            }
+            return row;
+        });
+
+
+        // Mark duplicates in the table
+        // const updatedTableData = newTableData.map((row, idx, arr) => {
+        //     const isDuplicate = arr.some((otherRow, otherIdx) =>
+        //         otherIdx !== idx &&
+        //         row.materialSubType === otherRow.materialSubType &&
+        //         row.material === otherRow.material &&
+        //         row.genericSpecification === otherRow.genericSpecification &&
+        //         row.colour === otherRow.colour &&
+        //         row.brand === otherRow.brand
+        //     );
         //     return { ...row, isDuplicate };
-        // }
-        // // Remove duplicate flag from previous rows
-        // const { isDuplicate, ...rest } = row;
-        // return rest;
+        // });
 
-          if (idx === newTableData.length - 1) {
-        return { ...row, isDuplicate };
-    }
-    return row;
-    });
+        setTableData(updatedTableData);
 
-
-    // Mark duplicates in the table
-    // const updatedTableData = newTableData.map((row, idx, arr) => {
-    //     const isDuplicate = arr.some((otherRow, otherIdx) =>
-    //         otherIdx !== idx &&
-    //         row.materialSubType === otherRow.materialSubType &&
-    //         row.material === otherRow.material &&
-    //         row.genericSpecification === otherRow.genericSpecification &&
-    //         row.colour === otherRow.colour &&
-    //         row.brand === otherRow.brand
-    //     );
-    //     return { ...row, isDuplicate };
-    // });
-
-    setTableData(updatedTableData);
-
-    setFormData({
-        materialType: "",
-        materialSubType: "",
-        material: "",
-        genericSpecification: "",
-        colour: "",
-        brand: "",
-        effectiveDate: "",
-        rate: "",
-        poRate: "",
-        avgRate: "",
-        uom: "",
-    }); // Reset form
-    setShowModal(false); // Close modal
-};
+        setFormData({
+            materialType: "",
+            materialSubType: "",
+            material: "",
+            genericSpecification: "",
+            colour: "",
+            brand: "",
+            effectiveDate: "",
+            rate: "",
+            poRate: "",
+            avgRate: "",
+            uom: "",
+        }); // Reset form
+        setShowModal(false); // Close modal
+    };
 
 
     // const handleCheckboxChange = (checkboxNum) => {
@@ -594,16 +627,7 @@ const CreateRate = () => {
         );
     };
 
-    // Add this function to check for duplicate combinations in your table data
-const isDuplicateCombination = (newRow) => {
-  return tableData.some(row =>
-    row.materialSubType === newRow.materialSubType &&
-    row.material === newRow.material &&
-    row.genericSpecification === newRow.genericSpecification &&
-    row.colour === newRow.colour &&
-    row.brand === newRow.brand
-  );
-};
+   
 
     //date  modal
     const [showDateModal, setShowDateModal] = useState(false);
@@ -620,151 +644,51 @@ const isDuplicateCombination = (newRow) => {
         to: formatDate(new Date()), // Today's date
     });
 
-    // console.log("date ranhe:", dateRange)
+    console.log("date ranhe:", dateRange)
 
-    // Add this function in your component
-const handleApplyDateRange = async () => {
-  try {
-    // Prepare the payload
     const payload = {
-      rate_detail: {
-        company_id:  selectedCompany?.value || "", // Replace with your actual company id state/variable
-        from: dateRange.from,
-        to: dateRange.to,
-        materials: tableData.map(row => ({
-          material_id: row.material,
-          material_sub_type_id: row.materialSubType,
-          generic_info_id: row.genericSpecification || "",
-          colour_id: row.colour || "",
-          brand_id: row.brand || "",
-          uom_id: row.uom || ""
-        }))
-      }
-    };
-    console.log("payload detail porate:",payload)
-
-    // Call the API
-    const response = await axios.post(
-      "https://marathon.lockated.com/rate_details/get_avg_po_rate.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
-      payload,
-      { headers: { "Content-Type": "application/json" } }
-    );
-
-
-    console.log("responce:",response.data)
-    // Update tableData with avg_rate and last_rate from response
-    const updatedTableData = tableData.map(row => {
-      const found = response.data.data.find(
-        item =>
-          item.material_id === row.material &&
-          item.material_sub_type_id === row.materialSubType
-      );
-      return found
-        ? { ...row, avgRate: found.avg_rate, poRate: found.last_rate }
-        : row;
-    });
-console.log("updated table data:",updatedTableData)
-    setTableData(updatedTableData);
-    setShowDateModal(false); // Close modal
-  } catch (error) {
-    console.error("Error fetching avg/po rates:", error);
-    setShowDateModal(false);
-  }
-};
-
-
-// const handleApplyDateRange = async () => {
-//   try {
-//     // Prepare the payload object
-//     const rateDetail = {
-//       company_id: selectedCompany.value, // Replace with your actual company id
-//       from: dateRange.from,
-//       to: dateRange.to,
-//       materials: tableData.map(row => ({
-//         material_id: row.material,
-//         material_sub_type_id: row.materialSubType,
-//         generic_info_id: row.genericSpecification || "",
-//         colour_id: row.colour || "",
-//         brand_id: row.brand || "",
-//         uom_id: row.uom || ""
-//       }))
-//     };
-//     console.log("rate details:",rateDetail)
-
-//     // Pass as a JSON string in the query parameter
-//     const params = {
-//       token: "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
-//       rate_detail: JSON.stringify(rateDetail)
-//     };
-
-//     const response = await axios.get(
-//       "https://marathon.lockated.com/rate_details/get_avg_po_rate.json",
-//       { params }
-//     );
-
-
-//     console.log("responce:",response.data)
-//     // Update tableData with avg_rate and last_rate from response
-//     const updatedTableData = tableData.map(row => {
-//       const found = response.data.data.find(
-//         item =>
-//           item.material_id === row.material_id &&
-//           item.material_sub_type_id === row.material_sub_type_id
-//       );
-//       return found
-//         ? { ...row, avgRate: found.avg_rate, poRate: found.last_rate }
-//         : row;
-//     });
-
-//     setTableData(updatedTableData);
-//     setShowDateModal(false); // Close modal
-//   } catch (error) {
-//     console.error("Error fetching avg/po rates:", error);
-//     setShowDateModal(false);
-//   }
-// };
-    const payload = {
-        rate_detail:{
-        company: selectedCompany?.value || "",
-        project: selectedProject?.value || "",
-        subProject: selectedSite?.value || "",
-        wing: selectedWing?.value || "",
-        materials: tableData.map(row => ({
-            material_id: row.material,
-            material_sub_type_id: row.materialSubType,
-            generic_info_id: row.genericSpecification || null,
-            colour_id: row.colour || null,
-            brand_id: row.brand || null,
-            uom_id: row.uom || null,
-            effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
-            rate: row.rate,
-            rate_type: row.rateType || null
-        }))
-    }
+        rate_detail: {
+            company: selectedCompany?.value || "",
+            project: selectedProject?.value || "",
+            subProject: selectedSite?.value || "",
+            wing: selectedWing?.value || "",
+            materials: tableData.map(row => ({
+                material_id: row.material,
+                material_sub_type_id: row.materialSubType,
+                generic_info_id: row.genericSpecification || null,
+                colour_id: row.colour || null,
+                brand_id: row.brand || null,
+                uom_id: row.uom || null,
+                effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
+                rate: row.rate,
+                rate_type: row.rateType || null
+            }))
+        }
         // material: tableData.map(({ rateChecked, avgRateChecked, poRateChecked, ...rest }) => rest) || []
     }
 
-    // console.log("payload :", payload)
+    console.log("payload :", payload)
 
     const handleSubmit = () => {
-        const payload = {rate_detail:{
-            company_id: selectedCompany?.value || "",
-            project_id: selectedProject?.value || "",
-            pms_site_id: selectedSite?.value || "",
-            wing_id: selectedWing?.value || "",
-            materials: tableData.map(row => ({
-            material_id: row.material,
-            material_sub_type_id: row.materialSubType,
-            generic_info_id: row.genericSpecification || null,
-            colour_id: row.colour || null,
-            brand_id: row.brand || null,
-            uom_id: row.uom || null,
-            effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
-            rate: row.rate,
-            rate_type: row.rateType || null
-        }))
-    }
-           
+        const payload = {
+            rate_detail: {
+                company_id: selectedCompany?.value || "",
+                project_id: selectedProject?.value || "",
+                pms_site_id: selectedSite?.value || "",
+                wing_id: selectedWing?.value || "",
+                materials: tableData.map(row => ({
+                    material_id: row.material,
+                    material_sub_type_id: row.materialSubType,
+                    generic_info_id: row.genericSpecification || null,
+                    colour_id: row.colour || null,
+                    brand_id: row.brand || null,
+                    uom_id: row.uom || null,
+                    effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
+                    rate: row.rate,
+                    rate_type: row.rateType || null
+                }))
+            }
+
         };
 
         console.log("Submitting payload:", payload);
@@ -774,14 +698,14 @@ console.log("updated table data:",updatedTableData)
         axios
             .post(`${baseURL}rate_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`, payload)
             .then((response) => {
-                 alert("Submission successful!");
+                alert("Submission successful!");
                 console.log("Submission successful:", response.data);
                 // Redirect to the list page
                 // navigate("/list-page"); // Replace "/list-page" with your actual list page route
                 navigate("/view-rate");
             })
             .catch((error) => {
-                 alert("Error submitting data!");
+                alert("Error submitting data!");
                 console.error("Error submitting data:", error);
             });
     };
@@ -796,60 +720,66 @@ console.log("updated table data:",updatedTableData)
                     </a>
                     <h5 class="mt-4">Create Rate</h5>
                     <div className="card mt-3 pb-3">
-
-                        <CollapsibleCard title="Create Rate">
-                            <div className="card-body mt-0 pt-0">
-                                <div className="row">
-                                    <div className="col-md-4 mt-2">
-                                        <div className="form-group">
+                        <div className="card-body">
+                            <div className="details_page">
+                                <div className="row px-3">
+                                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                        <div className="col-6">
                                             <label>Company</label>
-                                            <SingleSelector
-                                                options={companyOptions}
-                                                onChange={handleCompanyChange}
-                                                value={selectedCompany}
-                                                placeholder={`Select Project`} // Dynamic placeholder
-                                            />
+                                        </div>
+                                        <div className="col-6">
+                                            <label className="text">
+                                                <span className="me-3">
+                                                    <span className="text-dark">:</span>
+                                                </span>
+                                                {rateDetails?.company_name || "-"}
+                                            </label>
                                         </div>
                                     </div>
-                                    <div className="col-md-4 mt-2">
-
-                                        <div className="form-group">
+                                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                        <div className="col-6">
                                             <label>Project</label>
-                                            <SingleSelector
-                                                options={projects}
-                                                onChange={handleProjectChange}
-                                                value={selectedProject}
-                                                placeholder={`Select Project`} // Dynamic placeholder
-
-                                            />
+                                        </div>
+                                        <div className="col-6">
+                                            <label className="text">
+                                                <span className="me-3">
+                                                    <span className="text-dark">:</span>
+                                                </span>
+                                                {rateDetails?.project_name || "-"}
+                                            </label>
                                         </div>
                                     </div>
-                                    <div className="col-md-4 mt-2">
-                                        <div className="form-group">
+                                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                        <div className="col-6">
                                             <label>Sub-Project</label>
-                                            <SingleSelector
-                                                options={siteOptions}
-                                                onChange={handleSiteChange}
-                                                value={selectedSite}
-                                                placeholder={`Select Sub-Project`} // Dynamic placeholder
-                                            />
+                                        </div>
+                                        <div className="col-6">
+                                            <label className="text">
+                                                <span className="me-3">
+                                                    <span className="text-dark">:</span>
+                                                </span>
+                                                {rateDetails?.site_name || "-"}
+                                            </label>
                                         </div>
                                     </div>
-                                    <div className="col-md-4 mt-2">
-                                        <div className="form-group">
+                                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                        <div className="col-6">
                                             <label>Wing</label>
-                                            <SingleSelector
-                                                options={wingsOptions}
-                                                value={selectedWing}
-                                                onChange={handleWingChange}
-                                                placeholder={`Select Wing`} // Dynamic placeholder
-                                            />
+                                        </div>
+                                        <div className="col-6">
+                                            <label className="text">
+                                                <span className="me-3">
+                                                    <span className="text-dark">:</span>
+                                                </span>
+                                                {rateDetails?.wing_name || "-"}
+                                            </label>
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
-                        </CollapsibleCard>
 
+                        </div>
 {tableData.map((row, idx) => (
   <pre key={idx}>{JSON.stringify(row, null, 2)}</pre>
 ))}
@@ -875,6 +805,7 @@ console.log("updated table data:",updatedTableData)
                             </button>
                         </div>
                         {/* {(JSON.stringify(tableData, null, 2))} */}
+                        
                         <div className="mx-3">
                             <div className="tbl-container  mt-1">
                                 <table className="w-100">
@@ -927,42 +858,42 @@ console.log("updated table data:",updatedTableData)
                                             tableData.map((row, index) => (
                                                 <tr key={index}>
                                                     <td className="text-start"> {index + 1}</td>
-                                                    {/* {console.log("materail type:", row.materialType)} */}
+                                                    {console.log("materail type:", row.materialType)}
                                                     <td className="text-start">{row.materialTypeLabel}</td>
                                                     <td className="text-start">{row.materialLabel}
-                                                       {row.isDuplicate && (
-        <div className="text-danger" style={{ fontSize: "0.9rem" }}>
-          This combination already exists.
-        </div>
-      )}
+                                                        {row.isDuplicate && (
+                                                            <div className="text-danger" style={{ fontSize: "0.9rem" }}>
+                                                                This combination already exists.
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td className="text-start">{row.materialSubTypeLabel}
                                                         {row.isDuplicate && (
-        <div className="text-danger" style={{ fontSize: "0.9rem" }}>
-          This combination already exists.
-        </div>
-      )}
+                                                            <div className="text-danger" style={{ fontSize: "0.9rem" }}>
+                                                                This combination already exists.
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td className="text-start">{row.genericSpecificationLabel}
                                                         {row.isDuplicate && (
-        <div className="text-danger" style={{ fontSize: "0.9rem" }}>
-          This combination already exists.
-        </div>
-      )}
+                                                            <div className="text-danger" style={{ fontSize: "0.9rem" }}>
+                                                                This combination already exists.
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td className="text-start">{row.colourLabel}
                                                         {row.isDuplicate && (
-        <div className="text-danger" style={{ fontSize: "0.9rem" }}>
-          This combination already exists.
-        </div>
-      )}
+                                                            <div className="text-danger" style={{ fontSize: "0.9rem" }}>
+                                                                This combination already exists.
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td className="text-start">{row.brandLabel}
-                                                     {row.isDuplicate && (
-        <div className="text-danger" style={{ fontSize: "0.9rem" }}>
-          This combination already exists.
-        </div>
-      )}  
+                                                        {row.isDuplicate && (
+                                                            <div className="text-danger" style={{ fontSize: "0.9rem" }}>
+                                                                This combination already exists.
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td className="text-start">
                                                         {/* {row.effectiveDate} */}
@@ -1013,8 +944,7 @@ console.log("updated table data:",updatedTableData)
                                                                 disabled={row.rate !== "" || checkbox2}
                                                             />
                                                         </span> */}
-                                                        <span>{row.avgRate }</span>
-                                                        {console.log("avg rate:",row.avgRate)}
+                                                        <span>{row.avgRate || "0"}</span>
                                                         <span className="ms-2 pt-2">
                                                             <input
                                                                 type="checkbox"
@@ -1033,7 +963,7 @@ console.log("updated table data:",updatedTableData)
                                                                 disabled={row.rate !== "" || checkbox1}
                                                             />
                                                         </span> */}
-                                                        <span>{row.poRate  }</span>
+                                                        <span>{row.poRate || "0"}</span>
                                                         <span className="ms-2 pt-2">
                                                             <input
                                                                 type="checkbox"
@@ -1114,9 +1044,9 @@ console.log("updated table data:",updatedTableData)
                     </div>
                     <div className="row mt-2 justify-content-center mb-5 pb-5">
                         <div className="col-md-2 mt-2">
-                            <button className="purple-btn2 w-100" onClick={handleSubmit}>Create</button>
+                            <button className="purple-btn2 w-100" onClick={handleSubmit}>Update</button>
                         </div>
-                         <div className="col-md-2">
+                        <div className="col-md-2">
                             <button className="purple-btn1 w-100" onClick={() => navigate("/view-rate")}>Cancle</button>
                         </div>
                     </div>
@@ -1290,11 +1220,10 @@ console.log("updated table data:",updatedTableData)
                 <Modal.Footer>
                     <button
                         className="purple-btn2"
-                        // onClick={() => {
-                        //     console.log("Selected Date Range:", dateRange);
-                        //     setShowDateModal(false); // Close modal
-                        // }}
-                        onClick={handleApplyDateRange}
+                        onClick={() => {
+                            console.log("Selected Date Range:", dateRange);
+                            setShowDateModal(false); // Close modal
+                        }}
                     >
                         Apply
                     </button>
@@ -1307,4 +1236,4 @@ console.log("updated table data:",updatedTableData)
     )
 }
 
-export default CreateRate;
+export default EditRate;
