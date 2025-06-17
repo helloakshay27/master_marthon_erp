@@ -16,6 +16,7 @@ const RateDetails = () => {
     const [showModal, setShowModal] = useState(false);
 
     const [rateDetails, setRateDetails] = useState(null);
+    const [tableData, setTableData] = useState([]);
     const [status, setStatus] = useState('');
     const [remark, setRemark] = useState('');
     const [loading2, setLoading2] = useState(false);  // State for loading indicator
@@ -28,6 +29,45 @@ const RateDetails = () => {
             );
             setRateDetails(response.data);
             setStatus(response.data.selected_status || "");
+            if (response.data.materials) {
+                //   setTableData(
+                //     response.data.materials.map((mat) => ({
+                //       ...mat,
+                //       rateChecked: mat.rate_type === "manual",
+                //       avgRateChecked: mat.rate_type === "average",
+                //       poRateChecked: mat.rate_type === "last",
+                //     }))
+                //   );
+
+
+                setTableData(
+                    response.data.materials.map((mat) => {
+                        let rate = "";
+                        let avgRate = "";
+                        let poRate = "";
+
+                        if (mat.rate_type === "manual") {
+                            rate = mat.rate || "";
+                        } else if (mat.rate_type === "average") {
+                            avgRate = mat.rate;
+                            console.log("avg rate:", avgRate)
+                        } else if (mat.rate_type === "last") {
+                            poRate = mat.rate;
+                        }
+
+                        return {
+                            ...mat,
+                            rate,
+                            avgRate,
+                            poRate,
+                            rateChecked: mat.rate_type === "manual",
+                            avgRateChecked: mat.rate_type === "average",
+                            poRateChecked: mat.rate_type === "last",
+                        };
+                    })
+                );
+
+            }
         } catch (error) {
             console.error("Error fetching rate details:", error);
         }
@@ -122,14 +162,30 @@ const RateDetails = () => {
     };
     return (
         <>
-
-
             <div className="website-content overflow-auto">
                 <div className="module-data-section p-4">
                     <a href="">
                         <a href="">Setup &gt; Engineering Setup &gt; Rate</a>
                     </a>
                     <h5 class="mt-4">Rate Details</h5>
+                    {status && status.toLowerCase() === "draft" && (
+                        <div className="d-flex justify-content-end m-2">
+
+                            <Link
+                                to={`/edit-rate/${id}`}
+                                className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+
+                                <button class="purple-btn1" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#8b0203" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z" fill="#8b0203" />
+                                        <path d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#8b0203" />
+                                    </svg>
+                                </button>
+
+                            </Link>
+
+                        </div>
+                    )}
                     <div className="mb-5">
 
                         <div
@@ -178,13 +234,24 @@ const RateDetails = () => {
                                                 </label>
                                             </div>
                                         </div>
-
+                                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                            <div className="col-6">
+                                                <label>Wing</label>
+                                            </div>
+                                            <div className="col-6">
+                                                <label className="text">
+                                                    <span className="me-3">
+                                                        <span className="text-dark">:</span>
+                                                    </span>
+                                                    {rateDetails?.wing_name || "-"}
+                                                </label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                            </div>
-                        </div>
-                        <div className="mt-5 mb-5">
+ <div className="mt-5 mb-4 mx-3">
+     {/* <h5 className="mb-3">Materials</h5> */}
                             <div className="tbl-container  mt-1">
                                 <table className="w-100">
                                     <thead>
@@ -232,87 +299,26 @@ const RateDetails = () => {
                                     <tbody>
 
 
-                                        {rateDetails?.materials?.length > 0 ? (
+                                        {/* {rateDetails?.materials?.length > 0 ? (
                                             rateDetails?.materials?.map((row, index) => (
                                                 <tr key={index} >
                                                     <td className="text-start"> {index + 1}</td>
-                                                    {/* {console.log("materail type:", row.materialType)} */}
+                                                   
                                                     <td className="text-start">{row.material_type}</td>
                                                     <td className="text-start">{row.material_name}</td>
                                                     <td className="text-start">{row.material_sub_type}</td>
                                                     <td className="text-start">{row.generic_info}</td>
                                                     <td className="text-start">{row.color}</td>
-                                                    <td className="text-start">{row.brand }</td>
+                                                    <td className="text-start">{row.brand}</td>
                                                     <td className="text-start">
                                                         {row.effective_date}
                                                     </td>
                                                     <td className="text-start">{row.rate}</td>
                                                     <td className="text-start">{row.avg_po_rate}</td>
                                                     <td className="text-start">{row.last_po_rate}</td>
-                                                    {/* <td>
-
-                                                        <div className="d-flex align-items-center gap-2">
-                                                            <input
-                                                                className="form-control"
-                                                                type="number"
-                                                                value={row.rate}
-                                                                onChange={(e) => handleRateChange(e, index)}
-                                                                disabled={row.avgRateChecked || row.poRateChecked}
-                                                                placeholder="Enter Rate"
-                                                                style={{ maxWidth: "120px" }}
-                                                            />
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={row.rateChecked || false}
-                                                                disabled={row.avgRateChecked || row.poRateChecked}
-                                                                onChange={() => handleCheckboxChange("rate", index)}
-                                                            />
-                                                        </div>
-                                                    </td> */}
-                                                    {/* <td className="text-start">
-                                                        
-                                                        <span>{row.avgRate || "0"}</span>
-                                                        <span className="ms-2 pt-2">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={row.avgRateChecked || false}
-                                                                onChange={() => handleCheckboxChange("avgRate", index)}
-                                                                disabled={row.rateChecked || row.poRateChecked}
-                                                            />
-                                                        </span>
-                                                    </td> */}
-                                                    {/* <td className="text-start">
-                                                       
-                                                        <span>{row.poRate || "0"}</span>
-                                                        <span className="ms-2 pt-2">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={row.poRateChecked || false}
-                                                                onChange={() => handleCheckboxChange("poRate", index)}
-                                                                disabled={row.rateChecked || row.avgRateChecked}
-                                                            />
-                                                        </span>
-                                                    </td> */}
+                                                   
                                                     <td>{row.uom}</td>
-                                                    {/* <td className="text-start">
-                                                        <button
-                                                            className="btn mt-0 pt-0"
-                                                            onClick={() => handleDeleteRow(index)} // Use onClick instead of onChange
-                                                        >
-                                                            <svg
-                                                                width="16"
-                                                                height="20"
-                                                                viewBox="0 0 16 20"
-                                                                fill="none"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                            >
-                                                                <path
-                                                                    d="M14.7921 2.44744H10.8778C10.6485 1.0366 9.42966 0 8.00005 0C6.57044 0 5.35166 1.03658 5.12225 2.44744H1.20804C0.505736 2.48655 -0.0338884 3.08663 0.00166019 3.78893V5.26379C0.00166019 5.38914 0.0514441 5.51003 0.140345 5.59895C0.229246 5.68787 0.35015 5.73764 0.475508 5.73764H1.45253V17.2689C1.45253 18.4468 2.40731 19.4025 3.58612 19.4025H12.4139C13.5927 19.4025 14.5475 18.4468 14.5475 17.2689V5.73764H15.5245C15.6498 5.73764 15.7707 5.68785 15.8597 5.59895C15.9486 5.51005 15.9983 5.38914 15.9983 5.26379V3.78893C16.0339 3.08663 15.4944 2.48654 14.7921 2.44744ZM8.00005 0.94948C8.90595 0.94948 9.69537 1.56823 9.91317 2.44744H6.08703C6.30483 1.56821 7.09417 0.94948 8.00005 0.94948ZM13.5998 17.2688C13.5998 17.5835 13.4744 17.8849 13.2522 18.1072C13.0299 18.3294 12.7285 18.4539 12.4138 18.4539H3.58608C2.93089 18.4539 2.40017 17.9231 2.40017 17.2688V5.73762H13.5998L13.5998 17.2688ZM15.0506 4.78996H0.949274V3.78895C0.949274 3.56404 1.08707 3.39512 1.20797 3.39512H14.792C14.9129 3.39512 15.0507 3.56314 15.0507 3.78895L15.0506 4.78996ZM4.91788 16.5533V7.63931C4.91788 7.37706 5.13035 7.16548 5.3926 7.16548C5.65396 7.16548 5.86643 7.37706 5.86643 7.63931V16.5533C5.86643 16.8147 5.65396 17.0271 5.3926 17.0271C5.13035 17.0271 4.91788 16.8147 4.91788 16.5533ZM7.52531 16.5533L7.5262 7.63931C7.5262 7.37706 7.73778 7.16548 8.00003 7.16548C8.26228 7.16548 8.47386 7.37706 8.47386 7.63931V16.5533C8.47386 16.8147 8.26228 17.0271 8.00003 17.0271C7.73778 17.0271 7.5262 16.8147 7.5262 16.5533H7.52531ZM10.1327 16.5533L10.1336 7.63931C10.1336 7.37706 10.3461 7.16548 10.6075 7.16548C10.8697 7.16548 11.0822 7.37706 11.0822 7.63931V16.5533C11.0822 16.8147 10.8697 17.0271 10.6075 17.0271C10.3461 17.0271 10.1336 16.8147 10.1336 16.5533H10.1327Z"
-                                                                    fill="#B25657"
-                                                                />
-                                                            </svg>
-                                                        </button>
-                                                    </td> */}
+
 
                                                 </tr>
                                             ))
@@ -322,13 +328,65 @@ const RateDetails = () => {
                                                     No data added yet.
                                                 </td>
                                             </tr>
-                                        )}
+                                        )} */}
 
+
+                                        {tableData.length > 0 ? (
+                                            tableData.map((row, index) => (
+                                                <tr key={index}>
+                                                    <td className="text-start">{index + 1}</td>
+                                                    <td className="text-start">{row.material_type}</td>
+                                                    <td className="text-start">{row.material_name}</td>
+                                                    <td className="text-start">{row.material_sub_type}</td>
+                                                    <td className="text-start">{row.generic_info}</td>
+                                                    <td className="text-start">{row.color}</td>
+                                                    <td className="text-start">{row.brand}</td>
+                                                    <td className="text-start">{row.effective_date}</td>
+                                                    <td className="text-start">
+                                                        {row.rate}
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={row.rateChecked || false}
+                                                            disabled
+                                                            style={{ marginLeft: 8 }}
+                                                        />
+                                                    </td>
+                                                    <td className="text-start">
+                                                        {row.avgRate || "0"}
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={row.avgRateChecked || false}
+                                                            disabled
+                                                            style={{ marginLeft: 8 }}
+                                                        />
+                                                    </td>
+                                                    <td className="text-start">
+                                                        {row.poRate || "0"}
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={row.poRateChecked || false}
+                                                            disabled
+                                                            style={{ marginLeft: 8 }}
+                                                        />
+                                                    </td>
+                                                    <td className="text-start">{row.uom}</td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="12" className="text-center">
+                                                    No data found.
+                                                </td>
+                                            </tr>
+                                        )}
 
                                     </tbody>
                                 </table>
                             </div>
                         </div>
+                            </div>
+                        </div>
+                       
 
                         <div className="row w-100 ">
                             <div className="col-md-12 ">
@@ -388,7 +446,7 @@ const RateDetails = () => {
                                 <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
                             </div>
                             <div className="col-md-2">
-                                <button className="purple-btn1 w-100">Cancle</button>
+                                <button className="purple-btn1 w-100" onClick={() => navigate("/view-rate")}>Cancle</button>
                             </div>
                         </div>
 

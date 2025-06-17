@@ -103,6 +103,10 @@ import MaterialReconciliationEdit from "./pages/material-reconciliation-edit";
 import GatePassCreate from "./pages/gate-pass-create";
 import GatePassList from "./pages/gate-pass-list";
 import ConfirmationPage from "./pages/confirmation";
+import ApprovalMatrixCreate from "./pages/vendor-approval-create";
+import VendorApprovalList from "./pages/vendor-approval-list";
+import VendorApprovalEdit from "./pages/vendor-approval-edit";
+import EditRate from "./pages/edit-rate";
 
 function App() {
   return (
@@ -110,6 +114,10 @@ function App() {
       <div>
         <Routes>
           <Route path="/" element={<Members />} />
+          <Route path="/create-rate" element={<CreateRate />} />
+            <Route path="/view-rate" element={<ViewRate />} />
+            <Route path="/details-rate/:id" element={<RateDetails />} />
+            <Route path="/edit-rate/:id" element={<EditRate />} />
           <Route path="/confirmation" element={<ConfirmationPage />} />
           <Route path="/gate-pass-create" element={<GatePassCreate />} />
           <Route path="/gate-pass-list" element={<GatePassList />} />
@@ -285,9 +293,7 @@ function App() {
               path="/boq-approval-details"
               element={<BOQApprovalDetails />}
             />
-            <Route path="/create-rate" element={<CreateRate />} />
-            <Route path="/view-rate" element={<ViewRate />} />
-            <Route path="/details-rate/:id" element={<RateDetails />} />
+            
 
             <Route
               path="/estimation-details-wings"
@@ -359,8 +365,8 @@ function App() {
               path="/boq-approval-details"
               element={<BOQApprovalDetails />}
             />
-            <Route path="/create-rate" element={<CreateRate />} />
-            <Route path="/view-rate" element={<ViewRate />} />
+            {/* <Route path="/create-rate" element={<CreateRate />} /> */}
+            {/* <Route path="/view-rate" element={<ViewRate />} /> */}
             <Route path="/estimation-list" element={<EstimationList />} />
             <Route
               path="/estimation-details-wings"
@@ -512,6 +518,19 @@ function App() {
             path="/miscellaneous-bill-edit/:id"
             element={<MiscellaneousBillEdit />}
           />
+           <Route
+            path="/vendor-approval-create"
+            element={<ApprovalMatrixCreate />}
+          />
+          <Route
+            path="/vendor-approval-list"
+            element={<VendorApprovalList />}
+          />
+          <Route
+            path="/vendor-approval-edit/:id"
+            element={<VendorApprovalEdit />}
+          />
+
         </Routes>
       </div>
     </BrowserRouter>
