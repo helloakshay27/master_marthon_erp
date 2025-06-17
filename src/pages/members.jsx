@@ -272,6 +272,21 @@ function Members() {
                   <Link to="/view-rate">Rate List</Link>
                 </li>
               </ul>
+              <h1>Gate Pass</h1>
+              <ul>
+                <li>
+                  <Link to="/gate-pass-create"> Gate Pass Create</Link>
+                </li>
+                <li>
+                  <Link to="/gate-pass-list">Gate pass List</Link>
+                </li>
+              </ul>
+              <h1>Vendor REkyc</h1>
+              <ul>
+                <li>
+                  <Link to="/rekyc/:id">Section Re KYC Details</Link>
+                </li>
+              </ul>
               <h1>BOQ</h1>
               <ul>
                 <li>
@@ -658,8 +673,8 @@ function Members() {
                   <Link to="/approvals-list">approvals_list</Link>
                 </li>
                 <li>
-                <Link to="/rekyc/:id">Section Re KYC Details</Link>
-              </li>
+                  <Link to="/rekyc/:id">Section Re KYC Details</Link>
+                </li>
               </ul>
             </div>
 
