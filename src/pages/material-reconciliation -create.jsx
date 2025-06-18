@@ -332,13 +332,26 @@ const MaterialReconciliationCreate = () => {
 
   // Fetching inventory types data from API on component mount
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+
+    if (!token) {
+      console.error("No token found in URL");
+      return;
+    }
+
     axios
       .get(
         `${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`
       )
       .then((response) => {
+        // Check if response.data is an array or has a data property
+        const inventoryData = Array.isArray(response.data)
+          ? response.data
+          : response.data.inventory_types || [];
+
         // Map the fetched data to the format required by react-select
-        const options = response.data.map((inventory) => ({
+        const options = inventoryData.map((inventory) => ({
           value: inventory.id,
           label: inventory.name,
         }));
@@ -346,6 +359,7 @@ const MaterialReconciliationCreate = () => {
       })
       .catch((error) => {
         console.error("Error fetching inventory types:", error);
+        setInventoryTypes([]); // Set empty array in case of error
       });
   }, []); // Empty dependency array to run only once on mount
 
@@ -481,7 +495,7 @@ const MaterialReconciliationCreate = () => {
         .then((response) => {
           const options = response.data.map((brand) => ({
             value: brand.id,
-            label: brand.name,
+            label: brand.brand_name,
           }));
           setBrands(options);
         })
@@ -624,7 +638,24 @@ const MaterialReconciliationCreate = () => {
     // Create filters object with selected values
     const filters = {};
 
-    // Add each selected value to filters if it exists
+    // Add company, project, site, wing, and store filters
+    if (selectedCompany?.value) {
+      filters.company_id = selectedCompany.value;
+    }
+    if (selectedProject?.value) {
+      filters.project_id = selectedProject.value;
+    }
+    if (selectedSite?.value) {
+      filters.site_id = selectedSite.value;
+    }
+    if (selectedWing?.value) {
+      filters.wing_id = selectedWing.value;
+    }
+    if (selectedStore?.value) {
+      filters.store_id = selectedStore.value;
+    }
+
+    // Add material related filters
     if (selectedInventory?.map((item) => item.value).length > 0) {
       filters.material_type_id = selectedInventory
         .map((item) => item.value)
@@ -663,7 +694,24 @@ const MaterialReconciliationCreate = () => {
     // Create filters object with selected values
     const filters = {};
 
-    // Add each selected value to filters if it exists
+    // Add company, project, site, wing, and store filters
+    if (selectedCompany?.value) {
+      filters.company_id = selectedCompany.value;
+    }
+    if (selectedProject?.value) {
+      filters.project_id = selectedProject.value;
+    }
+    if (selectedSite?.value) {
+      filters.site_id = selectedSite.value;
+    }
+    if (selectedWing?.value) {
+      filters.wing_id = selectedWing.value;
+    }
+    if (selectedStore?.value) {
+      filters.store_id = selectedStore.value;
+    }
+
+    // Add material related filters
     if (selectedInventory?.map((item) => item.value).length > 0) {
       filters.material_type_id = selectedInventory
         .map((item) => item.value)

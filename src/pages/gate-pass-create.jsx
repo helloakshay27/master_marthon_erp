@@ -14,6 +14,7 @@ const GatePassCreate = () => {
     sub_project_id: null,
     gate_pass_no: "",
     gate_pass_type: "",
+    is_returnable: "returnable", // Default to returnable
     store_id: null,
     mto_po_number: "",
     to_store_id: null,
@@ -33,11 +34,19 @@ const GatePassCreate = () => {
   const [stores, setStores] = useState([]);
   const [toStores, setToStores] = useState([]);
   const [gatePassTypes, setGatePassTypes] = useState([
-    { value: "returnable", label: "Returnable" },
-    { value: "non_returnable", label: "Non-Returnable" },
+    { value: "transfer_to_site", label: "Transfer to Site" },
+    { value: "return_to_vendor", label: "Return to Vendor" },
+    { value: "repair_maintenance", label: "Repair/Maintenance" },
+    { value: "general", label: "General" },
+    { value: "testing_calibration", label: "Testing/Calibration" },
   ]);
   const [showMaterialModal, setShowMaterialModal] = useState(false);
   const navigate = useNavigate();
+
+  const [vendorTypes] = useState([
+    { value: "master", label: "Master Vendor" },
+    { value: "non_master", label: "Non-Master Vendor" },
+  ]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,7 +61,13 @@ const GatePassCreate = () => {
       return;
     }
     if (!formData.mto_po_number) {
-      alert("Please enter MTO/PO Number");
+      if (formData.gate_pass_type === "transfer_to_site") {
+        alert("Please enter MTO/SO Number");
+      } else if (formData.gate_pass_type === "repair_maintenance") {
+        alert("Please select To Vendor");
+      } else {
+        alert("Please enter PO/WO Number");
+      }
       return;
     }
     if (!formData.vehicle_no) {
@@ -61,6 +76,13 @@ const GatePassCreate = () => {
     }
     if (!formData.gate_pass_date_time) {
       alert("Please enter Gate Pass Date & Time");
+      return;
+    }
+    if (
+      formData.gate_pass_type === "return_to_vendor" &&
+      !formData.expected_return_date
+    ) {
+      alert("Please enter Expected Return Date for Return to Vendor");
       return;
     }
     if (formData.material_items.length === 0) {
@@ -160,6 +182,23 @@ const GatePassCreate = () => {
     }
   };
 
+  const getHeaderTitle = () => {
+    switch (formData.gate_pass_type) {
+      case "transfer_to_site":
+        return "Transfer to Site";
+      case "return_to_vendor":
+        return "Return to Vendor";
+      case "repair_maintenance":
+        return "Repair/Maintenance";
+      case "general":
+        return "General";
+      case "testing_calibration":
+        return "Testing/Calibration";
+      default:
+        return "Create Gate Pass";
+    }
+  };
+
   return (
     <div className="main-content">
       <div className="website-content overflow-auto">
@@ -167,13 +206,63 @@ const GatePassCreate = () => {
           <a href="">Home &gt; Store &gt; Store Operations &gt; Gate Pass</a>
           <h5 className="mt-3">Gate Pass list</h5>
           <div className="head-material text-center">
-            <h4>Return to Vendor</h4>
+            <h4>{getHeaderTitle()}</h4>
           </div>
           <div className="card card-default mt-5 p-2b-4">
             <div className="card-header3">
-              <h3 className="card-title">Create Gate Pass</h3>
+              <h3 className="card-title">{getHeaderTitle()}</h3>
             </div>
             <div className="card-body">
+              {/* Radio buttons for Returnable/Non-Returnable */}
+              <div className="row mb-4">
+                <div className="col-md-12">
+                  <div className="form-group">
+                    <label className="me-3">Returnable Status:</label>
+                    <div className="form-check form-check-inline">
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        name="isReturnable"
+                        id="returnable"
+                        value="returnable"
+                        checked={formData.is_returnable === "returnable"}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            is_returnable: e.target.value,
+                          })
+                        }
+                      />
+                      <label className="form-check-label" htmlFor="returnable">
+                        Returnable
+                      </label>
+                    </div>
+                    <div className="form-check form-check-inline">
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        name="isReturnable"
+                        id="nonReturnable"
+                        value="non_returnable"
+                        checked={formData.is_returnable === "non_returnable"}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            is_returnable: e.target.value,
+                          })
+                        }
+                      />
+                      <label
+                        className="form-check-label"
+                        htmlFor="nonReturnable"
+                      >
+                        Non-Returnable
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="row">
                 <div className="col-md-3">
                   <div className="form-group">
@@ -248,32 +337,65 @@ const GatePassCreate = () => {
                 </div>
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
-                    <label>Store</label>
+                    <label>From Store</label>
                     <SingleSelector
                       options={stores}
                       onChange={(selected) =>
                         setFormData({ ...formData, store_id: selected?.value })
                       }
                       value={stores.find((s) => s.value === formData.store_id)}
-                      placeholder="Select Store"
+                      placeholder="Select From Store"
                     />
                   </div>
                 </div>
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
-                    <label>MTO / PO Number *</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.mto_po_number}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          mto_po_number: e.target.value,
-                        })
-                      }
-                      placeholder="Enter MTO/PO Number"
-                    />
+                    {formData.gate_pass_type === "repair_maintenance" ? (
+                      <>
+                        <label>To Vendor *</label>
+                        <SingleSelector
+                          options={vendorTypes}
+                          onChange={(selected) =>
+                            setFormData({
+                              ...formData,
+                              mto_po_number: selected?.value,
+                            })
+                          }
+                          value={vendorTypes.find(
+                            (v) => v.value === formData.mto_po_number
+                          )}
+                          placeholder="Select Vendor Type"
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <label>
+                          {formData.gate_pass_type === "transfer_to_site"
+                            ? "MTO/SO Number *"
+                            : formData.gate_pass_type === "return_to_vendor"
+                            ? "PO/WO No *"
+                            : "MTO/PO Number *"}
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={formData.mto_po_number}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              mto_po_number: e.target.value,
+                            })
+                          }
+                          placeholder={
+                            formData.gate_pass_type === "transfer_to_site"
+                              ? "Enter MTO/SO Number"
+                              : formData.gate_pass_type === "return_to_vendor"
+                              ? "Enter PO/WO No"
+                              : "Enter MTO/PO Number"
+                          }
+                        />
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="col-md-3 mt-2">
@@ -327,7 +449,10 @@ const GatePassCreate = () => {
                 </div>
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
-                    <label>Expected Return Date</label>
+                    <label>
+                      Expected Return Date{" "}
+                      {formData.gate_pass_type === "return_to_vendor" && "*"}
+                    </label>
                     <input
                       type="date"
                       className="form-control"
@@ -338,6 +463,7 @@ const GatePassCreate = () => {
                           expected_return_date: e.target.value,
                         })
                       }
+                      required={formData.gate_pass_type === "return_to_vendor"}
                     />
                   </div>
                 </div>
@@ -420,15 +546,6 @@ const GatePassCreate = () => {
 
               <div className="d-flex justify-content-between align-items-end px-2 mt-3">
                 <h5>Material / Asset Details</h5>
-                <button
-                  className="purple-btn2"
-                  onClick={() => setShowMaterialModal(true)}
-                >
-                  <span className="material-symbols-outlined align-text-top">
-                    add
-                  </span>
-                  <span>Add Material</span>
-                </button>
               </div>
 
               <div className="tbl-container mx-2 mt-3">
