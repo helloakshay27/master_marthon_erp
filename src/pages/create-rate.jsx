@@ -7,7 +7,8 @@ import { Modal, Button, Form } from 'react-bootstrap';
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
-// import Modal from "react-bootstrap/Modal";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CreateRate = () => {
     const navigate = useNavigate();
@@ -18,10 +19,8 @@ const CreateRate = () => {
     const [checkbox2, setCheckbox2] = useState(false);
     const [isEditing, setIsEditing] = useState(false);  // State to manage edit mode
     const [validationMsg, setValidationMsg] = useState("");
-    // // Handle edit button click
-    // const handleEditClick = () => {
-    //     setIsEditing(!isEditing);  // Toggle edit mode
-    // };
+    const [fieldErrors, setFieldErrors] = useState({});
+    const [loading, setLoading] = useState(false); // Add loading state
 
     // Handle rate input change
     const handleRateChange = (e, rowIndex) => {
@@ -38,24 +37,6 @@ const CreateRate = () => {
 
     };
 
-    // Handle checkbox change
-    // const handleCheckboxChange = (checkboxNum) => {
-    //     if (checkboxNum === 1) {
-    //         setCheckbox1(!checkbox1);
-    //         // Disable the rate input and checkbox 2 when checkbox 1 is selected
-    //         if (!checkbox1) {
-    //             setCheckbox2(false);  // Deselect checkbox 2
-    //             // setRate('');           // Clear rate input
-    //         }
-    //     } else if (checkboxNum === 2) {
-    //         setCheckbox2(!checkbox2);
-    //         // Disable the rate input and checkbox 1 when checkbox 2 is selected
-    //         if (!checkbox2) {
-    //             setCheckbox1(false);  // Deselect checkbox 1
-    //             // setRate('');           // Clear rate input
-    //         }
-    //     }
-    // };
 
     // modal data dd to table 
     const [tableData, setTableData] = useState([]); // State for table rows
@@ -135,125 +116,82 @@ const CreateRate = () => {
 
     // console.log("form data:",formData)
     // Handle form submission
-    // const handleCreate = (e) => {
-    //     e.preventDefault();
-    //     // Check for duplicate combination
-    // const isDuplicate = tableData.some(row =>
-    //     row.materialSubType === formData.materialSubType &&
-    //     row.material === formData.material &&
-    //     row.genericSpecification === formData.genericSpecification &&
-    //     row.colour === formData.colour &&
-    //     row.brand === formData.brand
-    // );
-
-    // if (isDuplicate) {
-    //     setValidationMsg("This combination is already exists.");
-    //     return;
-    // } else {
-    //     setValidationMsg(""); // Clear message if not duplicate
-    // }
-
-    //     setTableData((prevData) => [...prevData, formData]); // Add form data to table
-    //     setFormData({
-    //         materialType: "",
-    //         materialSubType: "",
-    //         material: "",
-    //         genericSpecification: "",
-    //         colour: "",
-    //         brand: "",
-    //         effectiveDate: "",
-    //         rate: "",
-    //         poRate: "",
-    //         avgRate: "",
-    //         uom: "",
-    //     }); // Reset form
-    //     setShowModal(false); // Close modal
-    // };
-
 
     const handleCreate = (e) => {
-    e.preventDefault();
+        e.preventDefault();
+        const errors = {};
 
-    // Add the new row
-    const newTableData = [...tableData, formData];
+        if (!formData.materialType) errors.materialType = "Material Type is required.";
+        if (!formData.materialSubType) errors.materialSubType = "Material Sub Type is required.";
+        if (!formData.uom) errors.uom = "UOM is required.";
 
-    // Find if the new row is a duplicate of any previous row
-   const isDuplicate = tableData.some(row =>
-        row.materialSubType === formData.materialSubType &&
-        row.material === formData.material &&
-        row.genericSpecification === formData.genericSpecification &&
-        row.colour === formData.colour &&
-        row.brand === formData.brand
-    );
-    // Mark only the last (newly added) row as duplicate if needed
-    const updatedTableData = newTableData.map((row, idx) => {
-        // if (idx === newTableData.length - 1) {
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
+            return;
+        }
+        // Add the new row
+        const newTableData = [...tableData, formData];
+
+        // Find if the new row is a duplicate of any previous row
+        const isDuplicate = tableData.some(row =>
+            row.materialSubType === formData.materialSubType &&
+            row.material === formData.material &&
+            row.genericSpecification === formData.genericSpecification &&
+            row.colour === formData.colour &&
+            row.brand === formData.brand
+        );
+
+        if (isDuplicate) {
+            toast.error("This combination already exists.");
+            return; // Don't add the duplicate entry
+        }
+        // Mark only the last (newly added) row as duplicate if needed
+        const updatedTableData = newTableData.map((row, idx) => {
+            // if (idx === newTableData.length - 1) {
+            //     return { ...row, isDuplicate };
+            // }
+            // // Remove duplicate flag from previous rows
+            // const { isDuplicate, ...rest } = row;
+            // return rest;
+
+            if (idx === newTableData.length - 1) {
+                return { ...row, isDuplicate };
+            }
+            return row;
+        });
+
+
+        // Mark duplicates in the table
+        // const updatedTableData = newTableData.map((row, idx, arr) => {
+        //     const isDuplicate = arr.some((otherRow, otherIdx) =>
+        //         otherIdx !== idx &&
+        //         row.materialSubType === otherRow.materialSubType &&
+        //         row.material === otherRow.material &&
+        //         row.genericSpecification === otherRow.genericSpecification &&
+        //         row.colour === otherRow.colour &&
+        //         row.brand === otherRow.brand
+        //     );
         //     return { ...row, isDuplicate };
-        // }
-        // // Remove duplicate flag from previous rows
-        // const { isDuplicate, ...rest } = row;
-        // return rest;
+        // });
 
-          if (idx === newTableData.length - 1) {
-        return { ...row, isDuplicate };
-    }
-    return row;
-    });
+        setTableData(updatedTableData);
 
+        setFormData({
+            materialType: "",
+            materialSubType: "",
+            material: "",
+            genericSpecification: "",
+            colour: "",
+            brand: "",
+            effectiveDate: "",
+            rate: "",
+            poRate: "",
+            avgRate: "",
+            uom: "",
+        }); // Reset form
+        setShowModal(false); // Close modal
+    };
 
-    // Mark duplicates in the table
-    // const updatedTableData = newTableData.map((row, idx, arr) => {
-    //     const isDuplicate = arr.some((otherRow, otherIdx) =>
-    //         otherIdx !== idx &&
-    //         row.materialSubType === otherRow.materialSubType &&
-    //         row.material === otherRow.material &&
-    //         row.genericSpecification === otherRow.genericSpecification &&
-    //         row.colour === otherRow.colour &&
-    //         row.brand === otherRow.brand
-    //     );
-    //     return { ...row, isDuplicate };
-    // });
-
-    setTableData(updatedTableData);
-
-    setFormData({
-        materialType: "",
-        materialSubType: "",
-        material: "",
-        genericSpecification: "",
-        colour: "",
-        brand: "",
-        effectiveDate: "",
-        rate: "",
-        poRate: "",
-        avgRate: "",
-        uom: "",
-    }); // Reset form
-    setShowModal(false); // Close modal
-};
-
-
-    // const handleCheckboxChange = (checkboxNum) => {
-    //     if (checkboxNum === 1) {
-    //         setCheckbox1(!checkbox1);
-    //         setFormData((prevData) => ({
-    //             ...prevData,
-    //             avgRate: !checkbox1 ? prevData.rate : "", // Set avgRate if selected, clear if deselected
-    //         }));
-    //         if (!checkbox1) {
-    //             setCheckbox2(false); // Deselect checkbox 2
-    //         }
-    //     } else if (checkboxNum === 2) {
-    //         setCheckbox2(!checkbox2);
-    //         setFormData((prevData) => ({
-    //             ...prevData,
-    //             poRate: !checkbox2 ? prevData.rate : "", // Set poRate if selected, clear if deselected
-    //         }));
-    //         if (!checkbox2) {
-    //             setCheckbox1(false); // Deselect checkbox 1
-    //         }
-    //     }
-    // };
 
     const handleCheckboxChange = (checkboxType, rowIndex) => {
         setTableData((prevData) =>
@@ -594,16 +532,6 @@ const CreateRate = () => {
         );
     };
 
-    // Add this function to check for duplicate combinations in your table data
-const isDuplicateCombination = (newRow) => {
-  return tableData.some(row =>
-    row.materialSubType === newRow.materialSubType &&
-    row.material === newRow.material &&
-    row.genericSpecification === newRow.genericSpecification &&
-    row.colour === newRow.colour &&
-    row.brand === newRow.brand
-  );
-};
 
     //date  modal
     const [showDateModal, setShowDateModal] = useState(false);
@@ -623,177 +551,112 @@ const isDuplicateCombination = (newRow) => {
     // console.log("date ranhe:", dateRange)
 
     // Add this function in your component for po avg rate
-const handleApplyDateRange = async () => {
-  try {
-    // Prepare the payload
-    const payload = {
-      rate_detail: {
-        company_id:  selectedCompany?.value || "", // Replace with your actual company id state/variable
-        from: dateRange.from,
-        to: dateRange.to,
-        materials: tableData.map(row => ({
-          material_id: row.material,
-          material_sub_type_id: row.materialSubType,
-          generic_info_id: row.genericSpecification || "",
-          colour_id: row.colour || "",
-          brand_id: row.brand || "",
-          uom_id: row.uom || ""
-        }))
-      }
+    const handleApplyDateRange = async () => {
+        try {
+            // Prepare the payload
+            const payload = {
+                rate_detail: {
+                    company_id: selectedCompany?.value || "", // Replace with your actual company id state/variable
+                    from: dateRange.from,
+                    to: dateRange.to,
+                    materials: tableData.map(row => ({
+                        material_id: row.material,
+                        material_sub_type_id: row.materialSubType,
+                        generic_info_id: row.genericSpecification || "",
+                        colour_id: row.colour || "",
+                        brand_id: row.brand || "",
+                        uom_id: row.uom || ""
+                    }))
+                }
+            };
+            console.log("payload detail porate:", payload)
+
+            // Call the API
+            const response = await axios.post(
+                "https://marathon.lockated.com/rate_details/get_avg_po_rate.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+                payload,
+                { headers: { "Content-Type": "application/json" } }
+            );
+
+
+            console.log("responce---------:", response.data)
+            // Update tableData with avg_rate and last_rate from response
+            const updatedTableData = tableData.map(row => {
+                const found = response.data.data.find(
+                    item =>
+                        item.material_id === row.material &&
+                        item.material_sub_type_id === row.materialSubType
+                );
+                return found
+                    ? { ...row, avgRate: found.avg_rate, poRate: found.last_rate }
+                    : row;
+            });
+            console.log("updated table data:", updatedTableData)
+            setTableData(updatedTableData);
+            setShowDateModal(false); // Close modal
+        } catch (error) {
+            console.error("Error fetching avg/po rates:", error);
+            setShowDateModal(false);
+        }
     };
-    console.log("payload detail porate:",payload)
 
-    // Call the API
-    const response = await axios.post(
-      "https://marathon.lockated.com/rate_details/get_avg_po_rate.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
-      payload,
-      { headers: { "Content-Type": "application/json" } }
-    );
-
-
-    console.log("responce:",response.data)
-    // Update tableData with avg_rate and last_rate from response
-    const updatedTableData = tableData.map(row => {
-      const found = response.data.data.find(
-        item =>
-          item.material_id === row.material &&
-          item.material_sub_type_id === row.materialSubType
-      );
-      return found
-        ? { ...row, avgRate: found.avg_rate, poRate: found.last_rate }
-        : row;
-    });
-console.log("updated table data:",updatedTableData)
-    setTableData(updatedTableData);
-    setShowDateModal(false); // Close modal
-  } catch (error) {
-    console.error("Error fetching avg/po rates:", error);
-    setShowDateModal(false);
-  }
-};
-
-
-// const handleApplyDateRange = async () => {
-//   try {
-//     // Prepare the payload object
-//     const rateDetail = {
-//       company_id: selectedCompany.value, // Replace with your actual company id
-//       from: dateRange.from,
-//       to: dateRange.to,
-//       materials: tableData.map(row => ({
-//         material_id: row.material,
-//         material_sub_type_id: row.materialSubType,
-//         generic_info_id: row.genericSpecification || "",
-//         colour_id: row.colour || "",
-//         brand_id: row.brand || "",
-//         uom_id: row.uom || ""
-//       }))
-//     };
-//     console.log("rate details:",rateDetail)
-
-//     // Pass as a JSON string in the query parameter
-//     const params = {
-//       token: "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
-//       rate_detail: JSON.stringify(rateDetail)
-//     };
-
-//     const response = await axios.get(
-//       "https://marathon.lockated.com/rate_details/get_avg_po_rate.json",
-//       { params }
-//     );
-
-
-//     console.log("responce:",response.data)
-//     // Update tableData with avg_rate and last_rate from response
-//     const updatedTableData = tableData.map(row => {
-//       const found = response.data.data.find(
-//         item =>
-//           item.material_id === row.material_id &&
-//           item.material_sub_type_id === row.material_sub_type_id
-//       );
-//       return found
-//         ? { ...row, avgRate: found.avg_rate, poRate: found.last_rate }
-//         : row;
-//     });
-
-//     setTableData(updatedTableData);
-//     setShowDateModal(false); // Close modal
-//   } catch (error) {
-//     console.error("Error fetching avg/po rates:", error);
-//     setShowDateModal(false);
-//   }
-// };
-    // const payload = {
-    //     rate_detail:{
-    //     company: selectedCompany?.value || "",
-    //     project: selectedProject?.value || "",
-    //     subProject: selectedSite?.value || "",
-    //     wing: selectedWing?.value || "",
-    //     materials: tableData.map(row => ({
-    //         material_id: row.material,
-    //         material_sub_type_id: row.materialSubType,
-    //         generic_info_id: row.genericSpecification || null,
-    //         colour_id: row.colour || null,
-    //         brand_id: row.brand || null,
-    //         uom_id: row.uom || null,
-    //         effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
-    //         rate: row.rate,
-    //         rate_type: row.rateType || null
-    //     }))
-    // }
-    //     // material: tableData.map(({ rateChecked, avgRateChecked, poRateChecked, ...rest }) => rest) || []
-    // }
 
     const payload = {
-  rate_detail: {
-    company: selectedCompany?.value || "",
-    project: selectedProject?.value || "",
-    subProject: selectedSite?.value || "",
-    wing: selectedWing?.value || "",
-    materials: tableData.map(row => {
-      const material = {
-        material_id: row.material,
-        material_sub_type_id: row.materialSubType,
-        generic_info_id: row.genericSpecification || null,
-        colour_id: row.colour || null,
-        brand_id: row.brand || null,
-        uom_id: row.uom || null,
-        effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
-        rate: row.rate,
-        rate_type: row.rateType || null
-      };
-      if (row.rateType === "average") {
-        material.avg_rate_from = dateRange.from||""; // or your dynamic value
-        material.avg_rate_to = dateRange.to||"";   // or your dynamic value
-      }
-    //   console.log("material add:",material)
-      return material;
-    })
-  }
-};
+        rate_detail: {
+            company: selectedCompany?.value || "",
+            project: selectedProject?.value || "",
+            subProject: selectedSite?.value || "",
+            wing: selectedWing?.value || "",
+            materials: tableData.map(row => {
+                const material = {
+                    material_id: row.material,
+                    material_sub_type_id: row.materialSubType,
+                    generic_info_id: row.genericSpecification || null,
+                    colour_id: row.colour || null,
+                    brand_id: row.brand || null,
+                    uom_id: row.uom || null,
+                    effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
+                    rate: row.rate,
+                    rate_type: row.rateType || null
+                };
+                if (row.rateType === "average") {
+                    material.avg_rate_from = dateRange.from || ""; // or your dynamic value
+                    material.avg_rate_to = dateRange.to || "";   // or your dynamic value
+                }
+                //   console.log("material add:",material)
+                return material;
+            })
+        }
+    };
 
-console.log("payload :", payload);
+    console.log("payload :", payload);
     // console.log("payload :", payload)
 
     const handleSubmit = () => {
-        const payload = {rate_detail:{
-            company_id: selectedCompany?.value || "",
-            project_id: selectedProject?.value || "",
-            pms_site_id: selectedSite?.value || "",
-            wing_id: selectedWing?.value || "",
-            materials: tableData.map(row => ({
-            material_id: row.material,
-            material_sub_type_id: row.materialSubType,
-            generic_info_id: row.genericSpecification || null,
-            colour_id: row.colour || null,
-            brand_id: row.brand || null,
-            uom_id: row.uom || null,
-            effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
-            rate: row.rate,
-            rate_type: row.rateType || null
-        }))
-    }
-           
+        if (tableData.length === 0) {
+            toast.error("Please add at least one material before submitting.");
+            return;
+        }
+        setLoading(true);
+        const payload = {
+            rate_detail: {
+                company_id: selectedCompany?.value || "",
+                project_id: selectedProject?.value || "",
+                pms_site_id: selectedSite?.value || "",
+                wing_id: selectedWing?.value || "",
+                materials: tableData.map(row => ({
+                    material_id: row.material,
+                    material_sub_type_id: row.materialSubType,
+                    generic_info_id: row.genericSpecification || null,
+                    colour_id: row.colour || null,
+                    brand_id: row.brand || null,
+                    uom_id: row.uom || null,
+                    effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
+                    rate: row.rate,
+                    rate_type: row.rateType || null
+                }))
+            }
+
         };
 
         console.log("Submitting payload:", payload);
@@ -803,15 +666,19 @@ console.log("payload :", payload);
         axios
             .post(`${baseURL}rate_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`, payload)
             .then((response) => {
-                 alert("Submission successful!");
+                alert("Submission successful!");
                 console.log("Submission successful:", response.data);
+                setLoading(false);
                 // Redirect to the list page
                 // navigate("/list-page"); // Replace "/list-page" with your actual list page route
                 navigate("/view-rate");
             })
             .catch((error) => {
-                 alert("Error submitting data!");
+                alert("Error submitting data!");
                 console.error("Error submitting data:", error);
+                setLoading(false);
+            }).finally(() => {
+                setLoading(false); // Always executed
             });
     };
     return (
@@ -879,7 +746,7 @@ console.log("payload :", payload);
                             </div>
                         </CollapsibleCard>
 
-{/* {tableData.map((row, idx) => (
+                        {/* {tableData.map((row, idx) => (
   <pre key={idx}>{JSON.stringify(row, null, 2)}</pre>
 ))} */}
                         <div className="d-flex justify-content-end mx-2">
@@ -888,7 +755,12 @@ console.log("payload :", payload);
                                 className="purple-btn2"
                                 data-bs-toggle="modal"
                                 data-bs-target="#addnewModal"
-                                onClick={() => setShowModal(true)}
+                                // onClick={() => setShowModal(true)}
+
+                                onClick={() => {
+                                    setFieldErrors({});
+                                    setShowModal(true);
+                                }}
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -959,39 +831,39 @@ console.log("payload :", payload);
                                                     {/* {console.log("materail type:", row.materialType)} */}
                                                     <td className="text-start">{row.materialTypeLabel}</td>
                                                     <td className="text-start">{row.materialLabel}
-                                                       {row.isDuplicate && (
-        <div className="text-danger" style={{ fontSize: "0.9rem" }}>
-          This combination already exists.
-        </div>
-      )}
+                                                        {row.isDuplicate && (
+                                                            <div className="text-danger" style={{ fontSize: "0.9rem" }}>
+                                                                This combination already exists.
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td className="text-start">{row.materialSubTypeLabel}
                                                         {row.isDuplicate && (
-        <div className="text-danger" style={{ fontSize: "0.9rem" }}>
-          This combination already exists.
-        </div>
-      )}
+                                                            <div className="text-danger" style={{ fontSize: "0.9rem" }}>
+                                                                This combination already exists.
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td className="text-start">{row.genericSpecificationLabel}
                                                         {row.isDuplicate && (
-        <div className="text-danger" style={{ fontSize: "0.9rem" }}>
-          This combination already exists.
-        </div>
-      )}
+                                                            <div className="text-danger" style={{ fontSize: "0.9rem" }}>
+                                                                This combination already exists.
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td className="text-start">{row.colourLabel}
                                                         {row.isDuplicate && (
-        <div className="text-danger" style={{ fontSize: "0.9rem" }}>
-          This combination already exists.
-        </div>
-      )}
+                                                            <div className="text-danger" style={{ fontSize: "0.9rem" }}>
+                                                                This combination already exists.
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td className="text-start">{row.brandLabel}
-                                                     {row.isDuplicate && (
-        <div className="text-danger" style={{ fontSize: "0.9rem" }}>
-          This combination already exists.
-        </div>
-      )}  
+                                                        {row.isDuplicate && (
+                                                            <div className="text-danger" style={{ fontSize: "0.9rem" }}>
+                                                                This combination already exists.
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td className="text-start">
                                                         {/* {row.effectiveDate} */}
@@ -1042,8 +914,8 @@ console.log("payload :", payload);
                                                                 disabled={row.rate !== "" || checkbox2}
                                                             />
                                                         </span> */}
-                                                        <span>{row.avgRate }</span>
-                                                        {console.log("avg rate:",row.avgRate)}
+                                                        <span>{row.avgRate}</span>
+                                                        {console.log("avg rate:", row.avgRate)}
                                                         <span className="ms-2 pt-2">
                                                             <input
                                                                 type="checkbox"
@@ -1062,7 +934,7 @@ console.log("payload :", payload);
                                                                 disabled={row.rate !== "" || checkbox1}
                                                             />
                                                         </span> */}
-                                                        <span>{row.poRate  }</span>
+                                                        <span>{row.poRate}</span>
                                                         <span className="ms-2 pt-2">
                                                             <input
                                                                 type="checkbox"
@@ -1145,14 +1017,28 @@ console.log("payload :", payload);
                         <div className="col-md-2 mt-2">
                             <button className="purple-btn2 w-100" onClick={handleSubmit}>Create</button>
                         </div>
-                         <div className="col-md-2">
+                        <div className="col-md-2">
                             <button className="purple-btn1 w-100" onClick={() => navigate("/view-rate")}>Cancle</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-
+{loading && (
+        <div className="loader-container">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>loading...</p>
+        </div>
+      )}
             {/* create modal  */}
             <Modal centered size="lg" show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
@@ -1166,24 +1052,30 @@ console.log("payload :", payload);
 
                             <div className="col-md-4 mt-3">
                                 <div className="form-group">
-                                    <label className="po-fontBold">Material Type</label>
+                                    <label className="po-fontBold">Material Type <span>*</span></label>
                                     <SingleSelector
                                         options={inventoryTypes2}  // Provide the fetched options to the select component
                                         value={inventoryTypes2.find((option) => option.value === formData.materialType)} // Bind value to state
                                         placeholder={`Select Material Type`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("materialType", selectedOption)}
                                     />
+                                    {fieldErrors.materialType && (
+                                        <span className="text-danger">{fieldErrors.materialType}</span>
+                                    )}
                                 </div>
                             </div>
                             <div className="col-md-4 mt-3">
                                 <div className="form-group">
-                                    <label className="po-fontBold">Material Sub Type</label>
+                                    <label className="po-fontBold">Material Sub Type <span>*</span></label>
                                     <SingleSelector
                                         options={inventorySubTypes2}
                                         value={inventorySubTypes2.find((option) => option.value === formData.materialSubType)} // Bind value to state
                                         placeholder={`Select Material Sub Type`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("materialSubType", selectedOption)}
                                     />
+                                    {fieldErrors.materialSubType && (
+                                        <span className="text-danger">{fieldErrors.materialSubType}</span>
+                                    )}
                                 </div>
                             </div>
                             <div className="col-md-4 mt-3">
@@ -1253,13 +1145,16 @@ console.log("payload :", payload);
                             </div>
                             <div className="col-md-4 mt-3">
                                 <div className="form-group">
-                                    <label className="po-fontBold">UOM</label>
+                                    <label className="po-fontBold">UOM <span>*</span></label>
                                     <SingleSelector
                                         options={unitOfMeasures}
                                         value={unitOfMeasures.find((option) => option.value === formData.uom)} // Bind value to state
                                         placeholder={`Select UOM`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("uom", selectedOption)}
                                     />
+                                    {fieldErrors.uom && (
+                                        <span className="text-danger">{fieldErrors.uom}</span>
+                                    )}
                                 </div>
                             </div>
                             <div className="row mt-2 justify-content-center mt-5">
@@ -1267,7 +1162,7 @@ console.log("payload :", payload);
                                     <button className="purple-btn2 w-100" onClick={handleCreate}>Add</button>
                                 </div>
                                 <div className="col-md-3">
-                                    <button className="purple-btn1 w-100" data-bs-dismiss="modal" aria-label="Close" onClick={() => setShowModal(false)}>Cancel</button>
+                                    <button type="button" className="purple-btn1 w-100" data-bs-dismiss="modal" aria-label="Close" onClick={() => setShowModal(false)}>Cancel</button>
                                 </div>
                             </div>
                         </div>
@@ -1332,6 +1227,7 @@ console.log("payload :", payload);
                     </button>
                 </Modal.Footer>
             </Modal>
+            <ToastContainer position="top-right" autoClose={3000} />
         </>
     )
 }

@@ -497,7 +497,24 @@ const MaterialReconciliationEdit = () => {
     try {
       let url = `${baseURL}mor_inventories/fetch_all_inventories.json?page=${page}&per_page=${pageSizeOverride}`;
 
-      // Updated filter keys
+      // Add company/project hierarchy filters
+      if (filters.company_id) {
+        url += `&q[company_id_eq]=${filters.company_id}`;
+      }
+      if (filters.project_id) {
+        url += `&q[project_id_eq]=${filters.project_id}`;
+      }
+      if (filters.site_id) {
+        url += `&q[site_id_eq]=${filters.site_id}`;
+      }
+      if (filters.wing_id) {
+        url += `&q[wing_id_eq]=${filters.wing_id}`;
+      }
+      if (filters.store_id) {
+        url += `&q[store_id_eq]=${filters.store_id}`;
+      }
+
+      // Add material related filters
       if (filters.material_type_id) {
         url += `&q[material_order_request_pms_inventory_type_id_in]=${filters.material_type_id}`;
       }
@@ -530,6 +547,16 @@ const MaterialReconciliationEdit = () => {
         total_pages: response.data.pagination.total_pages,
         total_count: response.data.pagination.total_count,
       });
+
+      // Set selected inventories based on existing items
+      const existingInventoryIds =
+        formData.material_reconciliation_items_attributes.map(
+          (item) => item.mor_inventory_id
+        );
+      const selectedItems = response.data.inventories.filter((inventory) =>
+        existingInventoryIds.includes(inventory.id)
+      );
+      setSelectedInventories(selectedItems);
     } catch (error) {
       console.error("Error fetching MOR inventories:", error);
     } finally {
@@ -551,7 +578,24 @@ const MaterialReconciliationEdit = () => {
     // Create filters object with selected values
     const filters = {};
 
-    // Add each selected value to filters if it exists
+    // Add company, project, site, wing, and store filters
+    if (selectedCompany?.value) {
+      filters.company_id = selectedCompany.value;
+    }
+    if (selectedProject?.value) {
+      filters.project_id = selectedProject.value;
+    }
+    if (selectedSite?.value) {
+      filters.site_id = selectedSite.value;
+    }
+    if (selectedWing?.value) {
+      filters.wing_id = selectedWing.value;
+    }
+    if (selectedStore?.value) {
+      filters.store_id = selectedStore.value;
+    }
+
+    // Add material related filters
     if (selectedInventory?.map((item) => item.value).length > 0) {
       filters.material_type_id = selectedInventory
         .map((item) => item.value)
@@ -589,7 +633,24 @@ const MaterialReconciliationEdit = () => {
     // Create filters object with selected values
     const filters = {};
 
-    // Add each selected value to filters if it exists
+    // Add company, project, site, wing, and store filters
+    if (selectedCompany?.value) {
+      filters.company_id = selectedCompany.value;
+    }
+    if (selectedProject?.value) {
+      filters.project_id = selectedProject.value;
+    }
+    if (selectedSite?.value) {
+      filters.site_id = selectedSite.value;
+    }
+    if (selectedWing?.value) {
+      filters.wing_id = selectedWing.value;
+    }
+    if (selectedStore?.value) {
+      filters.store_id = selectedStore.value;
+    }
+
+    // Add material related filters
     if (selectedInventory?.map((item) => item.value).length > 0) {
       filters.material_type_id = selectedInventory
         .map((item) => item.value)
@@ -894,6 +955,18 @@ const MaterialReconciliationEdit = () => {
             reason: item.reason,
           }))
         );
+
+        // Fetch initial inventory data with filters
+        const initialFilters = {
+          company_id: data.company.id,
+          project_id: data.project.id,
+          site_id: data.sub_project.id,
+          wing_id: data.wing?.id,
+          store_id: data.store.id,
+        };
+
+        // Fetch inventory data with initial filters
+        fetchAllMorInventories(1, initialFilters);
       })
       .catch((error) => {
         console.error("Error fetching data:", error);

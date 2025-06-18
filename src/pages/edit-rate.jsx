@@ -17,6 +17,7 @@ const EditRate = () => {
     const [checkbox2, setCheckbox2] = useState(false);
     const [rateDetails, setRateDetails] = useState(null);
     const [tableData, setTableData] = useState([]);
+    const [loading, setLoading] = useState(false);
     // State for table rows
     const [formData, setFormData] = useState({
         materialType: "",
@@ -33,6 +34,7 @@ const EditRate = () => {
         uom: "",
     });
     const fetchRateDetails = async (id) => {
+        setLoading(true);
         try {
             const response = await axios.get(
                 `https://marathon.lockated.com/rate_details/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
@@ -66,7 +68,7 @@ const EditRate = () => {
                 //     poRateChecked: mat.rate_type === "last",
                 //     // Add any other fields you need for editing
                 // })));
-
+                setLoading(false);
                 setTableData(
                     response.data.materials.map((mat) => {
                         let rate = "";
@@ -114,6 +116,7 @@ const EditRate = () => {
             }
         } catch (error) {
             console.error("Error fetching rate details:", error);
+            setLoading(false);
         }
     };
     useEffect(() => {
@@ -786,36 +789,36 @@ const EditRate = () => {
     console.log(" update payload :", payload)
 
     const handleSubmit = () => {
- const payload = {
-        rate_detail: {
-            materials: tableData.map(row => {
-                // For edited rows, use id; for new rows, use material_id etc.
-                const base = row.id
-                    ? { id: row.id }
-                    : {
-                        material_id: row.material,
-                        material_sub_type_id: row.materialSubType,
-                        generic_info_id: row.genericSpecification || "",
-                        colour_id: row.colour || "",
-                        brand_id: row.brand || "",
-                        uom_id: row.uom || ""
-                    };
+        const payload = {
+            rate_detail: {
+                materials: tableData.map(row => {
+                    // For edited rows, use id; for new rows, use material_id etc.
+                    const base = row.id
+                        ? { id: row.id }
+                        : {
+                            material_id: row.material,
+                            material_sub_type_id: row.materialSubType,
+                            generic_info_id: row.genericSpecification || "",
+                            colour_id: row.colour || "",
+                            brand_id: row.brand || "",
+                            uom_id: row.uom || ""
+                        };
 
-                // Add common fields
-                base.effective_date = row.effectiveDate;
-                base.rate = row.rate;
-                base.rate_type = row.rateType;
+                    // Add common fields
+                    base.effective_date = row.effectiveDate;
+                    base.rate = row.rate;
+                    base.rate_type = row.rateType;
 
-                // Add avg_rate_from and avg_rate_to if rate_type is average
-                if (row.rateType === "average") {
-                    base.avg_rate_from = dateRange.from || "";
-                    base.avg_rate_to = dateRange.to || "";
-                }
+                    // Add avg_rate_from and avg_rate_to if rate_type is average
+                    if (row.rateType === "average") {
+                        base.avg_rate_from = dateRange.from || "";
+                        base.avg_rate_to = dateRange.to || "";
+                    }
 
-                return base;
-            })
-        }
-    };
+                    return base;
+                })
+            }
+        };
 
         console.log("Submitting payload update:", payload);
 
@@ -1180,7 +1183,21 @@ const EditRate = () => {
                 </div>
             </div>
 
-
+            {loading && (
+                <div className="loader-container">
+                    <div className="lds-ring">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <p>Loading...</p>
+                </div>
+            )}
             {/* create modal  */}
             <Modal centered size="lg" show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
