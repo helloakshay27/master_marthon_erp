@@ -763,7 +763,7 @@ const ViewRate = () => {
                         <div className="d-flex justify-content-between align-items-center">
                             {/* Left: Download sample format */}
                             <a
-                                href="/path/to/sample-format.xlsx"
+                                href="https://marathon.lockated.com/rate_details/download_rate_sample.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
                                 download
                                 className="d-flex align-items-center text-decoration-none"
                                 style={{ color: "#8b0203" }}
