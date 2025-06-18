@@ -19,10 +19,13 @@ const RateDetails = () => {
     const [tableData, setTableData] = useState([]);
     const [status, setStatus] = useState('');
     const [remark, setRemark] = useState('');
+    const [loading, setLoading] = useState(false);
     const [loading2, setLoading2] = useState(false);  // State for loading indicator
+    const [selectedMaterial, setSelectedMaterial] = useState(null);
 
 
     const fetchRateDetails = async (id) => {
+        setLoading(true);
         try {
             const response = await axios.get(
                 `https://marathon.lockated.com/rate_details/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
@@ -38,7 +41,7 @@ const RateDetails = () => {
                 //       poRateChecked: mat.rate_type === "last",
                 //     }))
                 //   );
-
+                setLoading(false);
 
                 setTableData(
                     response.data.materials.map((mat) => {
@@ -70,6 +73,7 @@ const RateDetails = () => {
             }
         } catch (error) {
             console.error("Error fetching rate details:", error);
+            setLoading(false);
         }
     };
     useEffect(() => {
@@ -77,10 +81,10 @@ const RateDetails = () => {
     }, [id]);
 
     const statusOptions = [
-        {
-            label: "Select Status",
-            value: "",
-        },
+        // {
+        //     label: "Select Status",
+        //     value: "",
+        // },
         ...(rateDetails?.status_list || []).map((status) => ({
             label: status,
             value: status.toLowerCase(),
@@ -154,6 +158,32 @@ const RateDetails = () => {
         }
     };
 
+    const [showDateModal, setShowDateModal] = useState(false);
+    const formatDate = (date) => {
+        const d = new Date(date);
+        const day = String(d.getDate()).padStart(2, "0");
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
+
+    const [dateRange, setDateRange] = useState({
+        from: formatDate(new Date(new Date().setMonth(new Date().getMonth() - 6))), // 6 months ago
+        to: formatDate(new Date()), // Today's date
+    });
+
+
+
+    const openDateModal = (material) => {
+        if (material.rate_type === "average" && material.avg_rate_from && material.avg_rate_to) {
+            setDateRange({
+                from: formatDate(material.avg_rate_from), // Format to DD/MM/YYYY
+                to: formatDate(material.avg_rate_to),
+            });
+            setSelectedMaterial(material);
+        }
+        setShowDateModal(true);
+    };
 
     const handleCancel = () => {
         // setStatus(initialStatus); // Reset status to the initial value
@@ -250,31 +280,31 @@ const RateDetails = () => {
                                     </div>
                                 </div>
 
- <div className="mt-5 mb-4 mx-3">
-     {/* <h5 className="mb-3">Materials</h5> */}
-                            <div className="tbl-container  mt-1">
-                                <table className="w-100">
-                                    <thead>
-                                        <tr>
-                                            <th className="text-start">Sr.No.</th>
-                                            <th className="text-start">Material Type</th>
-                                            <th className="text-start">Material</th>
-                                            <th className="text-start">Material Sub-Type</th>
-                                            <th className="text-start">Generic Specification</th>
-                                            <th className="text-start">Colour</th>
-                                            <th className="text-start">Brand</th>
+                                <div className="mt-5 mb-4 mx-3">
+                                    {/* <h5 className="mb-3">Materials</h5> */}
+                                    <div className="tbl-container  mt-1">
+                                        <table className="w-100">
+                                            <thead>
+                                                <tr>
+                                                    <th className="text-start">Sr.No.</th>
+                                                    <th className="text-start">Material Type</th>
+                                                    <th className="text-start">Material</th>
+                                                    <th className="text-start">Material Sub-Type</th>
+                                                    <th className="text-start">Generic Specification</th>
+                                                    <th className="text-start">Colour</th>
+                                                    <th className="text-start">Brand</th>
 
-                                            <th className="text-start">Effective Date</th>
-                                            <th className="text-start">Rate (INR)
-                                                {/* <span className="ms-2 pt-2">
+                                                    <th className="text-start">Effective Date</th>
+                                                    <th className="text-start">Rate (INR)
+                                                        {/* <span className="ms-2 pt-2">
                                                     <input type="checkbox" />
                                                 </span> */}
-                                            </th>
-                                            <th className="text-start">AVG Rate
-                                                {/* <span className="ms-2 pt-2">
+                                                    </th>
+                                                    <th className="text-start">AVG Rate
+                                                        {/* <span className="ms-2 pt-2">
                                                     <input type="checkbox" />
                                                 </span> */}
-                                                {/* <span className="ms-2 pt-2" onClick={() => setShowDateModal(true)} style={{ cursor: "pointer" }}>
+                                                        {/* <span className="ms-2 pt-2" onClick={() => setShowDateModal(true)} style={{ cursor: "pointer" }}>
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         width="16"
@@ -286,20 +316,20 @@ const RateDetails = () => {
                                                         <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1zm2-3v1h8V1H3z" />
                                                     </svg>
                                                 </span> */}
-                                            </th>
-                                            <th className="text-start">PO Rate
-                                                {/* <span className="ms-2 pt-2">
+                                                    </th>
+                                                    <th className="text-start">PO Rate
+                                                        {/* <span className="ms-2 pt-2">
                                                     <input type="checkbox" />
                                                 </span> */}
-                                            </th>
-                                            <th className="text-start">UOM</th>
-                                            {/* <th className="text-start">Action</th> */}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                                                    </th>
+                                                    <th className="text-start">UOM</th>
+                                                    {/* <th className="text-start">Action</th> */}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
 
 
-                                        {/* {rateDetails?.materials?.length > 0 ? (
+                                                {/* {rateDetails?.materials?.length > 0 ? (
                                             rateDetails?.materials?.map((row, index) => (
                                                 <tr key={index} >
                                                     <td className="text-start"> {index + 1}</td>
@@ -331,62 +361,91 @@ const RateDetails = () => {
                                         )} */}
 
 
-                                        {tableData.length > 0 ? (
-                                            tableData.map((row, index) => (
-                                                <tr key={index}>
-                                                    <td className="text-start">{index + 1}</td>
-                                                    <td className="text-start">{row.material_type}</td>
-                                                    <td className="text-start">{row.material_name}</td>
-                                                    <td className="text-start">{row.material_sub_type}</td>
-                                                    <td className="text-start">{row.generic_info}</td>
-                                                    <td className="text-start">{row.color}</td>
-                                                    <td className="text-start">{row.brand}</td>
-                                                    <td className="text-start">{row.effective_date}</td>
-                                                    <td className="text-start">
-                                                        {row.rate}
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={row.rateChecked || false}
-                                                            disabled
-                                                            style={{ marginLeft: 8 }}
-                                                        />
-                                                    </td>
-                                                    <td className="text-start">
-                                                        {row.avgRate || "0"}
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={row.avgRateChecked || false}
-                                                            disabled
-                                                            style={{ marginLeft: 8 }}
-                                                        />
-                                                    </td>
-                                                    <td className="text-start">
-                                                        {row.poRate || "0"}
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={row.poRateChecked || false}
-                                                            disabled
-                                                            style={{ marginLeft: 8 }}
-                                                        />
-                                                    </td>
-                                                    <td className="text-start">{row.uom}</td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="12" className="text-center">
-                                                    No data found.
-                                                </td>
-                                            </tr>
-                                        )}
+                                                {tableData.length > 0 ? (
+                                                    tableData.map((row, index) => (
+                                                        <tr key={index}>
+                                                            <td className="text-start">{index + 1}</td>
+                                                            <td className="text-start">{row.material_type}</td>
+                                                            <td className="text-start">{row.material_name}</td>
+                                                            <td className="text-start">{row.material_sub_type}</td>
+                                                            <td className="text-start">{row.generic_info}</td>
+                                                            <td className="text-start">{row.color}</td>
+                                                            <td className="text-start">{row.brand}</td>
+                                                            <td className="text-start">{row.effective_date}</td>
+                                                            <td className="text-start">
+                                                                {row.rate}
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={row.rateChecked || false}
+                                                                    disabled
+                                                                    style={{ marginLeft: 8 }}
+                                                                />
+                                                            </td>
+                                                            <td className="text-start">
+                                                                {row.avgRate || "0"}
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={row.avgRateChecked || false}
+                                                                    disabled
+                                                                    style={{ marginLeft: 8 }}
+                                                                />
 
-                                    </tbody>
-                                </table>
+                                                                {row.rate_type === "average" ? (
+                                                                    // <button
+                                                                    //   className="btn btn-link p-0"
+                                                                    //   onClick={() => openDateModal(row)}
+                                                                    // >
+                                                                    //   View Date Range
+                                                                    // </button>
+
+                                                                    <span
+                                                                        className="ms-2 pt-2"
+                                                                        onClick={() => openDateModal(row)}
+                                                                        style={{ cursor: "pointer" }}
+                                                                        title="View Date Range"
+                                                                    >
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            width="16"
+                                                                            height="16"
+                                                                            fill="currentColor"
+                                                                            className="bi bi-calendar"
+                                                                            viewBox="0 0 16 16"
+                                                                        >
+                                                                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1zm2-3v1h8V1H3z" />
+                                                                        </svg>
+                                                                    </span>
+                                                                ) : (
+                                                                    ""
+                                                                )}
+                                                            </td>
+                                                            <td className="text-start">
+                                                                {row.poRate || "0"}
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={row.poRateChecked || false}
+                                                                    disabled
+                                                                    style={{ marginLeft: 8 }}
+                                                                />
+                                                            </td>
+                                                            <td className="text-start">{row.uom}</td>
+                                                        </tr>
+                                                    ))
+                                                ) : (
+                                                    <tr>
+                                                        <td colSpan="12" className="text-center">
+                                                            No data found.
+                                                        </td>
+                                                    </tr>
+                                                )}
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                            </div>
-                        </div>
-                       
+
 
                         <div className="row w-100 ">
                             <div className="col-md-12 ">
@@ -522,6 +581,79 @@ const RateDetails = () => {
                 </div>
 
             )}
+            {loading && (
+                <div className="loader-container">
+                    <div className="lds-ring">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <p>Loading...</p>
+                </div>
+            )}
+
+            {/* date modal */}
+            {/*  */}
+
+            <Modal centered size="md" show={showDateModal} onHide={() => setShowDateModal(false)}>
+                <Modal.Header closeButton>
+                    <h5>Selected Date Range</h5>
+                </Modal.Header>
+                <Modal.Body>
+                    <form>
+                        <div className="row">
+                            <div className="col-md-6">
+                                <div className="form-group">
+                                    <label>From</label>
+                                    <input
+                                        type="date"
+                                        className="form-control"
+                                        value={dateRange.from.split("/").reverse().join("-")}
+                                        disabled={selectedMaterial?.rate_type === "average" &&
+                                            selectedMaterial?.avg_rate_from &&
+                                            selectedMaterial?.avg_rate_to}
+                                        onChange={(e) =>
+                                            setDateRange((prev) => ({
+                                                ...prev,
+                                                from: formatDate(e.target.value),
+                                            }))
+                                        }
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-md-6">
+                                <div className="form-group">
+                                    <label>To</label>
+                                    <input
+                                        type="date"
+                                        className="form-control"
+                                        value={dateRange.to.split("/").reverse().join("-")}
+                                        disabled={selectedMaterial?.rate_type === "average" &&
+                                            selectedMaterial?.avg_rate_from &&
+                                            selectedMaterial?.avg_rate_to}
+                                        onChange={(e) =>
+                                            setDateRange((prev) => ({
+                                                ...prev,
+                                                to: formatDate(e.target.value),
+                                            }))
+                                        }
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <button className="purple-btn1" onClick={() => setShowDateModal(false)}>
+                        Close
+                    </button>
+                </Modal.Footer>
+            </Modal>
 
         </>
     )

@@ -9,15 +9,7 @@ import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import { toast, ToastContainer } from "react-toastify";
 
-const options = [
-    { value: "alabama", label: "Alabama" },
-    { value: "alaska", label: "Alaska" },
-    { value: "california", label: "California" },
-    { value: "delaware", label: "Delaware" },
-    { value: "tennessee", label: "Tennessee" },
-    { value: "texas", label: "Texas" },
-    { value: "washington", label: "Washington" },
-];
+
 
 const ViewRate = () => {
     const [showModal, setShowModal] = useState(false);
@@ -26,6 +18,7 @@ const ViewRate = () => {
     const [showHistoryModal, setShowHistoryModal] = useState(false);
     const navigate = useNavigate();
     const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(false); // Add loading state
     const handleFileChange = (e) => setFile(e.target.files[0]);
 
     const handleSubmit = async (e) => {
@@ -71,12 +64,24 @@ const ViewRate = () => {
     };
 
     useEffect(() => {
+        setLoading(true);
         axios
             .get(
                 "https://marathon.lockated.com/rate_details.json?q[id_eq]=&q[projects_id_eq]=&q[pms_sites_id_eq]=&q[pms_wings_id_eq]=&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
             )
-            .then((response) => setData(response.data))
-            .catch((error) => console.error("Error fetching data:", error));
+            // .then((response) => setData(response.data))
+            // .catch((error) => console.error("Error fetching data:", error));
+            .then((response) => {
+                setData(response.data);
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.error("Error fetching data:", error);
+                setLoading(false);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     }, []);
 
     const handleClick = () => {
@@ -585,166 +590,21 @@ const ViewRate = () => {
                 </div>
             </div>
 
-            {/* edit modal  */}
-            <Modal centered size="lg" show={showEditModal} onHide={() => setShowEditModal(false)}>
-                <Modal.Header closeButton>
-                    <h5>Edit Material</h5>
-                </Modal.Header>
-                <Modal.Body>
-
-                    <div className="tbl-container mx-3 mt-1">
-                        <table className="">
-                            <thead>
-                                <tr>
-                                    <th className="text-start">Material Type</th>
-                                    <th className="text-start">Material Sub-Type</th>
-                                    <th className="text-start">Material</th>
-
-
-                                    <th className="text-start">Effective Date</th>
-                                    <th className="text-start">Rate (INR)</th>
-                                    <th className="text-start">AVG Rate
-                                        {/* <span className="ms-2 pt-2">
-                                                <input type="checkbox" />
-                                            </span> */}
-                                    </th>
-                                    <th className="text-start">PO Rate
-                                        {/* <span className="ms-2 pt-2">
-                                                <input type="checkbox" />
-                                            </span> */}
-                                    </th>
-                                    <th className="text-start">UOM</th>
-
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td className="text-start">Aggregate</td>
-                                    <td className="text-start">Aggregate</td>
-                                    <td className="text-start">
-                                        {/* <SingleSelector
-                                            options={options}
-                                            // value={values[label]} // Pass current value
-                                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                                            placeholder={`Select Sub-Type`} // Dynamic placeholder
-                                        // onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
-
-                                        /> */}
-                                    </td>
-
-                                    <td className="text-start">
-                                        <input className="form-control" type="date" />
-                                    </td>
-                                    <td className="text-start">
-                                        <input className="form-control" type="number" />
-                                    </td>
-
-
-                                    <td className="text-start">
-                                        5
-
-                                    </td>
-                                    <td className="text-start">
-                                        10
-                                    </td>
-                                    <td className="text-start">
-                                        <SingleSelector
-                                            options={options}
-                                            // value={values[label]} // Pass current value
-                                            // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                                            placeholder={`Select Sub-Type`} // Dynamic placeholder
-                                        // onChange={(selectedOption) => handleSelectorChange('subCategoryLvl4', selectedOption)}
-
-                                        />
-                                    </td>
-
-                                </tr>
-                            </tbody>
-                        </table>
+            {loading && (
+                <div className="loader-container">
+                    <div className="lds-ring">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
                     </div>
-                    <div className="row mt-2 justify-content-center mt-5">
-                        <div className="col-md-3">
-                            <button className="purple-btn2 w-100">Update</button>
-                        </div>
-
-                    </div>
-
-                </Modal.Body>
-            </Modal>
-
-
-            {/* history modal  */}
-            <Modal centered size="lg" show={showHistoryModal} onHide={() => setShowHistoryModal(false)}>
-                <Modal.Header closeButton>
-                    <h5>History</h5>
-                </Modal.Header>
-                <Modal.Body>
-
-                    <div className="tbl-container mx-3 mt-1">
-                        <table className="w-100">
-                            <thead>
-                                <tr>
-                                    <th className="text-start">Sr.No.</th>
-                                    <th className="text-start">User Name</th>
-                                    <th className="text-start">Modified Date</th>
-
-
-                                    <th className="text-start">Rate (INR)</th>
-                                    <th className="text-start">Unit</th>
-                                    <th className="text-start">Effective Date</th>
-
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td className="text-start">1</td>
-                                    <td className="text-start"></td>
-                                    <td className="text-start"></td>
-
-                                    <td className="text-start"></td>
-                                    <td className="text-start"></td>
-
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-
-                </Modal.Body>
-            </Modal>
-
-            {/* <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>Bulk Upload</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <form onSubmit={handleSubmit}>
-                        <div className="form-group mb-3">
-                            <label>Upload File</label>
-                            <input
-                                type="file"
-                                className="form-control"
-                                onChange={handleFileChange}
-                                required
-                            />
-                        </div>
-                        <div className="d-flex justify-content-end gap-2">
-                            <button type="submit" className="purple-btn2" onClick={handleSubmit}>
-                                Submit
-                            </button>
-                            <button
-                                type="button"
-                                className="purple-btn1"
-                                onClick={() => setShowModal(false)}
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
-                </Modal.Body>
-            </Modal> */}
-
-
+                    <p>Loading...</p>
+                </div>
+            )}
             <Modal show={showModal} onHide={() => setShowModal(false)} centered size="md">
                 <Modal.Header closeButton>
                     <Modal.Title>Bulk Upload</Modal.Title>
@@ -782,19 +642,6 @@ const ViewRate = () => {
                                 <span style={{ color: "#000" }}>Download Sample Format</span>
                             </a>
                             {/* Right: Submit and Cancel */}
-                            {/* <div className="d-flex justify-content-center gap-2">
-          <button type="submit" className="purple-btn2">
-            Upload
-          </button>
-          <button
-            type="button"
-            className="purple-btn1"
-            onClick={() => setShowModal(false)}
-          >
-            Cancel
-          </button>
-        </div> */}
-
                             <div className="d-flex justify-content-center gap-2 w-70">
                                 <div className="flex-grow-1">
                                     <button type="submit" className="purple-btn2 w-70 mt-2">
