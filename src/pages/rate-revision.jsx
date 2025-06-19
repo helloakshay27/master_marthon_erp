@@ -12,7 +12,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 
-const EditRate = () => {
+const RateRevision = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const [showModal, setShowModal] = useState(false);
@@ -21,7 +21,7 @@ const EditRate = () => {
     const [rateDetails, setRateDetails] = useState(null);
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(false);
-     const [fieldErrors, setFieldErrors] = useState({});
+    const [fieldErrors, setFieldErrors] = useState({});
     // State for table rows
     const [formData, setFormData] = useState({
         materialType: "",
@@ -68,15 +68,15 @@ const EditRate = () => {
                         return {
                             id: mat.id,
                             materialTypeLabel: mat.material_type || "",
-                            material: mat.material_id || "",
+                            material: mat.pms_inventory_id || "",
                             materialLabel: mat.material_name || "",
-                            materialSubType: mat.material_sub_type_id || "",
+                            materialSubType: mat.pms_inventory_sub_type_id || "",
                             materialSubTypeLabel: mat.material_sub_type || "",
-                            genericSpecification: mat.generic_info_id || "",
+                            genericSpecification: mat.pms_generic_info_id || "",
                             genericSpecificationLabel: mat.generic_info || "",
-                            colour: mat.color_id || "",
+                            colour: mat.pms_colour_id || "",
                             colourLabel: mat.color || "",
-                            brand: mat.brand_id || "",
+                            brand: mat.pms_brand_id || "",
                             brandLabel: mat.brand || "",
                             effectiveDate: mat.effective_date || "",
                             rateType: mat.rate_type,
@@ -87,6 +87,7 @@ const EditRate = () => {
                             rateChecked: mat.rate_type === "manual",
                             avgRateChecked: mat.rate_type === "average",
                             poRateChecked: mat.rate_type === "last",
+                            uom: mat.unit_of_measure_id,
                             // Add any other fields you need for editing
                         };
                     })
@@ -204,10 +205,10 @@ const EditRate = () => {
             row.colour === formData.colour &&
             row.brand === formData.brand
         );
-          if (isDuplicate) {
-                    toast.error("This combination already exists.");
-                    return; // Don't add the duplicate entry
-                }
+        if (isDuplicate) {
+            toast.error("This combination already exists.");
+            return; // Don't add the duplicate entry
+        }
         // Mark only the last (newly added) row as duplicate if needed
         const updatedTableData = newTableData.map((row, idx) => {
             if (idx === newTableData.length - 1) {
@@ -645,34 +646,33 @@ const EditRate = () => {
 
 
 
-
+    console.log("rate details:", rateDetails)
+    console.log("table data:", tableData)
     const payload = {
         rate_detail: {
+            company_id: rateDetails?.company_id,
+            project_id: rateDetails?.project_id,
+            pms_site_id: rateDetails?.pms_site_id,
+            pms_wing_id: rateDetails?.pms_wing_id || null,
+            parent_id: rateDetails?.id,
             materials: tableData.map(row => {
-                // For edited rows, use id; for new rows, use material_id etc.
-                const base = row.id
-                    ? { id: row.id }
-                    : {
-                        material_id: row.material,
-                        material_sub_type_id: row.materialSubType,
-                        generic_info_id: row.genericSpecification || "",
-                        colour_id: row.colour || "",
-                        brand_id: row.brand || "",
-                        uom_id: row.uom || ""
-                    };
-
-                // Add common fields
-                base.effective_date = row.effectiveDate;
-                base.rate = row.rate;
-                base.rate_type = row.rateType;
-
-                // Add avg_rate_from and avg_rate_to if rate_type is average
+                const material = {
+                    material_id: row.material,
+                    material_sub_type_id: row.materialSubType,
+                    generic_info_id: row.genericSpecification || null,
+                    colour_id: row.colour || null,
+                    brand_id: row.brand || null,
+                    uom_id: row.uom || null,
+                    effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
+                    rate: row.rate,
+                    rate_type: row.rateType || null
+                };
                 if (row.rateType === "average") {
-                    base.avg_rate_from = dateRange.from || "";
-                    base.avg_rate_to = dateRange.to || "";
+                    material.avg_rate_from = dateRange.from || ""; // or your dynamic value
+                    material.avg_rate_to = dateRange.to || "";   // or your dynamic value
                 }
-
-                return base;
+                //   console.log("material add:",material)
+                return material;
             })
         }
     };
@@ -682,31 +682,29 @@ const EditRate = () => {
     const handleSubmit = () => {
         const payload = {
             rate_detail: {
+                company_id: rateDetails?.company_id,
+                project_id: rateDetails?.project_id,
+                pms_site_id: rateDetails?.pms_site_id,
+                pms_wing_id: rateDetails?.pms_wing_id || null,
+                parent_id: rateDetails?.id,
                 materials: tableData.map(row => {
-                    // For edited rows, use id; for new rows, use material_id etc.
-                    const base = row.id
-                        ? { id: row.id }
-                        : {
-                            material_id: row.material,
-                            material_sub_type_id: row.materialSubType,
-                            generic_info_id: row.genericSpecification || "",
-                            colour_id: row.colour || "",
-                            brand_id: row.brand || "",
-                            uom_id: row.uom || ""
-                        };
-
-                    // Add common fields
-                    base.effective_date = row.effectiveDate;
-                    base.rate = row.rate;
-                    base.rate_type = row.rateType;
-
-                    // Add avg_rate_from and avg_rate_to if rate_type is average
+                    const material = {
+                        material_id: row.material,
+                        material_sub_type_id: row.materialSubType,
+                        generic_info_id: row.genericSpecification || null,
+                        colour_id: row.colour || null,
+                        brand_id: row.brand || null,
+                        uom_id: row.uom || null,
+                        effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
+                        rate: row.rate,
+                        rate_type: row.rateType || null
+                    };
                     if (row.rateType === "average") {
-                        base.avg_rate_from = dateRange.from || "";
-                        base.avg_rate_to = dateRange.to || "";
+                        material.avg_rate_from = dateRange.from || ""; // or your dynamic value
+                        material.avg_rate_to = dateRange.to || "";   // or your dynamic value
                     }
-
-                    return base;
+                    //   console.log("material add:",material)
+                    return material;
                 })
             }
         };
@@ -716,13 +714,13 @@ const EditRate = () => {
 
         // Simulate API call or handle submission logic
         axios
-            .patch(`${baseURL}rate_details/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`, payload)
+            .post(`https://marathon.lockated.com/rate_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`, payload)
             .then((response) => {
                 alert("Submission successful!");
                 console.log("Update successful:", response.data);
                 // Redirect to the list page
                 // navigate("/list-page"); // Replace "/list-page" with your actual list page route
-                navigate(`/details-rate/${response.data.id}`);
+                // navigate(`/details-rate/${response.data.id}`);
             })
             .catch((error) => {
                 alert("Error submitting data!");
@@ -738,7 +736,7 @@ const EditRate = () => {
                     <a href="">
                         <a href="">Setup &gt; Engineering Setup &gt; Rate</a>
                     </a>
-                    <h5 class="mt-4">Edit Rate</h5>
+                    <h5 class="mt-4">Rate Revision</h5>
                     <div className="card mt-3 pb-3">
                         <div className="card-body">
                             <div className="details_page">
@@ -887,16 +885,16 @@ const EditRate = () => {
                                                     <td className="text-start">{row.materialLabel}
                                                     </td>
                                                     <td className="text-start">{row.materialSubTypeLabel}
-                                                      
+
                                                     </td>
                                                     <td className="text-start">{row.genericSpecificationLabel}
-                                                       
+
                                                     </td>
                                                     <td className="text-start">{row.colourLabel}
-                                                       
+
                                                     </td>
                                                     <td className="text-start">{row.brandLabel}
-                                                        
+
                                                     </td>
                                                     <td className="text-start">
                                                         {/* {row.effectiveDate} */}
@@ -910,7 +908,7 @@ const EditRate = () => {
                                                     <td className="text-start">
 
                                                         <div className="d-flex align-items-center gap-2">
-                                                         
+
                                                             <input
                                                                 className="form-control"
                                                                 type="number"
@@ -929,9 +927,9 @@ const EditRate = () => {
                                                         </div>
                                                     </td>
                                                     <td className="text-start">
-                                                      
+
                                                         <span>{row.avgRate}</span>
-                                                       
+
                                                         <span className="ms-2 pt-2">
                                                             <input
                                                                 type="checkbox"
@@ -1209,4 +1207,4 @@ const EditRate = () => {
     )
 }
 
-export default EditRate;
+export default RateRevision;

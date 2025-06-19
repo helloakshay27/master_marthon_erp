@@ -107,6 +107,7 @@ import ApprovalMatrixCreate from "./pages/vendor-approval-create";
 import VendorApprovalList from "./pages/vendor-approval-list";
 import VendorApprovalEdit from "./pages/vendor-approval-edit";
 import EditRate from "./pages/edit-rate";
+import RateRevision from "./pages/rate-revision";
 
 function App() {
   return (
@@ -118,6 +119,7 @@ function App() {
             <Route path="/view-rate" element={<ViewRate />} />
             <Route path="/details-rate/:id" element={<RateDetails />} />
             <Route path="/edit-rate/:id" element={<EditRate />} />
+            <Route path="/rate-revision/:id" element={<RateRevision />} />
           <Route path="/confirmation" element={<ConfirmationPage />} />
           <Route path="/gate-pass-create" element={<GatePassCreate />} />
           <Route path="/gate-pass-list" element={<GatePassList />} />
