@@ -22,7 +22,8 @@ const RateDetails = () => {
     const [loading, setLoading] = useState(false);
     const [loading2, setLoading2] = useState(false);  // State for loading indicator
     const [selectedMaterial, setSelectedMaterial] = useState(null);
-
+    const openModal = () => setShowModal(true);
+    const closeModal = () => setShowModal(false);
 
     const fetchRateDetails = async (id) => {
         setLoading(true);
@@ -216,12 +217,47 @@ const RateDetails = () => {
 
                         </div>
                     )}
+{rateDetails?.show_revision === true && (
+                    <div className="d-flex justify-content-end m-2">
+
+                        <Link
+                            to={`/rate-revision/${id}`}
+                            className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+
+
+                            <button className="purple-btn2">
+                                Rate Revision
+                            </button>
+
+                        </Link>
+
+                    </div>
+                     )}
                     <div className="mb-5">
 
                         <div
                             className="card card-default"
                             id="mor-material-details"
                         >
+
+                            {rateDetails?.approval_logs?.length > 0 && (
+                                <div className="row mt-4 justify-content-end">
+                                    <div className="col-md-2 nav-item">
+                                        <button
+                                            className="purple-btn2"
+                                            onClick={openModal}
+                                            style={{
+                                                backgroundColor:
+                                                    rateDetails?.status === "approved" ? "green" : "",
+                                                border: "none",
+                                            }}
+                                        >
+                                            <span>Approval Logs</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="card-body">
                                 <div className="details_page">
                                     <div className="row px-3">
@@ -562,6 +598,50 @@ const RateDetails = () => {
                                 </div>
                             </div>
                         </div>
+                        {rateDetails?.revised_versions?.length > 0 && (
+                            <div className="row mt-4 w-100">
+                                <div className="col-12 " >
+                                    <h5> Rate Revised Versions</h5>
+                                    <div className="mx-0" >
+                                        <div className="tbl-container mt-1" style={{ maxHeight: "450px" }} >
+                                            <table className="w-100"  >
+                                                <thead>
+                                                    <tr>
+                                                        <th>Sr.No.</th>
+                                                        <th>ID</th>
+                                                        <th>Version Number</th>
+                                                        <th>Status</th>
+                                                        <th>List Status</th>
+                                                        {/* <th>Comment</th> */}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {rateDetails?.revised_versions?.map((log, index) => (
+                                                        <tr key={log.id}>
+                                                            <td className="text-start">{index + 1}</td>
+                                                            <td className="text-start">
+                                                                <Link to={`/details-rate/${log.id}`} className="boq-id-link">
+                                                                    {log.id}
+                                                                </Link>
+                                                            </td>
+                                                            <td className="text-start">
+                                                                {log.version_number}
+                                                            </td>
+                                                            <td className="text-start">
+                                                                {log.status
+                                                                    ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                                                    : ""}
+                                                            </td>
+                                                            <td className="text-start">{log.list_status || ""}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -653,6 +733,101 @@ const RateDetails = () => {
                         Close
                     </button>
                 </Modal.Footer>
+            </Modal>
+
+
+            {/* Modal start */}
+            <Modal size="xl" show={showModal} onHide={closeModal} centered>
+                <Modal.Header closeButton>
+                    <h5>Approval Log</h5>
+                </Modal.Header>
+                <Modal.Body>
+
+                    <div className="row mt-2 px-2">
+                        <div className="col-12">
+                            <div className="tbl-container me-2 mt-3">
+                                {/* Check if approval_logs is empty or undefined */}
+                                {!rateDetails?.approval_logs ||
+                                    rateDetails?.approval_logs.length === 0 ? (
+                                    // Display a message if no logs are available
+                                    <div className="text-center py-4">
+                                        <p className="text-muted">
+                                            No approval logs available.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    // Render the table if logs are available
+                                    <table className="w-100" style={{ width: "100%" }}>
+                                        <thead>
+                                            <tr>
+                                                <th style={{ width: "66px !important" }}>
+                                                    Sr.No.
+                                                </th>
+                                                <th>Approval Level</th>
+                                                <th>Approved By</th>
+                                                <th>Date</th>
+                                                <th>Status</th>
+                                                <th>Remark</th>
+                                                <th>Users</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {rateDetails?.approval_logs.map((log, id) => (
+                                                <tr key={id}>
+                                                    <td className="text-start">{id + 1}</td>
+                                                    <td className="text-start">{log.approval_level}</td>
+                                                    <td className="text-start">{log.approved_by}</td>
+                                                    <td className="text-start">{log.date}</td>
+                                                    <td className="text-start">
+                                                        <span
+                                                            className="px-2 py-1 rounded text-white"
+                                                            style={{
+                                                                backgroundColor:
+                                                                    log.status === "Pending"
+                                                                        ? "red"
+                                                                        : "green",
+                                                            }}
+                                                        >
+                                                            {log.status}
+                                                        </span>
+                                                    </td>
+
+                                                    <td className="text-start">
+                                                        <p>{log.remark || "-"}</p>
+                                                    </td>
+                                                    <td className="text-start">{log.users}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                    {/* <div>
+                       
+                        <img src="#" className="img-thumbnail" alt="Document 1" />
+                        <img src="#" className="img-thumbnail" alt="Document 2" />
+                      </div> */}
+
+                    {/* Documents Table */}
+                    {/* <div className="tbl-container mx-3 mt-1">
+                        <table className="w-100">
+                          <thead>
+                            <tr>
+                              <th>Documents</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>
+                                <img src="#" className="img-fluid" alt="Document Preview" />
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div> */}
+                </Modal.Body>
             </Modal>
 
         </>

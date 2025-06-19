@@ -58,6 +58,24 @@ const GatePassList = () => {
       minWidth: 80,
     },
     {
+      field: "company_name",
+      headerName: "Company",
+      flex: 1,
+      minWidth: 120,
+    },
+    {
+      field: "project_name",
+      headerName: "Project",
+      flex: 1,
+      minWidth: 120,
+    },
+    {
+      field: "sub_project_name",
+      headerName: "Subproject",
+      flex: 1,
+      minWidth: 120,
+    },
+    {
       field: "gate_pass_no",
       headerName: "Gate Pass No",
       flex: 1,
@@ -72,20 +90,44 @@ const GatePassList = () => {
         ),
     },
     {
-      field: "gate_pass_type",
+      field: "gate_pass_type_name",
       headerName: "Gate Pass Type",
+      flex: 1,
+      minWidth: 150,
+    },
+    {
+      field: "material_type",
+      headerName: "Material Type",
       flex: 1,
       minWidth: 120,
     },
     {
-      field: "date",
-      headerName: "Date",
+      field: "sub_type",
+      headerName: "Sub Type",
       flex: 1,
-      minWidth: 100,
+      minWidth: 120,
+    },
+    {
+      field: "mto_po_number",
+      headerName: "PO / MTO No.",
+      flex: 1,
+      minWidth: 120,
+    },
+    {
+      field: "gate_pass_date_time",
+      headerName: "Gate Pass Date",
+      flex: 1,
+      minWidth: 120,
     },
     {
       field: "issued_by",
       headerName: "Issued By",
+      flex: 1,
+      minWidth: 120,
+    },
+    {
+      field: "approved_by",
+      headerName: "Approved By",
       flex: 1,
       minWidth: 120,
     },
@@ -96,32 +138,24 @@ const GatePassList = () => {
       minWidth: 100,
     },
     {
-      field: "action",
-      headerName: "Action",
+      field: "expected_return_date",
+      headerName: "Due Date",
       flex: 1,
-      minWidth: 150,
-      renderCell: (params) => (
-        <div className="d-flex gap-2">
-          <button
-            className="btn btn-sm btn-primary"
-            onClick={() =>
-              navigate(`/gate-pass-edit/${params.row.id}?token=${token}`)
-            }
-          >
-            Edit
-          </button>
-          <button
-            className="btn btn-sm btn-danger"
-            onClick={() => handleDelete(params.row.id)}
-          >
-            Delete
-          </button>
-        </div>
-      ),
+      minWidth: 120,
+    },
+    {
+      field: "overdue",
+      headerName: "Overdue",
+      flex: 1,
+      minWidth: 100,
+    },
+    {
+      field: "due_at",
+      headerName: "Due At",
+      flex: 1,
+      minWidth: 100,
     },
   ];
-
-  const columns = allColumns.filter((col) => columnVisibility[col.field]);
 
   const handleSettingClose = () => setSettingShow(false);
   const handleClose = () => setShow(false);
@@ -234,60 +268,26 @@ const GatePassList = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Build base URL
-        let url = `${baseURL}bill_entries?page=${currentPage}&per_page=${pageSize}&token=${token}`;
-
-        // Add filters
-        if (
-          currentFilters.companyId ||
-          currentFilters.projectId ||
-          currentFilters.siteId
-        ) {
-          url += `&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_in]=${currentFilters.companyId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_in]=${currentFilters.projectId}&q[purchase_order_po_mor_inventories_mor_inventory_material_order_request_site_id_cont]=${currentFilters.siteId}`;
-        } else {
-          // Add tab filters
-          switch (activeTab) {
-            case "open":
-              url += "&q[status_eq]=open";
-              break;
-            case "online":
-              url += "&q[mode_of_submission_eq]=online";
-              break;
-            case "offline":
-              url += "&q[mode_of_submission_eq]=offline";
-              break;
-          }
-        }
-
-        // Add search
-        if (searchKeyword) {
-          url += `&q[bill_no_or_bill_date_or_mode_of_submission_or_bill_amount_or_status_or_vendor_remark_or_purchase_order_supplier_gstin_or_purchase_order_supplier_full_name_or_purchase_order_po_number_or_purchase_order_supplier_pan_number_or_purchase_order_company_company_name_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_project_id_or_purchase_order_po_mor_inventories_mor_inventory_material_order_request_company_id_cont]=${searchKeyword}`;
-        }
+        // Use the new API endpoint for gate passes
+        let url = `${baseURL}gate_passes.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${currentPage}&per_page=${pageSize}`;
         const response = await axios.get(url);
-        const data = response.data.bill_entries.map((entry, index) => ({
+        // The API returns gate_passes array
+        const data = (response.data.gate_passes || []).map((entry, index) => ({
           id: entry.id,
           srNo: (currentPage - 1) * pageSize + index + 1,
           ...entry,
+          due_date: formatDate(entry.due_date),
+          gate_pass_date: formatDate(entry.gate_pass_date),
+          expected_return_date: formatDate(entry.expected_return_date),
           created_at: formatDate(entry.created_at),
           updated_at: formatDate(entry.updated_at),
-          due_date: formatDate(entry.due_date),
-          bill_date: formatDate(entry.bill_date),
+          due_at: formatDate(entry.due_at),
         }));
-
         setBillEntries(data);
-        setMeta(response.data.meta);
-        setTotalPages(response.data.meta.total_pages);
-        setTotalEntries(response.data.meta.total_count);
-        // Update allBillCount when on list tab
-        if (
-          activeTab === "list" &&
-          !currentFilters.companyId &&
-          !currentFilters.projectId &&
-          !currentFilters.siteId &&
-          !searchKeyword
-        ) {
-          setAllBillCount(response.data.meta.total_count);
-        }
+        // Set pagination info if available
+        setMeta(response.data.pagination || {});
+        setTotalPages(response.data.pagination?.total_pages || 1);
+        setTotalEntries(response.data.pagination?.total_count || data.length);
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to fetch data");
@@ -295,9 +295,10 @@ const GatePassList = () => {
         setLoading(false);
       }
     };
-
     fetchData();
-  }, [currentPage, pageSize, currentFilters, activeTab, searchKeyword]);
+  }, [currentPage, pageSize, searchKeyword]);
+
+  const columns = allColumns;
 
   const formatDate = (dateString) => {
     if (!dateString) return "-";
@@ -625,7 +626,7 @@ display:none !important;
                 </button>
                 <button
                   className="purple-btn2"
-                  onClick={() => navigate("/bill-entry-list-sub-page")}
+                  onClick={() => navigate("/gate-pass-create")}
                 >
                   <span> + Add</span>
                 </button>
