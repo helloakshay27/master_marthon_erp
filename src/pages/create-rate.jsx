@@ -211,9 +211,9 @@ const CreateRate = () => {
                         // updatedRow.avgRate = ""; // Clear avgRate
                         // updatedRow.poRate = ""; // Clear poRate
                         updatedRow.rateType = newRateChecked ? "manual" : ""; // Set rateType
-        //                  setSelectAllRate(false);
-        //   setSelectAllAvgRate(false);
-        //   setSelectAllPoRate(false);
+                         if (newRateChecked) {
+                            updatedRow.rate = row.rate|| "0";
+                        } // Set rateType
                     }
 
                     // Handle AVG Rate checkbox
@@ -227,10 +227,10 @@ const CreateRate = () => {
                         updatedRow.rate = newAvgRateChecked ? "0" : ""; // Dummy value for avgRate
                         // updatedRow.avgRate= ""; // Clear rate
                         // updatedRow.poRate = ""; // Clear poRate
-                        updatedRow.rateType = newAvgRateChecked ? "average" : "";
+                        updatedRow.rateType = newAvgRateChecked ? "average" : ""; // Set rateType
                          if (newAvgRateChecked) {
-            updatedRow.rate = row.avgRate || "0";
-          } // Set rateType
+                            updatedRow.rate = row.avgRate || "0";
+                        } // Set rateType
                     }
 
                     // Handle PO Rate checkbox
@@ -245,11 +245,11 @@ const CreateRate = () => {
                         // updatedRow.poRate = ""; // Clear rate
                         // updatedRow.avgRate = ""; // Clear avgRate
                         updatedRow.rateType = newPoRateChecked ? "last" : ""; // Set rateType
+                         updatedRow.rateType = newPoRateChecked ? "last" : ""; // Set rateType
                          if (newPoRateChecked) {
-            updatedRow.rate = row.poRate || "0";
-          }
+                            updatedRow.rate = row.poRate || "0";
+                        }
                     }
-                    
 
                     return updatedRow;
                 }
@@ -692,54 +692,53 @@ const CreateRate = () => {
             });
     };
 
-
-const [selectAllRate, setSelectAllRate] = useState(false);
-const [selectAllAvgRate, setSelectAllAvgRate] = useState(false);
-const [selectAllPoRate, setSelectAllPoRate] = useState(false);
-
-// Add this new function to handle select all functionality
-const handleSelectAllRates = (rateType) => {
-  let updatedTableData = [...tableData];
-  
-  switch(rateType) {
-    case 'rate':
-      setSelectAllRate(!selectAllRate);
-      updatedTableData = tableData.map(row => ({
-        ...row,
-        rateChecked: !selectAllRate,
-        avgRateChecked: false,
-        poRateChecked: false,
-        rateType: !selectAllRate ? 'manual' : '',
-      }));
-      break;
-      
-    case 'avgRate': setSelectAllAvgRate(!selectAllAvgRate);
-      updatedTableData = tableData.map(row => ({
-        ...row,
-        avgRateChecked: !selectAllAvgRate,
-        rateChecked: false,
-        poRateChecked: false,
-        rateType: !selectAllAvgRate ? 'average' : '',
-      }));
-      break;
-      
-    case 'poRate':
-      setSelectAllPoRate(!selectAllPoRate);
-      updatedTableData = tableData.map(row => ({
-        ...row,
-        poRateChecked: !selectAllPoRate,
-        rateChecked: false,
-        avgRateChecked: false,
-        rateType: !selectAllPoRate ? 'last' : '',
-      }));
-      break;
-  }
-  
-  setTableData(updatedTableData);
-};
-
-
-
+     const [selectAllRate, setSelectAllRate] = useState(false);
+        const [selectAllAvgRate, setSelectAllAvgRate] = useState(false);
+        const [selectAllPoRate, setSelectAllPoRate] = useState(false);
+    
+        // Add this new function to handle select all functionality
+        const handleSelectAllRates = (rateType) => {
+            let updatedTableData = [...tableData];
+    
+            switch (rateType) {
+                case 'rate':
+                    setSelectAllRate(!selectAllRate);
+                    updatedTableData = tableData.map(row => ({
+                        ...row,
+                        rateChecked: !selectAllRate,
+                        avgRateChecked: false,
+                        poRateChecked: false,
+                        rateType: !selectAllRate ? 'manual' : '',
+                    }));
+                    break;
+    
+                case 'avgRate': setSelectAllAvgRate(!selectAllAvgRate);
+                    updatedTableData = tableData.map(row => ({
+                        ...row,
+                        avgRateChecked: !selectAllAvgRate,
+                        rateChecked: false,
+                        poRateChecked: false,
+                        rateType: !selectAllAvgRate ? 'average' : '',
+                        rate:row.avgRate || "0"
+                       
+                    }));
+                    break;
+    
+                case 'poRate':
+                    setSelectAllPoRate(!selectAllPoRate);
+                    updatedTableData = tableData.map(row => ({
+                        ...row,
+                        poRateChecked: !selectAllPoRate,
+                        rateChecked: false,
+                        avgRateChecked: false,
+                        rateType: !selectAllPoRate ? 'last' : '',
+                         rate:row.poRate || "0"
+                    }));
+                    break;
+            }
+    
+            setTableData(updatedTableData);
+        };
     return (
         <>
 
@@ -805,9 +804,9 @@ const handleSelectAllRates = (rateType) => {
                             </div>
                         </CollapsibleCard>
 
-                         {tableData.map((row, idx) => (
+                        {/* {tableData.map((row, idx) => (
   <pre key={idx}>{JSON.stringify(row, null, 2)}</pre>
-))} 
+))} */}
                         <div className="d-flex justify-content-end mx-2">
                             {/* <button className="purple-btn2">Bulk Upload</button> */}
                             <button
@@ -851,18 +850,18 @@ const handleSelectAllRates = (rateType) => {
                                             <th className="text-start">Effective Date</th>
                                             <th className="text-start">Rate (INR)
                                                 <span className="ms-2 pt-2">
-                                                    <input type="checkbox" 
-                                                     checked={selectAllRate}
-          onChange={() => handleSelectAllRates('rate')}/>
-                                                   
+                                                    {/* <input type="checkbox" /> */}
+                                                     <input type="checkbox"
+                                                        checked={selectAllRate}
+                                                        onChange={() => handleSelectAllRates('rate')} />
                                                 </span>
                                             </th>
                                             <th className="text-start">AVG Rate
                                                 <span className="ms-2 pt-2">
-                                                    <input type="checkbox" 
-                                                     checked={selectAllAvgRate}
-          onChange={() => handleSelectAllRates('avgRate')}/>
-                                                    
+                                                    {/* <input type="checkbox" /> */}
+                                                    <input type="checkbox"
+                                                        checked={selectAllAvgRate}
+                                                        onChange={() => handleSelectAllRates('avgRate')} />
                                                 </span>
                                                 <span className="ms-2 pt-2" onClick={() => setShowDateModal(true)} style={{ cursor: "pointer" }}>
                                                     <svg
@@ -879,10 +878,11 @@ const handleSelectAllRates = (rateType) => {
                                             </th>
                                             <th className="text-start">PO Rate
                                                 <span className="ms-2 pt-2">
-                                                    <input type="checkbox" 
-                                                     checked={selectAllPoRate}
-          onChange={() => handleSelectAllRates('poRate')}/>
-                                                                                                    </span>
+                                                    {/* <input type="checkbox" /> */}
+                                                     <input type="checkbox"
+                                                        checked={selectAllPoRate}
+                                                        onChange={() => handleSelectAllRates('poRate')} />
+                                                </span>
                                             </th>
                                             <th className="text-start">UOM</th>
                                             <th className="text-start">Action</th>
