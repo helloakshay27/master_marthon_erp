@@ -116,8 +116,8 @@ const RateRevision = () => {
         );
 
         // setRate(value);
-        setCheckbox1(false);
-        setCheckbox2(false);
+        // setCheckbox1(false);
+        // setCheckbox2(false);
 
     };
 
@@ -250,7 +250,15 @@ const RateRevision = () => {
                         updatedRow.poRateChecked = false;
 
                         // Add or clear the rate value based on the new state
-                        updatedRow.rate = newRateChecked ? row.rate : "";
+                        // updatedRow.rate = newRateChecked ? row.rate : "";
+                        // Only update rate if checked, not when unchecked
+                    if (newRateChecked) {
+                        updatedRow.rate = row.rate;
+                        updatedRow.rateType = "manual";
+                    } else {
+                        updatedRow.rateType = "";
+                        // Do not clear updatedRow.rate
+                    }
                         // updatedRow.avgRate = ""; // Clear avgRate
                         // updatedRow.poRate = ""; // Clear poRate
                         updatedRow.rateType = newRateChecked ? "manual" : ""; // Set rateType
@@ -264,7 +272,7 @@ const RateRevision = () => {
                         updatedRow.poRateChecked = false;
 
                         // Add or clear the avgRate value based on the new state
-                        updatedRow.rate = newAvgRateChecked ? "0" : ""; // Dummy value for avgRate
+                        updatedRow.rate = newAvgRateChecked ? row.avgRate : ""; // Dummy value for avgRate
                         // updatedRow.avgRate= ""; // Clear rate
                         // updatedRow.poRate = ""; // Clear poRate
                         updatedRow.rateType = newAvgRateChecked ? "average" : ""; // Set rateType
@@ -278,7 +286,7 @@ const RateRevision = () => {
                         updatedRow.avgRateChecked = false;
 
                         // Add or clear the poRate value based on the new state
-                        updatedRow.rate = newPoRateChecked ? "0" : ""; // Dummy value for poRate
+                        updatedRow.rate = newPoRateChecked ? row.poRate : ""; // Dummy value for poRate
                         // updatedRow.poRate = ""; // Clear rate
                         // updatedRow.avgRate = ""; // Clear avgRate
                         updatedRow.rateType = newPoRateChecked ? "last" : ""; // Set rateType
@@ -290,6 +298,7 @@ const RateRevision = () => {
             })
         );
     };
+    
     // delete row 
     const handleDeleteRow = (rowIndex) => {
         setTableData((prevData) => prevData.filter((_, index) => index !== rowIndex));

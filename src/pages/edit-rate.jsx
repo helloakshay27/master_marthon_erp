@@ -263,7 +263,7 @@ const EditRate = () => {
                         updatedRow.poRateChecked = false;
 
                         // Add or clear the avgRate value based on the new state
-                        updatedRow.rate = newAvgRateChecked ? "0" : ""; // Dummy value for avgRate
+                        updatedRow.rate = newAvgRateChecked ? row.avgRate: ""; // Dummy value for avgRate
                         // updatedRow.avgRate= ""; // Clear rate
                         // updatedRow.poRate = ""; // Clear poRate
                         updatedRow.rateType = newAvgRateChecked ? "average" : ""; // Set rateType
@@ -277,7 +277,7 @@ const EditRate = () => {
                         updatedRow.avgRateChecked = false;
 
                         // Add or clear the poRate value based on the new state
-                        updatedRow.rate = newPoRateChecked ? "0" : ""; // Dummy value for poRate
+                        updatedRow.rate = newPoRateChecked ?  row.poRate : ""; // Dummy value for poRate
                         // updatedRow.poRate = ""; // Clear rate
                         // updatedRow.avgRate = ""; // Clear avgRate
                         updatedRow.rateType = newPoRateChecked ? "last" : ""; // Set rateType
