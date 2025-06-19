@@ -27,6 +27,8 @@ const GatePassCreate = () => {
     contact_no: "",
     gate_no: "",
     material_items: [],
+    to_vendor: "",
+    driver_contact_no: "",
   });
 
   const [projects, setProjects] = useState([]);
@@ -48,59 +50,107 @@ const GatePassCreate = () => {
     { value: "non_master", label: "Non-Master Vendor" },
   ]);
 
+  const [attachModal, setattachModal] = useState(false);
+  const [viewDocumentModal, setviewDocumentModal] = useState(false);
+
+  const openattachModal = () => setattachModal(true);
+  const closeattachModal = () => setattachModal(false);
+  const openviewDocumentModal = () => setviewDocumentModal(true);
+  const closeviewDocumentModal = () => setviewDocumentModal(false);
+
+  const [poOptions, setPoOptions] = useState([]);
+  const [selectedPO, setSelectedPO] = useState(null); // Store selected PO object
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate required fields
-    if (!formData.project_id) {
-      alert("Please select a Project");
-      return;
-    }
-    if (!formData.sub_project_id) {
-      alert("Please select a Sub-Project");
-      return;
-    }
-    if (!formData.mto_po_number) {
-      if (formData.gate_pass_type === "transfer_to_site") {
-        alert("Please enter MTO/SO Number");
-      } else if (formData.gate_pass_type === "repair_maintenance") {
-        alert("Please select To Vendor");
-      } else {
-        alert("Please enter PO/WO Number");
-      }
-      return;
-    }
-    if (!formData.vehicle_no) {
-      alert("Please enter Vehicle No");
-      return;
-    }
-    if (!formData.gate_pass_date_time) {
-      alert("Please enter Gate Pass Date & Time");
-      return;
-    }
+    // Validation for Expected Return Date based on Returnable status
     if (
-      formData.gate_pass_type === "return_to_vendor" &&
+      formData.is_returnable === "returnable" &&
       !formData.expected_return_date
     ) {
-      alert("Please enter Expected Return Date for Return to Vendor");
-      return;
-    }
-    if (formData.material_items.length === 0) {
-      alert("Please add at least one material item");
+      alert("Please enter Expected Return Date for Returnable Gate Pass");
       return;
     }
 
+    // Validation: Gate Pass Qty must not exceed Stock As On
+    for (const item of formData.material_items || []) {
+      if (
+        item.gate_pass_qty !== undefined &&
+        item.gate_pass_qty !== null &&
+        item.gate_pass_qty !== "" &&
+        item.stock_as_on !== undefined &&
+        Number(item.gate_pass_qty) > Number(item.stock_as_on)
+      ) {
+        alert(
+          `Gate Pass Qty for ${
+            item.material_name || "material"
+          } cannot exceed Stock As On (${item.stock_as_on})!`
+        );
+        return;
+      }
+    }
+
+    // Map attachments from documents state
+    const attachments = (documents || [])
+      .map((doc) =>
+        doc.attachments && doc.attachments[0]
+          ? {
+              filename: doc.attachments[0].filename || null,
+              content: doc.attachments[0].content || null,
+              content_type: doc.attachments[0].content_type || null,
+            }
+          : null
+      )
+      .filter(Boolean);
+
+    const payload = {
+      gate_pass: {
+        sub_project_id: formData.sub_project_id || null,
+        gate_pass_type_id: 1, // hardcoded as per requirement
+        project_id: formData.project_id || null,
+
+        status:
+          (typeof selectedStatus === "object"
+            ? selectedStatus.value
+            : selectedStatus) || "draft",
+        due_date: formData.due_date || formData.expected_return_date || null,
+
+        driver_name: formData.driver_name || null,
+        driver_contact_no: formData.driver_contact_no || null,
+        expected_return_date: formData.expected_return_date || null,
+        remarks: formData.remarks || null,
+        returnable:
+          formData.is_returnable === "returnable"
+            ? true
+            : formData.is_returnable === "non_returnable"
+            ? false
+            : null,
+        contact_person: formData.contact_person || null,
+        contact_person_no: formData.contact_no || null,
+        gate_number_id: formData.gate_number_id || null,
+        vehicle_no: formData.vehicle_no || null,
+
+        all_level_approved: formData.all_level_approved || false,
+        gate_pass_materials_attributes: (formData.material_items || []).map(
+          (item) => ({
+            gate_pass_qty: Number(item.gate_pass_qty) || null,
+            mor_inventory_id: item.mor_inventory_id || item.id || null,
+          })
+        ),
+        attachments: attachments.length > 0 ? attachments : null,
+      },
+    };
+
     try {
-      const response = await axios.post(`${baseURL}gate_passes.json`, {
-        gate_pass: {
-          ...formData,
-          material_items_attributes: formData.material_items,
-        },
-      });
+      const response = await axios.post(
+        `${baseURL}gate_passes.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        payload
+      );
 
       if (response.status === 200 || response.status === 201) {
         alert("Gate Pass created successfully!");
-        navigate("/gate-pass-list");
+        // navigate("/gate-pass-list");
       }
     } catch (error) {
       console.error("Error creating gate pass:", error);
@@ -198,6 +248,183 @@ const GatePassCreate = () => {
         return "Create Gate Pass";
     }
   };
+
+  // Document attachment state and handlers for advanced modal
+  const [newDocument, setNewDocument] = useState({
+    document_type: "",
+    attachments: [],
+  });
+  const [documents, setDocuments] = useState([]); // If you want to keep a list
+
+  // Handle file upload
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewDocument((prev) => ({
+        ...prev,
+        attachments: [
+          {
+            filename: file.name,
+            content: reader.result.split(",")[1],
+            content_type: file.type,
+          },
+        ],
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle attach document
+  const handleAttachDocument = () => {
+    if (!newDocument.document_type || newDocument.attachments.length === 0)
+      return;
+    const now = new Date();
+    const uploadDate = `${now.getDate().toString().padStart(2, "0")}-${(
+      now.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}-${now.getFullYear()}`;
+    setDocuments((prev) => [
+      ...prev,
+      {
+        ...newDocument,
+        uploadDate,
+      },
+    ]);
+    setNewDocument({ document_type: "", attachments: [] });
+    closeattachModal();
+  };
+
+  // For viewing a specific document
+  const [viewDocIndex, setViewDocIndex] = useState(null);
+  const handleViewDocument = (index) => {
+    setViewDocIndex(index);
+    openviewDocumentModal();
+  };
+
+  const statusOptions = [
+    { value: "draft", label: "Draft" },
+    { value: "pending", label: "Pending" },
+    { value: "approved", label: "Approved" },
+    { value: "rejected", label: "Rejected" },
+  ];
+  const [selectedStatus, setSelectedStatus] = useState(statusOptions[0]);
+
+  useEffect(() => {
+    // Fetch PO/WO numbers for dropdown
+    const fetchPONumbers = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}purchase_orders/purchase_order_po_numbers.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        if (Array.isArray(response.data)) {
+          setPoOptions(
+            response.data.map((item) => ({
+              value: item.po_number,
+              label: item.po_number,
+              id: item.id, // keep id for later use
+            }))
+          );
+        }
+      } catch (error) {
+        setPoOptions([]);
+      }
+    };
+    fetchPONumbers();
+
+    // Fetch stores for From Store and To Store dropdowns
+    const fetchStores = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}pms/stores/store_dropdown.json`
+        );
+        if (Array.isArray(response.data)) {
+          setStores(response.data);
+          setToStores(response.data);
+        }
+      } catch (error) {
+        setStores([]);
+        setToStores([]);
+      }
+    };
+    fetchStores();
+
+    // Fetch projects and sub-projects
+    const fetchProjects = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        if (response.data && Array.isArray(response.data.companies)) {
+          // Flatten all projects from all companies
+          const allProjects = response.data.companies.flatMap((company) =>
+            (company.projects || []).map((project) => ({
+              value: project.id,
+              label: project.name,
+              subProjects: (project.pms_sites || []).map((site) => ({
+                value: site.id,
+                label: site.name,
+              })),
+            }))
+          );
+          setProjects(allProjects);
+        }
+      } catch (error) {
+        setProjects([]);
+      }
+    };
+    fetchProjects();
+  }, []);
+
+  // When project changes, update subProjects
+  useEffect(() => {
+    const selected = projects.find((p) => p.value === formData.project_id);
+    setSubProjects(selected ? selected.subProjects : []);
+    // Optionally reset sub_project_id if project changes
+    // setFormData(prev => ({ ...prev, sub_project_id: null }));
+    // If you want to reset sub_project_id, uncomment above
+  }, [formData.project_id, projects]);
+
+  // Fetch material/asset details when PO is selected (for return_to_vendor)
+  useEffect(() => {
+    if (
+      formData.gate_pass_type === "return_to_vendor" &&
+      selectedPO &&
+      selectedPO.id
+    ) {
+      const fetchMaterials = async () => {
+        try {
+          const response = await axios.get(
+            `${baseURL}mor_inventories/fetch_all_inventories.json?page=1&po_id=${selectedPO.id}`
+          );
+          if (response.data && Array.isArray(response.data.inventories)) {
+            setFormData((prev) => ({
+              ...prev,
+              material_items: response.data.inventories.map((item) => ({
+                material_type: item.material_type,
+                material_sub_type: item.material_sub_type,
+                material_name: item.material,
+                material_details: item.generic_specification,
+                generic_specification: item.generic_specification,
+                brand: item.brand,
+                colour: item.colour,
+                unit: item.uom,
+                gate_pass_qty: "", // always empty by default
+                stock_as_on: item.stock_as_on, // keep for validation
+                mor_inventory_id: item.id || null,
+              })),
+            }));
+          }
+        } catch (error) {
+          setFormData((prev) => ({ ...prev, material_items: [] }));
+        }
+      };
+      fetchMaterials();
+    }
+    // eslint-disable-next-line
+  }, [selectedPO, formData.gate_pass_type]);
 
   return (
     <div className="main-content">
@@ -302,23 +529,6 @@ const GatePassCreate = () => {
                 </div>
                 <div className="col-md-3">
                   <div className="form-group">
-                    <label>Gate Pass No</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.gate_pass_no}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          gate_pass_no: e.target.value,
-                        })
-                      }
-                      placeholder="Enter Gate Pass No"
-                    />
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="form-group">
                     <label>Gate Pass Type</label>
                     <SingleSelector
                       options={gatePassTypes}
@@ -335,45 +545,114 @@ const GatePassCreate = () => {
                     />
                   </div>
                 </div>
-                <div className="col-md-3 mt-2">
-                  <div className="form-group">
-                    <label>From Store</label>
-                    <SingleSelector
-                      options={stores}
-                      onChange={(selected) =>
-                        setFormData({ ...formData, store_id: selected?.value })
-                      }
-                      value={stores.find((s) => s.value === formData.store_id)}
-                      placeholder="Select From Store"
-                    />
-                  </div>
-                </div>
-                <div className="col-md-3 mt-2">
-                  <div className="form-group">
-                    {formData.gate_pass_type === "repair_maintenance" ? (
-                      <>
-                        <label>To Vendor *</label>
+
+                {/* Custom layout for 'return_to_vendor' */}
+                {formData.gate_pass_type === "return_to_vendor" ? (
+                  <>
+                    <div className="col-md-3 ">
+                      <div className="form-group">
+                        <label>From Store</label>
+                        <SingleSelector
+                          options={stores}
+                          onChange={(selected) =>
+                            setFormData({
+                              ...formData,
+                              store_id: selected?.value,
+                            })
+                          }
+                          value={stores.find(
+                            (s) => s.value === formData.store_id
+                          )}
+                          placeholder="Select From Store"
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3 mt-2">
+                      <div className="form-group">
+                        <label>To Vendor</label>
                         <SingleSelector
                           options={vendorTypes}
                           onChange={(selected) =>
                             setFormData({
                               ...formData,
-                              mto_po_number: selected?.value,
+                              to_vendor: selected?.value,
                             })
                           }
                           value={vendorTypes.find(
-                            (v) => v.value === formData.mto_po_number
+                            (v) => v.value === formData.to_vendor
                           )}
                           placeholder="Select Vendor Type"
                         />
-                      </>
-                    ) : (
-                      <>
+                      </div>
+                    </div>
+                    <div className="col-md-3 mt-2">
+                      <div className="form-group">
+                        <label>PO/WO No *</label>
+                        <SingleSelector
+                          options={poOptions}
+                          onChange={(selected) => {
+                            setFormData({
+                              ...formData,
+                              mto_po_number: selected?.value,
+                            });
+                            setSelectedPO(selected); // Store selected PO object
+                          }}
+                          value={poOptions.find(
+                            (p) => p.value === formData.mto_po_number
+                          )}
+                          placeholder="Select PO/WO No"
+                        />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="col-md-3 mt-2">
+                      <div className="form-group">
+                        <label>From Store</label>
+                        <SingleSelector
+                          options={stores}
+                          onChange={(selected) =>
+                            setFormData({
+                              ...formData,
+                              store_id: selected?.value,
+                            })
+                          }
+                          value={stores.find(
+                            (s) => s.value === formData.store_id
+                          )}
+                          placeholder="Select From Store"
+                        />
+                      </div>
+                    </div>
+                    {/* Hide To Store if repair_maintenance */}
+                    {formData.gate_pass_type !== "repair_maintenance" && (
+                      <div className="col-md-3 mt-2">
+                        <div className="form-group">
+                          <label>To Store</label>
+                          <SingleSelector
+                            options={toStores}
+                            onChange={(selected) =>
+                              setFormData({
+                                ...formData,
+                                to_store_id: selected?.value,
+                              })
+                            }
+                            value={toStores.find(
+                              (s) => s.value === formData.to_store_id
+                            )}
+                            placeholder="Select To Store"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <div className="col-md-3 mt-2">
+                      <div className="form-group">
                         <label>
                           {formData.gate_pass_type === "transfer_to_site"
                             ? "MTO/SO Number *"
-                            : formData.gate_pass_type === "return_to_vendor"
-                            ? "PO/WO No *"
+                            : formData.gate_pass_type === "repair_maintenance"
+                            ? "To Vendor *"
                             : "MTO/PO Number *"}
                         </label>
                         <input
@@ -389,33 +668,15 @@ const GatePassCreate = () => {
                           placeholder={
                             formData.gate_pass_type === "transfer_to_site"
                               ? "Enter MTO/SO Number"
-                              : formData.gate_pass_type === "return_to_vendor"
-                              ? "Enter PO/WO No"
+                              : formData.gate_pass_type === "repair_maintenance"
+                              ? "Select Vendor Type"
                               : "Enter MTO/PO Number"
                           }
                         />
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div className="col-md-3 mt-2">
-                  <div className="form-group">
-                    <label>To Store</label>
-                    <SingleSelector
-                      options={toStores}
-                      onChange={(selected) =>
-                        setFormData({
-                          ...formData,
-                          to_store_id: selected?.value,
-                        })
-                      }
-                      value={toStores.find(
-                        (s) => s.value === formData.to_store_id
-                      )}
-                      placeholder="Select To Store"
-                    />
-                  </div>
-                </div>
+                      </div>
+                    </div>
+                  </>
+                )}
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
                     <label>Vehicle No. *</label>
@@ -469,36 +730,6 @@ const GatePassCreate = () => {
                 </div>
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
-                    <label>Gate Pass Date & Time *</label>
-                    <input
-                      type="datetime-local"
-                      className="form-control"
-                      value={formData.gate_pass_date_time}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          gate_pass_date_time: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="col-md-3 mt-2">
-                  <div className="form-group">
-                    <label>Issued By</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.issued_by}
-                      onChange={(e) =>
-                        setFormData({ ...formData, issued_by: e.target.value })
-                      }
-                      placeholder="Enter Issued By"
-                    />
-                  </div>
-                </div>
-                <div className="col-md-3 mt-2">
-                  <div className="form-group">
                     <label>Contact Person</label>
                     <input
                       type="text"
@@ -530,6 +761,23 @@ const GatePassCreate = () => {
                 </div>
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
+                    <label>Driver Contact No</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.driver_contact_no}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          driver_contact_no: e.target.value,
+                        })
+                      }
+                      placeholder="Enter Driver Contact No"
+                    />
+                  </div>
+                </div>
+                <div className="col-md-3 mt-2">
+                  <div className="form-group">
                     <label>Gate No</label>
                     <input
                       type="text"
@@ -556,7 +804,9 @@ const GatePassCreate = () => {
                       <th>Material / Asset Type</th>
                       <th>Material / Asset Sub-Type</th>
                       <th>Material / Asset Name</th>
-                      <th>Material Details</th>
+                      <th>Generic Info</th>
+                      <th>Brand</th>
+                      <th>Colour</th>
                       <th>Unit</th>
                       <th>Gate Pass Qty</th>
                       <th>Action</th>
@@ -569,9 +819,39 @@ const GatePassCreate = () => {
                         <td>{item.material_type}</td>
                         <td>{item.material_sub_type}</td>
                         <td>{item.material_name}</td>
-                        <td>{item.material_details}</td>
+                        <td>
+                          {item.generic_specification || item.material_details}
+                        </td>
+                        <td>{item.brand}</td>
+                        <td>{item.colour}</td>
                         <td>{item.unit}</td>
-                        <td>{item.gate_pass_qty}</td>
+                        <td>
+                          <input
+                            type="number"
+                            className="form-control"
+                            value={item.gate_pass_qty}
+                            min={0}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (
+                                item.stock_as_on !== undefined &&
+                                value !== "" &&
+                                Number(value) > Number(item.stock_as_on)
+                              ) {
+                                alert(
+                                  `Gate Pass Qty cannot exceed Stock As On (${item.stock_as_on})!`
+                                );
+                                return; // Do not update value
+                              }
+                              const updatedItems = [...formData.material_items];
+                              updatedItems[index].gate_pass_qty = value;
+                              setFormData({
+                                ...formData,
+                                material_items: updatedItems,
+                              });
+                            }}
+                          />
+                        </td>
                         <td>
                           <button
                             className="btn"
@@ -606,84 +886,357 @@ const GatePassCreate = () => {
                   </tbody>
                 </table>
               </div>
-              <div>
-                <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
-                  <h5 className="mt-3">
-                    Document Attachments{" "}
-                    {/* <span style={{ color: "red", fontSize: "16px" }}>*</span> */}
-                  </h5>
+              {/* Remove old document attachment section and add new one from Bill Payment Create */}
+              {/* Document Attachment Section (copied and adapted) */}
+              <div className="d-flex justify-content-between mt-3 me-2">
+                <h5 className=" ">Document Attachment</h5>
+                <div
+                  className="card-tools d-flex"
+                  data-bs-toggle="modal"
+                  data-bs-target="#attachModal"
+                  onClick={openattachModal}
+                >
                   <button
-                    className="purple-btn2 mt-3"
-                    onClick={handleAddDocumentRow}
+                    className="purple-btn2 rounded-3"
+                    data-bs-toggle="modal"
+                    data-bs-target="#attachModal"
                   >
-                    <span className="material-symbols-outlined align-text-top me-2">
-                      add
-                    </span>
-                    <span>Add</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={20}
+                      height={20}
+                      fill="currentColor"
+                      className="bi bi-plus"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                    </svg>
+                    <span>Attach</span>
                   </button>
                 </div>
-
-                <Table
-                  columns={[
-                    { label: "Sr No", key: "srNo" },
-                    { label: "Upload File", key: "upload" },
-                    { label: "File Type", key: "fileType" },
-                    { label: "Upload Date", key: "uploadDate" },
-                    { label: "Action", key: "action" },
-                  ]}
-                  data={documentRows.map((row, index) => ({
-                    srNo: index + 1,
-                    upload: (
-                      <td style={{ border: "none" }}>
+              </div>
+              {/* Document Table (dynamic) */}
+              <div className="tbl-container mx-3 mt-3">
+                <table className="w-100">
+                  <thead>
+                    <tr>
+                      <th className="text-start">Sr. No.</th>
+                      <th className="text-start">Document Name</th>
+                      <th className="text-start">File Name</th>
+                      <th className="text-start">File Type</th>
+                      <th className="text-start">Upload Date</th>
+                      <th className="text-start">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {documents.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="text-center">
+                          No documents attached
+                        </td>
+                      </tr>
+                    ) : (
+                      documents.map((doc, idx) => (
+                        <tr key={idx}>
+                          <td className="text-start">{idx + 1}</td>
+                          <td className="text-start">{doc.document_type}</td>
+                          <td className="text-start">
+                            {doc.attachments[0]?.filename || "-"}
+                          </td>
+                          <td className="text-start">
+                            {doc.attachments[0]?.content_type || "-"}
+                          </td>
+                          <td className="text-start">
+                            {doc.uploadDate || "-"}
+                          </td>
+                          <td
+                            className="text-decoration-underline"
+                            style={{ cursor: "pointer" }}
+                            onClick={() => handleViewDocument(idx)}
+                          >
+                            View
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {/* Attach Modal (advanced, from Bill Entry Create) */}
+              <Modal
+                centered
+                size="l"
+                show={attachModal}
+                onHide={closeattachModal}
+                backdrop="true"
+                keyboard={true}
+                className="modal-centered-custom"
+              >
+                <Modal.Header closeButton>
+                  <h5>Attach Document</h5>
+                </Modal.Header>
+                <Modal.Body>
+                  <div className="row">
+                    <div className="col-md-12">
+                      <div className="form-group">
+                        <label>Name of the Document</label>
+                        {newDocument.document_type &&
+                        documents.find(
+                          (doc) =>
+                            doc.isDefault &&
+                            doc.document_type === newDocument.document_type
+                        ) ? (
+                          // For default document types - show as disabled input
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={newDocument.document_type}
+                            disabled
+                          />
+                        ) : (
+                          // For new document types - allow input
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={newDocument.document_type}
+                            onChange={(e) =>
+                              setNewDocument((prev) => ({
+                                ...prev,
+                                document_type: e.target.value,
+                              }))
+                            }
+                            placeholder="Enter document name"
+                          />
+                        )}
+                      </div>
+                    </div>
+                    <div className="col-md-12 mt-2">
+                      <div className="form-group">
+                        <label>Upload File</label>
                         <input
                           type="file"
-                          id={`file-input-${index}`}
-                          key={row?.srNo}
-                          style={{ display: "none" }}
-                          onChange={(e) =>
-                            handleFileChange(index, e.target.files[0])
-                          }
-                          accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
+                          className="form-control"
+                          onChange={handleFileUpload}
+                          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                         />
-                        <label
-                          htmlFor={`file-input-${index}`}
-                          style={{
-                            display: "inline-block",
-                            width: "300px",
-                            padding: "10px",
-                            border: "1px solid #ccc",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            color: "#555",
-                            backgroundColor: "#f5f5f5",
-                            textAlign: "center",
-                          }}
-                        >
-                          {row.upload?.filename
-                            ? row.upload.filename
-                            : "Choose File"}
-                        </label>
-                      </td>
-                    ),
-                    fileType: row.fileType || "-",
-                    uploadDate: row.uploadDate || "-",
-                    action: (
+                      </div>
+                    </div>
+                    {/* Add this new section for file name editing */}
+                    {newDocument.attachments.length > 0 && (
+                      <div className="col-md-12 mt-2">
+                        <div className="form-group">
+                          <label>File Name</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={newDocument.attachments[0].filename}
+                            onChange={(e) => {
+                              setNewDocument((prev) => ({
+                                ...prev,
+                                attachments: [
+                                  {
+                                    ...prev.attachments[0],
+                                    filename: e.target.value,
+                                  },
+                                ],
+                              }));
+                            }}
+                            placeholder="Enter file name"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="row mt-2 justify-content-center">
+                    <div className="col-md-4">
                       <button
-                        className="btn btn-danger"
-                        onClick={() => handleRemoveDocumentRow(index)}
-                        disabled={documentRows.length === 1}
+                        className="purple-btn2 w-100"
+                        onClick={handleAttachDocument}
+                        disabled={
+                          !newDocument.document_type ||
+                          newDocument.attachments.length === 0
+                        }
                       >
-                        Remove
+                        Attach
                       </button>
-                    ),
-                  }))}
-                  isAccordion={false}
-                />
+                    </div>
+                    <div className="col-md-4">
+                      <button
+                        className="purple-btn1 w-100"
+                        onClick={closeattachModal}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </Modal.Body>
+              </Modal>
+              {/* View Document Modal (dynamic) */}
+              <Modal
+                centered
+                size="lg"
+                show={viewDocumentModal}
+                onHide={closeviewDocumentModal}
+                backdrop="true"
+                keyboard={true}
+                className="modal-centered-custom"
+              >
+                <Modal.Header closeButton>
+                  <h5>Document Attachment</h5>
+                </Modal.Header>
+                <Modal.Body>
+                  <div>
+                    <div className="d-flex justify-content-between mt-3 me-2">
+                      <h5 className=" ">Latest Documents</h5>
+                      <div
+                        className="card-tools d-flex"
+                        data-bs-toggle="modal"
+                        data-bs-target="#attachModal"
+                      >
+                        <button
+                          className="purple-btn2 rounded-3"
+                          data-bs-toggle="modal"
+                          data-bs-target="#attachModal"
+                          onClick={openattachModal}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width={20}
+                            height={20}
+                            fill="currentColor"
+                            className="bi bi-plus"
+                            viewBox="0 0 16 16"
+                          >
+                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                          </svg>
+                          <span>Attach</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="tbl-container px-0">
+                      <table className="w-100">
+                        <thead>
+                          <tr>
+                            <th>Sr.No.</th>
+                            <th>Document Name</th>
+                            <th>Attachment Name</th>
+                            <th>File Type</th>
+                            <th>Upload Date</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {documents.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="text-center">
+                                No documents attached
+                              </td>
+                            </tr>
+                          ) : (
+                            documents.map((doc, idx) => (
+                              <tr key={idx}>
+                                <td>{idx + 1}</td>
+                                <td>{doc.document_type}</td>
+                                <td>{doc.attachments[0]?.filename || "-"}</td>
+                                <td>
+                                  {doc.attachments[0]?.content_type || "-"}
+                                </td>
+                                <td>{doc.uploadDate || "-"}</td>
+                                <td>
+                                  <i
+                                    className="fa-regular fa-eye"
+                                    style={{ fontSize: 18, cursor: "pointer" }}
+                                    // You can add onClick to preview/download if needed
+                                  />
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className=" mt-3 me-2">
+                      <h5 className=" ">Document Attachment History</h5>
+                    </div>
+                    <div className="tbl-container px-0">
+                      <table className="w-100">
+                        <thead>
+                          <tr>
+                            <th>Sr.No.</th>
+                            <th>Document Name</th>
+                            <th>Attachment Name</th>
+                            <th>File Type</th>
+                            <th>Upload Date</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {documents.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="text-center">
+                                No documents attached
+                              </td>
+                            </tr>
+                          ) : (
+                            documents.map((doc, idx) => (
+                              <tr key={idx}>
+                                <td>{idx + 1}</td>
+                                <td>{doc.document_type}</td>
+                                <td>{doc.attachments[0]?.filename || "-"}</td>
+                                <td>
+                                  {doc.attachments[0]?.content_type || "-"}
+                                </td>
+                                <td>{doc.uploadDate || "-"}</td>
+                                <td>
+                                  <i
+                                    className="fa-regular fa-eye"
+                                    style={{ fontSize: 18, cursor: "pointer" }}
+                                    // You can add onClick to preview/download if needed
+                                  />
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div className="row mt-2 justify-content-center">
+                    <div className="col-md-3">
+                      <button className="purple-btn1 w-100">Close</button>
+                    </div>
+                  </div>
+                </Modal.Body>
+              </Modal>
+
+              {/* Status Dropdown above Submit/Cancel using SingleSelector */}
+              <div className="row mt-4 justify-content-end align-items-center mx-2">
+                <div className="col-md-3">
+                  <div className="form-group d-flex gap-3 align-items-center mx-3">
+                    <label
+                      className="form-label mt-2"
+                      style={{ fontSize: "0.95rem", color: "black" }}
+                    >
+                      Status
+                    </label>
+                    <SingleSelector
+                      options={statusOptions}
+                      value={selectedStatus}
+                      onChange={setSelectedStatus}
+                      placeholder="Select Status"
+                      isClearable={false}
+                      classNamePrefix="react-select"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="row mt-4 justify-content-end">
                 <div className="col-md-2">
-                  <button className="purple-btn2 w-100" onClick={handleSubmit}>
+                  <button
+                    className="purple-btn2 w-100 mt-2"
+                    onClick={handleSubmit}
+                  >
                     Submit
                   </button>
                 </div>
