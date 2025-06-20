@@ -277,7 +277,7 @@ const RateDetails = () => {
                         </div>
                     )}
                     {rateDetails?.show_revision === true && (
-                        <div className="d-flex justify-content-end m-2">
+                        <div className="d-flex justify-content-end m-2 mb-4">
 
                             <Link
                                 to={`/rate-revision/${id}`}

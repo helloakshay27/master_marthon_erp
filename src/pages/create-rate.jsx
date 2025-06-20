@@ -122,6 +122,7 @@ const CreateRate = () => {
         const errors = {};
 
         if (!formData.materialType) errors.materialType = "Material Type is required.";
+        if (!formData.material) errors.material = "Material is required.";
         if (!formData.materialSubType) errors.materialSubType = "Material Sub Type is required.";
         if (!formData.uom) errors.uom = "UOM is required.";
 
@@ -211,8 +212,8 @@ const CreateRate = () => {
                         // updatedRow.avgRate = ""; // Clear avgRate
                         // updatedRow.poRate = ""; // Clear poRate
                         updatedRow.rateType = newRateChecked ? "manual" : ""; // Set rateType
-                         if (newRateChecked) {
-                            updatedRow.rate = row.rate|| "0";
+                        if (newRateChecked) {
+                            updatedRow.rate = row.rate || "0";
                         } // Set rateType
                     }
 
@@ -228,7 +229,7 @@ const CreateRate = () => {
                         // updatedRow.avgRate= ""; // Clear rate
                         // updatedRow.poRate = ""; // Clear poRate
                         updatedRow.rateType = newAvgRateChecked ? "average" : ""; // Set rateType
-                         if (newAvgRateChecked) {
+                        if (newAvgRateChecked) {
                             updatedRow.rate = row.avgRate || "0";
                         } // Set rateType
                     }
@@ -245,8 +246,8 @@ const CreateRate = () => {
                         // updatedRow.poRate = ""; // Clear rate
                         // updatedRow.avgRate = ""; // Clear avgRate
                         updatedRow.rateType = newPoRateChecked ? "last" : ""; // Set rateType
-                         updatedRow.rateType = newPoRateChecked ? "last" : ""; // Set rateType
-                         if (newPoRateChecked) {
+                        updatedRow.rateType = newPoRateChecked ? "last" : ""; // Set rateType
+                        if (newPoRateChecked) {
                             updatedRow.rate = row.poRate || "0";
                         }
                     }
@@ -643,6 +644,16 @@ const CreateRate = () => {
     // console.log("payload :", payload)
 
     const handleSubmit = () => {
+        if (!selectedCompany?.value) {
+            toast.error("Please select a company before submitting.");
+            return;
+        }
+
+        if (!selectedProject?.value) {
+            toast.error("Please select a project before submitting.");
+            return;
+        }
+
         if (tableData.length === 0) {
             toast.error("Please add at least one material before submitting.");
             return;
@@ -684,61 +695,66 @@ const CreateRate = () => {
                 navigate("/view-rate");
             })
             .catch((error) => {
-                alert("Error submitting data!");
+                // alert("Error submitting data!");
                 console.error("Error submitting data:", error);
+                if (error.response && error.response.status === 422) {
+                    toast.error("Rates are already created for this.");
+                } else {
+                    toast.error("Error submitting data!");
+                }
                 setLoading(false);
             }).finally(() => {
                 setLoading(false); // Always executed
             });
     };
 
-     const [selectAllRate, setSelectAllRate] = useState(false);
-        const [selectAllAvgRate, setSelectAllAvgRate] = useState(false);
-        const [selectAllPoRate, setSelectAllPoRate] = useState(false);
-    
-        // Add this new function to handle select all functionality
-        const handleSelectAllRates = (rateType) => {
-            let updatedTableData = [...tableData];
-    
-            switch (rateType) {
-                case 'rate':
-                    setSelectAllRate(!selectAllRate);
-                    updatedTableData = tableData.map(row => ({
-                        ...row,
-                        rateChecked: !selectAllRate,
-                        avgRateChecked: false,
-                        poRateChecked: false,
-                        rateType: !selectAllRate ? 'manual' : '',
-                    }));
-                    break;
-    
-                case 'avgRate': setSelectAllAvgRate(!selectAllAvgRate);
-                    updatedTableData = tableData.map(row => ({
-                        ...row,
-                        avgRateChecked: !selectAllAvgRate,
-                        rateChecked: false,
-                        poRateChecked: false,
-                        rateType: !selectAllAvgRate ? 'average' : '',
-                        rate:row.avgRate || "0"
-                       
-                    }));
-                    break;
-    
-                case 'poRate':
-                    setSelectAllPoRate(!selectAllPoRate);
-                    updatedTableData = tableData.map(row => ({
-                        ...row,
-                        poRateChecked: !selectAllPoRate,
-                        rateChecked: false,
-                        avgRateChecked: false,
-                        rateType: !selectAllPoRate ? 'last' : '',
-                         rate:row.poRate || "0"
-                    }));
-                    break;
-            }
-    
-            setTableData(updatedTableData);
-        };
+    const [selectAllRate, setSelectAllRate] = useState(false);
+    const [selectAllAvgRate, setSelectAllAvgRate] = useState(false);
+    const [selectAllPoRate, setSelectAllPoRate] = useState(false);
+
+    // Add this new function to handle select all functionality
+    const handleSelectAllRates = (rateType) => {
+        let updatedTableData = [...tableData];
+
+        switch (rateType) {
+            case 'rate':
+                setSelectAllRate(!selectAllRate);
+                updatedTableData = tableData.map(row => ({
+                    ...row,
+                    rateChecked: !selectAllRate,
+                    avgRateChecked: false,
+                    poRateChecked: false,
+                    rateType: !selectAllRate ? 'manual' : '',
+                }));
+                break;
+
+            case 'avgRate': setSelectAllAvgRate(!selectAllAvgRate);
+                updatedTableData = tableData.map(row => ({
+                    ...row,
+                    avgRateChecked: !selectAllAvgRate,
+                    rateChecked: false,
+                    poRateChecked: false,
+                    rateType: !selectAllAvgRate ? 'average' : '',
+                    rate: row.avgRate || "0"
+
+                }));
+                break;
+
+            case 'poRate':
+                setSelectAllPoRate(!selectAllPoRate);
+                updatedTableData = tableData.map(row => ({
+                    ...row,
+                    poRateChecked: !selectAllPoRate,
+                    rateChecked: false,
+                    avgRateChecked: false,
+                    rateType: !selectAllPoRate ? 'last' : '',
+                    rate: row.poRate || "0"
+                }));
+                break;
+        }
+
+        setTableData(updatedTableData);
+    };
     return (
         <>
 
@@ -756,7 +772,7 @@ const CreateRate = () => {
                                 <div className="row">
                                     <div className="col-md-4 mt-2">
                                         <div className="form-group">
-                                            <label>Company</label>
+                                            <label>Company <span>*</span></label>
                                             <SingleSelector
                                                 options={companyOptions}
                                                 onChange={handleCompanyChange}
@@ -768,7 +784,7 @@ const CreateRate = () => {
                                     <div className="col-md-4 mt-2">
 
                                         <div className="form-group">
-                                            <label>Project</label>
+                                            <label>Project <span>*</span></label>
                                             <SingleSelector
                                                 options={projects}
                                                 onChange={handleProjectChange}
@@ -851,7 +867,7 @@ const CreateRate = () => {
                                             <th className="text-start">Rate (INR)
                                                 <span className="ms-2 pt-2">
                                                     {/* <input type="checkbox" /> */}
-                                                     <input type="checkbox"
+                                                    <input type="checkbox"
                                                         checked={selectAllRate}
                                                         onChange={() => handleSelectAllRates('rate')} />
                                                 </span>
@@ -879,7 +895,7 @@ const CreateRate = () => {
                                             <th className="text-start">PO Rate
                                                 <span className="ms-2 pt-2">
                                                     {/* <input type="checkbox" /> */}
-                                                     <input type="checkbox"
+                                                    <input type="checkbox"
                                                         checked={selectAllPoRate}
                                                         onChange={() => handleSelectAllRates('poRate')} />
                                                 </span>
@@ -898,19 +914,19 @@ const CreateRate = () => {
                                                     {/* {console.log("materail type:", row.materialType)} */}
                                                     <td className="text-start">{row.materialTypeLabel}</td>
                                                     <td className="text-start">{row.materialLabel}
-                                                        
+
                                                     </td>
                                                     <td className="text-start">{row.materialSubTypeLabel}
-                                                       
+
                                                     </td>
                                                     <td className="text-start">{row.genericSpecificationLabel}
-                                                      
+
                                                     </td>
                                                     <td className="text-start">{row.colourLabel}
-                                                        
+
                                                     </td>
                                                     <td className="text-start">{row.brandLabel}
-                                                        
+
                                                     </td>
                                                     <td className="text-start">
                                                         <input
@@ -1012,21 +1028,21 @@ const CreateRate = () => {
                 </div>
             </div>
 
-{loading && (
-        <div className="loader-container">
-          <div className="lds-ring">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-          </div>
-          <p>loading...</p>
-        </div>
-      )}
+            {loading && (
+                <div className="loader-container">
+                    <div className="lds-ring">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <p>loading...</p>
+                </div>
+            )}
             {/* create modal  */}
             <Modal centered size="lg" show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
@@ -1068,13 +1084,16 @@ const CreateRate = () => {
                             </div>
                             <div className="col-md-4 mt-3">
                                 <div className="form-group">
-                                    <label className="po-fontBold">Material</label>
+                                    <label className="po-fontBold">Material <span>*</span></label>
                                     <SingleSelector
                                         options={inventoryMaterialTypes2}
                                         value={inventoryMaterialTypes2.find((option) => option.value === formData.material)} // Bind value to state
                                         placeholder={`Select Material`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("material", selectedOption)}
                                     />
+                                    {fieldErrors.material && (
+                                        <span className="text-danger">{fieldErrors.material}</span>
+                                    )}
                                 </div>
                             </div>
                             <div className="col-md-4 mt-3">

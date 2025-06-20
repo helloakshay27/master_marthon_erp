@@ -186,6 +186,7 @@ const EditRate = () => {
         const errors = {};
 
         if (!formData.materialType) errors.materialType = "Material Type is required.";
+         if (!formData.material) errors.material = "Material is required.";
         if (!formData.materialSubType) errors.materialSubType = "Material Sub Type is required.";
         if (!formData.uom) errors.uom = "UOM is required.";
 
@@ -1123,13 +1124,16 @@ const EditRate = () => {
                             </div>
                             <div className="col-md-4 mt-3">
                                 <div className="form-group">
-                                    <label className="po-fontBold">Material</label>
+                                    <label className="po-fontBold">Material <span>*</span> </label>
                                     <SingleSelector
                                         options={inventoryMaterialTypes2}
                                         value={inventoryMaterialTypes2.find((option) => option.value === formData.material)} // Bind value to state
                                         placeholder={`Select Material`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("material", selectedOption)}
                                     />
+                                    {fieldErrors.material && (
+                                        <span className="text-danger">{fieldErrors.material}</span>
+                                    )}
                                 </div>
                             </div>
                             <div className="col-md-4 mt-3">

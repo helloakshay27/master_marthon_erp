@@ -187,6 +187,7 @@ const RateRevision = () => {
         const errors = {};
 
         if (!formData.materialType) errors.materialType = "Material Type is required.";
+        if (!formData.material) errors.material = "Material is required.";
         if (!formData.materialSubType) errors.materialSubType = "Material Sub Type is required.";
         if (!formData.uom) errors.uom = "UOM is required.";
 
@@ -727,7 +728,7 @@ const RateRevision = () => {
             project_id: rateDetails?.project_id,
             pms_site_id: rateDetails?.pms_site_id,
             pms_wing_id: rateDetails?.pms_wing_id || null,
-            parent_id: rateDetails?.id,
+            parent_id: rateDetails?.parent_id,
             materials: tableData.map(row => {
                 const material = {
                     material_id: row.material,
@@ -1186,13 +1187,16 @@ const RateRevision = () => {
                             </div>
                             <div className="col-md-4 mt-3">
                                 <div className="form-group">
-                                    <label className="po-fontBold">Material</label>
+                                    <label className="po-fontBold">Material <span>*</span></label>
                                     <SingleSelector
                                         options={inventoryMaterialTypes2}
                                         value={inventoryMaterialTypes2.find((option) => option.value === formData.material)} // Bind value to state
                                         placeholder={`Select Material`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("material", selectedOption)}
                                     />
+                                    {fieldErrors.material && (
+                                        <span className="text-danger">{fieldErrors.material}</span>
+                                    )}
                                 </div>
                             </div>
                             <div className="col-md-4 mt-3">
