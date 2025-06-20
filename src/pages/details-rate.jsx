@@ -12,6 +12,9 @@ import { useParams } from "react-router-dom";
 
 const RateDetails = () => {
     const navigate = useNavigate();
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
+
     const { id } = useParams();
     const [showModal, setShowModal] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -34,13 +37,13 @@ const RateDetails = () => {
         setLoading(true);
         try {
             const response = await axios.get(
-                `https://marathon.lockated.com/rate_details/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}rate_details/${id}.json?token=${token}`
             );
             setRateDetails(response.data);
             setStatus(response.data.selected_status || "");
-            console.log("data list... ", response.data.pagination.total_entries)
-            setTotalPages(response.data?.pagination.total_pages); // Set total pages
-            setTotalEntries(response.data?.pagination.total_entries);
+            // console.log("data list... ", response.data.pagination.total_entries)
+            setTotalPages(response?.data?.pagination?.total_pages); // Set total pages
+            setTotalEntries(response?.data?.pagination?.total_entries);
             if (response.data.materials) {
                 setLoading(false);
                 setTableData(
@@ -126,7 +129,7 @@ const RateDetails = () => {
 
         try {
             const response = await axios.patch(
-                `${baseURL}rate_details/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                `${baseURL}rate_details/${id}/update_status.json?token=${token}`,
                 payload,  // The request body containing status and remarks
                 {
                     headers: {
@@ -188,7 +191,7 @@ const RateDetails = () => {
     const handleCancel = () => {
         // setStatus(initialStatus); // Reset status to the initial value
         // setRemark(''); // Optionally reset the remark as well
-        navigate("/view-BOQ"); // 🔥 Redirect to the /view-BOQ page
+        navigate(`/view-BOQ?token=${token}`); // 🔥 Redirect to the /view-BOQ page
     };
 
     const handleApplyFilters = () => {
@@ -202,8 +205,8 @@ const RateDetails = () => {
 
         axios
             .get(
-                `${baseURL}rate_details/${id}.json?search=${search}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-                // https://marathon.lockated.com/boq_details.json?q[work_category_id]=&q[work_sub_category_id]=&q[status]=approved&q[inventory_id]=&q[inventory_type_id]=&search=FINES&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414
+                `${baseURL}rate_details/${id}.json?search=${search}&token=${token}`
+                // https://marathon.lockated.com/boq_details.json?q[work_category_id]=&q[work_sub_category_id]=&q[status]=approved&q[inventory_id]=&q[inventory_type_id]=&search=FINES&token=${token}
             )
             .then((response) => {
                 setRateDetails(response.data);
@@ -262,7 +265,7 @@ const RateDetails = () => {
                         <div className="d-flex justify-content-end m-2">
 
                             <Link
-                                to={`/edit-rate/${id}`}
+                                to={`/edit-rate/${id}?token=${token}`}
                                 className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
 
                                 <button class="purple-btn1" data-bs-toggle="modal" data-bs-target="#exampleModal">
@@ -277,10 +280,10 @@ const RateDetails = () => {
                         </div>
                     )}
                     {rateDetails?.show_revision === true && (
-                        <div className="d-flex justify-content-end m-2">
+                        <div className="d-flex justify-content-end m-2 mb-4">
 
                             <Link
-                                to={`/rate-revision/${id}`}
+                                to={`/rate-revision/${id}?token=${token}`}
                                 className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
 
 
@@ -699,7 +702,7 @@ const RateDetails = () => {
                                 <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
                             </div>
                             <div className="col-md-2">
-                                <button className="purple-btn1 w-100" onClick={() => navigate("/view-rate")}>Cancle</button>
+                                <button className="purple-btn1 w-100" onClick={() => navigate(`/view-rate?token=${token}`)}>Cancle</button>
                             </div>
                         </div>
 
@@ -778,7 +781,7 @@ const RateDetails = () => {
                                                         <tr key={log.id}>
                                                             <td className="text-start">{index + 1}</td>
                                                             <td className="text-start">
-                                                                <Link to={`/details-rate/${log.id}`} className="boq-id-link">
+                                                                <Link to={`/details-rate/${log.id}?token=${token}`} className="boq-id-link">
                                                                     {log.id}
                                                                 </Link>
                                                             </td>

@@ -15,6 +15,8 @@ import "react-toastify/dist/ReactToastify.css";
 const RateRevision = () => {
     const navigate = useNavigate();
     const { id } = useParams();
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
     const [showModal, setShowModal] = useState(false);
     const [checkbox1, setCheckbox1] = useState(false);
     const [checkbox2, setCheckbox2] = useState(false);
@@ -41,7 +43,7 @@ const RateRevision = () => {
         setLoading(true);
         try {
             const response = await axios.get(
-                `https://marathon.lockated.com/rate_details/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}rate_details/${id}.json?token=${token}`
             );
             setRateDetails(response.data);
             // setStatus(response.data.selected_status || "");
@@ -187,6 +189,7 @@ const RateRevision = () => {
         const errors = {};
 
         if (!formData.materialType) errors.materialType = "Material Type is required.";
+        if (!formData.material) errors.material = "Material is required.";
         if (!formData.materialSubType) errors.materialSubType = "Material Sub Type is required.";
         if (!formData.uom) errors.uom = "UOM is required.";
 
@@ -381,7 +384,7 @@ const RateRevision = () => {
 
     // Fetch company data on component mount
     useEffect(() => {
-        axios.get(`${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios.get(`${baseURL}pms/company_setups.json?token=${token}`)
             .then(response => {
                 setCompanies(response.data.companies);
 
@@ -483,7 +486,7 @@ const RateRevision = () => {
     const [selectedInventoryMaterialTypes2, setSelectedInventoryMaterialTypes2] = useState(null); // State to hold selected sub-type
     // Fetching inventory types data from API on component mount
     useEffect(() => {
-        axios.get(`${baseURL}pms/inventory_types.json?q[category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios.get(`${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`)
             .then(response => {
                 // Map the fetched data to the format required by react-select
                 const options = response.data.map(inventory => ({
@@ -504,7 +507,7 @@ const RateRevision = () => {
         if (selectedInventory2) {
             //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
 
-            axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${selectedInventory2?.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+            axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${selectedInventory2?.value}&token=${token}`)
                 .then(response => {
                     // Map the sub-types to options for the select dropdown
                     const options = response.data.map(subType => ({
@@ -525,7 +528,7 @@ const RateRevision = () => {
         if (selectedInventory2) {
             //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
 
-            axios.get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${selectedInventory2?.value}&q[material_category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+            axios.get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${selectedInventory2?.value}&q[material_category_eq]=material&token=${token}`)
                 .then(response => {
                     // Map the sub-types to options for the select dropdown
                     const options = response.data.map(subType => ({
@@ -549,7 +552,7 @@ const RateRevision = () => {
     useEffect(() => {
         axios
             .get(
-                `${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}unit_of_measures.json?token=${token}`
             )
             .then((response) => {
                 // Mapping the response to the format required by react-select
@@ -575,7 +578,7 @@ const RateRevision = () => {
         if (selectedInventoryMaterialTypes2) {
             axios
                 .get(
-                    `${baseURL}pms/generic_infos.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                    `${baseURL}pms/generic_infos.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=${token}`
                 )
                 .then((response) => {
                     const options = response.data.map((specification) => ({
@@ -599,7 +602,7 @@ const RateRevision = () => {
         if (selectedInventoryMaterialTypes2) {
             axios
                 .get(
-                    `${baseURL}pms/colours.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                    `${baseURL}pms/colours.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=${token}`
                 )
                 .then((response) => {
                     const options = response.data.map((color) => ({
@@ -621,7 +624,7 @@ const RateRevision = () => {
         if (selectedInventoryMaterialTypes2) {
             axios
                 .get(
-                    `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                    `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=${token}`
                 )
                 .then((response) => {
                     const options = response.data.map((brand) => ({
@@ -690,7 +693,7 @@ const RateRevision = () => {
 
             // Call the API
             const response = await axios.post(
-                "https://marathon.lockated.com/rate_details/get_avg_po_rate.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+                `${baseURL}rate_details/get_avg_po_rate.json?token=${token}`,
                 payload,
                 { headers: { "Content-Type": "application/json" } }
             );
@@ -727,7 +730,7 @@ const RateRevision = () => {
             project_id: rateDetails?.project_id,
             pms_site_id: rateDetails?.pms_site_id,
             pms_wing_id: rateDetails?.pms_wing_id || null,
-            parent_id: rateDetails?.id,
+            parent_id: rateDetails?.parent_id,
             materials: tableData.map(row => {
                 const material = {
                     material_id: row.material,
@@ -787,7 +790,7 @@ const RateRevision = () => {
 
         // Simulate API call or handle submission logic
         axios
-            .post(`https://marathon.lockated.com/rate_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`, payload)
+            .post(`${baseURL}rate_details.json?token=${token}`, payload)
             .then((response) => {
                 alert("Submission successful!");
                 console.log("Update successful:", response.data);
@@ -850,8 +853,6 @@ const RateRevision = () => {
     };
     return (
         <>
-
-
             <div className="website-content overflow-auto">
                 <div className="module-data-section p-4">
                     <a href="">
@@ -1124,7 +1125,7 @@ const RateRevision = () => {
                             <button className="purple-btn2 w-100" onClick={handleSubmit}>Update</button>
                         </div>
                         <div className="col-md-2">
-                            <button className="purple-btn1 w-100" onClick={() => navigate("/view-rate")}>Cancle</button>
+                            <button className="purple-btn1 w-100" onClick={() => navigate(`/view-rate?token=${token}`)}>Cancle</button>
                         </div>
                     </div>
                 </div>
@@ -1186,13 +1187,16 @@ const RateRevision = () => {
                             </div>
                             <div className="col-md-4 mt-3">
                                 <div className="form-group">
-                                    <label className="po-fontBold">Material</label>
+                                    <label className="po-fontBold">Material <span>*</span></label>
                                     <SingleSelector
                                         options={inventoryMaterialTypes2}
                                         value={inventoryMaterialTypes2.find((option) => option.value === formData.material)} // Bind value to state
                                         placeholder={`Select Material`} // Dynamic placeholder
                                         onChange={(selectedOption) => handleSelectorChange("material", selectedOption)}
                                     />
+                                    {fieldErrors.material && (
+                                        <span className="text-danger">{fieldErrors.material}</span>
+                                    )}
                                 </div>
                             </div>
                             <div className="col-md-4 mt-3">

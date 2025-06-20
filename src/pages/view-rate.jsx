@@ -20,6 +20,8 @@ const ViewRate = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false); // Add loading state
     const handleFileChange = (e) => setFile(e.target.files[0]);
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,7 +33,7 @@ const ViewRate = () => {
 
             try {
                 const response = await axios.post(
-                    "https://marathon.lockated.com/rate_details/import.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+                    `${baseURL}rate_details/import.json?token=${token}`,
                     { file: base64String },
                     { headers: { "Content-Type": "application/json" } }
                 );
@@ -67,7 +69,7 @@ const ViewRate = () => {
         setLoading(true);
         axios
             .get(
-                "https://marathon.lockated.com/rate_details.json?q[id_eq]=&q[projects_id_eq]=&q[pms_sites_id_eq]=&q[pms_wings_id_eq]=&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+                `${baseURL}rate_details.json?q[id_eq]=&q[projects_id_eq]=&q[pms_sites_id_eq]=&q[pms_wings_id_eq]=&token=${token}`
             )
             // .then((response) => setData(response.data))
             // .catch((error) => console.error("Error fetching data:", error));
@@ -87,7 +89,7 @@ const ViewRate = () => {
     const handleClick = () => {
         // Optionally, show the modal here if needed before navigating
         // setShowModal(true);
-        navigate('/create-rate'); // This will navigate to /create-rate
+        navigate(`/create-rate?token=${token}`); // This will navigate to /create-rate
     };
 
     // States to store data company, project ,subproject ,wing
@@ -102,7 +104,7 @@ const ViewRate = () => {
 
     // Fetch company data on component mount
     useEffect(() => {
-        axios.get(`${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios.get(`${baseURL}pms/company_setups.json?token=${token}`)
             .then(response => {
                 setCompanies(response.data.companies);
 
@@ -200,7 +202,7 @@ const ViewRate = () => {
         const wingId = selectedWing?.value || ""
         try {
             const response = await axios.get(
-                `https://marathon.lockated.com/rate_details.json?q[id_eq]=${companyId}&q[projects_id_eq]=${projectId}&q[pms_sites_id_eq]=${siteId}&q[pms_wings_id_eq]=${wingId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}rate_details.json?q[id_eq]=${companyId}&q[projects_id_eq]=${projectId}&q[pms_sites_id_eq]=${siteId}&q[pms_wings_id_eq]=${wingId}&token=${token}`
             );
             setData(response.data);
         } catch (error) {
@@ -216,7 +218,7 @@ const ViewRate = () => {
         setSelectedWing(null)
         try {
             const response = await axios.get(
-                "https://marathon.lockated.com/rate_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+                `${baseURL}rate_details.json?token=${token}`
             );
             setData(response.data); // or setData(response.data) as per your structure
             // Optionally, reset filter states here as well
@@ -225,7 +227,7 @@ const ViewRate = () => {
         }
     };
 
-
+console.log("Token value inside render:", token);
     return (
         <>
             <div className="website-content overflow-auto">
@@ -484,9 +486,10 @@ const ViewRate = () => {
                                                                 {wingIndex === 0 && siteIndex === 0 ? (
                                                                     <td className="text-start">
                                                                         {project.rate_id ? (
-                                                                            <a href={`/details-rate/${project.rate_id}`}>
+                                                                            <a href={`/details-rate/${project.rate_id}?token=${token}`}>
                                                                                 <span style={{ color: "#8b0203", textDecoration: "underline" }}>
                                                                                     {project.name}
+                                                                                    {/* {console.log("token inn:",token)} */}
                                                                                 </span>
                                                                             </a>
                                                                         ) : (
@@ -505,7 +508,7 @@ const ViewRate = () => {
                                                                 {wingIndex === 0 ? (
                                                                     <td className="text-start">
                                                                         {site.rate_id ? (
-                                                                            <a href={`/details-rate/${site.rate_id}`}>
+                                                                            <a href={`/details-rate/${site.rate_id}?token=${token}`}>
                                                                                 <span style={{ color: "#8b0203", textDecoration: "underline" }}>
                                                                                     {site.name}
                                                                                 </span>
@@ -542,7 +545,7 @@ const ViewRate = () => {
                                                                 {siteIndex === 0 ? (
                                                                     <td className="text-start">
                                                                         {project.rate_id ? (
-                                                                            <a href={`/details-rate/${project.rate_id}`}>
+                                                                            <a href={`/details-rate/${project.rate_id}?token=${token}`}>
                                                                                 <span style={{ color: "#8b0203", textDecoration: "underline" }}>
                                                                                     {project.name}
                                                                                 </span>
@@ -562,7 +565,7 @@ const ViewRate = () => {
                                                                 {/* Sub-Project Name */}
                                                                 <td className="text-start">
                                                                     {site.rate_id ? (
-                                                                        <a href={`/details-rate/${site.rate_id}`}>
+                                                                        <a href={`/details-rate/${site.rate_id}?token=${token}`}>
                                                                             <span style={{ color: "#8b0203", textDecoration: "underline" }}>
                                                                                 {site.name}
                                                                             </span>
@@ -623,7 +626,7 @@ const ViewRate = () => {
                         <div className="d-flex justify-content-between align-items-center">
                             {/* Left: Download sample format */}
                             <a
-                                href="https://marathon.lockated.com/rate_details/download_rate_sample.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+                                href={`${baseURL}rate_details/download_rate_sample.json?token=${token}`}
                                 download
                                 className="d-flex align-items-center text-decoration-none"
                                 style={{ color: "#8b0203" }}
