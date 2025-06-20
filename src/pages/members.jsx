@@ -265,11 +265,11 @@ function Members() {
               </ul>
               <h1>Rate</h1>
               <ul>
-                <li>
+                {/* <li>
                   <Link to="/create-rate">Create Rate</Link>
-                </li>
+                </li> */}
                 <li>
-                  <Link to="/view-rate">Rate List</Link>
+                  <Link to="/view-rate?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">Rate List</Link>
                 </li>
               </ul>
               <h1>Gate Pass</h1>
