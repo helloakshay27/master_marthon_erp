@@ -1,0 +1,322 @@
+import React from "react";
+import { useEffect, useState, useRef } from "react";
+import axios from "axios";
+import SingleSelector from "../components/base/Select/SingleSelector";
+import { baseURL } from "../confi/apiDomain";
+import { Modal, Button, Form } from "react-bootstrap";
+import { useNavigate, useParams } from "react-router-dom";
+import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+
+const GatePassDetails = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [details, setDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [adminComment, setAdminComment] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState({
+    value: "",
+    label: "Select Status",
+  });
+  const [statusList, setStatusList] = useState([]);
+  const [isStatusDisabled, setIsStatusDisabled] = useState(false);
+
+  useEffect(() => {
+    const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
+    if (id) {
+      axios
+        .get(`${baseURL}gate_passes/${id}.json?token=${token}`)
+        .then((response) => {
+          setDetails(response.data);
+          if (response.data.status_list) {
+            const statusOptions = response.data.status_list.map((status) => ({
+              value: status.toLowerCase(),
+              label: status,
+            }));
+            setStatusList(statusOptions);
+            if (response.data.selected_status) {
+              setSelectedStatus({
+                value: response.data.selected_status.toLowerCase(),
+                label: response.data.selected_status,
+              });
+            }
+            setIsStatusDisabled(response.data.disabled || false);
+          }
+          setLoading(false);
+        })
+        .catch((err) => {
+          setError("Failed to fetch data");
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
+      setError("ID not provided.");
+    }
+  }, [id]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
+    try {
+      const payload = {
+        status_log: {
+          status: selectedStatus?.value || "draft",
+          remarks: adminComment,
+        },
+      };
+
+      const response = await axios.post(
+        `${baseURL}gate_passes/${id}/update_status.json?token=${token}`,
+        payload
+      );
+
+      console.log("Status update successful:", response.data);
+      alert("Status updated successfully!");
+      navigate(`/gate-pass-list?token=${token}`);
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Error updating status. Please try again.");
+    }
+  };
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
+  if (!details) return <p>No details found.</p>;
+
+  return (
+    <div className="main-content">
+      <div className="website-content overflow-auto">
+        <div className="module-data-section p-3 pt-2">
+          <a href="">Home &gt; Store &gt; Store Operations &gt; Gate Pass</a>
+          <h5 className="mt-3">Gate Pass Details</h5>
+          <form onSubmit={handleSubmit}>
+            <CollapsibleCard title="Gate Pass Information">
+              <div className="card-body">
+                <div className="row">
+                  <div className="col-md-4">
+                    <strong>Gate Pass No:</strong> {details.gate_pass_no}
+                  </div>
+                  <div className="col-md-4">
+                    <strong>Gate Pass Type:</strong>{" "}
+                    {details.gate_pass_type_name}
+                  </div>
+                  <div className="col-md-4">
+                    <strong>Date:</strong> {details.gate_pass_date}
+                  </div>
+                </div>
+                <div className="row mt-3">
+                  <div className="col-md-4">
+                    <strong>Project:</strong> {details.project?.name || "N/A"}
+                  </div>
+                  <div className="col-md-4">
+                    <strong>Sub-Project:</strong>{" "}
+                    {details.sub_project?.name || "N/A"}
+                  </div>
+                  <div className="col-md-4">
+                    <strong>From Store:</strong>{" "}
+                    {details.from_store?.name || "N/A"}
+                  </div>
+                </div>
+                <div className="row mt-3">
+                  <div className="col-md-4">
+                    <strong>Vehicle No:</strong> {details.vehicle_no}
+                  </div>
+                  <div className="col-md-4">
+                    <strong>Driver Name:</strong> {details.driver_name}
+                  </div>
+                  <div className="col-md-4">
+                    <strong>Driver Contact:</strong> {details.driver_contact_no}
+                  </div>
+                </div>
+                <div className="row mt-3">
+                  <div className="col-md-4">
+                    <strong>Contact Person:</strong> {details.contact_person}
+                  </div>
+                  <div className="col-md-4">
+                    <strong>Contact Person No:</strong>{" "}
+                    {details.contact_person_no}
+                  </div>
+                  <div className="col-md-4">
+                    <strong>Returnable:</strong>{" "}
+                    {details.returnable ? "Yes" : "No"}
+                  </div>
+                </div>
+                {details.returnable && (
+                  <div className="row mt-3">
+                    <div className="col-md-4">
+                      <strong>Expected Return Date:</strong>{" "}
+                      {details.expected_return_date}
+                    </div>
+                    <div className="col-md-4">
+                      <strong>Due Date:</strong>{" "}
+                      {details.due_at
+                        ? new Date(details.due_at).toLocaleDateString()
+                        : "N/A"}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CollapsibleCard>
+
+            <CollapsibleCard title="Material / Asset Details" isOpen={true}>
+              <div className="card-body">
+                <div className="tbl-container mx-2 mt-3">
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th>Sr.No.</th>
+                        <th>Material Name</th>
+                        <th>Gate Pass Qty</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {details?.gate_pass_materials?.map((item, index) => (
+                        <tr key={item.id}>
+                          <td>{index + 1}</td>
+                          <td>Material ID: {item.mor_inventory_id}</td>
+                          <td>{item.gate_pass_qty}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </CollapsibleCard>
+
+            <CollapsibleCard title="Attachments" isOpen={true}>
+              <div className="card-body">
+                <div className="tbl-container mx-2 mt-3">
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th>Sr.No.</th>
+                        <th>File Name</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {details?.attachments?.length > 0 ? (
+                        details.attachments.map((att, index) => (
+                          <tr key={index}>
+                            <td>{index + 1}</td>
+                            <td>{att.filename || "N/A"}</td>
+                            <td>
+                              <a
+                                href={att.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                View
+                              </a>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="3" className="text-center">
+                            No attachments
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </CollapsibleCard>
+
+            <div className="row mx-1 mt-3">
+              <div className="col-md-12">
+                <div className="form-group">
+                  <label>Remarks</label>
+                  <textarea
+                    className="form-control"
+                    rows={3}
+                    placeholder="Enter remarks..."
+                    value={adminComment}
+                    onChange={(e) => setAdminComment(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-4 justify-content-end align-items-center mx-2">
+              <div className="col-md-3">
+                <div className="form-group d-flex gap-3 align-items-center mx-3">
+                  <label
+                    className="form-label mt-2"
+                    style={{ fontSize: "0.95rem", color: "black" }}
+                  >
+                    Status
+                  </label>
+                  <SingleSelector
+                    options={statusList}
+                    value={selectedStatus}
+                    onChange={setSelectedStatus}
+                    placeholder="Select Status"
+                    isClearable={false}
+                    isDisabled={isStatusDisabled}
+                    classNamePrefix="react-select"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-4 justify-content-end">
+              <div className="col-md-2">
+                <button type="submit" className="purple-btn2 w-100 mt-2">
+                  Submit
+                </button>
+              </div>
+              <div className="col-md-2">
+                <button
+                  type="button"
+                  className="purple-btn1 w-100"
+                  onClick={() => navigate(-1)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <div className="mt-4">
+            <h5 className=" ">Audit Log</h5>
+            <div className="tbl-container px-0">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr.No.</th>
+                    <th>User</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Remark</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {details?.status_logs?.map((log, index) => (
+                    <tr key={log.id}>
+                      <td>{index + 1}</td>
+                      <td>{log.created_by_id}</td>
+                      <td>{new Date(log.created_at).toLocaleDateString()}</td>
+                      <td>{log.status}</td>
+                      <td>{log.remarks || "-"}</td>
+                    </tr>
+                  ))}
+                  {!details?.status_logs?.length && (
+                    <tr>
+                      <td colSpan="5" className="text-center">
+                        No audit log data available
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default GatePassDetails;
