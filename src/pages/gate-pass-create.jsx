@@ -52,6 +52,9 @@ const GatePassCreate = () => {
   ]);
   const [supplierOptions, setSupplierOptions] = useState([]); // For To Vendor dropdown
 
+  const [showAddVendorModal, setShowAddVendorModal] = useState(false);
+  const [newVendorName, setNewVendorName] = useState("");
+
   const [attachModal, setattachModal] = useState(false);
   const [viewDocumentModal, setviewDocumentModal] = useState(false);
 
@@ -339,6 +342,30 @@ const GatePassCreate = () => {
   ];
   const [selectedStatus, setSelectedStatus] = useState(statusOptions[0]);
 
+  const handleAddVendor = () => {
+    if (newVendorName.trim() === "") {
+      alert("Please enter a vendor name.");
+      return;
+    }
+    const newVendor = {
+      label: newVendorName,
+      value: `non_master_${newVendorName.replace(/\s+/g, "_").toLowerCase()}`,
+    };
+
+    const updatedOptions = [
+      ...supplierOptions.filter((o) => o.value !== "other"),
+      newVendor,
+      { value: "other", label: "Other" },
+    ];
+
+    setSupplierOptions(updatedOptions);
+
+    setFormData({ ...formData, to_vendor: newVendor.value });
+
+    setShowAddVendorModal(false);
+    setNewVendorName("");
+  };
+
   useEffect(() => {
     // Fetch PO/WO numbers for dropdown
     const fetchPONumbers = async () => {
@@ -514,33 +541,38 @@ const GatePassCreate = () => {
 
   useEffect(() => {
     // Fetch suppliers for To Vendor dropdown
-    if (
-      formData.gate_pass_type === "return_to_vendor" ||
-      formData.gate_pass_type === "testing_calibration" ||
-      formData.gate_pass_type === "repair_maintenance"
-    ) {
+    const selectedGatePassType = gatePassTypes.find(
+      (t) => t.value === formData.gate_pass_type
+    );
+    const rawValue = selectedGatePassType?.rawValue;
+
+    if (rawValue === "PurchaseOrder" || rawValue === "") {
       const fetchSuppliers = async () => {
         try {
           const response = await axios.get(
             "https://marathon.lockated.com/pms/suppliers.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
           );
           if (Array.isArray(response.data)) {
-            setSupplierOptions(
-              response.data.map((item) => ({
-                value: item.id,
-                label: item.organization_name,
-              }))
-            );
+            const vendors = response.data.map((item) => ({
+              value: item.id,
+              label: item.organization_name,
+            }));
+            setSupplierOptions([
+              ...vendors,
+              { value: "other", label: "Other" },
+            ]);
           } else {
-            setSupplierOptions([]);
+            setSupplierOptions([{ value: "other", label: "Other" }]);
           }
         } catch (error) {
-          setSupplierOptions([]);
+          setSupplierOptions([{ value: "other", label: "Other" }]);
         }
       };
       fetchSuppliers();
+    } else {
+      setSupplierOptions([]);
     }
-  }, [formData.gate_pass_type]);
+  }, [formData.gate_pass_type, gatePassTypes]);
 
   useEffect(() => {
     if (formData.project_id) {
@@ -725,12 +757,16 @@ const GatePassCreate = () => {
                               <label>To Vendor</label>
                               <SingleSelector
                                 options={supplierOptions}
-                                onChange={(selected) =>
-                                  setFormData({
-                                    ...formData,
-                                    to_vendor: selected?.value,
-                                  })
-                                }
+                                onChange={(selected) => {
+                                  if (selected?.value === "other") {
+                                    setShowAddVendorModal(true);
+                                  } else {
+                                    setFormData({
+                                      ...formData,
+                                      to_vendor: selected?.value,
+                                    });
+                                  }
+                                }}
                                 value={supplierOptions.find(
                                   (v) => v.value === formData.to_vendor
                                 )}
@@ -843,12 +879,16 @@ const GatePassCreate = () => {
                               <label>To Vendor</label>
                               <SingleSelector
                                 options={supplierOptions}
-                                onChange={(selected) =>
-                                  setFormData({
-                                    ...formData,
-                                    to_vendor: selected?.value,
-                                  })
-                                }
+                                onChange={(selected) => {
+                                  if (selected?.value === "other") {
+                                    setShowAddVendorModal(true);
+                                  } else {
+                                    setFormData({
+                                      ...formData,
+                                      to_vendor: selected?.value,
+                                    });
+                                  }
+                                }}
                                 value={supplierOptions.find(
                                   (v) => v.value === formData.to_vendor
                                 )}
@@ -1545,6 +1585,38 @@ const GatePassCreate = () => {
             </button>
           </div>
         </Modal.Body>
+      </Modal>
+
+      <Modal
+        show={showAddVendorModal}
+        onHide={() => setShowAddVendorModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Add Non-Master Vendor</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group>
+            <Form.Label>Vendor Name</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter vendor name"
+              value={newVendorName}
+              onChange={(e) => setNewVendorName(e.target.value)}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowAddVendorModal(false)}
+          >
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleAddVendor}>
+            Add Vendor
+          </Button>
+        </Modal.Footer>
       </Modal>
     </div>
   );

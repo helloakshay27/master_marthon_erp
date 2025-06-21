@@ -40,16 +40,6 @@ const GatePassList = () => {
   const [siteOptions, setSiteOptions] = useState([]);
   const navigate = useNavigate();
 
-  const [columnVisibility, setColumnVisibility] = useState({
-    srNo: true,
-    gate_pass_no: true,
-    gate_pass_type: true,
-    date: true,
-    issued_by: true,
-    status: true,
-    action: true,
-  });
-
   const allColumns = [
     {
       field: "srNo",
@@ -108,25 +98,25 @@ const GatePassList = () => {
       minWidth: 150,
     },
     {
-      field: "mto_po_number",
+      field: "po_or_mto_no",
       headerName: "PO / MTO No.",
       flex: 1,
-      minWidth: 120,
+      minWidth: 150,
     },
     {
-      field: "gate_pass_date_time",
+      field: "gate_pass_date",
       headerName: "Gate Pass Date",
       flex: 1,
-      minWidth: 120,
+      minWidth: 150,
     },
     {
-      field: "issued_by",
+      field: "created_by_name",
       headerName: "Issued By",
       flex: 1,
-      minWidth: 120,
+      minWidth: 150,
     },
     {
-      field: "approved_by",
+      field: "approved_by_name",
       headerName: "Approved By",
       flex: 1,
       minWidth: 120,
@@ -156,6 +146,10 @@ const GatePassList = () => {
     //   minWidth: 100,
     // },
   ];
+
+  const [columnVisibility, setColumnVisibility] = useState(
+    allColumns.reduce((acc, col) => ({ ...acc, [col.field]: true }), {})
+  );
 
   const handleSettingClose = () => setSettingShow(false);
   const handleClose = () => setShow(false);
@@ -642,6 +636,8 @@ display:none !important;
                 getRowId={(row) => row.id}
                 loading={loading}
                 disableSelectionOnClick
+                columnVisibilityModel={columnVisibility}
+                onColumnVisibilityModelChange={setColumnVisibility}
                 components={{
                   ColumnMenu: () => null,
                 }}
