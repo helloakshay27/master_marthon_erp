@@ -25,7 +25,7 @@ const GatePassCreate = () => {
     issued_by: "",
     contact_person: "",
     contact_no: "",
-    gate_no: "",
+    gate_number_id: null,
     material_items: [],
     to_vendor: null,
     driver_contact_no: "",
@@ -35,6 +35,7 @@ const GatePassCreate = () => {
   const [subProjects, setSubProjects] = useState([]);
   const [stores, setStores] = useState([]);
   const [toStores, setToStores] = useState([]);
+  const [gateNumbers, setGateNumbers] = useState([]);
   const [gatePassTypes, setGatePassTypes] = useState([
     // { value: "transfer_to_site", label: "Transfer to Site" },
     // { value: "return_to_vendor", label: "Return to Vendor" },
@@ -540,6 +541,34 @@ const GatePassCreate = () => {
     }
   }, [formData.gate_pass_type]);
 
+  useEffect(() => {
+    if (formData.project_id) {
+      const fetchGateNumbers = async () => {
+        try {
+          const response = await axios.get(
+            `https://marathon.lockated.com/gate_numbers/gate_numbers.json?q[project_id_eq]=${formData.project_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+          if (Array.isArray(response.data)) {
+            setGateNumbers(
+              response.data.map((item) => ({
+                value: item.id,
+                label: item.gate_number,
+              }))
+            );
+          } else {
+            setGateNumbers([]);
+          }
+        } catch (error) {
+          console.error("Error fetching gate numbers:", error);
+          setGateNumbers([]);
+        }
+      };
+      fetchGateNumbers();
+    } else {
+      setGateNumbers([]);
+    }
+  }, [formData.project_id]);
+
   return (
     <div className="main-content">
       <div className="website-content overflow-auto">
@@ -614,6 +643,8 @@ const GatePassCreate = () => {
                         setFormData({
                           ...formData,
                           project_id: selected?.value,
+                          sub_project_id: null,
+                          gate_number_id: null,
                         })
                       }
                       value={projects.find(
@@ -852,14 +883,18 @@ const GatePassCreate = () => {
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
                     <label>Gate No</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.gate_no}
-                      onChange={(e) =>
-                        setFormData({ ...formData, gate_no: e.target.value })
+                    <SingleSelector
+                      options={gateNumbers}
+                      onChange={(selected) =>
+                        setFormData({
+                          ...formData,
+                          gate_number_id: selected?.value,
+                        })
                       }
-                      placeholder="Enter Gate No"
+                      value={gateNumbers.find(
+                        (g) => g.value === formData.gate_number_id
+                      )}
+                      placeholder="Select Gate No"
                     />
                   </div>
                 </div>

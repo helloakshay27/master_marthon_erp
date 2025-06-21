@@ -1,13 +1,15 @@
 import React from "react";
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
+import MultiSelector from "../components/base/Select/MultiSelector";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { baseURL } from "../confi/apiDomain";
 import { Modal, Button, Form } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Table } from "../components";
 
-const  GatePassEdit= () => {
+const GatePassEdit = () => {
+  const { id } = useParams();
   const [formData, setFormData] = useState({
     project_id: null,
     sub_project_id: null,
@@ -24,9 +26,9 @@ const  GatePassEdit= () => {
     issued_by: "",
     contact_person: "",
     contact_no: "",
-    gate_no: "",
+    gate_number_id: null,
     material_items: [],
-    to_vendor: "",
+    to_vendor: null,
     driver_contact_no: "",
   });
 
@@ -34,6 +36,7 @@ const  GatePassEdit= () => {
   const [subProjects, setSubProjects] = useState([]);
   const [stores, setStores] = useState([]);
   const [toStores, setToStores] = useState([]);
+  const [gateNumbers, setGateNumbers] = useState([]);
   const [gatePassTypes, setGatePassTypes] = useState([
     // { value: "transfer_to_site", label: "Transfer to Site" },
     // { value: "return_to_vendor", label: "Return to Vendor" },
@@ -108,6 +111,17 @@ const  GatePassEdit= () => {
       )
       .filter(Boolean);
 
+    let to_resource_id = null;
+    let to_resource_type = null;
+
+    if (formData.to_vendor) {
+      to_resource_id = formData.to_vendor;
+      to_resource_type = "Pms::Supplier";
+    } else if (formData.to_store_id) {
+      to_resource_id = formData.to_store_id;
+      to_resource_type = "Pms::Store";
+    }
+
     const payload = {
       gate_pass: {
         sub_project_id: formData.sub_project_id || null,
@@ -145,6 +159,8 @@ const  GatePassEdit= () => {
           })
         ),
         attachments: attachments.length > 0 ? attachments : null,
+        to_resource_id: to_resource_id,
+        to_resource_type: to_resource_type,
         // Add resource_id and resource_type
         resource_id: selectedPO?.id || null,
         resource_type:
@@ -154,18 +170,28 @@ const  GatePassEdit= () => {
     };
 
     try {
-      const response = await axios.post(
-        `${baseURL}gate_passes.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-        payload
-      );
+      let response;
+      if (id) {
+        response = await axios.patch(
+          `${baseURL}gate_passes/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+          payload
+        );
+      } else {
+        response = await axios.post(
+          `${baseURL}gate_passes.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+          payload
+        );
+      }
 
       if (response.status === 200 || response.status === 201) {
-        alert("Gate Pass created successfully!");
-        // navigate("/gate-pass-list");
+        alert(`Gate Pass ${id ? "updated" : "created"} successfully!`);
+        navigate("/gate-pass-list");
       }
     } catch (error) {
-      console.error("Error creating gate pass:", error);
-      alert("Failed to create gate pass. Please try again.");
+      console.error(`Error ${id ? "updating" : "creating"} gate pass:`, error);
+      alert(
+        `Failed to ${id ? "update" : "create"} gate pass. Please try again.`
+      );
     }
   };
 
@@ -407,6 +433,95 @@ const  GatePassEdit= () => {
     fetchGatePassTypes();
   }, []);
 
+  useEffect(() => {
+    const fetchAndSetGatePassData = async () => {
+      if (id && gatePassTypes.length > 0 && poOptions.length > 0) {
+        try {
+          const response = await axios.get(
+            `https://marathon.lockated.com/gate_passes/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+          const data = response.data;
+
+          const gatePassType = gatePassTypes.find(
+            (t) => t.label === data.gate_pass_type_name
+          );
+
+          setFormData((prev) => ({
+            ...prev,
+            project_id: data.project?.id,
+            sub_project_id: data.sub_project?.id,
+            gate_pass_no: data.gate_pass_no,
+            gate_pass_type: gatePassType ? gatePassType.value : "",
+            is_returnable: data.expected_return_date
+              ? "returnable"
+              : "non_returnable",
+            store_id: data.from_store?.id,
+            vehicle_no: data.vehicle_no,
+            driver_name: data.driver_name,
+            expected_return_date: data.expected_return_date || "",
+            contact_person: data.contact_person,
+            contact_no: data.contact_person_no,
+            gate_number_id: data.gate_number_id,
+            driver_contact_no: data.driver_contact_no,
+          }));
+
+          if (data.to_resource) {
+            if (data.to_resource.type === "Pms::Supplier") {
+              setFormData((prev) => ({
+                ...prev,
+                to_vendor: data.to_resource.id,
+              }));
+            } else if (data.to_resource.type === "Pms::Store") {
+              setFormData((prev) => ({
+                ...prev,
+                to_store_id: data.to_resource.id,
+              }));
+            }
+          }
+
+          const status = statusOptions.find((s) => s.value === data.status);
+          if (status) {
+            setSelectedStatus(status);
+          }
+
+          if (data.resource_id) {
+            const po = poOptions.find((p) => p.id === data.resource_id);
+            if (po) {
+              setSelectedPO(po);
+              setFormData((prev) => ({ ...prev, mto_po_number: po.value }));
+            }
+          }
+
+          if (data.attachments && data.attachments.length > 0) {
+            const fetchedDocuments = data.attachments.map((att) => {
+              const urlParts = att.url.split("/");
+              const encodedFilename = urlParts[urlParts.length - 1];
+              const filename = decodeURIComponent(encodedFilename);
+              return {
+                document_type: filename, // Using filename as doc type as it's not in response
+                attachments: [
+                  {
+                    filename: filename,
+                    content: null, // Not fetching file content for pre-fill
+                    content_type: att.document_content_type,
+                    url: att.doc_path,
+                  },
+                ],
+                uploadDate: new Date(att.created_at)
+                  .toISOString()
+                  .split("T")[0],
+              };
+            });
+            setDocuments(fetchedDocuments);
+          }
+        } catch (error) {
+          console.error("Error fetching gate pass data:", error);
+        }
+      }
+    };
+    fetchAndSetGatePassData();
+  }, [id, gatePassTypes, poOptions]);
+
   // When project changes, update subProjects
   useEffect(() => {
     const selected = projects.find((p) => p.value === formData.project_id);
@@ -415,6 +530,18 @@ const  GatePassEdit= () => {
     // setFormData(prev => ({ ...prev, sub_project_id: null }));
     // If you want to reset sub_project_id, uncomment above
   }, [formData.project_id, projects]);
+
+  useEffect(() => {
+    // Reset dependent fields when gate pass type changes
+    setFormData((prev) => ({
+      ...prev,
+      to_vendor: null,
+      to_store_id: null,
+      mto_po_number: "",
+      material_items: [], // Also clear materials as they depend on PO
+    }));
+    setSelectedPO(null);
+  }, [formData.gate_pass_type]);
 
   // Fetch material/asset details when PO is selected (for return_to_vendor)
   useEffect(() => {
@@ -431,6 +558,51 @@ const  GatePassEdit= () => {
           );
           if (response.data && Array.isArray(response.data.inventories)) {
             setPoMaterials(response.data.inventories); // <-- for modal
+
+            // If it's an edit, pre-fill material items
+            if (id && formData.material_items.length === 0) {
+              const gatePassResponse = await axios.get(
+                `https://marathon.lockated.com/gate_passes/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+              );
+              const gatePassData = gatePassResponse.data;
+
+              if (
+                gatePassData.gate_pass_materials &&
+                gatePassData.gate_pass_materials.length > 0
+              ) {
+                const allPoMaterials = response.data.inventories;
+                const gatePassMaterialIds =
+                  gatePassData.gate_pass_materials.map(
+                    (m) => m.mor_inventory_id
+                  );
+
+                const selectedMaterials = allPoMaterials
+                  .filter((m) => gatePassMaterialIds.includes(m.id))
+                  .map((m) => {
+                    const gpMaterial =
+                      gatePassData.gate_pass_materials.find(
+                        (gpm) => gpm.mor_inventory_id === m.id
+                      ) || {};
+                    return {
+                      material_type: m.material_type,
+                      material_sub_type: m.material_sub_type,
+                      material_name: m.material,
+                      material_details: m.generic_specification,
+                      generic_specification: m.generic_specification,
+                      brand: m.brand,
+                      colour: m.colour,
+                      unit: m.uom,
+                      gate_pass_qty: gpMaterial.gate_pass_qty || "",
+                      stock_as_on: m.stock_as_on,
+                      mor_inventory_id: m.id,
+                    };
+                  });
+                setFormData((prev) => ({
+                  ...prev,
+                  material_items: selectedMaterials,
+                }));
+              }
+            }
           }
         } catch (error) {
           setPoMaterials([]);
@@ -488,7 +660,8 @@ const  GatePassEdit= () => {
     // Fetch suppliers for To Vendor dropdown
     if (
       formData.gate_pass_type === "return_to_vendor" ||
-      formData.gate_pass_type === "testing_calibration"
+      formData.gate_pass_type === "testing_calibration" ||
+      formData.gate_pass_type === "repair_maintenance"
     ) {
       const fetchSuppliers = async () => {
         try {
@@ -513,12 +686,40 @@ const  GatePassEdit= () => {
     }
   }, [formData.gate_pass_type]);
 
+  useEffect(() => {
+    if (formData.project_id) {
+      const fetchGateNumbers = async () => {
+        try {
+          const response = await axios.get(
+            `https://marathon.lockated.com/gate_numbers/gate_numbers.json?q[project_id_eq]=${formData.project_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+          if (Array.isArray(response.data)) {
+            setGateNumbers(
+              response.data.map((item) => ({
+                value: item.id,
+                label: item.gate_number,
+              }))
+            );
+          } else {
+            setGateNumbers([]);
+          }
+        } catch (error) {
+          console.error("Error fetching gate numbers:", error);
+          setGateNumbers([]);
+        }
+      };
+      fetchGateNumbers();
+    } else {
+      setGateNumbers([]);
+    }
+  }, [formData.project_id]);
+
   return (
     <div className="main-content">
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">Home &gt; Store &gt; Store Operations &gt; Gate Pass</a>
-          <h5 className="mt-3">Gate Pass list</h5>
+          <h5 className="mt-3">{id ? "Edit Gate Pass" : "Create Gate Pass"}</h5>
           <div className="head-material text-center">
             <h4>{getHeaderTitle()}</h4>
           </div>
@@ -587,6 +788,8 @@ const  GatePassEdit= () => {
                         setFormData({
                           ...formData,
                           project_id: selected?.value,
+                          sub_project_id: null,
+                          gate_number_id: null,
                         })
                       }
                       value={projects.find(
@@ -635,7 +838,8 @@ const  GatePassEdit= () => {
 
                 {/* Custom layout for 'return_to_vendor' */}
                 {formData.gate_pass_type === "return_to_vendor" ||
-                formData.gate_pass_type === "testing_calibration" ? (
+                formData.gate_pass_type === "testing_calibration" ||
+                formData.gate_pass_type === "repair_maintenance" ? (
                   <>
                     <div className="col-md-3 ">
                       <div className="form-group">
@@ -673,25 +877,28 @@ const  GatePassEdit= () => {
                         />
                       </div>
                     </div>
-                    <div className="col-md-3 mt-2">
-                      <div className="form-group">
-                        <label>PO/WO No *</label>
-                        <SingleSelector
-                          options={poOptions}
-                          onChange={(selected) => {
-                            setFormData({
-                              ...formData,
-                              mto_po_number: selected?.value,
-                            });
-                            setSelectedPO(selected); // Store selected PO object
-                          }}
-                          value={poOptions.find(
-                            (p) => p.value === formData.mto_po_number
-                          )}
-                          placeholder="Select PO/WO No"
-                        />
+                    {(formData.gate_pass_type === "return_to_vendor" ||
+                      formData.gate_pass_type === "testing_calibration") && (
+                      <div className="col-md-3 mt-2">
+                        <div className="form-group">
+                          <label>PO/WO No *</label>
+                          <SingleSelector
+                            options={poOptions}
+                            onChange={(selected) => {
+                              setFormData({
+                                ...formData,
+                                mto_po_number: selected?.value,
+                              });
+                              setSelectedPO(selected); // Store selected PO object
+                            }}
+                            value={poOptions.find(
+                              (p) => p.value === formData.mto_po_number
+                            )}
+                            placeholder="Select PO/WO No"
+                          />
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </>
                 ) : (
                   <>
@@ -734,38 +941,34 @@ const  GatePassEdit= () => {
                         </div>
                       </div>
                     )}
-                    {formData.gate_pass_type !== "general" && (
-                      <div className="col-md-3 mt-2">
-                        <div className="form-group">
-                          <label>
-                            {formData.gate_pass_type === "transfer_to_site"
-                              ? "MTO/SO Number *"
-                              : formData.gate_pass_type === "repair_maintenance"
-                              ? "To Vendor *"
-                              : "MTO/PO Number *"}
-                          </label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={formData.mto_po_number}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                mto_po_number: e.target.value,
-                              })
-                            }
-                            placeholder={
-                              formData.gate_pass_type === "transfer_to_site"
-                                ? "Enter MTO/SO Number"
-                                : formData.gate_pass_type ===
-                                  "repair_maintenance"
-                                ? "Select Vendor Type"
-                                : "Enter MTO/PO Number"
-                            }
-                          />
+                    {formData.gate_pass_type !== "general" &&
+                      formData.gate_pass_type !== "repair_maintenance" && (
+                        <div className="col-md-3 mt-2">
+                          <div className="form-group">
+                            <label>
+                              {formData.gate_pass_type === "transfer_to_site"
+                                ? "MTO/SO Number *"
+                                : "MTO/PO Number *"}
+                            </label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              value={formData.mto_po_number}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  mto_po_number: e.target.value,
+                                })
+                              }
+                              placeholder={
+                                formData.gate_pass_type === "transfer_to_site"
+                                  ? "Enter MTO/SO Number"
+                                  : "Enter MTO/PO Number"
+                              }
+                            />
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </>
                 )}
                 <div className="col-md-3 mt-2">
@@ -825,14 +1028,18 @@ const  GatePassEdit= () => {
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
                     <label>Gate No</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.gate_no}
-                      onChange={(e) =>
-                        setFormData({ ...formData, gate_no: e.target.value })
+                    <SingleSelector
+                      options={gateNumbers}
+                      onChange={(selected) =>
+                        setFormData({
+                          ...formData,
+                          gate_number_id: selected?.value,
+                        })
                       }
-                      placeholder="Enter Gate No"
+                      value={gateNumbers.find(
+                        (g) => g.value === formData.gate_number_id
+                      )}
+                      placeholder="Select Gate No"
                     />
                   </div>
                 </div>
@@ -1335,7 +1542,7 @@ const  GatePassEdit= () => {
                     className="purple-btn2 w-100 mt-2"
                     onClick={handleSubmit}
                   >
-                    Submit
+                    {id ? "Update" : "Submit"}
                   </button>
                 </div>
                 <div className="col-md-2">
@@ -1452,4 +1659,3 @@ const  GatePassEdit= () => {
 };
 
 export default GatePassEdit;
-

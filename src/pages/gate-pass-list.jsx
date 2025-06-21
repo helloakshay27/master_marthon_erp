@@ -61,13 +61,13 @@ const GatePassList = () => {
       field: "company_name",
       headerName: "Company",
       flex: 1,
-      minWidth: 120,
+      minWidth: 200,
     },
     {
       field: "project_name",
       headerName: "Project",
       flex: 1,
-      minWidth: 120,
+      minWidth: 200,
     },
     {
       field: "sub_project_name",
@@ -79,7 +79,7 @@ const GatePassList = () => {
       field: "gate_pass_no",
       headerName: "Gate Pass No",
       flex: 1,
-      minWidth: 120,
+      minWidth: 140,
       renderCell: (params) =>
         params.value && params.row.id ? (
           <Link to={`/gate-pass-details/${params.row.id}?token=${token}`}>
@@ -96,16 +96,16 @@ const GatePassList = () => {
       minWidth: 150,
     },
     {
-      field: "material_type",
+      field: "matarial_type_name",
       headerName: "Material Type",
       flex: 1,
-      minWidth: 120,
+      minWidth: 150,
     },
     {
-      field: "sub_type",
-      headerName: "Sub Type",
+      field: "material_sub_type_name",
+      headerName: " Material Sub Type",
       flex: 1,
-      minWidth: 120,
+      minWidth: 150,
     },
     {
       field: "mto_po_number",
@@ -149,12 +149,12 @@ const GatePassList = () => {
       flex: 1,
       minWidth: 100,
     },
-    {
-      field: "due_at",
-      headerName: "Due At",
-      flex: 1,
-      minWidth: 100,
-    },
+    // {
+    //   field: "due_at",
+    //   headerName: "Due At",
+    //   flex: 1,
+    //   minWidth: 100,
+    // },
   ];
 
   const handleSettingClose = () => setSettingShow(false);
