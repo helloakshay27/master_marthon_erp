@@ -25,7 +25,7 @@ const GatePassCreate = () => {
     issued_by: "",
     contact_person: "",
     contact_no: "",
-    gate_no: "",
+    gate_number_id: null,
     material_items: [],
     to_vendor: null,
     driver_contact_no: "",
@@ -35,6 +35,7 @@ const GatePassCreate = () => {
   const [subProjects, setSubProjects] = useState([]);
   const [stores, setStores] = useState([]);
   const [toStores, setToStores] = useState([]);
+  const [gateNumbers, setGateNumbers] = useState([]);
   const [gatePassTypes, setGatePassTypes] = useState([
     // { value: "transfer_to_site", label: "Transfer to Site" },
     // { value: "return_to_vendor", label: "Return to Vendor" },
@@ -50,6 +51,9 @@ const GatePassCreate = () => {
     { value: "non_master", label: "Non-Master Vendor" },
   ]);
   const [supplierOptions, setSupplierOptions] = useState([]); // For To Vendor dropdown
+
+  const [showAddVendorModal, setShowAddVendorModal] = useState(false);
+  const [newVendorName, setNewVendorName] = useState("");
 
   const [attachModal, setattachModal] = useState(false);
   const [viewDocumentModal, setviewDocumentModal] = useState(false);
@@ -123,6 +127,7 @@ const GatePassCreate = () => {
     const payload = {
       gate_pass: {
         sub_project_id: formData.sub_project_id || null,
+        from_store_id: formData.store_id || null,
         gate_pass_type_id:
           gatePassTypes.find((t) => t.value === formData.gate_pass_type)?.id ||
           1, // get id from selected gate pass type
@@ -337,6 +342,30 @@ const GatePassCreate = () => {
   ];
   const [selectedStatus, setSelectedStatus] = useState(statusOptions[0]);
 
+  const handleAddVendor = () => {
+    if (newVendorName.trim() === "") {
+      alert("Please enter a vendor name.");
+      return;
+    }
+    const newVendor = {
+      label: newVendorName,
+      value: `non_master_${newVendorName.replace(/\s+/g, "_").toLowerCase()}`,
+    };
+
+    const updatedOptions = [
+      ...supplierOptions.filter((o) => o.value !== "other"),
+      newVendor,
+      { value: "other", label: "Other" },
+    ];
+
+    setSupplierOptions(updatedOptions);
+
+    setFormData({ ...formData, to_vendor: newVendor.value });
+
+    setShowAddVendorModal(false);
+    setNewVendorName("");
+  };
+
   useEffect(() => {
     // Fetch PO/WO numbers for dropdown
     const fetchPONumbers = async () => {
@@ -512,33 +541,66 @@ const GatePassCreate = () => {
 
   useEffect(() => {
     // Fetch suppliers for To Vendor dropdown
-    if (
-      formData.gate_pass_type === "return_to_vendor" ||
-      formData.gate_pass_type === "testing_calibration" ||
-      formData.gate_pass_type === "repair_maintenance"
-    ) {
+    const selectedGatePassType = gatePassTypes.find(
+      (t) => t.value === formData.gate_pass_type
+    );
+    const rawValue = selectedGatePassType?.rawValue;
+
+    if (rawValue === "PurchaseOrder" || rawValue === "") {
       const fetchSuppliers = async () => {
         try {
           const response = await axios.get(
             "https://marathon.lockated.com/pms/suppliers.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
           );
           if (Array.isArray(response.data)) {
-            setSupplierOptions(
-              response.data.map((item) => ({
-                value: item.id,
-                label: item.organization_name,
-              }))
-            );
+            const vendors = response.data.map((item) => ({
+              value: item.id,
+              label: item.organization_name,
+            }));
+            setSupplierOptions([
+              ...vendors,
+              { value: "other", label: "Other" },
+            ]);
           } else {
-            setSupplierOptions([]);
+            setSupplierOptions([{ value: "other", label: "Other" }]);
           }
         } catch (error) {
-          setSupplierOptions([]);
+          setSupplierOptions([{ value: "other", label: "Other" }]);
         }
       };
       fetchSuppliers();
+    } else {
+      setSupplierOptions([]);
     }
-  }, [formData.gate_pass_type]);
+  }, [formData.gate_pass_type, gatePassTypes]);
+
+  useEffect(() => {
+    if (formData.project_id) {
+      const fetchGateNumbers = async () => {
+        try {
+          const response = await axios.get(
+            `https://marathon.lockated.com/gate_numbers/gate_numbers.json?q[project_id_eq]=${formData.project_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+          if (Array.isArray(response.data)) {
+            setGateNumbers(
+              response.data.map((item) => ({
+                value: item.id,
+                label: item.gate_number,
+              }))
+            );
+          } else {
+            setGateNumbers([]);
+          }
+        } catch (error) {
+          console.error("Error fetching gate numbers:", error);
+          setGateNumbers([]);
+        }
+      };
+      fetchGateNumbers();
+    } else {
+      setGateNumbers([]);
+    }
+  }, [formData.project_id]);
 
   return (
     <div className="main-content">
@@ -614,6 +676,8 @@ const GatePassCreate = () => {
                         setFormData({
                           ...formData,
                           project_id: selected?.value,
+                          sub_project_id: null,
+                          gate_number_id: null,
                         })
                       }
                       value={projects.find(
@@ -660,141 +724,185 @@ const GatePassCreate = () => {
                   </div>
                 </div>
 
-                {/* Custom layout for 'return_to_vendor' */}
-                {formData.gate_pass_type === "return_to_vendor" ||
-                formData.gate_pass_type === "testing_calibration" ||
-                formData.gate_pass_type === "repair_maintenance" ? (
-                  <>
-                    <div className="col-md-3 ">
-                      <div className="form-group">
-                        <label>From Store</label>
-                        <SingleSelector
-                          options={stores}
-                          onChange={(selected) =>
-                            setFormData({
-                              ...formData,
-                              store_id: selected?.value,
-                            })
-                          }
-                          value={stores.find(
-                            (s) => s.value === formData.store_id
-                          )}
-                          placeholder="Select From Store"
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-3 mt-2">
-                      <div className="form-group">
-                        <label>To Vendor</label>
-                        <SingleSelector
-                          options={supplierOptions}
-                          onChange={(selected) =>
-                            setFormData({
-                              ...formData,
-                              to_vendor: selected?.value,
-                            })
-                          }
-                          value={supplierOptions.find(
-                            (v) => v.value === formData.to_vendor
-                          )}
-                          placeholder="Select Vendor"
-                        />
-                      </div>
-                    </div>
-                    {(formData.gate_pass_type === "return_to_vendor" ||
-                      formData.gate_pass_type === "testing_calibration") && (
-                      <div className="col-md-3 mt-2">
-                        <div className="form-group">
-                          <label>PO/WO No *</label>
-                          <SingleSelector
-                            options={poOptions}
-                            onChange={(selected) => {
-                              setFormData({
-                                ...formData,
-                                mto_po_number: selected?.value,
-                              });
-                              setSelectedPO(selected); // Store selected PO object
-                            }}
-                            value={poOptions.find(
-                              (p) => p.value === formData.mto_po_number
-                            )}
-                            placeholder="Select PO/WO No"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <div className="col-md-3 mt-2">
-                      <div className="form-group">
-                        <label>From Store</label>
-                        <SingleSelector
-                          options={stores}
-                          onChange={(selected) =>
-                            setFormData({
-                              ...formData,
-                              store_id: selected?.value,
-                            })
-                          }
-                          value={stores.find(
-                            (s) => s.value === formData.store_id
-                          )}
-                          placeholder="Select From Store"
-                        />
-                      </div>
-                    </div>
-                    {/* Hide To Store if repair_maintenance */}
-                    {formData.gate_pass_type !== "repair_maintenance" && (
-                      <div className="col-md-3 mt-2">
-                        <div className="form-group">
-                          <label>To Store</label>
-                          <SingleSelector
-                            options={toStores}
-                            onChange={(selected) =>
-                              setFormData({
-                                ...formData,
-                                to_store_id: selected?.value,
-                              })
-                            }
-                            value={toStores.find(
-                              (s) => s.value === formData.to_store_id
-                            )}
-                            placeholder="Select To Store"
-                          />
-                        </div>
-                      </div>
-                    )}
-                    {formData.gate_pass_type !== "general" &&
-                      formData.gate_pass_type !== "repair_maintenance" && (
-                        <div className="col-md-3 mt-2">
-                          <div className="form-group">
-                            <label>
-                              {formData.gate_pass_type === "transfer_to_site"
-                                ? "MTO/SO Number *"
-                                : "MTO/PO Number *"}
-                            </label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={formData.mto_po_number}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  mto_po_number: e.target.value,
-                                })
-                              }
-                              placeholder={
-                                formData.gate_pass_type === "transfer_to_site"
-                                  ? "Enter MTO/SO Number"
-                                  : "Enter MTO/PO Number"
-                              }
-                            />
+                {(() => {
+                  const selectedGatePassType = gatePassTypes.find(
+                    (t) => t.value === formData.gate_pass_type
+                  );
+                  const rawValue = selectedGatePassType?.rawValue;
+
+                  switch (rawValue) {
+                    case "PurchaseOrder":
+                      return (
+                        <>
+                          <div className="col-md-3 ">
+                            <div className="form-group">
+                              <label>From Store</label>
+                              <SingleSelector
+                                options={stores}
+                                onChange={(selected) =>
+                                  setFormData({
+                                    ...formData,
+                                    store_id: selected?.value,
+                                  })
+                                }
+                                value={stores.find(
+                                  (s) => s.value === formData.store_id
+                                )}
+                                placeholder="Select From Store"
+                              />
+                            </div>
                           </div>
-                        </div>
-                      )}
-                  </>
-                )}
+                          <div className="col-md-3 mt-2">
+                            <div className="form-group">
+                              <label>To Vendor</label>
+                              <SingleSelector
+                                options={supplierOptions}
+                                onChange={(selected) => {
+                                  if (selected?.value === "other") {
+                                    setShowAddVendorModal(true);
+                                  } else {
+                                    setFormData({
+                                      ...formData,
+                                      to_vendor: selected?.value,
+                                    });
+                                  }
+                                }}
+                                value={supplierOptions.find(
+                                  (v) => v.value === formData.to_vendor
+                                )}
+                                placeholder="Select Vendor"
+                              />
+                            </div>
+                          </div>
+                          <div className="col-md-3 mt-2">
+                            <div className="form-group">
+                              <label>PO/WO No *</label>
+                              <SingleSelector
+                                options={poOptions}
+                                onChange={(selected) => {
+                                  setFormData({
+                                    ...formData,
+                                    mto_po_number: selected?.value,
+                                  });
+                                  setSelectedPO(selected); // Store selected PO object
+                                }}
+                                value={poOptions.find(
+                                  (p) => p.value === formData.mto_po_number
+                                )}
+                                placeholder="Select PO/WO No"
+                              />
+                            </div>
+                          </div>
+                        </>
+                      );
+                    case "MaterialTransaferOrder":
+                      return (
+                        <>
+                          <div className="col-md-3 mt-2">
+                            <div className="form-group">
+                              <label>From Store</label>
+                              <SingleSelector
+                                options={stores}
+                                onChange={(selected) =>
+                                  setFormData({
+                                    ...formData,
+                                    store_id: selected?.value,
+                                  })
+                                }
+                                value={stores.find(
+                                  (s) => s.value === formData.store_id
+                                )}
+                                placeholder="Select From Store"
+                              />
+                            </div>
+                          </div>
+                          <div className="col-md-3 mt-2">
+                            <div className="form-group">
+                              <label>To Store</label>
+                              <SingleSelector
+                                options={toStores}
+                                onChange={(selected) =>
+                                  setFormData({
+                                    ...formData,
+                                    to_store_id: selected?.value,
+                                  })
+                                }
+                                value={toStores.find(
+                                  (s) => s.value === formData.to_store_id
+                                )}
+                                placeholder="Select To Store"
+                              />
+                            </div>
+                          </div>
+                          <div className="col-md-3 mt-2">
+                            <div className="form-group">
+                              <label>MTO/SO Number *</label>
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={formData.mto_po_number}
+                                onChange={(e) =>
+                                  setFormData({
+                                    ...formData,
+                                    mto_po_number: e.target.value,
+                                  })
+                                }
+                                placeholder="Enter MTO/SO Number"
+                              />
+                            </div>
+                          </div>
+                        </>
+                      );
+                    case "":
+                      return (
+                        <>
+                          <div className="col-md-3 ">
+                            <div className="form-group">
+                              <label>From Store</label>
+                              <SingleSelector
+                                options={stores}
+                                onChange={(selected) =>
+                                  setFormData({
+                                    ...formData,
+                                    store_id: selected?.value,
+                                  })
+                                }
+                                value={stores.find(
+                                  (s) => s.value === formData.store_id
+                                )}
+                                placeholder="Select From Store"
+                              />
+                            </div>
+                          </div>
+                          <div className="col-md-3 mt-2">
+                            <div className="form-group">
+                              <label>To Vendor</label>
+                              <SingleSelector
+                                options={supplierOptions}
+                                onChange={(selected) => {
+                                  if (selected?.value === "other") {
+                                    setShowAddVendorModal(true);
+                                  } else {
+                                    setFormData({
+                                      ...formData,
+                                      to_vendor: selected?.value,
+                                    });
+                                  }
+                                }}
+                                value={supplierOptions.find(
+                                  (v) => v.value === formData.to_vendor
+                                )}
+                                placeholder="Select Vendor"
+                              />
+                            </div>
+                          </div>
+                        </>
+                      );
+                    default:
+                      return null;
+                  }
+                })()}
+
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
                     <label>Driver Name</label>
@@ -852,14 +960,18 @@ const GatePassCreate = () => {
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
                     <label>Gate No</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.gate_no}
-                      onChange={(e) =>
-                        setFormData({ ...formData, gate_no: e.target.value })
+                    <SingleSelector
+                      options={gateNumbers}
+                      onChange={(selected) =>
+                        setFormData({
+                          ...formData,
+                          gate_number_id: selected?.value,
+                        })
                       }
-                      placeholder="Enter Gate No"
+                      value={gateNumbers.find(
+                        (g) => g.value === formData.gate_number_id
+                      )}
+                      placeholder="Select Gate No"
                     />
                   </div>
                 </div>
@@ -1473,6 +1585,38 @@ const GatePassCreate = () => {
             </button>
           </div>
         </Modal.Body>
+      </Modal>
+
+      <Modal
+        show={showAddVendorModal}
+        onHide={() => setShowAddVendorModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Add Non-Master Vendor</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group>
+            <Form.Label>Vendor Name</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter vendor name"
+              value={newVendorName}
+              onChange={(e) => setNewVendorName(e.target.value)}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowAddVendorModal(false)}
+          >
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleAddVendor}>
+            Add Vendor
+          </Button>
+        </Modal.Footer>
       </Modal>
     </div>
   );

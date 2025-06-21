@@ -40,16 +40,6 @@ const GatePassList = () => {
   const [siteOptions, setSiteOptions] = useState([]);
   const navigate = useNavigate();
 
-  const [columnVisibility, setColumnVisibility] = useState({
-    srNo: true,
-    gate_pass_no: true,
-    gate_pass_type: true,
-    date: true,
-    issued_by: true,
-    status: true,
-    action: true,
-  });
-
   const allColumns = [
     {
       field: "srNo",
@@ -61,13 +51,13 @@ const GatePassList = () => {
       field: "company_name",
       headerName: "Company",
       flex: 1,
-      minWidth: 120,
+      minWidth: 200,
     },
     {
       field: "project_name",
       headerName: "Project",
       flex: 1,
-      minWidth: 120,
+      minWidth: 200,
     },
     {
       field: "sub_project_name",
@@ -79,7 +69,7 @@ const GatePassList = () => {
       field: "gate_pass_no",
       headerName: "Gate Pass No",
       flex: 1,
-      minWidth: 120,
+      minWidth: 140,
       renderCell: (params) =>
         params.value && params.row.id ? (
           <Link to={`/gate-pass-details/${params.row.id}?token=${token}`}>
@@ -96,37 +86,37 @@ const GatePassList = () => {
       minWidth: 150,
     },
     {
-      field: "material_type",
+      field: "matarial_type_name",
       headerName: "Material Type",
       flex: 1,
-      minWidth: 120,
+      minWidth: 150,
     },
     {
-      field: "sub_type",
-      headerName: "Sub Type",
+      field: "material_sub_type_name",
+      headerName: " Material Sub Type",
       flex: 1,
-      minWidth: 120,
+      minWidth: 150,
     },
     {
-      field: "mto_po_number",
+      field: "po_or_mto_no",
       headerName: "PO / MTO No.",
       flex: 1,
-      minWidth: 120,
+      minWidth: 150,
     },
     {
-      field: "gate_pass_date_time",
+      field: "gate_pass_date",
       headerName: "Gate Pass Date",
       flex: 1,
-      minWidth: 120,
+      minWidth: 150,
     },
     {
-      field: "issued_by",
+      field: "created_by_name",
       headerName: "Issued By",
       flex: 1,
-      minWidth: 120,
+      minWidth: 150,
     },
     {
-      field: "approved_by",
+      field: "approved_by_name",
       headerName: "Approved By",
       flex: 1,
       minWidth: 120,
@@ -149,13 +139,17 @@ const GatePassList = () => {
       flex: 1,
       minWidth: 100,
     },
-    {
-      field: "due_at",
-      headerName: "Due At",
-      flex: 1,
-      minWidth: 100,
-    },
+    // {
+    //   field: "due_at",
+    //   headerName: "Due At",
+    //   flex: 1,
+    //   minWidth: 100,
+    // },
   ];
+
+  const [columnVisibility, setColumnVisibility] = useState(
+    allColumns.reduce((acc, col) => ({ ...acc, [col.field]: true }), {})
+  );
 
   const handleSettingClose = () => setSettingShow(false);
   const handleClose = () => setShow(false);
@@ -642,6 +636,8 @@ display:none !important;
                 getRowId={(row) => row.id}
                 loading={loading}
                 disableSelectionOnClick
+                columnVisibilityModel={columnVisibility}
+                onColumnVisibilityModelChange={setColumnVisibility}
                 components={{
                   ColumnMenu: () => null,
                 }}
