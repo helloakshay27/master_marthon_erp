@@ -36,11 +36,11 @@ const GatePassCreate = () => {
   const [stores, setStores] = useState([]);
   const [toStores, setToStores] = useState([]);
   const [gatePassTypes, setGatePassTypes] = useState([
-    { value: "transfer_to_site", label: "Transfer to Site" },
-    { value: "return_to_vendor", label: "Return to Vendor" },
-    { value: "repair_maintenance", label: "Repair/Maintenance" },
-    { value: "general", label: "General" },
-    { value: "testing_calibration", label: "Testing/Calibration" },
+    // { value: "transfer_to_site", label: "Transfer to Site" },
+    // { value: "return_to_vendor", label: "Return to Vendor" },
+    // { value: "repair_maintenance", label: "Repair/Maintenance" },
+    // { value: "general", label: "General" },
+    // { value: "testing_calibration", label: "Testing/Calibration" },
   ]);
   const [showMaterialModal, setShowMaterialModal] = useState(false);
   const navigate = useNavigate();
@@ -49,6 +49,7 @@ const GatePassCreate = () => {
     { value: "master", label: "Master Vendor" },
     { value: "non_master", label: "Non-Master Vendor" },
   ]);
+  const [supplierOptions, setSupplierOptions] = useState([]); // For To Vendor dropdown
 
   const [attachModal, setattachModal] = useState(false);
   const [viewDocumentModal, setviewDocumentModal] = useState(false);
@@ -60,6 +61,10 @@ const GatePassCreate = () => {
 
   const [poOptions, setPoOptions] = useState([]);
   const [selectedPO, setSelectedPO] = useState(null); // Store selected PO object
+
+  const [showMaterialSelectModal, setShowMaterialSelectModal] = useState(false);
+  const [poMaterials, setPoMaterials] = useState([]); // Materials fetched from PO
+  const [selectedMaterialIndexes, setSelectedMaterialIndexes] = useState([]); // Indexes of selected materials in modal
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -107,7 +112,9 @@ const GatePassCreate = () => {
     const payload = {
       gate_pass: {
         sub_project_id: formData.sub_project_id || null,
-        gate_pass_type_id: 1, // hardcoded as per requirement
+        gate_pass_type_id:
+          gatePassTypes.find((t) => t.value === formData.gate_pass_type)?.id ||
+          1, // get id from selected gate pass type
         project_id: formData.project_id || null,
 
         status:
@@ -139,6 +146,11 @@ const GatePassCreate = () => {
           })
         ),
         attachments: attachments.length > 0 ? attachments : null,
+        // Add resource_id and resource_type
+        resource_id: selectedPO?.id || null,
+        resource_type:
+          gatePassTypes.find((t) => t.value === formData.gate_pass_type)
+            ?.rawValue || null,
       },
     };
 
@@ -334,23 +346,6 @@ const GatePassCreate = () => {
     };
     fetchPONumbers();
 
-    // Fetch stores for From Store and To Store dropdowns
-    const fetchStores = async () => {
-      try {
-        const response = await axios.get(
-          `${baseURL}pms/stores/store_dropdown.json`
-        );
-        if (Array.isArray(response.data)) {
-          setStores(response.data);
-          setToStores(response.data);
-        }
-      } catch (error) {
-        setStores([]);
-        setToStores([]);
-      }
-    };
-    fetchStores();
-
     // Fetch projects and sub-projects
     const fetchProjects = async () => {
       try {
@@ -376,6 +371,41 @@ const GatePassCreate = () => {
       }
     };
     fetchProjects();
+
+    // Fetch gate pass types for dropdown
+    const fetchGatePassTypes = async () => {
+      try {
+        const response = await axios.get(
+          "https://marathon.lockated.com//gate_pass_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+        if (Array.isArray(response.data)) {
+          setGatePassTypes(
+            response.data.map((item) => ({
+              value:
+                item.name === "Transfer to Site"
+                  ? "transfer_to_site"
+                  : item.name === "Return to Vendor"
+                  ? "return_to_vendor"
+                  : item.name === "Repair/ Maintenance"
+                  ? "repair_maintenance"
+                  : item.name === "General"
+                  ? "general"
+                  : item.name === "Testing /calibration"
+                  ? "testing_calibration"
+                  : item.name,
+              label: item.name,
+              id: item.id,
+              rawValue: item.value,
+            }))
+          );
+        } else {
+          setGatePassTypes([]);
+        }
+      } catch (error) {
+        setGatePassTypes([]);
+      }
+    };
+    fetchGatePassTypes();
   }, []);
 
   // When project changes, update subProjects
@@ -390,7 +420,8 @@ const GatePassCreate = () => {
   // Fetch material/asset details when PO is selected (for return_to_vendor)
   useEffect(() => {
     if (
-      formData.gate_pass_type === "return_to_vendor" &&
+      (formData.gate_pass_type === "return_to_vendor" ||
+        formData.gate_pass_type === "testing_calibration") &&
       selectedPO &&
       selectedPO.id
     ) {
@@ -400,31 +431,88 @@ const GatePassCreate = () => {
             `${baseURL}mor_inventories/fetch_all_inventories.json?page=1&po_id=${selectedPO.id}`
           );
           if (response.data && Array.isArray(response.data.inventories)) {
-            setFormData((prev) => ({
-              ...prev,
-              material_items: response.data.inventories.map((item) => ({
-                material_type: item.material_type,
-                material_sub_type: item.material_sub_type,
-                material_name: item.material,
-                material_details: item.generic_specification,
-                generic_specification: item.generic_specification,
-                brand: item.brand,
-                colour: item.colour,
-                unit: item.uom,
-                gate_pass_qty: "", // always empty by default
-                stock_as_on: item.stock_as_on, // keep for validation
-                mor_inventory_id: item.id || null,
-              })),
-            }));
+            setPoMaterials(response.data.inventories); // <-- for modal
           }
         } catch (error) {
-          setFormData((prev) => ({ ...prev, material_items: [] }));
+          setPoMaterials([]);
         }
       };
       fetchMaterials();
     }
     // eslint-disable-next-line
   }, [selectedPO, formData.gate_pass_type]);
+
+  useEffect(() => {
+    if (formData.sub_project_id) {
+      const fetchStoresBySite = async () => {
+        try {
+          const response = await axios.get(
+            `${baseURL}pms/stores/store_dropdown.json?q[site_id_eq]=${formData.sub_project_id}`
+          );
+          if (Array.isArray(response.data)) {
+            setStores(response.data);
+          } else {
+            setStores([]);
+          }
+        } catch (error) {
+          setStores([]);
+        }
+      };
+      fetchStoresBySite();
+    }
+  }, [formData.sub_project_id]);
+
+  useEffect(() => {
+    if (
+      formData.gate_pass_type === "transfer_to_site" &&
+      formData.sub_project_id
+    ) {
+      const fetchToStores = async () => {
+        try {
+          const response = await axios.get(
+            `https://marathon.lockated.com/pms/stores/store_dropdown.json?q[site_id_eq]=${formData.sub_project_id}&isformatted=true`
+          );
+          if (Array.isArray(response.data)) {
+            setToStores(response.data);
+          } else {
+            setToStores([]);
+          }
+        } catch (error) {
+          setToStores([]);
+        }
+      };
+      fetchToStores();
+    }
+  }, [formData.gate_pass_type, formData.sub_project_id]);
+
+  useEffect(() => {
+    // Fetch suppliers for To Vendor dropdown
+    if (
+      formData.gate_pass_type === "return_to_vendor" ||
+      formData.gate_pass_type === "testing_calibration"
+    ) {
+      const fetchSuppliers = async () => {
+        try {
+          const response = await axios.get(
+            "https://marathon.lockated.com/pms/suppliers.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          );
+          if (Array.isArray(response.data)) {
+            setSupplierOptions(
+              response.data.map((item) => ({
+                value: item.id,
+                label: item.organization_name,
+              }))
+            );
+          } else {
+            setSupplierOptions([]);
+          }
+        } catch (error) {
+          setSupplierOptions([]);
+        }
+      };
+      fetchSuppliers();
+    }
+  }, [formData.gate_pass_type]);
 
   return (
     <div className="main-content">
@@ -547,7 +635,8 @@ const GatePassCreate = () => {
                 </div>
 
                 {/* Custom layout for 'return_to_vendor' */}
-                {formData.gate_pass_type === "return_to_vendor" ? (
+                {formData.gate_pass_type === "return_to_vendor" ||
+                formData.gate_pass_type === "testing_calibration" ? (
                   <>
                     <div className="col-md-3 ">
                       <div className="form-group">
@@ -571,17 +660,17 @@ const GatePassCreate = () => {
                       <div className="form-group">
                         <label>To Vendor</label>
                         <SingleSelector
-                          options={vendorTypes}
+                          options={supplierOptions}
                           onChange={(selected) =>
                             setFormData({
                               ...formData,
                               to_vendor: selected?.value,
                             })
                           }
-                          value={vendorTypes.find(
+                          value={supplierOptions.find(
                             (v) => v.value === formData.to_vendor
                           )}
-                          placeholder="Select Vendor Type"
+                          placeholder="Select Vendor"
                         />
                       </div>
                     </div>
@@ -646,51 +735,40 @@ const GatePassCreate = () => {
                         </div>
                       </div>
                     )}
-                    <div className="col-md-3 mt-2">
-                      <div className="form-group">
-                        <label>
-                          {formData.gate_pass_type === "transfer_to_site"
-                            ? "MTO/SO Number *"
-                            : formData.gate_pass_type === "repair_maintenance"
-                            ? "To Vendor *"
-                            : "MTO/PO Number *"}
-                        </label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={formData.mto_po_number}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              mto_po_number: e.target.value,
-                            })
-                          }
-                          placeholder={
-                            formData.gate_pass_type === "transfer_to_site"
-                              ? "Enter MTO/SO Number"
+                    {formData.gate_pass_type !== "general" && (
+                      <div className="col-md-3 mt-2">
+                        <div className="form-group">
+                          <label>
+                            {formData.gate_pass_type === "transfer_to_site"
+                              ? "MTO/SO Number *"
                               : formData.gate_pass_type === "repair_maintenance"
-                              ? "Select Vendor Type"
-                              : "Enter MTO/PO Number"
-                          }
-                        />
+                              ? "To Vendor *"
+                              : "MTO/PO Number *"}
+                          </label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={formData.mto_po_number}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                mto_po_number: e.target.value,
+                              })
+                            }
+                            placeholder={
+                              formData.gate_pass_type === "transfer_to_site"
+                                ? "Enter MTO/SO Number"
+                                : formData.gate_pass_type ===
+                                  "repair_maintenance"
+                                ? "Select Vendor Type"
+                                : "Enter MTO/PO Number"
+                            }
+                          />
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </>
                 )}
-                <div className="col-md-3 mt-2">
-                  <div className="form-group">
-                    <label>Vehicle No. *</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.vehicle_no}
-                      onChange={(e) =>
-                        setFormData({ ...formData, vehicle_no: e.target.value })
-                      }
-                      placeholder="Enter Vehicle No"
-                    />
-                  </div>
-                </div>
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
                     <label>Driver Name</label>
@@ -705,6 +783,23 @@ const GatePassCreate = () => {
                         })
                       }
                       placeholder="Enter Driver Name"
+                    />
+                  </div>
+                </div>
+                <div className="col-md-3 mt-2">
+                  <div className="form-group">
+                    <label>Driver Contact No</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.driver_contact_no}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          driver_contact_no: e.target.value,
+                        })
+                      }
+                      placeholder="Enter Driver Contact No"
                     />
                   </div>
                 </div>
@@ -725,6 +820,34 @@ const GatePassCreate = () => {
                         })
                       }
                       required={formData.gate_pass_type === "return_to_vendor"}
+                    />
+                  </div>
+                </div>
+                <div className="col-md-3 mt-2">
+                  <div className="form-group">
+                    <label>Gate No</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.gate_no}
+                      onChange={(e) =>
+                        setFormData({ ...formData, gate_no: e.target.value })
+                      }
+                      placeholder="Enter Gate No"
+                    />
+                  </div>
+                </div>
+                <div className="col-md-3 mt-2">
+                  <div className="form-group">
+                    <label>Vehicle No. *</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.vehicle_no}
+                      onChange={(e) =>
+                        setFormData({ ...formData, vehicle_no: e.target.value })
+                      }
+                      placeholder="Enter Vehicle No"
                     />
                   </div>
                 </div>
@@ -759,41 +882,17 @@ const GatePassCreate = () => {
                     />
                   </div>
                 </div>
-                <div className="col-md-3 mt-2">
-                  <div className="form-group">
-                    <label>Driver Contact No</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.driver_contact_no}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          driver_contact_no: e.target.value,
-                        })
-                      }
-                      placeholder="Enter Driver Contact No"
-                    />
-                  </div>
-                </div>
-                <div className="col-md-3 mt-2">
-                  <div className="form-group">
-                    <label>Gate No</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.gate_no}
-                      onChange={(e) =>
-                        setFormData({ ...formData, gate_no: e.target.value })
-                      }
-                      placeholder="Enter Gate No"
-                    />
-                  </div>
-                </div>
               </div>
 
               <div className="d-flex justify-content-between align-items-end px-2 mt-3">
                 <h5>Material / Asset Details</h5>
+                <button
+                  className="purple-btn2"
+                  onClick={() => setShowMaterialSelectModal(true)}
+                  disabled={!selectedPO} // Only enable if PO is selected
+                >
+                  Add
+                </button>
               </div>
 
               <div className="tbl-container mx-2 mt-3">
@@ -1253,6 +1352,102 @@ const GatePassCreate = () => {
           </div>
         </div>
       </div>
+      <Modal
+        centered
+        size="lg"
+        show={showMaterialSelectModal}
+        onHide={() => setShowMaterialSelectModal(false)}
+        backdrop="true"
+        keyboard={true}
+      >
+        <Modal.Header closeButton>
+          <h5>Select Materials</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="tbl-container mx-2 mt-3">
+            <table className="w-100">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Sr.No.</th>
+                  <th>Material / Asset Type</th>
+                  <th>Material / Asset Sub-Type</th>
+                  <th>Material / Asset Name</th>
+                  <th>Generic Info</th>
+                  <th>Brand</th>
+                  <th>Colour</th>
+                  <th>Unit</th>
+                  <th>Stock As On</th>
+                </tr>
+              </thead>
+              <tbody>
+                {poMaterials.map((item, idx) => (
+                  <tr key={item.id || idx}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedMaterialIndexes.includes(idx)}
+                        onChange={() => {
+                          setSelectedMaterialIndexes((prev) =>
+                            prev.includes(idx)
+                              ? prev.filter((i) => i !== idx)
+                              : [...prev, idx]
+                          );
+                        }}
+                      />
+                    </td>
+                    <td>{idx + 1}</td>
+                    <td>{item.material_type}</td>
+                    <td>{item.material_sub_type}</td>
+                    <td>{item.material}</td>
+                    <td>{item.generic_specification}</td>
+                    <td>{item.brand}</td>
+                    <td>{item.colour}</td>
+                    <td>{item.uom}</td>
+                    <td>{item.stock_as_on}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="d-flex justify-content-end mt-3">
+            <button
+              className="purple-btn2"
+              onClick={() => {
+                // Add selected materials to main table
+                const selectedMaterials = selectedMaterialIndexes.map(
+                  (idx) => ({
+                    material_type: poMaterials[idx].material_type,
+                    material_sub_type: poMaterials[idx].material_sub_type,
+                    material_name: poMaterials[idx].material,
+                    material_details: poMaterials[idx].generic_specification,
+                    generic_specification:
+                      poMaterials[idx].generic_specification,
+                    brand: poMaterials[idx].brand,
+                    colour: poMaterials[idx].colour,
+                    unit: poMaterials[idx].uom,
+                    gate_pass_qty: "",
+                    stock_as_on: poMaterials[idx].stock_as_on,
+                    mor_inventory_id: poMaterials[idx].id || null,
+                  })
+                );
+                setFormData((prev) => ({
+                  ...prev,
+                  material_items: [
+                    ...prev.material_items,
+                    ...selectedMaterials,
+                  ],
+                }));
+                setShowMaterialSelectModal(false);
+                setSelectedMaterialIndexes([]);
+              }}
+              disabled={selectedMaterialIndexes.length === 0}
+            >
+              Accept Selected
+            </button>
+          </div>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };
