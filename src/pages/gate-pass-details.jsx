@@ -4,7 +4,7 @@ import axios from "axios";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { baseURL } from "../confi/apiDomain";
 import { Modal, Button, Form } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 
 const GatePassDetails = () => {
@@ -20,9 +20,9 @@ const GatePassDetails = () => {
   });
   const [statusList, setStatusList] = useState([]);
   const [isStatusDisabled, setIsStatusDisabled] = useState(false);
+  const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
 
   useEffect(() => {
-    const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
     if (id) {
       axios
         .get(`${baseURL}gate_passes/${id}.json?token=${token}`)
@@ -56,7 +56,6 @@ const GatePassDetails = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
     try {
       const payload = {
         status_log: {
@@ -65,7 +64,7 @@ const GatePassDetails = () => {
         },
       };
 
-      const response = await axios.post(
+      const response = await axios.patch(
         `${baseURL}gate_passes/${id}/update_status.json?token=${token}`,
         payload
       );
@@ -88,73 +87,200 @@ const GatePassDetails = () => {
       <div className="website-content overflow-auto">
         <div className="module-data-section p-3 pt-2">
           <a href="">Home &gt; Store &gt; Store Operations &gt; Gate Pass</a>
-          <h5 className="mt-3">Gate Pass Details</h5>
+          <div className="d-flex justify-content-between align-items-center">
+            <h5 className="mt-3">Gate Pass Details</h5>
+            <Link
+              to={`/gate-pass-edit/${id}?token=${token}`}
+              className="d-flex align-items-center me-5 mt-2"
+              style={{ borderColor: "#8b0203" }}
+            >
+              <button type="button" className="purple-btn1">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="#8b0203"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z"
+                    fill="#8b0203"
+                  />
+                  <path
+                    d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z"
+                    fill="#8b0203"
+                  />
+                </svg>
+              </button>
+            </Link>
+          </div>
           <form onSubmit={handleSubmit}>
             <CollapsibleCard title="Gate Pass Information">
               <div className="card-body">
-                <div className="row">
-                  <div className="col-md-4">
-                    <strong>Gate Pass No:</strong> {details.gate_pass_no}
-                  </div>
-                  <div className="col-md-4">
-                    <strong>Gate Pass Type:</strong>{" "}
-                    {details.gate_pass_type_name}
-                  </div>
-                  <div className="col-md-4">
-                    <strong>Date:</strong> {details.gate_pass_date}
-                  </div>
-                </div>
-                <div className="row mt-3">
-                  <div className="col-md-4">
-                    <strong>Project:</strong> {details.project?.name || "N/A"}
-                  </div>
-                  <div className="col-md-4">
-                    <strong>Sub-Project:</strong>{" "}
-                    {details.sub_project?.name || "N/A"}
-                  </div>
-                  <div className="col-md-4">
-                    <strong>From Store:</strong>{" "}
-                    {details.from_store?.name || "N/A"}
-                  </div>
-                </div>
-                <div className="row mt-3">
-                  <div className="col-md-4">
-                    <strong>Vehicle No:</strong> {details.vehicle_no}
-                  </div>
-                  <div className="col-md-4">
-                    <strong>Driver Name:</strong> {details.driver_name}
-                  </div>
-                  <div className="col-md-4">
-                    <strong>Driver Contact:</strong> {details.driver_contact_no}
-                  </div>
-                </div>
-                <div className="row mt-3">
-                  <div className="col-md-4">
-                    <strong>Contact Person:</strong> {details.contact_person}
-                  </div>
-                  <div className="col-md-4">
-                    <strong>Contact Person No:</strong>{" "}
-                    {details.contact_person_no}
-                  </div>
-                  <div className="col-md-4">
-                    <strong>Returnable:</strong>{" "}
-                    {details.returnable ? "Yes" : "No"}
-                  </div>
-                </div>
-                {details.returnable && (
-                  <div className="row mt-3">
-                    <div className="col-md-4">
-                      <strong>Expected Return Date:</strong>{" "}
-                      {details.expected_return_date}
+                <div className="details_page">
+                  <div className="row px-3">
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                      <div className="col-6">
+                        <label>Gate Pass No</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3 text-dark">:</span>
+                          {details.gate_pass_no || "-"}
+                        </label>
+                      </div>
                     </div>
-                    <div className="col-md-4">
-                      <strong>Due Date:</strong>{" "}
-                      {details.due_at
-                        ? new Date(details.due_at).toLocaleDateString()
-                        : "N/A"}
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                      <div className="col-6">
+                        <label>Gate Pass Type</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3 text-dark">:</span>
+                          {details.gate_pass_type_name || "-"}
+                        </label>
+                      </div>
                     </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                      <div className="col-6">
+                        <label>Date</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3 text-dark">:</span>
+                          {details.gate_pass_date || "-"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                      <div className="col-6">
+                        <label>Project</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3 text-dark">:</span>
+                          {details.project?.name || "N/A"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                      <div className="col-6">
+                        <label>Sub-Project</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3 text-dark">:</span>
+                          {details.sub_project?.name || "N/A"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                      <div className="col-6">
+                        <label>From Store</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3 text-dark">:</span>
+                          {details.from_store?.name || "N/A"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                      <div className="col-6">
+                        <label>Vehicle No</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3 text-dark">:</span>
+                          {details.vehicle_no || "-"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                      <div className="col-6">
+                        <label>Driver Name</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3 text-dark">:</span>
+                          {details.driver_name || "-"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                      <div className="col-6">
+                        <label>Driver Contact</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3 text-dark">:</span>
+                          {details.driver_contact_no || "-"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                      <div className="col-6">
+                        <label>Contact Person</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3 text-dark">:</span>
+                          {details.contact_person || "-"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                      <div className="col-6">
+                        <label>Contact Person No</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3 text-dark">:</span>
+                          {details.contact_person_no || "-"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                      <div className="col-6">
+                        <label>Returnable</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3 text-dark">:</span>
+                          {details.returnable ? "Yes" : "No"}
+                        </label>
+                      </div>
+                    </div>
+                    {details.returnable && (
+                      <>
+                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                          <div className="col-6">
+                            <label>Expected Return Date</label>
+                          </div>
+                          <div className="col-6">
+                            <label className="text">
+                              <span className="me-3 text-dark">:</span>
+                              {details.expected_return_date || "-"}
+                            </label>
+                          </div>
+                        </div>
+                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                          <div className="col-6">
+                            <label>Due Date</label>
+                          </div>
+                          <div className="col-6">
+                            <label className="text">
+                              <span className="me-3 text-dark">:</span>
+                              {details.due_at
+                                ? new Date(details.due_at).toLocaleDateString()
+                                : "N/A"}
+                            </label>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </CollapsibleCard>
 
@@ -165,7 +291,13 @@ const GatePassDetails = () => {
                     <thead>
                       <tr>
                         <th>Sr.No.</th>
-                        <th>Material Name</th>
+                        <th>Material / Asset Type</th>
+                        <th>Material / Asset Sub-Type</th>
+                        <th>Material / Asset Name</th>
+                        <th>Generic Info</th>
+                        <th>Brand</th>
+                        <th>Colour</th>
+                        <th>Unit</th>
                         <th>Gate Pass Qty</th>
                       </tr>
                     </thead>
@@ -173,7 +305,13 @@ const GatePassDetails = () => {
                       {details?.gate_pass_materials?.map((item, index) => (
                         <tr key={item.id}>
                           <td>{index + 1}</td>
-                          <td>Material ID: {item.mor_inventory_id}</td>
+                          <td>{item.material_type}</td>
+                          <td>{item.material_sub_type}</td>
+                          <td>{item.material}</td>
+                          <td>{item.generic_specification}</td>
+                          <td>{item.brand}</td>
+                          <td>{item.colour}</td>
+                          <td>{item.uom}</td>
                           <td>{item.gate_pass_qty}</td>
                         </tr>
                       ))}
@@ -189,18 +327,34 @@ const GatePassDetails = () => {
                   <table className="w-100">
                     <thead>
                       <tr>
-                        <th>Sr.No.</th>
-                        <th>File Name</th>
-                        <th>Action</th>
+                        <th className="text-start">Sr. No.</th>
+                        <th className="text-start">Document Name</th>
+                        <th className="text-start">File Name</th>
+                        <th className="text-start">File Type</th>
+                        <th className="text-start">Upload Date</th>
+                        <th className="text-start">Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       {details?.attachments?.length > 0 ? (
                         details.attachments.map((att, index) => (
                           <tr key={index}>
-                            <td>{index + 1}</td>
-                            <td>{att.filename || "N/A"}</td>
-                            <td>
+                            <td className="text-start">{index + 1}</td>
+                            <td className="text-start">
+                              {att.relation || "Attachment"}
+                            </td>
+                            <td className="text-start">
+                              {att.filename || "N/A"}
+                            </td>
+                            <td className="text-start">
+                              {att.content_type || "N/A"}
+                            </td>
+                            <td className="text-start">
+                              {att.created_at
+                                ? new Date(att.created_at).toLocaleDateString()
+                                : "N/A"}
+                            </td>
+                            <td className="text-start">
                               <a
                                 href={att.url}
                                 target="_blank"
@@ -213,7 +367,7 @@ const GatePassDetails = () => {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="3" className="text-center">
+                          <td colSpan="6" className="text-center">
                             No attachments
                           </td>
                         </tr>

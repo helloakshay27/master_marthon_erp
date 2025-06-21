@@ -27,7 +27,7 @@ const GatePassCreate = () => {
     contact_no: "",
     gate_no: "",
     material_items: [],
-    to_vendor: "",
+    to_vendor: null,
     driver_contact_no: "",
   });
 
@@ -109,6 +109,17 @@ const GatePassCreate = () => {
       )
       .filter(Boolean);
 
+    let to_resource_id = null;
+    let to_resource_type = null;
+
+    if (formData.to_vendor) {
+      to_resource_id = formData.to_vendor;
+      to_resource_type = "Pms::Supplier";
+    } else if (formData.to_store_id) {
+      to_resource_id = formData.to_store_id;
+      to_resource_type = "Pms::Store";
+    }
+
     const payload = {
       gate_pass: {
         sub_project_id: formData.sub_project_id || null,
@@ -146,6 +157,8 @@ const GatePassCreate = () => {
           })
         ),
         attachments: attachments.length > 0 ? attachments : null,
+        to_resource_id: to_resource_id,
+        to_resource_type: to_resource_type,
         // Add resource_id and resource_type
         resource_id: selectedPO?.id || null,
         resource_type:
@@ -417,6 +430,18 @@ const GatePassCreate = () => {
     // If you want to reset sub_project_id, uncomment above
   }, [formData.project_id, projects]);
 
+  useEffect(() => {
+    // Reset dependent fields when gate pass type changes
+    setFormData((prev) => ({
+      ...prev,
+      to_vendor: null,
+      to_store_id: null,
+      mto_po_number: "",
+      material_items: [], // Also clear materials as they depend on PO
+    }));
+    setSelectedPO(null);
+  }, [formData.gate_pass_type]);
+
   // Fetch material/asset details when PO is selected (for return_to_vendor)
   useEffect(() => {
     if (
@@ -489,7 +514,8 @@ const GatePassCreate = () => {
     // Fetch suppliers for To Vendor dropdown
     if (
       formData.gate_pass_type === "return_to_vendor" ||
-      formData.gate_pass_type === "testing_calibration"
+      formData.gate_pass_type === "testing_calibration" ||
+      formData.gate_pass_type === "repair_maintenance"
     ) {
       const fetchSuppliers = async () => {
         try {
@@ -636,7 +662,8 @@ const GatePassCreate = () => {
 
                 {/* Custom layout for 'return_to_vendor' */}
                 {formData.gate_pass_type === "return_to_vendor" ||
-                formData.gate_pass_type === "testing_calibration" ? (
+                formData.gate_pass_type === "testing_calibration" ||
+                formData.gate_pass_type === "repair_maintenance" ? (
                   <>
                     <div className="col-md-3 ">
                       <div className="form-group">
@@ -674,25 +701,28 @@ const GatePassCreate = () => {
                         />
                       </div>
                     </div>
-                    <div className="col-md-3 mt-2">
-                      <div className="form-group">
-                        <label>PO/WO No *</label>
-                        <SingleSelector
-                          options={poOptions}
-                          onChange={(selected) => {
-                            setFormData({
-                              ...formData,
-                              mto_po_number: selected?.value,
-                            });
-                            setSelectedPO(selected); // Store selected PO object
-                          }}
-                          value={poOptions.find(
-                            (p) => p.value === formData.mto_po_number
-                          )}
-                          placeholder="Select PO/WO No"
-                        />
+                    {(formData.gate_pass_type === "return_to_vendor" ||
+                      formData.gate_pass_type === "testing_calibration") && (
+                      <div className="col-md-3 mt-2">
+                        <div className="form-group">
+                          <label>PO/WO No *</label>
+                          <SingleSelector
+                            options={poOptions}
+                            onChange={(selected) => {
+                              setFormData({
+                                ...formData,
+                                mto_po_number: selected?.value,
+                              });
+                              setSelectedPO(selected); // Store selected PO object
+                            }}
+                            value={poOptions.find(
+                              (p) => p.value === formData.mto_po_number
+                            )}
+                            placeholder="Select PO/WO No"
+                          />
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </>
                 ) : (
                   <>
@@ -735,38 +765,34 @@ const GatePassCreate = () => {
                         </div>
                       </div>
                     )}
-                    {formData.gate_pass_type !== "general" && (
-                      <div className="col-md-3 mt-2">
-                        <div className="form-group">
-                          <label>
-                            {formData.gate_pass_type === "transfer_to_site"
-                              ? "MTO/SO Number *"
-                              : formData.gate_pass_type === "repair_maintenance"
-                              ? "To Vendor *"
-                              : "MTO/PO Number *"}
-                          </label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={formData.mto_po_number}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                mto_po_number: e.target.value,
-                              })
-                            }
-                            placeholder={
-                              formData.gate_pass_type === "transfer_to_site"
-                                ? "Enter MTO/SO Number"
-                                : formData.gate_pass_type ===
-                                  "repair_maintenance"
-                                ? "Select Vendor Type"
-                                : "Enter MTO/PO Number"
-                            }
-                          />
+                    {formData.gate_pass_type !== "general" &&
+                      formData.gate_pass_type !== "repair_maintenance" && (
+                        <div className="col-md-3 mt-2">
+                          <div className="form-group">
+                            <label>
+                              {formData.gate_pass_type === "transfer_to_site"
+                                ? "MTO/SO Number *"
+                                : "MTO/PO Number *"}
+                            </label>
+                            <input
+                              type="text"
+                              className="form-control"
+                              value={formData.mto_po_number}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  mto_po_number: e.target.value,
+                                })
+                              }
+                              placeholder={
+                                formData.gate_pass_type === "transfer_to_site"
+                                  ? "Enter MTO/SO Number"
+                                  : "Enter MTO/PO Number"
+                              }
+                            />
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </>
                 )}
                 <div className="col-md-3 mt-2">
