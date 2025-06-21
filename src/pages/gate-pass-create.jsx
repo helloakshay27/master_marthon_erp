@@ -124,6 +124,7 @@ const GatePassCreate = () => {
     const payload = {
       gate_pass: {
         sub_project_id: formData.sub_project_id || null,
+        from_store_id: formData.store_id || null,
         gate_pass_type_id:
           gatePassTypes.find((t) => t.value === formData.gate_pass_type)?.id ||
           1, // get id from selected gate pass type
@@ -691,141 +692,177 @@ const GatePassCreate = () => {
                   </div>
                 </div>
 
-                {/* Custom layout for 'return_to_vendor' */}
-                {formData.gate_pass_type === "return_to_vendor" ||
-                formData.gate_pass_type === "testing_calibration" ||
-                formData.gate_pass_type === "repair_maintenance" ? (
-                  <>
-                    <div className="col-md-3 ">
-                      <div className="form-group">
-                        <label>From Store</label>
-                        <SingleSelector
-                          options={stores}
-                          onChange={(selected) =>
-                            setFormData({
-                              ...formData,
-                              store_id: selected?.value,
-                            })
-                          }
-                          value={stores.find(
-                            (s) => s.value === formData.store_id
-                          )}
-                          placeholder="Select From Store"
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-3 mt-2">
-                      <div className="form-group">
-                        <label>To Vendor</label>
-                        <SingleSelector
-                          options={supplierOptions}
-                          onChange={(selected) =>
-                            setFormData({
-                              ...formData,
-                              to_vendor: selected?.value,
-                            })
-                          }
-                          value={supplierOptions.find(
-                            (v) => v.value === formData.to_vendor
-                          )}
-                          placeholder="Select Vendor"
-                        />
-                      </div>
-                    </div>
-                    {(formData.gate_pass_type === "return_to_vendor" ||
-                      formData.gate_pass_type === "testing_calibration") && (
-                      <div className="col-md-3 mt-2">
-                        <div className="form-group">
-                          <label>PO/WO No *</label>
-                          <SingleSelector
-                            options={poOptions}
-                            onChange={(selected) => {
-                              setFormData({
-                                ...formData,
-                                mto_po_number: selected?.value,
-                              });
-                              setSelectedPO(selected); // Store selected PO object
-                            }}
-                            value={poOptions.find(
-                              (p) => p.value === formData.mto_po_number
-                            )}
-                            placeholder="Select PO/WO No"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <div className="col-md-3 mt-2">
-                      <div className="form-group">
-                        <label>From Store</label>
-                        <SingleSelector
-                          options={stores}
-                          onChange={(selected) =>
-                            setFormData({
-                              ...formData,
-                              store_id: selected?.value,
-                            })
-                          }
-                          value={stores.find(
-                            (s) => s.value === formData.store_id
-                          )}
-                          placeholder="Select From Store"
-                        />
-                      </div>
-                    </div>
-                    {/* Hide To Store if repair_maintenance */}
-                    {formData.gate_pass_type !== "repair_maintenance" && (
-                      <div className="col-md-3 mt-2">
-                        <div className="form-group">
-                          <label>To Store</label>
-                          <SingleSelector
-                            options={toStores}
-                            onChange={(selected) =>
-                              setFormData({
-                                ...formData,
-                                to_store_id: selected?.value,
-                              })
-                            }
-                            value={toStores.find(
-                              (s) => s.value === formData.to_store_id
-                            )}
-                            placeholder="Select To Store"
-                          />
-                        </div>
-                      </div>
-                    )}
-                    {formData.gate_pass_type !== "general" &&
-                      formData.gate_pass_type !== "repair_maintenance" && (
-                        <div className="col-md-3 mt-2">
-                          <div className="form-group">
-                            <label>
-                              {formData.gate_pass_type === "transfer_to_site"
-                                ? "MTO/SO Number *"
-                                : "MTO/PO Number *"}
-                            </label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={formData.mto_po_number}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  mto_po_number: e.target.value,
-                                })
-                              }
-                              placeholder={
-                                formData.gate_pass_type === "transfer_to_site"
-                                  ? "Enter MTO/SO Number"
-                                  : "Enter MTO/PO Number"
-                              }
-                            />
+                {(() => {
+                  const selectedGatePassType = gatePassTypes.find(
+                    (t) => t.value === formData.gate_pass_type
+                  );
+                  const rawValue = selectedGatePassType?.rawValue;
+
+                  switch (rawValue) {
+                    case "PurchaseOrder":
+                      return (
+                        <>
+                          <div className="col-md-3 ">
+                            <div className="form-group">
+                              <label>From Store</label>
+                              <SingleSelector
+                                options={stores}
+                                onChange={(selected) =>
+                                  setFormData({
+                                    ...formData,
+                                    store_id: selected?.value,
+                                  })
+                                }
+                                value={stores.find(
+                                  (s) => s.value === formData.store_id
+                                )}
+                                placeholder="Select From Store"
+                              />
+                            </div>
                           </div>
-                        </div>
-                      )}
-                  </>
-                )}
+                          <div className="col-md-3 mt-2">
+                            <div className="form-group">
+                              <label>To Vendor</label>
+                              <SingleSelector
+                                options={supplierOptions}
+                                onChange={(selected) =>
+                                  setFormData({
+                                    ...formData,
+                                    to_vendor: selected?.value,
+                                  })
+                                }
+                                value={supplierOptions.find(
+                                  (v) => v.value === formData.to_vendor
+                                )}
+                                placeholder="Select Vendor"
+                              />
+                            </div>
+                          </div>
+                          <div className="col-md-3 mt-2">
+                            <div className="form-group">
+                              <label>PO/WO No *</label>
+                              <SingleSelector
+                                options={poOptions}
+                                onChange={(selected) => {
+                                  setFormData({
+                                    ...formData,
+                                    mto_po_number: selected?.value,
+                                  });
+                                  setSelectedPO(selected); // Store selected PO object
+                                }}
+                                value={poOptions.find(
+                                  (p) => p.value === formData.mto_po_number
+                                )}
+                                placeholder="Select PO/WO No"
+                              />
+                            </div>
+                          </div>
+                        </>
+                      );
+                    case "MaterialTransaferOrder":
+                      return (
+                        <>
+                          <div className="col-md-3 mt-2">
+                            <div className="form-group">
+                              <label>From Store</label>
+                              <SingleSelector
+                                options={stores}
+                                onChange={(selected) =>
+                                  setFormData({
+                                    ...formData,
+                                    store_id: selected?.value,
+                                  })
+                                }
+                                value={stores.find(
+                                  (s) => s.value === formData.store_id
+                                )}
+                                placeholder="Select From Store"
+                              />
+                            </div>
+                          </div>
+                          <div className="col-md-3 mt-2">
+                            <div className="form-group">
+                              <label>To Store</label>
+                              <SingleSelector
+                                options={toStores}
+                                onChange={(selected) =>
+                                  setFormData({
+                                    ...formData,
+                                    to_store_id: selected?.value,
+                                  })
+                                }
+                                value={toStores.find(
+                                  (s) => s.value === formData.to_store_id
+                                )}
+                                placeholder="Select To Store"
+                              />
+                            </div>
+                          </div>
+                          <div className="col-md-3 mt-2">
+                            <div className="form-group">
+                              <label>MTO/SO Number *</label>
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={formData.mto_po_number}
+                                onChange={(e) =>
+                                  setFormData({
+                                    ...formData,
+                                    mto_po_number: e.target.value,
+                                  })
+                                }
+                                placeholder="Enter MTO/SO Number"
+                              />
+                            </div>
+                          </div>
+                        </>
+                      );
+                    case "":
+                      return (
+                        <>
+                          <div className="col-md-3 ">
+                            <div className="form-group">
+                              <label>From Store</label>
+                              <SingleSelector
+                                options={stores}
+                                onChange={(selected) =>
+                                  setFormData({
+                                    ...formData,
+                                    store_id: selected?.value,
+                                  })
+                                }
+                                value={stores.find(
+                                  (s) => s.value === formData.store_id
+                                )}
+                                placeholder="Select From Store"
+                              />
+                            </div>
+                          </div>
+                          <div className="col-md-3 mt-2">
+                            <div className="form-group">
+                              <label>To Vendor</label>
+                              <SingleSelector
+                                options={supplierOptions}
+                                onChange={(selected) =>
+                                  setFormData({
+                                    ...formData,
+                                    to_vendor: selected?.value,
+                                  })
+                                }
+                                value={supplierOptions.find(
+                                  (v) => v.value === formData.to_vendor
+                                )}
+                                placeholder="Select Vendor"
+                              />
+                            </div>
+                          </div>
+                        </>
+                      );
+                    default:
+                      return null;
+                  }
+                })()}
+
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
                     <label>Driver Name</label>
