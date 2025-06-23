@@ -679,7 +679,7 @@ function Members() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/stock_register_list?token=4ad0c1cd2506a717ae19ed050c28d7f078b0210991571e47">
+                  <Link to="/stock_register_list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
                     {" "}
                     stock register list
                   </Link>

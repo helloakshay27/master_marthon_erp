@@ -43,13 +43,13 @@ const ErpStockRegisterCreationDetail13C = () => {
   return (
     <>
       <div className="website-content overflow-auto">
-        <div className="module-data-section container-fluid details_page">
+        <div className="module-data-section  details_page mx-3">
           <a href="">
             Home &gt; Store &gt; Store Operation &gt; Stock Register{" "}
           </a>
           <h5 className="mt-3">Stock Register</h5>
           <section className="mor  m-0" style={{ border: "none" }}>
-            <div className="">
+            <div className="container-fluid">
               <div className="row my-4 align-items-center">
                 <div className="col-md-12">
                   <div className="card">
@@ -197,7 +197,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {data?.stock_details.map((item, id) => (
+                                    {data?.stock_details?.map((item, id) => (
                                       <tr key={id}>
                                         <td>{id + 1}</td>
                                         <td>

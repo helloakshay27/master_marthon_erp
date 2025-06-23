@@ -17,6 +17,7 @@ import { baseURL } from "../confi/apiDomain";
 
 
 const BOQList = () => {
+  const [showModal, setShowModal] = useState(false);
   const [show, setShow] = useState(false); // State to manage modal visibility for copy budget
   const handleShow = () => setShow(true);
   const handleClose = () => setShow(false);
@@ -26,6 +27,9 @@ const BOQList = () => {
   const itemsPerPage = 5; // Items per page
   const [totalEntries, setTotalEntries] = useState(0);
   const [loading2, setLoading2] = useState(true);
+
+  const [file, setFile] = useState(null);
+  const handleFileChange = (e) => setFile(e.target.files[0]);
 
   const [searchKeyword, setSearchKeyword] = useState('');
 
@@ -173,7 +177,7 @@ const BOQList = () => {
       .get(`${baseURL}boq_details.json?page=${page}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
       .then((response) => {
         setBoqList(response.data); // Set the data in state
-        console.log("data list ", response.data.pagination.total_entries)
+        // console.log("data list ", response.data.pagination.total_entries)
         setTotalPages(response.data?.pagination.total_pages); // Set total pages
         setTotalEntries(response.data?.pagination.total_entries);
         setLoading2(false);
@@ -649,7 +653,7 @@ const BOQList = () => {
     const inventoryMaterialId = selectedInventoryMaterialTypes?.value || ""
     const status = selectedStatus?.value || "";
     const unitId = selectedUnit?.value || "";
-    console.log("filter ids:", categoryId, subCategoryId, status,  inventoryTypeId, inventoryMaterialId)
+    console.log("filter ids:", categoryId, subCategoryId, status, inventoryTypeId, inventoryMaterialId)
 
     const search = searchKeyword || "";
     console.log("search", search)
@@ -803,6 +807,47 @@ const BOQList = () => {
     setSelectedInventoryMaterialTypes(selectedOption); // Set the selected inventory sub-type
   };
 
+  const handleSubmitFile = async (e) => {
+    e.preventDefault();
+    if (!file) return;
+    console.log("file:", file)
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64String = event.target.result.split(",")[1];
+      console.log("base64String:", base64String)
+      try {
+        const response = await axios.post(
+          `${baseURL}boq_details/import.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+          { file: base64String },
+          { headers: { "Content-Type": "application/json" } }
+        );
+        if (response.status === 200) {
+          console.log("Upload response:", response.data);
+          toast.success(response.data.message);
+          // alert("File uploaded successfully!");
+        }
+        setShowModal(false);
+        setFile(null);
+      } catch (error) {
+
+        if (error.response && error.response.status === 422) {
+          console.log("422 response:", error.response.data);
+          if (Array.isArray(error.response.data.errors)) {
+            error.response.data.errors.forEach(errObj => {
+              toast.error(`${errObj.error}`);
+            });
+          } else if (typeof error.response.data.errors === "string") {
+            toast.error(error.response.data.errors);
+          }
+        } else {
+          console.error(error);
+        }
+        //   alert("File upload failed!");
+        console.error(error);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
     <>
@@ -1199,7 +1244,7 @@ const BOQList = () => {
                         />
                       </svg>
                     </button>
-
+                    <button className="purple-btn2" onClick={() => setShowModal(true)}>Bulk Upload</button>
                     {/* Reset Button */}
                     <button className="purple-btn2" onClick={handleClickCollapse}>Reset</button>
 
@@ -3422,7 +3467,7 @@ const BOQList = () => {
                     {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
 
                     {totalEntries} entries
-                    {console.log(".........", itemsPerPage)}
+                    {/* {console.log(".........", itemsPerPage)} */}
                   </div>
 
                 </div>
@@ -3603,6 +3648,66 @@ const BOQList = () => {
           </div>
         </div>
       )}
+
+      {/* bulk upload modal */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered size="md">
+        <Modal.Header closeButton>
+          <Modal.Title>Bulk Upload</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <form onSubmit={handleSubmitFile}>
+            <div className="form-group mb-3">
+              <label>Upload File</label>
+              <input
+                type="file"
+                className="form-control"
+                onChange={handleFileChange}
+                required
+              />
+            </div>
+            <div className="d-flex justify-content-between align-items-center">
+              {/* Left: Download sample format */}
+              <a
+                href={`${baseURL}boq_details/download_boq_sample.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`}
+                download
+                className="d-flex align-items-center text-decoration-none"
+                style={{ color: "#8b0203" }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="#8b0203"
+                  className="bi bi-download me-1"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M.5 9.9a.5.5 0 0 1 .5.5v3.1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.1a.5.5 0 0 1 1 0v3.1A2 2 0 0 1 14 16H2a2 2 0 0 1-2-2v-3.1a.5.5 0 0 1 .5-.5z" />
+                  <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                </svg>
+                <span style={{ color: "#000" }}>Download Sample Format</span>
+              </a>
+              {/* Right: Submit and Cancel */}
+              <div className="d-flex justify-content-center gap-2 w-70">
+                <div className="flex-grow-1">
+                  <button type="submit" className="purple-btn2 w-70 mt-2">
+                    Upload
+                  </button>
+                </div>
+                <div className="flex-grow-1">
+                  <button
+                    type="button"
+                    className="purple-btn1 w-70"
+                    onClick={() => setShowModal(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </form>
+        </Modal.Body>
+      </Modal>
 
       {/* copy modal */}
       {/* <Modal

@@ -762,7 +762,7 @@ const RateRevision = () => {
                 project_id: rateDetails?.project_id,
                 pms_site_id: rateDetails?.pms_site_id,
                 pms_wing_id: rateDetails?.pms_wing_id || null,
-                parent_id: rateDetails?.id,
+                parent_id: rateDetails?.parent_id,
                 materials: tableData.map(row => {
                     const material = {
                         material_id: row.material,
@@ -796,7 +796,7 @@ const RateRevision = () => {
                 console.log("Update successful:", response.data);
                 // Redirect to the list page
                 // navigate("/list-page"); // Replace "/list-page" with your actual list page route
-                // navigate(`/details-rate/${response.data.id}`);
+                navigate(`/details-rate/${rateDetails?.parent_id}?token=${token}`);
             })
             .catch((error) => {
                 alert("Error submitting data!");
@@ -1125,7 +1125,7 @@ const RateRevision = () => {
                             <button className="purple-btn2 w-100" onClick={handleSubmit}>Update</button>
                         </div>
                         <div className="col-md-2">
-                            <button className="purple-btn1 w-100" onClick={() => navigate(`/view-rate?token=${token}`)}>Cancle</button>
+                            <button className="purple-btn1 w-100" onClick={() => navigate(`/details-rate/${rateDetails?.parent_id}?token=${token}`)}>Cancle</button>
                         </div>
                     </div>
                 </div>
