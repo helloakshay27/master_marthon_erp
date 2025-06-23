@@ -551,7 +551,7 @@ const ErpStockRegister13B = () => {
   };
 
 
-  // if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Loading...</div>;
   return (
     <>
       <style type="text/css">
