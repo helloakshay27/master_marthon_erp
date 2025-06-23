@@ -54,6 +54,9 @@ const GatePassCreate = () => {
 
   const [showAddVendorModal, setShowAddVendorModal] = useState(false);
   const [newVendorName, setNewVendorName] = useState("");
+  const [newVendorContact, setNewVendorContact] = useState("");
+  const [newVendorAddress, setNewVendorAddress] = useState("");
+  const [newVendorRemark, setNewVendorRemark] = useState("");
 
   const [attachModal, setattachModal] = useState(false);
   const [viewDocumentModal, setviewDocumentModal] = useState(false);
@@ -69,6 +72,23 @@ const GatePassCreate = () => {
   const [showMaterialSelectModal, setShowMaterialSelectModal] = useState(false);
   const [poMaterials, setPoMaterials] = useState([]); // Materials fetched from PO
   const [selectedMaterialIndexes, setSelectedMaterialIndexes] = useState([]); // Indexes of selected materials in modal
+
+  // For dynamic material/asset rows when rawValue is ""
+  const [maintenanceRows, setMaintenanceRows] = useState([]);
+  // Dropdown options
+  const [inventoryTypes, setInventoryTypes] = useState([]);
+  const [inventorySubTypes, setInventorySubTypes] = useState([]);
+  const [inventoryNames, setInventoryNames] = useState([]);
+  const [genericInfos, setGenericInfos] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [colours, setColours] = useState([]);
+  const [units, setUnits] = useState([]);
+
+  // For Add Other Material modal
+  const [showAddMaterialModal, setShowAddMaterialModal] = useState(false);
+  const [newMaterialName, setNewMaterialName] = useState("");
+  const [newMaterialRemark, setNewMaterialRemark] = useState("");
+  const [materialRowIdx, setMaterialRowIdx] = useState(null); // which row to update
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -115,10 +135,30 @@ const GatePassCreate = () => {
 
     let to_resource_id = null;
     let to_resource_type = null;
+    let other_vendor_attributes = undefined;
 
     if (formData.to_vendor) {
-      to_resource_id = formData.to_vendor;
-      to_resource_type = "Pms::Supplier";
+      if (
+        typeof formData.to_vendor === "string" &&
+        (formData.to_vendor.startsWith("non_master_") ||
+          formData.to_vendor === "other")
+      ) {
+        // Find the vendor in supplierOptions
+        const otherVendor = supplierOptions.find(
+          (v) => v.value === formData.to_vendor
+        );
+        other_vendor_attributes = {
+          name: otherVendor?.label || "",
+          contact_no: otherVendor?.contact || "",
+          remarks: otherVendor?.remark || "",
+          address: otherVendor?.address || "",
+        };
+        to_resource_type = "OtherVendor";
+        to_resource_id = null;
+      } else {
+        to_resource_id = formData.to_vendor;
+        to_resource_type = "Pms::Supplier";
+      }
     } else if (formData.to_store_id) {
       to_resource_id = formData.to_store_id;
       to_resource_type = "Pms::Store";
@@ -164,6 +204,7 @@ const GatePassCreate = () => {
         attachments: attachments.length > 0 ? attachments : null,
         to_resource_id: to_resource_id,
         to_resource_type: to_resource_type,
+        ...(other_vendor_attributes ? { other_vendor_attributes } : {}),
         // Add resource_id and resource_type
         resource_id: selectedPO?.id || null,
         resource_type:
@@ -246,7 +287,7 @@ const GatePassCreate = () => {
         content_type: file.type,
       };
       documentRowsRef.current[index].fileType = fileType;
-      documentRowsRef.current[index].uploadDate = new Date()
+      documentRows.current[index].uploadDate = new Date()
         .toISOString()
         .split("T")[0];
 
@@ -343,13 +384,21 @@ const GatePassCreate = () => {
   const [selectedStatus, setSelectedStatus] = useState(statusOptions[0]);
 
   const handleAddVendor = () => {
-    if (newVendorName.trim() === "") {
-      alert("Please enter a vendor name.");
+    if (
+      !newVendorName.trim() ||
+      !newVendorContact.trim() ||
+      !newVendorAddress.trim() ||
+      !newVendorRemark.trim()
+    ) {
+      alert("All fields are mandatory for Non-Master Vendor.");
       return;
     }
     const newVendor = {
       label: newVendorName,
       value: `non_master_${newVendorName.replace(/\s+/g, "_").toLowerCase()}`,
+      contact: newVendorContact,
+      address: newVendorAddress,
+      remark: newVendorRemark,
     };
 
     const updatedOptions = [
@@ -364,6 +413,9 @@ const GatePassCreate = () => {
 
     setShowAddVendorModal(false);
     setNewVendorName("");
+    setNewVendorContact("");
+    setNewVendorAddress("");
+    setNewVendorRemark("");
   };
 
   useEffect(() => {
@@ -601,6 +653,193 @@ const GatePassCreate = () => {
       setGateNumbers([]);
     }
   }, [formData.project_id]);
+
+  // Fetch inventory types on mount
+  useEffect(() => {
+    axios
+      .get(
+        `${baseURL}pms/inventory_types.json?q[category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      )
+      .then((response) => {
+        setInventoryTypes(
+          response.data.map((i) => ({ value: i.id, label: i.name }))
+        );
+      });
+  }, []);
+
+  // Fetch sub-types and material names when type changes (per row)
+  const fetchSubTypesAndNames = async (typeId, rowIdx) => {
+    if (!typeId) return;
+    // Sub-types
+    const subTypeRes = await axios.get(
+      `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${typeId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    );
+    const subTypeOptions = subTypeRes.data.map((i) => ({
+      value: i.id,
+      label: i.name,
+    }));
+    // Material names
+    const nameRes = await axios.get(
+      `${baseURL}pms/inventories.json?q[inventory_type_id_in]=${typeId}&q[material_category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    );
+    let materialNameOptions = nameRes.data.map((i) => ({
+      value: i.id,
+      label: i.name,
+    }));
+    // Always add 'Other' option
+    materialNameOptions = [
+      ...materialNameOptions,
+      { value: "other", label: "Other" },
+    ];
+    setMaintenanceRows((rows) =>
+      rows.map((row, idx) =>
+        idx === rowIdx
+          ? {
+              ...row,
+              subTypeOptions,
+              materialNameOptions,
+              material_sub_type: null,
+              material_name: null,
+              genericInfoOptions: [],
+              brandOptions: [],
+              colourOptions: [],
+              unitOptions: [],
+              generic_info: null,
+              brand: null,
+              colour: null,
+              unit: null,
+            }
+          : row
+      )
+    );
+  };
+
+  // Fetch generic info, brand, colour, unit when name changes (per row)
+  const fetchMaterialDetails = async (materialId, rowIdx) => {
+    if (!materialId) return;
+    // Generic Info
+    const genRes = await axios.get(
+      `${baseURL}pms/generic_infos.json?q[material_id_eq]=${materialId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    );
+    const genericInfoOptions = genRes.data.map((i) => ({
+      value: i.id,
+      label: i.generic_info,
+    }));
+    // Brand
+    const brandRes = await axios.get(
+      `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${materialId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    );
+    const brandOptions = brandRes.data.map((i) => ({
+      value: i.id,
+      label: i.brand_name,
+    }));
+    // Colour
+    const colourRes = await axios.get(
+      `${baseURL}pms/colours.json?q[material_id_eq]=${materialId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    );
+    const colourOptions = colourRes.data.map((i) => ({
+      value: i.id,
+      label: i.colour,
+    }));
+    // Unit
+    const unitRes = await axios.get(
+      `${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    );
+    const unitOptions = unitRes.data.map((i) => ({
+      value: i.id,
+      label: i.name,
+    }));
+    setMaintenanceRows((rows) =>
+      rows.map((row, idx) =>
+        idx === rowIdx
+          ? {
+              ...row,
+              genericInfoOptions,
+              brandOptions,
+              colourOptions,
+              unitOptions,
+              generic_info: null,
+              brand: null,
+              colour: null,
+              unit: null,
+            }
+          : row
+      )
+    );
+  };
+
+  // Update handleMaintenanceRowChange to use new fetch logic
+  const handleMaintenanceRowChange = (idx, field, value) => {
+    setMaintenanceRows((rows) =>
+      rows.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
+    );
+    // If type changes, fetch sub-types and material names
+    if (field === "material_type") fetchSubTypesAndNames(value, idx);
+    // If material name changes, fetch details
+    if (field === "material_name") fetchMaterialDetails(value, idx);
+  };
+
+  // Add row handler
+  const handleAddMaintenanceRow = () => {
+    setMaintenanceRows((rows) => [
+      ...rows,
+      {
+        material_type: null,
+        subTypeOptions: [],
+        material_sub_type: null,
+        materialNameOptions: [],
+        material_name: null,
+        genericInfoOptions: [],
+        generic_info: null,
+        brandOptions: [],
+        brand: null,
+        colourOptions: [],
+        colour: null,
+        unitOptions: [],
+        unit: null,
+        gate_pass_qty: "",
+        reason: "",
+      },
+    ]);
+  };
+  // Remove row handler
+  const handleRemoveMaintenanceRow = (idx) => {
+    setMaintenanceRows((rows) => rows.filter((_, i) => i !== idx));
+  };
+
+  // Add new material to the row's materialNameOptions and select it
+  const handleAddMaterial = () => {
+    if (!newMaterialName.trim()) {
+      alert("Please enter a material/asset name.");
+      return;
+    }
+    const newMaterial = {
+      value: `other_${newMaterialName.replace(/\s+/g, "_").toLowerCase()}`,
+      label: newMaterialName,
+      remark: newMaterialRemark,
+    };
+    setMaintenanceRows((rows) =>
+      rows.map((row, idx) =>
+        idx === materialRowIdx
+          ? {
+              ...row,
+              materialNameOptions: [
+                ...(row.materialNameOptions || []).filter(
+                  (opt) => opt.value !== "other"
+                ),
+                newMaterial,
+                { value: "other", label: "Other" },
+              ],
+              material_name: newMaterial.value,
+            }
+          : row
+      )
+    );
+    setShowAddMaterialModal(false);
+    setNewMaterialName("");
+    setNewMaterialRemark("");
+    setMaterialRowIdx(null);
+  };
 
   return (
     <div className="main-content">
@@ -1024,105 +1263,359 @@ const GatePassCreate = () => {
 
               <div className="d-flex justify-content-between align-items-end px-2 mt-3">
                 <h5>Material / Asset Details</h5>
-                <button
-                  className="purple-btn2"
-                  onClick={() => setShowMaterialSelectModal(true)}
-                  disabled={!selectedPO} // Only enable if PO is selected
-                >
-                  Add
-                </button>
+                {(() => {
+                  const selectedGatePassType = gatePassTypes.find(
+                    (t) => t.value === formData.gate_pass_type
+                  );
+                  const rawValue = selectedGatePassType?.rawValue;
+                  if (rawValue === "") {
+                    return (
+                      <button
+                        className="purple-btn2"
+                        onClick={handleAddMaintenanceRow}
+                      >
+                        Add
+                      </button>
+                    );
+                  } else {
+                    return (
+                      <button
+                        className="purple-btn2"
+                        onClick={() => setShowMaterialSelectModal(true)}
+                        disabled={!selectedPO}
+                      >
+                        Add
+                      </button>
+                    );
+                  }
+                })()}
               </div>
 
-              <div className="tbl-container mx-2 mt-3">
-                <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th>Sr.No.</th>
-                      <th>Material / Asset Type</th>
-                      <th>Material / Asset Sub-Type</th>
-                      <th>Material / Asset Name</th>
-                      <th>Generic Info</th>
-                      <th>Brand</th>
-                      <th>Colour</th>
-                      <th>Unit</th>
-                      <th>Gate Pass Qty</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {formData.material_items.map((item, index) => (
-                      <tr key={index}>
-                        <td>{index + 1}</td>
-                        <td>{item.material_type}</td>
-                        <td>{item.material_sub_type}</td>
-                        <td>{item.material_name}</td>
-                        <td>
-                          {item.generic_specification || item.material_details}
-                        </td>
-                        <td>{item.brand}</td>
-                        <td>{item.colour}</td>
-                        <td>{item.unit}</td>
-                        <td>
-                          <input
-                            type="number"
-                            className="form-control"
-                            value={item.gate_pass_qty}
-                            min={0}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              if (
-                                item.stock_as_on !== undefined &&
-                                value !== "" &&
-                                Number(value) > Number(item.stock_as_on)
-                              ) {
-                                alert(
-                                  `Gate Pass Qty cannot exceed Stock As On (${item.stock_as_on})!`
-                                );
-                                return; // Do not update value
-                              }
-                              const updatedItems = [...formData.material_items];
-                              updatedItems[index].gate_pass_qty = value;
-                              setFormData({
-                                ...formData,
-                                material_items: updatedItems,
-                              });
-                            }}
-                          />
-                        </td>
-                        <td>
-                          <button
-                            className="btn"
-                            onClick={() => handleRemoveMaterial(index)}
-                          >
-                            <svg
-                              width={18}
-                              height={18}
-                              viewBox="0 0 18 18"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M11.76 6L6 11.76M6 6L11.76 11.76"
-                                stroke="#8B0203"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                              <path
-                                d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z"
-                                stroke="#8B0203"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {(() => {
+                const selectedGatePassType = gatePassTypes.find(
+                  (t) => t.value === formData.gate_pass_type
+                );
+                const rawValue = selectedGatePassType?.rawValue;
+                if (rawValue === "") {
+                  return (
+                    <div className="tbl-container mx-2 mt-3">
+                      <table className="w-100">
+                        <thead>
+                          <tr>
+                            <th>Sr.No.</th>
+                            <th>Material Type</th>
+                            <th>Material Sub-Type</th>
+                            <th>Material Name</th>
+                            <th>Generic Info</th>
+                            <th>Brand</th>
+                            <th>Colour</th>
+                            <th>Unit</th>
+                            <th>Gate Pass Qty</th>
+                            <th>Reason for Maintenance</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {maintenanceRows.map((row, idx) => (
+                            <tr key={idx}>
+                              <td>{idx + 1}</td>
+                              <td style={{ minWidth: 225 }}>
+                                <SingleSelector
+                                  options={inventoryTypes}
+                                  value={
+                                    inventoryTypes.find(
+                                      (opt) => opt.value === row.material_type
+                                    ) || null
+                                  }
+                                  onChange={(selected) =>
+                                    handleMaintenanceRowChange(
+                                      idx,
+                                      "material_type",
+                                      selected ? selected.value : null
+                                    )
+                                  }
+                                  placeholder="Select"
+                                />
+                              </td>
+                              <td style={{ minWidth: 225 }}>
+                                <SingleSelector
+                                  options={row.subTypeOptions || []}
+                                  value={
+                                    (row.subTypeOptions || []).find(
+                                      (opt) =>
+                                        opt.value === row.material_sub_type
+                                    ) || null
+                                  }
+                                  onChange={(selected) =>
+                                    handleMaintenanceRowChange(
+                                      idx,
+                                      "material_sub_type",
+                                      selected ? selected.value : null
+                                    )
+                                  }
+                                  placeholder="Select"
+                                />
+                              </td>
+                              <td style={{ minWidth: 225 }}>
+                                <SingleSelector
+                                  options={row.materialNameOptions || []}
+                                  value={
+                                    (row.materialNameOptions || []).find(
+                                      (opt) => opt.value === row.material_name
+                                    ) || null
+                                  }
+                                  onChange={(selected) => {
+                                    if (selected?.value === "other") {
+                                      setMaterialRowIdx(idx);
+                                      setShowAddMaterialModal(true);
+                                    } else {
+                                      handleMaintenanceRowChange(
+                                        idx,
+                                        "material_name",
+                                        selected ? selected.value : null
+                                      );
+                                    }
+                                  }}
+                                  placeholder="Select"
+                                />
+                              </td>
+                              <td style={{ minWidth: 225 }}>
+                                <SingleSelector
+                                  options={row.genericInfoOptions || []}
+                                  value={
+                                    (row.genericInfoOptions || []).find(
+                                      (opt) => opt.value === row.generic_info
+                                    ) || null
+                                  }
+                                  onChange={(selected) =>
+                                    handleMaintenanceRowChange(
+                                      idx,
+                                      "generic_info",
+                                      selected ? selected.value : null
+                                    )
+                                  }
+                                  placeholder="Select"
+                                />
+                              </td>
+                              <td style={{ minWidth: 225 }}>
+                                <SingleSelector
+                                  options={row.brandOptions || []}
+                                  value={
+                                    (row.brandOptions || []).find(
+                                      (opt) => opt.value === row.brand
+                                    ) || null
+                                  }
+                                  onChange={(selected) =>
+                                    handleMaintenanceRowChange(
+                                      idx,
+                                      "brand",
+                                      selected ? selected.value : null
+                                    )
+                                  }
+                                  placeholder="Select"
+                                />
+                              </td>
+                              <td style={{ minWidth: 225 }}>
+                                <SingleSelector
+                                  options={row.colourOptions || []}
+                                  value={
+                                    (row.colourOptions || []).find(
+                                      (opt) => opt.value === row.colour
+                                    ) || null
+                                  }
+                                  onChange={(selected) =>
+                                    handleMaintenanceRowChange(
+                                      idx,
+                                      "colour",
+                                      selected ? selected.value : null
+                                    )
+                                  }
+                                  placeholder="Select"
+                                />
+                              </td>
+                              <td style={{ minWidth: 225 }}>
+                                <SingleSelector
+                                  options={row.unitOptions || []}
+                                  value={
+                                    (row.unitOptions || []).find(
+                                      (opt) => opt.value === row.unit
+                                    ) || null
+                                  }
+                                  onChange={(selected) =>
+                                    handleMaintenanceRowChange(
+                                      idx,
+                                      "unit",
+                                      selected ? selected.value : null
+                                    )
+                                  }
+                                  placeholder="Select"
+                                />
+                              </td>
+                              <td style={{ minWidth: 150 }}>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  value={row.gate_pass_qty}
+                                  min={0}
+                                  onChange={(e) =>
+                                    handleMaintenanceRowChange(
+                                      idx,
+                                      "gate_pass_qty",
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                              </td>
+                              <td style={{ minWidth: 225 }}>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={row.reason}
+                                  onChange={(e) =>
+                                    handleMaintenanceRowChange(
+                                      idx,
+                                      "reason",
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                              </td>
+                              <td>
+                                <button
+                                  className="btn"
+                                  onClick={() =>
+                                    handleRemoveMaintenanceRow(idx)
+                                  }
+                                >
+                                  <svg
+                                    width={18}
+                                    height={18}
+                                    viewBox="0 0 18 18"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      d="M11.76 6L6 11.76M6 6L11.76 11.76"
+                                      stroke="#8B0203"
+                                      strokeWidth="1.5"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                    <path
+                                      d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z"
+                                      stroke="#8B0203"
+                                      strokeWidth="1.5"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  </svg>
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div className="tbl-container mx-2 mt-3">
+                      <table className="w-100">
+                        <thead>
+                          <tr>
+                            <th>Sr.No.</th>
+                            <th>Material Type</th>
+                            <th>Material Sub-Type</th>
+                            <th>Material Name</th>
+                            <th>Generic Info</th>
+                            <th>Brand</th>
+                            <th>Colour</th>
+                            <th>Unit</th>
+                            <th>Gate Pass Qty</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {formData.material_items.map((item, index) => (
+                            <tr key={index}>
+                              <td>{index + 1}</td>
+                              <td>{item.material_type}</td>
+                              <td>{item.material_sub_type}</td>
+                              <td>{item.material_name}</td>
+                              <td>
+                                {item.generic_specification ||
+                                  item.material_details}
+                              </td>
+                              <td>{item.brand}</td>
+                              <td>{item.colour}</td>
+                              <td>{item.unit}</td>
+                              <td>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  value={item.gate_pass_qty}
+                                  min={0}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (
+                                      item.stock_as_on !== undefined &&
+                                      value !== "" &&
+                                      Number(value) > Number(item.stock_as_on)
+                                    ) {
+                                      alert(
+                                        `Gate Pass Qty cannot exceed Stock As On (${item.stock_as_on})!`
+                                      );
+                                      return; // Do not update value
+                                    }
+                                    const updatedItems = [
+                                      ...formData.material_items,
+                                    ];
+                                    updatedItems[index].gate_pass_qty = value;
+                                    setFormData({
+                                      ...formData,
+                                      material_items: updatedItems,
+                                    });
+                                  }}
+                                />
+                              </td>
+                              <td>
+                                <button
+                                  className="btn"
+                                  onClick={() => handleRemoveMaterial(index)}
+                                >
+                                  <svg
+                                    width={18}
+                                    height={18}
+                                    viewBox="0 0 18 18"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      d="M11.76 6L6 11.76M6 6L11.76 11.76"
+                                      stroke="#8B0203"
+                                      strokeWidth="1.5"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                    <path
+                                      d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z"
+                                      stroke="#8B0203"
+                                      strokeWidth="1.5"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  </svg>
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                }
+              })()}
+
               {/* Remove old document attachment section and add new one from Bill Payment Create */}
               {/* Document Attachment Section (copied and adapted) */}
               <div className="d-flex justify-content-between mt-3 me-2">
@@ -1160,7 +1653,7 @@ const GatePassCreate = () => {
                       <th className="text-start">Sr. No.</th>
                       <th className="text-start">Document Name</th>
                       <th className="text-start">File Name</th>
-                      <th className="text-start">File Type</th>
+                      {/* <th className="text-start">File Type</th> */}
                       <th className="text-start">Upload Date</th>
                       <th className="text-start">Action</th>
                     </tr>
@@ -1180,9 +1673,9 @@ const GatePassCreate = () => {
                           <td className="text-start">
                             {doc.attachments[0]?.filename || "-"}
                           </td>
-                          <td className="text-start">
+                          {/* <td className="text-start">
                             {doc.attachments[0]?.content_type || "-"}
-                          </td>
+                          </td> */}
                           <td className="text-start">
                             {doc.uploadDate || "-"}
                           </td>
@@ -1357,9 +1850,9 @@ const GatePassCreate = () => {
                             <th>Sr.No.</th>
                             <th>Document Name</th>
                             <th>Attachment Name</th>
-                            <th>File Type</th>
+                            {/* <th>File Type</th> */}
                             <th>Upload Date</th>
-                            <th>Action</th>
+                            {/* <th>Action</th> */}
                           </tr>
                         </thead>
                         <tbody>
@@ -1375,17 +1868,17 @@ const GatePassCreate = () => {
                                 <td>{idx + 1}</td>
                                 <td>{doc.document_type}</td>
                                 <td>{doc.attachments[0]?.filename || "-"}</td>
-                                <td>
+                                {/* <td>
                                   {doc.attachments[0]?.content_type || "-"}
-                                </td>
+                                </td> */}
                                 <td>{doc.uploadDate || "-"}</td>
-                                <td>
+                                {/* <td>
                                   <i
                                     className="fa-regular fa-eye"
                                     style={{ fontSize: 18, cursor: "pointer" }}
                                     // You can add onClick to preview/download if needed
                                   />
-                                </td>
+                                </td> */}
                               </tr>
                             ))
                           )}
@@ -1402,9 +1895,9 @@ const GatePassCreate = () => {
                             <th>Sr.No.</th>
                             <th>Document Name</th>
                             <th>Attachment Name</th>
-                            <th>File Type</th>
+                            {/* <th>File Type</th> */}
                             <th>Upload Date</th>
-                            <th>Action</th>
+                            {/* <th>Action</th> */}
                           </tr>
                         </thead>
                         <tbody>
@@ -1420,17 +1913,17 @@ const GatePassCreate = () => {
                                 <td>{idx + 1}</td>
                                 <td>{doc.document_type}</td>
                                 <td>{doc.attachments[0]?.filename || "-"}</td>
-                                <td>
+                                {/* <td>
                                   {doc.attachments[0]?.content_type || "-"}
-                                </td>
+                                </td> */}
                                 <td>{doc.uploadDate || "-"}</td>
-                                <td>
+                                {/* <td>
                                   <i
                                     className="fa-regular fa-eye"
                                     style={{ fontSize: 18, cursor: "pointer" }}
                                     // You can add onClick to preview/download if needed
                                   />
-                                </td>
+                                </td> */}
                               </tr>
                             ))
                           )}
@@ -1463,6 +1956,7 @@ const GatePassCreate = () => {
                       placeholder="Select Status"
                       isClearable={false}
                       classNamePrefix="react-select"
+                      isDisabled={true} // <-- disables the dropdown
                     />
                   </div>
                 </div>
@@ -1548,7 +2042,7 @@ const GatePassCreate = () => {
               </tbody>
             </table>
           </div>
-          <div className="d-flex justify-content-end mt-3">
+          <div className="d-flex justify-content-center mt-3">
             <button
               className="purple-btn2"
               onClick={() => {
@@ -1596,13 +2090,52 @@ const GatePassCreate = () => {
           <Modal.Title>Add Non-Master Vendor</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form.Group>
-            <Form.Label>Vendor Name</Form.Label>
+          <Form.Group className="mb-2">
+            <Form.Label>
+              Vendor Name <span style={{ color: "red" }}>*</span>
+            </Form.Label>
             <Form.Control
               type="text"
               placeholder="Enter vendor name"
               value={newVendorName}
               onChange={(e) => setNewVendorName(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-2">
+            <Form.Label>
+              Contact No <span style={{ color: "red" }}>*</span>
+            </Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter contact number"
+              value={newVendorContact}
+              onChange={(e) => setNewVendorContact(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-2">
+            <Form.Label>
+              Address <span style={{ color: "red" }}>*</span>
+            </Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter address"
+              value={newVendorAddress}
+              onChange={(e) => setNewVendorAddress(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-2">
+            <Form.Label>
+              Remark <span style={{ color: "red" }}>*</span>
+            </Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter remark"
+              value={newVendorRemark}
+              onChange={(e) => setNewVendorRemark(e.target.value)}
+              required
             />
           </Form.Group>
         </Modal.Body>
@@ -1615,6 +2148,47 @@ const GatePassCreate = () => {
           </Button>
           <Button variant="primary" onClick={handleAddVendor}>
             Add Vendor
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal
+        show={showAddMaterialModal}
+        onHide={() => setShowAddMaterialModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Add Other Material</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group className="mb-2">
+            <Form.Label>Material / Asset Name</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter material/asset name"
+              value={newMaterialName}
+              onChange={(e) => setNewMaterialName(e.target.value)}
+            />
+          </Form.Group>
+          <Form.Group className="mb-2">
+            <Form.Label>Remark</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter remark"
+              value={newMaterialRemark}
+              onChange={(e) => setNewMaterialRemark(e.target.value)}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowAddMaterialModal(false)}
+          >
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleAddMaterial}>
+            Add Material
           </Button>
         </Modal.Footer>
       </Modal>

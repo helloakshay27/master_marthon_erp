@@ -328,7 +328,7 @@ const GatePassDetails = () => {
                     <thead>
                       <tr>
                         <th className="text-start">Sr. No.</th>
-                        <th className="text-start">Document Name</th>
+                        {/* <th className="text-start">Document Name</th> */}
                         <th className="text-start">File Name</th>
                         <th className="text-start">File Type</th>
                         <th className="text-start">Upload Date</th>
@@ -340,14 +340,14 @@ const GatePassDetails = () => {
                         details.attachments.map((att, index) => (
                           <tr key={index}>
                             <td className="text-start">{index + 1}</td>
+                            {/* <td className="text-start">
+                              {att.file_name || "Attachment"}
+                            </td> */}
                             <td className="text-start">
-                              {att.relation || "Attachment"}
+                              {att.file_name || "N/A"}
                             </td>
                             <td className="text-start">
-                              {att.filename || "N/A"}
-                            </td>
-                            <td className="text-start">
-                              {att.content_type || "N/A"}
+                              {att.document_content_type || "N/A"}
                             </td>
                             <td className="text-start">
                               {att.created_at
