@@ -227,7 +227,7 @@ const ViewRate = () => {
         }
     };
 
-console.log("Token value inside render:", token);
+// console.log("Token value inside render:", token);
     return (
         <>
             <div className="website-content overflow-auto">
