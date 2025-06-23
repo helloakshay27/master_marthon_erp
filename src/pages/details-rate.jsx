@@ -771,8 +771,8 @@ const RateDetails = () => {
                                                         <th>Sr.No.</th>
                                                         <th>ID</th>
                                                         <th>Version Number</th>
+                                                        {/* <th>Status</th> */}
                                                         <th>Status</th>
-                                                        <th>List Status</th>
                                                         {/* <th>Comment</th> */}
                                                     </tr>
                                                 </thead>
@@ -788,11 +788,11 @@ const RateDetails = () => {
                                                             <td className="text-start">
                                                                 {log.version_number}
                                                             </td>
-                                                            <td className="text-start">
+                                                            {/* <td className="text-start">
                                                                 {log.status
                                                                     ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
                                                                     : ""}
-                                                            </td>
+                                                            </td> */}
                                                             <td className="text-start">{log.list_status || ""}</td>
                                                         </tr>
                                                     ))}
