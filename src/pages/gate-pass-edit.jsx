@@ -408,8 +408,13 @@ const GatePassEdit = () => {
   const [selectedStatus, setSelectedStatus] = useState(statusOptions[0]);
 
   const handleAddVendor = () => {
-    if (newVendorName.trim() === "") {
-      alert("Please enter a vendor name.");
+    if (
+      !newVendorName.trim() ||
+      !newVendorContact.trim() ||
+      !newVendorAddress.trim() ||
+      !newVendorRemark.trim()
+    ) {
+      alert("All fields are mandatory for Non-Master Vendor.");
       return;
     }
     const newVendor = {
@@ -1567,7 +1572,7 @@ const GatePassEdit = () => {
                           {maintenanceRows.map((row, idx) => (
                             <tr key={idx}>
                               <td>{idx + 1}</td>
-                              <td>
+                              <td style={{ minWidth: 225 }}>
                                 <SingleSelector
                                   options={inventoryTypes}
                                   value={
@@ -1585,7 +1590,7 @@ const GatePassEdit = () => {
                                   placeholder="Select"
                                 />
                               </td>
-                              <td>
+                              <td style={{ minWidth: 225 }}>
                                 <SingleSelector
                                   options={row.subTypeOptions || []}
                                   value={
@@ -1604,7 +1609,7 @@ const GatePassEdit = () => {
                                   placeholder="Select"
                                 />
                               </td>
-                              <td>
+                              <td style={{ minWidth: 225 }}>
                                 <SingleSelector
                                   options={row.materialNameOptions || []}
                                   value={
@@ -1627,7 +1632,7 @@ const GatePassEdit = () => {
                                   placeholder="Select"
                                 />
                               </td>
-                              <td>
+                              <td style={{ minWidth: 225 }}>
                                 <SingleSelector
                                   options={row.genericInfoOptions || []}
                                   value={
@@ -1645,7 +1650,7 @@ const GatePassEdit = () => {
                                   placeholder="Select"
                                 />
                               </td>
-                              <td>
+                              <td style={{ minWidth: 225 }}>
                                 <SingleSelector
                                   options={row.brandOptions || []}
                                   value={
@@ -1663,7 +1668,7 @@ const GatePassEdit = () => {
                                   placeholder="Select"
                                 />
                               </td>
-                              <td>
+                              <td style={{ minWidth: 225 }}>
                                 <SingleSelector
                                   options={row.colourOptions || []}
                                   value={
@@ -1681,7 +1686,7 @@ const GatePassEdit = () => {
                                   placeholder="Select"
                                 />
                               </td>
-                              <td>
+                              <td style={{ minWidth: 225 }}>
                                 <SingleSelector
                                   options={row.unitOptions || []}
                                   value={
@@ -1699,7 +1704,7 @@ const GatePassEdit = () => {
                                   placeholder="Select"
                                 />
                               </td>
-                              <td>
+                              <td style={{ minWidth: 150 }}>
                                 <input
                                   type="number"
                                   className="form-control"
@@ -1714,7 +1719,7 @@ const GatePassEdit = () => {
                                   }
                                 />
                               </td>
-                              <td>
+                              <td style={{ minWidth: 180 }}>
                                 <input
                                   type="text"
                                   className="form-control"
@@ -1903,7 +1908,7 @@ const GatePassEdit = () => {
                       <th className="text-start">Sr. No.</th>
                       <th className="text-start">Document Name</th>
                       <th className="text-start">File Name</th>
-                      <th className="text-start">File Type</th>
+                      {/* <th className="text-start">File Type</th> */}
                       <th className="text-start">Upload Date</th>
                       <th className="text-start">Action</th>
                     </tr>
@@ -1923,9 +1928,9 @@ const GatePassEdit = () => {
                           <td className="text-start">
                             {doc.attachments[0]?.filename || "-"}
                           </td>
-                          <td className="text-start">
+                          {/* <td className="text-start">
                             {doc.attachments[0]?.content_type || "-"}
-                          </td>
+                          </td> */}
                           <td className="text-start">
                             {doc.uploadDate || "-"}
                           </td>
@@ -2100,9 +2105,9 @@ const GatePassEdit = () => {
                             <th>Sr.No.</th>
                             <th>Document Name</th>
                             <th>Attachment Name</th>
-                            <th>File Type</th>
+                            {/* <th>File Type</th> */}
                             <th>Upload Date</th>
-                            <th>Action</th>
+                            {/* <th>Action</th> */}
                           </tr>
                         </thead>
                         <tbody>
@@ -2118,17 +2123,17 @@ const GatePassEdit = () => {
                                 <td>{idx + 1}</td>
                                 <td>{doc.document_type}</td>
                                 <td>{doc.attachments[0]?.filename || "-"}</td>
-                                <td>
+                                {/* <td>
                                   {doc.attachments[0]?.content_type || "-"}
-                                </td>
+                                </td> */}
                                 <td>{doc.uploadDate || "-"}</td>
-                                <td>
+                                {/* <td>
                                   <i
                                     className="fa-regular fa-eye"
                                     style={{ fontSize: 18, cursor: "pointer" }}
                                     // You can add onClick to preview/download if needed
                                   />
-                                </td>
+                                </td> */}
                               </tr>
                             ))
                           )}
@@ -2145,9 +2150,9 @@ const GatePassEdit = () => {
                             <th>Sr.No.</th>
                             <th>Document Name</th>
                             <th>Attachment Name</th>
-                            <th>File Type</th>
+                            {/* <th>File Type</th> */}
                             <th>Upload Date</th>
-                            <th>Action</th>
+                            {/* <th>Action</th> */}
                           </tr>
                         </thead>
                         <tbody>
@@ -2163,17 +2168,17 @@ const GatePassEdit = () => {
                                 <td>{idx + 1}</td>
                                 <td>{doc.document_type}</td>
                                 <td>{doc.attachments[0]?.filename || "-"}</td>
-                                <td>
+                                {/* <td>
                                   {doc.attachments[0]?.content_type || "-"}
-                                </td>
+                                </td> */}
                                 <td>{doc.uploadDate || "-"}</td>
-                                <td>
+                                {/* <td>
                                   <i
                                     className="fa-regular fa-eye"
                                     style={{ fontSize: 18, cursor: "pointer" }}
                                     // You can add onClick to preview/download if needed
                                   />
-                                </td>
+                                </td> */}
                               </tr>
                             ))
                           )}
@@ -2340,39 +2345,51 @@ const GatePassEdit = () => {
         </Modal.Header>
         <Modal.Body>
           <Form.Group className="mb-2">
-            <Form.Label>Vendor Name</Form.Label>
+            <Form.Label>
+              Vendor Name <span style={{ color: "red" }}>*</span>
+            </Form.Label>
             <Form.Control
               type="text"
               placeholder="Enter vendor name"
               value={newVendorName}
               onChange={(e) => setNewVendorName(e.target.value)}
+              required
             />
           </Form.Group>
           <Form.Group className="mb-2">
-            <Form.Label>Contact No</Form.Label>
+            <Form.Label>
+              Contact No <span style={{ color: "red" }}>*</span>
+            </Form.Label>
             <Form.Control
               type="text"
               placeholder="Enter contact number"
               value={newVendorContact}
               onChange={(e) => setNewVendorContact(e.target.value)}
+              required
             />
           </Form.Group>
           <Form.Group className="mb-2">
-            <Form.Label>Address</Form.Label>
+            <Form.Label>
+              Address <span style={{ color: "red" }}>*</span>
+            </Form.Label>
             <Form.Control
               type="text"
               placeholder="Enter address"
               value={newVendorAddress}
               onChange={(e) => setNewVendorAddress(e.target.value)}
+              required
             />
           </Form.Group>
           <Form.Group className="mb-2">
-            <Form.Label>Remark</Form.Label>
+            <Form.Label>
+              Remark <span style={{ color: "red" }}>*</span>
+            </Form.Label>
             <Form.Control
               type="text"
               placeholder="Enter remark"
               value={newVendorRemark}
               onChange={(e) => setNewVendorRemark(e.target.value)}
+              required
             />
           </Form.Group>
         </Modal.Body>

@@ -57,13 +57,13 @@ const GatePassList = () => {
       field: "project_name",
       headerName: "Project",
       flex: 1,
-      minWidth: 200,
+      minWidth: 250,
     },
     {
       field: "sub_project_name",
       headerName: "Subproject",
       flex: 1,
-      minWidth: 180,
+      minWidth: 230,
     },
     {
       field: "gate_pass_no",
@@ -95,7 +95,7 @@ const GatePassList = () => {
       field: "material_sub_type_name",
       headerName: " Material Sub Type",
       flex: 1,
-      minWidth: 150,
+      minWidth: 250,
     },
     {
       field: "po_or_mto_no",
