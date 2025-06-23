@@ -63,7 +63,7 @@ const GatePassList = () => {
       field: "sub_project_name",
       headerName: "Subproject",
       flex: 1,
-      minWidth: 120,
+      minWidth: 180,
     },
     {
       field: "gate_pass_no",
@@ -262,8 +262,25 @@ const GatePassList = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Use the new API endpoint for gate passes
+        // Build base URL
         let url = `${baseURL}gate_passes.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${currentPage}&per_page=${pageSize}`;
+
+        // Add filters
+        if (currentFilters.companyId) {
+          url += `&q[company_id_eq]=${currentFilters.companyId}`;
+        }
+        if (currentFilters.projectId) {
+          url += `&q[project_id_eq]=${currentFilters.projectId}`;
+        }
+        if (currentFilters.siteId) {
+          // Assuming siteId corresponds to sub_project_id
+          url += `&q[sub_project_id_eq]=${currentFilters.siteId}`;
+        }
+
+        // Add search
+        if (searchKeyword) {
+          url += `&q[gate_pass_no_or_gate_pass_type_name_or_company_name_or_project_name_or_sub_project_name_or_created_by_name_or_status_cont]=${searchKeyword}`;
+        }
         const response = await axios.get(url);
         // The API returns gate_passes array
         const data = (response.data.gate_passes || []).map((entry, index) => ({
@@ -290,7 +307,7 @@ const GatePassList = () => {
       }
     };
     fetchData();
-  }, [currentPage, pageSize, searchKeyword]);
+  }, [currentPage, pageSize, searchKeyword, currentFilters]);
 
   const columns = allColumns;
 
@@ -347,9 +364,8 @@ const GatePassList = () => {
       siteId: "",
     });
 
-    // Reset to first page and fetch data
+    // Reset to first page
     setCurrentPage(1);
-    fetchTabData(activeTab, 1);
   };
 
   const [searchInput, setSearchInput] = useState("");
@@ -371,16 +387,6 @@ const GatePassList = () => {
     let rowsToShow = showOnlyPinned
       ? billEntries.filter((row) => pinnedRows.includes(row.id))
       : billEntries;
-
-    const normalizedSearchTerm = searchKeyword.trim().toLowerCase();
-    if (normalizedSearchTerm) {
-      rowsToShow = rowsToShow.filter((item) =>
-        Object.values(item).some(
-          (value) =>
-            value && String(value).toLowerCase().includes(normalizedSearchTerm)
-        )
-      );
-    }
 
     return rowsToShow;
   };

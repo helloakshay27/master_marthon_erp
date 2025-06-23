@@ -53,6 +53,12 @@ const GatePassEdit = () => {
   ]);
   const [supplierOptions, setSupplierOptions] = useState([]); // For To Vendor dropdown
 
+  const [showAddVendorModal, setShowAddVendorModal] = useState(false);
+  const [newVendorName, setNewVendorName] = useState("");
+  const [newVendorContact, setNewVendorContact] = useState("");
+  const [newVendorAddress, setNewVendorAddress] = useState("");
+  const [newVendorRemark, setNewVendorRemark] = useState("");
+
   const [attachModal, setattachModal] = useState(false);
   const [viewDocumentModal, setviewDocumentModal] = useState(false);
 
@@ -67,6 +73,28 @@ const GatePassEdit = () => {
   const [showMaterialSelectModal, setShowMaterialSelectModal] = useState(false);
   const [poMaterials, setPoMaterials] = useState([]); // Materials fetched from PO
   const [selectedMaterialIndexes, setSelectedMaterialIndexes] = useState([]); // Indexes of selected materials in modal
+
+  // For dynamic material/asset rows when rawValue is ""
+  const [maintenanceRows, setMaintenanceRows] = useState([]);
+  // Dropdown options
+  const [inventoryTypes, setInventoryTypes] = useState([]);
+  const [inventorySubTypes, setInventorySubTypes] = useState([]);
+  const [inventoryNames, setInventoryNames] = useState([]);
+  const [genericInfos, setGenericInfos] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [colours, setColours] = useState([]);
+  const [units, setUnits] = useState([]);
+
+  // For Add Other Material modal
+  const [showAddMaterialModal, setShowAddMaterialModal] = useState(false);
+  const [newMaterialName, setNewMaterialName] = useState("");
+  const [newMaterialRemark, setNewMaterialRemark] = useState("");
+  const [materialRowIdx, setMaterialRowIdx] = useState(null); // which row to update
+
+  const [fetchedResourceId, setFetchedResourceId] = useState(null);
+
+  // Add state for OtherVendor id
+  const [otherVendorId, setOtherVendorId] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -113,10 +141,30 @@ const GatePassEdit = () => {
 
     let to_resource_id = null;
     let to_resource_type = null;
+    let other_vendor_attributes = undefined;
 
     if (formData.to_vendor) {
-      to_resource_id = formData.to_vendor;
-      to_resource_type = "Pms::Supplier";
+      if (
+        typeof formData.to_vendor === "string" &&
+        (formData.to_vendor.startsWith("non_master_") ||
+          formData.to_vendor === "other")
+      ) {
+        // Find the vendor in supplierOptions
+        const otherVendor = supplierOptions.find(
+          (v) => v.value === formData.to_vendor
+        );
+        other_vendor_attributes = {
+          name: otherVendor?.label || "",
+          contact_no: otherVendor?.contact || "",
+          remarks: otherVendor?.remark || "",
+          address: otherVendor?.address || "",
+        };
+        to_resource_type = "OtherVendor";
+        to_resource_id = null;
+      } else {
+        to_resource_id = formData.to_vendor;
+        to_resource_type = "Pms::Supplier";
+      }
     } else if (formData.to_store_id) {
       to_resource_id = formData.to_store_id;
       to_resource_type = "Pms::Store";
@@ -125,17 +173,16 @@ const GatePassEdit = () => {
     const payload = {
       gate_pass: {
         sub_project_id: formData.sub_project_id || null,
+        from_store_id: formData.store_id || null,
         gate_pass_type_id:
           gatePassTypes.find((t) => t.value === formData.gate_pass_type)?.id ||
           1, // get id from selected gate pass type
         project_id: formData.project_id || null,
-
         status:
           (typeof selectedStatus === "object"
             ? selectedStatus.value
             : selectedStatus) || "draft",
         due_date: formData.due_date || formData.expected_return_date || null,
-
         driver_name: formData.driver_name || null,
         driver_contact_no: formData.driver_contact_no || null,
         expected_return_date: formData.expected_return_date || null,
@@ -150,18 +197,21 @@ const GatePassEdit = () => {
         contact_person_no: formData.contact_no || null,
         gate_number_id: formData.gate_number_id || null,
         vehicle_no: formData.vehicle_no || null,
-
         all_level_approved: formData.all_level_approved || false,
         gate_pass_materials_attributes: (formData.material_items || []).map(
-          (item) => ({
-            gate_pass_qty: Number(item.gate_pass_qty) || null,
-            mor_inventory_id: item.mor_inventory_id || item.id || null,
-          })
+          (item) => {
+            const attr = { gate_pass_qty: Number(item.gate_pass_qty) || null };
+            if (item.id) attr.id = item.id;
+            else if (item.mor_inventory_id)
+              attr.mor_inventory_id = item.mor_inventory_id;
+            if (item._destroy) attr._destroy = true;
+            return attr;
+          }
         ),
         attachments: attachments.length > 0 ? attachments : null,
         to_resource_id: to_resource_id,
         to_resource_type: to_resource_type,
-        // Add resource_id and resource_type
+        ...(other_vendor_attributes ? { other_vendor_attributes } : {}),
         resource_id: selectedPO?.id || null,
         resource_type:
           gatePassTypes.find((t) => t.value === formData.gate_pass_type)
@@ -172,11 +222,13 @@ const GatePassEdit = () => {
     try {
       let response;
       if (id) {
+        // Edit mode: PATCH
         response = await axios.patch(
           `${baseURL}gate_passes/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
           payload
         );
       } else {
+        // Create mode: POST
         response = await axios.post(
           `${baseURL}gate_passes.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
           payload
@@ -185,7 +237,7 @@ const GatePassEdit = () => {
 
       if (response.status === 200 || response.status === 201) {
         alert(`Gate Pass ${id ? "updated" : "created"} successfully!`);
-        navigate("/gate-pass-list");
+        // navigate("/gate-pass-list");
       }
     } catch (error) {
       console.error(`Error ${id ? "updating" : "creating"} gate pass:`, error);
@@ -196,11 +248,17 @@ const GatePassEdit = () => {
   };
 
   const handleRemoveMaterial = (index) => {
-    const updatedItems = [...formData.material_items];
-    updatedItems.splice(index, 1);
-    setFormData({
-      ...formData,
-      material_items: updatedItems,
+    setFormData((prev) => {
+      const items = [...prev.material_items];
+      const item = items[index];
+      if (item.id) {
+        // Mark for destroy, don't remove from array
+        items[index] = { ...item, _destroy: true };
+      } else {
+        // Remove new items immediately
+        items.splice(index, 1);
+      }
+      return { ...prev, material_items: items };
     });
   };
 
@@ -253,7 +311,7 @@ const GatePassEdit = () => {
         content_type: file.type,
       };
       documentRowsRef.current[index].fileType = fileType;
-      documentRowsRef.current[index].uploadDate = new Date()
+      documentRows.current[index].uploadDate = new Date()
         .toISOString()
         .split("T")[0];
 
@@ -349,6 +407,36 @@ const GatePassEdit = () => {
   ];
   const [selectedStatus, setSelectedStatus] = useState(statusOptions[0]);
 
+  const handleAddVendor = () => {
+    if (newVendorName.trim() === "") {
+      alert("Please enter a vendor name.");
+      return;
+    }
+    const newVendor = {
+      label: newVendorName,
+      value: `non_master_${newVendorName.replace(/\s+/g, "_").toLowerCase()}`,
+      contact: newVendorContact,
+      address: newVendorAddress,
+      remark: newVendorRemark,
+    };
+
+    const updatedOptions = [
+      ...supplierOptions.filter((o) => o.value !== "other"),
+      newVendor,
+      { value: "other", label: "Other" },
+    ];
+
+    setSupplierOptions(updatedOptions);
+
+    setFormData({ ...formData, to_vendor: newVendor.value });
+
+    setShowAddVendorModal(false);
+    setNewVendorName("");
+    setNewVendorContact("");
+    setNewVendorAddress("");
+    setNewVendorRemark("");
+  };
+
   useEffect(() => {
     // Fetch PO/WO numbers for dropdown
     const fetchPONumbers = async () => {
@@ -433,95 +521,6 @@ const GatePassEdit = () => {
     fetchGatePassTypes();
   }, []);
 
-  useEffect(() => {
-    const fetchAndSetGatePassData = async () => {
-      if (id && gatePassTypes.length > 0 && poOptions.length > 0) {
-        try {
-          const response = await axios.get(
-            `https://marathon.lockated.com/gate_passes/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-          );
-          const data = response.data;
-
-          const gatePassType = gatePassTypes.find(
-            (t) => t.label === data.gate_pass_type_name
-          );
-
-          setFormData((prev) => ({
-            ...prev,
-            project_id: data.project?.id,
-            sub_project_id: data.sub_project?.id,
-            gate_pass_no: data.gate_pass_no,
-            gate_pass_type: gatePassType ? gatePassType.value : "",
-            is_returnable: data.expected_return_date
-              ? "returnable"
-              : "non_returnable",
-            store_id: data.from_store?.id,
-            vehicle_no: data.vehicle_no,
-            driver_name: data.driver_name,
-            expected_return_date: data.expected_return_date || "",
-            contact_person: data.contact_person,
-            contact_no: data.contact_person_no,
-            gate_number_id: data.gate_number_id,
-            driver_contact_no: data.driver_contact_no,
-          }));
-
-          if (data.to_resource) {
-            if (data.to_resource.type === "Pms::Supplier") {
-              setFormData((prev) => ({
-                ...prev,
-                to_vendor: data.to_resource.id,
-              }));
-            } else if (data.to_resource.type === "Pms::Store") {
-              setFormData((prev) => ({
-                ...prev,
-                to_store_id: data.to_resource.id,
-              }));
-            }
-          }
-
-          const status = statusOptions.find((s) => s.value === data.status);
-          if (status) {
-            setSelectedStatus(status);
-          }
-
-          if (data.resource_id) {
-            const po = poOptions.find((p) => p.id === data.resource_id);
-            if (po) {
-              setSelectedPO(po);
-              setFormData((prev) => ({ ...prev, mto_po_number: po.value }));
-            }
-          }
-
-          if (data.attachments && data.attachments.length > 0) {
-            const fetchedDocuments = data.attachments.map((att) => {
-              const urlParts = att.url.split("/");
-              const encodedFilename = urlParts[urlParts.length - 1];
-              const filename = decodeURIComponent(encodedFilename);
-              return {
-                document_type: filename, // Using filename as doc type as it's not in response
-                attachments: [
-                  {
-                    filename: filename,
-                    content: null, // Not fetching file content for pre-fill
-                    content_type: att.document_content_type,
-                    url: att.doc_path,
-                  },
-                ],
-                uploadDate: new Date(att.created_at)
-                  .toISOString()
-                  .split("T")[0],
-              };
-            });
-            setDocuments(fetchedDocuments);
-          }
-        } catch (error) {
-          console.error("Error fetching gate pass data:", error);
-        }
-      }
-    };
-    fetchAndSetGatePassData();
-  }, [id, gatePassTypes, poOptions]);
-
   // When project changes, update subProjects
   useEffect(() => {
     const selected = projects.find((p) => p.value === formData.project_id);
@@ -558,51 +557,6 @@ const GatePassEdit = () => {
           );
           if (response.data && Array.isArray(response.data.inventories)) {
             setPoMaterials(response.data.inventories); // <-- for modal
-
-            // If it's an edit, pre-fill material items
-            if (id && formData.material_items.length === 0) {
-              const gatePassResponse = await axios.get(
-                `https://marathon.lockated.com/gate_passes/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-              );
-              const gatePassData = gatePassResponse.data;
-
-              if (
-                gatePassData.gate_pass_materials &&
-                gatePassData.gate_pass_materials.length > 0
-              ) {
-                const allPoMaterials = response.data.inventories;
-                const gatePassMaterialIds =
-                  gatePassData.gate_pass_materials.map(
-                    (m) => m.mor_inventory_id
-                  );
-
-                const selectedMaterials = allPoMaterials
-                  .filter((m) => gatePassMaterialIds.includes(m.id))
-                  .map((m) => {
-                    const gpMaterial =
-                      gatePassData.gate_pass_materials.find(
-                        (gpm) => gpm.mor_inventory_id === m.id
-                      ) || {};
-                    return {
-                      material_type: m.material_type,
-                      material_sub_type: m.material_sub_type,
-                      material_name: m.material,
-                      material_details: m.generic_specification,
-                      generic_specification: m.generic_specification,
-                      brand: m.brand,
-                      colour: m.colour,
-                      unit: m.uom,
-                      gate_pass_qty: gpMaterial.gate_pass_qty || "",
-                      stock_as_on: m.stock_as_on,
-                      mor_inventory_id: m.id,
-                    };
-                  });
-                setFormData((prev) => ({
-                  ...prev,
-                  material_items: selectedMaterials,
-                }));
-              }
-            }
           }
         } catch (error) {
           setPoMaterials([]);
@@ -658,33 +612,38 @@ const GatePassEdit = () => {
 
   useEffect(() => {
     // Fetch suppliers for To Vendor dropdown
-    if (
-      formData.gate_pass_type === "return_to_vendor" ||
-      formData.gate_pass_type === "testing_calibration" ||
-      formData.gate_pass_type === "repair_maintenance"
-    ) {
+    const selectedGatePassType = gatePassTypes.find(
+      (t) => t.value === formData.gate_pass_type
+    );
+    const rawValue = selectedGatePassType?.rawValue;
+
+    if (rawValue === "PurchaseOrder" || rawValue === "") {
       const fetchSuppliers = async () => {
         try {
           const response = await axios.get(
             "https://marathon.lockated.com/pms/suppliers.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
           );
           if (Array.isArray(response.data)) {
-            setSupplierOptions(
-              response.data.map((item) => ({
-                value: item.id,
-                label: item.organization_name,
-              }))
-            );
+            const vendors = response.data.map((item) => ({
+              value: item.id,
+              label: item.organization_name,
+            }));
+            setSupplierOptions([
+              ...vendors,
+              { value: "other", label: "Other" },
+            ]);
           } else {
-            setSupplierOptions([]);
+            setSupplierOptions([{ value: "other", label: "Other" }]);
           }
         } catch (error) {
-          setSupplierOptions([]);
+          setSupplierOptions([{ value: "other", label: "Other" }]);
         }
       };
       fetchSuppliers();
+    } else {
+      setSupplierOptions([]);
     }
-  }, [formData.gate_pass_type]);
+  }, [formData.gate_pass_type, gatePassTypes]);
 
   useEffect(() => {
     if (formData.project_id) {
@@ -714,12 +673,370 @@ const GatePassEdit = () => {
     }
   }, [formData.project_id]);
 
+  // Fetch inventory types on mount
+  useEffect(() => {
+    axios
+      .get(
+        `${baseURL}pms/inventory_types.json?q[category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      )
+      .then((response) => {
+        setInventoryTypes(
+          response.data.map((i) => ({ value: i.id, label: i.name }))
+        );
+      });
+  }, []);
+
+  // Fetch sub-types and material names when type changes (per row)
+  const fetchSubTypesAndNames = async (typeId, rowIdx) => {
+    if (!typeId) return;
+    // Sub-types
+    const subTypeRes = await axios.get(
+      `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${typeId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    );
+    const subTypeOptions = subTypeRes.data.map((i) => ({
+      value: i.id,
+      label: i.name,
+    }));
+    // Material names
+    const nameRes = await axios.get(
+      `${baseURL}pms/inventories.json?q[inventory_type_id_in]=${typeId}&q[material_category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    );
+    let materialNameOptions = nameRes.data.map((i) => ({
+      value: i.id,
+      label: i.name,
+    }));
+    // Always add 'Other' option
+    materialNameOptions = [
+      ...materialNameOptions,
+      { value: "other", label: "Other" },
+    ];
+    setMaintenanceRows((rows) =>
+      rows.map((row, idx) =>
+        idx === rowIdx
+          ? {
+              ...row,
+              subTypeOptions,
+              materialNameOptions,
+              material_sub_type: null,
+              material_name: null,
+              genericInfoOptions: [],
+              brandOptions: [],
+              colourOptions: [],
+              unitOptions: [],
+              generic_info: null,
+              brand: null,
+              colour: null,
+              unit: null,
+            }
+          : row
+      )
+    );
+  };
+
+  // Fetch generic info, brand, colour, unit when name changes (per row)
+  const fetchMaterialDetails = async (materialId, rowIdx) => {
+    if (!materialId) return;
+    // Generic Info
+    const genRes = await axios.get(
+      `${baseURL}pms/generic_infos.json?q[material_id_eq]=${materialId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    );
+    const genericInfoOptions = genRes.data.map((i) => ({
+      value: i.id,
+      label: i.generic_info,
+    }));
+    // Brand
+    const brandRes = await axios.get(
+      `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${materialId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    );
+    const brandOptions = brandRes.data.map((i) => ({
+      value: i.id,
+      label: i.brand_name,
+    }));
+    // Colour
+    const colourRes = await axios.get(
+      `${baseURL}pms/colours.json?q[material_id_eq]=${materialId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    );
+    const colourOptions = colourRes.data.map((i) => ({
+      value: i.id,
+      label: i.colour,
+    }));
+    // Unit
+    const unitRes = await axios.get(
+      `${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    );
+    const unitOptions = unitRes.data.map((i) => ({
+      value: i.id,
+      label: i.name,
+    }));
+    setMaintenanceRows((rows) =>
+      rows.map((row, idx) =>
+        idx === rowIdx
+          ? {
+              ...row,
+              genericInfoOptions,
+              brandOptions,
+              colourOptions,
+              unitOptions,
+              generic_info: null,
+              brand: null,
+              colour: null,
+              unit: null,
+            }
+          : row
+      )
+    );
+  };
+
+  // Update handleMaintenanceRowChange to use new fetch logic
+  const handleMaintenanceRowChange = (idx, field, value) => {
+    setMaintenanceRows((rows) =>
+      rows.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
+    );
+    // If type changes, fetch sub-types and material names
+    if (field === "material_type") fetchSubTypesAndNames(value, idx);
+    // If material name changes, fetch details
+    if (field === "material_name") fetchMaterialDetails(value, idx);
+  };
+
+  // Add row handler
+  const handleAddMaintenanceRow = () => {
+    setMaintenanceRows((rows) => [
+      ...rows,
+      {
+        material_type: null,
+        subTypeOptions: [],
+        material_sub_type: null,
+        materialNameOptions: [],
+        material_name: null,
+        genericInfoOptions: [],
+        generic_info: null,
+        brandOptions: [],
+        brand: null,
+        colourOptions: [],
+        colour: null,
+        unitOptions: [],
+        unit: null,
+        gate_pass_qty: "",
+        reason: "",
+      },
+    ]);
+  };
+  // Remove row handler
+  const handleRemoveMaintenanceRow = (idx) => {
+    setMaintenanceRows((rows) => rows.filter((_, i) => i !== idx));
+  };
+
+  // Add new material to the row's materialNameOptions and select it
+  const handleAddMaterial = () => {
+    if (!newMaterialName.trim()) {
+      alert("Please enter a material/asset name.");
+      return;
+    }
+    const newMaterial = {
+      value: `other_${newMaterialName.replace(/\s+/g, "_").toLowerCase()}`,
+      label: newMaterialName,
+      remark: newMaterialRemark,
+    };
+    setMaintenanceRows((rows) =>
+      rows.map((row, idx) =>
+        idx === materialRowIdx
+          ? {
+              ...row,
+              materialNameOptions: [
+                ...(row.materialNameOptions || []).filter(
+                  (opt) => opt.value !== "other"
+                ),
+                newMaterial,
+                { value: "other", label: "Other" },
+              ],
+              material_name: newMaterial.value,
+            }
+          : row
+      )
+    );
+    setShowAddMaterialModal(false);
+    setNewMaterialName("");
+    setNewMaterialRemark("");
+    setMaterialRowIdx(null);
+  };
+
+  useEffect(() => {
+    const fetchAndSetGatePassData = async () => {
+      if (id && gatePassTypes.length > 0 && poOptions.length > 0) {
+        try {
+          const response = await axios.get(
+            `https://marathon.lockated.com/gate_passes/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+          const data = response.data;
+
+          const gatePassType = gatePassTypes.find(
+            (t) => t.label === data.gate_pass_type_name
+          );
+
+          setFormData((prev) => ({
+            ...prev,
+            project_id: data.project?.id,
+            sub_project_id: data.sub_project?.id,
+            gate_pass_no: data.gate_pass_no,
+            gate_pass_type: gatePassType ? gatePassType.value : "",
+            is_returnable: data.expected_return_date
+              ? "returnable"
+              : "non_returnable",
+            store_id: data.from_store?.id,
+            vehicle_no: data.vehicle_no,
+            driver_name: data.driver_name,
+            expected_return_date: data.expected_return_date || "",
+            contact_person: data.contact_person,
+            contact_no: data.contact_person_no,
+            gate_number_id: data.gate_number_id,
+            driver_contact_no: data.driver_contact_no,
+          }));
+
+          if (data.to_resource) {
+            if (data.to_resource.type === "Pms::Supplier") {
+              setFormData((prev) => ({
+                ...prev,
+                to_vendor: data.to_resource.id,
+              }));
+            } else if (data.to_resource.type === "Pms::Store") {
+              setFormData((prev) => ({
+                ...prev,
+                to_store_id: data.to_resource.id,
+              }));
+            } else if (data.to_resource.type === "OtherVendor") {
+              // Preselect 'Other' in dropdown
+              setFormData((prev) => ({
+                ...prev,
+                to_vendor: "other",
+              }));
+              // Store the OtherVendor id for later fetch
+              setOtherVendorId(data.to_resource.id);
+            }
+          }
+
+          const status = statusOptions.find((s) => s.value === data.status);
+          if (status) {
+            setSelectedStatus(status);
+          }
+
+          if (data.resource_id) {
+            setFetchedResourceId(data.resource_id);
+            // (remove setSelectedPO and setFormData for mto_po_number here)
+          }
+
+          if (data.attachments && data.attachments.length > 0) {
+            const fetchedDocuments = data.attachments.map((att) => {
+              const urlParts = att.url.split("/");
+              const encodedFilename = urlParts[urlParts.length - 1];
+              const filename = decodeURIComponent(encodedFilename);
+              return {
+                document_type: filename, // Using filename as doc type as it's not in response
+                attachments: [
+                  {
+                    filename: filename,
+                    content: null, // Not fetching file content for pre-fill
+                    content_type: att.document_content_type,
+                    url: att.doc_path,
+                  },
+                ],
+                uploadDate: new Date(att.created_at)
+                  .toISOString()
+                  .split("T")[0],
+              };
+            });
+            setDocuments(fetchedDocuments);
+          }
+
+          // Pre-fill material_items for PO-based types
+          if (
+            data.gate_pass_materials &&
+            data.gate_pass_materials.length > 0 &&
+            (gatePassType?.rawValue === "PurchaseOrder" ||
+              gatePassType?.rawValue === "MaterialTransaferOrder")
+          ) {
+            // If PO materials are loaded, match by mor_inventory_id
+            const allPoMaterials = poMaterials.length > 0 ? poMaterials : [];
+            const gatePassMaterialIds = data.gate_pass_materials.map(
+              (m) => m.mor_inventory_id
+            );
+            const selectedMaterials = allPoMaterials
+              .filter((m) => gatePassMaterialIds.includes(m.id))
+              .map((m) => {
+                const gpMaterial =
+                  data.gate_pass_materials.find(
+                    (gpm) => gpm.mor_inventory_id === m.id
+                  ) || {};
+                return {
+                  id: gpMaterial.id, // <-- preserve the gate_pass_material id for PATCH
+                  material_type: m.material_type,
+                  material_sub_type: m.material_sub_type,
+                  material_name: m.material,
+                  material_details: m.generic_specification,
+                  generic_specification: m.generic_specification,
+                  brand: m.brand,
+                  colour: m.colour,
+                  unit: m.uom,
+                  gate_pass_qty: gpMaterial.gate_pass_qty || "",
+                  stock_as_on: m.stock_as_on,
+                  mor_inventory_id: m.id,
+                };
+              });
+            setFormData((prev) => ({
+              ...prev,
+              material_items: selectedMaterials,
+            }));
+          }
+        } catch (error) {
+          console.error("Error fetching gate pass data:", error);
+        }
+      }
+    };
+    fetchAndSetGatePassData();
+  }, [id, gatePassTypes, poOptions, poMaterials]);
+
+  // Ensure PO/WO No is preselected after both poOptions and resource_id are available
+  useEffect(() => {
+    if (fetchedResourceId && poOptions.length > 0) {
+      const po = poOptions.find((p) => p.id === fetchedResourceId);
+      if (po) {
+        setSelectedPO(po);
+        setFormData((prev) => ({ ...prev, mto_po_number: po.value }));
+      }
+    }
+  }, [fetchedResourceId, poOptions]);
+
+  // When Add Vendor modal is opened and to_vendor is 'other' and otherVendorId exists, fetch and prefill
+  useEffect(() => {
+    if (showAddVendorModal && formData.to_vendor === "other" && otherVendorId) {
+      const fetchOtherVendor = async () => {
+        try {
+          const response = await axios.get(
+            `https://marathon.lockated.com//gate_passes/${otherVendorId}/fetch_other_vendor.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          );
+          const data = response.data;
+          setNewVendorName(data.name || "");
+          setNewVendorContact(data.contact_no || "");
+          setNewVendorAddress(data.address || "");
+          setNewVendorRemark(data.remarks || "");
+        } catch (error) {
+          setNewVendorName("");
+          setNewVendorContact("");
+          setNewVendorAddress("");
+          setNewVendorRemark("");
+        }
+      };
+      fetchOtherVendor();
+    }
+    // Only run when modal opens
+    // eslint-disable-next-line
+  }, [showAddVendorModal]);
+
   return (
     <div className="main-content">
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">Home &gt; Store &gt; Store Operations &gt; Gate Pass</a>
-          <h5 className="mt-3">{id ? "Edit Gate Pass" : "Create Gate Pass"}</h5>
+          <h5 className="mt-3">Gate Pass list</h5>
           <div className="head-material text-center">
             <h4>{getHeaderTitle()}</h4>
           </div>
@@ -869,12 +1186,45 @@ const GatePassEdit = () => {
                               <label>To Vendor</label>
                               <SingleSelector
                                 options={supplierOptions}
-                                onChange={(selected) =>
-                                  setFormData({
-                                    ...formData,
-                                    to_vendor: selected?.value,
-                                  })
-                                }
+                                onChange={async (selected) => {
+                                  if (selected?.value === "other") {
+                                    setFormData({
+                                      ...formData,
+                                      to_vendor: "other",
+                                    });
+                                    setShowAddVendorModal(true);
+                                    // Fetch and prefill if otherVendorId is available
+                                    if (otherVendorId) {
+                                      try {
+                                        const response = await axios.get(
+                                          `https://marathon.lockated.com//gate_passes/${otherVendorId}/fetch_other_vendor.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                                        );
+                                        const data = response.data;
+                                        setNewVendorName(data.name || "");
+                                        setNewVendorContact(
+                                          data.contact_no || ""
+                                        );
+                                        setNewVendorAddress(data.address || "");
+                                        setNewVendorRemark(data.remarks || "");
+                                      } catch (error) {
+                                        setNewVendorName("");
+                                        setNewVendorContact("");
+                                        setNewVendorAddress("");
+                                        setNewVendorRemark("");
+                                      }
+                                    } else {
+                                      setNewVendorName("");
+                                      setNewVendorContact("");
+                                      setNewVendorAddress("");
+                                      setNewVendorRemark("");
+                                    }
+                                  } else {
+                                    setFormData({
+                                      ...formData,
+                                      to_vendor: selected?.value,
+                                    });
+                                  }
+                                }}
                                 value={supplierOptions.find(
                                   (v) => v.value === formData.to_vendor
                                 )}
@@ -895,7 +1245,7 @@ const GatePassEdit = () => {
                                   setSelectedPO(selected); // Store selected PO object
                                 }}
                                 value={poOptions.find(
-                                  (p) => p.value === formData.mto_po_number
+                                  (p) => p.id === selectedPO?.id
                                 )}
                                 placeholder="Select PO/WO No"
                               />
@@ -987,12 +1337,45 @@ const GatePassEdit = () => {
                               <label>To Vendor</label>
                               <SingleSelector
                                 options={supplierOptions}
-                                onChange={(selected) =>
-                                  setFormData({
-                                    ...formData,
-                                    to_vendor: selected?.value,
-                                  })
-                                }
+                                onChange={async (selected) => {
+                                  if (selected?.value === "other") {
+                                    setFormData({
+                                      ...formData,
+                                      to_vendor: "other",
+                                    });
+                                    setShowAddVendorModal(true);
+                                    // Fetch and prefill if otherVendorId is available
+                                    if (otherVendorId) {
+                                      try {
+                                        const response = await axios.get(
+                                          `https://marathon.lockated.com//gate_passes/${otherVendorId}/fetch_other_vendor.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                                        );
+                                        const data = response.data;
+                                        setNewVendorName(data.name || "");
+                                        setNewVendorContact(
+                                          data.contact_no || ""
+                                        );
+                                        setNewVendorAddress(data.address || "");
+                                        setNewVendorRemark(data.remarks || "");
+                                      } catch (error) {
+                                        setNewVendorName("");
+                                        setNewVendorContact("");
+                                        setNewVendorAddress("");
+                                        setNewVendorRemark("");
+                                      }
+                                    } else {
+                                      setNewVendorName("");
+                                      setNewVendorContact("");
+                                      setNewVendorAddress("");
+                                      setNewVendorRemark("");
+                                    }
+                                  } else {
+                                    setFormData({
+                                      ...formData,
+                                      to_vendor: selected?.value,
+                                    });
+                                  }
+                                }}
                                 value={supplierOptions.find(
                                   (v) => v.value === formData.to_vendor
                                 )}
@@ -1128,105 +1511,361 @@ const GatePassEdit = () => {
 
               <div className="d-flex justify-content-between align-items-end px-2 mt-3">
                 <h5>Material / Asset Details</h5>
-                <button
-                  className="purple-btn2"
-                  onClick={() => setShowMaterialSelectModal(true)}
-                  disabled={!selectedPO} // Only enable if PO is selected
-                >
-                  Add
-                </button>
+                {(() => {
+                  const selectedGatePassType = gatePassTypes.find(
+                    (t) => t.value === formData.gate_pass_type
+                  );
+                  const rawValue = selectedGatePassType?.rawValue;
+                  if (rawValue === "") {
+                    return (
+                      <button
+                        className="purple-btn2"
+                        onClick={handleAddMaintenanceRow}
+                      >
+                        Add
+                      </button>
+                    );
+                  } else {
+                    return (
+                      <button
+                        className="purple-btn2"
+                        onClick={() => setShowMaterialSelectModal(true)}
+                        disabled={!selectedPO}
+                      >
+                        Add
+                      </button>
+                    );
+                  }
+                })()}
               </div>
 
-              <div className="tbl-container mx-2 mt-3">
-                <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th>Sr.No.</th>
-                      <th>Material / Asset Type</th>
-                      <th>Material / Asset Sub-Type</th>
-                      <th>Material / Asset Name</th>
-                      <th>Generic Info</th>
-                      <th>Brand</th>
-                      <th>Colour</th>
-                      <th>Unit</th>
-                      <th>Gate Pass Qty</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {formData.material_items.map((item, index) => (
-                      <tr key={index}>
-                        <td>{index + 1}</td>
-                        <td>{item.material_type}</td>
-                        <td>{item.material_sub_type}</td>
-                        <td>{item.material_name}</td>
-                        <td>
-                          {item.generic_specification || item.material_details}
-                        </td>
-                        <td>{item.brand}</td>
-                        <td>{item.colour}</td>
-                        <td>{item.unit}</td>
-                        <td>
-                          <input
-                            type="number"
-                            className="form-control"
-                            value={item.gate_pass_qty}
-                            min={0}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              if (
-                                item.stock_as_on !== undefined &&
-                                value !== "" &&
-                                Number(value) > Number(item.stock_as_on)
-                              ) {
-                                alert(
-                                  `Gate Pass Qty cannot exceed Stock As On (${item.stock_as_on})!`
-                                );
-                                return; // Do not update value
-                              }
-                              const updatedItems = [...formData.material_items];
-                              updatedItems[index].gate_pass_qty = value;
-                              setFormData({
-                                ...formData,
-                                material_items: updatedItems,
-                              });
-                            }}
-                          />
-                        </td>
-                        <td>
-                          <button
-                            className="btn"
-                            onClick={() => handleRemoveMaterial(index)}
-                          >
-                            <svg
-                              width={18}
-                              height={18}
-                              viewBox="0 0 18 18"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M11.76 6L6 11.76M6 6L11.76 11.76"
-                                stroke="#8B0203"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                              <path
-                                d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z"
-                                stroke="#8B0203"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {(() => {
+                const selectedGatePassType = gatePassTypes.find(
+                  (t) => t.value === formData.gate_pass_type
+                );
+                const rawValue = selectedGatePassType?.rawValue;
+                if (rawValue === "") {
+                  return (
+                    <div className="tbl-container mx-2 mt-3">
+                      <table className="w-100">
+                        <thead>
+                          <tr>
+                            <th>Sr.No.</th>
+                            <th>Material Type</th>
+                            <th>Material Sub-Type</th>
+                            <th>Material Name</th>
+                            <th>Generic Info</th>
+                            <th>Brand</th>
+                            <th>Colour</th>
+                            <th>Unit</th>
+                            <th>Gate Pass Qty</th>
+                            <th>Reason for Maintenance</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {maintenanceRows.map((row, idx) => (
+                            <tr key={idx}>
+                              <td>{idx + 1}</td>
+                              <td>
+                                <SingleSelector
+                                  options={inventoryTypes}
+                                  value={
+                                    inventoryTypes.find(
+                                      (opt) => opt.value === row.material_type
+                                    ) || null
+                                  }
+                                  onChange={(selected) =>
+                                    handleMaintenanceRowChange(
+                                      idx,
+                                      "material_type",
+                                      selected ? selected.value : null
+                                    )
+                                  }
+                                  placeholder="Select"
+                                />
+                              </td>
+                              <td>
+                                <SingleSelector
+                                  options={row.subTypeOptions || []}
+                                  value={
+                                    (row.subTypeOptions || []).find(
+                                      (opt) =>
+                                        opt.value === row.material_sub_type
+                                    ) || null
+                                  }
+                                  onChange={(selected) =>
+                                    handleMaintenanceRowChange(
+                                      idx,
+                                      "material_sub_type",
+                                      selected ? selected.value : null
+                                    )
+                                  }
+                                  placeholder="Select"
+                                />
+                              </td>
+                              <td>
+                                <SingleSelector
+                                  options={row.materialNameOptions || []}
+                                  value={
+                                    (row.materialNameOptions || []).find(
+                                      (opt) => opt.value === row.material_name
+                                    ) || null
+                                  }
+                                  onChange={(selected) => {
+                                    if (selected?.value === "other") {
+                                      setMaterialRowIdx(idx);
+                                      setShowAddMaterialModal(true);
+                                    } else {
+                                      handleMaintenanceRowChange(
+                                        idx,
+                                        "material_name",
+                                        selected ? selected.value : null
+                                      );
+                                    }
+                                  }}
+                                  placeholder="Select"
+                                />
+                              </td>
+                              <td>
+                                <SingleSelector
+                                  options={row.genericInfoOptions || []}
+                                  value={
+                                    (row.genericInfoOptions || []).find(
+                                      (opt) => opt.value === row.generic_info
+                                    ) || null
+                                  }
+                                  onChange={(selected) =>
+                                    handleMaintenanceRowChange(
+                                      idx,
+                                      "generic_info",
+                                      selected ? selected.value : null
+                                    )
+                                  }
+                                  placeholder="Select"
+                                />
+                              </td>
+                              <td>
+                                <SingleSelector
+                                  options={row.brandOptions || []}
+                                  value={
+                                    (row.brandOptions || []).find(
+                                      (opt) => opt.value === row.brand
+                                    ) || null
+                                  }
+                                  onChange={(selected) =>
+                                    handleMaintenanceRowChange(
+                                      idx,
+                                      "brand",
+                                      selected ? selected.value : null
+                                    )
+                                  }
+                                  placeholder="Select"
+                                />
+                              </td>
+                              <td>
+                                <SingleSelector
+                                  options={row.colourOptions || []}
+                                  value={
+                                    (row.colourOptions || []).find(
+                                      (opt) => opt.value === row.colour
+                                    ) || null
+                                  }
+                                  onChange={(selected) =>
+                                    handleMaintenanceRowChange(
+                                      idx,
+                                      "colour",
+                                      selected ? selected.value : null
+                                    )
+                                  }
+                                  placeholder="Select"
+                                />
+                              </td>
+                              <td>
+                                <SingleSelector
+                                  options={row.unitOptions || []}
+                                  value={
+                                    (row.unitOptions || []).find(
+                                      (opt) => opt.value === row.unit
+                                    ) || null
+                                  }
+                                  onChange={(selected) =>
+                                    handleMaintenanceRowChange(
+                                      idx,
+                                      "unit",
+                                      selected ? selected.value : null
+                                    )
+                                  }
+                                  placeholder="Select"
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  value={row.gate_pass_qty}
+                                  min={0}
+                                  onChange={(e) =>
+                                    handleMaintenanceRowChange(
+                                      idx,
+                                      "gate_pass_qty",
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={row.reason}
+                                  onChange={(e) =>
+                                    handleMaintenanceRowChange(
+                                      idx,
+                                      "reason",
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                              </td>
+                              <td>
+                                <button
+                                  className="btn"
+                                  onClick={() =>
+                                    handleRemoveMaintenanceRow(idx)
+                                  }
+                                >
+                                  <svg
+                                    width={18}
+                                    height={18}
+                                    viewBox="0 0 18 18"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      d="M11.76 6L6 11.76M6 6L11.76 11.76"
+                                      stroke="#8B0203"
+                                      strokeWidth="1.5"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                    <path
+                                      d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z"
+                                      stroke="#8B0203"
+                                      strokeWidth="1.5"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  </svg>
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div className="tbl-container mx-2 mt-3">
+                      <table className="w-100">
+                        <thead>
+                          <tr>
+                            <th>Sr.No.</th>
+                            <th>Material Type</th>
+                            <th>Material Sub-Type</th>
+                            <th>Material Name</th>
+                            <th>Generic Info</th>
+                            <th>Brand</th>
+                            <th>Colour</th>
+                            <th>Unit</th>
+                            <th>Gate Pass Qty</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {formData.material_items
+                            .filter((item) => !item._destroy)
+                            .map((item, index) => (
+                              <tr key={index}>
+                                <td>{index + 1}</td>
+                                <td>{item.material_type}</td>
+                                <td>{item.material_sub_type}</td>
+                                <td>{item.material_name}</td>
+                                <td>
+                                  {item.generic_specification ||
+                                    item.material_details}
+                                </td>
+                                <td>{item.brand}</td>
+                                <td>{item.colour}</td>
+                                <td>{item.unit}</td>
+                                <td>
+                                  <input
+                                    type="number"
+                                    className="form-control"
+                                    value={item.gate_pass_qty}
+                                    min={0}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      if (
+                                        item.stock_as_on !== undefined &&
+                                        value !== "" &&
+                                        Number(value) > Number(item.stock_as_on)
+                                      ) {
+                                        alert(
+                                          `Gate Pass Qty cannot exceed Stock As On (${item.stock_as_on})!`
+                                        );
+                                        return; // Do not update value
+                                      }
+                                      const updatedItems = [
+                                        ...formData.material_items,
+                                      ];
+                                      updatedItems[index].gate_pass_qty = value;
+                                      setFormData({
+                                        ...formData,
+                                        material_items: updatedItems,
+                                      });
+                                    }}
+                                  />
+                                </td>
+                                <td>
+                                  <button
+                                    className="btn"
+                                    onClick={() => handleRemoveMaterial(index)}
+                                  >
+                                    <svg
+                                      width={18}
+                                      height={18}
+                                      viewBox="0 0 18 18"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="M11.76 6L6 11.76M6 6L11.76 11.76"
+                                        stroke="#8B0203"
+                                        strokeWidth="1.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                      <path
+                                        d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z"
+                                        stroke="#8B0203"
+                                        strokeWidth="1.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                    </svg>
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                }
+              })()}
+
               {/* Remove old document attachment section and add new one from Bill Payment Create */}
               {/* Document Attachment Section (copied and adapted) */}
               <div className="d-flex justify-content-between mt-3 me-2">
@@ -1578,7 +2217,7 @@ const GatePassEdit = () => {
                     className="purple-btn2 w-100 mt-2"
                     onClick={handleSubmit}
                   >
-                    {id ? "Update" : "Submit"}
+                    Submit
                   </button>
                 </div>
                 <div className="col-md-2">
@@ -1689,6 +2328,106 @@ const GatePassEdit = () => {
             </button>
           </div>
         </Modal.Body>
+      </Modal>
+
+      <Modal
+        show={showAddVendorModal}
+        onHide={() => setShowAddVendorModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Add Non-Master Vendor</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group className="mb-2">
+            <Form.Label>Vendor Name</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter vendor name"
+              value={newVendorName}
+              onChange={(e) => setNewVendorName(e.target.value)}
+            />
+          </Form.Group>
+          <Form.Group className="mb-2">
+            <Form.Label>Contact No</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter contact number"
+              value={newVendorContact}
+              onChange={(e) => setNewVendorContact(e.target.value)}
+            />
+          </Form.Group>
+          <Form.Group className="mb-2">
+            <Form.Label>Address</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter address"
+              value={newVendorAddress}
+              onChange={(e) => setNewVendorAddress(e.target.value)}
+            />
+          </Form.Group>
+          <Form.Group className="mb-2">
+            <Form.Label>Remark</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter remark"
+              value={newVendorRemark}
+              onChange={(e) => setNewVendorRemark(e.target.value)}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowAddVendorModal(false)}
+          >
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleAddVendor}>
+            Add Vendor
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal
+        show={showAddMaterialModal}
+        onHide={() => setShowAddMaterialModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Add Other Material</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group className="mb-2">
+            <Form.Label>Material / Asset Name</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter material/asset name"
+              value={newMaterialName}
+              onChange={(e) => setNewMaterialName(e.target.value)}
+            />
+          </Form.Group>
+          <Form.Group className="mb-2">
+            <Form.Label>Remark</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter remark"
+              value={newMaterialRemark}
+              onChange={(e) => setNewMaterialRemark(e.target.value)}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowAddMaterialModal(false)}
+          >
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleAddMaterial}>
+            Add Material
+          </Button>
+        </Modal.Footer>
       </Modal>
     </div>
   );
