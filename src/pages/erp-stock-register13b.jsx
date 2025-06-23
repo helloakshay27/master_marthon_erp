@@ -22,8 +22,11 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 
 import { baseURL, baseURL1 } from "../confi/apiDomain";
 import MultiSelector from "../components/base/Select/MultiSelector";
+// import { useLocation } from "react-router-dom";
+
 
 const ErpStockRegister13B = () => {
+  // const location = useLocation(); // ✅ this gives you the current location object
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -44,10 +47,10 @@ const ErpStockRegister13B = () => {
     srNo: true,
     material: true,
     material_name: true,
-    material_type: true,
-    materialSubType: true,
-    materialDescription: true,
-    specification: true,
+    // material_type: true,
+    // materialSubType: true,
+    // materialDescription: true,
+    // specification: true,
     lastReceived: true,
     total_received: true,
     total_issued: true,
@@ -72,33 +75,43 @@ const ErpStockRegister13B = () => {
     {
       field: "material_name",
       headerName: "Material Name",
-      width: 180,
+      width: 250,
       sortable: true,
+      renderCell: (params) =>
+        params.value && params.row.id ? (
+          <Link to={`/stock_register_detail/${params.row.id}?token=${token}`}
+
+          >
+            <span className="boq-id-link">{params.value}</span>
+          </Link>
+        ) : (
+          "-"
+        ),
     },
-    {
-      field: "material_type",
-      headerName: "Material Type",
-      width: 150,
-      sortable: true,
-    },
-    {
-      field: "materialSubType",
-      headerName: "Material Sub Type",
-      width: 150,
-      sortable: true,
-    },
-    {
-      field: "materialDescription",
-      headerName: "Material Description",
-      width: 200,
-      sortable: true,
-    },
-    {
-      field: "specification",
-      headerName: "Specification",
-      width: 180,
-      sortable: true,
-    },
+    // {
+    //   field: "material_type",
+    //   headerName: "Material Type",
+    //   width: 150,
+    //   sortable: true,
+    // },
+    // {
+    //   field: "materialSubType",
+    //   headerName: "Material Sub Type",
+    //   width: 150,
+    //   sortable: true,
+    // },
+    // {
+    //   field: "materialDescription",
+    //   headerName: "Material Description",
+    //   width: 200,
+    //   sortable: true,
+    // },
+    // {
+    //   field: "specification",
+    //   headerName: "Specification",
+    //   width: 180,
+    //   sortable: true,
+    // },
     {
       field: "lastReceived",
       headerName: "Last Received On",
@@ -179,6 +192,8 @@ const ErpStockRegister13B = () => {
   };
 
   const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
 
   const handleSettingClose = () => setSettingShow(false);
   const handleClose = () => setShow(false);
@@ -267,23 +282,18 @@ const ErpStockRegister13B = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const urlParams = new URLSearchParams(location.search);
+        // const urlParams = new URLSearchParams(location.search);
         // const token = urlParams.get("token");
-        const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
+        // const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
 
         const response = await fetch(
           `${baseURL}/stock_details.json?token=${token}&search=${encodeURIComponent(
             searchTerm
-          )}&q[company_id]=${selectedCompany}&q[project_id]=${selectedProject}&q[sub_project_id]=${selectedSubProject}&q[generic_info_id]=${
-            selectedIds.genericInfos
-          }&q[material_type_id]=${
-            selectedIds.materialTypes
-          }&q[material_sub_type_id]=${
-            selectedIds.materialSubTypes
-          }&q[brand_id]=&q[uom_id]=${
-            selectedIds.unitOfMeasures
-          }&q[mor_number]=${selectedIds.morNumbers}&q[grn_number]=${
-            selectedIds.grnNumbers
+          )}&q[generic_info_id]=${selectedIds.genericInfos
+          }&q[material_type_id]=${selectedIds.materialTypes
+          }&q[material_sub_type_id]=${selectedIds.materialSubTypes
+          }&q[brand_id]=&q[uom_id]=${selectedIds.unitOfMeasures
+          }&q[mor_number]=${selectedIds.morNumbers}&q[grn_number]=${selectedIds.grnNumbers
           }&page=${page}&per_page=${pageSize}`
         );
 
@@ -506,7 +516,42 @@ const ErpStockRegister13B = () => {
     setPage(pageNumber);
   };
 
-  if (loading) return <div>Loading...</div>;
+  const handleGoClick = async (e) => {
+    console.log("handle go ....")
+    e.preventDefault(); 
+    if (!selectedCompany || !selectedProject) {
+      alert("Please select Company and Project");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const params = new URLSearchParams({
+        token: "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+        search: "",
+        "q[stock_details_mor_inventory_material_order_request_company_id_eq]": selectedCompany,
+        "q[stock_details_mor_inventory_material_order_request_project_id_eq]": selectedProject || "",
+        "q[stock_details_mor_inventory_material_order_request_pms_site_id_eq]": selectedSubProject || "",
+        page: 1,
+        per_page: 10,
+      });
+
+      const response = await axios.get(`https://marathon.lockated.com/stock_details.json?${params.toString()}`);
+
+      // Handle response data
+      console.log("Fetched stock data:", response.data);
+      setFilteredData(response.data); // or any appropriate state you have
+    } catch (error) {
+      console.error("Error fetching stock details:", error);
+      toast.error("Failed to fetch data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  // if (loading) return <div>Loading...</div>;
   return (
     <>
       <style type="text/css">
@@ -535,7 +580,7 @@ display:none !important;
           <h5 className="mt-2">Stock Register</h5>
 
           <div className="card mt-3 pb-4">
-            {/* <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={false}>
+            <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
               <div className="row my-2 align-items-end">
                 <div className="col-md-3">
                   <div className="form-group">
@@ -551,11 +596,11 @@ display:none !important;
                       value={
                         companies.find((c) => c.id === selectedCompany)
                           ? {
-                              value: selectedCompany,
-                              label: companies.find(
-                                (c) => c.id === selectedCompany
-                              ).company_name,
-                            }
+                            value: selectedCompany,
+                            label: companies.find(
+                              (c) => c.id === selectedCompany
+                            ).company_name,
+                          }
                           : null
                       }
                       placeholder="Select Company"
@@ -598,12 +643,15 @@ display:none !important;
                   </div>
                 </div>
                 <div className="col-md-2">
-                  <button className="purple-btn2 m-0" onClick={handleResets}>
+                  <button className="purple-btn2 me-2" onClick={handleGoClick}>
+                    Go
+                  </button>
+                  <button className="purple-btn1 m-0" onClick={handleResets}>
                     Reset
                   </button>
                 </div>
               </div>
-            </CollapsibleCard> */}
+            </CollapsibleCard>
             <div className="d-flex mt-3 align-items-end px-3">
               <div className="col-md-6">
                 <form>
@@ -836,9 +884,8 @@ display:none !important;
                 {pageNumbers.map((pageNumber) => (
                   <li
                     key={pageNumber}
-                    className={`page-item ${
-                      currentPage === pageNumber ? "active" : ""
-                    }`}
+                    className={`page-item ${currentPage === pageNumber ? "active" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -850,9 +897,8 @@ display:none !important;
                 ))}
                 {/* Next Button */}
                 <li
-                  className={`page-item ${
-                    currentPage === totalPages ? "disabled" : ""
-                  }`}
+                  className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                    }`}
                 >
                   <button
                     className="page-link"
@@ -864,9 +910,8 @@ display:none !important;
                 </li>
                 {/* Last Button */}
                 <li
-                  className={`page-item ${
-                    currentPage === totalPages ? "disabled" : ""
-                  }`}
+                  className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                    }`}
                 >
                   <button
                     className="page-link"
@@ -1101,19 +1146,19 @@ display:none !important;
                 <div className="col-md-6">
                   <button type="submit" className="btn btn-md">
                     <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width={22}
-                    height={22}
-                    viewBox="0 0 48 48"
-                    fill="none"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                      fill="black"
-                    />
-                  </svg>
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={22}
+                      height={22}
+                      viewBox="0 0 48 48"
+                      fill="none"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
+                        fill="black"
+                      />
+                    </svg>
                   </button>
                   <label>{column.headerName}</label>
                 </div>
