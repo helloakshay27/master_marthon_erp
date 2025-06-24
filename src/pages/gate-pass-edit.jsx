@@ -223,6 +223,7 @@ const GatePassEdit = () => {
                   other_material_name: row.other_material_name || null,
                   other_material_description:
                     row.other_material_description || null,
+                  available_qty: null,
                 }))
             : (formData.material_items || []).map((item) => {
                 const attr = {
@@ -758,6 +759,7 @@ const GatePassEdit = () => {
               brand: null,
               colour: null,
               unit: null,
+              available_qty: null,
             }
           : row
       )
@@ -812,6 +814,7 @@ const GatePassEdit = () => {
               brand: null,
               colour: null,
               unit: null,
+              available_qty: null,
             }
           : row
       )
@@ -823,6 +826,28 @@ const GatePassEdit = () => {
     setMaintenanceRows((rows) =>
       rows.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
     );
+    // If any dropdown changes, fetch available qty
+    if (
+      [
+        "material_type",
+        "material_sub_type",
+        "material_name",
+        "generic_info",
+        "brand",
+        "colour",
+        "unit",
+      ].includes(field)
+    ) {
+      setTimeout(() => {
+        fetchAvailableQty(
+          {
+            ...maintenanceRows[idx],
+            [field]: value,
+          },
+          idx
+        );
+      }, 0);
+    }
     // If type changes, fetch sub-types and material names
     if (field === "material_type") fetchSubTypesAndNames(value, idx);
     // If material name changes, fetch details
@@ -849,6 +874,7 @@ const GatePassEdit = () => {
         unit: null,
         gate_pass_qty: "",
         reason: "",
+        available_qty: null,
       },
     ]);
   };
@@ -1137,6 +1163,7 @@ const GatePassEdit = () => {
                     gate_pass_qty: gpMaterial.gate_pass_qty || "",
                     stock_as_on: m.stock_as_on,
                     mor_inventory_id: m.id,
+                    available_qty: null,
                   };
                 });
               setFormData((prev) => ({
@@ -1174,6 +1201,7 @@ const GatePassEdit = () => {
                     brandOptions: [],
                     colourOptions: [],
                     unitOptions: [],
+                    available_qty: null,
                   };
                 }
               );
@@ -1224,6 +1252,35 @@ const GatePassEdit = () => {
     // Only run when modal opens
     // eslint-disable-next-line
   }, [showAddVendorModal]);
+
+  const fetchAvailableQty = async (row, idx) => {
+    const params = {
+      "q[inventory_id_eq]": row.material_name,
+      "q[generic_info_id_eq]": row.generic_info,
+      "q[pms_brand_id_eq]": row.brand,
+      "q[pms_colour_id_eq]": row.colour,
+      "q[material_order_request_pms_site_id_eq]": formData.sub_project_id,
+      "q[material_order_request_pms_site_pms_store_id_eq]": formData.store_id,
+      "q[inventory_sub_type_id_eq]": row.material_sub_type,
+    };
+    Object.keys(params).forEach((key) => {
+      if (!params[key]) delete params[key];
+    });
+    const query = new URLSearchParams(params).toString();
+    try {
+      const res = await axios.get(
+        `https://marathon.lockated.com//mor_inventories/fetch_store_available_qty.json?${query}`
+      );
+      const qty = res.data?.available_quantity ?? 0;
+      setMaintenanceRows((rows) =>
+        rows.map((r, i) => (i === idx ? { ...r, available_qty: qty } : r))
+      );
+    } catch {
+      setMaintenanceRows((rows) =>
+        rows.map((r, i) => (i === idx ? { ...r, available_qty: 0 } : r))
+      );
+    }
+  };
 
   return (
     <div className="main-content">
@@ -1936,14 +1993,33 @@ const GatePassEdit = () => {
                                     className="form-control"
                                     value={row.gate_pass_qty}
                                     min={0}
-                                    onChange={(e) =>
+                                    max={row.available_qty ?? undefined}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (
+                                        row.available_qty !== null &&
+                                        val !== "" &&
+                                        Number(val) > Number(row.available_qty)
+                                      ) {
+                                        alert(
+                                          `Gate Pass Qty cannot exceed Available Qty (${row.available_qty})!`
+                                        );
+                                        return;
+                                      }
                                       handleMaintenanceRowChange(
                                         idx,
                                         "gate_pass_qty",
-                                        e.target.value
-                                      )
-                                    }
+                                        val
+                                      );
+                                    }}
                                   />
+                                  {row.available_qty !== null && (
+                                    <div
+                                      style={{ fontSize: 12, color: "#888" }}
+                                    >
+                                      Available Qty: {row.available_qty}
+                                    </div>
+                                  )}
                                 </td>
                                 <td style={{ minWidth: 180 }}>
                                   <input
@@ -2541,6 +2617,7 @@ const GatePassEdit = () => {
                     gate_pass_qty: "",
                     stock_as_on: poMaterials[idx].stock_as_on,
                     mor_inventory_id: poMaterials[idx].id || null,
+                    available_qty: null,
                   })
                 );
                 setFormData((prev) => ({
