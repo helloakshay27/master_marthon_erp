@@ -134,6 +134,7 @@ const GatePassEdit = () => {
               filename: doc.attachments[0].filename || null,
               content: doc.attachments[0].content || null,
               content_type: doc.attachments[0].content_type || null,
+              document_name: doc.document_type || null,
             }
           : null
       )
@@ -198,16 +199,41 @@ const GatePassEdit = () => {
         gate_number_id: formData.gate_number_id || null,
         vehicle_no: formData.vehicle_no || null,
         all_level_approved: formData.all_level_approved || false,
-        gate_pass_materials_attributes: (formData.material_items || []).map(
-          (item) => {
-            const attr = { gate_pass_qty: Number(item.gate_pass_qty) || null };
-            if (item.id) attr.id = item.id;
-            else if (item.mor_inventory_id)
-              attr.mor_inventory_id = item.mor_inventory_id;
-            if (item._destroy) attr._destroy = true;
-            return attr;
-          }
-        ),
+        gate_pass_materials_attributes:
+          formData.gate_pass_type === "repair_maintenance" ||
+          formData.gate_pass_type === "general"
+            ? maintenanceRows
+                .filter((item) => !item._destroy)
+                .map((row) => ({
+                  id: row.id,
+                  gate_pass_qty: Number(row.gate_pass_qty) || null,
+                  remarks: row.reason || "",
+                  pms_inventory_id:
+                    row.material_name &&
+                    typeof row.material_name === "string" &&
+                    row.material_name.startsWith("other")
+                      ? null
+                      : row.material_name || null,
+                  pms_inventory_sub_type_id: row.material_sub_type || null,
+                  pms_inventory_type_id: row.material_type || null,
+                  pms_generic_info_id: row.generic_info || null,
+                  pms_colour_id: row.colour || null,
+                  pms_brand_id: row.brand || null,
+                  uom_id: row.unit || null,
+                  other_material_name: row.other_material_name || null,
+                  other_material_description:
+                    row.other_material_description || null,
+                }))
+            : (formData.material_items || []).map((item) => {
+                const attr = {
+                  gate_pass_qty: Number(item.gate_pass_qty) || null,
+                };
+                if (item.id) attr.id = item.id;
+                else if (item.mor_inventory_id)
+                  attr.mor_inventory_id = item.mor_inventory_id;
+                if (item._destroy) attr._destroy = true;
+                return attr;
+              }),
         attachments: attachments.length > 0 ? attachments : null,
         to_resource_id: to_resource_id,
         to_resource_type: to_resource_type,
@@ -828,7 +854,18 @@ const GatePassEdit = () => {
   };
   // Remove row handler
   const handleRemoveMaintenanceRow = (idx) => {
-    setMaintenanceRows((rows) => rows.filter((_, i) => i !== idx));
+    setMaintenanceRows((rows) => {
+      const newRows = [...rows];
+      const item = newRows[idx];
+      if (item.id) {
+        // If it's an existing item, mark it for destruction
+        newRows[idx]._destroy = true;
+      } else {
+        // If it's a new item, remove it from the array
+        newRows.splice(idx, 1);
+      }
+      return newRows;
+    });
   };
 
   // Add new material to the row's materialNameOptions and select it
@@ -855,6 +892,8 @@ const GatePassEdit = () => {
                 { value: "other", label: "Other" },
               ],
               material_name: newMaterial.value,
+              other_material_name: newMaterialName,
+              other_material_description: newMaterialRemark,
             }
           : row
       )
@@ -863,6 +902,89 @@ const GatePassEdit = () => {
     setNewMaterialName("");
     setNewMaterialRemark("");
     setMaterialRowIdx(null);
+  };
+
+  const prefillMaintenanceRowOptions = async (rows) => {
+    const optionPromises = rows.map(async (row) => {
+      const newOptions = {
+        subTypeOptions: [],
+        materialNameOptions: [],
+        genericInfoOptions: [],
+        brandOptions: [],
+        colourOptions: [],
+        unitOptions: [],
+      };
+
+      if (row.material_type) {
+        const subTypeRes = await axios.get(
+          `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${row.material_type}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        newOptions.subTypeOptions = subTypeRes.data.map((i) => ({
+          value: i.id,
+          label: i.name,
+        }));
+
+        const nameRes = await axios.get(
+          `${baseURL}pms/inventories.json?q[inventory_type_id_in]=${row.material_type}&q[material_category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        let materialNameOptions = nameRes.data.map((i) => ({
+          value: i.id,
+          label: i.name,
+        }));
+
+        if (
+          row.material_name &&
+          typeof row.material_name === "string" &&
+          row.material_name.startsWith("other")
+        ) {
+          materialNameOptions.push({
+            value: row.material_name,
+            label: row.other_material_name,
+          });
+        }
+
+        materialNameOptions.push({ value: "other", label: "Other" });
+        newOptions.materialNameOptions = materialNameOptions;
+      }
+
+      if (row.material_name && !String(row.material_name).startsWith("other")) {
+        const genRes = await axios.get(
+          `${baseURL}pms/generic_infos.json?q[material_id_eq]=${row.material_name}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        newOptions.genericInfoOptions = genRes.data.map((i) => ({
+          value: i.id,
+          label: i.generic_info,
+        }));
+
+        const brandRes = await axios.get(
+          `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${row.material_name}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        newOptions.brandOptions = brandRes.data.map((i) => ({
+          value: i.id,
+          label: i.brand_name,
+        }));
+
+        const colourRes = await axios.get(
+          `${baseURL}pms/colours.json?q[material_id_eq]=${row.material_name}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        newOptions.colourOptions = colourRes.data.map((i) => ({
+          value: i.id,
+          label: i.colour,
+        }));
+      }
+      const unitRes = await axios.get(
+        `${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+      newOptions.unitOptions = unitRes.data.map((i) => ({
+        value: i.id,
+        label: i.name,
+      }));
+
+      return { ...row, ...newOptions };
+    });
+
+    const populatedRows = await Promise.all(optionPromises);
+    setMaintenanceRows(populatedRows);
   };
 
   useEffect(() => {
@@ -895,6 +1017,7 @@ const GatePassEdit = () => {
             contact_no: data.contact_person_no,
             gate_number_id: data.gate_number_id,
             driver_contact_no: data.driver_contact_no,
+            gate_pass_date_time: data.gate_pass_date,
           }));
 
           if (data.to_resource) {
@@ -908,13 +1031,45 @@ const GatePassEdit = () => {
                 ...prev,
                 to_store_id: data.to_resource.id,
               }));
+            } else if (
+              data.to_resource.type === "OtherVendor" &&
+              data.to_resource.vendor_name
+            ) {
+              const vendorName = data.to_resource.vendor_name;
+              const vendorValue = `non_master_${vendorName
+                .replace(/\s+/g, "_")
+                .toLowerCase()}`;
+
+              // Add the new vendor to the supplier options
+              setSupplierOptions((prev) => {
+                const existingOptions = prev.filter((o) => o.value !== "other");
+                if (!existingOptions.some((o) => o.value === vendorValue)) {
+                  return [
+                    ...existingOptions,
+                    {
+                      label: vendorName,
+                      value: vendorValue,
+                    },
+                    { value: "other", label: "Other" },
+                  ];
+                }
+                return prev;
+              });
+
+              // Set the vendor as selected in the form data
+              setFormData((prev) => ({
+                ...prev,
+                to_vendor: vendorValue,
+              }));
+
+              // Store the OtherVendor id for later fetch if user wants to edit details
+              setOtherVendorId(data.to_resource.id);
             } else if (data.to_resource.type === "OtherVendor") {
-              // Preselect 'Other' in dropdown
+              // Fallback if vendor_name is not present
               setFormData((prev) => ({
                 ...prev,
                 to_vendor: "other",
               }));
-              // Store the OtherVendor id for later fetch
               setOtherVendorId(data.to_resource.id);
             }
           }
@@ -935,7 +1090,7 @@ const GatePassEdit = () => {
               const encodedFilename = urlParts[urlParts.length - 1];
               const filename = decodeURIComponent(encodedFilename);
               return {
-                document_type: filename, // Using filename as doc type as it's not in response
+                document_type: att.document_name, // Using filename as doc type as it's not in response
                 attachments: [
                   {
                     filename: filename,
@@ -952,44 +1107,78 @@ const GatePassEdit = () => {
             setDocuments(fetchedDocuments);
           }
 
-          // Pre-fill material_items for PO-based types
-          if (
-            data.gate_pass_materials &&
-            data.gate_pass_materials.length > 0 &&
-            (gatePassType?.rawValue === "PurchaseOrder" ||
-              gatePassType?.rawValue === "MaterialTransaferOrder")
-          ) {
-            // If PO materials are loaded, match by mor_inventory_id
-            const allPoMaterials = poMaterials.length > 0 ? poMaterials : [];
-            const gatePassMaterialIds = data.gate_pass_materials.map(
-              (m) => m.mor_inventory_id
-            );
-            const selectedMaterials = allPoMaterials
-              .filter((m) => gatePassMaterialIds.includes(m.id))
-              .map((m) => {
-                const gpMaterial =
-                  data.gate_pass_materials.find(
-                    (gpm) => gpm.mor_inventory_id === m.id
-                  ) || {};
-                return {
-                  id: gpMaterial.id, // <-- preserve the gate_pass_material id for PATCH
-                  material_type: m.material_type,
-                  material_sub_type: m.material_sub_type,
-                  material_name: m.material,
-                  material_details: m.generic_specification,
-                  generic_specification: m.generic_specification,
-                  brand: m.brand,
-                  colour: m.colour,
-                  unit: m.uom,
-                  gate_pass_qty: gpMaterial.gate_pass_qty || "",
-                  stock_as_on: m.stock_as_on,
-                  mor_inventory_id: m.id,
-                };
-              });
-            setFormData((prev) => ({
-              ...prev,
-              material_items: selectedMaterials,
-            }));
+          if (data.gate_pass_materials && data.gate_pass_materials.length > 0) {
+            // Pre-fill material_items for PO-based types
+            if (
+              gatePassType?.rawValue === "PurchaseOrder" ||
+              gatePassType?.rawValue === "MaterialTransaferOrder"
+            ) {
+              const allPoMaterials = poMaterials.length > 0 ? poMaterials : [];
+              const gatePassMaterialIds = data.gate_pass_materials.map(
+                (m) => m.mor_inventory_id
+              );
+              const selectedMaterials = allPoMaterials
+                .filter((m) => gatePassMaterialIds.includes(m.id))
+                .map((m) => {
+                  const gpMaterial =
+                    data.gate_pass_materials.find(
+                      (gpm) => gpm.mor_inventory_id === m.id
+                    ) || {};
+                  return {
+                    id: gpMaterial.id,
+                    material_type: m.material_type,
+                    material_sub_type: m.material_sub_type,
+                    material_name: m.material,
+                    material_details: m.generic_specification,
+                    generic_specification: m.generic_specification,
+                    brand: m.brand,
+                    colour: m.colour,
+                    unit: m.uom,
+                    gate_pass_qty: gpMaterial.gate_pass_qty || "",
+                    stock_as_on: m.stock_as_on,
+                    mor_inventory_id: m.id,
+                  };
+                });
+              setFormData((prev) => ({
+                ...prev,
+                material_items: selectedMaterials,
+              }));
+            }
+            // Pre-fill maintenanceRows for other types
+            else if (gatePassType?.rawValue === "" || !gatePassType?.rawValue) {
+              const maintenanceMaterialRows = data.gate_pass_materials.map(
+                (m) => {
+                  const isOther =
+                    m.material_id === null && m.other_material_name;
+                  const materialNameValue = isOther
+                    ? `other_${m.other_material_name
+                        .replace(/\s+/g, "_")
+                        .toLowerCase()}`
+                    : m.material_id;
+                  return {
+                    id: m.id,
+                    material_type: m.material_type_id,
+                    material_sub_type: m.material_sub_type_id,
+                    material_name: materialNameValue,
+                    generic_info: m.generic_specification_id,
+                    brand: m.brand_id,
+                    colour: m.colour_id,
+                    unit: m.uom_id,
+                    gate_pass_qty: m.gate_pass_qty || "",
+                    reason: m.remarks || "",
+                    other_material_name: m.other_material_name,
+                    other_material_description: m.other_material_description,
+                    subTypeOptions: [],
+                    materialNameOptions: [],
+                    genericInfoOptions: [],
+                    brandOptions: [],
+                    colourOptions: [],
+                    unitOptions: [],
+                  };
+                }
+              );
+              prefillMaintenanceRowOptions(maintenanceMaterialRows);
+            }
           }
         } catch (error) {
           console.error("Error fetching gate pass data:", error);
@@ -1189,6 +1378,7 @@ const GatePassEdit = () => {
                           <div className="col-md-3 mt-2">
                             <div className="form-group">
                               <label>To Vendor</label>
+
                               <SingleSelector
                                 options={supplierOptions}
                                 onChange={async (selected) => {
@@ -1397,35 +1587,35 @@ const GatePassEdit = () => {
 
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
-                    <label>Driver Name</label>
+                    <label>Gate Pass No</label>
                     <input
                       type="text"
                       className="form-control"
-                      value={formData.driver_name}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          driver_name: e.target.value,
-                        })
-                      }
-                      placeholder="Enter Driver Name"
+                      value={formData.gate_pass_no}
+                      disabled
                     />
                   </div>
                 </div>
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
-                    <label>Driver Contact No</label>
+                    <label>Gate Pass Date & Time</label>
                     <input
                       type="text"
                       className="form-control"
-                      value={formData.driver_contact_no}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          driver_contact_no: e.target.value,
-                        })
+                      value={
+                        formData.gate_pass_date_time
+                          ? `${new Date(
+                              formData.gate_pass_date_time
+                            ).toLocaleDateString("en-GB")} ${new Date(
+                              formData.gate_pass_date_time
+                            ).toLocaleTimeString("en-US", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            })}`
+                          : ""
                       }
-                      placeholder="Enter Driver Contact No"
+                      disabled
                     />
                   </div>
                 </div>
@@ -1464,6 +1654,40 @@ const GatePassEdit = () => {
                         (g) => g.value === formData.gate_number_id
                       )}
                       placeholder="Select Gate No"
+                    />
+                  </div>
+                </div>
+                <div className="col-md-3 mt-2">
+                  <div className="form-group">
+                    <label>Driver Name</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.driver_name}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          driver_name: e.target.value,
+                        })
+                      }
+                      placeholder="Enter Driver Name"
+                    />
+                  </div>
+                </div>
+                <div className="col-md-3 mt-2">
+                  <div className="form-group">
+                    <label>Driver Contact No</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.driver_contact_no}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          driver_contact_no: e.target.value,
+                        })
+                      }
+                      placeholder="Enter Driver Contact No"
                     />
                   </div>
                 </div>
@@ -1569,203 +1793,205 @@ const GatePassEdit = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {maintenanceRows.map((row, idx) => (
-                            <tr key={idx}>
-                              <td>{idx + 1}</td>
-                              <td style={{ minWidth: 225 }}>
-                                <SingleSelector
-                                  options={inventoryTypes}
-                                  value={
-                                    inventoryTypes.find(
-                                      (opt) => opt.value === row.material_type
-                                    ) || null
-                                  }
-                                  onChange={(selected) =>
-                                    handleMaintenanceRowChange(
-                                      idx,
-                                      "material_type",
-                                      selected ? selected.value : null
-                                    )
-                                  }
-                                  placeholder="Select"
-                                />
-                              </td>
-                              <td style={{ minWidth: 225 }}>
-                                <SingleSelector
-                                  options={row.subTypeOptions || []}
-                                  value={
-                                    (row.subTypeOptions || []).find(
-                                      (opt) =>
-                                        opt.value === row.material_sub_type
-                                    ) || null
-                                  }
-                                  onChange={(selected) =>
-                                    handleMaintenanceRowChange(
-                                      idx,
-                                      "material_sub_type",
-                                      selected ? selected.value : null
-                                    )
-                                  }
-                                  placeholder="Select"
-                                />
-                              </td>
-                              <td style={{ minWidth: 225 }}>
-                                <SingleSelector
-                                  options={row.materialNameOptions || []}
-                                  value={
-                                    (row.materialNameOptions || []).find(
-                                      (opt) => opt.value === row.material_name
-                                    ) || null
-                                  }
-                                  onChange={(selected) => {
-                                    if (selected?.value === "other") {
-                                      setMaterialRowIdx(idx);
-                                      setShowAddMaterialModal(true);
-                                    } else {
+                          {maintenanceRows
+                            .filter((row) => !row._destroy)
+                            .map((row, idx) => (
+                              <tr key={idx}>
+                                <td>{idx + 1}</td>
+                                <td style={{ minWidth: 225 }}>
+                                  <SingleSelector
+                                    options={inventoryTypes}
+                                    value={
+                                      inventoryTypes.find(
+                                        (opt) => opt.value === row.material_type
+                                      ) || null
+                                    }
+                                    onChange={(selected) =>
                                       handleMaintenanceRowChange(
                                         idx,
-                                        "material_name",
+                                        "material_type",
                                         selected ? selected.value : null
-                                      );
+                                      )
                                     }
-                                  }}
-                                  placeholder="Select"
-                                />
-                              </td>
-                              <td style={{ minWidth: 225 }}>
-                                <SingleSelector
-                                  options={row.genericInfoOptions || []}
-                                  value={
-                                    (row.genericInfoOptions || []).find(
-                                      (opt) => opt.value === row.generic_info
-                                    ) || null
-                                  }
-                                  onChange={(selected) =>
-                                    handleMaintenanceRowChange(
-                                      idx,
-                                      "generic_info",
-                                      selected ? selected.value : null
-                                    )
-                                  }
-                                  placeholder="Select"
-                                />
-                              </td>
-                              <td style={{ minWidth: 225 }}>
-                                <SingleSelector
-                                  options={row.brandOptions || []}
-                                  value={
-                                    (row.brandOptions || []).find(
-                                      (opt) => opt.value === row.brand
-                                    ) || null
-                                  }
-                                  onChange={(selected) =>
-                                    handleMaintenanceRowChange(
-                                      idx,
-                                      "brand",
-                                      selected ? selected.value : null
-                                    )
-                                  }
-                                  placeholder="Select"
-                                />
-                              </td>
-                              <td style={{ minWidth: 225 }}>
-                                <SingleSelector
-                                  options={row.colourOptions || []}
-                                  value={
-                                    (row.colourOptions || []).find(
-                                      (opt) => opt.value === row.colour
-                                    ) || null
-                                  }
-                                  onChange={(selected) =>
-                                    handleMaintenanceRowChange(
-                                      idx,
-                                      "colour",
-                                      selected ? selected.value : null
-                                    )
-                                  }
-                                  placeholder="Select"
-                                />
-                              </td>
-                              <td style={{ minWidth: 225 }}>
-                                <SingleSelector
-                                  options={row.unitOptions || []}
-                                  value={
-                                    (row.unitOptions || []).find(
-                                      (opt) => opt.value === row.unit
-                                    ) || null
-                                  }
-                                  onChange={(selected) =>
-                                    handleMaintenanceRowChange(
-                                      idx,
-                                      "unit",
-                                      selected ? selected.value : null
-                                    )
-                                  }
-                                  placeholder="Select"
-                                />
-                              </td>
-                              <td style={{ minWidth: 150 }}>
-                                <input
-                                  type="number"
-                                  className="form-control"
-                                  value={row.gate_pass_qty}
-                                  min={0}
-                                  onChange={(e) =>
-                                    handleMaintenanceRowChange(
-                                      idx,
-                                      "gate_pass_qty",
-                                      e.target.value
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td style={{ minWidth: 180 }}>
-                                <input
-                                  type="text"
-                                  className="form-control"
-                                  value={row.reason}
-                                  onChange={(e) =>
-                                    handleMaintenanceRowChange(
-                                      idx,
-                                      "reason",
-                                      e.target.value
-                                    )
-                                  }
-                                />
-                              </td>
-                              <td>
-                                <button
-                                  className="btn"
-                                  onClick={() =>
-                                    handleRemoveMaintenanceRow(idx)
-                                  }
-                                >
-                                  <svg
-                                    width={18}
-                                    height={18}
-                                    viewBox="0 0 18 18"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
+                                    placeholder="Select"
+                                  />
+                                </td>
+                                <td style={{ minWidth: 225 }}>
+                                  <SingleSelector
+                                    options={row.subTypeOptions || []}
+                                    value={
+                                      (row.subTypeOptions || []).find(
+                                        (opt) =>
+                                          opt.value === row.material_sub_type
+                                      ) || null
+                                    }
+                                    onChange={(selected) =>
+                                      handleMaintenanceRowChange(
+                                        idx,
+                                        "material_sub_type",
+                                        selected ? selected.value : null
+                                      )
+                                    }
+                                    placeholder="Select"
+                                  />
+                                </td>
+                                <td style={{ minWidth: 225 }}>
+                                  <SingleSelector
+                                    options={row.materialNameOptions || []}
+                                    value={
+                                      (row.materialNameOptions || []).find(
+                                        (opt) => opt.value === row.material_name
+                                      ) || null
+                                    }
+                                    onChange={(selected) => {
+                                      if (selected?.value === "other") {
+                                        setMaterialRowIdx(idx);
+                                        setShowAddMaterialModal(true);
+                                      } else {
+                                        handleMaintenanceRowChange(
+                                          idx,
+                                          "material_name",
+                                          selected ? selected.value : null
+                                        );
+                                      }
+                                    }}
+                                    placeholder="Select"
+                                  />
+                                </td>
+                                <td style={{ minWidth: 225 }}>
+                                  <SingleSelector
+                                    options={row.genericInfoOptions || []}
+                                    value={
+                                      (row.genericInfoOptions || []).find(
+                                        (opt) => opt.value === row.generic_info
+                                      ) || null
+                                    }
+                                    onChange={(selected) =>
+                                      handleMaintenanceRowChange(
+                                        idx,
+                                        "generic_info",
+                                        selected ? selected.value : null
+                                      )
+                                    }
+                                    placeholder="Select"
+                                  />
+                                </td>
+                                <td style={{ minWidth: 225 }}>
+                                  <SingleSelector
+                                    options={row.brandOptions || []}
+                                    value={
+                                      (row.brandOptions || []).find(
+                                        (opt) => opt.value === row.brand
+                                      ) || null
+                                    }
+                                    onChange={(selected) =>
+                                      handleMaintenanceRowChange(
+                                        idx,
+                                        "brand",
+                                        selected ? selected.value : null
+                                      )
+                                    }
+                                    placeholder="Select"
+                                  />
+                                </td>
+                                <td style={{ minWidth: 225 }}>
+                                  <SingleSelector
+                                    options={row.colourOptions || []}
+                                    value={
+                                      (row.colourOptions || []).find(
+                                        (opt) => opt.value === row.colour
+                                      ) || null
+                                    }
+                                    onChange={(selected) =>
+                                      handleMaintenanceRowChange(
+                                        idx,
+                                        "colour",
+                                        selected ? selected.value : null
+                                      )
+                                    }
+                                    placeholder="Select"
+                                  />
+                                </td>
+                                <td style={{ minWidth: 225 }}>
+                                  <SingleSelector
+                                    options={row.unitOptions || []}
+                                    value={
+                                      (row.unitOptions || []).find(
+                                        (opt) => opt.value === row.unit
+                                      ) || null
+                                    }
+                                    onChange={(selected) =>
+                                      handleMaintenanceRowChange(
+                                        idx,
+                                        "unit",
+                                        selected ? selected.value : null
+                                      )
+                                    }
+                                    placeholder="Select"
+                                  />
+                                </td>
+                                <td style={{ minWidth: 150 }}>
+                                  <input
+                                    type="number"
+                                    className="form-control"
+                                    value={row.gate_pass_qty}
+                                    min={0}
+                                    onChange={(e) =>
+                                      handleMaintenanceRowChange(
+                                        idx,
+                                        "gate_pass_qty",
+                                        e.target.value
+                                      )
+                                    }
+                                  />
+                                </td>
+                                <td style={{ minWidth: 180 }}>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={row.reason}
+                                    onChange={(e) =>
+                                      handleMaintenanceRowChange(
+                                        idx,
+                                        "reason",
+                                        e.target.value
+                                      )
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <button
+                                    className="btn"
+                                    onClick={() =>
+                                      handleRemoveMaintenanceRow(idx)
+                                    }
                                   >
-                                    <path
-                                      d="M11.76 6L6 11.76M6 6L11.76 11.76"
-                                      stroke="#8B0203"
-                                      strokeWidth="1.5"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    />
-                                    <path
-                                      d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z"
-                                      stroke="#8B0203"
-                                      strokeWidth="1.5"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    />
-                                  </svg>
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
+                                    <svg
+                                      width={18}
+                                      height={18}
+                                      viewBox="0 0 18 18"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="M11.76 6L6 11.76M6 6L11.76 11.76"
+                                        stroke="#8B0203"
+                                        strokeWidth="1.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                      <path
+                                        d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z"
+                                        stroke="#8B0203"
+                                        strokeWidth="1.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                    </svg>
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
                         </tbody>
                       </table>
                     </div>

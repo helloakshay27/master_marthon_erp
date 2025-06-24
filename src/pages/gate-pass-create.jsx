@@ -128,6 +128,7 @@ const GatePassCreate = () => {
               filename: doc.attachments[0].filename || null,
               content: doc.attachments[0].content || null,
               content_type: doc.attachments[0].content_type || null,
+              document_name: doc.document_type || null,
             }
           : null
       )
@@ -195,12 +196,33 @@ const GatePassCreate = () => {
         vehicle_no: formData.vehicle_no || null,
 
         all_level_approved: formData.all_level_approved || false,
-        gate_pass_materials_attributes: (formData.material_items || []).map(
-          (item) => ({
-            gate_pass_qty: Number(item.gate_pass_qty) || null,
-            mor_inventory_id: item.mor_inventory_id || item.id || null,
-          })
-        ),
+        gate_pass_materials_attributes:
+          formData.gate_pass_type === "" ||
+          formData.gate_pass_type === "repair_maintenance" ||
+          formData.gate_pass_type === "general"
+            ? maintenanceRows.map((row) => ({
+                gate_pass_qty: Number(row.gate_pass_qty) || null,
+                remarks: row.reason || "",
+                pms_inventory_id:
+                  row.material_name &&
+                  typeof row.material_name === "string" &&
+                  row.material_name.startsWith("other")
+                    ? null
+                    : row.material_name || null,
+                pms_inventory_sub_type_id: row.material_sub_type || null,
+                pms_inventory_type_id: row.material_type || null,
+                pms_generic_info_id: row.generic_info || null,
+                pms_colour_id: row.colour || null,
+                pms_brand_id: row.brand || null,
+                uom_id: row.unit || null,
+                other_material_name: row.other_material_name || null,
+                other_material_description:
+                  row.other_material_description || null,
+              }))
+            : (formData.material_items || []).map((item) => ({
+                gate_pass_qty: Number(item.gate_pass_qty) || null,
+                mor_inventory_id: item.mor_inventory_id || item.id || null,
+              })),
         attachments: attachments.length > 0 ? attachments : null,
         to_resource_id: to_resource_id,
         to_resource_type: to_resource_type,
@@ -831,6 +853,8 @@ const GatePassCreate = () => {
                 { value: "other", label: "Other" },
               ],
               material_name: newMaterial.value,
+              other_material_name: newMaterialName,
+              other_material_description: newMaterialRemark,
             }
           : row
       )
@@ -1144,40 +1168,6 @@ const GatePassCreate = () => {
 
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
-                    <label>Driver Name</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.driver_name}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          driver_name: e.target.value,
-                        })
-                      }
-                      placeholder="Enter Driver Name"
-                    />
-                  </div>
-                </div>
-                <div className="col-md-3 mt-2">
-                  <div className="form-group">
-                    <label>Driver Contact No</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.driver_contact_no}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          driver_contact_no: e.target.value,
-                        })
-                      }
-                      placeholder="Enter Driver Contact No"
-                    />
-                  </div>
-                </div>
-                <div className="col-md-3 mt-2">
-                  <div className="form-group">
                     <label>
                       Expected Return Date{" "}
                       {formData.gate_pass_type === "return_to_vendor" && "*"}
@@ -1211,6 +1201,41 @@ const GatePassCreate = () => {
                         (g) => g.value === formData.gate_number_id
                       )}
                       placeholder="Select Gate No"
+                    />
+                  </div>
+                </div>
+
+                <div className="col-md-3 mt-2">
+                  <div className="form-group">
+                    <label>Driver Name</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.driver_name}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          driver_name: e.target.value,
+                        })
+                      }
+                      placeholder="Enter Driver Name"
+                    />
+                  </div>
+                </div>
+                <div className="col-md-3 mt-2">
+                  <div className="form-group">
+                    <label>Driver Contact No</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={formData.driver_contact_no}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          driver_contact_no: e.target.value,
+                        })
+                      }
+                      placeholder="Enter Driver Contact No"
                     />
                   </div>
                 </div>
@@ -1868,10 +1893,12 @@ const GatePassCreate = () => {
                                 <td>{idx + 1}</td>
                                 <td>{doc.document_type}</td>
                                 <td>{doc.attachments[0]?.filename || "-"}</td>
-                                {/* <td>
+                                {/* <td className="text-start">
                                   {doc.attachments[0]?.content_type || "-"}
                                 </td> */}
-                                <td>{doc.uploadDate || "-"}</td>
+                                <td className="text-start">
+                                  {doc.uploadDate || "-"}
+                                </td>
                                 {/* <td>
                                   <i
                                     className="fa-regular fa-eye"

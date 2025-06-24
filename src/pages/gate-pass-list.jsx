@@ -57,13 +57,13 @@ const GatePassList = () => {
       field: "project_name",
       headerName: "Project",
       flex: 1,
-      minWidth: 250,
+      minWidth: 200,
     },
     {
       field: "sub_project_name",
       headerName: "Subproject",
       flex: 1,
-      minWidth: 230,
+      minWidth: 180,
     },
     {
       field: "gate_pass_no",
@@ -95,7 +95,7 @@ const GatePassList = () => {
       field: "material_sub_type_name",
       headerName: " Material Sub Type",
       flex: 1,
-      minWidth: 250,
+      minWidth: 150,
     },
     {
       field: "po_or_mto_no",
@@ -279,7 +279,7 @@ const GatePassList = () => {
 
         // Add search
         if (searchKeyword) {
-          url += `&q[gate_pass_no_or_gate_pass_type_name_or_company_name_or_project_name_or_sub_project_name_or_created_by_name_or_status_cont]=${searchKeyword}`;
+          url += `&search=${searchKeyword}`;
         }
         const response = await axios.get(url);
         // The API returns gate_passes array

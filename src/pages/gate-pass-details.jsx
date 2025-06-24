@@ -121,17 +121,6 @@ const GatePassDetails = () => {
                   <div className="row px-3">
                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                       <div className="col-6">
-                        <label>Gate Pass No</label>
-                      </div>
-                      <div className="col-6">
-                        <label className="text">
-                          <span className="me-3 text-dark">:</span>
-                          {details.gate_pass_no || "-"}
-                        </label>
-                      </div>
-                    </div>
-                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                      <div className="col-6">
                         <label>Gate Pass Type</label>
                       </div>
                       <div className="col-6">
@@ -143,12 +132,33 @@ const GatePassDetails = () => {
                     </div>
                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                       <div className="col-6">
-                        <label>Date</label>
+                        <label>Gate Pass No</label>
                       </div>
                       <div className="col-6">
                         <label className="text">
                           <span className="me-3 text-dark">:</span>
-                          {details.gate_pass_date || "-"}
+                          {details.gate_pass_no || "-"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                      <div className="col-6">
+                        <label>Gate Pass Date & Time</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3 text-dark">:</span>
+                          {details.gate_pass_date
+                            ? `${new Date(
+                                details.gate_pass_date
+                              ).toLocaleDateString("en-GB")} ${new Date(
+                                details.gate_pass_date
+                              ).toLocaleTimeString("en-US", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              })}`
+                            : "-"}
                         </label>
                       </div>
                     </div>
@@ -328,9 +338,9 @@ const GatePassDetails = () => {
                     <thead>
                       <tr>
                         <th className="text-start">Sr. No.</th>
-                        {/* <th className="text-start">Document Name</th> */}
+                        <th className="text-start">Document Name</th>
                         <th className="text-start">File Name</th>
-                        <th className="text-start">File Type</th>
+                        {/* <th className="text-start">File Type</th> */}
                         <th className="text-start">Upload Date</th>
                         <th className="text-start">Action</th>
                       </tr>
@@ -340,15 +350,15 @@ const GatePassDetails = () => {
                         details.attachments.map((att, index) => (
                           <tr key={index}>
                             <td className="text-start">{index + 1}</td>
-                            {/* <td className="text-start">
-                              {att.file_name || "Attachment"}
-                            </td> */}
+                            <td className="text-start">
+                              {att.document_name || "Attachment"}
+                            </td>
                             <td className="text-start">
                               {att.file_name || "N/A"}
                             </td>
-                            <td className="text-start">
+                            {/* <td className="text-start">
                               {att.document_content_type || "N/A"}
-                            </td>
+                            </td> */}
                             <td className="text-start">
                               {att.created_at
                                 ? new Date(att.created_at).toLocaleDateString()
