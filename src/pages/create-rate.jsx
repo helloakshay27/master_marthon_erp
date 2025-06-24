@@ -666,7 +666,7 @@ const CreateRate = () => {
                 company_id: selectedCompany?.value || "",
                 project_id: selectedProject?.value || "",
                 pms_site_id: selectedSite?.value || "",
-                wing_id: selectedWing?.value || "",
+                pms_wing_id: selectedWing?.value || "",
                 materials: tableData.map(row => ({
                     material_id: row.material,
                     material_sub_type_id: row.materialSubType,
