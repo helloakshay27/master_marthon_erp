@@ -754,7 +754,7 @@ const BillEntryListSubPage = () => {
           draggable: true,
         });
         setTimeout(() => {
-          navigate("/bill-entry-list");
+          navigate(`/bill-entry-list?token=${token}`);
         }, 1500); // 2 second delay
         // setLoading(false);
         // navigate("/bill-entry-list"); // Redirect to bill-booking-list
@@ -1260,7 +1260,7 @@ const BillEntryListSubPage = () => {
                   </div>
                 </div>
               </div>
-              <div className="tbl-container mt-3">
+              <div className="tbl-container mt-3" style={{ maxHeight: "400px" }}>
                 <table className="w-100">
                   <thead>
                     <tr>

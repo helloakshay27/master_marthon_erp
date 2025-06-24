@@ -487,31 +487,29 @@ const BillEntryDetails = () => {
                   </div>
                 </div>
               </div>
-              <div className="tbl-container mt-3">
+              <div className="tbl-container mt-3" style={{ maxHeight: "400px" }}>
                 <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th className="text-start">Sr. No.</th>
-                      <th className="text-start">Document Name</th>
-                      <th className="text-start">No. of Documents</th>
-                      <th className="text-start">Attach Copy</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {documents?.length === 0 ? (
+                    <thead>
                       <tr>
-                        <td colSpan="4" className="text-center">
-                          No documents added yet
-                        </td>
+                        <th className="text-start">Sr. No.</th>
+                        <th className="text-start">Document Name</th>
+                        <th className="text-start">No. of Documents</th>
+                        <th className="text-start">Attach Additional Copy</th>
                       </tr>
-                    ) : (
-                      documents?.map((doc, index) => (
+                    </thead>
+                    {/* // Replace your existing table body with this */}
+                    <tbody>
+                      {documents.map((doc, index) => (
                         <tr key={index}>
                           <td className="text-start">{index + 1}</td>
                           <td className="text-start">{doc.document_type}</td>
                           <td
-                            className="text-start boq-id-link"
-                            style={{ cursor: "pointer" }}
+                            className="text-start"
+                            style={{
+                              color: "#8b0203",
+                              textDecoration: "underline",
+                              cursor: "pointer",
+                            }}
                             onClick={() =>
                               handleDocumentCountClick(doc.document_type)
                             }
@@ -520,12 +518,12 @@ const BillEntryDetails = () => {
                           </td>
                           <td className="text-start">
                             <button
-                              className="purple-btn2"
-                              // style={{
-                              //   color: "#8b0203",
-                              //   textDecoration: "underline",
-                              //   cursor: "pointer",
-                              // }}
+                              className="text-decoration-underline border-0 bg-transparent"
+                              style={{
+                                color: "#8b0203",
+                                textDecoration: "underline",
+                                cursor: "pointer",
+                              }}
                               onClick={() => {
                                 setNewDocument((prev) => ({
                                   ...prev,
@@ -534,24 +532,13 @@ const BillEntryDetails = () => {
                                 openattachModal();
                               }}
                             >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                fill="white"
-                                className="bi bi-plus"
-                                viewBox="0 0 16 16"
-                              >
-                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                              </svg>
-                              <span>Attach</span>
+                              + Attach
                             </button>
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                      ))}
+                    </tbody>
+                  </table>
               </div>
               <div className="row mt-4 justify-content-end align-items-center mx-2">
                 <div className="col-md-3">
@@ -753,224 +740,296 @@ const BillEntryDetails = () => {
         </Modal.Footer>
       </Modal>
       {/* document add */}
-      <Modal
-        centered
-        size="lg"
-        show={viewDocumentModal}
-        onHide={() => {
-          setviewDocumentModal(false);
-          setSelectedDocument(null);
-        }}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header closeButton>
-          <h5>Document Attachment</h5>
-        </Modal.Header>
-        <Modal.Body>
-          <div>
-            <div className="d-flex justify-content-between mt-3 me-2">
-              <h5>Latest Documents</h5>
-              <div className="card-tools d-flex">
-                <button
-                  className="purple-btn2 rounded-3"
-                  onClick={() => {
-                    setviewDocumentModal(false);
-                    setNewDocument((prev) => ({
-                      ...prev,
-                      document_type: selectedDocument?.document_type,
-                    }));
-                    openattachModal();
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width={20}
-                    height={20}
-                    fill="currentColor"
-                    className="bi bi-plus"
-                    viewBox="0 0 16 16"
-                  >
-                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                  </svg>
-                  <span>Attach</span>
-                </button>
-              </div>
-            </div>
-            <div className="tbl-container px-0">
-              <table className="w-100">
-                <thead>
-                  <tr>
-                    <th>Sr.No.</th>
-                    <th>Document Name</th>
-                    <th>Attachment Name</th>
-                    <th>Upload Date</th>
-                    <th>Uploaded By</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedDocument?.attachments.map((attachment, index) => (
-                    <tr key={index}>
-                      <td>{index + 1}</td>
-                      <td>{selectedDocument.document_type}</td>
-                      <td>{attachment.filename}</td>
-                      <td>{new Date().toLocaleDateString()}</td>
-                      <td></td>
-                      <td>
-                        {/* <button
-                          className="btn btn-link p-0 text-decoration-underline"
-                          onClick={() => handleDownload(attachment.blob_id)}
-                        >
-                          <DownloadIcon />
-                        </button> */}
-                        <a
-                          href={
-                            // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
-                            `${baseURL}bill_entries/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
-                          }
-                          download={attachment.filename}
-                        >
-                          <DownloadIcon />
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-3 me-2">
-              <h5>Document Attachment History</h5>
-            </div>
-            <div className="tbl-container px-0">
-              <table className="w-100">
-                <thead>
-                  <tr>
-                    <th>Sr.No.</th>
-                    <th>Document Name</th>
-                    <th>Attachment Name</th>
-                    <th>Upload Date</th>
-                    <th>Uploaded By</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedDocument?.attachments.map((attachment, index) => (
-                    <tr key={index}>
-                      <td>{index + 1}</td>
-                      <td>{selectedDocument.document_type}</td>
-                      <td>{attachment.filename}</td>
-                      <td>{new Date().toLocaleDateString()}</td>
-                      <td></td>
-                      {/* <td> */}
-                      {/* <button
-                          className="btn btn-link p-0 text-decoration-underline"
-                          onClick={() => handleDownload(attachment.blob_id)}
-                        >
-                          <DownloadIcon />
-                        </button> */}
+    
 
-                      <td>
-                        <a
-                          href={
-                            // {`${baseURL}rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`}
-                            `${baseURL}bill_entries/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
-                          }
-                          download={attachment.filename}
+       <Modal
+              centered
+              size="lg"
+              show={viewDocumentModal}
+              onHide={() => {
+                setviewDocumentModal(false);
+                setSelectedDocument(null);
+              }}
+              backdrop="true"
+              keyboard={true}
+              className="modal-centered-custom"
+            >
+              <Modal.Header closeButton>
+                <h5>Document Attachment</h5>
+              </Modal.Header>
+              <Modal.Body>
+                <div>
+                  <div className="d-flex justify-content-between mt-3 me-2">
+                    <h5>Latest Documents</h5>
+                    <div className="card-tools d-flex">
+                      <button
+                        className="purple-btn2 rounded-3"
+                        onClick={() => {
+                          setviewDocumentModal(false);
+                          setNewDocument((prev) => ({
+                            ...prev,
+                            document_type: selectedDocument?.document_type,
+                          }));
+                          openattachModal();
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width={20}
+                          height={20}
+                          fill="currentColor"
+                          className="bi bi-plus"
+                          viewBox="0 0 16 16"
                         >
-                          <DownloadIcon />
-                        </a>
-                      </td>
-                      {/* </td> */}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-center">
-            <div className="col-md-3">
-              <button
-                className="purple-btn1 w-100"
-                onClick={() => {
-                  setviewDocumentModal(false);
-                  setSelectedDocument(null);
-                }}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal>
+                          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                        </svg>
+                        <span>Attach</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="tbl-container px-0">
+                    <table className="w-100">
+                      <thead>
+                        <tr>
+                          <th>Sr.No.</th>
+                          <th>Document Name</th>
+                          <th>Attachment Name</th>
+                          <th>Upload Date</th>
+                          <th>Uploaded By</th>
+                          <th>Document Preview</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedDocument?.attachments.map((attachment, index) => (
+                          <tr key={index}>
+                            <td>{index + 1}</td>
+                            <td>{selectedDocument.document_type}</td>
+                            <td>{attachment.filename}</td>
+                            <td>{new Date().toLocaleDateString()}</td>
+                            <td></td>
+                            <td>
+                              {/* <button
+                                className="btn btn-link p-0 text-decoration-underline"
+                                onClick={() => handleDownload(attachment.blob_id)}
+                              >
+                                <DownloadIcon />
+                              </button> */}
+                              <a
+                                href={
+                                  // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                                  `${baseURL}bill_entries/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
+                                }
+                                // target="_blank"
+                                // rel="noopener noreferrer"
+                                download={attachment.filename}
+                              >
+                                <DownloadIcon />
+                              </a>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="mt-3 me-2">
+                    <h5>Document Attachment History</h5>
+                  </div>
+                  <div className="tbl-container px-0">
+                    <table className="w-100">
+                      <thead>
+                        <tr>
+                          <th>Sr.No.</th>
+                          <th>Document Name</th>
+                          <th>Attachment Name</th>
+                          <th>Upload Date</th>
+                          <th>Uploaded By</th>
+                          <th>Document Preview</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selectedDocument?.attachments.map((attachment, index) => (
+                          <tr key={index}>
+                            <td>{index + 1}</td>
+                            <td>{selectedDocument.document_type}</td>
+                            <td>{attachment.filename}</td>
+                            <td>{new Date().toLocaleDateString()}</td>
+                            <td></td>
+                            {/* <td> */}
+                            {/* <button
+                                className="btn btn-link p-0 text-decoration-underline"
+                                onClick={() => handleDownload(attachment.blob_id)}
+                              >
+                                <DownloadIcon />
+                              </button> */}
+      
+                            <td>
+                              <a
+                                href={
+                                  // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                                  `${baseURL}bill_entries/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
+                                }
+                                // target="_blank"
+                                // rel="noopener noreferrer"
+                                download={attachment.filename}
+                              >
+                                <DownloadIcon />
+                              </a>
+                            </td>
+                            {/* </td> */}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div className="row mt-2 justify-content-center">
+                  <div className="col-md-3">
+                    <button
+                      className="purple-btn1 w-100"
+                      onClick={() => {
+                        setviewDocumentModal(false);
+                        setSelectedDocument(null);
+                      }}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </Modal.Body>
+            </Modal>
 
       {/* attach document */}
 
-      <Modal
-        centered
-        size="l"
-        show={attachModal}
-        onHide={closeattachModal}
-        backdrop="true"
-        keyboard={true}
-        className="modal-centered-custom"
-      >
-        <Modal.Header closeButton>
-          <h5>Attach Other Document</h5>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="row">
-            <div className="col-md-12">
-              <div className="form-group">
-                <label>Name of the Document</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={newDocument.document_type}
-                  onChange={(e) =>
-                    setNewDocument((prev) => ({
-                      ...prev,
-                      document_type: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter document name"
-                />
-              </div>
-            </div>
-            <div className="col-md-12 mt-2">
-              <div className="form-group">
-                <label>Upload File</label>
-                <input
-                  type="file"
-                  className="form-control"
-                  onChange={handleFileUpload}
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2 justify-content-center">
-            <div className="col-md-4">
-              <button
-                className="purple-btn2 w-100"
-                onClick={handleAttachDocument}
-                disabled={
-                  !newDocument.document_type ||
-                  newDocument.attachments.length === 0
-                }
-              >
-                Attach
-              </button>
-            </div>
-            <div className="col-md-4">
-              <button className="purple-btn1 w-100" onClick={closeattachModal}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </Modal.Body>
-      </Modal>
+        <Modal
+              centered
+              size="l"
+              show={attachModal}
+              onHide={closeattachModal}
+              backdrop="true"
+              keyboard={true}
+              className="modal-centered-custom"
+            >
+              <Modal.Header closeButton>
+                <h5>Attach Document</h5>
+              </Modal.Header>
+              <Modal.Body>
+                <div className="row">
+                  <div className="col-md-12">
+                    <div className="form-group">
+                      <label>Name of the Document</label>
+                      {newDocument.document_type &&
+                      documents.find(
+                        (doc) =>
+                          doc.isDefault &&
+                          doc.document_type === newDocument.document_type
+                      ) ? (
+                        // For default document types - show as disabled input
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={newDocument.document_type}
+                          disabled
+                        />
+                      ) : (
+                        // For new document types - allow input
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={newDocument.document_type}
+                          onChange={(e) =>
+                            setNewDocument((prev) => ({
+                              ...prev,
+                              document_type: e.target.value,
+                            }))
+                          }
+                          placeholder="Enter document name"
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <div className="col-md-12 mt-2">
+                    <div className="form-group">
+                      <label>Upload File</label>
+                      <input
+                        type="file"
+                        className="form-control"
+                        onChange={handleFileUpload}
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      />
+                    </div>
+                  </div>
+                  {/* Add this new section for file name editing */}
+                  {newDocument.attachments.length > 0 && (
+                    <div className="col-md-12 mt-2">
+                      <div className="form-group">
+                        <label>File Name</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={newDocument.attachments[0].filename}
+                          onChange={(e) => {
+                            setNewDocument((prev) => ({
+                              ...prev,
+                              attachments: [
+                                {
+                                  ...prev.attachments[0],
+                                  filename: e.target.value,
+                                },
+                              ],
+                            }));
+                          }}
+                          placeholder="Enter file name"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+      
+                <div className="row mt-3 justify-content-center">
+                  <div className="col-md-8 d-flex justify-content-center align-items-center gap-4">
+                    <div className="col-md-4">
+                      <button
+                        className="purple-btn2 w-100"
+                        onClick={handleAttachDocument}
+                        disabled={
+                          !newDocument.document_type ||
+                          newDocument.attachments.length === 0
+                        }
+                      >
+                        Attach
+                      </button>
+                    </div>
+                    <div className="col-md-4 ">
+                      <button
+                        className="purple-btn1 w-100"
+                        onClick={closeattachModal}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                {/* <div className="row mt-3 justify-content-center">
+                       <div className="col-md-4">
+                         <button
+                           className="purple-btn2 w-100"
+                           onClick={handleAttachDocument}
+                           disabled={
+                             !newDocument.document_type ||
+                             newDocument.attachments.length === 0
+                           }
+                         >
+                           Attach
+                         </button>
+                       </div>
+                       <div className="col-md-4">
+                         <button className="purple-btn1 w-100" onClick={closeattachModal}>
+                           Cancel
+                         </button>
+                       </div>
+                     </div> */}
+              </Modal.Body>
+            </Modal>
       {/* attach document */}
 
 

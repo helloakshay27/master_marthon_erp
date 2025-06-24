@@ -685,7 +685,7 @@ display:none !important;
                 </button>
                 <button
                   className="purple-btn2"
-                  onClick={() => navigate("/bill-entry-list-sub-page")}
+                  onClick={() => navigate(`/bill-entry-list-sub-page?token=${token}`)}
                 >
                   <span> + Add</span>
                 </button>

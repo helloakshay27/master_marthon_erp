@@ -545,7 +545,7 @@ const BillApproval = () => {
                     </div>
                   </div> */}
                 </div>
-                <div className="tbl-container mt-3">
+                <div className="tbl-container mt-3" style={{ maxHeight: "400px" }}>
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -722,7 +722,7 @@ const BillApproval = () => {
                   <button
                     className="purple-btn1 w-100"
                     onClick={() =>
-                      navigate(`/bill-verification-list?token=${token}`)
+                      navigate(`/bill-approval-list?token=${token}`)
                     }
                   >
                     Cancel
