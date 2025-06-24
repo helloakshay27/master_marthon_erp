@@ -13,6 +13,7 @@ import { BulkAction } from "../components";
 import axios from "axios";
 import { Link } from 'react-router-dom'
 import { baseURL } from "../confi/apiDomain";
+import { toast, ToastContainer } from "react-toastify";
 
 
 
@@ -830,12 +831,25 @@ const BOQList = () => {
         setFile(null);
       } catch (error) {
 
+        // if (error.response && error.response.status === 422) {
+        //   console.log("422 response:", error.response.data);
+        //   if (Array.isArray(error.response.data.errors)) {
+        //     error.response.data.errors.forEach(errObj => {
+        //       toast.error(`${errObj.error}`);
+        //     });
+        //   } else if (typeof error.response.data.errors === "string") {
+        //     toast.error(error.response.data.errors);
+        //   }
+        // } else {
+        //   console.error(error);
+        // }
         if (error.response && error.response.status === 422) {
           console.log("422 response:", error.response.data);
           if (Array.isArray(error.response.data.errors)) {
-            error.response.data.errors.forEach(errObj => {
-              toast.error(`${errObj.error}`);
-            });
+            const firstError = error.response.data.errors[0];
+            if (firstError && firstError.error) {
+              toast.error(`${firstError.error}`);
+            }
           } else if (typeof error.response.data.errors === "string") {
             toast.error(error.response.data.errors);
           }
@@ -3773,6 +3787,18 @@ const BOQList = () => {
       </Modal> */}
 
       {/* copy modal end */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 };
