@@ -859,7 +859,7 @@ const BillEntryCreateVendorPage = () => {
                     </div>
                   </div>
                 </div>
-                <div className="tbl-container mt-3">
+                <div className="tbl-container mt-3" style={{ maxHeight: "400px" }}>
                   <table className="w-100">
                     <thead>
                       <tr>

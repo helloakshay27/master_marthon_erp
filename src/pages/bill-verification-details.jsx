@@ -795,7 +795,7 @@ const BillVerificationDetails = () => {
                   </table>
                 </div> */}
 
-                <div className="tbl-container mt-3">
+                <div className="tbl-container mt-3" style={{ maxHeight: "400px" }}>
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -1340,7 +1340,7 @@ const BillVerificationDetails = () => {
                       <td>{selectedDocument.document_type}</td>
                       <td>{attachment.filename}</td>
                       <td>{new Date().toLocaleDateString()}</td>
-                      <td></td>
+                      <td>{attachment.created_by}</td>
                       <td>
                         {/* <button
                           className="btn btn-link p-0 text-decoration-underline"
@@ -1387,7 +1387,7 @@ const BillVerificationDetails = () => {
                       <td>{selectedDocument.document_type}</td>
                       <td>{attachment.filename}</td>
                       <td>{new Date().toLocaleDateString()}</td>
-                      <td></td>
+                      <td>{attachment.created_by}</td>
                       {/* <td> */}
                       {/* <button
                           className="btn btn-link p-0 text-decoration-underline"

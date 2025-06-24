@@ -111,6 +111,7 @@ import VendorApprovalEdit from "./pages/vendor-approval-edit";
 import EditRate from "./pages/edit-rate";
 import RateRevision from "./pages/rate-revision";
 import BillApproval from "./pages/bill-approval";
+import BillApprovalList from "./pages/bill-approval-list";
 
 function App() {
   return (
@@ -146,6 +147,7 @@ function App() {
             path="/bill-verification-details/:id"
             element={<BillVerificationDetails />}
           />
+           <Route path="/bill-approval-list" element={<BillApprovalList />} />
           <Route path="/bill-approval/:id" element={<BillApproval />} />
           <Route
             path="/bill-verification-list"

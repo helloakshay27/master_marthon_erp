@@ -424,6 +424,12 @@ function Members() {
                   <Link to={`/bill-approval/78?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`}>
                     Bill Approval
                   </Link>
+
+                </li>
+                <li>
+                   <Link to={`/bill-approval-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`}>
+                    Bill Approval List
+                  </Link>
                 </li>
 
 
