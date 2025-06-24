@@ -522,7 +522,18 @@ const ViewRate = () => {
                                                                     <td className="text-start"></td>
                                                                 )}
                                                                 {/* Wing Name */}
-                                                                <td className="text-start">{wing.name}</td>
+                                                                <td className="text-start">
+                                                                    {/* {wing.name} */}
+                                                                    {wing.rate_id ? (
+                                                                            <a href={`/details-rate/${wing.rate_id}?token=${token}`}>
+                                                                                <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                                    {wing.name}
+                                                                                </span>
+                                                                            </a>
+                                                                        ) : (
+                                                                            <span>{wing.name}</span>
+                                                                        )}
+                                                                </td>
                                                                 {/* Location */}
                                                                 {/* <td className="text-start"></td> */}
                                                             </tr>
