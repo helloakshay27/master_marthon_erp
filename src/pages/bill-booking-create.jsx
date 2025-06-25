@@ -2116,6 +2116,83 @@ const BillBookingCreate = () => {
                   </table>
                 </div>
                 <div className="d-flex justify-content-between mt-3 me-2">
+                  <h5 className=" ">Debit Note</h5>
+                </div>
+                <div className="tbl-container mx-3 mt-3">
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th className="text-start">Debit Note No.</th>
+                        <th className="text-start">PO No.</th>
+                        <th className="text-start">Project</th>
+                        <th className="text-start">Sub Project</th>
+                        <th className="text-start">Status</th>
+                        <th className="text-start">Debit Note Amount</th>
+                        <th className="text-start">Recovery Till Date</th>
+                        <th className="text-start">Waive off Till Date</th>
+                        <th className="text-start">
+                          Outstanding Amount (Certificate Date)
+                        </th>
+                        <th className="text-start">
+                          Outstanding Amount (Current Date)
+                        </th>
+                        <th className="text-start">Debit Note Reason Type</th>
+
+                        <th className="text-start">This Recovery</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {debitNotes.length > 0 ? (
+                        debitNotes.map((note, index) => (
+                          <tr key={note.id}>
+                            <td className="text-start">
+                              {note.debit_note_no || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.po_number || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.project_name || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.site_name || note.sub_project_name || "-"}
+                            </td>
+                            <td className="text-start">{note.status || "-"}</td>
+                            <td className="text-start">
+                              {note.debit_note_amount || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.recovery_till_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.waive_off_till_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.outstanding_certificate_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.outstanding_current_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.reason_type || "-"}
+                            </td>
+
+                            <td className="text-start">
+                              {note.this_recovery || "-"}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td className="text-start" colSpan="12">
+                            No debit notes available
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Tax Deduction:</h5>
                 </div>
                 <div className="tbl-container mx-3 mt-3">
