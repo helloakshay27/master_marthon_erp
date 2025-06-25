@@ -269,7 +269,9 @@ function Members() {
                   <Link to="/create-rate">Create Rate</Link>
                 </li> */}
                 <li>
-                  <Link to="/view-rate?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">Rate List</Link>
+                  <Link to="/view-rate?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    Rate List
+                  </Link>
                 </li>
               </ul>
               <h1>Gate Pass</h1>
@@ -278,7 +280,9 @@ function Members() {
                   <Link to="/gate-pass-create"> Gate Pass Create</Link>
                 </li>
                 <li>
-                  <Link to="/gate-pass-list">Gate pass List</Link>
+                  <Link to="/gate-pass-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    Gate pass List
+                  </Link>
                 </li>
               </ul>
               <h1>Vendor REkyc</h1>
@@ -287,7 +291,9 @@ function Members() {
                   <Link to="/rekyc/:id">Section Re KYC Details</Link>
                 </li>
                 <li>
-                  <Link to="/vendor-approval-create">Vendor approval create</Link>
+                  <Link to="/vendor-approval-create">
+                    Vendor approval create
+                  </Link>
                 </li>
                 <li>
                   <Link to="/vendor-approval-list">Vendor approval list</Link>
@@ -421,17 +427,19 @@ function Members() {
                   </Link>
                 </li>
                 <li>
-                  <Link to={`/bill-approval/78?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`}>
+                  <Link
+                    to={`/bill-approval/78?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`}
+                  >
                     Bill Approval
                   </Link>
-
                 </li>
                 <li>
-                   <Link to={`/bill-approval-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`}>
+                  <Link
+                    to={`/bill-approval-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`}
+                  >
                     Bill Approval List
                   </Link>
                 </li>
-
 
                 {/* <li>
                   <Link to="/bill-verification-edit">

@@ -6,8 +6,11 @@ import { baseURL } from "../confi/apiDomain";
 import { Modal, Button, Form } from "react-bootstrap";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+import { DownloadIcon } from "../components";
 
 const GatePassDetails = () => {
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const { id } = useParams();
   const navigate = useNavigate();
   const [details, setDetails] = useState(null);
@@ -20,7 +23,6 @@ const GatePassDetails = () => {
   });
   const [statusList, setStatusList] = useState([]);
   const [isStatusDisabled, setIsStatusDisabled] = useState(false);
-  const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
 
   useEffect(() => {
     if (id) {
@@ -364,13 +366,21 @@ const GatePassDetails = () => {
                                 ? new Date(att.created_at).toLocaleDateString()
                                 : "N/A"}
                             </td>
-                            <td className="text-start">
+                            {/* <td className="text-start">
                               <a
                                 href={att.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
                                 View
+                              </a>
+                            </td> */}
+                            <td className="text-start">
+                              <a
+                                href={`${baseURL}gate_passes/${id}/download_attachment?token=${token}&blob_id=${att.blob_id}`}
+                                download={att.file_name}
+                              >
+                                <DownloadIcon />
                               </a>
                             </td>
                           </tr>
