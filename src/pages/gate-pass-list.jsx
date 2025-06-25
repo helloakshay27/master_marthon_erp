@@ -95,7 +95,7 @@ const GatePassList = () => {
       field: "material_sub_type_name",
       headerName: " Material Sub Type",
       flex: 1,
-      minWidth: 180,
+      minWidth: 250,
     },
     {
       field: "po_or_mto_no",
