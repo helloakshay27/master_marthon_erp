@@ -1086,12 +1086,12 @@ const BillApproval = () => {
                 <tbody>
                   {selectedDocument?.attachments.map((attachment, index) => (
                     <tr key={index}>
-                      <td>{index + 1}</td>
-                      <td>{selectedDocument.document_type}</td>
-                      <td>{attachment.filename}</td>
-                      <td>{new Date().toLocaleDateString()}</td>
-                      <td></td>
-                      <td>
+                      <td className="text-start">{index + 1}</td>
+                      <td className="text-start">{selectedDocument.document_type}</td>
+                      <td className="text-start">{attachment.filename}</td>
+                      <td className="text-start">{new Date().toLocaleDateString()}</td>
+                      <td className="text-start" style={{ width: "150px" }}>{attachment.created_by}</td>
+                      <td className="text-start">
                         {/* <button
                           className="btn btn-link p-0 text-decoration-underline"
                           onClick={() => handleDownload(attachment.blob_id)}
@@ -1101,9 +1101,10 @@ const BillApproval = () => {
                         <a
                           href={
                             // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
-                            `${baseURL}bill_entries/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
+                            // `${baseURL}bill_entries/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
+                            attachment.url
                           }
-                          // target="_blank"
+                          target="_blank"
                           // rel="noopener noreferrer"
                           download={attachment.filename}
                         >
@@ -1133,11 +1134,11 @@ const BillApproval = () => {
                 <tbody>
                   {selectedDocument?.attachments.map((attachment, index) => (
                     <tr key={index}>
-                      <td>{index + 1}</td>
-                      <td>{selectedDocument.document_type}</td>
-                      <td>{attachment.filename}</td>
-                      <td>{new Date().toLocaleDateString()}</td>
-                      <td></td>
+                      <td className="text-start">{index + 1}</td>
+                      <td className="text-start">{selectedDocument.document_type}</td>
+                      <td className="text-start">{attachment.filename}</td>
+                      <td className="text-start">{new Date().toLocaleDateString()}</td>
+                      <td className="text-start" style={{ width: "150px" }}>{attachment.created_by}</td>
                       {/* <td> */}
                       {/* <button
                           className="btn btn-link p-0 text-decoration-underline"
@@ -1146,13 +1147,14 @@ const BillApproval = () => {
                           <DownloadIcon />
                         </button> */}
 
-                      <td>
+                      <td className="text-start">
                         <a
                           href={
                             // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
-                            `${baseURL}bill_entries/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
+                            // `${baseURL}bill_entries/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
+                            attachment.url
                           }
-                          // target="_blank"
+                          target="_blank"
                           // rel="noopener noreferrer"
                           download={attachment.filename}
                         >
