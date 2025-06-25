@@ -184,13 +184,20 @@ const GatePassEdit = () => {
           (v) => v.value === formData.to_vendor
         );
         other_vendor_attributes = {
+          id:
+            otherVendorId ||
+            (typeof formData.to_vendor === "number"
+              ? formData.to_vendor
+              : undefined),
           name: otherVendor?.label || "",
-          contact_no: otherVendor?.contact || "",
-          remarks: otherVendor?.remark || "",
-          address: otherVendor?.address || "",
+          ...(otherVendor?.contact ? { contact_no: otherVendor.contact } : {}),
+          ...(otherVendor?.remark ? { remarks: otherVendor.remark } : {}),
+          ...(otherVendor?.address ? { address: otherVendor.address } : {}),
         };
         to_resource_type = "OtherVendor";
-        to_resource_id = null;
+        to_resource_id =
+          otherVendorId ||
+          (typeof formData.to_vendor === "number" ? formData.to_vendor : null);
       } else {
         to_resource_id = formData.to_vendor;
         to_resource_type = "Pms::Supplier";
