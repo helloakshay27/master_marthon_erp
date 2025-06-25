@@ -665,8 +665,22 @@ const BillEntryListSubPage = () => {
       [name]: value,
     }));
   };
+  console.log("token:", token)
 
   const handleBillEntrySubmit = async () => {
+    // ✅ Validation for Invoice Number
+    const billNoRegex = /^[a-zA-Z0-9]*$/;
+
+    if (!formData.bill_no) {
+      toast.error("Invoice Number is required.");
+      return;
+    } else if (!billNoRegex.test(formData.bill_no)) {
+      toast.error("Invoice Number must be alphanumeric only.");
+      return;
+    } else if (formData.bill_no.length > 16) {
+      toast.error("Invoice Number must not exceed 16 characters.");
+      return;
+    }
     try {
       setLoading(true);
       // if (!selectedPO) {
@@ -763,14 +777,33 @@ const BillEntryListSubPage = () => {
       console.log("Response:", response.data);
     } catch (error) {
       console.error("Error submitting bill entry:", error);
-      toast.error("Failed to submit bill entry. Please try again.", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      // toast.error("Failed to submit bill entry. Please try again.", {
+      //   position: "top-right",
+      //   autoClose: 3000,
+      //   hideProgressBar: false,
+      //   closeOnClick: true,
+      //   pauseOnHover: true,
+      //   draggable: true,
+      // });
+      if (error.response && error.response.status === 422) {
+        const errors = error.response.data.errors;
+
+        // If errors is an object and contains bill_no key
+        if (errors && typeof errors === "object" && errors.bill_no && Array.isArray(errors.bill_no)) {
+          toast.error(`Invoice Number ${errors.bill_no[0]}`);
+        } else {
+          toast.error("Validation failed. Please check your inputs.");
+        }
+      } else {
+        toast.error("Failed to submit bill entry. Please try again.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
 
       setLoading(false);
       // alert("Failed to submit bill entry. Please try again.");
@@ -860,9 +893,8 @@ const BillEntryListSubPage = () => {
           >
             <li className="nav-item" role="presentation">
               <button
-                className={`nav-link ${
-                  activeTab === "material" ? "active" : ""
-                }`}
+                className={`nav-link ${activeTab === "material" ? "active" : ""
+                  }`}
                 onClick={() => handleTabClick("material")}
                 type="button"
               >
@@ -871,9 +903,8 @@ const BillEntryListSubPage = () => {
             </li>
             <li className="nav-item" role="presentation">
               <button
-                className={`nav-link ${
-                  activeTab === "service" ? "active" : ""
-                }`}
+                className={`nav-link ${activeTab === "service" ? "active" : ""
+                  }`}
                 onClick={() => handleTabClick("service")}
                 type="button"
               >
@@ -1074,11 +1105,11 @@ const BillEntryListSubPage = () => {
                           value={
                             selectedSupplier
                               ? {
-                                  label: selectedSupplier.organization_name,
-                                  value: selectedSupplier.id,
-                                  gstin: selectedSupplier.gstin,
-                                  pan_number: selectedSupplier.pan_number,
-                                }
+                                label: selectedSupplier.organization_name,
+                                value: selectedSupplier.id,
+                                gstin: selectedSupplier.gstin,
+                                pan_number: selectedSupplier.pan_number,
+                              }
                               : null
                           }
                           onChange={(option) => {
@@ -1140,7 +1171,7 @@ const BillEntryListSubPage = () => {
                       value={formData.bill_no}
                       onChange={handleInputChange}
                       placeholder=""
-                      // disabled
+                    // disabled
                     />
                   </div>
                 </div>
@@ -1591,11 +1622,11 @@ const BillEntryListSubPage = () => {
               <div className="form-group">
                 <label>Name of the Document</label>
                 {newDocument.document_type &&
-                documents.find(
-                  (doc) =>
-                    doc.isDefault &&
-                    doc.document_type === newDocument.document_type
-                ) ? (
+                  documents.find(
+                    (doc) =>
+                      doc.isDefault &&
+                      doc.document_type === newDocument.document_type
+                  ) ? (
                   // For default document types - show as disabled input
                   <input
                     type="text"
@@ -1867,9 +1898,8 @@ const BillEntryListSubPage = () => {
                   <nav>
                     <ul className="pagination">
                       <li
-                        className={`page-item ${
-                          pagination.current_page === 1 ? "disabled" : ""
-                        }`}
+                        className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -1880,9 +1910,8 @@ const BillEntryListSubPage = () => {
                         </button>
                       </li>
                       <li
-                        className={`page-item ${
-                          pagination.current_page === 1 ? "disabled" : ""
-                        }`}
+                        className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -1897,9 +1926,8 @@ const BillEntryListSubPage = () => {
                       {getPageNumbers().map((page) => (
                         <li
                           key={page}
-                          className={`page-item ${
-                            page === pagination.current_page ? "active" : ""
-                          }`}
+                          className={`page-item ${page === pagination.current_page ? "active" : ""
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -1910,11 +1938,10 @@ const BillEntryListSubPage = () => {
                         </li>
                       ))}
                       <li
-                        className={`page-item ${
-                          pagination.current_page === pagination.total_pages
+                        className={`page-item ${pagination.current_page === pagination.total_pages
                             ? "disabled"
                             : ""
-                        }`}
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -1929,11 +1956,10 @@ const BillEntryListSubPage = () => {
                         </button>
                       </li>
                       <li
-                        className={`page-item ${
-                          pagination.current_page === pagination.total_pages
+                        className={`page-item ${pagination.current_page === pagination.total_pages
                             ? "disabled"
                             : ""
-                        }`}
+                          }`}
                       >
                         <button
                           className="page-link"
