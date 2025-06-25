@@ -1133,7 +1133,7 @@ const GatePassCreate = () => {
                             <div className="form-group">
                               <label>
                                 PO/WO No
-                                <span>  *</span>
+                                <span> *</span>
                               </label>
                               <SingleSelector
                                 options={poOptions}
@@ -1923,7 +1923,7 @@ const GatePassCreate = () => {
                   <div className="row mt-2 justify-content-center">
                     <div className="col-md-4">
                       <button
-                        className="purple-btn2 w-100"
+                        className="purple-btn2 w-100 mt-2"
                         onClick={handleAttachDocument}
                         disabled={
                           !newDocument.document_type ||
