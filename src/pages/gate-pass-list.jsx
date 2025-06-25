@@ -40,6 +40,16 @@ const GatePassList = () => {
   const [siteOptions, setSiteOptions] = useState([]);
   const navigate = useNavigate();
 
+  const [statusCounts, setStatusCounts] = useState({
+    total: 0,
+    returnable: 0,
+    non_returnable: 0,
+    draft: 0,
+    approved: 0,
+    rejected: 0,
+  });
+  const [returnableFilter, setReturnableFilter] = useState(null);
+
   const allColumns = [
     {
       field: "srNo",
@@ -276,6 +286,8 @@ const GatePassList = () => {
           // Assuming siteId corresponds to sub_project_id
           url += `&q[sub_project_id_eq]=${currentFilters.siteId}`;
         }
+        if (returnableFilter === true) url += `&q[returnable_eq]=true`;
+        if (returnableFilter === false) url += `&q[returnable_eq]=false`;
 
         // Add search
         if (searchKeyword) {
@@ -299,6 +311,7 @@ const GatePassList = () => {
         setMeta(response.data.pagination || {});
         setTotalPages(response.data.pagination?.total_pages || 1);
         setTotalEntries(response.data.pagination?.total_count || data.length);
+        setStatusCounts(response.data.status_counts || {});
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to fetch data");
@@ -307,7 +320,7 @@ const GatePassList = () => {
       }
     };
     fetchData();
-  }, [currentPage, pageSize, searchKeyword, currentFilters]);
+  }, [currentPage, pageSize, searchKeyword, currentFilters, returnableFilter]);
 
   const columns = allColumns;
 
@@ -422,25 +435,51 @@ display:none !important;
             <div className="container-fluid">
               <div className="row separteinto6 justify-content-center">
                 <div className="col-md-2 text-center">
-                  <div className="content-box tab-button active">
+                  <div
+                    className={`content-box tab-button ${
+                      returnableFilter === null ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setReturnableFilter(null);
+                      setCurrentPage(1);
+                    }}
+                  >
                     <h4 className="content-box-title fw-semibold">Total</h4>
-                    <p className="content-box-sub">25</p>
+                    <p className="content-box-sub">{statusCounts.total}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div className="content-box tab-button">
+                  <div
+                    className={`content-box tab-button ${
+                      returnableFilter === true ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setReturnableFilter(true);
+                      setCurrentPage(1);
+                    }}
+                  >
                     <h4 className="content-box-title fw-semibold">
                       Returnable
                     </h4>
-                    <p className="content-box-sub">25</p>
+                    <p className="content-box-sub">{statusCounts.returnable}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div className="content-box tab-button">
+                  <div
+                    className={`content-box tab-button ${
+                      returnableFilter === false ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setReturnableFilter(false);
+                      setCurrentPage(1);
+                    }}
+                  >
                     <h4 className="content-box-title fw-semibold">
                       Non-Returnable
                     </h4>
-                    <p className="content-box-sub">10</p>
+                    <p className="content-box-sub">
+                      {statusCounts.non_returnable}
+                    </p>
                   </div>
                 </div>
                 {/* <div className="col-md-2 text-center">
