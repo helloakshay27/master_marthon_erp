@@ -50,13 +50,21 @@ const ViewRate = () => {
                     console.log("422 response:", error.response.data);
                     if (Array.isArray(error.response.data.errors)) {
                         error.response.data.errors.forEach(errObj => {
-                            toast.error(`${errObj.error}`);
+                            const rowInfo = errObj.row ? `Row ${errObj.row}: ` : "";
+                            toast.error(`${rowInfo}${errObj.error}`);
+                            setShowModal(false);
                         });
                     } else if (typeof error.response.data.errors === "string") {
                         toast.error(error.response.data.errors);
+                        setShowModal(false);
+                    } else if (error.response && error.response.status === 500) {
+                        toast.error("Server error occurred. Please try again later.");
+                        setShowModal(false);
                     }
                 } else {
                     console.error(error);
+                    toast.error("Failed to upload. Please try again.");
+                    setShowModal(false);
                 }
                 //   alert("File upload failed!");
                 console.error(error);
@@ -227,7 +235,7 @@ const ViewRate = () => {
         }
     };
 
-// console.log("Token value inside render:", token);
+    // console.log("Token value inside render:", token);
     return (
         <>
             <div className="website-content overflow-auto">
@@ -525,14 +533,14 @@ const ViewRate = () => {
                                                                 <td className="text-start">
                                                                     {/* {wing.name} */}
                                                                     {wing.rate_id ? (
-                                                                            <a href={`/details-rate/${wing.rate_id}?token=${token}`}>
-                                                                                <span style={{ color: "#8b0203", textDecoration: "underline" }}>
-                                                                                    {wing.name}
-                                                                                </span>
-                                                                            </a>
-                                                                        ) : (
-                                                                            <span>{wing.name}</span>
-                                                                        )}
+                                                                        <a href={`/details-rate/${wing.rate_id}?token=${token}`}>
+                                                                            <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                                {wing.name}
+                                                                            </span>
+                                                                        </a>
+                                                                    ) : (
+                                                                        <span>{wing.name}</span>
+                                                                    )}
                                                                 </td>
                                                                 {/* Location */}
                                                                 {/* <td className="text-start"></td> */}
