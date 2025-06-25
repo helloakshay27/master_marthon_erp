@@ -460,7 +460,7 @@ const GatePassDetails = () => {
                 <thead>
                   <tr>
                     <th>Sr.No.</th>
-                    <th>User</th>
+                    <th>Created By</th>
                     <th>Date</th>
                     <th>Status</th>
                     <th>Remark</th>
@@ -470,7 +470,7 @@ const GatePassDetails = () => {
                   {details?.status_logs?.map((log, index) => (
                     <tr key={log.id}>
                       <td>{index + 1}</td>
-                      <td>{log.created_by_id}</td>
+                      <td>{log.created_by_name}</td>
                       <td>{new Date(log.created_at).toLocaleDateString()}</td>
                       <td>{log.status}</td>
                       <td>{log.remarks || "-"}</td>
