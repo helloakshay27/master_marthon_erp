@@ -263,7 +263,7 @@ const GatePassList = () => {
       setLoading(true);
       try {
         // Build base URL
-        let url = `${baseURL}gate_passes.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&page=${currentPage}&per_page=${pageSize}`;
+        let url = `${baseURL}gate_passes.json?token=${token}&page=${currentPage}&per_page=${pageSize}`;
 
         // Add filters
         if (currentFilters.companyId) {
@@ -443,7 +443,7 @@ display:none !important;
                     <p className="content-box-sub">10</p>
                   </div>
                 </div>
-                <div className="col-md-2 text-center">
+                {/* <div className="col-md-2 text-center">
                   <div className="content-box tab-button">
                     <h4 className="content-box-title fw-semibold">
                       Pending to Return
@@ -456,7 +456,7 @@ display:none !important;
                     <h4 className="content-box-title fw-semibold">Value</h4>
                     <p className="content-box-sub">100200 ₹</p>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
@@ -626,7 +626,7 @@ display:none !important;
                 </button>
                 <button
                   className="purple-btn2"
-                  onClick={() => navigate("/gate-pass-create")}
+                  onClick={() => navigate(`/gate-pass-create?token=${token}`)}
                 >
                   <span> + Add</span>
                 </button>

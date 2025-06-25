@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 import { Table } from "../components";
 
 const GatePassCreate = () => {
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const [formData, setFormData] = useState({
     project_id: null,
     sub_project_id: null,
@@ -92,6 +94,33 @@ const GatePassCreate = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Required fields validation (star mark fields)
+    if (!formData.project_id) {
+      alert("Please select Project.");
+      return;
+    }
+    if (!formData.sub_project_id) {
+      alert("Please select Sub-Project.");
+      return;
+    }
+    if (!formData.gate_pass_type) {
+      alert("Please select Gate Pass Type.");
+      return;
+    }
+    // For PurchaseOrder type, PO/WO No is required
+    const selectedGatePassType = gatePassTypes.find(
+      (t) => t.value === formData.gate_pass_type
+    );
+    const rawValue = selectedGatePassType?.rawValue;
+    if (rawValue === "PurchaseOrder" && !formData.mto_po_number) {
+      alert("Please select PO/WO No.");
+      return;
+    }
+    if (rawValue === "MaterialTransaferOrder" && !formData.mto_po_number) {
+      alert("Please enter MTO/SO Number.");
+      return;
+    }
 
     // Validation for Expected Return Date based on Returnable status
     if (
@@ -237,13 +266,13 @@ const GatePassCreate = () => {
 
     try {
       const response = await axios.post(
-        `${baseURL}gate_passes.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}gate_passes.json?token=${token}`,
         payload
       );
 
       if (response.status === 200 || response.status === 201) {
         alert("Gate Pass created successfully!");
-        // navigate("/gate-pass-list");
+        navigate(`/gate-pass-list?token=${token}`);
       }
     } catch (error) {
       console.error("Error creating gate pass:", error);
@@ -445,7 +474,7 @@ const GatePassCreate = () => {
     const fetchPONumbers = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}purchase_orders/purchase_order_po_numbers.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}purchase_orders/purchase_order_po_numbers.json?token=${token}`
         );
         if (Array.isArray(response.data)) {
           setPoOptions(
@@ -466,7 +495,7 @@ const GatePassCreate = () => {
     const fetchProjects = async () => {
       try {
         const response = await axios.get(
-          `${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}pms/company_setups.json?token=${token}`
         );
         if (response.data && Array.isArray(response.data.companies)) {
           // Flatten all projects from all companies
@@ -492,7 +521,7 @@ const GatePassCreate = () => {
     const fetchGatePassTypes = async () => {
       try {
         const response = await axios.get(
-          "https://marathon.lockated.com//gate_pass_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+          `https://marathon.lockated.com//gate_pass_types.json?token=${token}`
         );
         if (Array.isArray(response.data)) {
           setGatePassTypes(
@@ -624,7 +653,7 @@ const GatePassCreate = () => {
       const fetchSuppliers = async () => {
         try {
           const response = await axios.get(
-            "https://marathon.lockated.com/pms/suppliers.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+            `https://marathon.lockated.com/pms/suppliers.json?token=${token}`
           );
           if (Array.isArray(response.data)) {
             const vendors = response.data.map((item) => ({
@@ -653,7 +682,7 @@ const GatePassCreate = () => {
       const fetchGateNumbers = async () => {
         try {
           const response = await axios.get(
-            `https://marathon.lockated.com/gate_numbers/gate_numbers.json?q[project_id_eq]=${formData.project_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `https://marathon.lockated.com/gate_numbers/gate_numbers.json?q[project_id_eq]=${formData.project_id}&token=${token}`
           );
           if (Array.isArray(response.data)) {
             setGateNumbers(
@@ -680,7 +709,7 @@ const GatePassCreate = () => {
   useEffect(() => {
     axios
       .get(
-        `${baseURL}pms/inventory_types.json?q[category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`
       )
       .then((response) => {
         setInventoryTypes(
@@ -694,7 +723,7 @@ const GatePassCreate = () => {
     if (!typeId) return;
     // Sub-types
     const subTypeRes = await axios.get(
-      `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${typeId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${typeId}&token=${token}`
     );
     const subTypeOptions = subTypeRes.data.map((i) => ({
       value: i.id,
@@ -702,7 +731,7 @@ const GatePassCreate = () => {
     }));
     // Material names
     const nameRes = await axios.get(
-      `${baseURL}pms/inventories.json?q[inventory_type_id_in]=${typeId}&q[material_category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      `${baseURL}pms/inventories.json?q[inventory_type_id_in]=${typeId}&q[material_category_eq]=material&token=${token}`
     );
     let materialNameOptions = nameRes.data.map((i) => ({
       value: i.id,
@@ -741,7 +770,7 @@ const GatePassCreate = () => {
     if (!materialId) return;
     // Generic Info
     const genRes = await axios.get(
-      `${baseURL}pms/generic_infos.json?q[material_id_eq]=${materialId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      `${baseURL}pms/generic_infos.json?q[material_id_eq]=${materialId}&token=${token}`
     );
     const genericInfoOptions = genRes.data.map((i) => ({
       value: i.id,
@@ -749,7 +778,7 @@ const GatePassCreate = () => {
     }));
     // Brand
     const brandRes = await axios.get(
-      `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${materialId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${materialId}&token=${token}`
     );
     const brandOptions = brandRes.data.map((i) => ({
       value: i.id,
@@ -757,7 +786,7 @@ const GatePassCreate = () => {
     }));
     // Colour
     const colourRes = await axios.get(
-      `${baseURL}pms/colours.json?q[material_id_eq]=${materialId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      `${baseURL}pms/colours.json?q[material_id_eq]=${materialId}&token=${token}`
     );
     const colourOptions = colourRes.data.map((i) => ({
       value: i.id,
@@ -765,7 +794,7 @@ const GatePassCreate = () => {
     }));
     // Unit
     const unitRes = await axios.get(
-      `${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      `${baseURL}unit_of_measures.json?token=${token}`
     );
     const unitOptions = unitRes.data.map((i) => ({
       value: i.id,
@@ -986,7 +1015,10 @@ const GatePassCreate = () => {
               <div className="row">
                 <div className="col-md-3">
                   <div className="form-group">
-                    <label>Project *</label>
+                    <label>
+                      Project
+                      <span> *</span>
+                    </label>
                     <SingleSelector
                       options={projects}
                       onChange={(selected) =>
@@ -1006,7 +1038,10 @@ const GatePassCreate = () => {
                 </div>
                 <div className="col-md-3">
                   <div className="form-group">
-                    <label>Sub-Project *</label>
+                    <label>
+                      Sub-Project
+                      <span> *</span>
+                    </label>
                     <SingleSelector
                       options={subProjects}
                       onChange={(selected) =>
@@ -1024,7 +1059,10 @@ const GatePassCreate = () => {
                 </div>
                 <div className="col-md-3">
                   <div className="form-group">
-                    <label>Gate Pass Type</label>
+                    <label>
+                      Gate Pass Type
+                      <span> *</span>
+                    </label>
                     <SingleSelector
                       options={gatePassTypes}
                       onChange={(selected) =>
@@ -1093,7 +1131,10 @@ const GatePassCreate = () => {
                           </div>
                           <div className="col-md-3 mt-2">
                             <div className="form-group">
-                              <label>PO/WO No *</label>
+                              <label>
+                                PO/WO No
+                                <span>  *</span>
+                              </label>
                               <SingleSelector
                                 options={poOptions}
                                 onChange={(selected) => {
@@ -1224,7 +1265,9 @@ const GatePassCreate = () => {
                   <div className="form-group">
                     <label>
                       Expected Return Date{" "}
-                      {formData.gate_pass_type === "return_to_vendor" && "*"}
+                      {formData.is_returnable === "returnable" && (
+                        <span style={{ color: "red" }}>*</span>
+                      )}
                     </label>
                     <input
                       type="date"
@@ -1295,7 +1338,7 @@ const GatePassCreate = () => {
                 </div>
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
-                    <label>Vehicle No. *</label>
+                    <label>Vehicle No. </label>
                     <input
                       type="text"
                       className="form-control"

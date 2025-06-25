@@ -831,31 +831,38 @@ const BOQList = () => {
         setFile(null);
       } catch (error) {
 
+        if (error.response && error.response.status === 422) {
+          console.log("422 response:", error.response.data);
+          if (Array.isArray(error.response.data.errors)) {
+            error.response.data.errors.forEach(errObj => {
+              const rowInfo = errObj.row ? `Row ${errObj.row}: ` : "";
+              toast.error(`${rowInfo}${errObj.error}`);
+              setShowModal(false);
+            });
+          } else if (typeof error.response.data.errors === "string") {
+            toast.error(error.response.data.errors);
+          } else if (error.response && error.response.status === 500) {
+            toast.error("Server error occurred. Please try again later.");
+            setShowModal(false);
+          }
+        } else {
+          console.error(error);
+          toast.error("Failed to upload. Please try again.");
+          setShowModal(false);
+        }
         // if (error.response && error.response.status === 422) {
         //   console.log("422 response:", error.response.data);
         //   if (Array.isArray(error.response.data.errors)) {
-        //     error.response.data.errors.forEach(errObj => {
-        //       toast.error(`${errObj.error}`);
-        //     });
+        //     const firstError = error.response.data.errors[0];
+        //     if (firstError && firstError.error) {
+        //       toast.error(`${firstError.error}`);
+        //     }
         //   } else if (typeof error.response.data.errors === "string") {
         //     toast.error(error.response.data.errors);
         //   }
         // } else {
         //   console.error(error);
         // }
-        if (error.response && error.response.status === 422) {
-          console.log("422 response:", error.response.data);
-          if (Array.isArray(error.response.data.errors)) {
-            const firstError = error.response.data.errors[0];
-            if (firstError && firstError.error) {
-              toast.error(`${firstError.error}`);
-            }
-          } else if (typeof error.response.data.errors === "string") {
-            toast.error(error.response.data.errors);
-          }
-        } else {
-          console.error(error);
-        }
         //   alert("File upload failed!");
         console.error(error);
       }
