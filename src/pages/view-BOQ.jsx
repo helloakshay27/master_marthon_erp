@@ -1126,7 +1126,7 @@ const BOQList = () => {
 
               </CollapsibleCard>
 
-              <CollapsibleCard title="Bulk Action" isInitiallyCollapsed={true}>
+              {/* <CollapsibleCard title="Bulk Action" isInitiallyCollapsed={true}>
                 <form
                   onSubmit={handleSubmit}
                 >
@@ -1134,61 +1134,27 @@ const BOQList = () => {
                     <div className="col-md-4">
                       <div className="form-group">
                         <label>From Status</label>
-                        {/* <select
-                        name="fromStatus"
-                        className="form-control form-select"
-                         classNamePrefix="react-select"
-                        value={fromStatus}
-                        onChange={handleStatusChange}
-                      // value={formValues.fromStatus}
-                      // onChange={handleChange}
-                      >
-                        <option value="">Select Status</option>
-                        <option value="draft">Draft</option>
-                        <option value="submitted">Submitted</option>
-                        <option value="approved">Approved</option>
-                      </select> */}
-                        {/* {errors.fromStatus && <div className="text-danger mt-2">{errors.fromStatus}</div>} */}
-
+                       
                         <SingleSelector
                           options={options}
-                          // value={options.value}
+                          
                           value={options.find(option => option.value === fromStatus)}
                           onChange={handleStatusChange}
-                          // onChange={handleStatusChange}
-                          // options.find(option => option.value === status)
-                          // value={filteredOptions.find(option => option.value === status)}
-                          // value={options.find(option => option.value === status)}
-                          // value={selectedSite}
+                         
                           placeholder={`Select Status`} // Dynamic placeholder
                           classNamePrefix="react-select"
                         />
-                        {/* {console.log("options:", options.value)} */}
+                       
                       </div>
                       <div className="form-group mt-3">
                         <label>To Status</label>
-                        {/* <select
-                        name="toStatus"
-                        className="form-control form-select"
-                        value={toStatus}
-                        onChange={handleToStatusChange}
-                      >
-                        <option value="">Select Status</option>
-                        <option value="draft">Draft</option>
-                        <option value="submitted">Submitted</option>
-                        <option value="approved">Approved</option>
-                      </select> */}
 
                         <SingleSelector
                           options={options}
-                          // value={options.value}
+
                           onChange={handleToStatusChange}
                           value={options.find(option => option.value === toStatus)}
-                          // onChange={handleStatusChange}
-                          // options.find(option => option.value === status)
-                          // value={filteredOptions.find(option => option.value === status)}
-                          // value={options.find(option => option.value === status)}
-                          // value={selectedSite}
+                         
                           placeholder={`Select Status`} // Dynamic placeholder
                           classNamePrefix="react-select"
                         />
@@ -1214,7 +1180,7 @@ const BOQList = () => {
                     </div>
                   </div>
                 </form>
-              </CollapsibleCard>
+              </CollapsibleCard> */}
 
               {/* <BOQListTable boqList={boqList} setBoqList={setBoqList} /> */}
 
