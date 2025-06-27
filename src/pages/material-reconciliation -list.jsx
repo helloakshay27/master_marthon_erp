@@ -47,7 +47,9 @@ const MaterialReconciliationList = () => {
   const [remark, setRemark] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
   const [settingShow, setSettingShow] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const itemsPerPage = 10; // Add itemsPerPage constant
+  const [activeStatusTab, setActiveStatusTab] = useState(""); // "" means all
 
   const options = [
     {
@@ -79,8 +81,9 @@ const MaterialReconciliationList = () => {
   // Handle status change for 'From Status'
   const handleStatusChange = (selectedOption) => {
     setFromStatus(selectedOption.value);
-    // Call fetchFilteredData with the selected status
-    fetchFilteredData({
+    setCurrentPage(1);
+    // Call fetchData with the selected status, resetting to page 1
+    fetchData(1, {
       companyId: selectedCompany?.value,
       projectId: selectedProject?.value,
       siteId: selectedSite?.value,
@@ -97,78 +100,27 @@ const MaterialReconciliationList = () => {
     setRemark(e.target.value);
   };
 
-  const fetchFilteredData = (filters = {}) => {
-    setLoading(true);
-    const companyId = filters.companyId || selectedCompany?.value || "";
-    const projectId = filters.projectId || selectedProject?.value || "";
-    const siteId = filters.siteId || selectedSite?.value || "";
-    const status = filters.status || fromStatus || "";
-
-    console.log("ids filter:", companyId, projectId, siteId, status);
-
-    let url = `${baseURL}material_reconciliations.json?token=${token}`;
-
-    // Add filters to URL if they exist
-    if (companyId) {
-      url += `&q[pms_company_setup_id_eq]=${companyId}`;
-    }
-    if (projectId) {
-      url += `&q[pms_project_id_eq]=${projectId}`;
-    }
-    if (siteId) {
-      url += `&q[sub_project_id_eq]=${siteId}`;
-    }
-    if (status) {
-      url += `&q[status_eq]=${status}`;
-    }
-
-    axios
-      .get(url)
-      .then((response) => {
-        setReconciliationData(response.data.data); // Update table data
-        setTotalPages(response.data.meta.total_pages); // Update total pages
-        setTotalEntries(response.data.meta.total_count); // Update total entries
-      })
-      .catch((error) => {
-        console.error("Error fetching filtered data:", error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
-
   const validateAndFetchFilteredData = () => {
-    // Remove validation and directly fetch filtered data
-    fetchFilteredData({
-      companyId: selectedCompany?.value,
-      projectId: selectedProject?.value,
-      siteId: selectedSite?.value,
-      status: fromStatus,
-    });
+    setCurrentPage(1);
+    fetchData(1);
   };
 
   const handleReset = () => {
-    setLoading(true);
     // Clear selected filters
     setSelectedCompany(null);
     setSelectedProject(null);
     setSelectedSite(null);
-    setFromStatus(""); // Reset status filter
+    setFromStatus("");
+    setSearchTerm("");
+    setCurrentPage(1);
+    setActiveStatusTab("");
 
-    // Fetch unfiltered data
-    axios
-      .get(`${baseURL}material_reconciliations.json?token=${token}`)
-      .then((response) => {
-        setReconciliationData(response.data.data); // Reset table data
-        setTotalPages(response.data.meta.total_pages); // Reset total pages
-        setTotalEntries(response.data.meta.total_count); // Reset total entries
-      })
-      .catch((error) => {
-        console.error("Error resetting data:", error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    // Fetch unfiltered data by calling fetchData with default empty/null states
+    fetchData(
+      1,
+      { companyId: null, projectId: null, siteId: null, status: "" },
+      ""
+    );
   };
 
   // Static data for SingleSelector (this will be replaced by API data later)
@@ -266,12 +218,41 @@ const MaterialReconciliationList = () => {
   //get data
   const [data, setData] = useState([]);
   // Fetch data from the API
-  const fetchData = (page) => {
+  const fetchData = (
+    page,
+    filters = {
+      companyId: selectedCompany?.value,
+      projectId: selectedProject?.value,
+      siteId: selectedSite?.value,
+      status: fromStatus,
+    },
+    search = searchTerm
+  ) => {
     setLoading(true);
+
+    let url = `${baseURL}material_reconciliations.json?page=${page}&token=${token}`;
+
+    // Add filters to URL if they exist
+    if (filters.companyId) {
+      url += `&q[pms_company_setup_id_eq]=${filters.companyId}`;
+    }
+    if (filters.projectId) {
+      url += `&q[pms_project_id_eq]=${filters.projectId}`;
+    }
+    if (filters.siteId) {
+      url += `&q[sub_project_id_eq]=${filters.siteId}`;
+    }
+    if (filters.status) {
+      url += `&q[status_eq]=${filters.status}`;
+    }
+
+    // Add search term if it exists
+    if (search) {
+      url += `&q[reco_number_or_status_or_reco_date_or_pms_company_setup_company_name_or_pms_project_name_or_sub_project_name_or_pms_store_name_created_by_full_name_cont]=${search}`;
+    }
+
     axios
-      .get(
-        `${baseURL}material_reconciliations.json?page=${page}&token=${token}`
-      )
+      .get(url)
       .then((response) => {
         if (response.data && response.data.data) {
           setReconciliationData(response.data.data);
@@ -301,6 +282,7 @@ const MaterialReconciliationList = () => {
         setLoading(false);
       });
   };
+
   useEffect(() => {
     console.log("Reconciliation Data:", reconciliationData);
   }, [reconciliationData]);
@@ -315,6 +297,12 @@ const MaterialReconciliationList = () => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
     }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setCurrentPage(1);
+    fetchData(1);
   };
 
   const [columnVisibility, setColumnVisibility] = useState({
@@ -499,6 +487,18 @@ const MaterialReconciliationList = () => {
     }
   };
 
+  const handleTabClick = (status) => {
+    setActiveStatusTab(status);
+    setFromStatus(status);
+    setCurrentPage(1);
+    fetchData(1, {
+      companyId: selectedCompany?.value,
+      projectId: selectedProject?.value,
+      siteId: selectedSite?.value,
+      status: status,
+    });
+  };
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -512,8 +512,11 @@ const MaterialReconciliationList = () => {
               <div className="row separteinto7 justify-content-center">
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button active"
+                    className={`content-box tab-button ${
+                      activeStatusTab === "" ? "active" : ""
+                    }`}
                     data-tab="total"
+                    onClick={() => handleTabClick("")}
                   >
                     <h4 className="content-box-title fw-semibold">
                       Reconciliation
@@ -524,7 +527,13 @@ const MaterialReconciliationList = () => {
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div className="content-box tab-button" data-tab="draft">
+                  <div
+                    className={`content-box tab-button ${
+                      activeStatusTab === "draft" ? "active" : ""
+                    }`}
+                    data-tab="draft"
+                    onClick={() => handleTabClick("draft")}
+                  >
                     <h4 className="content-box-title fw-semibold">Draft</h4>
                     <p className="content-box-sub">
                       {data?.status_counts?.draft}
@@ -533,8 +542,11 @@ const MaterialReconciliationList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button"
-                    data-tab="pending-approval"
+                    className={`content-box tab-button ${
+                      activeStatusTab === "approved" ? "active" : ""
+                    }`}
+                    data-tab="approved"
+                    onClick={() => handleTabClick("approved")}
                   >
                     <h4 className="content-box-title fw-semibold">Approved</h4>
                     <p className="content-box-sub">
@@ -544,8 +556,11 @@ const MaterialReconciliationList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className="content-box tab-button"
-                    data-tab="self-overdue"
+                    className={`content-box tab-button ${
+                      activeStatusTab === "rejected" ? "active" : ""
+                    }`}
+                    data-tab="rejected"
+                    onClick={() => handleTabClick("rejected")}
                   >
                     <h4 className="content-box-title fw-semibold">Rejected</h4>
                     <p className="content-box-sub">
@@ -687,17 +702,19 @@ const MaterialReconciliationList = () => {
               <div className="d-flex justify-content-between align-items-center me-2 mt-4">
                 {/* Search Input */}
                 <div className="col-md-4">
-                  <form>
+                  <form onSubmit={handleSearch}>
                     <div className="input-group ms-3">
                       <input
                         type="search"
                         id="searchInput"
                         className="form-control tbl-search"
                         placeholder="Type your keywords here"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                       />
                       <div className="input-group-append">
                         <button
-                          type="button"
+                          type="submit"
                           className="btn btn-md btn-default"
                         >
                           <svg
