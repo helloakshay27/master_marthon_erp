@@ -85,6 +85,7 @@ const DebitNoteCreate = () => {
   //   };
 
   const [showRows, setShowRows] = useState(false);
+  const [debitNoteReason, setDebitNoteReason] = useState("");
   const [attachOneModal, setattachOneModal] = useState(false);
   const [attachTwoModal, setattachTwoModal] = useState(false);
   const [attachThreeModal, setattachThreeModal] = useState(false);
@@ -630,9 +631,9 @@ const DebitNoteCreate = () => {
     setRows((prevRows) =>
       prevRows.filter((row, index) => {
         // Prevent deletion of the first three rows
-        if (index < 3) {
-          return true;
-        }
+        // if (index < 3) {
+        //   return true;
+        // }
         return row.id !== id;
       })
     );
@@ -745,6 +746,121 @@ const DebitNoteCreate = () => {
   console.log("remark:", remark2)
   const [creditNoteDate, setCreditNoteDate] = useState(""); // State to store the date
   const [creditNoteAmount, setCreditNoteAmount] = useState(null); // State to store the amount
+
+   const [formData, setFormData] = useState({
+      poNumber: "",
+      poDate: "",
+      poValue: "",
+      gstin: "",
+      pan: "",
+      invoiceNumber: "",
+      // invoiceDate: getFormattedDate(), // Initial date
+      invoiceAmount: "",
+      baseCost: "",
+      netTaxes: "",
+      netCharges: "",
+      allInclusiveCost: "",
+      charges: [],
+      deductions: [],
+      typeOfCertificate: "",
+      departmentId: "",
+      otherDeductions: "",
+      otherDeductionRemarks: "",
+      otherAdditions: "",
+      otherAdditionRemarks: "",
+      retentionPercentage: "",
+      retentionAmount: "",
+      remark: "",
+      payeeName: "",
+      paymentMode: "",
+      paymentDueDate: "",
+      attachments: [],
+      currentAdvanceDeduction: "",
+      status: "draft",
+      roundOffAmount: "",
+    });
+  const [pendingAdvances, setPendingAdvances] = useState([]);
+  
+    useEffect(() => {
+      const fetchPendingAdvances = async () => {
+        if (selectedPO?.id) {
+          try {
+            const response = await axios.get(
+              `${baseURL}advance_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=${token}`
+            );
+            setPendingAdvances(response.data.advance_notes || []);
+          } catch (error) {
+            console.error("Error fetching pending advances:", error);
+            setPendingAdvances([]);
+          }
+        }
+      };
+  
+      fetchPendingAdvances();
+    }, [selectedPO, formData.pms_supplier_id]);
+  
+
+   // Add these state variables at the top
+    const [advanceNoteModal, setAdvanceNoteModal] = useState(false);
+    const [selectedAdvanceNotes, setSelectedAdvanceNotes] = useState([]);
+  
+    // Add these handlers
+    const handleAdvanceNoteSelect = (note) => {
+      setSelectedAdvanceNotes((prev) => {
+        const isSelected = prev.some((n) => n.id === note.id);
+        if (isSelected) {
+          const newNotes = prev.filter((n) => n.id !== note.id);
+          // Update form data with new total
+          setFormData((prevForm) => ({
+            ...prevForm,
+            currentAdvanceDeduction: calculateTotalAdvanceRecovery(),
+          }));
+          return newNotes;
+        } else {
+          const newNotes = [...prev, note];
+          // Update form data with new total
+          setFormData((prevForm) => ({
+            ...prevForm,
+            currentAdvanceDeduction: calculateTotalAdvanceRecovery(),
+          }));
+          return newNotes;
+        }
+      });
+    };
+  
+
+  // Add modal toggle handlers
+    const openAdvanceNoteModal = () => setAdvanceNoteModal(true);
+    const closeAdvanceNoteModal = () => setAdvanceNoteModal(false);
+  
+    // Add validation handler
+    const validateAdvanceRecovery = (note, value) => {
+      const recovery = parseFloat(value) || 0;
+      const advanceAmount = parseFloat(note.advance_amount) || 0;
+  
+      if (recovery > advanceAmount) {
+        // alert("Recovery amount cannot exceed advance amount");
+        // return false;
+        toast.error("Recovery amount cannot exceed advance amount", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        return false;
+      }
+      return true;
+    };
+  
+    const calculateTotalAdvanceRecovery = () => {
+      return selectedAdvanceNotes
+        .reduce((total, note) => {
+          return total + (parseFloat(note.this_recovery) || 0);
+        }, 0)
+        .toFixed(2);
+    };
 
   const payload = {
 
@@ -1110,6 +1226,32 @@ const DebitNoteCreate = () => {
                             </div>
                             <div className="col-md-4 mt-2">
                               <div className="form-group">
+                                <label>Debit Note Reason</label>
+                                <SingleSelector
+                                  options={[
+                                    { value: "advance_note", label: "Advance Note" },
+                                    { value: "miscellaneous", label: "Miscellaneous" },
+                                    { value: "others", label: "Others" },
+                                  ]}
+                                  value={debitNoteReason ? {
+                                    value: debitNoteReason,
+                                    label:
+                                      debitNoteReason === "advance_note"
+                                        ? "Advance Note"
+                                        : debitNoteReason === "miscellaneous"
+                                          ? "Miscellaneous"
+                                          : "Others",
+                                  } : null}
+                                  onChange={(selected) =>
+                                    setDebitNoteReason(selected?.value || "")
+                                  }
+                                  placeholder="Select Reason"
+                                  className="form-control"
+                                />
+                              </div>
+                            </div>
+                            <div className="col-md-4 mt-2">
+                              <div className="form-group">
                                 <label>Debit Note Date</label>
                                 <div
                                   id="datepicker"
@@ -1143,7 +1285,7 @@ const DebitNoteCreate = () => {
                             <h5 className=" ">Tax Details</h5>
                           </div>
 
-                          <div className="tbl-container mt-3">
+                          <div className="tbl-container mt-3" style={{ maxHeight: "500px" }}>
                             <table className="w-100">
                               <thead>
                                 <tr>
@@ -1168,8 +1310,8 @@ const DebitNoteCreate = () => {
                                   <td className="text-start" />
                                   <td className="text-start" />
                                   <td className="text-start" />
-                                  <td onClick={addRow}>
-                                    <svg
+                                  <td className="text-start" onClick={addRow}>
+                                    {/* <svg
                                       xmlns="http://www.w3.org/2000/svg"
                                       width="16"
                                       height="16"
@@ -1183,7 +1325,8 @@ const DebitNoteCreate = () => {
                                     >
                                       <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                                       <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                    </svg>
+                                    </svg> */}
+                                    <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
                                   </td>
                                 </tr>
                                 {/* Dynamic Rows for Addition Tax */}
@@ -1323,7 +1466,7 @@ const DebitNoteCreate = () => {
                                       onClick={() => deleteRow(row.id)}
                                       style={{ cursor: "pointer", color: "black" }}
                                     >
-                                      <svg
+                                      {/* <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="16"
                                         height="16"
@@ -1336,7 +1479,8 @@ const DebitNoteCreate = () => {
                                       >
                                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                                         <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                                      </svg>
+                                      </svg> */}
+                                      <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
                                     </td>
                                   </tr>
                                 ))}
@@ -1361,8 +1505,8 @@ const DebitNoteCreate = () => {
                                   <td className="text-start" />
                                   <td className="" />
                                   <td className="text-start" />
-                                  <td onClick={addDeductionRow}>
-                                    <svg
+                                  <td className="text-start" onClick={addDeductionRow}>
+                                    {/* <svg
                                       xmlns="http://www.w3.org/2000/svg"
                                       width="16"
                                       height="16"
@@ -1376,7 +1520,8 @@ const DebitNoteCreate = () => {
                                     >
                                       <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                                       <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                    </svg>
+                                    </svg> */}
+                                    <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
                                   </td>
                                 </tr>
                                 {/* Dynamic Rows for Deduction Tax */}
@@ -1489,7 +1634,7 @@ const DebitNoteCreate = () => {
                                       onClick={() => deleteDeductionRow(row.id)}
                                       style={{ cursor: "pointer", color: "black" }}
                                     >
-                                      <svg
+                                      {/* <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="16"
                                         height="16"
@@ -1502,7 +1647,8 @@ const DebitNoteCreate = () => {
                                       >
                                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                                         <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                                      </svg>
+                                      </svg> */}
+                                      <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
                                     </td>
                                   </tr>
                                 ))}
@@ -1526,6 +1672,128 @@ const DebitNoteCreate = () => {
                               </tbody>
                             </table>
                           </div>
+{/* advance note  */}
+  <div className="d-flex justify-content-between mt-4 me-2">
+                  <h5 className=" ">Advance Adjustment</h5>
+                  <button
+                    className="purple-btn2"
+                    onClick={openAdvanceNoteModal}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={20}
+                      height={20}
+                      fill="currentColor"
+                      className="bi bi-plus"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                    </svg>
+                    <span>Select Advance Note</span>
+                  </button>
+                </div>
+ <div className="tbl-container mx-3 mt-3">
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th className="text-start">ID</th>
+                        <th className="text-start">PO Display No.</th>
+                        <th className="text-start">Project</th>
+                        <th className="text-start">Advance Number</th>
+
+                        <th className="text-start">Advance Amount (INR)</th>
+                        <th className="text-start">Status</th>
+                        <th className="text-start">
+                          Debit Note For Advance (INR)
+                        </th>
+                        <th className="text-start">
+                          Advance Adjusted Till Date (INR)
+                        </th>
+                        <th className="text-start">
+                          Advance Outstanding till Certificate Date (INR)
+                        </th>
+                        <th className="text-start">
+                          Advance Outstanding till current Date (INR)
+                        </th>
+                        <th className="text-start" style={{ width: "200px" }}>
+                          This Recovery (INR)
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedAdvanceNotes.length > 0 ? (
+                        selectedAdvanceNotes.map((note) => (
+                          <tr key={note.id}>
+                            <td className="text-start">{note.id || "-"}</td>
+                            <td className="text-start">
+                              {note.po_number || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.project_name || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.advance_number || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.advance_amount || "-"}
+                            </td>
+                            <td className="text-start">{note.status || "-"}</td>
+
+                            <td className="text-start">
+                              {note.debit_note_for_advance || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.advance_adjusted_till_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.advance_outstanding_till_certificate_date ||
+                                "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.advance_outstanding_till_current_date ||
+                                "-"}
+                            </td>
+                            <td className="text-start">
+                              <input
+                                type="number"
+                                className="form-control"
+                                value={note.this_recovery || ""}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (validateAdvanceRecovery(note, value)) {
+                                    setSelectedAdvanceNotes((prev) => {
+                                      const newNotes = prev.map((n) =>
+                                        n.id === note.id
+                                          ? { ...n, this_recovery: value }
+                                          : n
+                                      );
+                                      // Update form data with new total after recovery amount changes
+                                      setFormData((prevForm) => ({
+                                        ...prevForm,
+                                        currentAdvanceDeduction:
+                                          calculateTotalAdvanceRecovery(),
+                                      }));
+                                      return newNotes;
+                                    });
+                                  }
+                                }}
+                                min="0"
+                                max={note.advance_amount}
+                              />
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td className="text-start" colSpan="9">
+                            No advance notes selected.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
                           <div className="d-flex justify-content-between align-items-end  mt-5">
                             <h5 className="mt-3">
                               Document Attachments{" "}
@@ -2504,6 +2772,133 @@ const DebitNoteCreate = () => {
           </div>
         </Modal.Body>
       </Modal>
+
+
+      {/* advance note modal  */}
+
+        <Modal
+              centered
+              size="xl"
+              show={advanceNoteModal}
+              onHide={closeAdvanceNoteModal}
+              backdrop="static"
+              keyboard={false}
+            >
+              <Modal.Header closeButton>
+                <Modal.Title>Select Advance Notes</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <div className="tbl-container">
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th>
+                          <input
+                            type="checkbox"
+                            checked={
+                              pendingAdvances.length > 0 &&
+                              selectedAdvanceNotes.length === pendingAdvances.length
+                            }
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedAdvanceNotes(pendingAdvances);
+                              } else {
+                                setSelectedAdvanceNotes([]);
+                              }
+                            }}
+                          />
+                        </th>
+                        <th className="text-start">ID</th>
+                        <th className="text-start">PO Display No.</th>
+                        <th className="text-start">Project</th>
+                        <th className="text-start">Advance Number</th>
+      
+                        <th className="text-start">Advance Amount (INR)</th>
+                        <th className="text-start">Status</th>
+                        <th className="text-start">Debit Note For Advance (INR)</th>
+                        <th className="text-start">
+                          Advance Adjusted Till Date (INR)
+                        </th>
+                        <th className="text-start">
+                          Advance Outstanding till Certificate Date (INR)
+                        </th>
+                        <th className="text-start">
+                          Advance Outstanding till current Date (INR)
+                        </th>
+                        <th className="text-start">This Recovery (INR)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pendingAdvances.length > 0 ? (
+                        pendingAdvances.map((note) => (
+                          <tr key={note.id}>
+                            <td>
+                              <input
+                                type="checkbox"
+                                checked={selectedAdvanceNotes.some(
+                                  (n) => n.id === note.id
+                                )}
+                                onChange={() => handleAdvanceNoteSelect(note)}
+                              />
+                            </td>
+                            <td className="text-start">{note.id || "-"}</td>
+                            <td className="text-start">{note.po_number || "-"}</td>
+                            <td className="text-start">{note.project_name || "-"}</td>
+                            <td className="text-start">
+                              {note.advance_number || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.advance_amount || "-"}
+                            </td>
+                            <td className="text-start">{note.status || "-"}</td>
+                            <td className="text-start">
+                              {note.debit_note_for_advance || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.advance_adjusted_till_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.advance_outstanding_till_certificate_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.advance_outstanding_till_current_date || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.this_recovery || "-"}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="10" className="text-center">
+                            No advance notes available
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="row mt-2 justify-content-center">
+                  <div className="col-md-3 ">
+                    <button
+                      className="purple-btn2 w-100 mt-2"
+                      onClick={closeAdvanceNoteModal}
+                      disabled={selectedAdvanceNotes.length === 0}
+                    >
+                      Submit
+                    </button>
+                  </div>
+                  <div className="col-md-3">
+                    <button
+                      className="purple-btn1 w-100"
+                      onClick={closeAdvanceNoteModal}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </Modal.Body>
+            </Modal>
     </>
   );
 };

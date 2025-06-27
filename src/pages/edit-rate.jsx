@@ -22,7 +22,7 @@ const EditRate = () => {
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [fieldErrors, setFieldErrors] = useState({});
-     const urlParams = new URLSearchParams(location.search);
+    const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
 
     // State for table rows
@@ -189,9 +189,11 @@ const EditRate = () => {
         const errors = {};
 
         if (!formData.materialType) errors.materialType = "Material Type is required.";
-         if (!formData.material) errors.material = "Material is required.";
+        if (!formData.material) errors.material = "Material is required.";
         if (!formData.materialSubType) errors.materialSubType = "Material Sub Type is required.";
         if (!formData.uom) errors.uom = "UOM is required.";
+        if (!formData.effectiveDate) errors.effectiveDate = "Effective Date is required.";
+        if (!formData.rate) errors.rate = "Rate is required.";
 
         if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
@@ -257,8 +259,8 @@ const EditRate = () => {
                         // updatedRow.avgRate = ""; // Clear avgRate
                         // updatedRow.poRate = ""; // Clear poRate
                         updatedRow.rateType = newRateChecked ? "manual" : ""; // Set rateType
-                         if (newRateChecked) {
-                            updatedRow.rate = row.rate|| "0";
+                        if (newRateChecked) {
+                            updatedRow.rate = row.rate || "0";
                         } // Set rateType
                     }
 
@@ -291,7 +293,7 @@ const EditRate = () => {
                         // updatedRow.poRate = ""; // Clear rate
                         // updatedRow.avgRate = ""; // Clear avgRate
                         updatedRow.rateType = newPoRateChecked ? "last" : ""; // Set rateType
-                         if (newPoRateChecked) {
+                        if (newPoRateChecked) {
                             updatedRow.rate = row.poRate || "0";
                         }
                     }
@@ -770,8 +772,8 @@ const EditRate = () => {
                     rateChecked: false,
                     poRateChecked: false,
                     rateType: !selectAllAvgRate ? 'average' : '',
-                    rate:row.avgRate || "0"
-                   
+                    rate: row.avgRate || "0"
+
                 }));
                 break;
 
@@ -783,7 +785,7 @@ const EditRate = () => {
                     rateChecked: false,
                     avgRateChecked: false,
                     rateType: !selectAllPoRate ? 'last' : '',
-                     rate:row.poRate || "0"
+                    rate: row.poRate || "0"
                 }));
                 break;
         }
@@ -1173,22 +1175,27 @@ const EditRate = () => {
                             </div>
                             <div className="col-md-4 mt-3">
                                 <div className="form-group">
-                                    <label>Effective Date</label>
+                                    <label>Effective Date <span>*</span></label>
                                     <input className="form-control" type="date" name="effectiveDate"
                                         value={formData.effectiveDate}
                                         onChange={handleInputChange}
                                     />
+                                    {fieldErrors.effectiveDate && (
+                                        <span className="text-danger">{fieldErrors.effectiveDate}</span>
+                                    )}
                                 </div>
                             </div>
                             <div className="col-md-4 mt-3">
                                 <div className="form-group">
 
-                                    <label>Rate</label>
+                                    <label>Rate <span>*</span></label>
                                     <input className="form-control" type="number" name="rate"
                                         value={formData.rate}
                                         onChange={handleInputChange}
                                     />
-
+                                    {fieldErrors.rate && (
+                                        <span className="text-danger">{fieldErrors.rate}</span>
+                                    )}
                                 </div>
                             </div>
                             <div className="col-md-4 mt-3">

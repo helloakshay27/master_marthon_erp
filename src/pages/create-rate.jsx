@@ -127,13 +127,27 @@ const CreateRate = () => {
         if (!formData.material) errors.material = "Material is required.";
         if (!formData.materialSubType) errors.materialSubType = "Material Sub Type is required.";
         if (!formData.uom) errors.uom = "UOM is required.";
+        if (!formData.effectiveDate) errors.effectiveDate = "Effective Date is required.";
+        if (!formData.rate) errors.rate = "Rate is required.";
 
         if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
             return;
         }
+
+         // Add the new row with rateChecked and rateType if rate is present
+    const newRow = {
+        ...formData,
+        rateChecked: !!formData.rate,
+        rateType: formData.rate ? "manual" : "",
+        avgRateChecked: false,
+        poRateChecked: false,
+        isDuplicate: false,
+    };
+
+    const newTableData = [...tableData, newRow];
         // Add the new row
-        const newTableData = [...tableData, formData];
+        // const newTableData = [...tableData, formData];
 
         // Find if the new row is a duplicate of any previous row
         const isDuplicate = tableData.some(row =>
@@ -560,6 +574,8 @@ const CreateRate = () => {
         from: formatDate(new Date(new Date().setMonth(new Date().getMonth() - 6))), // 6 months ago
         to: formatDate(new Date()), // Today's date
     });
+    // Add this state at the top of your component
+    const [dateType, setDateType] = useState("company"); // "company" selected by default
 
     // console.log("date ranhe:", dateRange)
 
@@ -660,6 +676,18 @@ const CreateRate = () => {
             toast.error("Please add at least one material before submitting.");
             return;
         }
+            // Validation: Ensure every row has a rateType
+    // const missingRateType = tableData.some(row => !row.rateType);
+    // if (missingRateType) {
+    //     toast.error("Please check the Rate, AVG Rate, or PO Rate checkbox for every material.");
+    //     return;
+    // }
+
+     const missingIndex = tableData.findIndex(row => !row.rateType);
+    if (missingIndex !== -1) {
+        toast.error(`row ${missingIndex + 1} : Please check the Rate, AVG Rate, or PO Rate checkbox for material .`);
+        return;
+    }
         setLoading(true);
         const payload = {
             rate_detail: {
@@ -853,20 +881,21 @@ const CreateRate = () => {
                         </div>
                         {/* {(JSON.stringify(tableData, null, 2))} */}
                         <div className="mx-3">
-                            <div className="tbl-container  mt-1">
+                            <div className="tbl-container  mt-1" style={{maxHeight:"600px"}}>
                                 <table className="w-100">
                                     <thead>
                                         <tr>
                                             <th className="text-start">Sr.No.</th>
                                             <th className="text-start">Material Type</th>
-                                            <th className="text-start">Material</th>
                                             <th className="text-start">Material Sub-Type</th>
+                                            <th className="text-start">Material</th>
                                             <th className="text-start">Generic Specification</th>
                                             <th className="text-start">Colour</th>
                                             <th className="text-start">Brand</th>
+                                            <th className="text-start">UOM</th>
 
                                             <th className="text-start">Effective Date</th>
-                                            <th className="text-start">Rate (INR)
+                                            <th className="text-start" style={{width:"140px"}}>Rate (INR)
                                                 <span className="ms-2 pt-2">
                                                     {/* <input type="checkbox" /> */}
                                                     <input type="checkbox"
@@ -902,7 +931,6 @@ const CreateRate = () => {
                                                         onChange={() => handleSelectAllRates('poRate')} />
                                                 </span>
                                             </th>
-                                            <th className="text-start">UOM</th>
                                             <th className="text-start">Action</th>
                                         </tr>
                                     </thead>
@@ -915,12 +943,9 @@ const CreateRate = () => {
                                                     <td className="text-start"> {index + 1}</td>
                                                     {/* {console.log("materail type:", row.materialType)} */}
                                                     <td className="text-start">{row.materialTypeLabel}</td>
-                                                    <td className="text-start">{row.materialLabel}
+                                                    <td className="text-start">{row.materialSubTypeLabel}</td>
+                                                    <td className="text-start">{row.materialLabel}</td>
 
-                                                    </td>
-                                                    <td className="text-start">{row.materialSubTypeLabel}
-
-                                                    </td>
                                                     <td className="text-start">{row.genericSpecificationLabel}
 
                                                     </td>
@@ -930,7 +955,8 @@ const CreateRate = () => {
                                                     <td className="text-start">{row.brandLabel}
 
                                                     </td>
-                                                    <td className="text-start">
+                                                    <td className="text-start">{row.uomLabel}</td>
+                                                    <td className="text-start"style={{width:"140px"}}>
                                                         <input
                                                             type="date"
                                                             className="form-control"
@@ -959,7 +985,7 @@ const CreateRate = () => {
                                                         </div>
                                                     </td>
                                                     <td className="text-start">
-                                                        <span>{row.avgRate}</span>
+                                                        <span>{row.avgRate||0}</span>
                                                         {console.log("avg rate:", row.avgRate)}
                                                         <span className="ms-2 pt-2">
                                                             <input
@@ -971,7 +997,7 @@ const CreateRate = () => {
                                                         </span>
                                                     </td>
                                                     <td className="text-start">
-                                                        <span>{row.poRate}</span>
+                                                        <span>{row.poRate || 0}</span>
                                                         <span className="ms-2 pt-2">
                                                             <input
                                                                 type="checkbox"
@@ -981,7 +1007,6 @@ const CreateRate = () => {
                                                             />
                                                         </span>
                                                     </td>
-                                                    <td className="text-start">{row.uomLabel}</td>
                                                     <td className="text-start">
                                                         <button
                                                             className="btn mt-0 pt-0"
@@ -1134,22 +1159,26 @@ const CreateRate = () => {
                             </div>
                             <div className="col-md-4 mt-3">
                                 <div className="form-group">
-                                    <label>Effective Date</label>
+                                    <label>Effective Date <span>*</span></label>
                                     <input className="form-control" type="date" name="effectiveDate"
                                         value={formData.effectiveDate}
                                         onChange={handleInputChange}
                                     />
+                                    {fieldErrors.effectiveDate && (
+                                        <span className="text-danger">{fieldErrors.effectiveDate}</span>
+                                    )}
                                 </div>
                             </div>
                             <div className="col-md-4 mt-3">
                                 <div className="form-group">
-
-                                    <label>Rate</label>
+                                    <label>Rate <span>*</span></label>
                                     <input className="form-control" type="number" name="rate"
                                         value={formData.rate}
                                         onChange={handleInputChange}
                                     />
-
+                                    {fieldErrors.rate && (
+                                        <span className="text-danger">{fieldErrors.rate}</span>
+                                    )}
                                 </div>
                             </div>
                             <div className="col-md-4 mt-3">
@@ -1217,8 +1246,44 @@ const CreateRate = () => {
                                     />
                                 </div>
                             </div>
+                            <div className="col-md-6 d-flex align-items-center mt-3">
+                                <input
+                                    type="checkbox"
+                                    id="companyRadio"
+                                    value="company"
+                                    checked={dateType === "company"}
+                                    onChange={() => setDateType("company")}
+                                    className="me-2"
+                                />
+                                <label
+                                    htmlFor="without-bill-entry"
+                                    className="mb-0"
+                                >
+                                    Company
+                                </label>
+                            </div>
+                            <div className="col-md-6 d-flex align-items-center mt-3">
+                                <input
+                                    type="checkbox"
+                                    className="me-2"
+                                    id="organisationRadio"
+                                    value="organisation"
+                                    checked={dateType === "organisation"}
+                                    onChange={() => setDateType("organisation")}
+                                />
+                                <label
+                                    htmlFor="without-bill-entry"
+                                    className="mb-0"
+                                >
+                                    Organisation
+                                </label>
+                            </div>
+                            {/* {console.log("date type:",dateType)} */}
+
                         </div>
                     </form>
+
+
                 </Modal.Body>
                 <Modal.Footer>
                     <button

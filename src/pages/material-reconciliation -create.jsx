@@ -5,7 +5,8 @@ import MultiSelector from "../components/base/Select/MultiSelector";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { baseURL } from "../confi/apiDomain";
 import { Modal, Button, Form } from "react-bootstrap";
-import { useNavigate } from "react-router-dom"; // Add this import at the top
+import { useNavigate } from "react-router-dom"; // Add this import at the top'
+import { ShowIcon } from "../components";
 
 const MaterialReconciliationCreate = () => {
   const navigate = useNavigate(); // Add this hook
@@ -1078,6 +1079,7 @@ const MaterialReconciliationCreate = () => {
                       <th style={{ minWidth: "120px" }}>Deadstock Qty</th>
                       <th style={{ minWidth: "120px" }}>Theft / Missing Qty</th>
                       <th style={{ minWidth: "120px" }}>Damage Qty</th>
+                      <th style={{ minWidth: "80px" }}>Batch</th>
                       <th style={{ minWidth: "150px" }}>Adjustment Quantity</th>
                       <th>Adjustment Rate(INR)</th>
                       <th>Adjustment Value(INR)</th>
@@ -1144,6 +1146,32 @@ const MaterialReconciliationCreate = () => {
                           />
                         </td>
                         <td>
+                          {/* <span
+                            className="boq-id-link mt-1"
+                            style={{
+                              display: "inline-block",
+                              fontWeight: "bold",
+                              cursor: "pointer",
+                            }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              openBatchPopup(inventory.id); // This should set showBatchModal to true and load batchList
+                            }}
+                          >
+                            Select Batch
+                          </span> */}
+                          <td>
+                            <ShowIcon
+                              onClick={() => openBatchPopup(inventory.id)}
+                              style={{
+                                // cursor: "pointer",
+                                width: "20px",
+                                height: "20px",
+                              }}
+                            />
+                          </td>
+                        </td>
+                        <td>
                           <input
                             type="number"
                             className="form-control"
@@ -1158,7 +1186,7 @@ const MaterialReconciliationCreate = () => {
                             placeholder="Enter Adjustment Qty"
                             style={{ display: "inline-block", width: "70%" }}
                           />
-                          {Number(inventory.adjustment_qty) < 0 && (
+                          {/* {Number(inventory.adjustment_qty) < 0 && (
                             <span
                               className="boq-id-link mt-1"
                               style={{
@@ -1173,7 +1201,7 @@ const MaterialReconciliationCreate = () => {
                             >
                               Select Batch
                             </span>
-                          )}
+                          )} */}
                         </td>
 
                         <td>
