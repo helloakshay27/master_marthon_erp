@@ -413,12 +413,12 @@ const RateDetails = () => {
                                         <tr>
                                             <th className="text-start">Sr.No.</th>
                                             <th className="text-start">Material Type</th>
-                                            <th className="text-start">Material</th>
                                             <th className="text-start">Material Sub-Type</th>
+                                            <th className="text-start">Material</th>
                                             <th className="text-start">Generic Specification</th>
                                             <th className="text-start">Colour</th>
                                             <th className="text-start">Brand</th>
-
+                                            <th className="text-start">UOM</th>
                                             <th className="text-start">Effective Date</th>
                                             <th className="text-start">Rate (INR)
                                                 {/* <span className="ms-2 pt-2">
@@ -447,7 +447,7 @@ const RateDetails = () => {
                                                     <input type="checkbox" />
                                                 </span> */}
                                             </th>
-                                            <th className="text-start">UOM</th>
+
                                             {/* <th className="text-start">Action</th> */}
                                         </tr>
                                     </thead>
@@ -491,11 +491,13 @@ const RateDetails = () => {
                                                 <tr key={index}>
                                                     <td className="text-start">{index + 1}</td>
                                                     <td className="text-start">{row.material_type}</td>
-                                                    <td className="text-start">{row.material_name}</td>
                                                     <td className="text-start">{row.material_sub_type}</td>
+                                                    <td className="text-start">{row.material_name}</td>
+
                                                     <td className="text-start">{row.generic_info}</td>
                                                     <td className="text-start">{row.color}</td>
                                                     <td className="text-start">{row.brand}</td>
+                                                    <td className="text-start">{row.uom}</td>
                                                     <td className="text-start">{row.effective_date}</td>
                                                     <td className="text-start">
                                                         {row.rate}
@@ -553,7 +555,7 @@ const RateDetails = () => {
                                                             style={{ marginLeft: 8 }}
                                                         />
                                                     </td>
-                                                    <td className="text-start">{row.uom}</td>
+
                                                 </tr>
                                             ))
                                         ) : (

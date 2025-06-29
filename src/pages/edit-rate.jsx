@@ -199,8 +199,19 @@ const EditRate = () => {
             setFieldErrors(errors);
             return;
         }
+        // Add the new row with rateChecked and rateType if rate is present
+        const newRow = {
+            ...formData,
+            rateChecked: !!formData.rate,
+            rateType: formData.rate ? "manual" : "",
+            avgRateChecked: false,
+            poRateChecked: false,
+            isDuplicate: false,
+        };
+
+        const newTableData = [...tableData, newRow];
         // Add the new row
-        const newTableData = [...tableData, formData];
+        // const newTableData = [...tableData, formData];
 
         // Find if the new row is a duplicate of any previous row
         const isDuplicate = tableData.some(row =>
@@ -695,6 +706,11 @@ const EditRate = () => {
     console.log(" update payload :", payload)
 
     const handleSubmit = () => {
+        const missingIndex = tableData.findIndex(row => !row.rateType);
+        if (missingIndex !== -1) {
+            toast.error(`row ${missingIndex + 1} : Please check the Rate, AVG Rate, or PO Rate checkbox for material .`);
+            return;
+        }
         const payload = {
             rate_detail: {
                 materials: tableData.map(row => {
@@ -892,18 +908,19 @@ const EditRate = () => {
                         {/* {(JSON.stringify(tableData, null, 2))} */}
 
                         <div className="mx-3 mt-3 mb-3">
-                            <div className="tbl-container  mt-1">
+                            <div className="tbl-container  mt-1" style={{ maxHeight: "600px" }}>
                                 <table className="w-100">
                                     <thead>
                                         <tr>
                                             <th className="text-start">Sr.No.</th>
                                             <th className="text-start">Material Type</th>
-                                            <th className="text-start">Material</th>
                                             <th className="text-start">Material Sub-Type</th>
+                                            <th className="text-start">Material</th>
+
                                             <th className="text-start">Generic Specification</th>
                                             <th className="text-start">Colour</th>
                                             <th className="text-start">Brand</th>
-
+                                            <th className="text-start">UOM</th>
                                             <th className="text-start">Effective Date</th>
                                             <th className="text-start">Rate (INR)
                                                 <span className="ms-2 pt-2">
@@ -941,7 +958,7 @@ const EditRate = () => {
                                                         onChange={() => handleSelectAllRates('poRate')} />
                                                 </span>
                                             </th>
-                                            <th className="text-start">UOM</th>
+
                                             <th className="text-start">Action</th>
                                         </tr>
                                     </thead>
@@ -954,11 +971,10 @@ const EditRate = () => {
                                                     <td className="text-start"> {index + 1}</td>
                                                     {/* {console.log("materail type:", row.materialType)} */}
                                                     <td className="text-start">{row.materialTypeLabel}</td>
+                                                    <td className="text-start">{row.materialSubTypeLabel}</td>
                                                     <td className="text-start">{row.materialLabel}
                                                     </td>
-                                                    <td className="text-start">{row.materialSubTypeLabel}
 
-                                                    </td>
                                                     <td className="text-start">{row.genericSpecificationLabel}
 
                                                     </td>
@@ -968,6 +984,7 @@ const EditRate = () => {
                                                     <td className="text-start">{row.brandLabel}
 
                                                     </td>
+                                                    <td className="text-start">{row.uomLabel}</td>
                                                     <td className="text-start">
                                                         {/* {row.effectiveDate} */}
                                                         <input
@@ -1000,7 +1017,7 @@ const EditRate = () => {
                                                     </td>
                                                     <td className="text-start">
 
-                                                        <span>{row.avgRate}</span>
+                                                        <span>{row.avgRate || 0}</span>
 
                                                         <span className="ms-2 pt-2">
                                                             <input
@@ -1012,7 +1029,7 @@ const EditRate = () => {
                                                         </span>
                                                     </td>
                                                     <td className="text-start">
-                                                        <span>{row.poRate}</span>
+                                                        <span>{row.poRate || 0}</span>
                                                         <span className="ms-2 pt-2">
                                                             <input
                                                                 type="checkbox"
@@ -1022,7 +1039,7 @@ const EditRate = () => {
                                                             />
                                                         </span>
                                                     </td>
-                                                    <td className="text-start">{row.uomLabel}</td>
+
                                                     <td className="text-start">
                                                         <button
                                                             className="btn mt-0 pt-0"

@@ -135,17 +135,17 @@ const CreateRate = () => {
             return;
         }
 
-         // Add the new row with rateChecked and rateType if rate is present
-    const newRow = {
-        ...formData,
-        rateChecked: !!formData.rate,
-        rateType: formData.rate ? "manual" : "",
-        avgRateChecked: false,
-        poRateChecked: false,
-        isDuplicate: false,
-    };
+        // Add the new row with rateChecked and rateType if rate is present
+        const newRow = {
+            ...formData,
+            rateChecked: !!formData.rate,
+            rateType: formData.rate ? "manual" : "",
+            avgRateChecked: false,
+            poRateChecked: false,
+            isDuplicate: false,
+        };
 
-    const newTableData = [...tableData, newRow];
+        const newTableData = [...tableData, newRow];
         // Add the new row
         // const newTableData = [...tableData, formData];
 
@@ -676,18 +676,18 @@ const CreateRate = () => {
             toast.error("Please add at least one material before submitting.");
             return;
         }
-            // Validation: Ensure every row has a rateType
-    // const missingRateType = tableData.some(row => !row.rateType);
-    // if (missingRateType) {
-    //     toast.error("Please check the Rate, AVG Rate, or PO Rate checkbox for every material.");
-    //     return;
-    // }
+        // Validation: Ensure every row has a rateType
+        // const missingRateType = tableData.some(row => !row.rateType);
+        // if (missingRateType) {
+        //     toast.error("Please check the Rate, AVG Rate, or PO Rate checkbox for every material.");
+        //     return;
+        // }
 
-     const missingIndex = tableData.findIndex(row => !row.rateType);
-    if (missingIndex !== -1) {
-        toast.error(`row ${missingIndex + 1} : Please check the Rate, AVG Rate, or PO Rate checkbox for material .`);
-        return;
-    }
+        const missingIndex = tableData.findIndex(row => !row.rateType);
+        if (missingIndex !== -1) {
+            toast.error(`row ${missingIndex + 1} : Please check the Rate, AVG Rate, or PO Rate checkbox for material .`);
+            return;
+        }
         setLoading(true);
         const payload = {
             rate_detail: {
@@ -881,7 +881,7 @@ const CreateRate = () => {
                         </div>
                         {/* {(JSON.stringify(tableData, null, 2))} */}
                         <div className="mx-3">
-                            <div className="tbl-container  mt-1" style={{maxHeight:"600px"}}>
+                            <div className="tbl-container  mt-1" style={{ maxHeight: "600px" }}>
                                 <table className="w-100">
                                     <thead>
                                         <tr>
@@ -895,7 +895,7 @@ const CreateRate = () => {
                                             <th className="text-start">UOM</th>
 
                                             <th className="text-start">Effective Date</th>
-                                            <th className="text-start" style={{width:"140px"}}>Rate (INR)
+                                            <th className="text-start" style={{ width: "140px" }}>Rate (INR)
                                                 <span className="ms-2 pt-2">
                                                     {/* <input type="checkbox" /> */}
                                                     <input type="checkbox"
@@ -956,7 +956,7 @@ const CreateRate = () => {
 
                                                     </td>
                                                     <td className="text-start">{row.uomLabel}</td>
-                                                    <td className="text-start"style={{width:"140px"}}>
+                                                    <td className="text-start" style={{ width: "140px" }}>
                                                         <input
                                                             type="date"
                                                             className="form-control"
@@ -985,7 +985,7 @@ const CreateRate = () => {
                                                         </div>
                                                     </td>
                                                     <td className="text-start">
-                                                        <span>{row.avgRate||0}</span>
+                                                        <span>{row.avgRate || 0}</span>
                                                         {console.log("avg rate:", row.avgRate)}
                                                         <span className="ms-2 pt-2">
                                                             <input
