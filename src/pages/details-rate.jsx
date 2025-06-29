@@ -22,6 +22,9 @@ const RateDetails = () => {
     const itemsPerPage = 10; // Items per page
     const [totalEntries, setTotalEntries] = useState(0);
     const [searchKeyword, setSearchKeyword] = useState('');
+    // ...existing state...
+    const [activeTab, setActiveTab] = useState("details");
+
 
     const [rateDetails, setRateDetails] = useState(null);
     const [tableData, setTableData] = useState([]);
@@ -321,115 +324,148 @@ const RateDetails = () => {
                             )}
 
                             <div className="card-body">
-                                <div className="details_page">
-                                    <div className="row px-3">
-                                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                            <div className="col-6">
-                                                <label>Company</label>
-                                            </div>
-                                            <div className="col-6">
-                                                <label className="text">
-                                                    <span className="me-3">
-                                                        <span className="text-dark">:</span>
-                                                    </span>
-                                                    {rateDetails?.company_name || "-"}
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                            <div className="col-6">
-                                                <label>Project</label>
-                                            </div>
-                                            <div className="col-6">
-                                                <label className="text">
-                                                    <span className="me-3">
-                                                        <span className="text-dark">:</span>
-                                                    </span>
-                                                    {rateDetails?.project_name || "-"}
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                            <div className="col-6">
-                                                <label>Sub-Project</label>
-                                            </div>
-                                            <div className="col-6">
-                                                <label className="text">
-                                                    <span className="me-3">
-                                                        <span className="text-dark">:</span>
-                                                    </span>
-                                                    {rateDetails?.site_name || "-"}
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
-                                            <div className="col-6">
-                                                <label>Wing</label>
-                                            </div>
-                                            <div className="col-6">
-                                                <label className="text">
-                                                    <span className="me-3">
-                                                        <span className="text-dark">:</span>
-                                                    </span>
-                                                    {rateDetails?.wing_name || "-"}
-                                                </label>
-                                            </div>
-                                        </div>
+                                {/* Tabs */}
+                                <nav className="mb-5">
+                                    <div className="nav nav-tabs" id="nav-tab" role="tablist">
+                                        <button
+                                            className={`nav-link ${activeTab === "details" ? "active" : ""}`}
+                                            id="nav-details-tab"
+                                            type="button"
+                                            onClick={() => setActiveTab("details")}
+                                            role="tab"
+                                            aria-selected={activeTab === "details"}
+                                        >
+                                            Rate Details
+                                        </button>
+                                        <button
+                                            className={`nav-link ${activeTab === "revisions" ? "active" : ""}`}
+                                            id="nav-revisions-tab"
+                                            type="button"
+                                            onClick={() => setActiveTab("revisions")}
+                                            role="tab"
+                                            aria-selected={activeTab === "revisions"}
+                                        >
+                                            Rate Revised Versions
+                                        </button>
                                     </div>
-                                </div>
+                                </nav>
+                                {/* Tab Content */}
+                                <div className="tab-content" id="nav-tabContent">
+                                    {activeTab === "details" && (
+                                        <div className="tab-pane fade show active" id="details" role="tabpanel">
+                                            {/* Rate Details and Materials Table */}
+                                            <div className="details_page">
+                                                {/* ...company/project/site/wing info... */}
+                                                {/* ...search/filter... */}
+                                                {/* ...materials table (your existing tableData table)... */}
 
-                            </div>
-                        </div>
-                        <div className="d-flex justify-content-between align-items-center me-2 mt-5">
-                            {/* Search Input */}
-                            <div className="col-md-4">
-                                <form>
-                                    <div className="input-group">
-                                        <input
-                                            type="search"
-                                            id="searchInput"
-                                            value={searchKeyword}
-                                            onChange={(e) => setSearchKeyword(e.target.value)} // <- Add this line
-                                            className="form-control tbl-search"
-                                            placeholder="Type your keywords here"
-                                        />
-                                        <div className="input-group-append">
-                                            <button type="button" className="btn btn-md btn-default" onClick={handleApplyFilters} >
-                                                <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203" />
-                                                    <path d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z" fill="#8B0203" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                        <div className="mt-3 mb-5 ">
-                            {/* <h5 className="mb-3">Materials</h5> */}
-                            <div className="tbl-container  mt-1">
-                                <table className="w-100">
-                                    <thead>
-                                        <tr>
-                                            <th className="text-start">Sr.No.</th>
-                                            <th className="text-start">Material Type</th>
-                                            <th className="text-start">Material Sub-Type</th>
-                                            <th className="text-start">Material</th>
-                                            <th className="text-start">Generic Specification</th>
-                                            <th className="text-start">Colour</th>
-                                            <th className="text-start">Brand</th>
-                                            <th className="text-start">UOM</th>
-                                            <th className="text-start">Effective Date</th>
-                                            <th className="text-start">Rate (INR)
-                                                {/* <span className="ms-2 pt-2">
+                                                <div className="details_page">
+                                                    <div className="row px-3">
+                                                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                                            <div className="col-6">
+                                                                <label>Company</label>
+                                                            </div>
+                                                            <div className="col-6">
+                                                                <label className="text">
+                                                                    <span className="me-3">
+                                                                        <span className="text-dark">:</span>
+                                                                    </span>
+                                                                    {rateDetails?.company_name || "-"}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                                            <div className="col-6">
+                                                                <label>Project</label>
+                                                            </div>
+                                                            <div className="col-6">
+                                                                <label className="text">
+                                                                    <span className="me-3">
+                                                                        <span className="text-dark">:</span>
+                                                                    </span>
+                                                                    {rateDetails?.project_name || "-"}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                                            <div className="col-6">
+                                                                <label>Sub-Project</label>
+                                                            </div>
+                                                            <div className="col-6">
+                                                                <label className="text">
+                                                                    <span className="me-3">
+                                                                        <span className="text-dark">:</span>
+                                                                    </span>
+                                                                    {rateDetails?.site_name || "-"}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                                            <div className="col-6">
+                                                                <label>Wing</label>
+                                                            </div>
+                                                            <div className="col-6">
+                                                                <label className="text">
+                                                                    <span className="me-3">
+                                                                        <span className="text-dark">:</span>
+                                                                    </span>
+                                                                    {rateDetails?.wing_name || "-"}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="d-flex justify-content-between align-items-center me-2 mt-5">
+                                                    {/* Search Input */}
+                                                    <div className="col-md-4">
+                                                        <form>
+                                                            <div className="input-group">
+                                                                <input
+                                                                    type="search"
+                                                                    id="searchInput"
+                                                                    value={searchKeyword}
+                                                                    onChange={(e) => setSearchKeyword(e.target.value)} // <- Add this line
+                                                                    className="form-control tbl-search"
+                                                                    placeholder="Type your keywords here"
+                                                                />
+                                                                <div className="input-group-append">
+                                                                    <button type="button" className="btn btn-md btn-default" onClick={handleApplyFilters} >
+                                                                        <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                            <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203" />
+                                                                            <path d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z" fill="#8B0203" />
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                                <div className="mt-3 mb-5 ">
+                                                    {/* <h5 className="mb-3">Materials</h5> */}
+                                                    <div className="tbl-container  mt-1">
+                                                        <table className="w-100">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th className="text-start">Sr.No.</th>
+                                                                    <th className="text-start">Material Type</th>
+                                                                    <th className="text-start">Material Sub-Type</th>
+                                                                    <th className="text-start">Material</th>
+                                                                    <th className="text-start">Generic Specification</th>
+                                                                    <th className="text-start">Colour</th>
+                                                                    <th className="text-start">Brand</th>
+                                                                    <th className="text-start">UOM</th>
+                                                                    <th className="text-start">Effective Date</th>
+                                                                    <th className="text-start">Rate (INR)
+                                                                        {/* <span className="ms-2 pt-2">
                                                     <input type="checkbox" />
                                                 </span> */}
-                                            </th>
-                                            <th className="text-start">AVG Rate
-                                                {/* <span className="ms-2 pt-2">
+                                                                    </th>
+                                                                    <th className="text-start">AVG Rate
+                                                                        {/* <span className="ms-2 pt-2">
                                                     <input type="checkbox" />
                                                 </span> */}
-                                                {/* <span className="ms-2 pt-2" onClick={() => setShowDateModal(true)} style={{ cursor: "pointer" }}>
+                                                                        {/* <span className="ms-2 pt-2" onClick={() => setShowDateModal(true)} style={{ cursor: "pointer" }}>
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         width="16"
@@ -441,20 +477,20 @@ const RateDetails = () => {
                                                         <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1zm2-3v1h8V1H3z" />
                                                     </svg>
                                                 </span> */}
-                                            </th>
-                                            <th className="text-start">PO Rate
-                                                {/* <span className="ms-2 pt-2">
+                                                                    </th>
+                                                                    <th className="text-start">PO Rate
+                                                                        {/* <span className="ms-2 pt-2">
                                                     <input type="checkbox" />
                                                 </span> */}
-                                            </th>
+                                                                    </th>
 
-                                            {/* <th className="text-start">Action</th> */}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                                                                    {/* <th className="text-start">Action</th> */}
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
 
 
-                                        {/* {rateDetails?.materials?.length > 0 ? (
+                                                                {/* {rateDetails?.materials?.length > 0 ? (
                                             rateDetails?.materials?.map((row, index) => (
                                                 <tr key={index} >
                                                     <td className="text-start"> {index + 1}</td>
@@ -486,166 +522,221 @@ const RateDetails = () => {
                                         )} */}
 
 
-                                        {tableData.length > 0 ? (
-                                            tableData.map((row, index) => (
-                                                <tr key={index}>
-                                                    <td className="text-start">{index + 1}</td>
-                                                    <td className="text-start">{row.material_type}</td>
-                                                    <td className="text-start">{row.material_sub_type}</td>
-                                                    <td className="text-start">{row.material_name}</td>
+                                                                {tableData.length > 0 ? (
+                                                                    tableData.map((row, index) => (
+                                                                        <tr key={index}>
+                                                                            <td className="text-start">{index + 1}</td>
+                                                                            <td className="text-start">{row.material_type}</td>
+                                                                            <td className="text-start">{row.material_sub_type}</td>
+                                                                            <td className="text-start">{row.material_name}</td>
 
-                                                    <td className="text-start">{row.generic_info}</td>
-                                                    <td className="text-start">{row.color}</td>
-                                                    <td className="text-start">{row.brand}</td>
-                                                    <td className="text-start">{row.uom}</td>
-                                                    <td className="text-start">{row.effective_date}</td>
-                                                    <td className="text-start">
-                                                        {row.rate}
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={row.rateChecked || false}
-                                                            disabled
-                                                            style={{ marginLeft: 8 }}
-                                                        />
-                                                    </td>
-                                                    <td className="text-start">
-                                                        {row.avgRate || "0"}
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={row.avgRateChecked || false}
-                                                            disabled
-                                                            style={{ marginLeft: 8 }}
-                                                        />
+                                                                            <td className="text-start">{row.generic_info}</td>
+                                                                            <td className="text-start">{row.color}</td>
+                                                                            <td className="text-start">{row.brand}</td>
+                                                                            <td className="text-start">{row.uom}</td>
+                                                                            <td className="text-start">{row.effective_date}</td>
+                                                                            <td className="text-start">
+                                                                                {row.rate || "0"}
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={row.rateChecked || false}
+                                                                                    disabled
+                                                                                    style={{ marginLeft: 8 }}
+                                                                                />
+                                                                            </td>
+                                                                            <td className="text-start">
+                                                                                {row.avgRate || "0"}
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={row.avgRateChecked || false}
+                                                                                    disabled
+                                                                                    style={{ marginLeft: 8 }}
+                                                                                />
 
-                                                        {row.rate_type === "average" ? (
-                                                            // <button
-                                                            //   className="btn btn-link p-0"
-                                                            //   onClick={() => openDateModal(row)}
-                                                            // >
-                                                            //   View Date Range
-                                                            // </button>
+                                                                                {row.rate_type === "average" ? (
+                                                                                    // <button
+                                                                                    //   className="btn btn-link p-0"
+                                                                                    //   onClick={() => openDateModal(row)}
+                                                                                    // >
+                                                                                    //   View Date Range
+                                                                                    // </button>
 
-                                                            <span
-                                                                className="ms-2 pt-2"
-                                                                onClick={() => openDateModal(row)}
-                                                                style={{ cursor: "pointer" }}
-                                                                title="View Date Range"
+                                                                                    <span
+                                                                                        className="ms-2 pt-2"
+                                                                                        onClick={() => openDateModal(row)}
+                                                                                        style={{ cursor: "pointer" }}
+                                                                                        title="View Date Range"
+                                                                                    >
+                                                                                        <svg
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            width="16"
+                                                                                            height="16"
+                                                                                            fill="currentColor"
+                                                                                            className="bi bi-calendar"
+                                                                                            viewBox="0 0 16 16"
+                                                                                        >
+                                                                                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1zm2-3v1h8V1H3z" />
+                                                                                        </svg>
+                                                                                    </span>
+                                                                                ) : (
+                                                                                    ""
+                                                                                )}
+                                                                            </td>
+                                                                            <td className="text-start">
+                                                                                {row.poRate || "0"}
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={row.poRateChecked || false}
+                                                                                    disabled
+                                                                                    style={{ marginLeft: 8 }}
+                                                                                />
+                                                                            </td>
+
+                                                                        </tr>
+                                                                    ))
+                                                                ) : (
+                                                                    <tr>
+                                                                        <td colSpan="12" className="text-center">
+                                                                            No data found.
+                                                                        </td>
+                                                                    </tr>
+                                                                )}
+
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <div className="d-flex justify-content-between align-items-center px-1 mt-2  mb-3">
+                                                        <ul className="pagination justify-content-center d-flex">
+                                                            <li
+                                                                className={`page-item ${currentPage === 1 ? "disabled" : ""
+                                                                    }`}
                                                             >
-                                                                <svg
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    width="16"
-                                                                    height="16"
-                                                                    fill="currentColor"
-                                                                    className="bi bi-calendar"
-                                                                    viewBox="0 0 16 16"
+                                                                <button
+                                                                    className="page-link"
+                                                                    onClick={() => handlePageChange(1)}
+                                                                    disabled={currentPage === 1}
                                                                 >
-                                                                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1zm2-3v1h8V1H3z" />
-                                                                </svg>
-                                                            </span>
-                                                        ) : (
-                                                            ""
-                                                        )}
-                                                    </td>
-                                                    <td className="text-start">
-                                                        {row.poRate || "0"}
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={row.poRateChecked || false}
-                                                            disabled
-                                                            style={{ marginLeft: 8 }}
-                                                        />
-                                                    </td>
+                                                                    First
+                                                                </button>
+                                                            </li>
+                                                            <li
+                                                                className={`page-item ${currentPage === 1 ? "disabled" : ""
+                                                                    }`}
+                                                            >
+                                                                <button
+                                                                    className="page-link"
+                                                                    onClick={() => handlePageChange(currentPage - 1)}
+                                                                    disabled={currentPage === 1}
+                                                                >
+                                                                    Prev
+                                                                </button>
+                                                            </li>
 
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="12" className="text-center">
-                                                    No data found.
-                                                </td>
-                                            </tr>
-                                        )}
+                                                            {Array.from({ length: totalPages }, (_, index) => (
+                                                                <li
+                                                                    key={index + 1}
+                                                                    className={`page-item ${currentPage === index + 1 ? "active" : ""
+                                                                        }`}
+                                                                >
+                                                                    <button
+                                                                        className="page-link"
+                                                                        onClick={() => handlePageChange(index + 1)}
+                                                                    >
+                                                                        {index + 1}
+                                                                    </button>
+                                                                </li>
+                                                            ))}
 
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div className="d-flex justify-content-between align-items-center px-1 mt-2  mb-3">
-                                <ul className="pagination justify-content-center d-flex">
-                                    <li
-                                        className={`page-item ${currentPage === 1 ? "disabled" : ""
-                                            }`}
-                                    >
-                                        <button
-                                            className="page-link"
-                                            onClick={() => handlePageChange(1)}
-                                            disabled={currentPage === 1}
-                                        >
-                                            First
-                                        </button>
-                                    </li>
-                                    <li
-                                        className={`page-item ${currentPage === 1 ? "disabled" : ""
-                                            }`}
-                                    >
-                                        <button
-                                            className="page-link"
-                                            onClick={() => handlePageChange(currentPage - 1)}
-                                            disabled={currentPage === 1}
-                                        >
-                                            Prev
-                                        </button>
-                                    </li>
+                                                            <li
+                                                                className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                                                                    }`}
+                                                            >
+                                                                <button
+                                                                    className="page-link"
+                                                                    onClick={() => handlePageChange(currentPage + 1)}
+                                                                    disabled={currentPage === totalPages}
+                                                                >
+                                                                    Next
+                                                                </button>
+                                                            </li>
+                                                            <li
+                                                                className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                                                                    }`}
+                                                            >
+                                                                <button
+                                                                    className="page-link"
+                                                                    onClick={() => handlePageChange(totalPages)}
+                                                                    disabled={currentPage === totalPages}
+                                                                >
+                                                                    Last
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                        <div>
+                                                            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                                                            {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
 
-                                    {Array.from({ length: totalPages }, (_, index) => (
-                                        <li
-                                            key={index + 1}
-                                            className={`page-item ${currentPage === index + 1 ? "active" : ""
-                                                }`}
-                                        >
-                                            <button
-                                                className="page-link"
-                                                onClick={() => handlePageChange(index + 1)}
-                                            >
-                                                {index + 1}
-                                            </button>
-                                        </li>
-                                    ))}
+                                                            {totalEntries} entries
+                                                            {console.log(".........", itemsPerPage)}
+                                                        </div>
 
-                                    <li
-                                        className={`page-item ${currentPage === totalPages ? "disabled" : ""
-                                            }`}
-                                    >
-                                        <button
-                                            className="page-link"
-                                            onClick={() => handlePageChange(currentPage + 1)}
-                                            disabled={currentPage === totalPages}
-                                        >
-                                            Next
-                                        </button>
-                                    </li>
-                                    <li
-                                        className={`page-item ${currentPage === totalPages ? "disabled" : ""
-                                            }`}
-                                    >
-                                        <button
-                                            className="page-link"
-                                            onClick={() => handlePageChange(totalPages)}
-                                            disabled={currentPage === totalPages}
-                                        >
-                                            Last
-                                        </button>
-                                    </li>
-                                </ul>
-                                <div>
-                                    Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                                    {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
+                                                    </div>
+                                                </div>
 
-                                    {totalEntries} entries
-                                    {console.log(".........", itemsPerPage)}
+                                            </div>
+                                        </div>
+
+                                    )}
+
+                                    {activeTab === "revisions" && (
+                                        <div className="tab-pane fade show active" id="revisions" role="tabpanel">
+                                            {/* Rate Revised Versions Table */}
+                                            {rateDetails?.revised_versions?.length > 0 ? (
+                                                <div className="row mt-4 w-100">
+                                                    <div className="col-12">
+                                                        <h5>Rate Revised Versions</h5>
+                                                        <div className="mx-0">
+                                                            <div className="tbl-container mt-1" style={{ maxHeight: "450px" }}>
+                                                                <table className="w-100">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Sr.No.</th>
+                                                                            <th>ID</th>
+                                                                            <th>Version Number</th>
+                                                                            <th>Status</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {rateDetails?.revised_versions?.map((log, index) => (
+                                                                            <tr key={log.id}>
+                                                                                <td className="text-start">{index + 1}</td>
+                                                                                <td className="text-start">
+                                                                                    <Link to={`/details-rate/${log.id}?token=${token}`} className="boq-id-link">
+                                                                                        {log.id}
+                                                                                    </Link>
+                                                                                </td>
+                                                                                <td className="text-start">{log.display_name}</td>
+                                                                                <td className="text-start">{log.list_status || ""}</td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="text-center py-4">No revised versions found.</div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
+
 
                             </div>
                         </div>
+
+
                         <div className="row w-100 ">
                             <div className="col-md-12 ">
                                 <div className="form-group">
@@ -761,7 +852,7 @@ const RateDetails = () => {
                                 </div>
                             </div>
                         </div>
-                        {rateDetails?.revised_versions?.length > 0 && (
+                        {/* {rateDetails?.revised_versions?.length > 0 && (
                             <div className="row mt-4 w-100">
                                 <div className="col-12 " >
                                     <h5> Rate Revised Versions</h5>
@@ -773,9 +864,9 @@ const RateDetails = () => {
                                                         <th>Sr.No.</th>
                                                         <th>ID</th>
                                                         <th>Version Number</th>
-                                                        {/* <th>Status</th> */}
+                                                       
                                                         <th>Status</th>
-                                                        {/* <th>Comment</th> */}
+                                                        
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -788,13 +879,9 @@ const RateDetails = () => {
                                                                 </Link>
                                                             </td>
                                                             <td className="text-start">
-                                                                {log.version_number}
+                                                                {log.display_name}
                                                             </td>
-                                                            {/* <td className="text-start">
-                                                                {log.status
-                                                                    ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
-                                                                    : ""}
-                                                            </td> */}
+                                                            
                                                             <td className="text-start">{log.list_status || ""}</td>
                                                         </tr>
                                                     ))}
@@ -804,9 +891,13 @@ const RateDetails = () => {
                                     </div>
                                 </div>
                             </div>
-                        )}
+                        )} */}
                     </div>
                 </div>
+
+
+
+
             </div>
             {loading2 && (
                 <div className="loader-container">

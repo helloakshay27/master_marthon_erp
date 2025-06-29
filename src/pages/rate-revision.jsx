@@ -24,6 +24,9 @@ const RateRevision = () => {
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [fieldErrors, setFieldErrors] = useState({});
+    const [showRemarkModal, setShowRemarkModal] = useState(false);
+    const [remarkRowIndex, setRemarkRowIndex] = useState(null);
+    const [remarkInput, setRemarkInput] = useState("");
     // State for table rows
     const [formData, setFormData] = useState({
         materialType: "",
@@ -111,11 +114,15 @@ const RateRevision = () => {
     // Handle rate input change
     const handleRateChange = (e, rowIndex) => {
         const value = e.target.value;
+
         setTableData((prevData) =>
             prevData.map((row, index) =>
                 index === rowIndex ? { ...row, rate: value } : row
             )
         );
+        setRemarkRowIndex(rowIndex);
+        setRemarkInput(tableData[rowIndex]?.remark || "");
+        setShowRemarkModal(true);
 
         // setRate(value);
         // setCheckbox1(false);
@@ -199,7 +206,7 @@ const RateRevision = () => {
             setFieldErrors(errors);
             return;
         }
-         // Add the new row with rateChecked and rateType if rate is present
+        // Add the new row with rateChecked and rateType if rate is present
         const newRow = {
             ...formData,
             rateChecked: !!formData.rate,
@@ -317,6 +324,9 @@ const RateRevision = () => {
 
 
     const handleCheckboxChange = (checkboxType, rowIndex) => {
+        setRemarkRowIndex(rowIndex);
+        setRemarkInput(tableData[rowIndex]?.remark || "");
+        setShowRemarkModal(true);
         setTableData((prevData) =>
             prevData.map((row, index) => {
                 if (index === rowIndex) {
@@ -814,7 +824,7 @@ const RateRevision = () => {
                 console.log("Update successful:", response.data);
                 // Redirect to the list page
                 // navigate("/list-page"); // Replace "/list-page" with your actual list page route
-                navigate(`/details-rate/${rateDetails?.parent_id}?token=${token}`);
+                navigate(`/details-rate/${response.data.id}?token=${token}`);
             })
             .catch((error) => {
                 alert("Error submitting data!");
@@ -1353,6 +1363,40 @@ const RateRevision = () => {
                         Apply
                     </button>
                     <button className="purple-btn1" onClick={() => setShowDateModal(false)}>
+                        Cancel
+                    </button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={showRemarkModal} onHide={() => setShowRemarkModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Enter Remark</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <textarea
+                        className="form-control"
+                        rows={3}
+                        value={remarkInput}
+                        onChange={e => setRemarkInput(e.target.value)}
+                        placeholder="Enter remark for this material"
+                    />
+                </Modal.Body>
+                <Modal.Footer>
+                    <button
+                        className="purple-btn2 me-2"
+                        // variant="primary"
+                        onClick={() => {
+                            setTableData(prev =>
+                                prev.map((row, idx) =>
+                                    idx === remarkRowIndex ? { ...row, remark: remarkInput } : row
+                                )
+                            );
+                            setShowRemarkModal(false);
+                        }}
+                    >
+                        Save
+                    </button>
+                    <button className="purple-btn1" onClick={() => setShowRemarkModal(false)}>
                         Cancel
                     </button>
                 </Modal.Footer>
