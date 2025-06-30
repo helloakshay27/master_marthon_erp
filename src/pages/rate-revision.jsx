@@ -86,6 +86,7 @@ const RateRevision = () => {
                             effectiveDate: mat.effective_date || "",
                             rateType: mat.rate_type,
                             rate,
+                            originalManualRate: rate,
                             avgRate,
                             poRate,
                             uomLabel: mat.uom || "",
@@ -117,7 +118,7 @@ const RateRevision = () => {
 
         setTableData((prevData) =>
             prevData.map((row, index) =>
-                index === rowIndex ? { ...row, rate: value } : row
+                index === rowIndex ? { ...row, rate: value, originalManualRate: value } : row
             )
         );
         // setRemarkRowIndex(rowIndex);
@@ -130,10 +131,10 @@ const RateRevision = () => {
 
     };
     const handleRateBlur = (rowIndex) => {
-    setRemarkRowIndex(rowIndex);
-    setRemarkInput(tableData[rowIndex]?.remark || "");
-    setShowRemarkModal(true);
-};
+        setRemarkRowIndex(rowIndex);
+        setRemarkInput(tableData[rowIndex]?.remark || "");
+        setShowRemarkModal(true);
+    };
 
     // Handle input/select changes
     const handleInputChange = (e) => {
@@ -362,13 +363,21 @@ const RateRevision = () => {
                         updatedRow.poRateChecked = false;
 
                         // Add or clear the avgRate value based on the new state
-                        updatedRow.rate = newAvgRateChecked ? row.avgRate : ""; // Dummy value for avgRate
+                        // updatedRow.rate = newAvgRateChecked ? row.avgRate : ""; // Dummy value for avgRate
                         // updatedRow.avgRate= ""; // Clear rate
                         // updatedRow.poRate = ""; // Clear poRate
-                        updatedRow.rateType = newAvgRateChecked ? "average" : ""; // Set rateType
+                        // updatedRow.rateType = newAvgRateChecked ? "average" : ""; // Set rateType
+                        // if (newAvgRateChecked) {
+                        //     updatedRow.rate = row.avgRate || "0";
+                        // } // Set rateType
+
+
                         if (newAvgRateChecked) {
                             updatedRow.rate = row.avgRate || "0";
-                        } // Set rateType
+                        } else {
+                            updatedRow.rate = row.originalManualRate || "";
+                        }
+                        updatedRow.rateType = newAvgRateChecked ? "average" : "";
                     }
 
                     // Handle PO Rate checkbox
@@ -379,13 +388,21 @@ const RateRevision = () => {
                         updatedRow.avgRateChecked = false;
 
                         // Add or clear the poRate value based on the new state
-                        updatedRow.rate = newPoRateChecked ? row.poRate : ""; // Dummy value for poRate
+                        // updatedRow.rate = newPoRateChecked ? row.poRate : ""; // Dummy value for poRate
                         // updatedRow.poRate = ""; // Clear rate
                         // updatedRow.avgRate = ""; // Clear avgRate
-                        updatedRow.rateType = newPoRateChecked ? "last" : ""; // Set rateType
+                        // updatedRow.rateType = newPoRateChecked ? "last" : ""; // Set rateType
+                        // if (newPoRateChecked) {
+                        //     updatedRow.rate = row.poRate || "0";
+                        // }
+
+
                         if (newPoRateChecked) {
                             updatedRow.rate = row.poRate || "0";
+                        } else {
+                            updatedRow.rate = row.originalManualRate || "";
                         }
+                        updatedRow.rateType = newPoRateChecked ? "last" : "";
                     }
 
                     return updatedRow;
@@ -1358,7 +1375,7 @@ const RateRevision = () => {
                                     />
                                 </div>
                             </div>
-                              <div className="col-md-6 d-flex align-items-center mt-3">
+                            <div className="col-md-6 d-flex align-items-center mt-3">
                                 <input
                                     type="checkbox"
                                     id="companyRadio"
