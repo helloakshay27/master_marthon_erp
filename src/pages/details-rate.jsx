@@ -33,6 +33,7 @@ const RateDetails = () => {
     const [loading, setLoading] = useState(false);
     const [loading2, setLoading2] = useState(false);  // State for loading indicator
     const [selectedMaterial, setSelectedMaterial] = useState(null);
+    const [dateType, setDateType] = useState("");
     const openModal = () => setShowModal(true);
     const closeModal = () => setShowModal(false);
 
@@ -44,7 +45,7 @@ const RateDetails = () => {
             );
             setRateDetails(response.data);
             setStatus(response.data.selected_status || "");
-            // console.log("data list... ", response.data.pagination.total_entries)
+            console.log("data list... ", response.data)
             setTotalPages(response?.data?.pagination?.total_pages); // Set total pages
             setTotalEntries(response?.data?.pagination?.total_entries);
             if (response.data.materials) {
@@ -187,6 +188,7 @@ const RateDetails = () => {
                 to: formatDate(material.avg_rate_to),
             });
             setSelectedMaterial(material);
+            setDateType(material.rate_level || "");
         }
         setShowDateModal(true);
     };
@@ -978,6 +980,41 @@ const RateDetails = () => {
                                         }
                                     />
                                 </div>
+                            </div>
+
+                             <div className="col-md-6 d-flex align-items-center mt-3">
+                                <input
+                                    type="checkbox"
+                                    id="companyRadio"
+                                    value="company"
+                                    checked={dateType === "company"}
+                                    onChange={() => setDateType("company")}
+                                    className="me-2"
+                                    disabled
+                                />
+                                <label
+                                    htmlFor="without-bill-entry"
+                                    className="mb-0"
+                                >
+                                    Company
+                                </label>
+                            </div>
+                            <div className="col-md-6 d-flex align-items-center mt-3">
+                                <input
+                                    type="checkbox"
+                                    className="me-2"
+                                    id="organisationRadio"
+                                    value="organisation"
+                                    checked={dateType === "organisation"}
+                                    onChange={() => setDateType("organisation")}
+                                     disabled
+                                />
+                                <label
+                                    htmlFor="without-bill-entry"
+                                    className="mb-0"
+                                >
+                                    Organisation
+                                </label>
                             </div>
                         </div>
                     </form>

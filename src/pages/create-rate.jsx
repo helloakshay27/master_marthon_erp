@@ -588,6 +588,7 @@ const CreateRate = () => {
                     company_id: selectedCompany?.value || "", // Replace with your actual company id state/variable
                     from: dateRange.from,
                     to: dateRange.to,
+                    rate_level: dateType,
                     materials: tableData.map(row => ({
                         material_id: row.material,
                         material_sub_type_id: row.materialSubType,
@@ -651,6 +652,7 @@ const CreateRate = () => {
                 if (row.rateType === "average") {
                     material.avg_rate_from = dateRange.from || ""; // or your dynamic value
                     material.avg_rate_to = dateRange.to || "";   // or your dynamic value
+                    material.rate_level= dateType
                 }
                 //   console.log("material add:",material)
                 return material;
@@ -695,19 +697,40 @@ const CreateRate = () => {
                 project_id: selectedProject?.value || "",
                 pms_site_id: selectedSite?.value || "",
                 pms_wing_id: selectedWing?.value || "",
-                materials: tableData.map(row => ({
-                    material_id: row.material,
-                    material_sub_type_id: row.materialSubType,
-                    generic_info_id: row.genericSpecification || null,
-                    colour_id: row.colour || null,
-                    brand_id: row.brand || null,
-                    uom_id: row.uom || null,
-                    effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
-                    rate: row.rate,
-                    rate_type: row.rateType || null
-                }))
-            }
+                // materials: tableData.map(row => ({
+                //     material_id: row.material,
+                //     material_sub_type_id: row.materialSubType,
+                //     generic_info_id: row.genericSpecification || null,
+                //     colour_id: row.colour || null,
+                //     brand_id: row.brand || null,
+                //     uom_id: row.uom || null,
+                //     effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
+                //     rate: row.rate,
+                //     rate_type: row.rateType || null
+                // }))
 
+                materials: tableData.map(row => {
+                    const material = {
+                        material_id: row.material,
+                        material_sub_type_id: row.materialSubType,
+                        generic_info_id: row.genericSpecification || null,
+                        colour_id: row.colour || null,
+                        brand_id: row.brand || null,
+                        uom_id: row.uom || null,
+                        effective_date: row.effectiveDate, // should be in "DD/MM/YYYY" format
+                        rate: row.rate,
+                        rate_type: row.rateType || null
+                    };
+                    if (row.rateType === "average") {
+                        material.avg_rate_from = dateRange.from || ""; // or your dynamic value
+                        material.avg_rate_to = dateRange.to || "";   // or your dynamic value
+                        material.rate_level= dateType
+                    }
+                    //   console.log("material add:",material)
+                    return material;
+                })
+            }
+            
         };
 
         console.log("Submitting payload:", payload);

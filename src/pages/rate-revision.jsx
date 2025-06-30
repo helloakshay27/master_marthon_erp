@@ -690,6 +690,7 @@ const RateRevision = () => {
         from: formatDate(new Date(new Date().setMonth(new Date().getMonth() - 6))), // 6 months ago
         to: formatDate(new Date()), // Today's date
     });
+    const [dateType, setDateType] = useState("company");
 
     // console.log("date ranhe:", dateRange)
     //  console.log("rate details:",rateDetails.company_id)
@@ -702,6 +703,7 @@ const RateRevision = () => {
                     company_id: rateDetails?.company_id || null, // Replace with your actual company id state/variable
                     from: dateRange.from,
                     to: dateRange.to,
+                    rate_level: dateType,
                     materials: tableData.map(row => ({
                         material_id: row.material,
                         material_sub_type_id: row.materialSubType,
@@ -769,6 +771,7 @@ const RateRevision = () => {
                 if (row.rateType === "average") {
                     material.avg_rate_from = dateRange.from || ""; // or your dynamic value
                     material.avg_rate_to = dateRange.to || "";   // or your dynamic value
+                    material.rate_level = dateType
                 }
                 //   console.log("material add:",material)
                 return material;
@@ -806,6 +809,7 @@ const RateRevision = () => {
                     if (row.rateType === "average") {
                         material.avg_rate_from = dateRange.from || ""; // or your dynamic value
                         material.avg_rate_to = dateRange.to || "";   // or your dynamic value
+                        material.rate_level = dateType || "company"
                     }
                     //   console.log("material add:",material)
                     return material;
@@ -1347,6 +1351,38 @@ const RateRevision = () => {
                                         }
                                     />
                                 </div>
+                            </div>
+                              <div className="col-md-6 d-flex align-items-center mt-3">
+                                <input
+                                    type="checkbox"
+                                    id="companyRadio"
+                                    value="company"
+                                    checked={dateType === "company"}
+                                    onChange={() => setDateType("company")}
+                                    className="me-2"
+                                />
+                                <label
+                                    htmlFor="without-bill-entry"
+                                    className="mb-0"
+                                >
+                                    Company
+                                </label>
+                            </div>
+                            <div className="col-md-6 d-flex align-items-center mt-3">
+                                <input
+                                    type="checkbox"
+                                    className="me-2"
+                                    id="organisationRadio"
+                                    value="organisation"
+                                    checked={dateType === "organisation"}
+                                    onChange={() => setDateType("organisation")}
+                                />
+                                <label
+                                    htmlFor="without-bill-entry"
+                                    className="mb-0"
+                                >
+                                    Organisation
+                                </label>
                             </div>
                         </div>
                     </form>
