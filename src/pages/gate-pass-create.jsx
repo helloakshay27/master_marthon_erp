@@ -269,7 +269,7 @@ const GatePassCreate = () => {
               })
             : (formData.material_items || []).map((item) => ({
                 gate_pass_qty: Number(item.gate_pass_qty) || null,
-                mor_inventory_id: item.mor_inventory_id || item.id || null,
+                material_inventory_id: item.material_inventory_id || item.id || null,
               })),
         attachments: attachments.length > 0 ? attachments : null,
         to_resource_id: to_resource_id,
@@ -1086,7 +1086,7 @@ const GatePassCreate = () => {
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">Home &gt; Store &gt; Store Operations &gt; Gate Pass</a>
-          <h5 className="mt-3">Gate Pass list</h5>
+          <h5 className="mt-3">Gate Pass Create</h5>
           <div className="head-material text-center">
             <h4>{getHeaderTitle()}</h4>
           </div>
@@ -1456,15 +1456,17 @@ const GatePassCreate = () => {
                   <div className="form-group">
                     <label>Driver Contact No</label>
                     <input
-                      type="text"
+                      type="number"
                       className="form-control"
                       value={formData.driver_contact_no}
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        let value = e.target.value.replace(/[^0-9]/g, "");
+                        if (value.length > 10) value = value.slice(0, 10);
                         setFormData({
                           ...formData,
-                          driver_contact_no: e.target.value,
-                        })
-                      }
+                          driver_contact_no: value,
+                        });
+                      }}
                       placeholder="Enter Driver Contact No"
                     />
                   </div>
@@ -1504,12 +1506,14 @@ const GatePassCreate = () => {
                   <div className="form-group">
                     <label>Contact No</label>
                     <input
-                      type="text"
+                      type="number"
                       className="form-control"
                       value={formData.contact_no}
-                      onChange={(e) =>
-                        setFormData({ ...formData, contact_no: e.target.value })
-                      }
+                      onChange={(e) => {
+                        let value = e.target.value.replace(/[^0-9]/g, "");
+                        if (value.length > 10) value = value.slice(0, 10);
+                        setFormData({ ...formData, contact_no: value });
+                      }}
                       placeholder="Enter Contact No"
                     />
                   </div>
@@ -2369,7 +2373,7 @@ const GatePassCreate = () => {
                     unit: poMaterials[idx].uom,
                     gate_pass_qty: "",
                     stock_as_on: poMaterials[idx].stock_as_on,
-                    mor_inventory_id: poMaterials[idx].id || null,
+                    material_inventory_id: poMaterials[idx].id || null,
                   })
                 );
                 setFormData((prev) => ({

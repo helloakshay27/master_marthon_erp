@@ -1965,15 +1965,17 @@ const GatePassEdit = () => {
                   <div className="form-group">
                     <label>Driver Contact No</label>
                     <input
-                      type="text"
+                      type="number"
                       className="form-control"
                       value={formData.driver_contact_no}
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        let value = e.target.value.replace(/[^0-9]/g, "");
+                        if (value.length > 10) value = value.slice(0, 10);
                         setFormData({
                           ...formData,
-                          driver_contact_no: e.target.value,
-                        })
-                      }
+                          driver_contact_no: value,
+                        });
+                      }}
                       placeholder="Enter Driver Contact No"
                     />
                   </div>
@@ -2013,12 +2015,14 @@ const GatePassEdit = () => {
                   <div className="form-group">
                     <label>Contact No</label>
                     <input
-                      type="text"
+                      type="number"
                       className="form-control"
                       value={formData.contact_no}
-                      onChange={(e) =>
-                        setFormData({ ...formData, contact_no: e.target.value })
-                      }
+                      onChange={(e) => {
+                        let value = e.target.value.replace(/[^0-9]/g, "");
+                        if (value.length > 10) value = value.slice(0, 10);
+                        setFormData({ ...formData, contact_no: value });
+                      }}
                       placeholder="Enter Contact No"
                     />
                   </div>
