@@ -94,6 +94,7 @@ const GatePassEdit = () => {
   const [materialRowIdx, setMaterialRowIdx] = useState(null); // which row to update
 
   const [fetchedResourceId, setFetchedResourceId] = useState(null);
+  const [fetchedMaterials, setFetchedMaterials] = useState([]);
 
   // Add state for OtherVendor id
   const [otherVendorId, setOtherVendorId] = useState(null);
@@ -266,8 +267,8 @@ const GatePassEdit = () => {
                   gate_pass_qty: Number(item.gate_pass_qty) || null,
                 };
                 if (item.id) attr.id = item.id;
-                else if (item.mor_inventory_id)
-                  attr.mor_inventory_id = item.mor_inventory_id;
+                else if (item.material_inventory_id)
+                  attr.material_inventory_id = item.material_inventory_id;
                 if (item._destroy) attr._destroy = true;
                 return attr;
               }),
@@ -506,11 +507,17 @@ const GatePassEdit = () => {
   };
 
   useEffect(() => {
-    // Fetch PO/WO numbers for dropdown
+    // Fetch PO/WO numbers for dropdown when store is selected
     const fetchPONumbers = async () => {
+      if (!formData.store_id) {
+        setPoOptions([]);
+        setSelectedPO(null);
+        setFormData((prev) => ({ ...prev, mto_po_number: "" }));
+        return;
+      }
       try {
         const response = await axios.get(
-          `${baseURL}purchase_orders/purchase_order_po_numbers.json?token=${token}`
+          `${baseURL}purchase_orders/purchase_order_po_numbers.json?token=${token}&store_id=${formData.store_id}`
         );
         if (Array.isArray(response.data)) {
           setPoOptions(
@@ -520,13 +527,17 @@ const GatePassEdit = () => {
               id: item.id, // keep id for later use
             }))
           );
+        } else {
+          setPoOptions([]);
         }
       } catch (error) {
         setPoOptions([]);
       }
     };
     fetchPONumbers();
+  }, [formData.store_id, token]);
 
+  useEffect(() => {
     // Fetch projects and sub-projects
     const fetchProjects = async () => {
       try {
@@ -587,7 +598,7 @@ const GatePassEdit = () => {
       }
     };
     fetchGatePassTypes();
-  }, []);
+  }, [token]);
 
   // When project changes, update subProjects
   useEffect(() => {
@@ -616,15 +627,24 @@ const GatePassEdit = () => {
       (formData.gate_pass_type === "return_to_vendor" ||
         formData.gate_pass_type === "testing_calibration") &&
       selectedPO &&
-      selectedPO.id
+      selectedPO.id &&
+      formData.store_id
     ) {
       const fetchMaterials = async () => {
         try {
           const response = await axios.get(
-            `${baseURL}mor_inventories/fetch_all_inventories.json?page=1&po_id=${selectedPO.id}`
+            `${baseURL}pms/stores/fetch_store_inventories.json?token=${token}&store_id=${formData.store_id}&po_id=${selectedPO.id}`
           );
-          if (response.data && Array.isArray(response.data.inventories)) {
-            setPoMaterials(response.data.inventories); // <-- for modal
+          if (response.data) {
+            if (Array.isArray(response.data.inventories)) {
+              setPoMaterials(response.data.inventories); // <-- for modal
+            } else if (Array.isArray(response.data)) {
+              setPoMaterials(response.data);
+            } else {
+              setPoMaterials([]);
+            }
+          } else {
+            setPoMaterials([]);
           }
         } catch (error) {
           setPoMaterials([]);
@@ -633,7 +653,7 @@ const GatePassEdit = () => {
       fetchMaterials();
     }
     // eslint-disable-next-line
-  }, [selectedPO, formData.gate_pass_type]);
+  }, [selectedPO, formData.gate_pass_type, formData.store_id, token]);
 
   useEffect(() => {
     if (formData.sub_project_id) {
@@ -1051,7 +1071,7 @@ const GatePassEdit = () => {
 
   useEffect(() => {
     const fetchAndSetGatePassData = async () => {
-      if (id && gatePassTypes.length > 0 && poOptions.length > 0) {
+      if (id && gatePassTypes.length > 0) {
         try {
           const response = await axios.get(
             `https://marathon.lockated.com/gate_passes/${id}.json?token=${token}`
@@ -1170,79 +1190,7 @@ const GatePassEdit = () => {
           }
 
           if (data.gate_pass_materials && data.gate_pass_materials.length > 0) {
-            // Pre-fill material_items for PO-based types
-            if (
-              gatePassType?.rawValue === "PurchaseOrder" ||
-              gatePassType?.rawValue === "MaterialTransaferOrder"
-            ) {
-              const allPoMaterials = poMaterials.length > 0 ? poMaterials : [];
-              const gatePassMaterialIds = data.gate_pass_materials.map(
-                (m) => m.mor_inventory_id
-              );
-              const selectedMaterials = allPoMaterials
-                .filter((m) => gatePassMaterialIds.includes(m.id))
-                .map((m) => {
-                  const gpMaterial =
-                    data.gate_pass_materials.find(
-                      (gpm) => gpm.mor_inventory_id === m.id
-                    ) || {};
-                  return {
-                    id: gpMaterial.id,
-                    material_type: m.material_type,
-                    material_sub_type: m.material_sub_type,
-                    material_name: m.material,
-                    material_details: m.generic_specification,
-                    generic_specification: m.generic_specification,
-                    brand: m.brand,
-                    colour: m.colour,
-                    unit: m.uom,
-                    gate_pass_qty: gpMaterial.gate_pass_qty || "",
-                    stock_as_on: m.stock_as_on,
-                    mor_inventory_id: m.id,
-                    available_qty: null,
-                  };
-                });
-              setFormData((prev) => ({
-                ...prev,
-                material_items: selectedMaterials,
-              }));
-            }
-            // Pre-fill maintenanceRows for other types
-            else if (gatePassType?.rawValue === "" || !gatePassType?.rawValue) {
-              const maintenanceMaterialRows = data.gate_pass_materials.map(
-                (m) => {
-                  const isOther =
-                    m.material_id === null && m.other_material_name;
-                  const materialNameValue = isOther
-                    ? `other_${m.other_material_name
-                        .replace(/\s+/g, "_")
-                        .toLowerCase()}`
-                    : m.material_id;
-                  return {
-                    id: m.id,
-                    material_type: m.material_type_id,
-                    material_sub_type: m.material_sub_type_id,
-                    material_name: materialNameValue,
-                    generic_info: m.generic_specification_id,
-                    brand: m.brand_id,
-                    colour: m.colour_id,
-                    unit: m.uom_id,
-                    gate_pass_qty: m.gate_pass_qty || "",
-                    reason: m.remarks || "",
-                    other_material_name: m.other_material_name,
-                    other_material_description: m.other_material_description,
-                    subTypeOptions: [],
-                    materialNameOptions: [],
-                    genericInfoOptions: [],
-                    brandOptions: [],
-                    colourOptions: [],
-                    unitOptions: [],
-                    available_qty: null,
-                  };
-                }
-              );
-              prefillMaintenanceRowOptions(maintenanceMaterialRows);
-            }
+            setFetchedMaterials(data.gate_pass_materials);
           }
         } catch (error) {
           console.error("Error fetching gate pass data:", error);
@@ -1250,7 +1198,7 @@ const GatePassEdit = () => {
       }
     };
     fetchAndSetGatePassData();
-  }, [id, gatePassTypes, poOptions, poMaterials]);
+  }, [id, gatePassTypes, token]);
 
   // Ensure PO/WO No is preselected after both poOptions and resource_id are available
   useEffect(() => {
@@ -1288,6 +1236,95 @@ const GatePassEdit = () => {
     // Only run when modal opens
     // eslint-disable-next-line
   }, [showAddVendorModal]);
+
+  // Pre-fill materials table once all necessary data is available
+  useEffect(() => {
+    // Wait until all necessary data is available
+    if (
+      !formData.gate_pass_type ||
+      fetchedMaterials.length === 0 ||
+      gatePassTypes.length === 0
+    ) {
+      return;
+    }
+
+    const gatePassType = gatePassTypes.find(
+      (t) => t.value === formData.gate_pass_type
+    );
+
+    if (!gatePassType) return;
+
+    if (
+      gatePassType.rawValue === "PurchaseOrder" ||
+      gatePassType.rawValue === "MaterialTransaferOrder"
+    ) {
+      // For PO-based types, we need poMaterials to be loaded
+      if (poMaterials.length === 0) return;
+
+      const gatePassMaterialIds = fetchedMaterials.map(
+        (m) => m.material_inventory_id
+      );
+
+      const selectedMaterials = poMaterials
+        .filter((m) => gatePassMaterialIds.includes(m.id))
+        .map((m) => {
+          const gpMaterial =
+            fetchedMaterials.find(
+              (gpm) => gpm.material_inventory_id === m.id
+            ) || {};
+          return {
+            id: gpMaterial.id,
+            material_type: m.material_type,
+            material_sub_type: m.material_sub_type,
+            material_name: m.material,
+            material_details: m.generic_specification,
+            generic_specification: m.generic_specification,
+            brand: m.brand,
+            colour: m.colour,
+            unit: m.uom,
+            gate_pass_qty: gpMaterial.gate_pass_qty || "",
+            stock_as_on: m.stock_as_on,
+            material_inventory_id: m.id,
+            available_qty: null,
+          };
+        });
+
+      setFormData((prev) => ({
+        ...prev,
+        material_items: selectedMaterials,
+      }));
+    } else if (gatePassType.rawValue === "" || !gatePassType.rawValue) {
+      // For general/maintenance types
+      const maintenanceMaterialRows = fetchedMaterials.map((m) => {
+        const isOther = m.material_id === null && m.other_material_name;
+        const materialNameValue = isOther
+          ? `other_${m.other_material_name.replace(/\s+/g, "_").toLowerCase()}`
+          : m.material_id;
+        return {
+          id: m.id,
+          material_type: m.material_type_id,
+          material_sub_type: m.material_sub_type_id,
+          material_name: materialNameValue,
+          generic_info: m.generic_specification_id,
+          brand: m.brand_id,
+          colour: m.colour_id,
+          unit: m.uom_id,
+          gate_pass_qty: m.gate_pass_qty || "",
+          reason: m.remarks || "",
+          other_material_name: m.other_material_name,
+          other_material_description: m.other_material_description,
+          subTypeOptions: [],
+          materialNameOptions: [],
+          genericInfoOptions: [],
+          brandOptions: [],
+          colourOptions: [],
+          unitOptions: [],
+          available_qty: null,
+        };
+      });
+      prefillMaintenanceRowOptions(maintenanceMaterialRows);
+    }
+  }, [fetchedMaterials, poMaterials, formData.gate_pass_type, gatePassTypes]);
 
   const fetchAvailableQty = async (row, idx) => {
     const params = {
@@ -2663,7 +2700,7 @@ const GatePassEdit = () => {
                     unit: poMaterials[idx].uom,
                     gate_pass_qty: "",
                     stock_as_on: poMaterials[idx].stock_as_on,
-                    mor_inventory_id: poMaterials[idx].id || null,
+                    material_inventory_id: poMaterials[idx].id || null,
                     available_qty: null,
                   })
                 );

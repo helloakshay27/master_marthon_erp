@@ -250,7 +250,7 @@ const GatePassCreate = () => {
               }))
             : (formData.material_items || []).map((item) => ({
                 gate_pass_qty: Number(item.gate_pass_qty) || null,
-                mor_inventory_id: item.mor_inventory_id || item.id || null,
+                material_inventory_id: item.material_inventory_id || item.id || null,
               })),
         attachments: attachments.length > 0 ? attachments : null,
         to_resource_id: to_resource_id,
@@ -470,11 +470,15 @@ const GatePassCreate = () => {
   };
 
   useEffect(() => {
-    // Fetch PO/WO numbers for dropdown
+    // Fetch PO/WO numbers for dropdown when store is selected
     const fetchPONumbers = async () => {
+      if (!formData.store_id) {
+        setPoOptions([]);
+        return;
+      }
       try {
         const response = await axios.get(
-          `${baseURL}purchase_orders/purchase_order_po_numbers.json?token=${token}`
+          `${baseURL}purchase_orders/purchase_order_po_numbers.json?token=${token}&store_id=${formData.store_id}`
         );
         if (Array.isArray(response.data)) {
           setPoOptions(
@@ -484,13 +488,17 @@ const GatePassCreate = () => {
               id: item.id, // keep id for later use
             }))
           );
+        } else {
+          setPoOptions([]);
         }
       } catch (error) {
         setPoOptions([]);
       }
     };
     fetchPONumbers();
+  }, [formData.store_id, token]);
 
+  useEffect(() => {
     // Fetch projects and sub-projects
     const fetchProjects = async () => {
       try {
@@ -580,15 +588,24 @@ const GatePassCreate = () => {
       (formData.gate_pass_type === "return_to_vendor" ||
         formData.gate_pass_type === "testing_calibration") &&
       selectedPO &&
-      selectedPO.id
+      selectedPO.id &&
+      formData.store_id
     ) {
       const fetchMaterials = async () => {
         try {
           const response = await axios.get(
-            `${baseURL}mor_inventories/fetch_all_inventories.json?page=1&po_id=${selectedPO.id}`
+            `${baseURL}pms/stores/fetch_store_inventories.json?token=${token}&store_id=${formData.store_id}&po_id=${selectedPO.id}`
           );
-          if (response.data && Array.isArray(response.data.inventories)) {
-            setPoMaterials(response.data.inventories); // <-- for modal
+          if (response.data) {
+            if (Array.isArray(response.data.inventories)) {
+              setPoMaterials(response.data.inventories); // <-- for modal
+            } else if (Array.isArray(response.data)) {
+              setPoMaterials(response.data);
+            } else {
+              setPoMaterials([]);
+            }
+          } else {
+            setPoMaterials([]);
           }
         } catch (error) {
           setPoMaterials([]);
@@ -597,7 +614,7 @@ const GatePassCreate = () => {
       fetchMaterials();
     }
     // eslint-disable-next-line
-  }, [selectedPO, formData.gate_pass_type]);
+  }, [selectedPO, formData.gate_pass_type, formData.store_id, token]);
 
   useEffect(() => {
     if (formData.sub_project_id) {
@@ -2207,7 +2224,7 @@ const GatePassCreate = () => {
                     unit: poMaterials[idx].uom,
                     gate_pass_qty: "",
                     stock_as_on: poMaterials[idx].stock_as_on,
-                    mor_inventory_id: poMaterials[idx].id || null,
+                    material_inventory_id: poMaterials[idx].id || null,
                   })
                 );
                 setFormData((prev) => ({
