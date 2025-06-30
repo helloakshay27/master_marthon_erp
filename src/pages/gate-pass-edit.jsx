@@ -80,6 +80,12 @@ const GatePassEdit = () => {
   const [maintenanceRows, setMaintenanceRows] = useState([]);
   // Dropdown options
   const [inventoryTypes, setInventoryTypes] = useState([]);
+  const [initialGenericInfoOptions, setInitialGenericInfoOptions] = useState(
+    []
+  );
+  const [initialBrandOptions, setInitialBrandOptions] = useState([]);
+  const [initialColourOptions, setInitialColourOptions] = useState([]);
+  const [initialUnitOptions, setInitialUnitOptions] = useState([]);
   const [inventorySubTypes, setInventorySubTypes] = useState([]);
   const [inventoryNames, setInventoryNames] = useState([]);
   const [genericInfos, setGenericInfos] = useState([]);
@@ -241,27 +247,44 @@ const GatePassEdit = () => {
           formData.gate_pass_type === "general"
             ? maintenanceRows
                 .filter((item) => !item._destroy)
-                .map((row) => ({
-                  id: row.id,
-                  gate_pass_qty: Number(row.gate_pass_qty) || null,
-                  remarks: row.reason || "",
-                  pms_inventory_id:
-                    row.material_name &&
-                    typeof row.material_name === "string" &&
-                    row.material_name.startsWith("other")
-                      ? null
-                      : row.material_name || null,
-                  pms_inventory_sub_type_id: row.material_sub_type || null,
-                  pms_inventory_type_id: row.material_type || null,
-                  pms_generic_info_id: row.generic_info || null,
-                  pms_colour_id: row.colour || null,
-                  pms_brand_id: row.brand || null,
-                  uom_id: row.unit || null,
-                  other_material_name: row.other_material_name || null,
-                  other_material_description:
-                    row.other_material_description || null,
-                  available_qty: null,
-                }))
+                .map((row) => {
+                  if (row.material_inventory_id) {
+                    return {
+                      id: row.id,
+                      material_inventory_id: row.material_inventory_id,
+                      gate_pass_qty: Number(row.gate_pass_qty) || null,
+                      remarks: row.reason || "",
+                      other_material_name: row.other_material_name || null,
+                      other_material_description:
+                        row.other_material_description || null,
+                    };
+                  }
+                  const attributes = {
+                    id: row.id,
+                    gate_pass_qty: Number(row.gate_pass_qty) || null,
+                    remarks: row.reason || "",
+                    pms_inventory_id:
+                      row.material_name &&
+                      typeof row.material_name === "string" &&
+                      row.material_name.startsWith("other")
+                        ? null
+                        : row.material_name || null,
+                    pms_inventory_sub_type_id: row.material_sub_type || null,
+                    pms_inventory_type_id: row.material_type || null,
+                    pms_generic_info_id: row.generic_info || null,
+                    pms_colour_id: row.colour || null,
+                    pms_brand_id: row.brand || null,
+                    uom_id: row.unit || null,
+                  };
+                  if (row.other_material_name) {
+                    attributes.other_material_name = row.other_material_name;
+                  }
+                  if (row.other_material_description) {
+                    attributes.other_material_description =
+                      row.other_material_description;
+                  }
+                  return attributes;
+                })
             : (formData.material_items || []).map((item) => {
                 const attr = {
                   gate_pass_qty: Number(item.gate_pass_qty) || null,
@@ -761,7 +784,7 @@ const GatePassEdit = () => {
     }
   }, [formData.project_id]);
 
-  // Fetch inventory types on mount
+  // Fetch dropdown options on mount
   useEffect(() => {
     axios
       .get(
@@ -772,7 +795,33 @@ const GatePassEdit = () => {
           response.data.map((i) => ({ value: i.id, label: i.name }))
         );
       });
-  }, []);
+    axios
+      .get(`${baseURL}pms/generic_infos.json?token=${token}`)
+      .then((response) => {
+        setInitialGenericInfoOptions(
+          response.data.map((i) => ({ value: i.id, label: i.generic_info }))
+        );
+      });
+    axios
+      .get(`${baseURL}pms/inventory_brands.json?token=${token}`)
+      .then((response) => {
+        setInitialBrandOptions(
+          response.data.map((i) => ({ value: i.id, label: i.brand_name }))
+        );
+      });
+    axios.get(`${baseURL}pms/colours.json?token=${token}`).then((response) => {
+      setInitialColourOptions(
+        response.data.map((i) => ({ value: i.id, label: i.colour }))
+      );
+    });
+    axios
+      .get(`${baseURL}unit_of_measures.json?token=${token}`)
+      .then((response) => {
+        setInitialUnitOptions(
+          response.data.map((i) => ({ value: i.id, label: i.name }))
+        );
+      });
+  }, [token]);
 
   // Fetch sub-types and material names when type changes (per row)
   const fetchSubTypesAndNames = async (typeId, rowIdx) => {
@@ -807,10 +856,10 @@ const GatePassEdit = () => {
               materialNameOptions,
               material_sub_type: null,
               material_name: null,
-              genericInfoOptions: [],
-              brandOptions: [],
-              colourOptions: [],
-              unitOptions: [],
+              genericInfoOptions: initialGenericInfoOptions,
+              brandOptions: initialBrandOptions,
+              colourOptions: initialColourOptions,
+              unitOptions: initialUnitOptions,
               generic_info: null,
               brand: null,
               colour: null,
@@ -824,27 +873,45 @@ const GatePassEdit = () => {
 
   // Fetch generic info, brand, colour, unit when name changes (per row)
   const fetchMaterialDetails = async (materialId, rowIdx) => {
-    if (!materialId) return;
     // Generic Info
-    const genRes = await axios.get(
-      `${baseURL}pms/generic_infos.json?q[material_id_eq]=${materialId}&token=${token}`
-    );
+    let genRes;
+    if (materialId) {
+      genRes = await axios.get(
+        `${baseURL}pms/generic_infos.json?q[material_id_eq]=${materialId}&token=${token}`
+      );
+    } else {
+      genRes = await axios.get(
+        `${baseURL}pms/generic_infos.json?token=${token}`
+      );
+    }
     const genericInfoOptions = genRes.data.map((i) => ({
       value: i.id,
       label: i.generic_info,
     }));
     // Brand
-    const brandRes = await axios.get(
-      `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${materialId}&token=${token}`
-    );
+    let brandRes;
+    if (materialId) {
+      brandRes = await axios.get(
+        `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${materialId}&token=${token}`
+      );
+    } else {
+      brandRes = await axios.get(
+        `${baseURL}pms/inventory_brands.json?token=${token}`
+      );
+    }
     const brandOptions = brandRes.data.map((i) => ({
       value: i.id,
       label: i.brand_name,
     }));
     // Colour
-    const colourRes = await axios.get(
-      `${baseURL}pms/colours.json?q[material_id_eq]=${materialId}&token=${token}`
-    );
+    let colourRes;
+    if (materialId) {
+      colourRes = await axios.get(
+        `${baseURL}pms/colours.json?q[material_id_eq]=${materialId}&token=${token}`
+      );
+    } else {
+      colourRes = await axios.get(`${baseURL}pms/colours.json?token=${token}`);
+    }
     const colourOptions = colourRes.data.map((i) => ({
       value: i.id,
       label: i.colour,
@@ -871,43 +938,55 @@ const GatePassEdit = () => {
               colour: null,
               unit: null,
               available_qty: null,
+              material_inventory_id: null,
             }
           : row
       )
     );
   };
 
+  const findMatchingInventory = (row, idx) => {
+    // This function now simply calls fetchAvailableQty,
+    // which contains all the necessary guard clauses.
+    fetchAvailableQty(row, idx);
+  };
+
   // Update handleMaintenanceRowChange to use new fetch logic
   const handleMaintenanceRowChange = (idx, field, value) => {
-    setMaintenanceRows((rows) =>
-      rows.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
-    );
-    // If any dropdown changes, fetch available qty
-    if (
-      [
-        "material_type",
-        "material_sub_type",
-        "material_name",
-        "generic_info",
-        "brand",
-        "colour",
-        "unit",
-      ].includes(field)
-    ) {
-      setTimeout(() => {
-        fetchAvailableQty(
-          {
-            ...maintenanceRows[idx],
-            [field]: value,
-          },
-          idx
-        );
-      }, 0);
-    }
-    // If type changes, fetch sub-types and material names
-    if (field === "material_type") fetchSubTypesAndNames(value, idx);
-    // If material name changes, fetch details
-    if (field === "material_name") fetchMaterialDetails(value, idx);
+    setMaintenanceRows((prevRows) => {
+      const newRows = prevRows.map((row, i) =>
+        i === idx ? { ...row, [field]: value } : row
+      );
+
+      // --- Start of new logic ---
+      const changedRow = newRows[idx];
+
+      // If type changes, fetch sub-types and material names
+      if (field === "material_type") {
+        fetchSubTypesAndNames(value, idx);
+      }
+      // If material name changes, fetch details
+      else if (field === "material_name") {
+        fetchMaterialDetails(value, idx);
+      }
+
+      // If any relevant dropdown changes, try to find matching inventory
+      if (
+        [
+          "material_name",
+          "material_sub_type",
+          "generic_info",
+          "brand",
+          "colour",
+          "unit",
+        ].includes(field)
+      ) {
+        findMatchingInventory(changedRow, idx);
+      }
+      // --- End of new logic ---
+
+      return newRows;
+    });
   };
 
   // Add row handler
@@ -918,19 +997,20 @@ const GatePassEdit = () => {
         material_type: null,
         subTypeOptions: [],
         material_sub_type: null,
-        materialNameOptions: [],
+        materialNameOptions: [{ value: "other", label: "Other" }],
         material_name: null,
-        genericInfoOptions: [],
+        genericInfoOptions: initialGenericInfoOptions,
         generic_info: null,
-        brandOptions: [],
+        brandOptions: initialBrandOptions,
         brand: null,
-        colourOptions: [],
+        colourOptions: initialColourOptions,
         colour: null,
-        unitOptions: [],
+        unitOptions: initialUnitOptions,
         unit: null,
         gate_pass_qty: "",
         reason: "",
         available_qty: null,
+        material_inventory_id: null,
       },
     ]);
   };
@@ -1327,30 +1407,96 @@ const GatePassEdit = () => {
   }, [fetchedMaterials, poMaterials, formData.gate_pass_type, gatePassTypes]);
 
   const fetchAvailableQty = async (row, idx) => {
+    if (!formData.store_id) {
+      setMaintenanceRows((rows) =>
+        rows.map((r, i) =>
+          i === idx
+            ? { ...r, available_qty: null, material_inventory_id: null }
+            : r
+        )
+      );
+      return;
+    }
+
     const params = {
-      "q[inventory_id_eq]": row.material_name,
-      "q[generic_info_id_eq]": row.generic_info,
-      "q[pms_brand_id_eq]": row.brand,
+      "q[pms_inventory_sub_type_id_eq]": row.material_sub_type,
+      "q[pms_inventory_id_eq]": row.material_name,
+      "q[pms_generic_info_id_eq]": row.generic_info,
       "q[pms_colour_id_eq]": row.colour,
-      "q[material_order_request_pms_site_id_eq]": formData.sub_project_id,
-      "q[material_order_request_pms_site_pms_store_id_eq]": formData.store_id,
-      "q[inventory_sub_type_id_eq]": row.material_sub_type,
+      "q[pms_brand_id_eq]": row.brand,
+      "q[unit_of_measure_id_eq]": row.unit,
     };
+    // Remove undefined/null params, and "other" material name
     Object.keys(params).forEach((key) => {
-      if (!params[key]) delete params[key];
+      if (
+        !params[key] ||
+        (key === "q[pms_inventory_id_eq]" &&
+          String(params[key]).startsWith("other"))
+      ) {
+        delete params[key];
+      }
     });
+
+    // If no filter criteria, don't fetch
+    if (Object.keys(params).length === 0) {
+      setMaintenanceRows((rows) =>
+        rows.map((r, i) =>
+          i === idx
+            ? { ...r, available_qty: null, material_inventory_id: null }
+            : r
+        )
+      );
+      return;
+    }
+
     const query = new URLSearchParams(params).toString();
     try {
       const res = await axios.get(
-        `https://marathon.lockated.com//mor_inventories/fetch_store_available_qty.json?${query}`
+        `${baseURL}pms/stores/find_matching_inventory?store_id=${formData.store_id}&${query}&token=${token}`
       );
-      const qty = res.data?.available_quantity ?? 0;
-      setMaintenanceRows((rows) =>
-        rows.map((r, i) => (i === idx ? { ...r, available_qty: qty } : r))
-      );
+
+      let inventoryData = null;
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        inventoryData = res.data[0];
+      } else if (
+        res.data &&
+        !Array.isArray(res.data) &&
+        Object.keys(res.data).length > 0
+      ) {
+        inventoryData = res.data;
+      }
+
+      const qty = inventoryData?.stock_as_on;
+      const inventoryId = inventoryData?.id || null;
+
+      if (qty === undefined || qty === null || qty === 0) {
+        setMaintenanceRows((rows) =>
+          rows.map((r, i) =>
+            i === idx
+              ? {
+                  ...r,
+                  available_qty: "not_found",
+                  material_inventory_id: null,
+                }
+              : r
+          )
+        );
+      } else {
+        setMaintenanceRows((rows) =>
+          rows.map((r, i) =>
+            i === idx
+              ? { ...r, available_qty: qty, material_inventory_id: inventoryId }
+              : r
+          )
+        );
+      }
     } catch {
       setMaintenanceRows((rows) =>
-        rows.map((r, i) => (i === idx ? { ...r, available_qty: 0 } : r))
+        rows.map((r, i) =>
+          i === idx
+            ? { ...r, available_qty: "not_found", material_inventory_id: null }
+            : r
+        )
       );
     }
   };
@@ -2077,16 +2223,35 @@ const GatePassEdit = () => {
                                     className="form-control"
                                     value={row.gate_pass_qty}
                                     min={0}
-                                    max={row.available_qty ?? undefined}
+                                    max={
+                                      row.available_qty === "not_found"
+                                        ? 0
+                                        : row.available_qty ?? undefined
+                                    }
                                     onChange={(e) => {
                                       const val = e.target.value;
                                       if (
+                                        row.available_qty === "not_found" &&
+                                        Number(val) > 0
+                                      ) {
+                                        alert(
+                                          "No matching inventory found. Quantity cannot be greater than 0."
+                                        );
+                                        handleMaintenanceRowChange(
+                                          idx,
+                                          "gate_pass_qty",
+                                          ""
+                                        );
+                                        return;
+                                      }
+                                      if (
                                         row.available_qty !== null &&
+                                        row.available_qty !== "not_found" &&
                                         val !== "" &&
                                         Number(val) > Number(row.available_qty)
                                       ) {
                                         alert(
-                                          `Gate Pass Qty cannot exceed Available Qty (${row.available_qty})!`
+                                          `Gate Pass Qty cannot exceed Stock As On (${row.available_qty})!`
                                         );
                                         return;
                                       }
@@ -2099,9 +2264,17 @@ const GatePassEdit = () => {
                                   />
                                   {row.available_qty !== null && (
                                     <div
-                                      style={{ fontSize: 12, color: "#888" }}
+                                      style={{
+                                        fontSize: 12,
+                                        color:
+                                          row.available_qty === "not_found"
+                                            ? "red"
+                                            : "#888",
+                                      }}
                                     >
-                                      Available Qty: {row.available_qty}
+                                      {row.available_qty === "not_found"
+                                        ? "No matching inventory found"
+                                        : `Stock As On: ${row.available_qty}`}
                                     </div>
                                   )}
                                 </td>
