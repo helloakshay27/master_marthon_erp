@@ -538,7 +538,37 @@ const RateDetails = () => {
                                                                             <td className="text-start">{row.uom}</td>
                                                                             <td className="text-start">{row.effective_date}</td>
                                                                             <td className="text-start">
-                                                                                {row.rate || "0"}
+                                                                                {/* {row.rate || "0"}
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={row.rateChecked || false}
+                                                                                    disabled
+                                                                                    style={{ marginLeft: 8 }}
+                                                                                /> */}
+
+                                                                                {row.prev_rate && row.prev_rate !== row.rate ? (
+                                                                                    <>
+                                                                                        <span style={{
+                                                                                            display: "inline-flex",
+                                                                                            alignItems: "center",
+                                                                                            gap: "4px",
+                                                                                            background: "#8b0203",
+                                                                                            borderRadius: "10px",
+                                                                                            padding: "2px 8px",
+                                                                                            fontSize: "0.95em"
+                                                                                        }}>
+                                                                                            <span style={{ textDecoration: "line-through", color: "#fff", marginRight: 6 }}>
+                                                                                                {row.prev_rate}
+                                                                                            </span>
+
+                                                                                        </span>
+                                                                                        <span className="ms-1">
+                                                                                            {row.rate || "0"}
+                                                                                        </span>
+                                                                                    </>
+                                                                                ) : (
+                                                                                    <span>{row.rate || "0"}</span>
+                                                                                )}
                                                                                 <input
                                                                                     type="checkbox"
                                                                                     checked={row.rateChecked || false}
@@ -547,7 +577,7 @@ const RateDetails = () => {
                                                                                 />
                                                                             </td>
                                                                             <td className="text-start">
-                                                                                {row.avgRate || "0"}
+                                                                                {/* {row.avgRate || "0"}
                                                                                 <input
                                                                                     type="checkbox"
                                                                                     checked={row.avgRateChecked || false}
@@ -582,10 +612,90 @@ const RateDetails = () => {
                                                                                     </span>
                                                                                 ) : (
                                                                                     ""
+                                                                                )} */}
+
+
+                                                                                {row.prev_rate_type === "average" && row.prev_rate !== row.avgRate ? (
+                                                                                    <>
+                                                                                        <span style={{
+                                                                                            display: "inline-flex",
+                                                                                            alignItems: "center",
+                                                                                            gap: "4px",
+                                                                                            background: "#8b0203",
+                                                                                            borderRadius: "10px",
+                                                                                            padding: "2px 8px",
+                                                                                            fontSize: "0.95em"
+                                                                                        }}>
+                                                                                            <span style={{ textDecoration: "line-through", color: "#fff", marginRight: 6 }}>
+                                                                                                {row.prev_rate}
+                                                                                            </span>
+
+                                                                                        </span>
+                                                                                        <span>
+                                                                                            {row.avgRate || "0"}
+                                                                                        </span>
+                                                                                    </>
+                                                                                ) : (
+                                                                                    <span>{row.avgRate || "0"}</span>
+                                                                                )}
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={row.avgRateChecked || false}
+                                                                                    disabled
+                                                                                    style={{ marginLeft: 8 }}
+                                                                                />
+                                                                                {row.rate_type === "average" && (
+                                                                                    <span
+                                                                                        className="ms-2 pt-2"
+                                                                                        onClick={() => openDateModal(row)}
+                                                                                        style={{ cursor: "pointer" }}
+                                                                                        title="View Date Range"
+                                                                                    >
+                                                                                        <svg
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            width="16"
+                                                                                            height="16"
+                                                                                            fill="currentColor"
+                                                                                            className="bi bi-calendar"
+                                                                                            viewBox="0 0 16 16"
+                                                                                        >
+                                                                                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1zm2-3v1h8V1H3z" />
+                                                                                        </svg>
+                                                                                    </span>
                                                                                 )}
                                                                             </td>
                                                                             <td className="text-start">
-                                                                                {row.poRate || "0"}
+                                                                                {/* {row.poRate || "0"}
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={row.poRateChecked || false}
+                                                                                    disabled
+                                                                                    style={{ marginLeft: 8 }}
+                                                                                /> */}
+
+
+                                                                                {row.prev_rate_type === "last" && row.prev_rate !== row.poRate ? (
+                                                                                    <>
+                                                                                        <span style={{
+                                                                                            display: "inline-flex",
+                                                                                            alignItems: "center",
+                                                                                            gap: "4px",
+                                                                                            background: "#8b0203",
+                                                                                            borderRadius: "10px",
+                                                                                            padding: "2px 8px",
+                                                                                            fontSize: "0.95em"
+                                                                                        }}>
+                                                                                            <span style={{ textDecoration: "line-through", color: "#fff", marginRight: 6 }}>
+                                                                                                {row.prev_rate}
+                                                                                            </span>
+                                                                                        </span>
+                                                                                        <span>
+                                                                                            {row.poRate || "0"}
+                                                                                        </span>
+                                                                                    </>
+                                                                                ) : (
+                                                                                    <span>{row.poRate || "0"}</span>
+                                                                                )}
                                                                                 <input
                                                                                     type="checkbox"
                                                                                     checked={row.poRateChecked || false}
@@ -982,7 +1092,7 @@ const RateDetails = () => {
                                 </div>
                             </div>
 
-                             <div className="col-md-6 d-flex align-items-center mt-3">
+                            <div className="col-md-6 d-flex align-items-center mt-3">
                                 <input
                                     type="checkbox"
                                     id="companyRadio"
@@ -1007,7 +1117,7 @@ const RateDetails = () => {
                                     value="organisation"
                                     checked={dateType === "organisation"}
                                     onChange={() => setDateType("organisation")}
-                                     disabled
+                                    disabled
                                 />
                                 <label
                                     htmlFor="without-bill-entry"

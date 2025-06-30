@@ -120,15 +120,20 @@ const RateRevision = () => {
                 index === rowIndex ? { ...row, rate: value } : row
             )
         );
-        setRemarkRowIndex(rowIndex);
-        setRemarkInput(tableData[rowIndex]?.remark || "");
-        setShowRemarkModal(true);
+        // setRemarkRowIndex(rowIndex);
+        // setRemarkInput(tableData[rowIndex]?.remark || "");
+        // setShowRemarkModal(true);
 
         // setRate(value);
         // setCheckbox1(false);
         // setCheckbox2(false);
 
     };
+    const handleRateBlur = (rowIndex) => {
+    setRemarkRowIndex(rowIndex);
+    setRemarkInput(tableData[rowIndex]?.remark || "");
+    setShowRemarkModal(true);
+};
 
     // Handle input/select changes
     const handleInputChange = (e) => {
@@ -1076,6 +1081,7 @@ const RateRevision = () => {
                                                                 type="number"
                                                                 value={row.rate}
                                                                 onChange={(e) => handleRateChange(e, index)}
+                                                                onBlur={() => handleRateBlur(index)}
                                                                 disabled={row.avgRateChecked || row.poRateChecked}
                                                                 placeholder="Enter Rate"
                                                                 style={{ maxWidth: "120px" }}
