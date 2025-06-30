@@ -24,6 +24,9 @@ const EditRate = () => {
     const [fieldErrors, setFieldErrors] = useState({});
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
+    const [editRowIndex, setEditRowIndex] = useState(null);
+    const [editingRow, setEditingRow] = useState(null);
+    const [modalOptionsLoading, setModalOptionsLoading] = useState(false);
 
     // State for table rows
     const [formData, setFormData] = useState({
@@ -70,16 +73,17 @@ const EditRate = () => {
 
                         return {
                             id: mat.id,
+                            // materialType: mat.pms_inventory_id || "",
                             materialTypeLabel: mat.material_type || "",
-                            material: mat.material_id || "",
+                            material: mat.pms_inventory_id || "",
                             materialLabel: mat.material_name || "",
-                            materialSubType: mat.material_sub_type_id || "",
+                            materialSubType: mat.pms_inventory_sub_type_id || "",
                             materialSubTypeLabel: mat.material_sub_type || "",
-                            genericSpecification: mat.generic_info_id || "",
+                            genericSpecification: mat.pms_generic_info_id || "",
                             genericSpecificationLabel: mat.generic_info || "",
-                            colour: mat.color_id || "",
+                            colour: mat.pms_colour_id || "",
                             colourLabel: mat.color || "",
-                            brand: mat.brand_id || "",
+                            brand: mat.pms_brand_id || "",
                             brandLabel: mat.brand || "",
                             effectiveDate: mat.effective_date || "",
                             rateType: mat.rate_type,
@@ -87,6 +91,7 @@ const EditRate = () => {
                             originalManualRate: rate,
                             avgRate,
                             poRate,
+                            uom: mat.unit_of_measure_id || "",
                             uomLabel: mat.uom || "",
                             rateChecked: mat.rate_type === "manual",
                             avgRateChecked: mat.rate_type === "average",
@@ -185,6 +190,47 @@ const EditRate = () => {
 
     // console.log("form data:",formData)
 
+    const handleEditRow = (rowIndex) => {
+        setModalOptionsLoading(true);
+        const row = tableData[rowIndex];
+        console.log("row data in edit:", row)
+         setEditingRow(row);
+        const selectedInventoryTypeOption = inventoryTypes2.find(opt => opt.label === row.materialTypeLabel) || null;
+        const materialTypeId = selectedInventoryTypeOption ? selectedInventoryTypeOption.value : "";
+        setFormData({
+            materialType: materialTypeId || "",
+            materialTypeLabel: row.materialTypeLabel || "",
+            materialSubType: row.materialSubType || "",
+            material: row.material || "",
+            genericSpecification: row.genericSpecification || "",
+            colour: row.colour || "",
+            brand: row.brand || "",
+            effectiveDate: row.effectiveDate || "",
+            rate: row.rate || "",
+            poRate: row.poRate || "",
+            avgRate: row.avgRate || "",
+            uom: row.uom || "",
+        });
+        console.log("form data in edit :", formData)
+        // Set selected options for selectors
+        setSelectedInventory2(selectedInventoryTypeOption);
+        console.log("selected inventory for editL", selectedInventoryTypeOption)
+        setSelectedSubType2(inventorySubTypes2.find(opt => opt.value === row.materialSubType) || null);
+        // console.log("selected sub type for editL", selectedSubType2)
+        setSelectedInventoryMaterialTypes2(inventoryMaterialTypes2.find(opt => opt.value === row.material) || null);
+        console.log("selected material in edit:", selectedInventoryMaterialTypes2)
+
+        // setSelectedGenericSpecifications(genericSpecifications.find(opt => opt.value === row.genericSpecification) || null);
+        // console.log("selected gen in edit:", selectedGenericSpecifications)
+        // setSelectedColors(colors.find(opt => opt.value === row.colour) || null);
+        // setSelectedInventoryBrands(inventoryBrands.find(opt => opt.value === row.brand) || null);
+        setSelectedUnit(unitOfMeasures.find(opt => opt.value === row.uom) || null);
+        setEditRowIndex(rowIndex);
+        setShowModal(true);
+    };
+
+
+
     const handleCreate = (e) => {
         e.preventDefault();
         const errors = {};
@@ -200,41 +246,63 @@ const EditRate = () => {
             setFieldErrors(errors);
             return;
         }
-        // Add the new row with rateChecked and rateType if rate is present
-        const newRow = {
-            ...formData,
-            rateChecked: !!formData.rate,
-            rateType: formData.rate ? "manual" : "",
-            avgRateChecked: false,
-            poRateChecked: false,
-            isDuplicate: false,
-        };
 
-        const newTableData = [...tableData, newRow];
-        // Add the new row
-        // const newTableData = [...tableData, formData];
+        if (editRowIndex !== null) {
+            // Edit mode: update the row
+            const updatedTableData = tableData.map((row, idx) =>
+                idx === editRowIndex
+                    ? {
+                        ...row,
+                        ...formData,
+                        materialTypeLabel: inventoryTypes2.find(opt => opt.value === formData.materialType)?.label || "",
+                        materialSubTypeLabel: inventorySubTypes2.find(opt => opt.value === formData.materialSubType)?.label || "",
+                        materialLabel: inventoryMaterialTypes2.find(opt => opt.value === formData.material)?.label || "",
+                        genericSpecificationLabel: genericSpecifications.find(opt => opt.value === formData.genericSpecification)?.label || "",
+                        colourLabel: colors.find(opt => opt.value === formData.colour)?.label || "",
+                        brandLabel: inventoryBrands.find(opt => opt.value === formData.brand)?.label || "",
+                        uomLabel: unitOfMeasures.find(opt => opt.value === formData.uom)?.label || "",
+                    }
+                    : row
+            );
+            setTableData(updatedTableData);
+            setEditRowIndex(null);
+        } else {
+            // Add the new row with rateChecked and rateType if rate is present
+            const newRow = {
+                ...formData,
+                rateChecked: !!formData.rate,
+                rateType: formData.rate ? "manual" : "",
+                avgRateChecked: false,
+                poRateChecked: false,
+                isDuplicate: false,
+            };
 
-        // Find if the new row is a duplicate of any previous row
-        const isDuplicate = tableData.some(row =>
-            row.materialSubType === formData.materialSubType &&
-            row.material === formData.material &&
-            row.genericSpecification === formData.genericSpecification &&
-            row.colour === formData.colour &&
-            row.brand === formData.brand
-        );
-        if (isDuplicate) {
-            toast.error("This combination already exists.");
-            return; // Don't add the duplicate entry
-        }
-        // Mark only the last (newly added) row as duplicate if needed
-        const updatedTableData = newTableData.map((row, idx) => {
-            if (idx === newTableData.length - 1) {
-                return { ...row, isDuplicate };
+            const newTableData = [...tableData, newRow];
+            // Add the new row
+            // const newTableData = [...tableData, formData];
+
+            // Find if the new row is a duplicate of any previous row
+            const isDuplicate = tableData.some(row =>
+                row.materialSubType === formData.materialSubType &&
+                row.material === formData.material &&
+                row.genericSpecification === formData.genericSpecification &&
+                row.colour === formData.colour &&
+                row.brand === formData.brand
+            );
+            if (isDuplicate) {
+                toast.error("This combination already exists.");
+                return; // Don't add the duplicate entry
             }
-            return row;
-        });
+            // Mark only the last (newly added) row as duplicate if needed
+            const updatedTableData = newTableData.map((row, idx) => {
+                if (idx === newTableData.length - 1) {
+                    return { ...row, isDuplicate };
+                }
+                return row;
+            });
 
-        setTableData(updatedTableData);
+            setTableData(updatedTableData);
+        }
 
         setFormData({
             materialType: "",
@@ -470,6 +538,7 @@ const EditRate = () => {
 
     // Fetch inventory sub-types when an inventory type is selected
     useEffect(() => {
+        // console.log("selected inventory:", selectedInventory2.value)
         if (selectedInventory2) {
             //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
 
@@ -491,6 +560,7 @@ const EditRate = () => {
 
     // Fetch inventory Material when an inventory type is selected
     useEffect(() => {
+        console.log("selected inventory in material ===:", selectedInventory2?.value)
         if (selectedInventory2) {
             //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
 
@@ -540,7 +610,7 @@ const EditRate = () => {
 
     // Fetch generic specifications for materials
     useEffect(() => {
-
+console.log("material id:",selectedInventoryMaterialTypes2)
         if (selectedInventoryMaterialTypes2) {
             axios
                 .get(
@@ -607,7 +677,58 @@ const EditRate = () => {
                 });
         }
     }, [selectedInventoryMaterialTypes2, baseURL]); // Runs when materials or baseURL changes
+    
 
+    // When all options are loaded, stop loading
+useEffect(() => {
+    if (
+        showModal &&
+        inventoryTypes2.length &&
+        inventorySubTypes2.length &&
+        inventoryMaterialTypes2.length 
+        // &&
+        // genericSpecifications.length 
+        // &&
+        // colors.length &&
+        // inventoryBrands.length
+    ) {
+        setModalOptionsLoading(false);
+    }
+    // You may want to fine-tune this condition based on your actual dependencies
+}, [
+    showModal,
+    inventoryTypes2,
+    inventorySubTypes2,
+    inventoryMaterialTypes2,
+    genericSpecifications,
+    colors,
+    inventoryBrands,
+]);
+
+   // When genericSpecifications change, set the selected value if editingRow exists
+useEffect(() => {
+    if (editingRow && genericSpecifications.length) {
+        setSelectedGenericSpecifications(
+            genericSpecifications.find(opt => opt.value === editingRow.genericSpecification) || null
+        );
+    }
+}, [genericSpecifications, editingRow]);
+
+useEffect(() => {
+    if (editingRow && colors.length) {
+        setSelectedColors(
+            colors.find(opt => opt.value === editingRow.colour) || null
+        );
+    }
+}, [colors, editingRow]);
+
+useEffect(() => {
+    if (editingRow && inventoryBrands.length) {
+        setSelectedInventoryBrands(
+            inventoryBrands.find(opt => opt.value === editingRow.brand) || null
+        );
+    }
+}, [inventoryBrands, editingRow]);
 
     const handleEffectiveDateChange = (id, value) => {
         setTableData(prev =>
@@ -829,6 +950,8 @@ const EditRate = () => {
 
         setTableData(updatedTableData);
     };
+
+   
     return (
         <>
             <div className="website-content overflow-auto">
@@ -1062,6 +1185,13 @@ const EditRate = () => {
                                                     </td>
 
                                                     <td className="text-start">
+                                                        <span
+                                                            // className="btn btn-sm btn-primary me-2"
+                                                            onClick={() => handleEditRow(index)}
+                                                        >
+                                                            {/* Edit */}
+                                                            {/* <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"></path></svg> */}
+                                                        </span>
                                                         <button
                                                             className="btn mt-0 pt-0"
                                                             onClick={() => handleDeleteRow(index)} // Use onClick instead of onChange
@@ -1127,10 +1257,18 @@ const EditRate = () => {
             {/* create modal  */}
             <Modal centered size="lg" show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
-                    <h5>Add Material</h5>
+                    {/* <h5>Add Material</h5> */}
+                    <h5>{editRowIndex !== null ? "Edit Material" : "Add Material"}</h5>
                 </Modal.Header>
                 <Modal.Body>
-
+  {modalOptionsLoading ? (
+            <div className="d-flex flex-column align-items-center justify-content-center" style={{ minHeight: 200 }}>
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+                <div className="mt-2">Loading options...</div>
+            </div>
+        ) : (
                     <form acceptCharset="UTF-8">
                         <div className="row">
 
@@ -1261,7 +1399,7 @@ const EditRate = () => {
                         </div>
                     </form>
 
-
+ )}
                 </Modal.Body>
             </Modal>
 

@@ -22,6 +22,7 @@ const RateDetails = () => {
     const itemsPerPage = 10; // Items per page
     const [totalEntries, setTotalEntries] = useState(0);
     const [searchKeyword, setSearchKeyword] = useState('');
+    const [showRevisionModal, setShowRevisionModal] = useState(false);
     // ...existing state...
     const [activeTab, setActiveTab] = useState("details");
 
@@ -48,6 +49,10 @@ const RateDetails = () => {
             console.log("data list... ", response.data)
             setTotalPages(response?.data?.pagination?.total_pages); // Set total pages
             setTotalEntries(response?.data?.pagination?.total_entries);
+
+            if (response?.data?.display_name) {
+                setShowRevisionModal(true);
+            }
             if (response.data.materials) {
                 setLoading(false);
                 setTableData(
@@ -337,18 +342,20 @@ const RateDetails = () => {
                                             role="tab"
                                             aria-selected={activeTab === "details"}
                                         >
-                                            Rate Details
+                                            Details
                                         </button>
-                                        <button
-                                            className={`nav-link ${activeTab === "revisions" ? "active" : ""}`}
-                                            id="nav-revisions-tab"
-                                            type="button"
-                                            onClick={() => setActiveTab("revisions")}
-                                            role="tab"
-                                            aria-selected={activeTab === "revisions"}
-                                        >
-                                            Rate Revised Versions
-                                        </button>
+                                        {rateDetails?.revised_versions?.length > 0 && (
+                                            <button
+                                                className={`nav-link ${activeTab === "revisions" ? "active" : ""}`}
+                                                id="nav-revisions-tab"
+                                                type="button"
+                                                onClick={() => setActiveTab("revisions")}
+                                                role="tab"
+                                                aria-selected={activeTab === "revisions"}
+                                            >
+                                                Revised Versions
+                                            </button>
+                                        )}
                                     </div>
                                 </nav>
                                 {/* Tab Content */}
@@ -547,35 +554,63 @@ const RateDetails = () => {
                                                                                 /> */}
 
                                                                                 {row.prev_rate && row.prev_rate !== row.rate ? (
-                                                                                    <>
-                                                                                        <span style={{
+                                                                                    <span
+                                                                                        style={{
                                                                                             display: "inline-flex",
                                                                                             alignItems: "center",
-                                                                                            gap: "4px",
-                                                                                            background: "#8b0203",
-                                                                                            borderRadius: "10px",
-                                                                                            padding: "2px 8px",
-                                                                                            fontSize: "0.95em"
-                                                                                        }}>
-                                                                                            <span style={{ textDecoration: "line-through", color: "#fff", marginRight: 6 }}>
-                                                                                                {row.prev_rate}
-                                                                                            </span>
-
+                                                                                            gap: "8px",
+                                                                                        }}
+                                                                                    >
+                                                                                        <span
+                                                                                            style={{
+                                                                                                textDecoration: "line-through",
+                                                                                                color: "gray",
+                                                                                            }}
+                                                                                        >
+                                                                                            {row.prev_rate}
                                                                                         </span>
-                                                                                        <span className="ms-1">
+                                                                                        <svg
+                                                                                            viewBox="64 64 896 896"
+                                                                                            width="1em"
+                                                                                            height="1em"
+                                                                                            fill="currentColor"
+                                                                                            aria-hidden="true"
+                                                                                            style={{ margin: "0 4px" }}
+                                                                                        >
+                                                                                            <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                                                                                        </svg>
+                                                                                        <span
+                                                                                            style={{
+                                                                                                backgroundColor: "#b45253",
+                                                                                                padding: "4px 10px",
+                                                                                                borderRadius: "5px",
+                                                                                                color: "white",
+                                                                                                fontWeight: 500,
+                                                                                                lineHeight: "1",
+                                                                                            }}
+                                                                                        >
                                                                                             {row.rate || "0"}
                                                                                         </span>
-                                                                                    </>
+                                                                                        <input
+                                                                                            type="checkbox"
+                                                                                            checked={row.rateChecked || false}
+                                                                                            disabled
+                                                                                            style={{ marginLeft: 8 }}
+                                                                                        />
+                                                                                    </span>
                                                                                 ) : (
-                                                                                    <span>{row.rate || "0"}</span>
+                                                                                    <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                                                                                        {row.rate || "0"}
+                                                                                        <input
+                                                                                            type="checkbox"
+                                                                                            checked={row.rateChecked || false}
+                                                                                            disabled
+                                                                                            style={{ marginLeft: 8 }}
+                                                                                        />
+                                                                                    </span>
                                                                                 )}
-                                                                                <input
-                                                                                    type="checkbox"
-                                                                                    checked={row.rateChecked || false}
-                                                                                    disabled
-                                                                                    style={{ marginLeft: 8 }}
-                                                                                />
                                                                             </td>
+
                                                                             <td className="text-start">
                                                                                 {/* {row.avgRate || "0"}
                                                                                 <input
@@ -613,57 +648,94 @@ const RateDetails = () => {
                                                                                 ) : (
                                                                                     ""
                                                                                 )} */}
-
-
                                                                                 {row.prev_rate_type === "average" && row.prev_rate !== row.avgRate ? (
-                                                                                    <>
-                                                                                        <span style={{
-                                                                                            display: "inline-flex",
-                                                                                            alignItems: "center",
-                                                                                            gap: "4px",
-                                                                                            background: "#8b0203",
-                                                                                            borderRadius: "10px",
-                                                                                            padding: "2px 8px",
-                                                                                            fontSize: "0.95em"
-                                                                                        }}>
-                                                                                            <span style={{ textDecoration: "line-through", color: "#fff", marginRight: 6 }}>
-                                                                                                {row.prev_rate}
-                                                                                            </span>
-
+                                                                                    <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                                                                                        <span style={{ textDecoration: "line-through", color: "gray" }}>
+                                                                                            {row.prev_rate}
                                                                                         </span>
-                                                                                        <span>
+                                                                                        <svg
+                                                                                            viewBox="64 64 896 896"
+                                                                                            width="1em"
+                                                                                            height="1em"
+                                                                                            fill="currentColor"
+                                                                                            aria-hidden="true"
+                                                                                            style={{ margin: "0 4px" }}
+                                                                                        >
+                                                                                            <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                                                                                        </svg>
+                                                                                        <span
+                                                                                            style={{
+                                                                                                backgroundColor: "#b45253",
+                                                                                                padding: "4px 10px",
+                                                                                                borderRadius: "5px",
+                                                                                                color: "white",
+                                                                                                fontWeight: 500,
+                                                                                                lineHeight: "1",
+                                                                                            }}
+                                                                                        >
                                                                                             {row.avgRate || "0"}
                                                                                         </span>
-                                                                                    </>
+                                                                                        <input
+                                                                                            type="checkbox"
+                                                                                            checked={row.avgRateChecked || false}
+                                                                                            disabled
+                                                                                            style={{ marginLeft: 8 }}
+                                                                                        />
+                                                                                        {row.rate_type === "average" && (
+                                                                                            <span
+                                                                                                className="ms-2 pt-2"
+                                                                                                onClick={() => openDateModal(row)}
+                                                                                                style={{ cursor: "pointer" }}
+                                                                                                title="View Date Range"
+                                                                                            >
+                                                                                                <svg
+                                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                                    width="16"
+                                                                                                    height="16"
+                                                                                                    fill="currentColor"
+                                                                                                    className="bi bi-calendar"
+                                                                                                    viewBox="0 0 16 16"
+                                                                                                >
+                                                                                                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1zm2-3v1h8V1H3z" />
+                                                                                                </svg>
+                                                                                            </span>
+                                                                                        )}
+                                                                                    </span>
                                                                                 ) : (
-                                                                                    <span>{row.avgRate || "0"}</span>
-                                                                                )}
-                                                                                <input
-                                                                                    type="checkbox"
-                                                                                    checked={row.avgRateChecked || false}
-                                                                                    disabled
-                                                                                    style={{ marginLeft: 8 }}
-                                                                                />
-                                                                                {row.rate_type === "average" && (
-                                                                                    <span
-                                                                                        className="ms-2 pt-2"
-                                                                                        onClick={() => openDateModal(row)}
-                                                                                        style={{ cursor: "pointer" }}
-                                                                                        title="View Date Range"
-                                                                                    >
-                                                                                        <svg
-                                                                                            xmlns="http://www.w3.org/2000/svg"
-                                                                                            width="16"
-                                                                                            height="16"
-                                                                                            fill="currentColor"
-                                                                                            className="bi bi-calendar"
-                                                                                            viewBox="0 0 16 16"
-                                                                                        >
-                                                                                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1zm2-3v1h8V1H3z" />
-                                                                                        </svg>
+                                                                                    <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                                                                                        {row.avgRate || "0"}
+                                                                                        <input
+                                                                                            type="checkbox"
+                                                                                            checked={row.avgRateChecked || false}
+                                                                                            disabled
+                                                                                            style={{ marginLeft: 8 }}
+                                                                                        />
+                                                                                        {row.rate_type === "average" && (
+                                                                                            <span
+                                                                                                className="ms-2 "
+                                                                                                onClick={() => openDateModal(row)}
+                                                                                                style={{ cursor: "pointer" }}
+                                                                                                title="View Date Range"
+                                                                                            >
+                                                                                                <svg
+                                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                                    width="16"
+                                                                                                    height="16"
+                                                                                                    fill="currentColor"
+                                                                                                    className="bi bi-calendar"
+                                                                                                    viewBox="0 0 16 16"
+                                                                                                >
+                                                                                                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1zm2-3v1h8V1H3z" />
+                                                                                                </svg>
+                                                                                            </span>
+                                                                                        )}
                                                                                     </span>
                                                                                 )}
+
+
+
                                                                             </td>
+
                                                                             <td className="text-start">
                                                                                 {/* {row.poRate || "0"}
                                                                                 <input
@@ -672,36 +744,52 @@ const RateDetails = () => {
                                                                                     disabled
                                                                                     style={{ marginLeft: 8 }}
                                                                                 /> */}
-
-
                                                                                 {row.prev_rate_type === "last" && row.prev_rate !== row.poRate ? (
-                                                                                    <>
-                                                                                        <span style={{
-                                                                                            display: "inline-flex",
-                                                                                            alignItems: "center",
-                                                                                            gap: "4px",
-                                                                                            background: "#8b0203",
-                                                                                            borderRadius: "10px",
-                                                                                            padding: "2px 8px",
-                                                                                            fontSize: "0.95em"
-                                                                                        }}>
-                                                                                            <span style={{ textDecoration: "line-through", color: "#fff", marginRight: 6 }}>
-                                                                                                {row.prev_rate}
-                                                                                            </span>
+                                                                                    <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                                                                                        <span style={{ textDecoration: "line-through", color: "gray" }}>
+                                                                                            {row.prev_rate}
                                                                                         </span>
-                                                                                        <span>
+                                                                                        <svg
+                                                                                            viewBox="64 64 896 896"
+                                                                                            width="1em"
+                                                                                            height="1em"
+                                                                                            fill="currentColor"
+                                                                                            aria-hidden="true"
+                                                                                            style={{ margin: "0 4px" }}
+                                                                                        >
+                                                                                            <path d="M869 487.8L491.2 159.9c-2.9-2.5-6.6-3.9-10.5-3.9h-88.5c-7.4 0-10.8 9.2-5.2 14l350.2 304H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h585.1L386.9 854c-5.6 4.9-2.2 14 5.2 14h91.5c1.9 0 3.8-.7 5.2-2L869 536.2a32.07 32.07 0 0 0 0-48.4z"></path>
+                                                                                        </svg>
+                                                                                        <span
+                                                                                            style={{
+                                                                                                backgroundColor: "#b45253",
+                                                                                                padding: "4px 10px",
+                                                                                                borderRadius: "5px",
+                                                                                                color: "white",
+                                                                                                fontWeight: 500,
+                                                                                                lineHeight: "1",
+                                                                                            }}
+                                                                                        >
                                                                                             {row.poRate || "0"}
                                                                                         </span>
-                                                                                    </>
+                                                                                        <input
+                                                                                            type="checkbox"
+                                                                                            checked={row.poRateChecked || false}
+                                                                                            disabled
+                                                                                            style={{ marginLeft: 8 }}
+                                                                                        />
+                                                                                    </span>
                                                                                 ) : (
-                                                                                    <span>{row.poRate || "0"}</span>
+                                                                                    <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                                                                                        {row.poRate || "0"}
+                                                                                        <input
+                                                                                            type="checkbox"
+                                                                                            checked={row.poRateChecked || false}
+                                                                                            disabled
+                                                                                            style={{ marginLeft: 8 }}
+                                                                                        />
+                                                                                    </span>
                                                                                 )}
-                                                                                <input
-                                                                                    type="checkbox"
-                                                                                    checked={row.poRateChecked || false}
-                                                                                    disabled
-                                                                                    style={{ marginLeft: 8 }}
-                                                                                />
+
                                                                             </td>
 
                                                                         </tr>
@@ -813,7 +901,7 @@ const RateDetails = () => {
                                                                     <thead>
                                                                         <tr>
                                                                             <th>Sr.No.</th>
-                                                                            <th>ID</th>
+                                                                            {/* <th>ID</th> */}
                                                                             <th>Version Number</th>
                                                                             <th>Status</th>
                                                                         </tr>
@@ -822,12 +910,16 @@ const RateDetails = () => {
                                                                         {rateDetails?.revised_versions?.map((log, index) => (
                                                                             <tr key={log.id}>
                                                                                 <td className="text-start">{index + 1}</td>
-                                                                                <td className="text-start">
+                                                                                {/* <td className="text-start">
                                                                                     <Link to={`/details-rate/${log.id}?token=${token}`} className="boq-id-link">
                                                                                         {log.id}
                                                                                     </Link>
+                                                                                </td> */}
+                                                                                <td className="text-start">
+                                                                                    <Link to={`/details-rate/${log.id}?token=${token}`} className="boq-id-link">
+                                                                                        <span>{log.display_name}</span>
+                                                                                    </Link>
                                                                                 </td>
-                                                                                <td className="text-start">{log.display_name}</td>
                                                                                 <td className="text-start">{log.list_status || ""}</td>
                                                                             </tr>
                                                                         ))}
@@ -1229,6 +1321,79 @@ const RateDetails = () => {
                         </table>
                       </div> */}
                 </Modal.Body>
+            </Modal>
+
+            {/* revision modal */}
+            <Modal
+                centered
+                size="xl"
+                show={showRevisionModal}
+                onHide={() => setShowRevisionModal(false)}
+                backdrop="true"
+                keyboard={true}
+                className="modal-centered-custom"
+            >
+                <Modal.Header closeButton>
+                    <h5>Revision Requested</h5>
+                </Modal.Header>
+                <Modal.Body style={{ background: "#f5f5f5" }}>
+                    <div className="col-md-12">
+                        <div className="form-group">
+                            {/* <p>
+                                This bill entry is marked as <b>Request for Revision</b>.
+                            </p> */}
+                            {/* {billDetails?.revision_remark && (
+                            <div>
+                              <strong>Remark :</strong>
+                              <div>{billDetails.revision_remark}</div>
+                            </div>
+                          )} */}
+
+
+                            <div
+                                className="d-flex justify-content-between align-items-center mx-3 p-3 rounded-3"
+                                style={{
+                                    background: "linear-gradient(90deg, #fff3cd 0%, #ffeeba 100%)",
+                                    border: "2px solid #ffc107",
+                                    boxShadow: "0 2px 8px rgba(255,193,7,0.15)",
+                                    color: "#856404",
+                                }}
+                            >
+                                <div>
+                                    <p style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: 4 }}>
+                                        <i className="bi bi-exclamation-triangle-fill me-2" style={{ color: "#856404" }} />
+                                        {/* Counter Offer */}
+                                        Rate Revision
+                                        {/* {rateDetails?.display_name} */}
+                                    </p>
+                                    <p style={{ marginBottom: 0 }}>
+                                        {rateDetails?.display_name}
+                                    </p>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                    {/* <div className="row mt-3 justify-content-center">
+                  <div className="col-md-4">
+                    <button
+                      className="purple-btn1 w-100"
+                      onClick={() => setShowRevisionModal(false)}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div> */}
+                </Modal.Body>
+                <Modal.Footer className="justify-content-end">
+                    <button
+                        className="purple-btn1"
+                        onClick={() => setShowRevisionModal(false)}
+                    >
+                        Close
+                    </button>
+                </Modal.Footer>
             </Modal>
 
         </>
