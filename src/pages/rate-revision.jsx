@@ -24,6 +24,9 @@ const RateRevision = () => {
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [fieldErrors, setFieldErrors] = useState({});
+    const [showRemarkModal, setShowRemarkModal] = useState(false);
+    const [remarkRowIndex, setRemarkRowIndex] = useState(null);
+    const [remarkInput, setRemarkInput] = useState("");
     // State for table rows
     const [formData, setFormData] = useState({
         materialType: "",
@@ -83,6 +86,7 @@ const RateRevision = () => {
                             effectiveDate: mat.effective_date || "",
                             rateType: mat.rate_type,
                             rate,
+                            originalManualRate: rate,
                             avgRate,
                             poRate,
                             uomLabel: mat.uom || "",
@@ -111,16 +115,25 @@ const RateRevision = () => {
     // Handle rate input change
     const handleRateChange = (e, rowIndex) => {
         const value = e.target.value;
+
         setTableData((prevData) =>
             prevData.map((row, index) =>
-                index === rowIndex ? { ...row, rate: value } : row
+                index === rowIndex ? { ...row, rate: value, originalManualRate: value } : row
             )
         );
+        // setRemarkRowIndex(rowIndex);
+        // setRemarkInput(tableData[rowIndex]?.remark || "");
+        // setShowRemarkModal(true);
 
         // setRate(value);
         // setCheckbox1(false);
         // setCheckbox2(false);
 
+    };
+    const handleRateBlur = (rowIndex) => {
+        setRemarkRowIndex(rowIndex);
+        setRemarkInput(tableData[rowIndex]?.remark || "");
+        setShowRemarkModal(true);
     };
 
     // Handle input/select changes
@@ -199,8 +212,19 @@ const RateRevision = () => {
             setFieldErrors(errors);
             return;
         }
+        // Add the new row with rateChecked and rateType if rate is present
+        const newRow = {
+            ...formData,
+            rateChecked: !!formData.rate,
+            rateType: formData.rate ? "manual" : "",
+            avgRateChecked: false,
+            poRateChecked: false,
+            isDuplicate: false,
+        };
+
+        const newTableData = [...tableData, newRow];
         // Add the new row
-        const newTableData = [...tableData, formData];
+        // const newTableData = [...tableData, formData];
 
         // Find if the new row is a duplicate of any previous row
         const isDuplicate = tableData.some(row =>
@@ -306,6 +330,9 @@ const RateRevision = () => {
 
 
     const handleCheckboxChange = (checkboxType, rowIndex) => {
+        setRemarkRowIndex(rowIndex);
+        setRemarkInput(tableData[rowIndex]?.remark || "");
+        setShowRemarkModal(true);
         setTableData((prevData) =>
             prevData.map((row, index) => {
                 if (index === rowIndex) {
@@ -336,13 +363,21 @@ const RateRevision = () => {
                         updatedRow.poRateChecked = false;
 
                         // Add or clear the avgRate value based on the new state
-                        updatedRow.rate = newAvgRateChecked ? row.avgRate : ""; // Dummy value for avgRate
+                        // updatedRow.rate = newAvgRateChecked ? row.avgRate : ""; // Dummy value for avgRate
                         // updatedRow.avgRate= ""; // Clear rate
                         // updatedRow.poRate = ""; // Clear poRate
-                        updatedRow.rateType = newAvgRateChecked ? "average" : ""; // Set rateType
+                        // updatedRow.rateType = newAvgRateChecked ? "average" : ""; // Set rateType
+                        // if (newAvgRateChecked) {
+                        //     updatedRow.rate = row.avgRate || "0";
+                        // } // Set rateType
+
+
                         if (newAvgRateChecked) {
                             updatedRow.rate = row.avgRate || "0";
-                        } // Set rateType
+                        } else {
+                            updatedRow.rate = row.originalManualRate || "";
+                        }
+                        updatedRow.rateType = newAvgRateChecked ? "average" : "";
                     }
 
                     // Handle PO Rate checkbox
@@ -353,13 +388,21 @@ const RateRevision = () => {
                         updatedRow.avgRateChecked = false;
 
                         // Add or clear the poRate value based on the new state
-                        updatedRow.rate = newPoRateChecked ? row.poRate : ""; // Dummy value for poRate
+                        // updatedRow.rate = newPoRateChecked ? row.poRate : ""; // Dummy value for poRate
                         // updatedRow.poRate = ""; // Clear rate
                         // updatedRow.avgRate = ""; // Clear avgRate
-                        updatedRow.rateType = newPoRateChecked ? "last" : ""; // Set rateType
+                        // updatedRow.rateType = newPoRateChecked ? "last" : ""; // Set rateType
+                        // if (newPoRateChecked) {
+                        //     updatedRow.rate = row.poRate || "0";
+                        // }
+
+
                         if (newPoRateChecked) {
                             updatedRow.rate = row.poRate || "0";
+                        } else {
+                            updatedRow.rate = row.originalManualRate || "";
                         }
+                        updatedRow.rateType = newPoRateChecked ? "last" : "";
                     }
 
                     return updatedRow;
@@ -669,6 +712,7 @@ const RateRevision = () => {
         from: formatDate(new Date(new Date().setMonth(new Date().getMonth() - 6))), // 6 months ago
         to: formatDate(new Date()), // Today's date
     });
+    const [dateType, setDateType] = useState("company");
 
     // console.log("date ranhe:", dateRange)
     //  console.log("rate details:",rateDetails.company_id)
@@ -681,6 +725,7 @@ const RateRevision = () => {
                     company_id: rateDetails?.company_id || null, // Replace with your actual company id state/variable
                     from: dateRange.from,
                     to: dateRange.to,
+                    rate_level: dateType,
                     materials: tableData.map(row => ({
                         material_id: row.material,
                         material_sub_type_id: row.materialSubType,
@@ -748,6 +793,7 @@ const RateRevision = () => {
                 if (row.rateType === "average") {
                     material.avg_rate_from = dateRange.from || ""; // or your dynamic value
                     material.avg_rate_to = dateRange.to || "";   // or your dynamic value
+                    material.rate_level = dateType
                 }
                 //   console.log("material add:",material)
                 return material;
@@ -758,6 +804,11 @@ const RateRevision = () => {
     console.log(" update payload :", payload)
 
     const handleSubmit = () => {
+        const missingIndex = tableData.findIndex(row => !row.rateType);
+        if (missingIndex !== -1) {
+            toast.error(`row ${missingIndex + 1} : Please check the Rate, AVG Rate, or PO Rate checkbox for material .`);
+            return;
+        }
         const payload = {
             rate_detail: {
                 company_id: rateDetails?.company_id,
@@ -780,6 +831,7 @@ const RateRevision = () => {
                     if (row.rateType === "average") {
                         material.avg_rate_from = dateRange.from || ""; // or your dynamic value
                         material.avg_rate_to = dateRange.to || "";   // or your dynamic value
+                        material.rate_level = dateType || "company"
                     }
                     //   console.log("material add:",material)
                     return material;
@@ -798,7 +850,7 @@ const RateRevision = () => {
                 console.log("Update successful:", response.data);
                 // Redirect to the list page
                 // navigate("/list-page"); // Replace "/list-page" with your actual list page route
-                navigate(`/details-rate/${rateDetails?.parent_id}?token=${token}`);
+                navigate(`/details-rate/${response.data.id}?token=${token}`);
             })
             .catch((error) => {
                 alert("Error submitting data!");
@@ -953,19 +1005,19 @@ const RateRevision = () => {
                         {/* {(JSON.stringify(tableData, null, 2))} */}
 
                         <div className="mx-3 mt-3 mb-3">
-                            <div className="tbl-container  mt-1">
+                            <div className="tbl-container  mt-1" style={{ maxHeight: "600px" }}>
                                 <table className="w-100">
                                     <thead>
                                         <tr>
                                             <th className="text-start">Sr.No.</th>
                                             <th className="text-start">Material Type</th>
-                                             <th className="text-start">Material Sub-Type</th>
+                                            <th className="text-start">Material Sub-Type</th>
                                             <th className="text-start">Material</th>
-                                           
+
                                             <th className="text-start">Generic Specification</th>
                                             <th className="text-start">Colour</th>
                                             <th className="text-start">Brand</th>
-<th className="text-start">UOM</th>
+                                            <th className="text-start">UOM</th>
                                             <th className="text-start">Effective Date</th>
                                             <th className="text-start">Rate (INR)
                                                 <span className="ms-2 pt-2">
@@ -1004,7 +1056,7 @@ const RateRevision = () => {
 
                                                 </span>
                                             </th>
-                                            
+
                                             <th className="text-start">Action</th>
                                         </tr>
                                     </thead>
@@ -1017,9 +1069,9 @@ const RateRevision = () => {
                                                     <td className="text-start"> {index + 1}</td>
                                                     {/* {console.log("materail type:", row.materialType)} */}
                                                     <td className="text-start">{row.materialTypeLabel}</td>
-                                                     <td className="text-start">{row.materialSubTypeLabel}</td>
+                                                    <td className="text-start">{row.materialSubTypeLabel}</td>
                                                     <td className="text-start">{row.materialLabel}</td>
-                                                   
+
                                                     <td className="text-start">{row.genericSpecificationLabel}
 
                                                     </td>
@@ -1027,7 +1079,7 @@ const RateRevision = () => {
 
                                                     </td>
                                                     <td className="text-start">{row.brandLabel}</td>
-                                                     <td className="text-start">{row.uomLabel}</td>
+                                                    <td className="text-start">{row.uomLabel}</td>
                                                     <td className="text-start">
                                                         {/* {row.effectiveDate} */}
                                                         <input
@@ -1046,6 +1098,7 @@ const RateRevision = () => {
                                                                 type="number"
                                                                 value={row.rate}
                                                                 onChange={(e) => handleRateChange(e, index)}
+                                                                onBlur={() => handleRateBlur(index)}
                                                                 disabled={row.avgRateChecked || row.poRateChecked}
                                                                 placeholder="Enter Rate"
                                                                 style={{ maxWidth: "120px" }}
@@ -1060,7 +1113,7 @@ const RateRevision = () => {
                                                     </td>
                                                     <td className="text-start">
 
-                                                        <span>{row.avgRate}</span>
+                                                        <span>{row.avgRate || 0}</span>
 
                                                         <span className="ms-2 pt-2">
                                                             <input
@@ -1072,7 +1125,7 @@ const RateRevision = () => {
                                                         </span>
                                                     </td>
                                                     <td className="text-start">
-                                                        <span>{row.poRate}</span>
+                                                        <span>{row.poRate || 0}</span>
                                                         <span className="ms-2 pt-2">
                                                             <input
                                                                 type="checkbox"
@@ -1322,6 +1375,38 @@ const RateRevision = () => {
                                     />
                                 </div>
                             </div>
+                            <div className="col-md-6 d-flex align-items-center mt-3">
+                                <input
+                                    type="checkbox"
+                                    id="companyRadio"
+                                    value="company"
+                                    checked={dateType === "company"}
+                                    onChange={() => setDateType("company")}
+                                    className="me-2"
+                                />
+                                <label
+                                    htmlFor="without-bill-entry"
+                                    className="mb-0"
+                                >
+                                    Company
+                                </label>
+                            </div>
+                            <div className="col-md-6 d-flex align-items-center mt-3">
+                                <input
+                                    type="checkbox"
+                                    className="me-2"
+                                    id="organisationRadio"
+                                    value="organisation"
+                                    checked={dateType === "organisation"}
+                                    onChange={() => setDateType("organisation")}
+                                />
+                                <label
+                                    htmlFor="without-bill-entry"
+                                    className="mb-0"
+                                >
+                                    Organisation
+                                </label>
+                            </div>
                         </div>
                     </form>
                 </Modal.Body>
@@ -1337,6 +1422,40 @@ const RateRevision = () => {
                         Apply
                     </button>
                     <button className="purple-btn1" onClick={() => setShowDateModal(false)}>
+                        Cancel
+                    </button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={showRemarkModal} onHide={() => setShowRemarkModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Enter Remark</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <textarea
+                        className="form-control"
+                        rows={3}
+                        value={remarkInput}
+                        onChange={e => setRemarkInput(e.target.value)}
+                        placeholder="Enter remark for this material"
+                    />
+                </Modal.Body>
+                <Modal.Footer>
+                    <button
+                        className="purple-btn2 me-2"
+                        // variant="primary"
+                        onClick={() => {
+                            setTableData(prev =>
+                                prev.map((row, idx) =>
+                                    idx === remarkRowIndex ? { ...row, remark: remarkInput } : row
+                                )
+                            );
+                            setShowRemarkModal(false);
+                        }}
+                    >
+                        Save
+                    </button>
+                    <button className="purple-btn1" onClick={() => setShowRemarkModal(false)}>
                         Cancel
                     </button>
                 </Modal.Footer>

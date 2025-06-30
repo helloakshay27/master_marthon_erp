@@ -84,6 +84,7 @@ const EditRate = () => {
                             effectiveDate: mat.effective_date || "",
                             rateType: mat.rate_type,
                             rate,
+                            originalManualRate: rate,
                             avgRate,
                             poRate,
                             uomLabel: mat.uom || "",
@@ -113,7 +114,7 @@ const EditRate = () => {
         const value = e.target.value;
         setTableData((prevData) =>
             prevData.map((row, index) =>
-                index === rowIndex ? { ...row, rate: value } : row
+                index === rowIndex ? { ...row, rate: value, originalManualRate: value } : row
             )
         );
 
@@ -199,8 +200,19 @@ const EditRate = () => {
             setFieldErrors(errors);
             return;
         }
+        // Add the new row with rateChecked and rateType if rate is present
+        const newRow = {
+            ...formData,
+            rateChecked: !!formData.rate,
+            rateType: formData.rate ? "manual" : "",
+            avgRateChecked: false,
+            poRateChecked: false,
+            isDuplicate: false,
+        };
+
+        const newTableData = [...tableData, newRow];
         // Add the new row
-        const newTableData = [...tableData, formData];
+        // const newTableData = [...tableData, formData];
 
         // Find if the new row is a duplicate of any previous row
         const isDuplicate = tableData.some(row =>
@@ -272,13 +284,21 @@ const EditRate = () => {
                         updatedRow.poRateChecked = false;
 
                         // Add or clear the avgRate value based on the new state
-                        updatedRow.rate = newAvgRateChecked ? row.avgRate : ""; // Dummy value for avgRate
+                        // updatedRow.rate = newAvgRateChecked ? row.avgRate : ""; // Dummy value for avgRate
                         // updatedRow.avgRate= ""; // Clear rate
                         // updatedRow.poRate = ""; // Clear poRate
-                        updatedRow.rateType = newAvgRateChecked ? "average" : ""; // Set rateType
+                        // updatedRow.rateType = newAvgRateChecked ? "average" : ""; // Set rateType
+                        // if (newAvgRateChecked) {
+                        //     updatedRow.rate = row.avgRate || "0";
+                        // } // Set rateType
+
+
                         if (newAvgRateChecked) {
                             updatedRow.rate = row.avgRate || "0";
-                        } // Set rateType
+                        } else {
+                            updatedRow.rate = row.originalManualRate || "0";
+                        }
+                        updatedRow.rateType = newAvgRateChecked ? "average" : "";
                     }
 
                     // Handle PO Rate checkbox
@@ -289,13 +309,21 @@ const EditRate = () => {
                         updatedRow.avgRateChecked = false;
 
                         // Add or clear the poRate value based on the new state
-                        updatedRow.rate = newPoRateChecked ? row.poRate : ""; // Dummy value for poRate
+                        // updatedRow.rate = newPoRateChecked ? row.poRate : ""; // Dummy value for poRate
                         // updatedRow.poRate = ""; // Clear rate
                         // updatedRow.avgRate = ""; // Clear avgRate
-                        updatedRow.rateType = newPoRateChecked ? "last" : ""; // Set rateType
+                        // updatedRow.rateType = newPoRateChecked ? "last" : ""; // Set rateType
+                        // if (newPoRateChecked) {
+                        //     updatedRow.rate = row.poRate || "0";
+                        // }
+
+
                         if (newPoRateChecked) {
                             updatedRow.rate = row.poRate || "0";
+                        } else {
+                            updatedRow.rate = row.originalManualRate || "0";
                         }
+                        updatedRow.rateType = newPoRateChecked ? "last" : "";
                     }
 
                     return updatedRow;
@@ -605,6 +633,7 @@ const EditRate = () => {
         from: formatDate(new Date(new Date().setMonth(new Date().getMonth() - 6))), // 6 months ago
         to: formatDate(new Date()), // Today's date
     });
+    const [dateType, setDateType] = useState("company");
 
     // console.log("date ranhe:", dateRange)
     //  console.log("rate details:",rateDetails.company_id)
@@ -617,6 +646,7 @@ const EditRate = () => {
                     company_id: rateDetails?.company_id || null, // Replace with your actual company id state/variable
                     from: dateRange.from,
                     to: dateRange.to,
+                    rate_level: dateType,
                     materials: tableData.map(row => ({
                         material_id: row.material,
                         material_sub_type_id: row.materialSubType,
@@ -685,6 +715,7 @@ const EditRate = () => {
                 if (row.rateType === "average") {
                     base.avg_rate_from = dateRange.from || "";
                     base.avg_rate_to = dateRange.to || "";
+                    base.rate_level = dateType
                 }
 
                 return base;
@@ -695,6 +726,11 @@ const EditRate = () => {
     console.log(" update payload :", payload)
 
     const handleSubmit = () => {
+        const missingIndex = tableData.findIndex(row => !row.rateType);
+        if (missingIndex !== -1) {
+            toast.error(`row ${missingIndex + 1} : Please check the Rate, AVG Rate, or PO Rate checkbox for material .`);
+            return;
+        }
         const payload = {
             rate_detail: {
                 materials: tableData.map(row => {
@@ -719,6 +755,7 @@ const EditRate = () => {
                     if (row.rateType === "average") {
                         base.avg_rate_from = dateRange.from || "";
                         base.avg_rate_to = dateRange.to || "";
+                        base.rate_level = dateType
                     }
 
                     return base;
@@ -892,18 +929,19 @@ const EditRate = () => {
                         {/* {(JSON.stringify(tableData, null, 2))} */}
 
                         <div className="mx-3 mt-3 mb-3">
-                            <div className="tbl-container  mt-1">
+                            <div className="tbl-container  mt-1" style={{ maxHeight: "600px" }}>
                                 <table className="w-100">
                                     <thead>
                                         <tr>
                                             <th className="text-start">Sr.No.</th>
                                             <th className="text-start">Material Type</th>
-                                            <th className="text-start">Material</th>
                                             <th className="text-start">Material Sub-Type</th>
+                                            <th className="text-start">Material</th>
+
                                             <th className="text-start">Generic Specification</th>
                                             <th className="text-start">Colour</th>
                                             <th className="text-start">Brand</th>
-
+                                            <th className="text-start">UOM</th>
                                             <th className="text-start">Effective Date</th>
                                             <th className="text-start">Rate (INR)
                                                 <span className="ms-2 pt-2">
@@ -941,7 +979,7 @@ const EditRate = () => {
                                                         onChange={() => handleSelectAllRates('poRate')} />
                                                 </span>
                                             </th>
-                                            <th className="text-start">UOM</th>
+
                                             <th className="text-start">Action</th>
                                         </tr>
                                     </thead>
@@ -954,11 +992,10 @@ const EditRate = () => {
                                                     <td className="text-start"> {index + 1}</td>
                                                     {/* {console.log("materail type:", row.materialType)} */}
                                                     <td className="text-start">{row.materialTypeLabel}</td>
+                                                    <td className="text-start">{row.materialSubTypeLabel}</td>
                                                     <td className="text-start">{row.materialLabel}
                                                     </td>
-                                                    <td className="text-start">{row.materialSubTypeLabel}
 
-                                                    </td>
                                                     <td className="text-start">{row.genericSpecificationLabel}
 
                                                     </td>
@@ -968,6 +1005,7 @@ const EditRate = () => {
                                                     <td className="text-start">{row.brandLabel}
 
                                                     </td>
+                                                    <td className="text-start">{row.uomLabel}</td>
                                                     <td className="text-start">
                                                         {/* {row.effectiveDate} */}
                                                         <input
@@ -1000,7 +1038,7 @@ const EditRate = () => {
                                                     </td>
                                                     <td className="text-start">
 
-                                                        <span>{row.avgRate}</span>
+                                                        <span>{row.avgRate || 0}</span>
 
                                                         <span className="ms-2 pt-2">
                                                             <input
@@ -1012,7 +1050,7 @@ const EditRate = () => {
                                                         </span>
                                                     </td>
                                                     <td className="text-start">
-                                                        <span>{row.poRate}</span>
+                                                        <span>{row.poRate || 0}</span>
                                                         <span className="ms-2 pt-2">
                                                             <input
                                                                 type="checkbox"
@@ -1022,7 +1060,7 @@ const EditRate = () => {
                                                             />
                                                         </span>
                                                     </td>
-                                                    <td className="text-start">{row.uomLabel}</td>
+
                                                     <td className="text-start">
                                                         <button
                                                             className="btn mt-0 pt-0"
@@ -1263,6 +1301,38 @@ const EditRate = () => {
                                     />
                                 </div>
                             </div>
+                            <div className="col-md-6 d-flex align-items-center mt-3">
+                                <input
+                                    type="checkbox"
+                                    id="companyRadio"
+                                    value="company"
+                                    checked={dateType === "company"}
+                                    onChange={() => setDateType("company")}
+                                    className="me-2"
+                                />
+                                <label
+                                    htmlFor="without-bill-entry"
+                                    className="mb-0"
+                                >
+                                    Company
+                                </label>
+                            </div>
+                            <div className="col-md-6 d-flex align-items-center mt-3">
+                                <input
+                                    type="checkbox"
+                                    className="me-2"
+                                    id="organisationRadio"
+                                    value="organisation"
+                                    checked={dateType === "organisation"}
+                                    onChange={() => setDateType("organisation")}
+                                />
+                                <label
+                                    htmlFor="without-bill-entry"
+                                    className="mb-0"
+                                >
+                                    Organisation
+                                </label>
+                            </div>
                         </div>
                     </form>
                 </Modal.Body>
@@ -1282,6 +1352,8 @@ const EditRate = () => {
                     </button>
                 </Modal.Footer>
             </Modal>
+
+
             <ToastContainer position="top-right" autoClose={3000} />
         </>
     )
