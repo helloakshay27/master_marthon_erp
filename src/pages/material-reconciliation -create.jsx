@@ -863,7 +863,7 @@ const MaterialReconciliationCreate = () => {
           // status: selectedStatus?.value || " ", // Get status from dropdown selection
           material_reconciliation_items_attributes: acceptedInventories.map(
             (inventory) => ({
-              mor_inventory_id: inventory.id,
+              material_inventory_id: inventory.id,
               stock_as_on: inventory.stock_as_on || 0,
               rate: inventory.rate_weighted_average
                 ? parseFloat(inventory.rate_weighted_average)

@@ -2769,11 +2769,14 @@ const GatePassEdit = () => {
                     </label>
                     <SingleSelector
                       options={statusOptions}
-                      value={selectedStatus}
-                      onChange={setSelectedStatus}
+                      value={statusOptions.find(
+                        (option) => option.value === "draft"
+                      )}
+                      onChange={() => {}}
                       placeholder="Select Status"
                       isClearable={false}
                       classNamePrefix="react-select"
+                      isDisabled={true}
                     />
                   </div>
                 </div>
@@ -2863,9 +2866,12 @@ const GatePassEdit = () => {
             <button
               className="purple-btn2"
               onClick={() => {
-                // Add selected materials to main table
-                const selectedMaterials = selectedMaterialIndexes.map(
-                  (idx) => ({
+                // Prevent duplicate materials
+                const existingIds = formData.material_items.map(
+                  (item) => item.material_inventory_id
+                );
+                const selectedMaterials = selectedMaterialIndexes
+                  .map((idx) => ({
                     material_type: poMaterials[idx].material_type,
                     material_sub_type: poMaterials[idx].material_sub_type,
                     material_name: poMaterials[idx].material,
@@ -2879,8 +2885,11 @@ const GatePassEdit = () => {
                     stock_as_on: poMaterials[idx].stock_as_on,
                     material_inventory_id: poMaterials[idx].id || null,
                     available_qty: null,
-                  })
-                );
+                  }))
+                  .filter(
+                    (mat) => !existingIds.includes(mat.material_inventory_id)
+                  ); // Only add if not already present
+
                 setFormData((prev) => ({
                   ...prev,
                   material_items: [

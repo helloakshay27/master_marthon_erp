@@ -85,7 +85,7 @@ const MaterialReconciliationDetail = () => {
           material_reconciliation_items_attributes:
             response.data.material_reconciliation_items.map((item) => ({
               id: item.id,
-              mor_inventory_id: item.mor_inventory_id,
+              material_inventory_id: item.material_inventory_id,
               material: item.material,
               stock_as_on: item.stock_as_on,
               rate: item.rate,
