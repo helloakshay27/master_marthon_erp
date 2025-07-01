@@ -1510,7 +1510,7 @@ const GatePassEdit = () => {
           </a>
           <h5 className="mt-3">Gate Pass Edit</h5>
           <div className="head-material text-center">
-            <h4>{getHeaderTitle()}</h4>
+            {/* <h4>{getHeaderTitle()}</h4> */}
           </div>
           <div className="card card-default mt-5 p-2b-4">
             <div className="card-header3">

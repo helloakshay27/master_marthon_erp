@@ -269,7 +269,8 @@ const GatePassCreate = () => {
               })
             : (formData.material_items || []).map((item) => ({
                 gate_pass_qty: Number(item.gate_pass_qty) || null,
-                material_inventory_id: item.material_inventory_id || item.id || null,
+                material_inventory_id:
+                  item.material_inventory_id || item.id || null,
               })),
         attachments: attachments.length > 0 ? attachments : null,
         to_resource_id: to_resource_id,
@@ -1088,7 +1089,7 @@ const GatePassCreate = () => {
           <a href="">Home &gt; Store &gt; Store Operations &gt; Gate Pass</a>
           <h5 className="mt-3">Gate Pass Create</h5>
           <div className="head-material text-center">
-            <h4>{getHeaderTitle()}</h4>
+            {/* <h4>{getHeaderTitle()}</h4> */}
           </div>
           <div className="card card-default mt-5 p-2b-4">
             <div className="card-header3">
