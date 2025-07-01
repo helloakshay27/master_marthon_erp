@@ -22,6 +22,8 @@ const ViewRate = () => {
     const handleFileChange = (e) => setFile(e.target.files[0]);
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
+    const [showResultModal, setShowResultModal] = useState(false);
+    const [resultMessages, setResultMessages] = useState([]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -39,7 +41,14 @@ const ViewRate = () => {
                 );
                 if (response.status === 200) {
                     console.log("Upload response:", response.data);
-                    toast.success(response.data.message);
+                    // toast.success(response.data.message);
+                    // If response.data.message is an array, show modal with all messages
+                    if (Array.isArray(response.data.message)) {
+                        setResultMessages(response.data.message);
+                        setShowResultModal(true);
+                    } else {
+                        toast.success(response.data.message);
+                    }
                     // alert("File uploaded successfully!");
                 }
                 setShowModal(false);
@@ -685,6 +694,7 @@ const ViewRate = () => {
                     </form>
                 </Modal.Body>
             </Modal>
+
             <ToastContainer
                 position="top-right"
                 autoClose={3000}
@@ -697,6 +707,52 @@ const ViewRate = () => {
                 pauseOnHover
                 theme="light"
             />
+
+
+            <Modal show={showResultModal} onHide={() => setShowResultModal(false)} centered size="md">
+                <Modal.Header closeButton>
+                    <Modal.Title>Upload Result</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {/* {resultMessages.map((msg, idx) => (
+            <div key={idx} className="mb-3">
+                <div> Row : {msg.row}</div>
+                <div>Message : {msg.message}</div>
+                
+            </div>
+        ))} */}
+
+                    {resultMessages.map((msg, idx) => (
+                        <div
+                            className="d-flex justify-content-between align-items-center mx-3 p-3 rounded-3"
+                            style={{
+                                background: "linear-gradient(90deg, #fff3cd 0%, #ffeeba 100%)",
+                                border: "2px solid #ffc107",
+                                boxShadow: "0 2px 8px rgba(255,193,7,0.15)",
+                                color: "#856404",
+                            }}
+                            key={idx}
+                        >
+                            <div>
+                                <p style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: 4 }}>
+                                    <i className="bi bi-exclamation-triangle-fill me-2" style={{ color: "#856404" }} />
+                                    Row : {msg.row}
+
+                                </p>
+                                <p style={{ marginBottom: 0 }}>
+                                    {msg.message}
+                                </p>
+                            </div>
+
+                        </div>
+                    ))}
+                </Modal.Body>
+                <Modal.Footer>
+                    <button className="purple-btn1" onClick={() => setShowResultModal(false)}>
+                        Close
+                    </button>
+                </Modal.Footer>
+            </Modal>
         </>
     )
 }

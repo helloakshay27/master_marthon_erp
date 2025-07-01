@@ -59,7 +59,7 @@ const ErpStockRegister13B = () => {
     deadstockQty: true,
     theftMissing: true,
     uom_name: true,
-    Star: true,
+    // Star: true,
     mor: true, // Added Mor Number column
     grn_number: true, //
   });
@@ -155,7 +155,7 @@ const ErpStockRegister13B = () => {
       sortable: true,
     },
     { field: "uom_name", headerName: "UOM", width: 100, sortable: true },
-    { field: "Star", headerName: "Star", width: 80, sortable: false },
+    // { field: "Star", headerName: "Star", width: 80, sortable: false },
     { field: "mor", headerName: "MOR Number", width: 120, sortable: true },
     {
       field: "grn_number",
@@ -712,7 +712,7 @@ display:none !important;
                           </svg>
                         </button>
                       </div>
-                      <div className="col-md-3">
+                      {/* <div className="col-md-3">
                         <button
                           type="submit"
                           className="btn btn-md"
@@ -746,7 +746,7 @@ display:none !important;
                             </svg>
                           )}
                         </button>
-                      </div>
+                      </div> */}
                       <div className="col-md-3">
                         <button
                           onClick={downloadExcel}
