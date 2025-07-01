@@ -1411,7 +1411,39 @@ useEffect(() => {
                 <Modal.Body>
                     <form>
                         <div className="row">
-                            <div className="col-md-6">
+                             <div className="col-md-3 d-flex align-items-center custom-radio ">
+                                <input
+                                    type="radio"
+                                    id="companyRadio"
+                                    value="company"
+                                    checked={dateType === "company"}
+                                    onChange={() => setDateType("company")}
+                                    className="me-2"
+                                />
+                                <label
+                                    htmlFor="companyRadio"
+                                    className="mb-0"
+                                >
+                                    Company
+                                </label>
+                            </div>
+                            <div className="col-md-4 d-flex align-items-center custom-radio ">
+                                <input
+                                    type="radio"
+                                    className="me-2"
+                                    id="organisationRadio"
+                                    value="organisation"
+                                    checked={dateType === "organisation"}
+                                    onChange={() => setDateType("organisation")}
+                                />
+                                <label
+                                    htmlFor="organisationRadio"
+                                    className="mb-0"
+                                >
+                                    Organisation
+                                </label>
+                            </div>
+                            <div className="col-md-6 mt-3">
                                 <div className="form-group">
                                     <label>From</label>
                                     <input
@@ -1425,7 +1457,7 @@ useEffect(() => {
                                     />
                                 </div>
                             </div>
-                            <div className="col-md-6">
+                            <div className="col-md-6 mt-3">
                                 <div className="form-group">
                                     <label>To</label>
                                     <input
@@ -1439,38 +1471,7 @@ useEffect(() => {
                                     />
                                 </div>
                             </div>
-                            <div className="col-md-6 d-flex align-items-center mt-3">
-                                <input
-                                    type="checkbox"
-                                    id="companyRadio"
-                                    value="company"
-                                    checked={dateType === "company"}
-                                    onChange={() => setDateType("company")}
-                                    className="me-2"
-                                />
-                                <label
-                                    htmlFor="without-bill-entry"
-                                    className="mb-0"
-                                >
-                                    Company
-                                </label>
-                            </div>
-                            <div className="col-md-6 d-flex align-items-center mt-3">
-                                <input
-                                    type="checkbox"
-                                    className="me-2"
-                                    id="organisationRadio"
-                                    value="organisation"
-                                    checked={dateType === "organisation"}
-                                    onChange={() => setDateType("organisation")}
-                                />
-                                <label
-                                    htmlFor="without-bill-entry"
-                                    className="mb-0"
-                                >
-                                    Organisation
-                                </label>
-                            </div>
+                           
                         </div>
                     </form>
                 </Modal.Body>
