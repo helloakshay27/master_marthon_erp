@@ -90,6 +90,7 @@ const RateDetails = () => {
     };
     useEffect(() => {
         fetchRateDetails(id);
+        setActiveTab("details");
     }, [id]);
 
     const statusOptions = [
@@ -305,6 +306,8 @@ const RateDetails = () => {
 
                         </div>
                     )}
+
+
                     <div className="mb-5">
 
                         <div
@@ -331,6 +334,28 @@ const RateDetails = () => {
                             )}
 
                             <div className="card-body">
+                                                    {/* Show Rate Revision card if display_name exists */}
+    {rateDetails?.display_name && (
+      <div
+        className="d-flex justify-content-between align-items-center mx-1 p-3 mb-3 rounded-3"
+        style={{
+          background: "linear-gradient(90deg, #fff3cd 0%, #ffeeba 100%)",
+          border: "2px solid #ffc107",
+          boxShadow: "0 2px 8px rgba(255,193,7,0.15)",
+          color: "#856404",
+        }}
+      >
+        <div>
+          <p style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: 4 }}>
+            <i className="bi bi-exclamation-triangle-fill me-2" style={{ color: "#856404" }} />
+            Rate Revision
+          </p>
+          <p style={{ marginBottom: 0 }}>
+            {rateDetails?.display_name}
+          </p>
+        </div>
+      </div>
+    )}
                                 {/* Tabs */}
                                 <nav className="mb-5">
                                     <div className="nav nav-tabs" id="nav-tab" role="tablist">
@@ -1324,7 +1349,7 @@ const RateDetails = () => {
             </Modal>
 
             {/* revision modal */}
-            <Modal
+            {/* <Modal
                 centered
                 size="xl"
                 show={showRevisionModal}
@@ -1339,17 +1364,7 @@ const RateDetails = () => {
                 <Modal.Body style={{ background: "#f5f5f5" }}>
                     <div className="col-md-12">
                         <div className="form-group">
-                            {/* <p>
-                                This bill entry is marked as <b>Request for Revision</b>.
-                            </p> */}
-                            {/* {billDetails?.revision_remark && (
-                            <div>
-                              <strong>Remark :</strong>
-                              <div>{billDetails.revision_remark}</div>
-                            </div>
-                          )} */}
-
-
+                           
                             <div
                                 className="d-flex justify-content-between align-items-center mx-3 p-3 rounded-3"
                                 style={{
@@ -1362,9 +1377,9 @@ const RateDetails = () => {
                                 <div>
                                     <p style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: 4 }}>
                                         <i className="bi bi-exclamation-triangle-fill me-2" style={{ color: "#856404" }} />
-                                        {/* Counter Offer */}
+                                     
                                         Rate Revision
-                                        {/* {rateDetails?.display_name} */}
+
                                     </p>
                                     <p style={{ marginBottom: 0 }}>
                                         {rateDetails?.display_name}
@@ -1375,16 +1390,7 @@ const RateDetails = () => {
 
                         </div>
                     </div>
-                    {/* <div className="row mt-3 justify-content-center">
-                  <div className="col-md-4">
-                    <button
-                      className="purple-btn1 w-100"
-                      onClick={() => setShowRevisionModal(false)}
-                    >
-                      Close
-                    </button>
-                  </div>
-                </div> */}
+                   
                 </Modal.Body>
                 <Modal.Footer className="justify-content-end">
                     <button
@@ -1394,7 +1400,7 @@ const RateDetails = () => {
                         Close
                     </button>
                 </Modal.Footer>
-            </Modal>
+            </Modal> */}
 
         </>
     )
