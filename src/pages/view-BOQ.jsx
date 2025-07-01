@@ -28,6 +28,8 @@ const BOQList = () => {
   const itemsPerPage = 5; // Items per page
   const [totalEntries, setTotalEntries] = useState(0);
   const [loading2, setLoading2] = useState(true);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [resultMessages, setResultMessages] = useState([]);
 
   const [file, setFile] = useState(null);
   const handleFileChange = (e) => setFile(e.target.files[0]);
@@ -815,7 +817,7 @@ const BOQList = () => {
     const reader = new FileReader();
     reader.onload = async (event) => {
       const base64String = event.target.result.split(",")[1];
-      console.log("base64String:", base64String)
+      // console.log("base64String:", base64String)
       try {
         const response = await axios.post(
           `${baseURL}boq_details/import.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
@@ -824,7 +826,13 @@ const BOQList = () => {
         );
         if (response.status === 200) {
           console.log("Upload response:", response.data);
-          toast.success(response.data.message);
+          // toast.success(response.data.message);
+          if (Array.isArray(response.data.message)) {
+            setResultMessages(response.data.message);
+            setShowResultModal(true);
+          } else {
+            toast.success(response.data.message);
+          }
           // alert("File uploaded successfully!");
         }
         setShowModal(false);
@@ -3772,6 +3780,44 @@ const BOQList = () => {
         pauseOnHover
         theme="light"
       />
+
+      <Modal show={showResultModal} onHide={() => setShowResultModal(false)} centered size="xl">
+        <Modal.Header closeButton>
+          <Modal.Title>Upload Result</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+
+          {resultMessages.map((msg, idx) => (
+            <div
+              className="d-flex justify-content-between align-items-center mx-3 p-3 rounded-3 mb-3"
+              style={{
+                background: "linear-gradient(90deg, #fff3cd 0%, #ffeeba 100%)",
+                border: "2px solid #ffc107",
+                boxShadow: "0 2px 8px rgba(255,193,7,0.15)",
+                color: "#856404",
+              }}
+              key={idx}
+            >
+              <div>
+                <p style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: 4 }}>
+                  <i className="bi bi-exclamation-triangle-fill me-2" style={{ color: "#856404" }} />
+                  Row : {msg.row}
+
+                </p>
+                <span style={{ marginBottom: 0 ,fontSize: "16px"}}>
+                  {msg.message}
+                </span>
+              </div>
+
+            </div>
+          ))}
+        </Modal.Body>
+        <Modal.Footer>
+          <button className="purple-btn1" onClick={() => setShowResultModal(false)}>
+            Close
+          </button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };

@@ -468,7 +468,7 @@ const ViewRate = () => {
 
 
                         <div className="mx-3 mb-5 mt-3">
-                            <div className="tbl-container mt-3">
+                            <div className="tbl-container mt-3" style={{ maxHeight: "600px" }}>
                                 <table className="w-100">
                                     <thead>
                                         <tr>
@@ -503,14 +503,30 @@ const ViewRate = () => {
                                                                 {wingIndex === 0 && siteIndex === 0 ? (
                                                                     <td className="text-start">
                                                                         {project.rate_id ? (
-                                                                            <a href={`/details-rate/${project.rate_id}?token=${token}`}>
+                                                                            <a href={`/details-rate/${project.rate_id}?token=${token}`}
+                                                                                title={project.status ? `Status: ${project.status}` : ""}
+                                                                                style={{
+                                                                                    cursor: project.status ? "pointer" : "default",
+                                                                                    textDecoration: "underline",
+                                                                                    color: "#8b0203",
+                                                                                    position: "relative"
+                                                                                }}
+                                                                            >
                                                                                 <span style={{ color: "#8b0203", textDecoration: "underline" }}>
                                                                                     {project.name}
                                                                                     {/* {console.log("token inn:",token)} */}
                                                                                 </span>
                                                                             </a>
                                                                         ) : (
-                                                                            <span>{project.name}</span>
+                                                                            <span
+                                                                                title={project.status ? `Status: ${project.status}` : ""}
+                                                                                style={{
+                                                                                    cursor: project.status ? "pointer" : "default",
+                                                                                    textDecoration: "underline",
+                                                                                    color: "#8b0203",
+                                                                                    position: "relative"
+                                                                                }}
+                                                                            >{project.name}</span>
                                                                         )}
                                                                         {/* <a href={`/details-rate/${project.rate_id}`}>
                                                                             <span style={{ color: "#8b0203", textDecoration: "underline" }}>
@@ -525,13 +541,31 @@ const ViewRate = () => {
                                                                 {wingIndex === 0 ? (
                                                                     <td className="text-start">
                                                                         {site.rate_id ? (
-                                                                            <a href={`/details-rate/${site.rate_id}?token=${token}`}>
-                                                                                <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                            <a href={`/details-rate/${site.rate_id}?token=${token}`}
+                                                                                title={site.status ? `Status: ${site.status}` : ""}
+                                                                                style={{
+                                                                                    cursor: site.status ? "pointer" : "default",
+                                                                                    textDecoration: "underline",
+                                                                                    color: "#8b0203",
+                                                                                    position: "relative"
+                                                                                }}
+                                                                            >
+                                                                                <span style={{ color: "#8b0203", textDecoration: "underline" }}
+
+                                                                                >
                                                                                     {site.name}
                                                                                 </span>
                                                                             </a>
                                                                         ) : (
-                                                                            <span>{site.name}</span>
+                                                                            <span
+                                                                                title={site.status ? `Status: ${site.status}` : ""}
+                                                                                style={{
+                                                                                    cursor: site.status ? "pointer" : "default",
+                                                                                    textDecoration: "underline",
+                                                                                    color: "#8b0203",
+                                                                                    position: "relative"
+                                                                                }}
+                                                                            >{site.name}</span>
                                                                         )}
 
                                                                     </td>
@@ -542,13 +576,29 @@ const ViewRate = () => {
                                                                 <td className="text-start">
                                                                     {/* {wing.name} */}
                                                                     {wing.rate_id ? (
-                                                                        <a href={`/details-rate/${wing.rate_id}?token=${token}`}>
+                                                                        <a href={`/details-rate/${wing.rate_id}?token=${token}`}
+                                                                            title={wing.status ? `Status: ${wing.status}` : ""}
+                                                                            style={{
+                                                                                cursor: wing.status ? "pointer" : "default",
+                                                                                textDecoration: "underline",
+                                                                                color: "#8b0203",
+                                                                                position: "relative"
+                                                                            }}
+                                                                        >
                                                                             <span style={{ color: "#8b0203", textDecoration: "underline" }}>
                                                                                 {wing.name}
                                                                             </span>
                                                                         </a>
                                                                     ) : (
-                                                                        <span>{wing.name}</span>
+                                                                        <span
+                                                                            title={wing.status ? `Status: ${wing.status}` : ""}
+                                                                            style={{
+                                                                                cursor: wing.status ? "pointer" : "default",
+                                                                                textDecoration: "underline",
+                                                                                color: "#8b0203",
+                                                                                position: "relative"
+                                                                            }}
+                                                                        >{wing.name}</span>
                                                                     )}
                                                                 </td>
                                                                 {/* Location */}
@@ -573,13 +623,28 @@ const ViewRate = () => {
                                                                 {siteIndex === 0 ? (
                                                                     <td className="text-start">
                                                                         {project.rate_id ? (
-                                                                            <a href={`/details-rate/${project.rate_id}?token=${token}`}>
+                                                                            <a href={`/details-rate/${project.rate_id}?token=${token}`}
+                                                                                title={project.status ? `Status: ${project.status}` : ""}
+                                                                                style={{
+                                                                                    cursor: project.status ? "pointer" : "default",
+                                                                                    textDecoration: "underline",
+                                                                                    color: "#8b0203",
+                                                                                    position: "relative"
+                                                                                }}>
                                                                                 <span style={{ color: "#8b0203", textDecoration: "underline" }}>
                                                                                     {project.name}
                                                                                 </span>
                                                                             </a>
                                                                         ) : (
-                                                                            <span>{project.name}</span>
+                                                                            <span
+                                                                                title={project.status ? `Status: ${project.status}` : ""}
+                                                                                style={{
+                                                                                    cursor: project.status ? "pointer" : "default",
+                                                                                    textDecoration: "underline",
+                                                                                    color: "#8b0203",
+                                                                                    position: "relative"
+                                                                                }}
+                                                                            >{project.name}</span>
                                                                         )}
                                                                         {/* <a href={`/details-rate/${project.rate_id}`}>
                                                                             <span style={{ color: "#8b0203", textDecoration: "underline" }}>
@@ -593,13 +658,27 @@ const ViewRate = () => {
                                                                 {/* Sub-Project Name */}
                                                                 <td className="text-start">
                                                                     {site.rate_id ? (
-                                                                        <a href={`/details-rate/${site.rate_id}?token=${token}`}>
+                                                                        <a href={`/details-rate/${site.rate_id}?token=${token}`}
+                                                                            title={site.status ? `Status: ${site.status}` : ""}
+                                                                            style={{
+                                                                                cursor: site.status ? "pointer" : "default",
+                                                                                textDecoration: "underline",
+                                                                                color: "#8b0203",
+                                                                                position: "relative"
+                                                                            }}>
                                                                             <span style={{ color: "#8b0203", textDecoration: "underline" }}>
                                                                                 {site.name}
                                                                             </span>
                                                                         </a>
                                                                     ) : (
-                                                                        <span>{site.name}</span>
+                                                                        <span
+                                                                            title={site.status ? `Status: ${site.status}` : ""}
+                                                                            style={{
+                                                                                cursor: site.status ? "pointer" : "default",
+                                                                                textDecoration: "underline",
+                                                                                color: "#8b0203",
+                                                                                position: "relative"
+                                                                            }}>{site.name}</span>
                                                                     )}
 
                                                                 </td>
@@ -709,22 +788,15 @@ const ViewRate = () => {
             />
 
 
-            <Modal show={showResultModal} onHide={() => setShowResultModal(false)} centered size="md">
+            <Modal show={showResultModal} onHide={() => setShowResultModal(false)} centered size="xl">
                 <Modal.Header closeButton>
                     <Modal.Title>Upload Result</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {/* {resultMessages.map((msg, idx) => (
-            <div key={idx} className="mb-3">
-                <div> Row : {msg.row}</div>
-                <div>Message : {msg.message}</div>
-                
-            </div>
-        ))} */}
 
                     {resultMessages.map((msg, idx) => (
                         <div
-                            className="d-flex justify-content-between align-items-center mx-3 p-3 rounded-3"
+                            className="d-flex justify-content-between align-items-center mx-3 p-3 rounded-3 mb-3"
                             style={{
                                 background: "linear-gradient(90deg, #fff3cd 0%, #ffeeba 100%)",
                                 border: "2px solid #ffc107",
@@ -739,9 +811,9 @@ const ViewRate = () => {
                                     Row : {msg.row}
 
                                 </p>
-                                <p style={{ marginBottom: 0 }}>
+                                <span style={{ marginBottom: 0, fontSize: "16px" }}>
                                     {msg.message}
-                                </p>
+                                </span>
                             </div>
 
                         </div>

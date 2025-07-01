@@ -366,7 +366,7 @@ const MaterialReconciliationCreate = () => {
         console.error("Error fetching inventory types:", error);
         setInventoryTypes([]); // Set empty array in case of error
       });
-  }, []); // Empty dependency array to run only once on mount
+  }, []);
 
   // Fetch inventory sub-types when an inventory type is selected
   useEffect(() => {
@@ -556,10 +556,22 @@ const MaterialReconciliationCreate = () => {
     return pageNumbers;
   };
 
+  // Helper to build filters
+  const buildFilters = () => {
+    const filters = {};
+    if (selectedCompany?.value) filters.company_id = selectedCompany.value;
+    if (selectedProject?.value) filters.project_id = selectedProject.value;
+    if (selectedSite?.value) filters.site_id = selectedSite.value;
+    if (selectedWing?.value) filters.wing_id = selectedWing.value;
+    return filters;
+  };
+
   // Fetch all MOR inventories on component mount
   useEffect(() => {
-    fetchAllMorInventories();
-  }, []);
+    if (selectedStore) {
+      fetchAllMorInventories(1, buildFilters());
+    }
+  }, [selectedStore]);
 
   const fetchAllMorInventories = async (
     page = 1,
@@ -568,39 +580,61 @@ const MaterialReconciliationCreate = () => {
   ) => {
     setLoading(true);
     try {
-      // Require store selection
-      const storeId = filters.store_id || selectedStore?.value;
-      if (!storeId) {
-        setMorInventories([]);
-        setPagination({
-          current_page: 1,
-          next_page: null,
-          prev_page: null,
-          total_pages: 1,
-          total_count: 0,
-        });
-        setLoading(false);
-        return;
+      // Only proceed if a store is selected
+      // if (!selectedStore) {
+      //   alert("Please select a store before fetching inventories.");
+      //   setLoading(false);
+      //   return;
+      // }
+      let url = `${baseURL}pms/stores/fetch_store_inventories.json?page=${page}&per_page=${pageSizeOverride}&store_id=${selectedStore.value}`;
+
+      // Add all filters
+      if (filters.company_id) {
+        url += `&q[material_order_request_company_id_in]=${filters.company_id}`;
       }
-      // Use the new API endpoint
-      let url = `https://marathon.lockated.com/pms/stores/fetch_store_inventories.json?token=${token}&store_id=${storeId}`;
-      // Note: The new API does not support all the old filters, so only store_id and token are used
-      // If you want to filter client-side, you can do so after fetching
+      if (filters.project_id) {
+        url += `&q[material_order_request_project_id_in]=${filters.project_id}`;
+      }
+      if (filters.site_id) {
+        url += `&q[material_order_request_pms_site_id_in]=${filters.site_id}`;
+      }
+      if (filters.wing_id) {
+        url += `&q[material_order_request_wing_id_in]=${filters.wing_id}`;
+      }
+      if (filters.material_id) {
+        url += `&q[pms_inventory_id_eq]=${filters.material_id}`;
+      }
+      if (filters.material_type_id) {
+        url += `&q[material_sub_type_pms_inventory_type_id_eq]=${filters.material_type_id}`;
+      }
+      if (filters.material_sub_type_id) {
+        url += `&q[pms_inventory_sub_type_id_eq]=${filters.material_sub_type_id}`;
+      }
+      if (filters.generic_specification_id) {
+        url += `&q[pms_generic_info_id_eq]=${filters.generic_specification_id}`;
+      }
+      if (filters.colour_id) {
+        url += `&q[pms_colour_id_eq]=${filters.colour_id}`;
+      }
+      if (filters.brand_id) {
+        url += `&q[pms_brand_id_eq]=${filters.brand_id}`;
+      }
+      if (filters.uom_id) {
+        url += `&q[unit_of_measure_id_eq]=${filters.uom_id}`;
+      }
+
+      console.log("Fetching URL:", url);
       const response = await axios.get(url);
-      setMorInventories(response.data.inventories || []);
+      setMorInventories(response.data.inventories);
       setPagination({
-        current_page: response.data.pagination?.current_page || 1,
-        next_page: response.data.pagination?.next_page || null,
-        prev_page: response.data.pagination?.prev_page || null,
-        total_pages: response.data.pagination?.total_pages || 1,
-        total_count:
-          response.data.pagination?.total_count ||
-          response.data.inventories?.length ||
-          0,
+        current_page: response.data.pagination.current_page,
+        next_page: response.data.pagination.next_page,
+        prev_page: response.data.pagination.prev_page,
+        total_pages: response.data.pagination.total_pages,
+        total_count: response.data.pagination.total_count,
       });
     } catch (error) {
-      console.error("Error fetching store inventories:", error);
-      setMorInventories([]);
+      console.error("Error fetching MOR inventories:", error);
     } finally {
       setLoading(false);
     }
@@ -829,7 +863,7 @@ const MaterialReconciliationCreate = () => {
           // status: selectedStatus?.value || " ", // Get status from dropdown selection
           material_reconciliation_items_attributes: acceptedInventories.map(
             (inventory) => ({
-              mor_inventory_id: inventory.id,
+              material_inventory_id: inventory.id,
               stock_as_on: inventory.stock_as_on || 0,
               rate: inventory.rate_weighted_average
                 ? parseFloat(inventory.rate_weighted_average)
@@ -890,44 +924,31 @@ const MaterialReconciliationCreate = () => {
 
   // Fetch store data on component mount
   useEffect(() => {
-    axios
-      .get(
-        `https://marathon.lockated.com/pms/stores/store_dropdown.json?token=${token}`
-      )
-      .then((response) => {
-        setStores(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching store data:", error);
-      });
-  }, []);
+    if (selectedSite && selectedSite.value) {
+      const fetchStoresBySite = async () => {
+        try {
+          const response = await axios.get(
+            `${baseURL}pms/stores/store_dropdown.json?q[site_id_eq]=${selectedSite.value}&token=${token}`
+          );
+          if (Array.isArray(response.data)) {
+            setStores(response.data);
+          } else {
+            setStores([]);
+          }
+        } catch (error) {
+          setStores([]);
+        }
+      };
+      fetchStoresBySite();
+    } else {
+      setStores([]); // Clear stores if no site is selected
+    }
+  }, [selectedSite]);
 
   // Handle store selection
   const handleStoreChange = (selectedOption) => {
     setSelectedStore(selectedOption);
-
-    if (selectedOption) {
-      // Create filters object with all IDs
-      const filters = {
-        company_id: selectedCompany.value,
-        project_id: selectedProject.value,
-        site_id: selectedSite.value,
-        wing_id: selectedWing.value,
-        store_id: selectedOption.value,
-      };
-
-      // Fetch inventories with all filters
-      fetchAllMorInventories(1, filters);
-    } else {
-      // If no store is selected, fetch with all other filters
-      const filters = {
-        company_id: selectedCompany.value,
-        project_id: selectedProject.value,
-        site_id: selectedSite.value,
-        wing_id: selectedWing.value,
-      };
-      fetchAllMorInventories(1, filters);
-    }
+    fetchAllMorInventories(1, buildFilters());
   };
 
   // Function to handle inventory removal
@@ -1545,7 +1566,7 @@ const MaterialReconciliationCreate = () => {
                   {pagination.total_pages}
                 </p> */}
 
-              <div className="d-flex align-items-center gap-2">
+              {/* <div className="d-flex align-items-center gap-2">
                 <label className="mb-0">Show</label>
                 <select
                   className="form-select form-select-sm"
@@ -1559,7 +1580,7 @@ const MaterialReconciliationCreate = () => {
                   <option value="50">20</option>
                 </select>
                 <span>entries</span>
-              </div>
+              </div> */}
             </div>
 
             <div className="tbl-container  mt-3">
