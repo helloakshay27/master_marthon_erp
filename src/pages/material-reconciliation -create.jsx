@@ -84,6 +84,10 @@ const MaterialReconciliationCreate = () => {
 
   // Optional: Function to open the modal
   const openAddMaterialModal = () => {
+    if (!selectedStore) {
+      alert("Please select a store before adding material.");
+      return;
+    }
     setAddMaterialModal(true);
   };
 
@@ -564,60 +568,39 @@ const MaterialReconciliationCreate = () => {
   ) => {
     setLoading(true);
     try {
-      let url = `${baseURL}mor_inventories/fetch_all_inventories.json?page=${page}&per_page=${pageSizeOverride}`;
-
-      // Add all filters
-      if (filters.company_id) {
-        url += `&q[material_order_request_company_id_in]=${filters.company_id}`;
+      // Require store selection
+      const storeId = filters.store_id || selectedStore?.value;
+      if (!storeId) {
+        setMorInventories([]);
+        setPagination({
+          current_page: 1,
+          next_page: null,
+          prev_page: null,
+          total_pages: 1,
+          total_count: 0,
+        });
+        setLoading(false);
+        return;
       }
-      if (filters.project_id) {
-        url += `&q[material_order_request_project_id_in]=${filters.project_id}`;
-      }
-      if (filters.site_id) {
-        url += `&q[material_order_request_pms_site_id_in]=${filters.site_id}`;
-      }
-      if (filters.wing_id) {
-        url += `&q[material_order_request_wing_id_in]=${filters.wing_id}`;
-      }
-      if (filters.store_id) {
-        url += `&q[material_order_request_store_id_in]=${filters.store_id}`;
-      }
-
-      // Add other filters
-      if (filters.material_type_id) {
-        url += `&q[material_order_request_pms_inventory_type_id_in]=${filters.material_type_id}`;
-      }
-      if (filters.material_sub_type_id) {
-        url += `&q[inventory_sub_type_id_in]=${filters.material_sub_type_id}`;
-      }
-      if (filters.material_id) {
-        url += `&q[inventory_id_in]=${filters.material_id}`;
-      }
-      if (filters.brand_id) {
-        url += `&q[pms_brand_id_in]=${filters.brand_id}`;
-      }
-      if (filters.uom_id) {
-        url += `&q[unit_of_measure_id_in]=${filters.uom_id}`;
-      }
-      if (filters.generic_specification_id) {
-        url += `&q[generic_info_id_in]=${filters.generic_specification_id}`;
-      }
-      if (filters.colour_id) {
-        url += `&q[pms_colour_id_in]=${filters.colour_id}`;
-      }
-
-      console.log("Fetching URL:", url);
+      // Use the new API endpoint
+      let url = `https://marathon.lockated.com/pms/stores/fetch_store_inventories.json?token=${token}&store_id=${storeId}`;
+      // Note: The new API does not support all the old filters, so only store_id and token are used
+      // If you want to filter client-side, you can do so after fetching
       const response = await axios.get(url);
-      setMorInventories(response.data.inventories);
+      setMorInventories(response.data.inventories || []);
       setPagination({
-        current_page: response.data.pagination.current_page,
-        next_page: response.data.pagination.next_page,
-        prev_page: response.data.pagination.prev_page,
-        total_pages: response.data.pagination.total_pages,
-        total_count: response.data.pagination.total_count,
+        current_page: response.data.pagination?.current_page || 1,
+        next_page: response.data.pagination?.next_page || null,
+        prev_page: response.data.pagination?.prev_page || null,
+        total_pages: response.data.pagination?.total_pages || 1,
+        total_count:
+          response.data.pagination?.total_count ||
+          response.data.inventories?.length ||
+          0,
       });
     } catch (error) {
-      console.error("Error fetching MOR inventories:", error);
+      console.error("Error fetching store inventories:", error);
+      setMorInventories([]);
     } finally {
       setLoading(false);
     }
@@ -1785,27 +1768,27 @@ const MaterialReconciliationCreate = () => {
         size="xl"
       >
         <Modal.Header closeButton>
-          <Modal.Title>Issue Material</Modal.Title>
+          <Modal.Title>Batch Deatails</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="tbl-container">
             <table className="w-100">
               <thead>
                 <tr>
-                  <th className="text-start">Type</th>
-                  <th className="text-start">Display No.</th>
-                  <th className="text-start">Material</th>
-                  <th className="text-start">Material Attributes</th>
-                  <th className="text-start">Quantity</th>
-                  <th className="text-start">Current Adjustment QTY</th>
+                  <th className="text-start">Batch No</th>
+                  <th className="text-start">MOR No.</th>
+                  <th className="text-start">GRN No</th>
+                  <th className="text-start">GRN Creation Date</th>
+                  <th className="text-start"> Available Qty</th>
+                  <th className="text-start">Issue QTY</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="text-start">RETURN INVENTORY</td>
-                  <td className="text-start">6020</td>
-                  <td className="text-start">TILE ADHESIVE(KG)</td>
-                  <td className="text-start"></td>
+                  <td className="text-start">1</td>
+                  <td className="text-start">MOR/2025/6020</td>
+                  <td className="text-start">07-02-25</td>
+                  <td className="text-start">40</td>
                   <td className="text-start">50</td>
                   <td className="text-start">
                     <input
