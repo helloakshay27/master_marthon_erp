@@ -1181,7 +1181,7 @@ const RateDetails = () => {
                                     disabled
                                 />
                                 <label
-                                    htmlFor="without-bill-entry"
+                                    htmlFor="companyRadio"
                                     className="mb-0"
                                 >
                                     Company
@@ -1198,7 +1198,7 @@ const RateDetails = () => {
                                     disabled
                                 />
                                 <label
-                                    htmlFor="without-bill-entry"
+                                    htmlFor="organisationRadio"
                                     className="mb-0"
                                 >
                                     Organisation
