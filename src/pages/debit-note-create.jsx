@@ -631,9 +631,9 @@ const DebitNoteCreate = () => {
     setRows((prevRows) =>
       prevRows.filter((row, index) => {
         // Prevent deletion of the first three rows
-        // if (index < 3) {
-        //   return true;
-        // }
+        if (index < 3) {
+          return true;
+        }
         return row.id !== id;
       })
     );
