@@ -18710,6 +18710,40 @@ ul.pagination.justify-content-center {
   text-decoration: underline !important;
 }
 
+.custom-radio input[type="radio"] {
+  display: none;
+}
+
+.custom-radio label {
+  position: relative;
+  padding-left: 28px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.custom-radio label:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #8b0203;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.custom-radio input[type="radio"]:checked + label:after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 7px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #8b0203;
+}
+
 @media print {
   /* Force A2 paper size with adequate spacing */
   @page {
