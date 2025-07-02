@@ -86,6 +86,13 @@ const ErpStockRegisterCreationDetail13C = () => {
       const store = data.stores?.find((s) => s.id === selectedStore.value);
       setSelectedStoreDetails(store || null);
     }
+     if (data?.stores?.length > 0 && !selectedStore) {
+    const firstStore = {
+      value: data.stores[0].id,
+      label: data.stores[0].store_name,
+    };
+    setSelectedStore(firstStore);
+  }
   }, [data, selectedStore]);
 
   return (
@@ -180,7 +187,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                             </label>
                           </div>
                         </div>
-                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                        {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                           <div className="col-6 ">
                             <label>Store </label>
                           </div>
@@ -190,7 +197,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                               {data?.store || "-"}
                             </label>
                           </div>
-                        </div>
+                        </div> */}
 
                         <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
                           <div className="col-6 ">
