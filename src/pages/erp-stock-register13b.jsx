@@ -22,6 +22,7 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 
 import { baseURL, baseURL1 } from "../confi/apiDomain";
 import MultiSelector from "../components/base/Select/MultiSelector";
+import { toast, ToastContainer } from "react-toastify";
 // import { useLocation } from "react-router-dom";
 
 
@@ -202,7 +203,7 @@ const ErpStockRegister13B = () => {
 
   // Calculate displayed rows for the current page
   const startEntry = (page - 1) * pageSize + 1;
-  console.log("pagination:-", pagination);
+  // console.log("pagination:-", pagination);
 
   const endEntry = Math.min(
     pagination.current_page * pageSize,
@@ -425,6 +426,7 @@ const ErpStockRegister13B = () => {
       );
     }
   };
+  const [selectedStore, setSelectedStore] = useState(null);
 
   // Handle Project Selection
   const handleProjectChange = (projectId) => {
@@ -436,16 +438,58 @@ const ErpStockRegister13B = () => {
       const company = companies.find((c) => c.id === selectedCompany); // Use selectedCompany directly
       const project = company?.projects.find((p) => p.id === projectId);
 
+      // setSubProjects(
+      //   project?.pms_sites.map((s) => ({ value: s.id, label: s.name })) || []
+      // );
+
       setSubProjects(
-        project?.pms_sites.map((s) => ({ value: s.id, label: s.name })) || []
+        project?.pms_sites.map((s) => ({
+          value: s.id,
+          label: s.name,
+          store_id: s.store_id,
+          store_name: s.store_name,
+          // add any other fields you need from s
+        })) || []
       );
     }
   };
 
   // Handle Subproject Selection
-  const handleSubProjectChange = (option) => {
-    setSelectedSubProject(option);
+
+
+
+  // / Update handleSubProjectChange to also set the store
+  const handleSubProjectChange = (subProjectId) => {
+    setSelectedSubProject(subProjectId);
+    console.log("sub prj-----", subProjectId)
+    // Find the selected sub-project from subProjects array
+    const subProjectObj = subProjects.find((s) => s.value === subProjectId);
+    console.log("sub prj obj", subProjectObj)
+    if (subProjectObj && subProjectObj.store_id && subProjectObj.store_name) {
+      setSelectedStore({
+        value: subProjectObj.store_id,
+        label: subProjectObj.store_name,
+      });
+    } else {
+      setSelectedStore(null);
+    }
   };
+  console.log("selected store:", selectedStore)
+  // Prepare store options based on selected sub-project
+  const storeOptions = (() => {
+    const subProjectObj = subProjects.find((s) => s.value === selectedSubProject);
+    if (subProjectObj && subProjectObj.store_id && subProjectObj.store_name) {
+      return [
+        {
+          value: subProjectObj.store_id,
+          label: subProjectObj.store_name,
+        },
+      ];
+    }
+    return [];
+  })();
+
+
 
   const [genericInfos, setGenericInfos] = useState([]);
   const [materialSubTypes, setMaterialSubTypes] = useState([]);
@@ -518,9 +562,10 @@ const ErpStockRegister13B = () => {
 
   const handleGoClick = async (e) => {
     console.log("handle go ....")
-    e.preventDefault(); 
-    if (!selectedCompany || !selectedProject) {
-      alert("Please select Company and Project");
+    e.preventDefault();
+    
+    if (!selectedCompany || !selectedProject || !selectedSubProject || !selectedStore) {
+      toast.error("Please select Company, Project, Sub-project, and Store");
       return;
     }
 
@@ -530,9 +575,10 @@ const ErpStockRegister13B = () => {
       const params = new URLSearchParams({
         token: "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
         search: "",
-        "q[stock_details_mor_inventory_material_order_request_company_id_eq]": selectedCompany,
-        "q[stock_details_mor_inventory_material_order_request_project_id_eq]": selectedProject || "",
-        "q[stock_details_mor_inventory_material_order_request_pms_site_id_eq]": selectedSubProject || "",
+        // "q[stock_details_mor_inventory_material_order_request_company_id_eq]": selectedCompany,
+        // "q[stock_details_mor_inventory_material_order_request_project_id_eq]": selectedProject || "",
+        // "q[stock_details_mor_inventory_material_order_request_pms_site_id_eq]": selectedSubProject || "",
+        "q[store_id_eq]": selectedStore?.value || "",
         page: 1,
         per_page: 10,
       });
@@ -573,7 +619,7 @@ display:none !important;
 }
         `}
       </style>
-      {console.log("columnVisibility", columnVisibility, allColumns)}
+      {/* {console.log("columnVisibility", columnVisibility, allColumns)} */}
       <div className="website-content overflow-auto">
         <div className="module-data-section px-3">
           <p>Home &gt; Store &gt; Store Operations &gt; Stock Register</p>
@@ -582,13 +628,13 @@ display:none !important;
           <div className="card mt-3 pb-4">
             <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
               <div className="row my-2 align-items-end">
-                <div className="col-md-3">
+                <div className="col-md-2">
                   <div className="form-group">
                     <label>
                       Company <span>*</span>
                     </label>
                     <SingleSelector
-                      options={companies.map((c) => ({
+                      options={companies?.map((c) => ({
                         value: c.id,
                         label: c.company_name,
                       }))}
@@ -607,7 +653,7 @@ display:none !important;
                     />
                   </div>
                 </div>
-                <div className="col-md-3">
+                <div className="col-md-2">
                   <div className="form-group">
                     <label>
                       Project <span>*</span>
@@ -620,13 +666,13 @@ display:none !important;
                         null
                       }
                       placeholder="Select Project"
-                      isDisabled={!selectedCompany}
+                    // isDisabled={!selectedCompany}
                     />
                   </div>
                 </div>
-                <div className="col-md-3">
+                <div className="col-md-2">
                   <div className="form-group">
-                    <label>Sub-project</label>
+                    <label>Sub-project <span>*</span></label>
                     <SingleSelector
                       options={subProjects}
                       onChange={(option) =>
@@ -638,8 +684,21 @@ display:none !important;
                         ) || null
                       }
                       placeholder="Select Sub-project"
-                      isDisabled={!selectedProject}
+                    // isDisabled={!selectedProject}
                     />
+                  </div>
+                </div>
+                <div className="col-md-2">
+                  <div className="form-group">
+                    <label>Store <span>*</span></label>
+                    <SingleSelector
+                      options={storeOptions}
+                      onChange={setSelectedStore}
+                      value={selectedStore}
+                      placeholder="Select Store"
+                    // isDisabled={!selectedSubProject}
+                    />
+                    {console.log("store options:", storeOptions)}
                   </div>
                 </div>
                 <div className="col-md-2">
@@ -1178,6 +1237,8 @@ display:none !important;
             ))}
         </Modal.Body>
       </Modal>
+      <ToastContainer position="top-right" autoClose={3000} />
+
     </>
   );
 };

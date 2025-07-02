@@ -4,6 +4,44 @@ import Footer from "../components/Footer";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { baseURL } from "../confi/apiDomain";
+import SingleSelector from "../components/base/Select/SingleSelector";
+// const dummyData = {
+//   id: 23,
+//   material_name: "CEMENT-CEMENT-OPC-53 GRADE-BIRLA-",
+//   category: "Material",
+//   stock_as_on: 1000.0,
+//   total_received: 1000.0,
+//   total_issued: 0.0,
+//   last_received_on: "12/12/2024",
+//   uom: "BAGS",
+//   deadstock_qty: "",
+//   missing_qty: "",
+//   store: "",
+//   stores: [
+//     {
+//       id: 1,
+//       store_name: "Antilia",
+//       balanced_qty: 1000.0,
+//       stock_details: [
+//         {
+//           id: 41,
+//           created_at: "2024-12-12T22:43:35.197+05:30",
+//           mor: "MOR/974/10/2024",
+//           grn_number: "GRN6518",
+//           resource_number: "GRN6518",
+//           status: "received",
+//           uom: "BAGS",
+//           supplier: null,
+//           received_qty: 1000.0,
+//           issued_qty: null,
+//           returned_qty: null,
+//           balanced_qty: 1000.0,
+//         },
+//       ],
+//     },
+//   ],
+// };
+
 
 const ErpStockRegisterCreationDetail13C = () => {
   const { id } = useParams(); // Extract the 'id' from the route
@@ -11,6 +49,8 @@ const ErpStockRegisterCreationDetail13C = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedStore, setSelectedStore] = useState(null);
+  const [selectedStoreDetails, setSelectedStoreDetails] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -40,6 +80,14 @@ const ErpStockRegisterCreationDetail13C = () => {
     fetchData();
   }, []);
 
+  // When data or selectedStore changes, update selectedStoreDetails
+  useEffect(() => {
+    if (data && selectedStore) {
+      const store = data.stores?.find((s) => s.id === selectedStore.value);
+      setSelectedStoreDetails(store || null);
+    }
+  }, [data, selectedStore]);
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -54,10 +102,61 @@ const ErpStockRegisterCreationDetail13C = () => {
                 <div className="col-md-12">
                   <div className="card">
                     <div className="card-body ">
-                      <div>
+                      {/* <div>
                         <h5>Material Details</h5>
                       </div>
-                      <div className="row mt-4">
+                      
+                      <div className="row mb-3">
+                        <div className="col-md-4">
+                          <label>Select Store</label>
+                          <SingleSelector
+                            options={
+                              data?.stores?.map((store) => ({
+                                value: store.id,
+                                label: store.store_name,
+                              })) || []
+                            }
+                            
+                            value={selectedStore}
+                            onChange={setSelectedStore}
+                            placeholder="Select Store"
+                          />
+                          {console.log("data:",data)}
+                        </div>
+                      </div> */}
+
+                      <div className="d-flex align-items-center mb-3">
+                        <h5 className="mb-0 me-4">Material Details</h5>
+                        <label className="mb-0 ms-5 me-4">Store </label>
+                        <div style={{ minWidth: 250 }}>
+                          <SingleSelector
+                            options={
+                              data?.stores?.map((store) => ({
+                                value: store.id,
+                                label: store.store_name,
+                              })) || []
+                            }
+                            value={selectedStore}
+                            onChange={setSelectedStore}
+                            placeholder="Select Store"
+                          />
+                        </div>
+                        {console.log("data:", data)}
+                      </div>
+                      {/* Show selected store details */}
+                      {/* {selectedStoreDetails && (
+                        <div className="row mb-3">
+                          <div className="col-md-4">
+                            <label>Store Name:</label>
+                            <span className="ms-2">{selectedStoreDetails.store_name}</span>
+                          </div>
+                          <div className="col-md-4">
+                            <label>Balanced Qty:</label>
+                            <span className="ms-2">{selectedStoreDetails.balanced_qty}</span>
+                          </div>
+                        </div>
+                      )} */}
+                      <div className="row mt-5">
                         <div className="col-lg-12 col-md-6 col-sm-12 row px-2 mt-1">
                           <div className="col-3 ms-2">
                             <label>Material </label>
@@ -197,7 +296,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {data?.stock_details?.map((item, id) => (
+                                    {(selectedStoreDetails?.stock_details || []).map((item, id) => (
                                       <tr key={id}>
                                         <td>{id + 1}</td>
                                         <td>
