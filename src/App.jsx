@@ -119,6 +119,14 @@ function App() {
       <div>
         <Routes>
           <Route path="/" element={<Members />} />
+            <Route
+            path="/stock_register_detail/:id"
+            element={<ErpStockRegisterCreationDetail13C />}
+          />
+          <Route
+            path="/stock_register_list"
+            element={<ErpStockRegister13B />}
+          />
           <Route path="/create-rate" element={<CreateRate />} />
           <Route path="/view-rate" element={<ViewRate />} />
           <Route path="/details-rate/:id" element={<RateDetails />} />
@@ -232,14 +240,7 @@ function App() {
             path="/good_receive_notes/:id"
             element={<GoodReceiveNoteDetails />}
           />
-          <Route
-            path="/stock_register_detail/:id"
-            element={<ErpStockRegisterCreationDetail13C />}
-          />
-          <Route
-            path="/stock_register_list"
-            element={<ErpStockRegister13B />}
-          />
+        
           <Route
             path="/TreeDataWithStaticRows"
             element={<TreeDataWithStaticRows />}

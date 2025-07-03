@@ -814,6 +814,17 @@ const ViewRate = () => {
                                 <span style={{ marginBottom: 0, fontSize: "16px" }}>
                                     {msg.message}
                                 </span>
+
+                                {msg.rate_id && (
+                                    <a
+                                        href={`/details-rate/${msg.rate_id}?token=${token}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ color: "#8b0203", textDecoration: "underline", marginLeft: 8 }}
+                                    >
+                                        View Details
+                                    </a>
+                                )}
                             </div>
 
                         </div>
