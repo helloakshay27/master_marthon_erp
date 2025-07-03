@@ -507,8 +507,8 @@ const ViewRate = () => {
                                                                                 title={project.status ? `Status: ${project.status}` : ""}
                                                                                 style={{
                                                                                     cursor: project.status ? "pointer" : "default",
-                                                                                    textDecoration: "underline",
-                                                                                    color: "#8b0203",
+                                                                                    // textDecoration: "underline",
+                                                                                    // color: "#8b0203",
                                                                                     position: "relative"
                                                                                 }}
                                                                             >
@@ -522,8 +522,8 @@ const ViewRate = () => {
                                                                                 title={project.status ? `Status: ${project.status}` : ""}
                                                                                 style={{
                                                                                     cursor: project.status ? "pointer" : "default",
-                                                                                    textDecoration: "underline",
-                                                                                    color: "#8b0203",
+                                                                                    // textDecoration: "underline",
+                                                                                    // color: "#8b0203",
                                                                                     position: "relative"
                                                                                 }}
                                                                             >{project.name}</span>
@@ -545,8 +545,8 @@ const ViewRate = () => {
                                                                                 title={site.status ? `Status: ${site.status}` : ""}
                                                                                 style={{
                                                                                     cursor: site.status ? "pointer" : "default",
-                                                                                    textDecoration: "underline",
-                                                                                    color: "#8b0203",
+                                                                                    // textDecoration: "underline",
+                                                                                    // color: "#8b0203",
                                                                                     position: "relative"
                                                                                 }}
                                                                             >
@@ -561,8 +561,8 @@ const ViewRate = () => {
                                                                                 title={site.status ? `Status: ${site.status}` : ""}
                                                                                 style={{
                                                                                     cursor: site.status ? "pointer" : "default",
-                                                                                    textDecoration: "underline",
-                                                                                    color: "#8b0203",
+                                                                                    // textDecoration: "underline",
+                                                                                    // color: "#8b0203",
                                                                                     position: "relative"
                                                                                 }}
                                                                             >{site.name}</span>
@@ -580,8 +580,8 @@ const ViewRate = () => {
                                                                             title={wing.status ? `Status: ${wing.status}` : ""}
                                                                             style={{
                                                                                 cursor: wing.status ? "pointer" : "default",
-                                                                                textDecoration: "underline",
-                                                                                color: "#8b0203",
+                                                                                // textDecoration: "underline",
+                                                                                // color: "#8b0203",
                                                                                 position: "relative"
                                                                             }}
                                                                         >
@@ -594,8 +594,8 @@ const ViewRate = () => {
                                                                             title={wing.status ? `Status: ${wing.status}` : ""}
                                                                             style={{
                                                                                 cursor: wing.status ? "pointer" : "default",
-                                                                                textDecoration: "underline",
-                                                                                color: "#8b0203",
+                                                                                // textDecoration: "underline",
+                                                                                // color: "#8b0203",
                                                                                 position: "relative"
                                                                             }}
                                                                         >{wing.name}</span>
@@ -627,8 +627,8 @@ const ViewRate = () => {
                                                                                 title={project.status ? `Status: ${project.status}` : ""}
                                                                                 style={{
                                                                                     cursor: project.status ? "pointer" : "default",
-                                                                                    textDecoration: "underline",
-                                                                                    color: "#8b0203",
+                                                                                    // textDecoration: "underline",
+                                                                                    // color: "#8b0203",
                                                                                     position: "relative"
                                                                                 }}>
                                                                                 <span style={{ color: "#8b0203", textDecoration: "underline" }}>
@@ -640,8 +640,8 @@ const ViewRate = () => {
                                                                                 title={project.status ? `Status: ${project.status}` : ""}
                                                                                 style={{
                                                                                     cursor: project.status ? "pointer" : "default",
-                                                                                    textDecoration: "underline",
-                                                                                    color: "#8b0203",
+                                                                                    // textDecoration: "underline",
+                                                                                    // color: "#8b0203",
                                                                                     position: "relative"
                                                                                 }}
                                                                             >{project.name}</span>
@@ -662,8 +662,8 @@ const ViewRate = () => {
                                                                             title={site.status ? `Status: ${site.status}` : ""}
                                                                             style={{
                                                                                 cursor: site.status ? "pointer" : "default",
-                                                                                textDecoration: "underline",
-                                                                                color: "#8b0203",
+                                                                                // textDecoration: "underline",
+                                                                                // color: "#8b0203",
                                                                                 position: "relative"
                                                                             }}>
                                                                             <span style={{ color: "#8b0203", textDecoration: "underline" }}>
@@ -675,8 +675,8 @@ const ViewRate = () => {
                                                                             title={site.status ? `Status: ${site.status}` : ""}
                                                                             style={{
                                                                                 cursor: site.status ? "pointer" : "default",
-                                                                                textDecoration: "underline",
-                                                                                color: "#8b0203",
+                                                                                // textDecoration: "underline",
+                                                                                // color: "#8b0203",
                                                                                 position: "relative"
                                                                             }}>{site.name}</span>
                                                                     )}
