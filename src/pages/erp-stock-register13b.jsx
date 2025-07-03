@@ -521,7 +521,7 @@ const ErpStockRegister13B = () => {
     total_received: true,
     total_issued: true,
     stock_as_on: true,
-    stockStatus: true,
+    status: true,
     deadstockQty: true,
     theftMissing: true,
     uom_name: true,
@@ -605,7 +605,7 @@ const ErpStockRegister13B = () => {
       sortable: true,
     },
     {
-      field: "stockStatus",
+      field: "status",
       headerName: "Stock Status",
       width: 120,
       sortable: true,

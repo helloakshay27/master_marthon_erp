@@ -345,7 +345,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                       <th>Sr. No.</th>
                                       <th>Date</th>
                                       <th>MOR</th>
-                                      <th>Supplier/Contractor/Store</th>
+                                      <th>Supplier/Contractor</th>
                                       <th>GRN / Issue / Return / MTO No.</th>
                                       <th>Status</th>
                                       <th>UOM</th>
