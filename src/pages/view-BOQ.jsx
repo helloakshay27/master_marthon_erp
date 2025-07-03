@@ -3804,9 +3804,21 @@ const BOQList = () => {
                   Row : {msg.row}
 
                 </p>
-                <span style={{ marginBottom: 0 ,fontSize: "16px"}}>
+                <span style={{ marginBottom: 0, fontSize: "16px" }}>
                   {msg.message}
                 </span>
+                <div className="m-0">
+                  {msg.boq_id && (
+                    <a
+                      href={`/boq-details-page-master/${msg.boq_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "#8b0203", textDecoration: "underline", marginLeft: 8 }}
+                    >
+                     <span>View Details</span> 
+                    </a>
+                  )}
+                </div>
               </div>
 
             </div>
