@@ -547,7 +547,7 @@ const ErpStockRegister13B = () => {
         params.value && params.row.store_id ? (
           <Link 
           // to={`/stock_register_detail/${params.row.store_id}?token=${token}`
-        to={`/stock_register_detail/${params.row.id}&store_id=${params.row.store_id}?token=${token}`}
+        to={`/stock_register_detail/${params.row.id}&store_id=${selectedStore?.value}?token=${token}`}
 
           >
             <span className="boq-id-link">{params.value}</span>

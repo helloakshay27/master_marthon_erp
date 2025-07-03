@@ -81,14 +81,42 @@ const ErpStockRegisterCreationDetail13C = () => {
   }, []);
 
   // When data or selectedStore changes, update selectedStoreDetails
+  // useEffect(() => {
+  //   // if (data && selectedStore) {
+  //   //   const store = data.stores?.find((s) => s.id === selectedStore.value);
+  //   //   setSelectedStoreDetails(store || null);
+  //   // }
+
+
+  //   if (data) {
+  //   // Get store_id from URL (handle both ?store_id= and &store_id=)
+  //   const urlParams = new URLSearchParams(window.location.search);
+  //   let storeId = urlParams.get("store_id");
+  //   if (!storeId) {
+  //     // fallback for /:id&store_id=... style
+  //     const match = window.location.pathname.match(/stock_register_detail\/\d+&store_id=(\d+)/);
+  //     if (match) storeId = match[1];
+  //   }
+  //   // If storeId exists and no store is selected, preselect it
+  //   if (storeId && !selectedStore) {
+  //     const found = data.stores?.find((s) => String(s.store_id) === String(storeId));
+  //     if (found) {
+  //       setSelectedStore({ value: found.store_id, label: found.store_name });
+  //       setSelectedStoreDetails(found);
+  //       return;
+  //     }
+  //   }
+  //   // If store is selected, update details as usual
+  //   if (selectedStore) {
+  //     const store = data.stores?.find((s) => s.store_id === selectedStore.value);
+  //     setSelectedStoreDetails(store || null);
+  //   }
+  // }
+    
+  // }, [data, selectedStore]);
+
   useEffect(() => {
-    // if (data && selectedStore) {
-    //   const store = data.stores?.find((s) => s.id === selectedStore.value);
-    //   setSelectedStoreDetails(store || null);
-    // }
-
-
-    if (data) {
+  if (data) {
     // Get store_id from URL (handle both ?store_id= and &store_id=)
     const urlParams = new URLSearchParams(window.location.search);
     let storeId = urlParams.get("store_id");
@@ -106,14 +134,20 @@ const ErpStockRegisterCreationDetail13C = () => {
         return;
       }
     }
+    // If no storeId in URL and no store is selected, select the first store by default
+    if (!storeId && !selectedStore && data.stores && data.stores.length > 0) {
+      const first = data.stores[0];
+      setSelectedStore({ value: first.store_id, label: first.store_name });
+      setSelectedStoreDetails(first);
+      return;
+    }
     // If store is selected, update details as usual
     if (selectedStore) {
       const store = data.stores?.find((s) => s.store_id === selectedStore.value);
       setSelectedStoreDetails(store || null);
     }
   }
-    
-  }, [data, selectedStore]);
+}, [data, selectedStore]);
 
   return (
     <>
@@ -304,7 +338,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                               aria-labelledby="nav-home-tab"
                               tabIndex={0}
                             >
-                              <div className="tbl-container me-2 mt-3">
+                              <div className="tbl-container me-2 mt-3" style={{maxHeight:"500px"}}>
                                 <table className="w-100">
                                   <thead>
                                     <tr>
@@ -319,7 +353,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                       <th>Issued Qty</th>
                                       <th>Return Qty</th>
                                       <th>Current Stock</th>
-                                      <th>Remark</th>
+                                      {/* <th>Remark</th> */}
                                     </tr>
                                   </thead>
                                   <tbody>
@@ -340,7 +374,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                         <td>{item?.issued_qty || "-"}</td>
                                         <td>{item?.returned_qty || "-"}</td>
                                         <td></td>
-                                        <td>-</td>
+                                        {/* <td>-</td> */}
                                       </tr>
                                     ))}
                                     <tr>
@@ -359,7 +393,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                       <td>
                                         <strong>{data?.stock_as_on}</strong>
                                       </td>
-                                      <td></td>
+                                      {/* <td></td> */}
                                     </tr>
                                   </tbody>
                                 </table>
