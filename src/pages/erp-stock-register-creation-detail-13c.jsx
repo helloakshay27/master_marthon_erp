@@ -82,17 +82,37 @@ const ErpStockRegisterCreationDetail13C = () => {
 
   // When data or selectedStore changes, update selectedStoreDetails
   useEffect(() => {
-    if (data && selectedStore) {
-      const store = data.stores?.find((s) => s.id === selectedStore.value);
+    // if (data && selectedStore) {
+    //   const store = data.stores?.find((s) => s.id === selectedStore.value);
+    //   setSelectedStoreDetails(store || null);
+    // }
+
+
+    if (data) {
+    // Get store_id from URL (handle both ?store_id= and &store_id=)
+    const urlParams = new URLSearchParams(window.location.search);
+    let storeId = urlParams.get("store_id");
+    if (!storeId) {
+      // fallback for /:id&store_id=... style
+      const match = window.location.pathname.match(/stock_register_detail\/\d+&store_id=(\d+)/);
+      if (match) storeId = match[1];
+    }
+    // If storeId exists and no store is selected, preselect it
+    if (storeId && !selectedStore) {
+      const found = data.stores?.find((s) => String(s.store_id) === String(storeId));
+      if (found) {
+        setSelectedStore({ value: found.store_id, label: found.store_name });
+        setSelectedStoreDetails(found);
+        return;
+      }
+    }
+    // If store is selected, update details as usual
+    if (selectedStore) {
+      const store = data.stores?.find((s) => s.store_id === selectedStore.value);
       setSelectedStoreDetails(store || null);
     }
-     if (data?.stores?.length > 0 && !selectedStore) {
-    const firstStore = {
-      value: data.stores[0].id,
-      label: data.stores[0].store_name,
-    };
-    setSelectedStore(firstStore);
   }
+    
   }, [data, selectedStore]);
 
   return (
@@ -139,7 +159,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           <SingleSelector
                             options={
                               data?.stores?.map((store) => ({
-                                value: store.id,
+                                value: store.store_id,
                                 label: store.store_name,
                               })) || []
                             }
@@ -410,7 +430,7 @@ const ErpStockRegisterCreationDetail13C = () => {
           </section>
         </div>
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 };
