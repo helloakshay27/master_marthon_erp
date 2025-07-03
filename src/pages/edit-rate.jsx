@@ -27,6 +27,7 @@ const EditRate = () => {
     const [editRowIndex, setEditRowIndex] = useState(null);
     const [editingRow, setEditingRow] = useState(null);
     const [modalOptionsLoading, setModalOptionsLoading] = useState(false);
+    const [deletedIds, setDeletedIds] = useState([]);
 
     // State for table rows
     const [formData, setFormData] = useState({
@@ -189,46 +190,89 @@ const EditRate = () => {
     };
 
     // console.log("form data:",formData)
+    const [editingMaterialId, setEditingMaterialId] = useState(null);
 
-    const handleEditRow = (rowIndex) => {
-        setModalOptionsLoading(true);
-        const row = tableData[rowIndex];
-        console.log("row data in edit:", row)
-         setEditingRow(row);
-        const selectedInventoryTypeOption = inventoryTypes2.find(opt => opt.label === row.materialTypeLabel) || null;
-        const materialTypeId = selectedInventoryTypeOption ? selectedInventoryTypeOption.value : "";
-        setFormData({
-            materialType: materialTypeId || "",
-            materialTypeLabel: row.materialTypeLabel || "",
-            materialSubType: row.materialSubType || "",
-            material: row.material || "",
-            genericSpecification: row.genericSpecification || "",
-            colour: row.colour || "",
-            brand: row.brand || "",
-            effectiveDate: row.effectiveDate || "",
-            rate: row.rate || "",
-            poRate: row.poRate || "",
-            avgRate: row.avgRate || "",
-            uom: row.uom || "",
-        });
-        console.log("form data in edit :", formData)
-        // Set selected options for selectors
-        setSelectedInventory2(selectedInventoryTypeOption);
-        console.log("selected inventory for editL", selectedInventoryTypeOption)
-        setSelectedSubType2(inventorySubTypes2.find(opt => opt.value === row.materialSubType) || null);
-        // console.log("selected sub type for editL", selectedSubType2)
-        setSelectedInventoryMaterialTypes2(inventoryMaterialTypes2.find(opt => opt.value === row.material) || null);
-        console.log("selected material in edit:", selectedInventoryMaterialTypes2)
+    const handleEditRow = (rowIndex, materialId) => {
+        setEditRowIndex(rowIndex, materialId);
+        setEditingMaterialId(materialId);
+        //  setSelectedInventoryMaterialTypes2(materialId);
+        // setModalOptionsLoading(true);
+        // const row = tableData[rowIndex];
+        // // console.log("row data in edit:", row)
+        // setEditingRow(row);
+        // const selectedInventoryTypeOption = inventoryTypes2.find(opt => opt.label === row.materialTypeLabel) || null;
+        // const materialTypeId = selectedInventoryTypeOption ? selectedInventoryTypeOption.value : "";
+        // setFormData({
+        //     materialType: materialTypeId || "",
+        //     materialTypeLabel: row.materialTypeLabel || "",
+        //     materialSubType: row.materialSubType || "",
+        //     material: row.material || "",
+        //     genericSpecification: row.genericSpecification || "",
+        //     colour: row.colour || "",
+        //     brand: row.brand || "",
+        //     effectiveDate: row.effectiveDate || "",
+        //     rate: row.rate || "",
+        //     poRate: row.poRate || "",
+        //     avgRate: row.avgRate || "",
+        //     uom: row.uom || "",
+        // });
+        // // console.log("form data in edit :", formData)
+        // // Set selected options for selectors
+        // setSelectedInventory2(selectedInventoryTypeOption);
+        // console.log("selected inventory for editL", selectedInventoryTypeOption)
+        // setSelectedSubType2(inventorySubTypes2.find(opt => opt.value === row.materialSubType) || null);
+        // // console.log("selected sub type for editL", selectedSubType2)
+        // setSelectedInventoryMaterialTypes2(inventoryMaterialTypes2.find(opt => opt.value === row.material) || null);
+        // console.log("selected material in edit:", selectedInventoryMaterialTypes2)
 
+        // // setSelectedGenericSpecifications(genericSpecifications.find(opt => opt.value === row.genericSpecification) || null);
+        // // console.log("selected gen in edit:", selectedGenericSpecifications)
+        // // setSelectedColors(colors.find(opt => opt.value === row.colour) || null);
+        // // setSelectedInventoryBrands(inventoryBrands.find(opt => opt.value === row.brand) || null);
         // setSelectedGenericSpecifications(genericSpecifications.find(opt => opt.value === row.genericSpecification) || null);
-        // console.log("selected gen in edit:", selectedGenericSpecifications)
         // setSelectedColors(colors.find(opt => opt.value === row.colour) || null);
         // setSelectedInventoryBrands(inventoryBrands.find(opt => opt.value === row.brand) || null);
-        setSelectedUnit(unitOfMeasures.find(opt => opt.value === row.uom) || null);
-        setEditRowIndex(rowIndex);
-        setShowModal(true);
+
+        // setSelectedUnit(unitOfMeasures.find(opt => opt.value === row.uom) || null);
+        // setEditRowIndex(rowIndex);
+        // setShowModal(true);
     };
 
+
+    // Place this useEffect in your component:
+    useEffect(() => {
+        if (editRowIndex !== null && tableData.length > 0) {
+            setLoading(true);
+            const row = tableData[editRowIndex];
+            setEditingRow(row);
+            const selectedInventoryTypeOption = inventoryTypes2.find(opt => opt.label === row.materialTypeLabel) || null;
+            const materialTypeId = selectedInventoryTypeOption ? selectedInventoryTypeOption.value : "";
+            setFormData({
+                materialType: materialTypeId || "",
+                materialTypeLabel: row.materialTypeLabel || "",
+                materialSubType: row.materialSubType || "",
+                material: row.material || "",
+                genericSpecification: row.genericSpecification || "",
+                colour: row.colour || "",
+                brand: row.brand || "",
+                effectiveDate: row.effectiveDate || "",
+                rate: row.rate || "",
+                poRate: row.poRate || "",
+                avgRate: row.avgRate || "",
+                uom: row.uom || "",
+            });
+            setSelectedInventory2(selectedInventoryTypeOption);
+            setSelectedSubType2(inventorySubTypes2.find(opt => opt.value === row.materialSubType) || null);
+            setSelectedInventoryMaterialTypes2(inventoryMaterialTypes2.find(opt => opt.value === row.material) || editingMaterialId);
+            setSelectedGenericSpecifications(genericSpecifications.find(opt => opt.value === row.genericSpecification) || null);
+            setSelectedColors(colors.find(opt => opt.value === row.colour) || null);
+            setSelectedInventoryBrands(inventoryBrands.find(opt => opt.value === row.brand) || null);
+            setSelectedUnit(unitOfMeasures.find(opt => opt.value === row.uom) || null);
+            setShowModal(true);
+        }
+        // Optionally, reset editRowIndex after modal opens if you want
+        // return () => setEditRowIndex(null);
+    }, [editRowIndex, tableData, editingMaterialId]);
 
 
     const handleCreate = (e) => {
@@ -402,7 +446,15 @@ const EditRate = () => {
     };
     // delete row 
     const handleDeleteRow = (rowIndex) => {
-        setTableData((prevData) => prevData.filter((_, index) => index !== rowIndex));
+        // setTableData((prevData) => prevData.filter((_, index) => index !== rowIndex));
+        setTableData((prevData) => {
+            const row = prevData[rowIndex];
+            if (row.id) {
+                // setDeletedIds((prev) => [...prev, row.id]);
+                setDeletedIds((prev) => prev.includes(row.id) ? prev : [...prev, row.id]);
+            }
+            return prevData.filter((_, index) => index !== rowIndex);
+        });
     };
 
 
@@ -558,9 +610,10 @@ const EditRate = () => {
         }
     }, [selectedInventory2]); // Run this effect whenever the selectedInventory state changes
 
+
     // Fetch inventory Material when an inventory type is selected
     useEffect(() => {
-        console.log("selected inventory in material ===:", selectedInventory2?.value)
+        // console.log("selected inventory in material ===:", selectedInventory2?.value)
         if (selectedInventory2) {
             //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
 
@@ -577,7 +630,10 @@ const EditRate = () => {
                 .catch(error => {
                     console.error('Error fetching inventory sub-types:', error);
                 });
+
         }
+
+
     }, [selectedInventory2]); // Run this effect whenever the selectedInventory state changes
 
     // umo api
@@ -610,11 +666,11 @@ const EditRate = () => {
 
     // Fetch generic specifications for materials
     useEffect(() => {
-console.log("material id:",selectedInventoryMaterialTypes2)
-        if (selectedInventoryMaterialTypes2) {
+        console.log("material id:", selectedInventoryMaterialTypes2, editingMaterialId)
+        if (selectedInventoryMaterialTypes2 || editingMaterialId) {
             axios
                 .get(
-                    `${baseURL}pms/generic_infos.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=${token}`
+                    `${baseURL}pms/generic_infos.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value || editingMaterialId}&token=${token}`
                 )
                 .then((response) => {
                     const options = response.data.map((specification) => ({
@@ -635,10 +691,10 @@ console.log("material id:",selectedInventoryMaterialTypes2)
     const [colors, setColors] = useState([]); // State to hold the fetched colors
     const [selectedColors, setSelectedColors] = useState(null); // Holds the selected colors for each material
     useEffect(() => {
-        if (selectedInventoryMaterialTypes2) {
+        if (selectedInventoryMaterialTypes2 || editingMaterialId) {
             axios
                 .get(
-                    `${baseURL}pms/colours.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=${token}`
+                    `${baseURL}pms/colours.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value || editingMaterialId}&token=${token}`
                 )
                 .then((response) => {
                     const options = response.data.map((color) => ({
@@ -657,10 +713,10 @@ console.log("material id:",selectedInventoryMaterialTypes2)
     const [inventoryBrands, setInventoryBrands] = useState([]); // State to hold the fetched inventory brands
     const [selectedInventoryBrands, setSelectedInventoryBrands] = useState(null); // Holds the selected brands for each material
     useEffect(() => {
-        if (selectedInventoryMaterialTypes2) {
+        if (selectedInventoryMaterialTypes2 || editingMaterialId) {
             axios
                 .get(
-                    `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=${token}`
+                    `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value || editingMaterialId}&token=${token}`
                 )
                 .then((response) => {
                     const options = response.data.map((brand) => ({
@@ -677,58 +733,59 @@ console.log("material id:",selectedInventoryMaterialTypes2)
                 });
         }
     }, [selectedInventoryMaterialTypes2, baseURL]); // Runs when materials or baseURL changes
-    
+
 
     // When all options are loaded, stop loading
-useEffect(() => {
-    if (
-        showModal &&
-        inventoryTypes2.length &&
-        inventorySubTypes2.length &&
-        inventoryMaterialTypes2.length 
-        // &&
-        // genericSpecifications.length 
-        // &&
-        // colors.length &&
-        // inventoryBrands.length
-    ) {
-        setModalOptionsLoading(false);
-    }
-    // You may want to fine-tune this condition based on your actual dependencies
-}, [
-    showModal,
-    inventoryTypes2,
-    inventorySubTypes2,
-    inventoryMaterialTypes2,
-    genericSpecifications,
-    colors,
-    inventoryBrands,
-]);
 
-   // When genericSpecifications change, set the selected value if editingRow exists
-useEffect(() => {
-    if (editingRow && genericSpecifications.length) {
-        setSelectedGenericSpecifications(
-            genericSpecifications.find(opt => opt.value === editingRow.genericSpecification) || null
-        );
-    }
-}, [genericSpecifications, editingRow]);
 
-useEffect(() => {
-    if (editingRow && colors.length) {
-        setSelectedColors(
-            colors.find(opt => opt.value === editingRow.colour) || null
-        );
-    }
-}, [colors, editingRow]);
+    // When genericSpecifications change, set the selected value if editingRow exists
+    useEffect(() => {
+        if (editingRow && genericSpecifications.length) {
+            setSelectedGenericSpecifications(
+                genericSpecifications.find(opt => opt.value === editingRow.genericSpecification) || null
+            );
+        }
+    }, [genericSpecifications, editingRow]);
 
-useEffect(() => {
-    if (editingRow && inventoryBrands.length) {
-        setSelectedInventoryBrands(
-            inventoryBrands.find(opt => opt.value === editingRow.brand) || null
-        );
-    }
-}, [inventoryBrands, editingRow]);
+    useEffect(() => {
+        if (editingRow && colors.length) {
+            setSelectedColors(
+                colors.find(opt => opt.value === editingRow.colour) || null
+            );
+        }
+    }, [colors, editingRow]);
+
+    useEffect(() => {
+        if (editingRow && inventoryBrands.length) {
+            setSelectedInventoryBrands(
+                inventoryBrands.find(opt => opt.value === editingRow.brand) || null
+            );
+        }
+    }, [inventoryBrands, editingRow]);
+    useEffect(() => {
+        if (
+            showModal &&
+            inventoryTypes2.length &&
+            inventorySubTypes2.length &&
+            inventoryMaterialTypes2.length
+            // &&
+            // genericSpecifications.length 
+            // &&
+            // colors.length &&
+            // inventoryBrands.length
+        ) {
+            setLoading(false);
+        }
+        // You may want to fine-tune this condition based on your actual dependencies
+    }, [
+        showModal,
+        inventoryTypes2,
+        inventorySubTypes2,
+        inventoryMaterialTypes2,
+        genericSpecifications,
+        colors,
+        inventoryBrands,
+    ]);
 
     const handleEffectiveDateChange = (id, value) => {
         setTableData(prev =>
@@ -840,10 +897,11 @@ useEffect(() => {
                 }
 
                 return base;
-            })
+            }),
+            deleted: deletedIds // <-- add this line
         }
     };
-
+    console.log("deleted ids:", deletedIds)
     console.log(" update payload :", payload)
 
     const handleSubmit = () => {
@@ -880,7 +938,8 @@ useEffect(() => {
                     }
 
                     return base;
-                })
+                }),
+                deleted: deletedIds // <-- add this line
             }
         };
 
@@ -951,7 +1010,7 @@ useEffect(() => {
         setTableData(updatedTableData);
     };
 
-   
+
     return (
         <>
             <div className="website-content overflow-auto">
@@ -1102,7 +1161,7 @@ useEffect(() => {
                                                         onChange={() => handleSelectAllRates('poRate')} />
                                                 </span>
                                             </th>
-
+                                            {/* <th className="text-start">Edit</th> */}
                                             <th className="text-start">Action</th>
                                         </tr>
                                     </thead>
@@ -1183,15 +1242,17 @@ useEffect(() => {
                                                             />
                                                         </span>
                                                     </td>
-
-                                                    <td className="text-start">
+                                                    {/* <td className="text-start">
                                                         <span
-                                                            // className="btn btn-sm btn-primary me-2"
-                                                            onClick={() => handleEditRow(index)}
+                                                            
+                                                            onClick={() => handleEditRow(index,row.material)}
                                                         >
-                                                            {/* Edit */}
-                                                            {/* <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"></path></svg> */}
+                                                        
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"></path></svg>
                                                         </span>
+                                                    </td> */}
+                                                    <td className="text-start">
+
                                                         <button
                                                             className="btn mt-0 pt-0"
                                                             onClick={() => handleDeleteRow(index)} // Use onClick instead of onChange
@@ -1255,151 +1316,159 @@ useEffect(() => {
                 </div>
             )}
             {/* create modal  */}
-            <Modal centered size="lg" show={showModal} onHide={() => setShowModal(false)}>
+            {/* <Modal centered size="lg" show={showModal} onHide={() => setShowModal(false)}> */}
+            <Modal centered size="lg" show={showModal} onHide={() => {
+                setShowModal(false);
+                setEditRowIndex(null); // <-- Reset editRowIndex on modal close
+            }}>
                 <Modal.Header closeButton>
                     {/* <h5>Add Material</h5> */}
                     <h5>{editRowIndex !== null ? "Edit Material" : "Add Material"}</h5>
                 </Modal.Header>
                 <Modal.Body>
-  {modalOptionsLoading ? (
-            <div className="d-flex flex-column align-items-center justify-content-center" style={{ minHeight: 200 }}>
-                <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-                <div className="mt-2">Loading options...</div>
-            </div>
-        ) : (
-                    <form acceptCharset="UTF-8">
-                        <div className="row">
-
-
-                            <div className="col-md-4 mt-3">
-                                <div className="form-group">
-                                    <label className="po-fontBold">Material Type <span>*</span></label>
-                                    <SingleSelector
-                                        options={inventoryTypes2}  // Provide the fetched options to the select component
-                                        value={inventoryTypes2.find((option) => option.value === formData.materialType)} // Bind value to state
-                                        placeholder={`Select Material Type`} // Dynamic placeholder
-                                        onChange={(selectedOption) => handleSelectorChange("materialType", selectedOption)}
-                                    />
-                                    {fieldErrors.materialType && (
-                                        <span className="text-danger">{fieldErrors.materialType}</span>
-                                    )}
-                                </div>
+                    {modalOptionsLoading ? (
+                        <div className="d-flex flex-column align-items-center justify-content-center" style={{ minHeight: 200 }}>
+                            <div className="spinner-border text-primary" role="status">
+                                <span className="visually-hidden">Loading...</span>
                             </div>
-                            <div className="col-md-4 mt-3">
-                                <div className="form-group">
-                                    <label className="po-fontBold">Material Sub Type <span>*</span></label>
-                                    <SingleSelector
-                                        options={inventorySubTypes2}
-                                        value={inventorySubTypes2.find((option) => option.value === formData.materialSubType)} // Bind value to state
-                                        placeholder={`Select Material Sub Type`} // Dynamic placeholder
-                                        onChange={(selectedOption) => handleSelectorChange("materialSubType", selectedOption)}
-                                    />
-                                    {fieldErrors.materialSubType && (
-                                        <span className="text-danger">{fieldErrors.materialSubType}</span>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="col-md-4 mt-3">
-                                <div className="form-group">
-                                    <label className="po-fontBold">Material <span>*</span> </label>
-                                    <SingleSelector
-                                        options={inventoryMaterialTypes2}
-                                        value={inventoryMaterialTypes2.find((option) => option.value === formData.material)} // Bind value to state
-                                        placeholder={`Select Material`} // Dynamic placeholder
-                                        onChange={(selectedOption) => handleSelectorChange("material", selectedOption)}
-                                    />
-                                    {fieldErrors.material && (
-                                        <span className="text-danger">{fieldErrors.material}</span>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="col-md-4 mt-3">
-                                <div className="form-group">
-                                    <label className="po-fontBold">Generic Specification</label>
-                                    <SingleSelector
-                                        options={Array.isArray(genericSpecifications) ? genericSpecifications : []}
-                                        value={genericSpecifications.find((option) => option.value === formData.genericSpecification)} // Bind value to state
-                                        placeholder={`Select Specification`} // Dynamic placeholder
-                                        onChange={(selectedOption) => handleSelectorChange("genericSpecification", selectedOption)}
-                                    />
-                                    {/* {console.log("gen:",genericSpecifications)} */}
-                                </div>
-                            </div>
-                            <div className="col-md-4 mt-3">
-                                <div className="form-group">
-                                    <label className="po-fontBold">Colour</label>
-                                    <SingleSelector
-                                        options={colors || []}
-                                        value={colors.find((option) => option.value === formData.colour)} // Bind value to stat
-                                        placeholder={`Select Colour`} // Dynamic placeholder
-                                        onChange={(selectedOption) => handleSelectorChange("colour", selectedOption)}
-                                    />
-                                </div>
-                            </div>
-                            <div className="col-md-4 mt-3">
-                                <div className="form-group">
-                                    <label className="po-fontBold">Brand</label>
-                                    <SingleSelector
-                                        options={inventoryBrands || []}
-                                        value={inventoryBrands.find((option) => option.value === formData.brand)} // Bind value to state
-                                        placeholder={`Select Brand`} // Dynamic placeholder
-                                        onChange={(selectedOption) => handleSelectorChange("brand", selectedOption)}
-                                    />
-                                </div>
-                            </div>
-                            <div className="col-md-4 mt-3">
-                                <div className="form-group">
-                                    <label>Effective Date <span>*</span></label>
-                                    <input className="form-control" type="date" name="effectiveDate"
-                                        value={formData.effectiveDate}
-                                        onChange={handleInputChange}
-                                    />
-                                    {fieldErrors.effectiveDate && (
-                                        <span className="text-danger">{fieldErrors.effectiveDate}</span>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="col-md-4 mt-3">
-                                <div className="form-group">
-
-                                    <label>Rate <span>*</span></label>
-                                    <input className="form-control" type="number" name="rate"
-                                        value={formData.rate}
-                                        onChange={handleInputChange}
-                                    />
-                                    {fieldErrors.rate && (
-                                        <span className="text-danger">{fieldErrors.rate}</span>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="col-md-4 mt-3">
-                                <div className="form-group">
-                                    <label className="po-fontBold">UOM <span>*</span></label>
-                                    <SingleSelector
-                                        options={unitOfMeasures}
-                                        value={unitOfMeasures.find((option) => option.value === formData.uom)} // Bind value to state
-                                        placeholder={`Select UOM`} // Dynamic placeholder
-                                        onChange={(selectedOption) => handleSelectorChange("uom", selectedOption)}
-                                    />
-                                    {fieldErrors.uom && (
-                                        <span className="text-danger">{fieldErrors.uom}</span>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="row mt-2 justify-content-center mt-5">
-                                <div className="col-md-3 mt-2">
-                                    <button className="purple-btn2 w-100" onClick={handleCreate}>Add</button>
-                                </div>
-                                <div className="col-md-3">
-                                    <button type="button" className="purple-btn1 w-100" data-bs-dismiss="modal" aria-label="Close" onClick={() => setShowModal(false)}>Cancel</button>
-                                </div>
-                            </div>
+                            <div className="mt-2">Loading options...</div>
                         </div>
-                    </form>
+                    ) : (
+                        <form acceptCharset="UTF-8">
+                            <div className="row">
 
- )}
+
+                                <div className="col-md-4 mt-3">
+                                    <div className="form-group">
+                                        <label className="po-fontBold">Material Type <span>*</span></label>
+                                        <SingleSelector
+                                            options={inventoryTypes2}  // Provide the fetched options to the select component
+                                            value={inventoryTypes2.find((option) => option.value === formData.materialType)} // Bind value to state
+                                            placeholder={`Select Material Type`} // Dynamic placeholder
+                                            onChange={(selectedOption) => handleSelectorChange("materialType", selectedOption)}
+                                        />
+                                        {fieldErrors.materialType && (
+                                            <span className="text-danger">{fieldErrors.materialType}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="col-md-4 mt-3">
+                                    <div className="form-group">
+                                        <label className="po-fontBold">Material Sub Type <span>*</span></label>
+                                        <SingleSelector
+                                            options={inventorySubTypes2}
+                                            value={inventorySubTypes2.find((option) => option.value === formData.materialSubType)} // Bind value to state
+                                            placeholder={`Select Material Sub Type`} // Dynamic placeholder
+                                            onChange={(selectedOption) => handleSelectorChange("materialSubType", selectedOption)}
+                                        />
+                                        {fieldErrors.materialSubType && (
+                                            <span className="text-danger">{fieldErrors.materialSubType}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="col-md-4 mt-3">
+                                    <div className="form-group">
+                                        <label className="po-fontBold">Material <span>*</span> </label>
+                                        <SingleSelector
+                                            options={inventoryMaterialTypes2}
+                                            value={inventoryMaterialTypes2.find((option) => option.value === formData.material)} // Bind value to state
+                                            placeholder={`Select Material`} // Dynamic placeholder
+                                            onChange={(selectedOption) => handleSelectorChange("material", selectedOption)}
+                                        />
+                                        {fieldErrors.material && (
+                                            <span className="text-danger">{fieldErrors.material}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="col-md-4 mt-3">
+                                    <div className="form-group">
+                                        <label className="po-fontBold">Generic Specification</label>
+                                        <SingleSelector
+                                            options={Array.isArray(genericSpecifications) ? genericSpecifications : []}
+                                            value={genericSpecifications.find((option) => option.value === formData.genericSpecification)} // Bind value to state
+                                            placeholder={`Select Specification`} // Dynamic placeholder
+                                            onChange={(selectedOption) => handleSelectorChange("genericSpecification", selectedOption)}
+                                        />
+                                        {/* {console.log("gen:",genericSpecifications)} */}
+                                    </div>
+                                </div>
+                                <div className="col-md-4 mt-3">
+                                    <div className="form-group">
+                                        <label className="po-fontBold">Colour</label>
+                                        <SingleSelector
+                                            options={colors || []}
+                                            value={colors.find((option) => option.value === formData.colour)} // Bind value to stat
+                                            placeholder={`Select Colour`} // Dynamic placeholder
+                                            onChange={(selectedOption) => handleSelectorChange("colour", selectedOption)}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="col-md-4 mt-3">
+                                    <div className="form-group">
+                                        <label className="po-fontBold">Brand</label>
+                                        <SingleSelector
+                                            options={inventoryBrands || []}
+                                            value={inventoryBrands.find((option) => option.value === formData.brand)} // Bind value to state
+                                            placeholder={`Select Brand`} // Dynamic placeholder
+                                            onChange={(selectedOption) => handleSelectorChange("brand", selectedOption)}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="col-md-4 mt-3">
+                                    <div className="form-group">
+                                        <label>Effective Date <span>*</span></label>
+                                        <input className="form-control" type="date" name="effectiveDate"
+                                            value={formData.effectiveDate}
+                                            onChange={handleInputChange}
+                                        />
+                                        {fieldErrors.effectiveDate && (
+                                            <span className="text-danger">{fieldErrors.effectiveDate}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="col-md-4 mt-3">
+                                    <div className="form-group">
+
+                                        <label>Rate <span>*</span></label>
+                                        <input className="form-control" type="number" name="rate"
+                                            value={formData.rate}
+                                            onChange={handleInputChange}
+                                        />
+                                        {fieldErrors.rate && (
+                                            <span className="text-danger">{fieldErrors.rate}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="col-md-4 mt-3">
+                                    <div className="form-group">
+                                        <label className="po-fontBold">UOM <span>*</span></label>
+                                        <SingleSelector
+                                            options={unitOfMeasures}
+                                            value={unitOfMeasures.find((option) => option.value === formData.uom)} // Bind value to state
+                                            placeholder={`Select UOM`} // Dynamic placeholder
+                                            onChange={(selectedOption) => handleSelectorChange("uom", selectedOption)}
+                                        />
+                                        {fieldErrors.uom && (
+                                            <span className="text-danger">{fieldErrors.uom}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="row mt-2 justify-content-center mt-5">
+                                    <div className="col-md-3 mt-2">
+                                        <button className="purple-btn2 w-100" onClick={handleCreate}>Add</button>
+                                    </div>
+                                    <div className="col-md-3">
+                                        <button type="button" className="purple-btn1 w-100" data-bs-dismiss="modal" aria-label="Close"
+                                            onClick={() => {
+                                                setShowModal(false);
+                                                setEditRowIndex(null); // <-- Reset here too
+                                            }}>Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+
+                    )}
                 </Modal.Body>
             </Modal>
 
@@ -1411,7 +1480,7 @@ useEffect(() => {
                 <Modal.Body>
                     <form>
                         <div className="row">
-                             <div className="col-md-3 d-flex align-items-center custom-radio ">
+                            <div className="col-md-3 d-flex align-items-center custom-radio ">
                                 <input
                                     type="radio"
                                     id="companyRadio"
@@ -1471,7 +1540,7 @@ useEffect(() => {
                                     />
                                 </div>
                             </div>
-                           
+
                         </div>
                     </form>
                 </Modal.Body>

@@ -134,65 +134,84 @@ const CreateRate = () => {
             setFieldErrors(errors);
             return;
         }
+        if (editRowIndex !== null) {
+            // Edit mode: update the row
+            const updatedTableData = tableData.map((row, idx) =>
+                idx === editRowIndex
+                    ? {
+                        ...row,
+                        ...formData,
+                        materialTypeLabel: inventoryTypes2.find(opt => opt.value === formData.materialType)?.label || "",
+                        materialSubTypeLabel: inventorySubTypes2.find(opt => opt.value === formData.materialSubType)?.label || "",
+                        materialLabel: inventoryMaterialTypes2.find(opt => opt.value === formData.material)?.label || "",
+                        genericSpecificationLabel: genericSpecifications.find(opt => opt.value === formData.genericSpecification)?.label || "",
+                        colourLabel: colors.find(opt => opt.value === formData.colour)?.label || "",
+                        brandLabel: inventoryBrands.find(opt => opt.value === formData.brand)?.label || "",
+                        uomLabel: unitOfMeasures.find(opt => opt.value === formData.uom)?.label || "",
+                    }
+                    : row
+            );
+            setTableData(updatedTableData);
+            setEditRowIndex(null);
+        } else {
+            // Add the new row with rateChecked and rateType if rate is present
+            const newRow = {
+                ...formData,
+                rateChecked: !!formData.rate,
+                rateType: formData.rate ? "manual" : "",
+                avgRateChecked: false,
+                poRateChecked: false,
+                isDuplicate: false,
+            };
 
-        // Add the new row with rateChecked and rateType if rate is present
-        const newRow = {
-            ...formData,
-            rateChecked: !!formData.rate,
-            rateType: formData.rate ? "manual" : "",
-            avgRateChecked: false,
-            poRateChecked: false,
-            isDuplicate: false,
-        };
+            const newTableData = [...tableData, newRow];
+            // Add the new row
+            // const newTableData = [...tableData, formData];
 
-        const newTableData = [...tableData, newRow];
-        // Add the new row
-        // const newTableData = [...tableData, formData];
+            // Find if the new row is a duplicate of any previous row
+            const isDuplicate = tableData.some(row =>
+                row.materialSubType === formData.materialSubType &&
+                row.material === formData.material &&
+                row.genericSpecification === formData.genericSpecification &&
+                row.colour === formData.colour &&
+                row.brand === formData.brand
+            );
 
-        // Find if the new row is a duplicate of any previous row
-        const isDuplicate = tableData.some(row =>
-            row.materialSubType === formData.materialSubType &&
-            row.material === formData.material &&
-            row.genericSpecification === formData.genericSpecification &&
-            row.colour === formData.colour &&
-            row.brand === formData.brand
-        );
-
-        if (isDuplicate) {
-            toast.error("This combination already exists.");
-            return; // Don't add the duplicate entry
-        }
-        // Mark only the last (newly added) row as duplicate if needed
-        const updatedTableData = newTableData.map((row, idx) => {
-            // if (idx === newTableData.length - 1) {
-            //     return { ...row, isDuplicate };
-            // }
-            // // Remove duplicate flag from previous rows
-            // const { isDuplicate, ...rest } = row;
-            // return rest;
-
-            if (idx === newTableData.length - 1) {
-                return { ...row, isDuplicate };
+            if (isDuplicate) {
+                toast.error("This combination already exists.");
+                return; // Don't add the duplicate entry
             }
-            return row;
-        });
+            // Mark only the last (newly added) row as duplicate if needed
+            const updatedTableData = newTableData.map((row, idx) => {
+                // if (idx === newTableData.length - 1) {
+                //     return { ...row, isDuplicate };
+                // }
+                // // Remove duplicate flag from previous rows
+                // const { isDuplicate, ...rest } = row;
+                // return rest;
+
+                if (idx === newTableData.length - 1) {
+                    return { ...row, isDuplicate };
+                }
+                return row;
+            });
 
 
-        // Mark duplicates in the table
-        // const updatedTableData = newTableData.map((row, idx, arr) => {
-        //     const isDuplicate = arr.some((otherRow, otherIdx) =>
-        //         otherIdx !== idx &&
-        //         row.materialSubType === otherRow.materialSubType &&
-        //         row.material === otherRow.material &&
-        //         row.genericSpecification === otherRow.genericSpecification &&
-        //         row.colour === otherRow.colour &&
-        //         row.brand === otherRow.brand
-        //     );
-        //     return { ...row, isDuplicate };
-        // });
+            // Mark duplicates in the table
+            // const updatedTableData = newTableData.map((row, idx, arr) => {
+            //     const isDuplicate = arr.some((otherRow, otherIdx) =>
+            //         otherIdx !== idx &&
+            //         row.materialSubType === otherRow.materialSubType &&
+            //         row.material === otherRow.material &&
+            //         row.genericSpecification === otherRow.genericSpecification &&
+            //         row.colour === otherRow.colour &&
+            //         row.brand === otherRow.brand
+            //     );
+            //     return { ...row, isDuplicate };
+            // });
 
-        setTableData(updatedTableData);
-
+            setTableData(updatedTableData);
+        }
         setFormData({
             materialType: "",
             materialSubType: "",
@@ -652,7 +671,7 @@ const CreateRate = () => {
                 if (row.rateType === "average") {
                     material.avg_rate_from = dateRange.from || ""; // or your dynamic value
                     material.avg_rate_to = dateRange.to || "";   // or your dynamic value
-                    material.rate_level= dateType
+                    material.rate_level = dateType
                 }
                 //   console.log("material add:",material)
                 return material;
@@ -724,13 +743,13 @@ const CreateRate = () => {
                     if (row.rateType === "average") {
                         material.avg_rate_from = dateRange.from || ""; // or your dynamic value
                         material.avg_rate_to = dateRange.to || "";   // or your dynamic value
-                        material.rate_level= dateType
+                        material.rate_level = dateType
                     }
                     //   console.log("material add:",material)
                     return material;
                 })
             }
-            
+
         };
 
         console.log("Submitting payload:", payload);
@@ -808,6 +827,48 @@ const CreateRate = () => {
 
         setTableData(updatedTableData);
     };
+    const [editRowIndex, setEditRowIndex] = useState(null);
+    const [editingRow, setEditingRow] = useState(null);
+    const [editingMaterialId, setEditingMaterialId] = useState(null);
+    const handleEditRow = (rowIndex, materialId) => {
+        setEditRowIndex(rowIndex, materialId);
+        setEditingMaterialId(materialId);
+    };
+    // Place this useEffect in your component:
+    useEffect(() => {
+        if (editRowIndex !== null && tableData.length > 0) {
+            // setLoading(true);
+            const row = tableData[editRowIndex];
+            setEditingRow(row);
+            const selectedInventoryTypeOption = inventoryTypes2.find(opt => opt.label === row.materialTypeLabel) || null;
+            const materialTypeId = selectedInventoryTypeOption ? selectedInventoryTypeOption.value : "";
+            setFormData({
+                materialType: materialTypeId || "",
+                materialTypeLabel: row.materialTypeLabel || "",
+                materialSubType: row.materialSubType || "",
+                material: row.material || "",
+                genericSpecification: row.genericSpecification || "",
+                colour: row.colour || "",
+                brand: row.brand || "",
+                effectiveDate: row.effectiveDate || "",
+                rate: row.rate || "",
+                poRate: row.poRate || "",
+                avgRate: row.avgRate || "",
+                uom: row.uom || "",
+            });
+            setSelectedInventory2(selectedInventoryTypeOption);
+            setSelectedSubType2(inventorySubTypes2.find(opt => opt.value === row.materialSubType) || null);
+            setSelectedInventoryMaterialTypes2(inventoryMaterialTypes2.find(opt => opt.value === row.material) || editingMaterialId);
+            setSelectedGenericSpecifications(genericSpecifications.find(opt => opt.value === row.genericSpecification) || null);
+            setSelectedColors(colors.find(opt => opt.value === row.colour) || null);
+            setSelectedInventoryBrands(inventoryBrands.find(opt => opt.value === row.brand) || null);
+            setSelectedUnit(unitOfMeasures.find(opt => opt.value === row.uom) || null);
+            setShowModal(true);
+        }
+        // Optionally, reset editRowIndex after modal opens if you want
+        // return () => setEditRowIndex(null);
+    }, [editRowIndex, tableData, editingMaterialId]);
+
     return (
         <>
 
@@ -954,6 +1015,7 @@ const CreateRate = () => {
                                                         onChange={() => handleSelectAllRates('poRate')} />
                                                 </span>
                                             </th>
+                                            <th className="text-start">Edit</th>
                                             <th className="text-start">Action</th>
                                         </tr>
                                     </thead>
@@ -1031,6 +1093,15 @@ const CreateRate = () => {
                                                         </span>
                                                     </td>
                                                     <td className="text-start">
+                                                        <span
+                                                            // className="btn btn-sm btn-primary me-2"
+                                                            onClick={() => handleEditRow(index, row.material)}
+                                                        >
+                                                            {/* Edit */}
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"></path></svg>
+                                                        </span>
+                                                    </td>
+                                                    <td className="text-start">
                                                         <button
                                                             className="btn mt-0 pt-0"
                                                             onClick={() => handleDeleteRow(index)} // Use onClick instead of onChange
@@ -1094,9 +1165,14 @@ const CreateRate = () => {
                 </div>
             )}
             {/* create modal  */}
-            <Modal centered size="lg" show={showModal} onHide={() => setShowModal(false)}>
+            {/* <Modal centered size="lg" show={showModal} onHide={() => setShowModal(false)}> */}
+            <Modal centered size="lg" show={showModal} onHide={() => {
+                setShowModal(false);
+                setEditRowIndex(null); // <-- Reset editRowIndex on modal close
+            }}>
                 <Modal.Header closeButton>
-                    <h5>Add Material</h5>
+                    {/* <h5>Add Material</h5> */}
+                    <h5>{editRowIndex !== null ? "Edit Material" : "Add Material"}</h5>
                 </Modal.Header>
                 <Modal.Body>
 
@@ -1223,7 +1299,11 @@ const CreateRate = () => {
                                     <button className="purple-btn2 w-100" onClick={handleCreate}>Add</button>
                                 </div>
                                 <div className="col-md-3">
-                                    <button type="button" className="purple-btn1 w-100" data-bs-dismiss="modal" aria-label="Close" onClick={() => setShowModal(false)}>Cancel</button>
+                                    <button type="button" className="purple-btn1 w-100" data-bs-dismiss="modal" aria-label="Close"
+                                        onClick={() => {
+                                            setShowModal(false);
+                                            setEditRowIndex(null); // <-- Reset here too
+                                        }}>Cancel</button>
                                 </div>
                             </div>
                         </div>
@@ -1241,7 +1321,7 @@ const CreateRate = () => {
                 <Modal.Body>
                     <form>
                         <div className="row">
-                             <div className="col-md-3 d-flex align-items-center  custom-radio">
+                            <div className="col-md-3 d-flex align-items-center  custom-radio">
                                 <input
                                     type="radio"
                                     id="companyRadio"
@@ -1258,7 +1338,7 @@ const CreateRate = () => {
                                     Company
                                 </label>
                             </div>
-                              <div className="col-md-4 d-flex align-items-center  custom-radio">
+                            <div className="col-md-4 d-flex align-items-center  custom-radio">
                                 <input
                                     type="radio"
                                     className="me-2"
@@ -1267,7 +1347,7 @@ const CreateRate = () => {
                                     value="organisation"
                                     checked={dateType === "organisation"}
                                     onChange={() => setDateType("organisation")}
-                                    style={{color:"#8b0203"}}
+                                    style={{ color: "#8b0203" }}
                                 />
                                 <label
                                     htmlFor="organisationRadio"
@@ -1276,7 +1356,7 @@ const CreateRate = () => {
                                     Organisation
                                 </label>
                             </div>
-                            {console.log("date type:",dateType)}
+                            {console.log("date type:", dateType)}
                             <div className="col-md-6 mt-3">
                                 <div className="form-group">
                                     <label>From</label>
@@ -1305,7 +1385,7 @@ const CreateRate = () => {
                                     />
                                 </div>
                             </div>
-                           
+
                             {/* {console.log("date type:",dateType)} */}
 
                         </div>
