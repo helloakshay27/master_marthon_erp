@@ -45,6 +45,8 @@ const GatePassCreate = () => {
     // { value: "general", label: "General" },
     // { value: "testing_calibration", label: "Testing/Calibration" },
   ]);
+  const [contactNoError, setContactNoError] = useState("");
+  const [driverContactNoError, setDriverContactNoError] = useState("");
   const [showMaterialModal, setShowMaterialModal] = useState(false);
   const navigate = useNavigate();
 
@@ -134,6 +136,10 @@ const GatePassCreate = () => {
       !formData.expected_return_date
     ) {
       alert("Please enter Expected Return Date for Returnable Gate Pass");
+      return;
+    }
+    if (contactNoError || driverContactNoError) {
+      alert("Please correct the contact number fields before submitting.");
       return;
     }
 
@@ -1456,7 +1462,7 @@ const GatePassCreate = () => {
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
                     <label>Driver Contact No</label>
-                    <input
+                    {/* <input
                       type="number"
                       className="form-control"
                       value={formData.driver_contact_no}
@@ -1469,7 +1475,36 @@ const GatePassCreate = () => {
                         });
                       }}
                       placeholder="Enter Driver Contact No"
+                    /> */}
+                    <input
+                      type="text"
+                      className="form-control"
+                      maxLength={10}
+                      value={formData.driver_contact_no}
+                      onChange={(e) => {
+                        // Remove all non-digit characters
+                        let value = e.target.value.replace(/\D/g, "");
+                        // Limit to 10 digits
+                        if (value.length > 10) value = value.slice(0, 10);
+                        setFormData({
+                          ...formData,
+                          driver_contact_no: value,
+                        });
+                        if (value.length > 0 && value.length !== 10) {
+                          setDriverContactNoError(
+                            "Contact number must be exactly 10 digits"
+                          );
+                        } else {
+                          setDriverContactNoError("");
+                        }
+                      }}
+                      placeholder="Enter Driver Contact No"
                     />
+                    {driverContactNoError && (
+                      <div style={{ color: "red", fontSize: 12 }}>
+                        {driverContactNoError}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="col-md-3 mt-2">
@@ -1506,7 +1541,8 @@ const GatePassCreate = () => {
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
                     <label>Contact No</label>
-                    <input
+
+                    {/* <input
                       type="number"
                       className="form-control"
                       value={formData.contact_no}
@@ -1516,7 +1552,33 @@ const GatePassCreate = () => {
                         setFormData({ ...formData, contact_no: value });
                       }}
                       placeholder="Enter Contact No"
+                    /> */}
+                    <input
+                      type="text"
+                      className="form-control"
+                      maxLength={10}
+                      value={formData.contact_no}
+                      onChange={(e) => {
+                        // Remove all non-digit characters
+                        let value = e.target.value.replace(/\D/g, "");
+                        // Limit to 10 digits
+                        if (value.length > 10) value = value.slice(0, 10);
+                        setFormData({ ...formData, contact_no: value });
+                        if (value.length > 0 && value.length !== 10) {
+                          setContactNoError(
+                            "Contact number must be exactly 10 digits"
+                          );
+                        } else {
+                          setContactNoError("");
+                        }
+                      }}
+                      placeholder="Enter Contact No"
                     />
+                    {contactNoError && (
+                      <div style={{ color: "red", fontSize: 12 }}>
+                        {contactNoError}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
