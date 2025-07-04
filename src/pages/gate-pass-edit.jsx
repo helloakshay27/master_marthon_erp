@@ -3042,12 +3042,31 @@ const GatePassEdit = () => {
               Contact No <span style={{ color: "red" }}>*</span>
             </Form.Label>
             <Form.Control
+              // type="text"
+              // placeholder="Enter contact number"
+              // value={newVendorContact}
+              // onChange={(e) => setNewVendorContact(e.target.value)}
+              // required
               type="text"
+              className="form-control"
+              maxLength={10}
               placeholder="Enter contact number"
               value={newVendorContact}
-              onChange={(e) => setNewVendorContact(e.target.value)}
+              onChange={(e) => {
+                let value = e.target.value.replace(/\D/g, "");
+                if (value.length > 10) value = value.slice(0, 10);
+                setNewVendorContact(value);
+                if (value.length > 0 && value.length !== 10) {
+                  setContactNoError("Contact number must be exactly 10 digits");
+                } else {
+                  setContactNoError("");
+                }
+              }}
               required
             />
+            {contactNoError && (
+              <div style={{ color: "red", fontSize: 12 }}>{contactNoError}</div>
+            )}
           </Form.Group>
           <Form.Group className="mb-2">
             <Form.Label>
