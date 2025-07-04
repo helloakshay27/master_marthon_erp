@@ -203,7 +203,7 @@ const BOQDetailsPageMaster = () => {
   const handleCancel = () => {
     // setStatus(initialStatus); // Reset status to the initial value
     // setRemark(''); // Optionally reset the remark as well
-    navigate("/view-BOQ"); // 🔥 Redirect to the /view-BOQ page
+    navigate(`/initial-boq-list`); // 🔥 Redirect to the /view-BOQ page
   };
 
   //status 

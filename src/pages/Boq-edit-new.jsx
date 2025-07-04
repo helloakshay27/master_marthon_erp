@@ -798,10 +798,10 @@ const EditBOQNew = () => {
     const handleUnitChange = (selectedOption) => {
         setSelectedUnit(selectedOption); // Update selected unit state
         // Ensure boqDetails is updated with the selected unit
-    setBoqDetails((prev) => ({
-        ...prev,
-        unit_of_measure_id: selectedOption?.value || null, 
-    }));
+        setBoqDetails((prev) => ({
+            ...prev,
+            unit_of_measure_id: selectedOption?.value || null,
+        }));
     };
 
     // const handleUnitChange2 = (selectedOption) => {
@@ -1481,10 +1481,10 @@ const EditBOQNew = () => {
     //     setBoqSubItems((prevBoqSubItems) => {
     //         // Create a new array (immutability)
     //         const updatedBoq = [...prevBoqSubItems];
-    
+
     //         // Create a new object for the specific subItem
     //         updatedBoq[index] = { ...updatedBoq[index], [field]: value };
-    
+
     //         return updatedBoq;
     //     });
     // };
@@ -1639,27 +1639,27 @@ const EditBOQNew = () => {
     //         alert("Please select at least one row to delete");
     //         return;
     //     }
-    
+
     //     // Store deleted IDs
     //     const deletedIds = boqSubItems
     //         .filter(item => selectedRows.includes(item.id))
     //         .map(item => item.id);
-    
+
     //     // Update deleted state (you can define it as useState or just attach to an object)
     //     setBoqSubItems(prevItems => {
     //         const updatedItems = prevItems.filter(item => !selectedRows.includes(item.id));
     //         return updatedItems;
     //     });
-    
+
     //     // Remove from count state
     //     setcount(prevCount => prevCount.filter(row => !selectedRows.includes(row.id)));
-    
+
     //     // Clear selection
     //     setSelectedRows([]);
-    
+
     //     // Update counter if needed
     //     setCounter(prev => Math.max(0, prev - selectedRows.length));
-    
+
     //     // Add deleted IDs to an attribute (e.g., if boqSubItems is stored in a parent state object)
     //     setBoqSubItems(prev => ({
     //         ...prev,
@@ -1673,26 +1673,26 @@ const EditBOQNew = () => {
             alert("Please select at least one row to delete");
             return;
         }
-    
+
         const deletedIds = selectedRows.map(rowId => rowId); // Assuming `selectedRows` contains IDs
-    
+
         // Remove from count state
         setcount(prevCount => prevCount.filter(row => !deletedIds.includes(row.id)));
-    
+
         // Remove from boqSubItems array
         setBoqSubItems(prevItems => prevItems.filter(item => !deletedIds.includes(item.id)));
-    
+
         // Store deleted IDs
         setDeletedSubItemIds(prev => [...prev, ...deletedIds]);
-    
+
         // Clear selected rows
         setSelectedRows([]);
-    
+
         // Adjust counter
         setCounter(prev => Math.max(0, prev - deletedIds.length));
     };
-    
-    console.log("boq sub :",boqSubItems)
+
+    console.log("boq sub :", boqSubItems)
 
     const payload = {
         boq_detail: {
@@ -1728,7 +1728,7 @@ const EditBOQNew = () => {
                 {
                     id: lastCategory,
                     boq_sub_items: boqSubItems || [],
-                    deleted:deletedSubItemIds
+                    deleted: deletedSubItemIds
                 }
             ]
         }
@@ -1788,7 +1788,7 @@ const EditBOQNew = () => {
         }
     };
 
-    
+
 
 
     useEffect(() => {
@@ -1796,7 +1796,7 @@ const EditBOQNew = () => {
         calculateTotalEstimatedQtyWastages();
         calculateAssetEstimatedQuantities();
         calculateAssetTotalEstimatedQtyWastages();
-        
+
     }, [
         boqQuantity,
         coefficientFactors,
@@ -1871,7 +1871,7 @@ const EditBOQNew = () => {
     // Function to calculate total estimated quantities with wastage
     const [totalEstimatedvalidationErrors, setTotalEstimatedValidationErrors] = useState([]);
     const calculateTotalEstimatedQtyWastages = () => {
-        if (boqQuantity && estimatedQuantities.length > 0 && wastages.length>0) {
+        if (boqQuantity && estimatedQuantities.length > 0 && wastages.length > 0) {
             const newTotalEstimatedQtyWastages = materials.map((material, index) => {
                 const estimatedQty = parseFloat(estimatedQuantities[index]) || 0;
                 const wastagePercentage = parseFloat(wastages[index]) || 0;
@@ -1903,10 +1903,10 @@ const EditBOQNew = () => {
         // setErrors(newErrors);
         // if (!itemName) validationErrors.itemName = "Item Name is required.";
         if (!boqDetails?.item_name) validationErrors.itemName = "Item Name is required.";
-        if(!boqDetails?.unit_of_measure_id){
+        if (!boqDetails?.unit_of_measure_id) {
             if (!selectedUnit) validationErrors.unit = "UOM is required.";
         }
-       
+
         if (!boqQuantity)
             validationErrors.boqQuantity = "BOQ Quantity is required.";
 
@@ -1941,7 +1941,7 @@ const EditBOQNew = () => {
 
         const invalidGenericSpecification = materials.some((material, index) => {
             // Get the selected generic specification for this material
-            const genericSpecification = selectedGenericSpecifications[index]  ;
+            const genericSpecification = selectedGenericSpecifications[index];
 
             // Check if the generic specification is invalid (empty or undefined)
             return !genericSpecification || genericSpecification === "";
@@ -1958,32 +1958,32 @@ const EditBOQNew = () => {
         //     );
         //     return; // Exit function if validation fails
         // }
-         // sub type validation
-            const invalidSubType = materials.some((material, index) => {
-              const subType = selectedSubTypes[index];
-              return !subType || subType === "";
-            });
-            if (invalidSubType) {
-              toast.error(
+        // sub type validation
+        const invalidSubType = materials.some((material, index) => {
+            const subType = selectedSubTypes[index];
+            return !subType || subType === "";
+        });
+        if (invalidSubType) {
+            toast.error(
                 "Material Sub-Type is required for all materials."
-              );
-              return; // Exit function if validation fails
-            }
+            );
+            return; // Exit function if validation fails
+        }
 
-            const invalidUnit = materials.some((material, index) => {
-                // Get the selected generic specification for this material
-                const unit = selectedUnit2[index];
-          
-                // Check if the generic specification is invalid (empty or undefined)
-                return !unit || unit === "";
-              });
-          
-              if (invalidUnit ) {
-                toast.error(
-                  "UOM is required for all materials ."
-                );
-                return; // Exit function if validation fails
-              }
+        const invalidUnit = materials.some((material, index) => {
+            // Get the selected generic specification for this material
+            const unit = selectedUnit2[index];
+
+            // Check if the generic specification is invalid (empty or undefined)
+            return !unit || unit === "";
+        });
+
+        if (invalidUnit) {
+            toast.error(
+                "UOM is required for all materials ."
+            );
+            return; // Exit function if validation fails
+        }
 
 
         if (Object.keys(validationErrors).length > 0) {
@@ -2002,12 +2002,13 @@ const EditBOQNew = () => {
                         quantity: boqDetails?.quantity,
                         note: boqDetails?.note,
                         unit_of_measure_id: selectedUnit ? selectedUnit.value : boqDetails?.unit_of_measure_id,
-                        sub_categories: [
-                            {
-                                id: lastCategory, // Ensure lastCategory is set correctly
-                                materials: predefinedMaterials,
-                            },
-                        ],
+                        materials: predefinedMaterials,
+                        // sub_categories: [
+                        //     {
+                        //         id: lastCategory, // Ensure lastCategory is set correctly
+                        //         materials: predefinedMaterials,
+                        //     },
+                        // ],
                     }
                 }
                 console.log("payload submission:", payload)
@@ -2051,8 +2052,8 @@ const EditBOQNew = () => {
         if (!boqDetails?.item_name) validationErrors.itemName = "Item Name is required.";
 
         if (boqSubItems.length === 0) {
-          toast.error("BoQ Sub Items cannot be empty. Please add at least one sub item.");
-          return;
+            toast.error("BoQ Sub Items cannot be empty. Please add at least one sub item.");
+            return;
         }
 
         // // Check for validation errors in materials and assets
@@ -2061,31 +2062,31 @@ const EditBOQNew = () => {
         //   return;
         // }
 
-        console.log("validation sub item:",boqSubItems)
+        console.log("validation sub item:", boqSubItems)
         // Iterate over each boqSubItem to validate
         for (let i = 0; i < boqSubItems.length; i++) {
             const boqSubItem = boqSubItems[i];
             // console.log("validation sub item:",boqSubItem)
-              const subItemNames = boqSubItems.map(item => item.name?.trim());
-                  const nameSet = new Set();
-                  for (let i = 0; i < subItemNames.length; i++) {
-                    const name = subItemNames[i];
-            
-                    // Check if name is empty
-                    if (!name) {
-                      toast.error(`Name is required for BoQ Sub Item ${i + 1}.`);
-                      return;
-                    }
-            
-                    // Check for duplicates
-                    if (nameSet.has(name.toLowerCase())) {
-                      toast.error(`Name "${name}" is duplicated. Each BoQ Sub Item name must be unique.`);
-                      return;
-                    }
-            
-                    nameSet.add(name.toLowerCase()); // Add to set for uniqueness check
-                  }
-            
+            const subItemNames = boqSubItems.map(item => item.name?.trim());
+            const nameSet = new Set();
+            for (let i = 0; i < subItemNames.length; i++) {
+                const name = subItemNames[i];
+
+                // Check if name is empty
+                if (!name) {
+                    toast.error(`Name is required for BoQ Sub Item ${i + 1}.`);
+                    return;
+                }
+
+                // Check for duplicates
+                if (nameSet.has(name.toLowerCase())) {
+                    toast.error(`Name "${name}" is duplicated. Each BoQ Sub Item name must be unique.`);
+                    return;
+                }
+
+                nameSet.add(name.toLowerCase()); // Add to set for uniqueness check
+            }
+
 
             // if (!boqSubItem.name || boqSubItem.name.trim() === "") {
             //     toast.error(`Name is required for BoQ Sub Item ${i + 1}.`);
@@ -2154,29 +2155,29 @@ const EditBOQNew = () => {
             // **Prevent form submission if any sub-item has errors**
             if (hasErrors2) return;
 
-  let hasErrors3 = false; // Track global errors
+            let hasErrors3 = false; // Track global errors
 
-      boqSubItems.forEach((boqSubItem, i) => {
-        console.log("boq sub mt:", boqSubItem.materials);
+            boqSubItems.forEach((boqSubItem, i) => {
+                console.log("boq sub mt:", boqSubItem.materials);
 
-        let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
+                let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
 
-        boqSubItem.materials.forEach((material) => {
-          const genericInfoId = material.material_sub_type_id?? ""; // Ensure it's never undefined
+                boqSubItem.materials.forEach((material) => {
+                    const genericInfoId = material.material_sub_type_id ?? ""; // Ensure it's never undefined
 
-          if (!genericInfoId) {
-            subItemHasErrors = true; // Mark that there's an error for this sub-item
-          }
-        });
+                    if (!genericInfoId) {
+                        subItemHasErrors = true; // Mark that there's an error for this sub-item
+                    }
+                });
 
-        if (subItemHasErrors) {
-          hasErrors3 = true; // Mark that there are global errors
-          toast.error(`Material Sub-Type is required for all materials in BoQ Sub Item ${i + 1}.`);
-        }
-      });
+                if (subItemHasErrors) {
+                    hasErrors3 = true; // Mark that there are global errors
+                    toast.error(`Material Sub-Type is required for all materials in BoQ Sub Item ${i + 1}.`);
+                }
+            });
 
-      // **Prevent form submission if any sub-item has errors**
-      if (hasErrors3) return;
+            // **Prevent form submission if any sub-item has errors**
+            if (hasErrors3) return;
 
         }
 
@@ -2200,13 +2201,15 @@ const EditBOQNew = () => {
                         quantity: boqDetails?.quantity,
                         note: boqDetails?.note,
                         unit_of_measure_id: selectedUnit ? selectedUnit.value : boqDetails?.unit_of_measure_id,
-                        sub_categories: [
-                            {
-                                id: lastCategory,
-                                boq_sub_items: processedSubItems || [],
-                                deleted:deletedSubItemIds
-                            }
-                        ]
+                        boq_sub_items: processedSubItems || [],
+                        deleted: deletedSubItemIds
+                        // sub_categories: [
+                        //     {
+                        //         id: lastCategory,
+                        //         boq_sub_items: processedSubItems || [],
+                        //         deleted:deletedSubItemIds
+                        //     }
+                        // ]
                     }
                 }
 
@@ -2505,7 +2508,7 @@ const EditBOQNew = () => {
             <div className="website-content">
                 <div className="module-data-section p-4">
                     <a href="" style={{ color: "black" }}>
-                        Home &gt; Engineering &gt; Create BOQ
+                        Home &gt; Engineering &gt; Edit BOQ ;;;;;;;;;;;;;
                     </a>
                     {/* <h5 className="mt-4">Create BOQ</h5> */}
                     <div className="tab-content1 active" id="total-content">
@@ -2577,7 +2580,7 @@ const EditBOQNew = () => {
                                                     className="form-control"
                                                     type="text"
                                                     // placeholder='56914'
-                                                    value={groupedCategories?.[1]?.[0]?.category_name || ''} // Safe access
+                                                    value={boqDetails?.level_one_name || "-"} // Safe access
                                                     //   value={groupedCategories[1] && groupedCategories[1]?.length > 0 ? groupedCategories[1][0]?.category_name : ''}
                                                     disabled
                                                 />
@@ -2591,7 +2594,7 @@ const EditBOQNew = () => {
                                                     className="form-control"
                                                     type="text"
                                                     // placeholder='56914'
-                                                    value={groupedCategories?.[2]?.[0]?.category_name || ''} // Safe access
+                                                    value={boqDetails?.level_two_name || "-"} // Safe access
                                                     //   value={groupedCategories[2] && groupedCategories[2].length > 0 ? groupedCategories[2][0].category_name : ''}
                                                     disabled
                                                 />
@@ -2605,7 +2608,7 @@ const EditBOQNew = () => {
                                                     className="form-control"
                                                     type="text"
                                                     // placeholder='56914'
-                                                    value={groupedCategories?.[3]?.[0]?.category_name || ''} // Safe access
+                                                    value={boqDetails?.level_three_name || "-"} // Safe access
                                                     //   value={groupedCategories[3] && groupedCategories[3].length > 0 ? groupedCategories[3][0].category_name : ''}
                                                     disabled
                                                 />
@@ -2619,7 +2622,7 @@ const EditBOQNew = () => {
                                                 <input
                                                     className="form-control"
                                                     type="text"
-                                                    value={groupedCategories?.[4]?.[0]?.category_name || ''} // Safe access
+                                                    value={boqDetails?.level_four_name || "-"} // Safe access
                                                     //   value={groupedCategories[4] && groupedCategories[4].length > 0 ? groupedCategories[4][0].category_name : ''}
                                                     disabled
                                                 />
@@ -2632,7 +2635,7 @@ const EditBOQNew = () => {
                                                 <input
                                                     className="form-control"
                                                     type="text"
-                                                    value={groupedCategories?.[5]?.[0]?.category_name || ''} // Safe access
+                                                    value={boqDetails?.level_five_name || "-"} // Safe access
                                                     //   value={groupedCategories[5] && groupedCategories[5].length > 0 ? groupedCategories[5][0].category_name : ''}
                                                     disabled
                                                 />
@@ -2682,7 +2685,7 @@ const EditBOQNew = () => {
                                                     value={(boqDetails?.
                                                         unit_of_measure_id
                                                         ?
-                                                        unitOfMeasures.find(uom => uom.value ===boqDetails?.
+                                                        unitOfMeasures.find(uom => uom.value === boqDetails?.
                                                             unit_of_measure_id
                                                         ) :
                                                         null) || selectedUnit
@@ -3051,7 +3054,7 @@ const EditBOQNew = () => {
                                                                                     disabled
                                                                                     value={totalEstimatedQtyWastages[index] || ""}
                                                                                 />
-                                                                                   {totalEstimatedvalidationErrors[index] && (
+                                                                                {totalEstimatedvalidationErrors[index] && (
                                                                                     <span style={{ color: "red", fontSize: "12px" }}>{totalEstimatedvalidationErrors[index]}</span>
                                                                                 )}
                                                                             </td>
@@ -3409,7 +3412,7 @@ const EditBOQNew = () => {
                             {showBOQSubItem && (
                                 <>
 
-                                 {/* <pre>{JSON.stringify(boqSubItems, null, 2)}</pre> */}
+                                    {/* <pre>{JSON.stringify(boqSubItems, null, 2)}</pre> */}
 
                                     {/* <pre>{JSON.stringify(materials2, null, 2)}</pre> */}
 
@@ -3525,11 +3528,11 @@ const EditBOQNew = () => {
                                                                                                 e.target.value
                                                                                             )
                                                                                         }
-                                                                                        
-                                                                                        // disabled={!subItem.hasOwnProperty('isNew')} 
-                                                                                        // disabled={subItem.cost_quantity}
+
+                                                                                    // disabled={!subItem.hasOwnProperty('isNew')} 
+                                                                                    // disabled={subItem.cost_quantity}
                                                                                     />
-                                                                                    
+
                                                                                 </td>
                                                                                 {console.log("subitem", subItem)}
                                                                                 <td>
@@ -3597,7 +3600,7 @@ const EditBOQNew = () => {
                                                                                         placeholder={`Select UOM`}
                                                                                     />
 
-                                                                                     {/* {console.log('Current subItem:', subItem)}  */}
+                                                                                    {/* {console.log('Current subItem:', subItem)}  */}
 
                                                                                 </td>
                                                                                 <td colSpan={2}>
@@ -3650,42 +3653,42 @@ const EditBOQNew = () => {
                                                                                 </td> */}
                                                                             </tr>
                                                                             {/* {!expandedRows.includes(subItem.id) && ( */}
-                                                                                <tr style={{ display: expandedRows.includes(subItem.id) ? "table-row" : "none" }}>
-                                                                                    <td colSpan={11}>
-                                                                                        <EditBoqSub
-                                                                                            materials={materials2[subItem.id] || subItem.materials || []}
-                                                                                            handleAddMaterials={(newMaterials) =>
-                                                                                                handleAddMaterials2(
-                                                                                                    subItem.id,
-                                                                                                    newMaterials
-                                                                                                )
-                                                                                            }
-                                                                                            setMaterials={setMaterials2}
-                                                                                            Assets={Assets2[subItem.id] || subItem.assets || []}
-                                                                                            setAssets={setAssets2}
-                                                                                            handleDeleteAll={handleDeleteAll2}
-                                                                                            handleSelectRow={handleSelectRow2}
-                                                                                            handleAddAssets={(newMaterials) =>
-                                                                                                handleAddAssets2(
-                                                                                                    subItem.id,
-                                                                                                    newMaterials
-                                                                                                )
-                                                                                            }
-                                                                                            handleDeleteAllAssets={handleDeleteAllAssets2}
-                                                                                            handleSelectRowAsset={handleSelectRowAssets2}
-                                                                                            predefinedMaterialsData={(data) => updatePredefinedMaterialsData(subItem.id, data)}
-                                                                                            predefinedAssetsData={(data) => updatePredefinedAssetsData(subItem.id, data)}
-                                                                                            boqSubItemId={subItem.id}
-                                                                                            boqSubItems={boqSubItems.filter((item) => item.id === subItem.id)}
-                                                                                            setBoqSubItems={setBoqSubItems}
-                                                                                            setMaterialErrors={setMaterialErrors}
-                                                                                            setAssetsErrors={setAssetsErrors}
-                                                                                            boqDetails={boqDetails}
-                                                                                            setCounter={setCounter}
+                                                                            <tr style={{ display: expandedRows.includes(subItem.id) ? "table-row" : "none" }}>
+                                                                                <td colSpan={11}>
+                                                                                    <EditBoqSub
+                                                                                        materials={materials2[subItem.id] || subItem.materials || []}
+                                                                                        handleAddMaterials={(newMaterials) =>
+                                                                                            handleAddMaterials2(
+                                                                                                subItem.id,
+                                                                                                newMaterials
+                                                                                            )
+                                                                                        }
+                                                                                        setMaterials={setMaterials2}
+                                                                                        Assets={Assets2[subItem.id] || subItem.assets || []}
+                                                                                        setAssets={setAssets2}
+                                                                                        handleDeleteAll={handleDeleteAll2}
+                                                                                        handleSelectRow={handleSelectRow2}
+                                                                                        handleAddAssets={(newMaterials) =>
+                                                                                            handleAddAssets2(
+                                                                                                subItem.id,
+                                                                                                newMaterials
+                                                                                            )
+                                                                                        }
+                                                                                        handleDeleteAllAssets={handleDeleteAllAssets2}
+                                                                                        handleSelectRowAsset={handleSelectRowAssets2}
+                                                                                        predefinedMaterialsData={(data) => updatePredefinedMaterialsData(subItem.id, data)}
+                                                                                        predefinedAssetsData={(data) => updatePredefinedAssetsData(subItem.id, data)}
+                                                                                        boqSubItemId={subItem.id}
+                                                                                        boqSubItems={boqSubItems.filter((item) => item.id === subItem.id)}
+                                                                                        setBoqSubItems={setBoqSubItems}
+                                                                                        setMaterialErrors={setMaterialErrors}
+                                                                                        setAssetsErrors={setAssetsErrors}
+                                                                                        boqDetails={boqDetails}
+                                                                                        setCounter={setCounter}
 
-                                                                                        />
-                                                                                    </td>
-                                                                                </tr>
+                                                                                    />
+                                                                                </td>
+                                                                            </tr>
                                                                             {/* )} */}
                                                                         </React.Fragment>
                                                                     ))}
@@ -3979,7 +3982,7 @@ const EditBOQNew = () => {
 
                                 )}
                                 <button
-                                    className="purple-btn2 w-100"
+                                    className="purple-btn2 w-100 mt-2"
                                     fdprocessedid="u33pye"
                                     onClick={handleSubmit}
                                 >

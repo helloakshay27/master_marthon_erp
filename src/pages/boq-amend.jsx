@@ -1841,7 +1841,7 @@ const BoqAmend = () => {
 
     const subCategoriesMaterial = categories.map(cat => ({
         category_id: cat.category_id,
-        level:cat.level,
+        level: cat.level,
         materials: cat.category_id === lastCategory ? (predefinedMaterials || []) : []
     }));
 
@@ -1856,10 +1856,17 @@ const BoqAmend = () => {
             quantity: boqDetails?.quantity,
             note: boqDetails?.note,
             unit_of_measure_id: selectedUnit ? selectedUnit.value : boqDetails?.unit_of_measure_id,
-            sub_categories: subCategoriesMaterial
+            level_one_id: boqDetails?.level_one_id || null,
+            level_two_id: boqDetails?.level_two_id || null,
+            level_three_id: boqDetails?.level_three_id || null,
+            level_four_id: boqDetails?.level_four_id || null,
+            level_five_id: boqDetails?.level_five_id || null,
+            materials: predefinedMaterials || [],
+            // sub_categories: subCategoriesMaterial
         },
     };
-    console.log("Material payload creation:", payloadData1)
+    // console.log("Material payload creation:", payloadData1)
+    console.log("boq details:",boqDetails)
 
     const handleSubmitMaterialLabour = async () => {
         let validationErrors = {};
@@ -1926,29 +1933,29 @@ const BoqAmend = () => {
         const invalidUnit = materials.some((material, index) => {
             // Get the selected generic specification for this material
             const unit = selectedUnit2[index];
-      
+
             // Check if the generic specification is invalid (empty or undefined)
             return !unit || unit === "";
-          });
-      
-          if (invalidUnit ) {
+        });
+
+        if (invalidUnit) {
             toast.error(
-              "UOM is required for all materials and assets."
+                "UOM is required for all materials and assets."
             );
             return; // Exit function if validation fails
-          }
+        }
 
-          // sub type validation
-            const invalidSubType = materials.some((material, index) => {
-              const subType = selectedSubTypes[index];
-              return !subType || subType === "";
-            });
-            if (invalidSubType) {
-              toast.error(
+        // sub type validation
+        const invalidSubType = materials.some((material, index) => {
+            const subType = selectedSubTypes[index];
+            return !subType || subType === "";
+        });
+        if (invalidSubType) {
+            toast.error(
                 "Material Sub-Type is required for all materials."
-              );
-              return; // Exit function if validation fails
-            }
+            );
+            return; // Exit function if validation fails
+        }
 
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
@@ -1963,13 +1970,19 @@ const BoqAmend = () => {
                         project_id: boqDetails?.project_id,
                         pms_site_id: boqDetails?.pms_site_id,
                         pms_wing_id: boqDetails?.pms_wing_id,
-                        parent_id: boqDetails?.id,
+                        parent_id: boqDetails?.parent_id,
                         item_name: boqDetails?.item_name,
                         description: boqDetails?.description,
                         quantity: boqDetails?.quantity,
                         note: boqDetails?.note,
                         unit_of_measure_id: selectedUnit ? selectedUnit.value : boqDetails?.unit_of_measure_id,
-                        sub_categories: subCategoriesMaterial
+                        level_one_id: boqDetails?.level_one_id || null,
+                        level_two_id: boqDetails?.level_two_id || null,
+                        level_three_id: boqDetails?.level_three_id || null,
+                        level_four_id: boqDetails?.level_four_id || null,
+                        level_five_id: boqDetails?.level_five_id || null,
+                        materials: predefinedMaterials || [],
+                        // sub_categories: subCategoriesMaterial
                     },
                 }
                 // console.log("payload submission:", payload)
@@ -1983,9 +1996,9 @@ const BoqAmend = () => {
 
                 if (response.status === 201) {
                     alert("BOQ Amendment done successfully!");
-                    console.log("responce id:",response.data.id)
+                    console.log("responce id:", response.data.id)
                     navigate(`/boq-details-page-master/${response.data.id}`); // Redirect to details page
-                    
+
                 }
 
             } catch (error) {
@@ -2006,11 +2019,11 @@ const BoqAmend = () => {
     // sub data 2
     const processedSubItems = boqSubItems.map(item => ({
         ...item,
-        id:  null // Set ID to null for new items
+        id: null // Set ID to null for new items
     }));
     const subCategories = categories.map(cat => ({
         category_id: cat.category_id,
-        level:cat.level,
+        level: cat.level,
         boq_sub_items: cat.category_id === lastCategory ? (processedSubItems || []) : []
     }));
 
@@ -2053,25 +2066,25 @@ const BoqAmend = () => {
         for (let i = 0; i < boqSubItems.length; i++) {
             const boqSubItem = boqSubItems[i];
             // console.log("validation sub item:", boqSubItem)
-              const subItemNames = boqSubItems.map(item => item.name?.trim());
-                  const nameSet = new Set();
-                  for (let i = 0; i < subItemNames.length; i++) {
-                    const name = subItemNames[i];
-            
-                    // Check if name is empty
-                    if (!name) {
-                      toast.error(`Name is required for BoQ Sub Item ${i + 1}.`);
-                      return;
-                    }
-            
-                    // Check for duplicates
-                    if (nameSet.has(name.toLowerCase())) {
-                      toast.error(`Name "${name}" is duplicated. Each BoQ Sub Item name must be unique.`);
-                      return;
-                    }
-            
-                    nameSet.add(name.toLowerCase()); // Add to set for uniqueness check
-                  }
+            const subItemNames = boqSubItems.map(item => item.name?.trim());
+            const nameSet = new Set();
+            for (let i = 0; i < subItemNames.length; i++) {
+                const name = subItemNames[i];
+
+                // Check if name is empty
+                if (!name) {
+                    toast.error(`Name is required for BoQ Sub Item ${i + 1}.`);
+                    return;
+                }
+
+                // Check for duplicates
+                if (nameSet.has(name.toLowerCase())) {
+                    toast.error(`Name "${name}" is duplicated. Each BoQ Sub Item name must be unique.`);
+                    return;
+                }
+
+                nameSet.add(name.toLowerCase()); // Add to set for uniqueness check
+            }
 
 
             // if (!boqSubItem.name || boqSubItem.name.trim() === "") {
@@ -2141,29 +2154,29 @@ const BoqAmend = () => {
             // **Prevent form submission if any sub-item has errors**
             if (hasErrors2) return;
 
- let hasErrors3 = false; // Track global errors
+            let hasErrors3 = false; // Track global errors
 
-      boqSubItems.forEach((boqSubItem, i) => {
-        console.log("boq sub mt:", boqSubItem.materials);
+            boqSubItems.forEach((boqSubItem, i) => {
+                console.log("boq sub mt:", boqSubItem.materials);
 
-        let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
+                let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
 
-        boqSubItem.materials.forEach((material) => {
-          const genericInfoId = material.material_sub_type_id?? ""; // Ensure it's never undefined
+                boqSubItem.materials.forEach((material) => {
+                    const genericInfoId = material.material_sub_type_id ?? ""; // Ensure it's never undefined
 
-          if (!genericInfoId) {
-            subItemHasErrors = true; // Mark that there's an error for this sub-item
-          }
-        });
+                    if (!genericInfoId) {
+                        subItemHasErrors = true; // Mark that there's an error for this sub-item
+                    }
+                });
 
-        if (subItemHasErrors) {
-          hasErrors3 = true; // Mark that there are global errors
-          toast.error(`Material Sub-Type is required for all materials in BoQ Sub Item ${i + 1}.`);
-        }
-      });
+                if (subItemHasErrors) {
+                    hasErrors3 = true; // Mark that there are global errors
+                    toast.error(`Material Sub-Type is required for all materials in BoQ Sub Item ${i + 1}.`);
+                }
+            });
 
-      // **Prevent form submission if any sub-item has errors**
-      if (hasErrors3) return;
+            // **Prevent form submission if any sub-item has errors**
+            if (hasErrors3) return;
 
 
         }
@@ -2180,13 +2193,19 @@ const BoqAmend = () => {
                         project_id: boqDetails?.project_id,
                         pms_site_id: boqDetails?.pms_site_id,
                         pms_wing_id: boqDetails?.pms_wing_id,
-                        parent_id: boqDetails?.id,
+                        parent_id: boqDetails?.parent_id,
                         item_name: boqDetails?.item_name,
                         description: boqDetails?.description,
                         quantity: boqDetails?.quantity,
                         note: boqDetails?.note,
                         unit_of_measure_id: selectedUnit ? selectedUnit.value : boqDetails?.unit_of_measure_id,
-                        sub_categories: subCategories
+                        level_one_id: boqDetails?.level_one_id || null,
+                        level_two_id: boqDetails?.level_two_id || null,
+                        level_three_id: boqDetails?.level_three_id || null,
+                        level_four_id: boqDetails?.level_four_id || null,
+                        level_five_id: boqDetails?.level_five_id || null,
+                        boq_sub_items: processedSubItems || []
+                        // sub_categories: subCategories
                     },
                 }
 
@@ -2541,7 +2560,7 @@ const BoqAmend = () => {
                                                     className="form-control"
                                                     type="text"
                                                     // placeholder='56914'
-                                                    value={boqDetails?.wing}
+                                                    value={boqDetails?.wing || "-"}
                                                     disabled
                                                 />
                                             </div>
@@ -2554,7 +2573,7 @@ const BoqAmend = () => {
                                                     className="form-control"
                                                     type="text"
                                                     // placeholder='56914'
-                                                    value={groupedCategories?.[1]?.[0]?.category_name || ''} // Safe access
+                                                    value={boqDetails?.level_one_name || "-"} // Safe access
                                                     //   value={groupedCategories[1] && groupedCategories[1]?.length > 0 ? groupedCategories[1][0]?.category_name : ''}
                                                     disabled
                                                 />
@@ -2568,7 +2587,7 @@ const BoqAmend = () => {
                                                     className="form-control"
                                                     type="text"
                                                     // placeholder='56914'
-                                                    value={groupedCategories?.[2]?.[0]?.category_name || ''} // Safe access
+                                                    value={boqDetails?.level_two_name || "-"} // Safe access
                                                     //   value={groupedCategories[2] && groupedCategories[2].length > 0 ? groupedCategories[2][0].category_name : ''}
                                                     disabled
                                                 />
@@ -2582,7 +2601,7 @@ const BoqAmend = () => {
                                                     className="form-control"
                                                     type="text"
                                                     // placeholder='56914'
-                                                    value={groupedCategories?.[3]?.[0]?.category_name || ''} // Safe access
+                                                    value={boqDetails?.level_three_name || "-"} // Safe access
                                                     //   value={groupedCategories[3] && groupedCategories[3].length > 0 ? groupedCategories[3][0].category_name : ''}
                                                     disabled
                                                 />
@@ -2596,7 +2615,7 @@ const BoqAmend = () => {
                                                 <input
                                                     className="form-control"
                                                     type="text"
-                                                    value={groupedCategories?.[4]?.[0]?.category_name || ''} // Safe access
+                                                    value={boqDetails?.level_four_name || "-"} // Safe access
                                                     //   value={groupedCategories[4] && groupedCategories[4].length > 0 ? groupedCategories[4][0].category_name : ''}
                                                     disabled
                                                 />
@@ -2609,7 +2628,7 @@ const BoqAmend = () => {
                                                 <input
                                                     className="form-control"
                                                     type="text"
-                                                    value={groupedCategories?.[5]?.[0]?.category_name || ''} // Safe access
+                                                    value={boqDetails?.level_five_name || "-"} // Safe access
                                                     //   value={groupedCategories[5] && groupedCategories[5].length > 0 ? groupedCategories[5][0].category_name : ''}
                                                     disabled
                                                 />
@@ -3965,7 +3984,7 @@ const BoqAmend = () => {
 
                                 )}
                                 <button
-                                    className="purple-btn2 w-100"
+                                    className="purple-btn2 w-100 mt-2"
                                     fdprocessedid="u33pye"
                                     onClick={handleSubmit}
                                 >

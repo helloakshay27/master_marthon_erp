@@ -517,7 +517,7 @@ const CreateBOQ = () => {
       ) // Replace with your API endpoint
       .then((response) => {
         setWorkCategories(response.data.work_categories); // Save the categories to state
-        console.log("work cat:",response.data.work_categories)
+        console.log("work cat:", response.data.work_categories)
       })
       .catch((error) => {
         console.error("Error fetching work categories:", error);
@@ -1720,7 +1720,7 @@ const CreateBOQ = () => {
       return !unit || unit === "";
     });
 
-    if (invalidUnit ) {
+    if (invalidUnit) {
       toast.error(
         "UOM is required for all materials and assets."
       );
@@ -1759,88 +1759,16 @@ const CreateBOQ = () => {
             unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
             quantity: boqQuantity,
             note: note,
+            // Flattened category levels
+            level_one_id: selectedCategory?.value || "",
+            level_two_id: selectedSubCategory?.value || "",
+            level_three_id: selectedSubCategoryLevel3?.value || "",
+            level_four_id: selectedSubCategoryLevel4?.value || "",
+            level_five_id: selectedSubCategoryLevel5?.value || "",
+            // Directly include all predefined materials and assets
+            materials: predefinedMaterials || [],
+            assets: predefinedAssets || [],
 
-            sub_categories: [
-              // Always include main category (level 1)
-              // {
-              //   category_id: selectedCategory?.value,
-              //   level: 1,
-              // },
-              ...(selectedCategory
-                ? [
-                  {
-                    category_id: selectedCategory?.value,
-                    level: 1,
-                    materials: !selectedSubCategory
-                      ? predefinedMaterials
-                      : [], // Filter for level 2
-                    assets: !selectedSubCategory
-                      ? predefinedAssets
-                      : [],
-                  },
-                ]
-                : []),
-
-              // Only include materials for level 2 if it is selected, and exclude if level 3 is selected
-              ...(selectedSubCategory
-                ? [
-                  {
-                    category_id: selectedSubCategory?.value,
-                    level: 2,
-                    materials: !selectedSubCategoryLevel3
-                      ? predefinedMaterials
-                      : [], // Filter for level 2
-                    assets: !selectedSubCategoryLevel3
-                      ? predefinedAssets
-                      : [],
-                  },
-                ]
-                : []),
-
-              // Only include materials for level 3 if it is selected, and exclude if level 4 is selected
-              ...(selectedSubCategoryLevel3
-                ? [
-                  {
-                    category_id: selectedSubCategoryLevel3?.value,
-                    level: 3,
-                    materials: !selectedSubCategoryLevel4
-                      ? predefinedMaterials
-                      : [], // Filter for level 3
-                    assets: !selectedSubCategoryLevel4
-                      ? predefinedAssets
-                      : [],
-                  },
-                ]
-                : []),
-
-              // Only include materials for level 4 if it is selected
-              ...(selectedSubCategoryLevel4
-                ? [
-                  {
-                    category_id: selectedSubCategoryLevel4?.value,
-                    level: 4,
-                    materials: !selectedSubCategoryLevel5
-                      ? predefinedMaterials
-                      : [], // Filter for level 4
-                    assets: !selectedSubCategoryLevel5
-                      ? predefinedAssets
-                      : [],
-                  },
-                ]
-                : []),
-
-              // Only include materials for level 5 if it is selected
-              ...(selectedSubCategoryLevel5
-                ? [
-                  {
-                    category_id: selectedSubCategoryLevel5?.value,
-                    level: 5,
-                    materials: predefinedMaterials, // Filter for level 5
-                    assets: predefinedAssets || [],
-                  },
-                ]
-                : []),
-            ],
           },
         };
 
@@ -2057,7 +1985,7 @@ const CreateBOQ = () => {
         let subItemHasErrors = false; // Track errors for the current BoQ Sub Item
 
         boqSubItem.materials.forEach((material) => {
-          const genericInfoId = material.material_sub_type_id?? ""; // Ensure it's never undefined
+          const genericInfoId = material.material_sub_type_id ?? ""; // Ensure it's never undefined
 
           if (!genericInfoId) {
             subItemHasErrors = true; // Mark that there's an error for this sub-item
@@ -2109,25 +2037,14 @@ const CreateBOQ = () => {
             item_name: itemName,
             description: description,
             note: note,
-
-            sub_categories: [
-              // { category_id: selectedCategory?.value, level: 1 },
-              ...(selectedCategory
-                ? [{ category_id: selectedCategory?.value, level: 1, boq_sub_items: !selectedSubCategory ? boqSubItems : [] }]
-                : []),
-              ...(selectedSubCategory
-                ? [{ category_id: selectedSubCategory?.value, level: 2, boq_sub_items: !selectedSubCategoryLevel3 ? boqSubItems : [] }]
-                : []),
-              ...(selectedSubCategoryLevel3
-                ? [{ category_id: selectedSubCategoryLevel3?.value, level: 3, boq_sub_items: !selectedSubCategoryLevel4 ? boqSubItems : [] }]
-                : []),
-              ...(selectedSubCategoryLevel4
-                ? [{ category_id: selectedSubCategoryLevel4?.value, level: 4, boq_sub_items: !selectedSubCategoryLevel5 ? boqSubItems : [] }]
-                : []),
-              ...(selectedSubCategoryLevel5
-                ? [{ category_id: selectedSubCategoryLevel5?.value, level: 5, boq_sub_items: boqSubItems || [] }]
-                : []),
-            ],
+            // Flattened category levels
+            level_one_id: selectedCategory?.value || "",
+            level_two_id: selectedSubCategory?.value || "",
+            level_three_id: selectedSubCategoryLevel3?.value || "",
+            level_four_id: selectedSubCategoryLevel4?.value || "",
+            level_five_id: selectedSubCategoryLevel5?.value || "",
+            // Directly assign all sub items (regardless of level)
+            boq_sub_items: boqSubItems || [],
           },
         };
 
@@ -2801,7 +2718,7 @@ const CreateBOQ = () => {
                                     Assest Sub-Type
                                   </th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
-                                    Generic Specification 
+                                    Generic Specification
                                   </th>
                                   <th rowSpan={2} style={{ width: "300px", whiteSpace: "nowrap" }}>
                                     Colour
