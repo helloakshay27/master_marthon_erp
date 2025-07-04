@@ -107,6 +107,8 @@ const GatePassEdit = () => {
   // Add state for OtherVendor id
   const [otherVendorId, setOtherVendorId] = useState(null);
 
+  const [selectedVendorOption, setSelectedVendorOption] = useState(null);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -638,17 +640,28 @@ const GatePassEdit = () => {
     // If you want to reset sub_project_id, uncomment above
   }, [formData.project_id, projects]);
 
+  // 1. Clear materials when gate pass type changes
   useEffect(() => {
-    // Reset dependent fields when gate pass type changes
     setFormData((prev) => ({
       ...prev,
-      to_vendor: null,
+      // to_vendor: null,
       to_store_id: null,
       mto_po_number: "",
-      material_items: [], // Also clear materials as they depend on PO
+      material_items: [],
     }));
     setSelectedPO(null);
+    setMaintenanceRows([]);
+    setFetchedMaterials([]);
   }, [formData.gate_pass_type]);
+
+  // 2. Reset sub-project, from store, to store when project changes
+  useEffect(() => {
+    const selected = projects.find((p) => p.value === formData.project_id);
+    setSubProjects(selected ? selected.subProjects : []);
+    setStores([]);
+    // setToStores([]);
+    setGateNumbers([]);
+  }, [formData.project_id, projects]);
 
   // Fetch material/asset details when PO is selected (for return_to_vendor)
   useEffect(() => {
@@ -1194,51 +1207,29 @@ const GatePassEdit = () => {
                 ...prev,
                 to_vendor: data.to_resource.id,
               }));
+              setSelectedVendorOption({
+                value: data.to_resource.id,
+                label: data.to_resource.vendor_name,
+              });
+            } else if (data.to_resource.type === "OtherVendor") {
+              const vendorValue = `non_master_${data.to_resource.vendor_name
+                .replace(/\s+/g, "_")
+                .toLowerCase()}`;
+              setFormData((prev) => ({
+                ...prev,
+                to_vendor: vendorValue,
+              }));
+              setSelectedVendorOption({
+                value: vendorValue,
+                label: data.to_resource.vendor_name,
+              });
+              setOtherVendorId(data.to_resource.id);
             } else if (data.to_resource.type === "Pms::Store") {
               setFormData((prev) => ({
                 ...prev,
                 to_store_id: data.to_resource.id,
               }));
-            } else if (
-              data.to_resource.type === "OtherVendor" &&
-              data.to_resource.vendor_name
-            ) {
-              const vendorName = data.to_resource.vendor_name;
-              const vendorValue = `non_master_${vendorName
-                .replace(/\s+/g, "_")
-                .toLowerCase()}`;
-
-              // Add the new vendor to the supplier options
-              setSupplierOptions((prev) => {
-                const existingOptions = prev.filter((o) => o.value !== "other");
-                if (!existingOptions.some((o) => o.value === vendorValue)) {
-                  return [
-                    ...existingOptions,
-                    {
-                      label: vendorName,
-                      value: vendorValue,
-                    },
-                    { value: "other", label: "Other" },
-                  ];
-                }
-                return prev;
-              });
-
-              // Set the vendor as selected in the form data
-              setFormData((prev) => ({
-                ...prev,
-                to_vendor: vendorValue,
-              }));
-
-              // Store the OtherVendor id for later fetch if user wants to edit details
-              setOtherVendorId(data.to_resource.id);
-            } else if (data.to_resource.type === "OtherVendor") {
-              // Fallback if vendor_name is not present
-              setFormData((prev) => ({
-                ...prev,
-                to_vendor: "other",
-              }));
-              setOtherVendorId(data.to_resource.id);
+              // You may want to handle store name elsewhere, not in vendor dropdown
             }
           }
 
@@ -1507,6 +1498,46 @@ const GatePassEdit = () => {
     }
   };
 
+  useEffect(() => {
+    if (
+      formData.to_vendor &&
+      supplierOptions.length > 0 &&
+      !supplierOptions.some(
+        (v) => String(v.value) === String(formData.to_vendor)
+      )
+    ) {
+      // Add the selected vendor to the options if missing
+      setSupplierOptions((prev) => [
+        ...prev.filter((v) => v.value !== "other"),
+        {
+          value: formData.to_vendor,
+          label:
+            typeof formData.to_vendor === "string" &&
+            formData.to_vendor.startsWith("non_master_")
+              ? formData.to_vendor.replace("non_master_", "").replace(/_/g, " ")
+              : "Selected Vendor",
+        },
+        { value: "other", label: "Other" },
+      ]);
+    }
+  }, [formData.to_vendor, supplierOptions.length]);
+
+  useEffect(() => {
+    if (
+      selectedVendorOption &&
+      supplierOptions.length > 0 &&
+      !supplierOptions.some(
+        (v) => String(v.value) === String(selectedVendorOption.value)
+      )
+    ) {
+      setSupplierOptions((prev) => [
+        ...prev.filter((v) => v.value !== "other"),
+        selectedVendorOption,
+        { value: "other", label: "Other" },
+      ]);
+    }
+  }, [selectedVendorOption, supplierOptions.length]);
+
   return (
     <div className="main-content">
       <div className="website-content overflow-auto">
@@ -1587,6 +1618,8 @@ const GatePassEdit = () => {
                           ...formData,
                           project_id: selected?.value,
                           sub_project_id: null,
+                          store_id: null,
+                          to_store_id: null,
                           gate_number_id: null,
                         })
                       }
@@ -1713,9 +1746,15 @@ const GatePassEdit = () => {
                                     });
                                   }
                                 }}
-                                value={supplierOptions.find(
-                                  (v) => v.value === formData.to_vendor
-                                )}
+                                value={
+                                  supplierOptions.find(
+                                    (v) =>
+                                      String(v.value) ===
+                                      String(formData.to_vendor)
+                                  ) ||
+                                  selectedVendorOption ||
+                                  null
+                                }
                                 placeholder="Select Vendor"
                               />
                             </div>
@@ -1860,7 +1899,10 @@ const GatePassEdit = () => {
                                   } else {
                                     setFormData({
                                       ...formData,
-                                      to_vendor: selected?.value,
+                                      // to_vendor: selected?.value,
+                                      to_vendor: selected?.value
+                                        ? String(selected.value)
+                                        : null,
                                     });
                                   }
                                 }}
