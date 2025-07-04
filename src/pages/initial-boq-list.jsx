@@ -681,7 +681,7 @@ const InitialBOQList = () => {
 
         axios
             .get(
-                `${baseURL}boq_details.json?q[work_category_id]=${categoryId}&q[work_sub_category_id]=${subCategoryId}&q[status]=${status}&q[inventory_id]=${inventoryMaterialId}&q[inventory_type_id]=${inventoryTypeId}&search=${search}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}boq_details.json?q[company_company_name_or_pms_sites_name_or_pms_wings_name_cont]=${search}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
                 // https://marathon.lockated.com/boq_details.json?q[work_category_id]=&q[work_sub_category_id]=&q[status]=approved&q[inventory_id]=&q[inventory_type_id]=&search=FINES&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414
             )
             .then((response) => {
