@@ -5,8 +5,9 @@ import MultiSelector from "../components/base/Select/MultiSelector";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { baseURL } from "../confi/apiDomain";
 import { Modal, Button, Form } from "react-bootstrap";
-import { useNavigate, useParams } from "react-router-dom"; // Add this import at the top
-
+import { useNavigate, useParams } from "react-router-dom"; // Add this
+// import at the top
+import { ShowIcon } from "../components";
 const MaterialReconciliationEdit = () => {
   const navigate = useNavigate(); // Add this hook
 
@@ -37,6 +38,34 @@ const MaterialReconciliationEdit = () => {
 
   // Add this state to track select-all status
   const [selectAll, setSelectAll] = useState(false);
+  const [batchList, setBatchList] = useState([]);
+  const [batchLoading, setBatchLoading] = useState(false);
+
+  // Add this state to track batch issue QTYs and the max allowed for the selected inventory
+  const [batchIssueQty, setBatchIssueQty] = useState({});
+  const [batchMaxQty, setBatchMaxQty] = useState(0);
+
+  // Add state for dynamic reasons
+  const [reasonOptions, setReasonOptions] = useState([]);
+
+  // Fetch reasons from API on mount
+  useEffect(() => {
+    axios
+      .get(
+        `https://marathon.lockated.com//material_reconciliation_reasons/fetch_reasons.json?token=${token}`
+      )
+      .then((response) => {
+        const options = response.data.map((reason) => ({
+          value: reason.id,
+          label: reason.name,
+        }));
+        setReasonOptions(options);
+      })
+      .catch((error) => {
+        setReasonOptions([]);
+        console.error("Error fetching reasons:", error);
+      });
+  }, [token]);
 
   // Add this function to handle select-all checkbox
   const handleSelectAll = (checked) => {
@@ -61,23 +90,75 @@ const MaterialReconciliationEdit = () => {
     }
   };
 
-  const openBatchPopup = (inventoryId) => {
-    setSelectedInventoryId(inventoryId);
-    // Fetch or set batchList here as needed
-    setShowBatchModal(true);
+  // const openBatchPopup = (inventory) => {
+  //   console.log("openBatchPopup inventory:", inventory);
+  //   setSelectedInventoryId(inventory.material_inventory_id);
+  //   setTimeout(() => setShowBatchModal(true), 0);
+
+  //   // Find the selected inventory in formData.material_reconciliation_items_attributes
+  //   const inv = formData.material_reconciliation_items_attributes.find(
+  //     (item) => item.id === inventory.material_inventory_id
+  //   );
+  //   if (inv) {
+  //     const maxQty =
+  //       (parseFloat(inv.deadstock_qty) || 0) +
+  //       (parseFloat(inv.theft_or_missing_qty) || 0) +
+  //       (parseFloat(inv.damage_qty) || 0);
+  //     setBatchMaxQty(maxQty);
+
+  //     // If editing, prefill batchIssueQty from existing mr_batches_attributes
+  //     if (inv.mr_batches_attributes) {
+  //       const prefill = {};
+  //       inv.mr_batches_attributes.forEach((batch) => {
+  //         prefill[batch.grn_batch_id] = batch.grn_batch_qty;
+  //       });
+  //       setBatchIssueQty(prefill);
+  //     } else {
+  //       setBatchIssueQty({});
+  //     }
+  //   } else {
+  //     setBatchMaxQty(0);
+  //     setBatchIssueQty({});
+  //   }
+  // };
+
+  const openBatchPopup = (inventory) => {
+    console.log("openBatchPopup inventory:", inventory);
+    setSelectedInventoryId(inventory.material_inventory_id);
+
+    setTimeout(() => setShowBatchModal(true), 0);
+
+    // Find the selected inventory in formData.material_reconciliation_items_attributes
+    const inv = formData.material_reconciliation_items_attributes.find(
+      (item) => item.material_inventory_id === inventory.material_inventory_id
+    );
+    if (inv) {
+      const maxQty =
+        (parseFloat(inv.deadstock_qty) || 0) +
+        (parseFloat(inv.theft_or_missing_qty) || 0) +
+        (parseFloat(inv.damage_qty) || 0);
+      setBatchMaxQty(maxQty);
+
+      // If editing, prefill batchIssueQty from existing mr_batches_attributes
+      if (inv.mr_batches_attributes) {
+        const prefill = {};
+        inv.mr_batches_attributes.forEach((batch) => {
+          prefill[batch.grn_batch_id] = batch.grn_batch_qty;
+        });
+        setBatchIssueQty(prefill);
+      } else {
+        setBatchIssueQty({});
+      }
+    } else {
+      setBatchMaxQty(0);
+      setBatchIssueQty({});
+    }
   };
 
   const [selectedStatus, setSelectedStatus] = useState({
     value: "",
     label: "Select Status",
   });
-
-  // Update the reasonOptions array
-  const reasonOptions = [
-    { value: "rmc_production", label: "RMC Production" },
-    { value: "sale_of_scrap", label: "Sale of Scrap" },
-    { value: "stock_adjustment", label: "Stock Adjustment" },
-  ];
 
   // Function to close the modal
   const closeAddMaterialModal = () => {
@@ -293,7 +374,7 @@ const MaterialReconciliationEdit = () => {
       .catch((error) => {
         console.error("Error fetching inventory types:", error);
       });
-  }, []); // Empty dependency array to run only once on mount
+  }, []);
 
   // Fetch inventory sub-types when an inventory type is selected
   useEffect(() => {
@@ -551,7 +632,7 @@ const MaterialReconciliationEdit = () => {
   //     // Set selected inventories based on existing items
   //     const existingInventoryIds =
   //       formData.material_reconciliation_items_attributes.map(
-  //         (item) => item.mor_inventory_id
+  //         (item) => item.material_inventory_id
   //       );
   //     const selectedItems = response.data.inventories.filter((inventory) =>
   //       existingInventoryIds.includes(inventory.id)
@@ -785,7 +866,7 @@ const MaterialReconciliationEdit = () => {
     const newInventories = selectedInventories.map((inventory) => ({
       id: inventory.id,
       material: inventory.material || inventory.material_name || inventory.name, // Try different possible field names
-      stock_as_on: inventory.qty || 0,
+      stock_as_on: inventory.stock_as_on || 0,
       rate: inventory.rate_weighted_average || 0,
       deadstock_qty: 0,
       theft_or_missing_qty: 0,
@@ -811,7 +892,7 @@ const MaterialReconciliationEdit = () => {
       material_reconciliation_items_attributes: [
         ...prev.material_reconciliation_items_attributes,
         ...newInventories.map((inventory) => ({
-          mor_inventory_id: inventory.id,
+          material_inventory_id: inventory.id,
           material: inventory.material, // Include material name
           uom: inventory.uom, // Include UOM
           stock_as_on: inventory.stock_as_on,
@@ -825,6 +906,9 @@ const MaterialReconciliationEdit = () => {
           net_quantity: inventory.net_quantity,
           remarks: inventory.remarks,
           reason: inventory.reason,
+          ...(inventory.mr_batches_attributes
+            ? { mr_batches_attributes: inventory.mr_batches_attributes }
+            : {}),
         })),
       ],
     }));
@@ -858,7 +942,10 @@ const MaterialReconciliationEdit = () => {
         ...updatedItems[index],
         [field]: value,
       };
-
+      // If field is 'reason', store as reason_id
+      if (field === "reason") {
+        updatedItems[index].reason_id = value;
+      }
       // Calculate net quantity when relevant fields change
       if (
         field === "deadstock_qty" ||
@@ -882,7 +969,6 @@ const MaterialReconciliationEdit = () => {
           adjustmentQty
         );
       }
-
       return {
         ...prev,
         material_reconciliation_items_attributes: updatedItems,
@@ -1003,7 +1089,7 @@ const MaterialReconciliationEdit = () => {
           material_reconciliation_items_attributes:
             data.material_reconciliation_items.map((item) => ({
               id: item.id,
-              mor_inventory_id: item.mor_inventory_id,
+              material_inventory_id: item.material_inventory_id,
               material: item.material,
               stock_as_on: item.stock_as_on,
               rate: item.rate,
@@ -1015,7 +1101,7 @@ const MaterialReconciliationEdit = () => {
               adjustment_value: item.adjustment_value,
               net_quantity: item.net_quantity,
               remarks: item.remarks,
-              reason: item.reason,
+              reason_id: item.reason ? item.reason.id : null,
               uom: item.uom,
             })),
         });
@@ -1023,7 +1109,7 @@ const MaterialReconciliationEdit = () => {
         // Set accepted inventories for the table
         setAcceptedInventories(
           data.material_reconciliation_items.map((item) => ({
-            id: item.mor_inventory_id,
+            id: item.material_inventory_id,
             material: item.material,
             stock_as_on: item.stock_as_on,
             rate: item.rate,
@@ -1074,7 +1160,7 @@ const MaterialReconciliationEdit = () => {
           material_reconciliation_items_attributes:
             formData.material_reconciliation_items_attributes.map((item) => ({
               id: item.id,
-              mor_inventory_id: item.mor_inventory_id,
+              material_inventory_id: item.material_inventory_id,
               stock_as_on: parseFloat(item.stock_as_on) || 0,
               rate: item.rate ? parseFloat(item.rate) : null,
               deadstock_qty: item.deadstock_qty
@@ -1097,8 +1183,11 @@ const MaterialReconciliationEdit = () => {
                 ? parseFloat(item.net_quantity)
                 : null,
               remarks: item.remarks || "",
-              reason: item.reason || "",
-              _destroy: item._destroy || false, // Include destroy flag in payload
+              reason_id: item.reason_id || null,
+              ...(item.mr_batches_attributes
+                ? { mr_batches_attributes: item.mr_batches_attributes }
+                : {}),
+              _destroy: item._destroy || false,
             })),
         },
       };
@@ -1172,7 +1261,7 @@ const MaterialReconciliationEdit = () => {
       ...prev,
       material_reconciliation_items_attributes:
         prev.material_reconciliation_items_attributes.map((item) =>
-          item.mor_inventory_id === inventoryId
+          item.material_inventory_id === inventoryId
             ? { ...item, _destroy: true } // Mark for deletion
             : item
         ),
@@ -1187,6 +1276,71 @@ const MaterialReconciliationEdit = () => {
   useEffect(() => {
     setSelectAll(false);
   }, [pagination.current_page]);
+
+  const handleBatchModalSubmit = () => {
+    // Prepare batch data
+    const batchData = Object.entries(batchIssueQty)
+      .filter(([batchId, qty]) => qty && Number(qty) > 0)
+      .map(([batchId, qty]) => ({
+        grn_batch_id: Number(batchId),
+        grn_batch_qty: Number(qty),
+      }));
+
+    // Update the relevant inventory in formData
+    setFormData((prev) => ({
+      ...prev,
+      material_reconciliation_items_attributes:
+        prev.material_reconciliation_items_attributes.map((item) =>
+          item.id === selectedInventoryId
+            ? { ...item, mr_batches_attributes: batchData }
+            : item
+        ),
+    }));
+
+    setShowBatchModal(false);
+  };
+
+  const handleBatchIssueQtyChange = (batchId, value) => {
+    const newValue = parseFloat(value) || 0;
+    const newBatchIssueQty = { ...batchIssueQty, [batchId]: newValue };
+    const total = Object.values(newBatchIssueQty).reduce(
+      (sum, v) => sum + (parseFloat(v) || 0),
+      0
+    );
+    if (total > batchMaxQty) {
+      alert(`Total Issue QTY cannot exceed ${batchMaxQty}`);
+      return;
+    } else {
+      setBatchIssueQty(newBatchIssueQty);
+    }
+  };
+
+  useEffect(() => {
+    console.log("Batch Modal:", {
+      showBatchModal,
+      selectedInventoryId,
+      selectedStore,
+    });
+    if (showBatchModal && selectedInventoryId && selectedStore?.value) {
+      const fetchBatchList = async () => {
+        setBatchLoading(true);
+        try {
+          const response = await axios.get(
+            `https://marathon.lockated.com/material_reconciliations/grn_batches.json?q[material_inventory_id_eq]=${selectedInventoryId}&q[pms_store_id_eq]=${selectedStore.value}&token=${token}`
+          );
+          setBatchList(response.data || []);
+        } catch (error) {
+          setBatchList([]);
+          console.error("Error fetching batch list:", error);
+        } finally {
+          setBatchLoading(false);
+        }
+      };
+      fetchBatchList();
+    } else {
+      setBatchList([]);
+    }
+  }, [showBatchModal, selectedInventoryId, selectedStore]);
 
   return (
     <div className="main-content">
@@ -1294,6 +1448,7 @@ const MaterialReconciliationEdit = () => {
                       <th style={{ minWidth: "120px" }}>Deadstock Qty</th>
                       <th style={{ minWidth: "120px" }}>Theft / Missing Qty</th>
                       <th style={{ minWidth: "120px" }}>Damage Qty</th>
+                      <th style={{ minWidth: "80px" }}>Batch</th>
                       <th style={{ minWidth: "150px" }}>Adjustment Quantity</th>
                       <th>Adjustment Rate(INR)</th>
                       <th>Adjustment Value(INR)</th>
@@ -1307,7 +1462,7 @@ const MaterialReconciliationEdit = () => {
                     {formData.material_reconciliation_items_attributes
                       .filter((item) => !item._destroy) // Only show non-deleted items
                       .map((item, index) => (
-                        <tr key={item.mor_inventory_id}>
+                        <tr key={item.material_inventory_id}>
                           <td>{index + 1}</td>
                           <td>{item.material}</td>
                           <td>{item.uom}</td>
@@ -1317,7 +1472,13 @@ const MaterialReconciliationEdit = () => {
                             <input
                               className="form-control"
                               type="number"
-                              value={item.deadstock_qty || ""}
+                              // value={item.deadstock_qty || ""}
+                              value={
+                                item.deadstock_qty === null ||
+                                item.deadstock_qty === undefined
+                                  ? ""
+                                  : item.deadstock_qty
+                              }
                               onChange={(e) =>
                                 handleInputChange(
                                   index,
@@ -1332,7 +1493,13 @@ const MaterialReconciliationEdit = () => {
                             <input
                               className="form-control"
                               type="number"
-                              value={item.theft_or_missing_qty || ""}
+                              // value={item.theft_or_missing_qty || ""}
+                              value={
+                                item.theft_or_missing_qty === null ||
+                                item.theft_or_missing_qty === undefined
+                                  ? ""
+                                  : item.theft_or_missing_qty
+                              }
                               onChange={(e) =>
                                 handleInputChange(
                                   index,
@@ -1347,7 +1514,13 @@ const MaterialReconciliationEdit = () => {
                             <input
                               className="form-control"
                               type="number"
-                              value={item.damage_qty || ""}
+                              //
+                              value={
+                                item.damage_qty === null ||
+                                item.damage_qty === undefined
+                                  ? ""
+                                  : item.damage_qty
+                              }
                               onChange={(e) =>
                                 handleInputChange(
                                   index,
@@ -1359,10 +1532,33 @@ const MaterialReconciliationEdit = () => {
                             />
                           </td>
                           <td>
+                            <ShowIcon
+                              // onClick={() => openBatchPopup(item)}
+                              onClick={() =>
+                                openBatchPopup({
+                                  ...item,
+                                  material_inventory_id:
+                                    item.material_inventory_id,
+                                })
+                              }
+                              style={{
+                                // cursor: "pointer",
+                                width: "20px",
+                                height: "20px",
+                              }}
+                            />
+                          </td>
+                          <td>
                             <input
                               className="form-control"
                               type="number"
-                              value={item.adjustment_qty || ""}
+                              // value={item.adjustment_qty || ""}
+                              value={
+                                item.adjustment_qty === null ||
+                                item.adjustment_qty === undefined
+                                  ? ""
+                                  : item.adjustment_qty
+                              }
                               onChange={(e) =>
                                 handleInputChange(
                                   index,
@@ -1429,14 +1625,14 @@ const MaterialReconciliationEdit = () => {
                               options={reasonOptions}
                               value={
                                 reasonOptions.find(
-                                  (option) => option.value === item.reason
+                                  (option) => option.value === item.reason_id
                                 ) || null
                               }
                               onChange={(selectedOption) =>
                                 handleInputChange(
                                   index,
                                   "reason",
-                                  selectedOption ? selectedOption.value : ""
+                                  selectedOption ? selectedOption.value : null
                                 )
                               }
                               placeholder="Select Reason"
@@ -1446,7 +1642,9 @@ const MaterialReconciliationEdit = () => {
                             <button
                               className="btn"
                               onClick={() =>
-                                handleRemoveInventory(item.mor_inventory_id)
+                                handleRemoveInventory(
+                                  item.material_inventory_id
+                                )
                               }
                             >
                               <svg
@@ -1604,7 +1802,7 @@ const MaterialReconciliationEdit = () => {
         </Modal.Header>
         <Modal.Body>
           <div className="row">
-            <div className="col-md-6">
+            <div className="col-md-4">
               <div className="form-group">
                 <label>Material Type</label>
                 <MultiSelector
@@ -1615,7 +1813,7 @@ const MaterialReconciliationEdit = () => {
                 />
               </div>
             </div>
-            <div className="col-md-6">
+            <div className="col-md-4">
               <div className="form-group">
                 <label>Material Sub-Type</label>
                 <MultiSelector
@@ -1626,7 +1824,7 @@ const MaterialReconciliationEdit = () => {
                 />
               </div>
             </div>
-            <div className="col-md-6">
+            <div className="col-md-4">
               <div className="form-group">
                 <label>Material</label>
                 <MultiSelector
@@ -1637,19 +1835,19 @@ const MaterialReconciliationEdit = () => {
                 />
               </div>
             </div>
-            <div className="col-md-6">
-              <div className="form-group">
+            <div className="col-md-4">
+              <div className="form-group mt-2">
                 <label>Generic Specification</label>
                 <SingleSelector
                   options={genericSpecifications}
                   onChange={handleGenericSpecChange}
                   value={selectedGenericSpec}
-                  placeholder="Select Generic Specification"
+                  placeholder="Select Gen Specification"
                 />
               </div>
             </div>
-            <div className="col-md-6">
-              <div className="form-group">
+            <div className="col-md-4">
+              <div className="form-group mt-2">
                 <label>Colour</label>
                 <SingleSelector
                   options={colors}
@@ -1659,8 +1857,8 @@ const MaterialReconciliationEdit = () => {
                 />
               </div>
             </div>
-            <div className="col-md-6">
-              <div className="form-group">
+            <div className="col-md-4">
+              <div className="form-group mt-2">
                 <label>Brand</label>
                 <SingleSelector
                   options={brands}
@@ -1670,8 +1868,8 @@ const MaterialReconciliationEdit = () => {
                 />
               </div>
             </div>
-            <div className="col-md-6">
-              <div className="form-group">
+            <div className="col-md-4">
+              <div className="form-group mt-2">
                 <label>UOM</label>
                 <SingleSelector
                   options={uoms}
@@ -1694,9 +1892,9 @@ const MaterialReconciliationEdit = () => {
               </button>
             </div>
           </div>
-          <div className="card card-default mt-5">
-            <div className="card-body">
-              <div className="d-flex align-items-center gap-2">
+          {/* <div className="card card-default mt-5"> */}
+          {/* <div className="card-body"> */}
+          {/* <div className="d-flex align-items-center gap-2">
                 <label className="mb-0">Show</label>
                 <select
                   className="form-select form-select-sm"
@@ -1710,177 +1908,170 @@ const MaterialReconciliationEdit = () => {
                   <option value="50">20</option>
                 </select>
                 <span>entries</span>
-              </div>
-            </div>
+              </div> */}
+          {/* </div> */}
 
-            <div className="tbl-container  mt-3">
-              <table className="w-100 ">
-                <thead>
+          <div className="tbl-container  mt-3">
+            <table className="w-100 ">
+              <thead>
+                <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      checked={selectAll}
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      style={{ cursor: "pointer" }}
+                    />
+                  </th>
+                  <th>Material Type</th>
+                  <th>Material Sub-Type</th>
+                  <th>Material</th>
+                  <th>Generic Specification</th>
+                  <th>Colour</th>
+                  <th>Brand</th>
+                  <th>Qty</th>
+                  <th>UOM</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
                   <tr>
-                    <th>
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        checked={selectAll}
-                        onChange={(e) => handleSelectAll(e.target.checked)}
-                        style={{ cursor: "pointer" }}
-                      />
-                    </th>
-                    <th>Material Type</th>
-                    <th>Material Sub-Type</th>
-                    <th>Material</th>
-                    <th>Generic Specification</th>
-                    <th>Colour</th>
-                    <th>Brand</th>
-                    <th>Qty</th>
-                    <th>UOM</th>
+                    <td colSpan="9" className="text-center">
+                      Loading...
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan="9" className="text-center">
-                        Loading...
+                ) : morInventories.length === 0 ? (
+                  <tr>
+                    <td colSpan="9" className="text-center">
+                      No data found
+                    </td>
+                  </tr>
+                ) : (
+                  morInventories.map((inventory) => (
+                    <tr key={inventory.id}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          checked={selectedInventories.some(
+                            (item) => item.id === inventory.id
+                          )}
+                          onChange={() => handleInventorySelect(inventory)}
+                          style={{ cursor: "pointer" }}
+                        />
                       </td>
+                      <td>{inventory.material_type || "-"}</td>
+                      <td>{inventory.material_sub_type || "-"}</td>
+                      <td>{inventory.material || "-"}</td>
+                      <td>{inventory.generic_specification || "-"}</td>
+                      <td>{inventory.colour || "-"}</td>
+                      <td>{inventory.brand || "-"}</td>
+                      <td>{inventory.qty || "-"}</td>
+                      <td>{inventory.uom || "-"}</td>
                     </tr>
-                  ) : morInventories.length === 0 ? (
-                    <tr>
-                      <td colSpan="9" className="text-center">
-                        No data found
-                      </td>
-                    </tr>
-                  ) : (
-                    morInventories.map((inventory) => (
-                      <tr key={inventory.id}>
-                        <td>
-                          <input
-                            type="checkbox"
-                            className="form-check-input"
-                            checked={selectedInventories.some(
-                              (item) => item.id === inventory.id
-                            )}
-                            onChange={() => handleInventorySelect(inventory)}
-                            style={{ cursor: "pointer" }}
-                          />
-                        </td>
-                        <td>{inventory.material_type || "-"}</td>
-                        <td>{inventory.material_sub_type || "-"}</td>
-                        <td>{inventory.material || "-"}</td>
-                        <td>{inventory.generic_specification || "-"}</td>
-                        <td>{inventory.colour || "-"}</td>
-                        <td>{inventory.brand || "-"}</td>
-                        <td>{inventory.qty || "-"}</td>
-                        <td>{inventory.uom || "-"}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-              <div className="d-flex justify-content-between align-items-center px-3 mt-1 mb-2">
-                <ul className="pagination justify-content-center d-flex">
-                  <li
-                    className={`page-item ${
-                      pagination.current_page === 1 ? "disabled" : ""
-                    }`}
+          <div className="d-flex justify-content-between align-items-center px-3 mt-1 mb-2">
+            <ul className="pagination justify-content-center d-flex">
+              <li
+                className={`page-item ${
+                  pagination.current_page === 1 ? "disabled" : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(1)}
+                >
+                  First
+                </button>
+              </li>
+
+              <li
+                className={`page-item ${
+                  pagination.current_page === 1 ? "disabled" : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(pagination.current_page - 1)}
+                  disabled={pagination.current_page === 1}
+                >
+                  Prev
+                </button>
+              </li>
+
+              {getPageNumbers().map((pageNumber) => (
+                <li
+                  key={pageNumber}
+                  className={`page-item ${
+                    pagination.current_page === pageNumber ? "active" : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handlePageChange(pageNumber)}
                   >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(1)}
-                    >
-                      First
-                    </button>
-                  </li>
+                    {pageNumber}
+                  </button>
+                </li>
+              ))}
 
-                  <li
-                    className={`page-item ${
-                      pagination.current_page === 1 ? "disabled" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() =>
-                        handlePageChange(pagination.current_page - 1)
-                      }
-                      disabled={pagination.current_page === 1}
-                    >
-                      Prev
-                    </button>
-                  </li>
+              <li
+                className={`page-item ${
+                  pagination.current_page === pagination.total_pages
+                    ? "disabled"
+                    : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(pagination.current_page + 1)}
+                  disabled={pagination.current_page === pagination.total_pages}
+                >
+                  Next
+                </button>
+              </li>
 
-                  {getPageNumbers().map((pageNumber) => (
-                    <li
-                      key={pageNumber}
-                      className={`page-item ${
-                        pagination.current_page === pageNumber ? "active" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(pageNumber)}
-                      >
-                        {pageNumber}
-                      </button>
-                    </li>
-                  ))}
+              <li
+                className={`page-item ${
+                  pagination.current_page === pagination.total_pages
+                    ? "disabled"
+                    : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(pagination.total_pages)}
+                  disabled={pagination.current_page === pagination.total_pages}
+                >
+                  Last
+                </button>
+              </li>
+            </ul>
 
-                  <li
-                    className={`page-item ${
-                      pagination.current_page === pagination.total_pages
-                        ? "disabled"
-                        : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() =>
-                        handlePageChange(pagination.current_page + 1)
-                      }
-                      disabled={
-                        pagination.current_page === pagination.total_pages
-                      }
-                    >
-                      Next
-                    </button>
-                  </li>
-
-                  <li
-                    className={`page-item ${
-                      pagination.current_page === pagination.total_pages
-                        ? "disabled"
-                        : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(pagination.total_pages)}
-                      disabled={
-                        pagination.current_page === pagination.total_pages
-                      }
-                    >
-                      Last
-                    </button>
-                  </li>
-                </ul>
-
-                <div>
-                  <p>
-                    Showing{" "}
-                    {Math.min(
-                      (pagination.current_page - 1) * pageSize + 1 || 1,
-                      pagination.total_count
-                    )}{" "}
-                    to{" "}
-                    {Math.min(
-                      pagination.current_page * pageSize,
-                      pagination.total_count
-                    )}{" "}
-                    of {pagination.total_count} entries
-                  </p>
-                </div>
-              </div>
+            <div>
+              <p>
+                Showing{" "}
+                {Math.min(
+                  (pagination.current_page - 1) * pageSize + 1 || 1,
+                  pagination.total_count
+                )}{" "}
+                to{" "}
+                {Math.min(
+                  pagination.current_page * pageSize,
+                  pagination.total_count
+                )}{" "}
+                of {pagination.total_count} entries
+              </p>
             </div>
           </div>
+
+          {/* </div> */}
 
           <div className="row mt-3 justify-content-center">
             <div className="col-md-3">
@@ -1903,6 +2094,7 @@ const MaterialReconciliationEdit = () => {
         </Modal.Body>
       </Modal>
 
+      {/* issue material pop up modal*/}
       <Modal
         show={showBatchModal}
         onHide={() => setShowBatchModal(false)}
@@ -1910,42 +2102,81 @@ const MaterialReconciliationEdit = () => {
         size="xl"
       >
         <Modal.Header closeButton>
-          <Modal.Title>Issue Material</Modal.Title>
+          <Modal.Title>Batch Deatails</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="tbl-container">
             <table className="w-100">
               <thead>
                 <tr>
-                  <th className="text-start">Type</th>
-                  <th className="text-start">Display No.</th>
-                  <th className="text-start">Material</th>
-                  <th className="text-start">Material Attributes</th>
-                  <th className="text-start">Quantity</th>
-                  <th className="text-start">Current Adjustment QTY</th>
+                   <th className="text-start">Sr. No.</th>
+                  <th className="text-start">Batch No</th>
+                  <th className="text-start">MOR No.</th>
+                  <th className="text-start">GRN No</th>
+                  <th className="text-start">GRN Creation Date</th>
+                  <th className="text-start"> Available Qty</th>
+                  <th className="text-start">Issue QTY</th>
                 </tr>
               </thead>
+
               <tbody>
-                <tr>
-                  <td className="text-start">RETURN INVENTORY</td>
-                  <td className="text-start">6020</td>
-                  <td className="text-start">TILE ADHESIVE(KG)</td>
-                  <td className="text-start"></td>
-                  <td className="text-start">50</td>
-                  <td className="text-start">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Enter..."
-                    />
-                  </td>
-                </tr>
+                {batchLoading ? (
+                  <tr>
+                    <td colSpan="6" className="text-center">
+                      Loading...
+                    </td>
+                  </tr>
+                ) : batchList.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="text-center">
+                      No batch data found
+                    </td>
+                  </tr>
+                ) : (
+                  batchList.map((batch, idx) => (
+                    <tr key={batch.id || idx}>
+                      <td className="text-start">{idx + 1}</td>
+                      <td className="text-start">
+                        {batch.batch_no || batch.id || "-"}
+                      </td>
+                      <td className="text-start">{batch.mor_number || "-"}</td>
+                      <td className="text-start">{batch.grn_number || "-"}</td>
+                      <td className="text-start">
+                        {batch.created_at
+                          ? new Date(batch.created_at).toLocaleDateString(
+                              "en-GB"
+                            )
+                          : "-"}
+                      </td>
+                      <td className="text-start">
+                        {batch.current_stock_qty ?? "-"}
+                      </td>
+                      <td className="text-start">
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="Enter..."
+                          min={0}
+                          value={batchIssueQty[batch.id] || ""}
+                          onChange={(e) =>
+                            handleBatchIssueQtyChange(batch.id, e.target.value)
+                          }
+                        />
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
           <div className="row mt-2 justify-content-center">
             <div className="col-md-2 mt-2">
-              <button className="purple-btn2 w-100">Submit</button>
+              <button
+                className="purple-btn2 w-100"
+                onClick={handleBatchModalSubmit}
+              >
+                Submit
+              </button>
             </div>
             <div className="col-md-2">
               <button
