@@ -14,10 +14,13 @@ import axios from "axios";
 import { Link } from 'react-router-dom'
 import { baseURL } from "../confi/apiDomain";
 import { toast, ToastContainer } from "react-toastify";
+import { useParams } from 'react-router-dom';
 
 
 
 const BOQList = () => {
+  const { id } = useParams()
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [show, setShow] = useState(false); // State to manage modal visibility for copy budget
   const handleShow = () => setShow(true);
@@ -36,7 +39,7 @@ const BOQList = () => {
 
   const [searchKeyword, setSearchKeyword] = useState('');
 
-  const navigate = useNavigate(); // hook to get navigate function
+
 
   const handleClick = () => {
     // Navigate to '/about' when the button is clicked
@@ -174,15 +177,16 @@ const BOQList = () => {
 
   const [boqDetailsSub, setBoqDetailsSub] = useState(true);
   // Fetch data from the API when the component mounts
+
   const fetchData = (page) => {
     setLoading(true);
     axios
-      .get(`${baseURL}boq_details.json?page=${page}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      .get(`${baseURL}boq_details/${id}/boq_info.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
       .then((response) => {
         setBoqList(response.data); // Set the data in state
         // console.log("data list ", response.data.pagination.total_entries)
-        setTotalPages(response.data?.pagination.total_pages); // Set total pages
-        setTotalEntries(response.data?.pagination.total_entries);
+        // setTotalPages(response.data?.pagination.total_pages); // Set total pages
+        // setTotalEntries(response.data?.pagination.total_entries);
         setLoading2(false);
         setLoading(false);
         if (response.data.boq_sub_items && response.data.boq_sub_items.length > 0) {
@@ -202,8 +206,8 @@ const BOQList = () => {
 
   // Fetch data on component mount and when the page changes
   useEffect(() => {
-    fetchData(currentPage);
-  }, [currentPage]);
+    fetchData(id);
+  }, [id]);
 
   // Handle page change
   const handlePageChange = (pageNumber) => {
@@ -902,237 +906,55 @@ const BOQList = () => {
         <div className="website-content">
           <div className="module-data-section p-4">
             <a href="" style={{ color: 'black' }}>Home &gt; Engineering  &gt; BOQ List</a>
-            {/* <h5 className="mt-4">BOQ</h5> */}
-            <div className="d-flex justify-content-end mt-4">
-              {/* <button className="purple-btn2" onClick={handleClick}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                fill="white"
-                className="bi bi-plus"
-                viewBox="0 0 16 16"
-              >
-                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-              </svg>
-              <span> Create BOQ</span>
-            </button> */}
-              {/* <button className="purple-btn2">Import</button>
-            <button className="purple-btn2">Export</button>
-            <button className="purple-btn2">Delete</button> */}
-              {/* <button
-              className="purple-btn2"
-              // data-bs-toggle="modal"
-              // data-bs-target="#copyModal"
-              // onClick={openCopyModal}
-              onClick={handleShow}
-            >
-              Copy
-            </button> */}
-            </div>
-            {/* <div className="tab-content1 active" id="total-content"> */}
-            {/* Total Content Here */}
 
 
-            <div className="card mt-2 There is no selected portion. The entire code file is provided. If you could specify the portion of the code you would like me to improve, I can help you with that.mb-5 ">
-              <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
-                <div className="card-body mt-0 pt-0">
-                  <div className="row">
-                    <div className="col-md-3">
-                      <div className="form-group">
-                        <label>Project <span>*</span></label>
-                        <SingleSelector
-                          options={projectOptions}
-                          onChange={handleProjectChange}
-                          value={selectedProject}
-                          placeholder={`Select Project`} // Dynamic placeholder
-                        />
-                        {errors.project && (
-                          <div className="error-message">{errors.project}</div>
-                        )}
-                      </div>
+
+            <div className="card mt-5 mb-5 ">
+
+
+              <div className="details_page mt-5 mb-5">
+                <div className="row px-3">
+                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                    <div className="col-6">
+                      <label>Project</label>
                     </div>
-                    <div className="col-md-3">
-                      <div className="form-group">
-                        <label>Sub-project</label>
-                        <SingleSelector
-                          options={siteOptions}
-                          onChange={handleSiteChange}
-                          value={selectedSite}
-                          placeholder={`Select Sub-project`} // Dynamic placeholder
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-3">
-                      <div className="form-group">
-                        <label>Wing</label>
-                        <SingleSelector
-                          options={wingsOptions}
-                          value={selectedWing}
-                          onChange={handleWingChange}
-                          placeholder={`Select Wing`} // Dynamic placeholder
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-3">
-                      <button type="" className="purple-btn2 mt-4" onClick={handleGoClick}>
-                        Go
-                      </button>
+                    <div className="col-6">
+                      <label className="text">
+                        <span className="me-3">
+                          <span className="text-dark">:</span>
+                        </span>
+                        {boqList?.project_name || "-"}
+                      </label>
                     </div>
                   </div>
-                  {/* <div className="row">
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Main Category</label>
-                      <SingleSelector
-                        options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                        placeholder={`Select Main Category`} // Dynamic placeholder
-                      />
+                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                    <div className="col-6">
+                      <label>Sub-Project</label>
+                    </div>
+                    <div className="col-6">
+                      <label className="text">
+                        <span className="me-3">
+                          <span className="text-dark">:</span>
+                        </span>
+                        {boqList?.site_name || "-"}
+                      </label>
                     </div>
                   </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Sub-Category lvl 2</label>
-                      <SingleSelector
-                        options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                        placeholder={`Select Sub-Category lvl 2`} // Dynamic placeholder
-                      />
+                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                    <div className="col-6">
+                      <label>Wing</label>
+                    </div>
+                    <div className="col-6">
+                      <label className="text">
+                        <span className="me-3">
+                          <span className="text-dark">:</span>
+                        </span>
+                        {boqList?.wing_name || "-"}
+                      </label>
                     </div>
                   </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Sub-Category lvl 3</label>
-                      <SingleSelector
-                        options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                        placeholder={`Select Sub-Category lvl 3`} // Dynamic placeholder
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Sub-Category lvl 4</label>
-                      <SingleSelector
-                        options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                        placeholder={`Select Sub-Category lvl 4`} // Dynamic placeholder
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Sub-Category lvl 5</label>
-                      <SingleSelector
-                        options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                        placeholder={`Select Sub-Category lvl 5`} // Dynamic placeholder
-                      />
-                    </div>
-                  </div>
-                </div> */}
-                  {/* <div className="row">
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>BOQ Name</label>
-                      <SingleSelector
-                        options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                        placeholder={`Select BOQ Name`} // Dynamic placeholder
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>BOQ ID</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>BOQ Description</label>
-                      <textarea
-                        className="form-control"
-                        rows={1}
-                        placeholder="Enter ..."
-                        defaultValue={""}
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4">
-                    <div className="form-group">
-                      <label>Status</label>
-                      <SingleSelector
-                        options={options}
-                        // value={values[label]} // Pass current value
-                        // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                        placeholder={`Select Status`} // Dynamic placeholder
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>From Date</label>
-                      <input
-                        className="form-control"
-                        type="date"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>To Date</label>
-                      <input
-                        className="form-control"
-                        type="date"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                      />
-                    </div>
-                  </div>
-                  <div className="col-md-12 mt-2">
-                    <div className="d-flex">
-                      <div className="form-group d-flex mt-1">
-                        <label className="form-check-label me-3">
-                          View BOQ Version List
-                        </label>
-                        <div className="form-check pe-2">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                          />
-                        </div>
-                      </div>
-                      <div className="form-group">
-                        <SingleSelector
-                          options={options}
-                          // value={values[label]} // Pass current value
-                          // onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                          placeholder={`Select BOQ Version`} // Dynamic placeholder
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div> */}
                 </div>
-
-                {/* <BulkAction /> */}
-
-              </CollapsibleCard>
+              </div>
 
               <CollapsibleCard title="Bulk Action" isInitiallyCollapsed={true}>
                 <form
@@ -1239,38 +1061,23 @@ const BOQList = () => {
                         />
                       </svg>
                     </button>
-                    <button className="purple-btn2" onClick={() => setShowModal(true)}>Bulk Upload</button>
-                    {/* Reset Button */}
-                    <button className="purple-btn2" onClick={handleClickCollapse}>Reset</button>
 
-                    {/* Create BOQ Button */}
-                    <button className="purple-btn2" onClick={handleClick}>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        fill="white"
-                        className="bi bi-plus"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                      </svg>
-                      <span> Create BOQ</span>
-                    </button>
+                    {/* Reset Button */}
+                    <button className="purple-btn2 me-2" onClick={handleClickCollapse}>Reset</button>
                   </div>
                 </div>
               </div>
 
 
-              <div className="mx-3">
-                <div className="tbl-container mt-1">
+              <div className="mx-3 mb-5 mt-3">
+                <div className="tbl-container mt-1" style={{maxHeight:"500px"}}>
                   <table className="w-100">
                     <thead>
                       <tr>
                         <th>Sr.No.</th>
                         <th className="text-start"> <input className="ms-1 me-1 mb-1" type="checkbox" /></th>
-                        <th className="text-start">Expand</th>
-                        <th className="text-start">Project/Sub-Project</th>
+                        {/* <th className="text-start">Expand</th> */}
+                        <th className="text-start">Category</th>
                         <th className="text-start">BOQ ID</th>
                         <th className="text-start">Unit</th>
                         <th className="text-start">Cost Qty</th>
@@ -1284,165 +1091,16 @@ const BOQList = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {boqList && boqList.projects && boqList.projects.map((project, index) => (
-                        <React.Fragment key={project.id}>
-
-                          <tr>
-                            <td>
-                              {/* {index + 1} */}
-                              {(currentPage - 1) * itemsPerPage + index + 1}
-                            </td>
-                            <td>
-                              {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
-                            </td>
-                            <td>
-                              <button
-                                className="btn btn-link p-0"
-                                // onClick={handleSubProject}
-                                // onClick={() => toggleProject(project.id)}
-                                onClick={() => {
-                                  toggleProject(project.id); // disable manual toggle when auto-expand is active
-                                }}
-                                aria-label="Toggle row visibility"
-                              >
-                                {openProjectId === project.id ?
-                                  (
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="24"
-                                      height="24"
-                                      viewBox="0 0 24 24"
-                                      fill=" #e0e0e0"
-                                      stroke="black"
-                                      strokeWidth="1"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    >
-                                      {/* Square */}
-                                      <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                      {/* Minus Icon */}
-                                      <line x1="8" y1="12" x2="16" y2="12" />
-                                    </svg>
-                                  ) : (
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="24"
-                                      height="24"
-                                      viewBox="0 0 24 24"
-                                      fill=" #e0e0e0"
-                                      stroke="black"
-                                      strokeWidth="1"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    >
-                                      {/* Square */}
-                                      <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                      {/* Plus Icon */}
-                                      <line x1="12" y1="8" x2="12" y2="16" />
-                                      <line x1="8" y1="12" x2="16" y2="12" />
-                                    </svg>
-                                  )
-                                }
-                              </button>
-                            </td>
-                            <td className="text-start">{project.name}</td>
-                            <td className="text-start"></td>
-                            <td className="text-start"></td>
-                            <td className="text-start"></td>
-                            <td className="text-start"></td>
-                            <td className="text-start"></td>
-
-                          </tr>
-                          {/* subProject  start */}
-
-                          {openProjectId === project.id && project.sub_projects && project.sub_projects.map((subProject) => (
-                            <React.Fragment key={subProject.id}>
-                              <tr>
-                                <td></td>
-                                <td>
-                                  {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
-                                </td>
-
-                                <td>
-                                  <button
-                                    className="btn btn-link p-0"
-
-                                    onClick={() => toggleSubProject(subProject.id)}
-                                    aria-label="Toggle row visibility"
-                                  >
-                                    {openSubProjectId === subProject.id ?
-                                      (
-
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill=" #e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                          {/* Square */}
-                                          <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                          {/* Circle */}
-                                          {/* <circle cx="12" cy="12" r="9" /> */}
-                                          {/* Minus Icon (for when toggled) */}
-                                          <line x1="8" y1="12" x2="16" y2="12" />
-                                        </svg>
-                                        //   <svg
-                                        //   xmlns="http://www.w3.org/2000/svg"
-                                        //   width="16"
-                                        //   height="16"
-                                        //   fill="black"
-                                        //   className="bi bi-caret-up"
-                                        //   viewBox="0 0 16 16"
-                                        // >
-                                        //   <path d="M3.204 9h9.592L8 4.48 3.204 9z" />
-
-                                        // </svg>
-                                      ) : (
-
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill=" #e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                          {/* Square */}
-                                          <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                          {/* Circle */}
-                                          {/* <circle cx="12" cy="12" r="9" /> */}
-                                          {/* Plus Icon */}
-                                          <line x1="12" y1="8" x2="12" y2="16" />
-                                          <line x1="8" y1="12" x2="16" y2="12" />
-                                        </svg>
-
-                                        //   <svg
-                                        //   xmlns="http://www.w3.org/2000/svg"
-                                        //   width="16"
-                                        //   height="16"
-                                        //   fill="black"
-                                        //   className="bi bi-caret-up"
-                                        //   viewBox="0 0 16 16"
-                                        // >
-                                        //   <path d="M3.204 6h9.592L8 10.52 3.204 6z" />
-                                        // </svg>
-                                      )
-                                    }
-                                  </button>
-                                </td>
-                                <td className="text-start">{subProject.name}</td>
-                                <td className="text-start"></td>
-                                <td className="text-start"></td>
-                                <td className="text-start"></td>
-                                <td className="text-start"></td>
-                                <td className="text-start"></td>
-                                {/* <td className="text-start">
-                               
-                              </td> */}
-                                <td></td>
-
-                              </tr>
-
-                              {/* Conditional rendering for categories under sub-project start */}
-                              {openSubProjectId === subProject.id && subProject.categories && subProject.categories.length > 0 && (
-                                subProject.categories.map((category) => (
+                      {boqList && boqList.categories && boqList.categories.map((category, index) => (      
                                   <React.Fragment key={category.id}>
                                     <tr>
-                                      <td></td>
+                                      <td className="text-start">{index+1}</td>
                                       <td>
                                         {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                       </td>
-                                      <td></td>
+                                      {/* <td></td> */}
 
-                                      <td>
+                                      <td className="text-start">
                                         <button
                                           className="btn btn-link p-0"
                                           onClick={() => toggleCategory(category.id)}
@@ -1514,9 +1172,9 @@ const BOQList = () => {
                                                 onChange={() => handleCheckboxChange(boqDetail2.id)} // Handle checkbox change
                                               />
                                             </td>
-                                            <td></td>
+                                            {/* <td></td> */}
 
-                                            <td style={{ paddingLeft: '80px' }}>
+                                            <td style={{ paddingLeft: '80px' }} className="text-start">
                                               <button
                                                 className="btn btn-link p-0"
                                                 onClick={() => toggleBoqDetail(boqDetail2.id)}
@@ -1846,7 +1504,7 @@ const BOQList = () => {
                                             <td>
                                               {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                             </td>
-                                            <td></td>
+                                            {/* <td></td> */}
 
                                             <td style={{ paddingLeft: '40px' }}>
                                               <button
@@ -1903,7 +1561,7 @@ const BOQList = () => {
                                                       onChange={() => handleCheckboxChange(boqDetail2.id)} // Handle checkbox change
                                                     />
                                                   </td>
-                                                  <td></td>
+                                                  {/* <td></td> */}
 
                                                   <td style={{ paddingLeft: '80px' }}>
                                                     <button
@@ -2244,7 +1902,7 @@ const BOQList = () => {
                                                   <td>
                                                     {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                   </td>
-                                                  <td></td>
+                                                  {/* <td></td> */}
                                                   <td style={{ paddingLeft: '60px' }}>
                                                     <button
                                                       className="btn btn-link p-0"
@@ -2293,7 +1951,7 @@ const BOQList = () => {
                                                             onChange={() => handleCheckboxChange(boqDetail3.id)} // Handle checkbox change
                                                           />
                                                         </td>
-                                                        <td></td>
+                                                        {/* <td></td> */}
                                                         <td style={{ paddingLeft: '80px' }}>
                                                           <button
                                                             className="btn btn-link p-0"
@@ -2619,7 +2277,7 @@ const BOQList = () => {
                                                         <td>
                                                           {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                         </td>
-                                                        <td></td>
+                                                        {/* <td></td> */}
                                                         <td style={{ paddingLeft: '80px' }}>
                                                           <button
                                                             className="btn btn-link p-0"
@@ -2668,7 +2326,7 @@ const BOQList = () => {
                                                                   onChange={() => handleCheckboxChange(boqDetail4.id)} // Handle checkbox change
                                                                 />
                                                               </td>
-                                                              <td></td>
+                                                              {/* <td></td> */}
                                                               <td style={{ paddingLeft: '100px' }}>
                                                                 <button
                                                                   className="btn btn-link p-0"
@@ -2992,7 +2650,7 @@ const BOQList = () => {
                                                               <td>
                                                                 {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
                                                               </td>
-                                                              <td></td>
+                                                              {/* <td></td> */}
                                                               <td style={{ paddingLeft: '100px' }}>
                                                                 <button
                                                                   className="btn btn-link p-0"
@@ -3041,7 +2699,7 @@ const BOQList = () => {
                                                                         onChange={() => handleCheckboxChange(boqDetail5.id)} // Handle checkbox change
                                                                       />
                                                                     </td>
-                                                                    <td></td>
+                                                                    {/* <td></td> */}
                                                                     <td style={{ paddingLeft: '110px' }}>
                                                                       <button
                                                                         className="btn btn-link p-0"
@@ -3374,15 +3032,6 @@ const BOQList = () => {
                                     {/* sub level 2 end*/}
 
                                   </React.Fragment>
-                                ))
-                              )}
-                              {/* Conditional rendering for categories under sub-project  end*/}
-                            </React.Fragment>
-                          ))}
-
-                        </React.Fragment>
-
-
                       ))}
                       {/* subProject end */}
 
@@ -3390,89 +3039,13 @@ const BOQList = () => {
                   </table>
 
                 </div>
-                <div className="d-flex justify-content-between align-items-center px-3 mt-2  mb-3">
-                  <ul className="pagination justify-content-center d-flex">
-                    <li
-                      className={`page-item ${currentPage === 1 ? "disabled" : ""
-                        }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(1)}
-                        disabled={currentPage === 1}
-                      >
-                        First
-                      </button>
-                    </li>
-                    <li
-                      className={`page-item ${currentPage === 1 ? "disabled" : ""
-                        }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                      >
-                        Prev
-                      </button>
-                    </li>
-
-                    {Array.from({ length: totalPages }, (_, index) => (
-                      <li
-                        key={index + 1}
-                        className={`page-item ${currentPage === index + 1 ? "active" : ""
-                          }`}
-                      >
-                        <button
-                          className="page-link"
-                          onClick={() => handlePageChange(index + 1)}
-                        >
-                          {index + 1}
-                        </button>
-                      </li>
-                    ))}
-
-                    <li
-                      className={`page-item ${currentPage === totalPages ? "disabled" : ""
-                        }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                      >
-                        Next
-                      </button>
-                    </li>
-                    <li
-                      className={`page-item ${currentPage === totalPages ? "disabled" : ""
-                        }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(totalPages)}
-                        disabled={currentPage === totalPages}
-                      >
-                        Last
-                      </button>
-                    </li>
-                  </ul>
-                  <div>
-                    Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                    {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
-
-                    {totalEntries} entries
-                    {/* {console.log(".........", itemsPerPage)} */}
-                  </div>
-
-                </div>
+              
               </div>
 
               {/* boq list table is here  end*/}
 
             </div>
 
-            {/* <CopyBudgetModal show={show} handleClose={handleClose} /> */}
           </div>
         </div>
 
@@ -3815,7 +3388,7 @@ const BOQList = () => {
                       rel="noopener noreferrer"
                       style={{ color: "#8b0203", textDecoration: "underline", marginLeft: 8 }}
                     >
-                     <span>View Details</span> 
+                      <span>View Details</span>
                     </a>
                   )}
                 </div>

@@ -492,7 +492,7 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3">{groupedCategories[5] && groupedCategories[5].length > 0 ? groupedCategories[5][0].category_name : ''}
+                    <span className="me-3">{boqDetails?.level_five_name || "-"}
                     </span>
                   </label>
                 </div>
@@ -504,7 +504,7 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3">{boqDetails.project}</span>
+                    <span className="me-3">{boqDetails.project  || "-"}</span>
                   </label>
                 </div>
               </div>
@@ -515,7 +515,7 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3">{boqDetails.item_name} </span>
+                    <span className="me-3">{boqDetails.item_name  || "-"} </span>
                   </label>
                 </div>
               </div>
@@ -526,7 +526,7 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3">{boqDetails.sub_project}</span>
+                    <span className="me-3">{boqDetails.sub_project  || "-"}</span>
                   </label>
                 </div>
               </div>
@@ -537,7 +537,7 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3"> {boqDetails.description}</span>
+                    <span className="me-3"> {boqDetails.description || "-"}</span>
                   </label>
                 </div>
               </div>
@@ -548,7 +548,7 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3"> {boqDetails.wing}</span>
+                    <span className="me-3"> {boqDetails.wing  || "-"}</span>
                   </label>
                 </div>
               </div>
@@ -560,7 +560,7 @@ const BOQDetailsPageMaster = () => {
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
                     <span className="me-3">
-                      {boqDetails.uom}
+                      {boqDetails.uom  || "-"}
                       {/* {
                         boqDetails?.boq_sub_items?.map((boqSubItem, index) => (
                           <span key={index}>{boqSubItem.umo}</span> // Wrap each 'umo' value in a valid element
@@ -581,7 +581,7 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3">  {groupedCategories[1] && groupedCategories[1].length > 0 ? groupedCategories[1][0].category_name : ''} </span>
+                    <span className="me-3">{boqDetails?.level_one_name || "-"}</span>
                   </label>
                 </div>
               </div>
@@ -593,7 +593,7 @@ const BOQDetailsPageMaster = () => {
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
                     <span className="me-3">
-                      {boqDetails.quantity}
+                      {boqDetails.quantity  || "-"}
                       {/* {boqDetails?.quantity || boqDetails?.boq_sub_items?.map((boqSubItem, index) => (
                         <span key={index}>{boqSubItem.cost_quantity}</span>
                       ))} */}
@@ -608,7 +608,8 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3"> {groupedCategories[2] && groupedCategories[2].length > 0 ? groupedCategories[2][0].category_name : ''}</span>
+                    <span className="me-3">{boqDetails?.level_two_name || "-"}</span>
+                    {/* <span className="me-3"> {groupedCategories[2] && groupedCategories[2].length > 0 ? groupedCategories[2][0].category_name : ''}</span> */}
                   </label>
                 </div>
               </div>
@@ -620,7 +621,7 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3">{boqDetails.note} </span>
+                    <span className="me-3">{boqDetails.note  || "-"} </span>
                   </label>
                 </div>
               </div>
@@ -632,7 +633,8 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3"> {groupedCategories[3] && groupedCategories[3].length > 0 ? groupedCategories[3][0].category_name : ''} </span>
+                    <span className="me-3">{boqDetails?.level_three_name || "-"}</span>
+                    {/* <span className="me-3"> {groupedCategories[3] && groupedCategories[3].length > 0 ? groupedCategories[3][0].category_name : ''} </span> */}
                   </label>
                 </div>
               </div>
@@ -656,8 +658,9 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3">{groupedCategories[4] && groupedCategories[4].length > 0 ? groupedCategories[4][0].category_name : ''}
-                    </span>
+                    <span className="me-3">{boqDetails?.level_four_name || "-"}</span>
+                    {/* <span className="me-3">{groupedCategories[4] && groupedCategories[4].length > 0 ? groupedCategories[4][0].category_name : ''} */}
+                    {/* </span> */}
                   </label>
                 </div>
               </div>

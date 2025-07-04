@@ -112,6 +112,7 @@ import EditRate from "./pages/edit-rate";
 import RateRevision from "./pages/rate-revision";
 import BillApproval from "./pages/bill-approval";
 import BillApprovalList from "./pages/bill-approval-list";
+import InitialBOQList from "./pages/initial-boq-list";
 
 function App() {
   return (
@@ -119,7 +120,7 @@ function App() {
       <div>
         <Routes>
           <Route path="/" element={<Members />} />
-            <Route
+          <Route
             path="/stock_register_detail/:id"
             element={<ErpStockRegisterCreationDetail13C />}
           />
@@ -155,7 +156,7 @@ function App() {
             path="/bill-verification-details/:id"
             element={<BillVerificationDetails />}
           />
-           <Route path="/bill-approval-list" element={<BillApprovalList />} />
+          <Route path="/bill-approval-list" element={<BillApprovalList />} />
           <Route path="/bill-approval/:id" element={<BillApproval />} />
           <Route
             path="/bill-verification-list"
@@ -214,7 +215,8 @@ function App() {
           <Route path="/boq-amend/:id" element={<BoqAmend />} />
           <Route path="/create-BOQ" element={<BoqAmendSub />} />
           {/* <Route path='/boq-list' element={<BOQList />} /> */}
-          <Route path="/view-BOQ" element={<BOQList />} />
+          <Route path="/view-BOQ/:id" element={<BOQList />} />
+          <Route path="/initial-boq-list" element={<InitialBOQList />} />
           <Route path="/boq-approval-list" element={<BOQApprovalList />} />
           {/* <Route path="/boq-edit/:id" element={<BOQEdit />} /> */}
           {/* <Route
@@ -240,7 +242,7 @@ function App() {
             path="/good_receive_notes/:id"
             element={<GoodReceiveNoteDetails />}
           />
-        
+
           <Route
             path="/TreeDataWithStaticRows"
             element={<TreeDataWithStaticRows />}
