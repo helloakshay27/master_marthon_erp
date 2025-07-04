@@ -199,6 +199,17 @@ const GatePassDetails = () => {
                     </div>
                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                       <div className="col-6">
+                        <label>To Vendor</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3 text-dark">:</span>
+                          {details.to_resource.vendor_name || "N/A"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                      <div className="col-6">
                         <label>Vehicle No</label>
                       </div>
                       <div className="col-6">
@@ -286,6 +297,17 @@ const GatePassDetails = () => {
                               {details.due_at
                                 ? new Date(details.due_at).toLocaleDateString()
                                 : "N/A"}
+                            </label>
+                          </div>
+                        </div>
+                        <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                          <div className="col-6">
+                            <label>Issued By</label>
+                          </div>
+                          <div className="col-6">
+                            <label className="text">
+                              <span className="me-3 text-dark">:</span>
+                              {details.created_by_name || "N/A"}
                             </label>
                           </div>
                         </div>
