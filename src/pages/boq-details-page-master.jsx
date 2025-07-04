@@ -25,6 +25,7 @@ const BOQDetailsPageMaster = () => {
   const [boqDetailsSub, setBoqDetailsSub] = useState(true);
   const [loading, setLoading] = useState(true);  // State for loading indicator
   const [error, setError] = useState(null);  // State for handling errors
+  const [activeTab, setActiveTab] = useState("details");
 
   const [status, setStatus] = useState(''); // Assuming boqDetails.status is initially available
   const [remark, setRemark] = useState('');
@@ -76,7 +77,7 @@ const BOQDetailsPageMaster = () => {
 
 
   //   modal
-   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setShowModal(true);
   const closeModal = () => setShowModal(false);
 
@@ -110,6 +111,7 @@ const BOQDetailsPageMaster = () => {
 
 
     fetchData();
+    setActiveTab("details");
   }, [id]);  // Dependency array ensures fetch is triggered when 'id' changes
 
   // Loading, error, and data display logic
@@ -203,7 +205,7 @@ const BOQDetailsPageMaster = () => {
   const handleCancel = () => {
     // setStatus(initialStatus); // Reset status to the initial value
     // setRemark(''); // Optionally reset the remark as well
-    navigate("/view-BOQ"); // 🔥 Redirect to the /view-BOQ page
+    navigate(`/initial-boq-list`); // 🔥 Redirect to the /view-BOQ page
   };
 
   //status 
@@ -415,65 +417,75 @@ const BOQDetailsPageMaster = () => {
             )}
           </div>
           <CollapsibleCard title="BOQ Details">
-          <div className="d-flex justify-content-end m-2">
-          {boqDetails?.approval_logs?.length > 0 && (
-                  <div className="col-md-2 nav-item">
-                    <button
-                      className="purple-btn2"
-                      onClick={openModal}
-                      style={{
-                        backgroundColor:
-                          boqDetails?.status === "approved" ? "green" : "",
-                        border: "none",
-                      }}
-                    >
-                      <span>Approval Logs</span>
-                    </button>
-                  </div>
-                )}
+            <div className="d-flex justify-content-end m-2">
+              {boqDetails?.approval_logs?.length > 0 && (
+                <div className="col-md-2 nav-item">
+                  <button
+                    className="purple-btn2"
+                    onClick={openModal}
+                    style={{
+                      backgroundColor:
+                        boqDetails?.status === "approved" ? "green" : "",
+                      border: "none",
+                    }}
+                  >
+                    <span>Approval Logs</span>
+                  </button>
                 </div>
-            <div className="row px-3 mt-2">
-              <div className="col-md-12 mb-3 row">
-                <div className="col-md-10">
-                  <div className="d-flex justify-content-end m-2 mb-3">
-                    {/* <button className="btn  d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            fill="#6c757d"
-                            className="bi bi-pencil-square me-2"  // "me-2" adds margin to the right of the icon
-                            viewBox="0 0 16 16"
-                          >
-                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                            <path
-                              fillRule="evenodd"
-                              d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
-                            />
-                          </svg>
-
-                        </button> */}
-
-                    {/* <Link to="/boq-edit" className="btn d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        fill="#6c757d"
-                        className="bi bi-pencil-square me-2"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                        <path
-                          fillRule="evenodd"
-                          d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
-                        />
-                      </svg>
-                    </Link> */}
-                  </div>
-
+              )} 
+            </div>
+            {boqDetails?.display_name && (
+              <div
+                className="d-flex justify-content-between align-items-center mx-1 p-3 mb-3 rounded-3 mt-4"
+                style={{
+                  background: "linear-gradient(90deg, #fff3cd 0%, #ffeeba 100%)",
+                  border: "2px solid #ffc107",
+                  boxShadow: "0 2px 8px rgba(255,193,7,0.15)",
+                  color: "#856404",
+                }}
+              >
+                <div>
+                  <p style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: 4 }}>
+                    <i className="bi bi-exclamation-triangle-fill me-2" style={{ color: "#856404" }} />
+                    BOQ Amendment
+                  </p>
+                  <p style={{ marginBottom: 0 }}>
+                    {boqDetails?.display_name}
+                  </p>
                 </div>
               </div>
+            )}
+
+              {/* Tabs */}
+                                <nav className="mb-5">
+                                    <div className="nav nav-tabs" id="nav-tab" role="tablist">
+                                        <button
+                                            className={`nav-link ${activeTab === "details" ? "active" : ""}`}
+                                            id="nav-details-tab"
+                                            type="button"
+                                            onClick={() => setActiveTab("details")}
+                                            role="tab"
+                                            aria-selected={activeTab === "details"}
+                                        >
+                                            Details
+                                        </button>
+                                        {boqDetails?.amendment_versions?.length > 0 && (
+                                            <button
+                                                className={`nav-link ${activeTab === "revisions" ? "active" : ""}`}
+                                                id="nav-revisions-tab"
+                                                type="button"
+                                                onClick={() => setActiveTab("revisions")}
+                                                role="tab"
+                                                aria-selected={activeTab === "revisions"}
+                                            >
+                                                Amendments
+                                            </button>
+                                        )}
+                                    </div>
+                                </nav>
+                                 {activeTab === "details" && (
+            <div className="row px-3 mt-5">
+
               <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                 <div className="col-6">
                   <label>BOQ ID</label>
@@ -504,7 +516,7 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3">{boqDetails.project  || "-"}</span>
+                    <span className="me-3">{boqDetails.project || "-"}</span>
                   </label>
                 </div>
               </div>
@@ -515,7 +527,7 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3">{boqDetails.item_name  || "-"} </span>
+                    <span className="me-3">{boqDetails.item_name || "-"} </span>
                   </label>
                 </div>
               </div>
@@ -526,7 +538,7 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3">{boqDetails.sub_project  || "-"}</span>
+                    <span className="me-3">{boqDetails.sub_project || "-"}</span>
                   </label>
                 </div>
               </div>
@@ -548,7 +560,7 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3"> {boqDetails.wing  || "-"}</span>
+                    <span className="me-3"> {boqDetails.wing || "-"}</span>
                   </label>
                 </div>
               </div>
@@ -560,7 +572,7 @@ const BOQDetailsPageMaster = () => {
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
                     <span className="me-3">
-                      {boqDetails.uom  || "-"}
+                      {boqDetails.uom || "-"}
                       {/* {
                         boqDetails?.boq_sub_items?.map((boqSubItem, index) => (
                           <span key={index}>{boqSubItem.umo}</span> // Wrap each 'umo' value in a valid element
@@ -593,7 +605,7 @@ const BOQDetailsPageMaster = () => {
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
                     <span className="me-3">
-                      {boqDetails.quantity  || "-"}
+                      {boqDetails.quantity || "-"}
                       {/* {boqDetails?.quantity || boqDetails?.boq_sub_items?.map((boqSubItem, index) => (
                         <span key={index}>{boqSubItem.cost_quantity}</span>
                       ))} */}
@@ -621,7 +633,7 @@ const BOQDetailsPageMaster = () => {
                 <div className="col-6">
                   <label className="text">
                     <span className="me-3" style={{ color: "black" }}>:</span>
-                    <span className="me-3">{boqDetails.note  || "-"} </span>
+                    <span className="me-3">{boqDetails.note || "-"} </span>
                   </label>
                 </div>
               </div>
@@ -665,9 +677,66 @@ const BOQDetailsPageMaster = () => {
                 </div>
               </div>
             </div>
+             )}
+
+              {activeTab === "revisions" && boqDetails?.amendment_versions.length > 0 && (
+            <div className="row mx-2 mt-2 mb-5">
+              <h5>BOQ Amendment Versions</h5>
+              <div className="">
+                {/* <Table columns={auditLogColumns} data={auditLogData} /> */}
+                <div className="tbl-container  mt-1">
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th >Sr.No.</th>
+                        {/* <th>ID</th> */}
+                        <th>Item Name</th>
+                        <th>Version Number</th>
+                        <th>Status</th>
+                      </tr>
+
+                    </thead>
+                    <tbody>
+
+
+                      {boqDetails.amendment_versions.map((log, index) => (
+                        <tr key={log.id}>
+                          <td className="text-start">{index + 1}</td>
+                          {/* <td className="text-start">
+                            <Link to={`/boq-details-page-master/${log.id}`}
+                              className="boq-id-link"
+                            >
+                              {log.id}
+                            </Link>
+                          </td> */}
+                          <td className="text-start">{log.item_name}</td>
+                          <td className="text-start">
+                            <Link to={`/boq-details-page-master/${log.id}`}
+                              className="boq-id-link"
+                            >
+                              <span>{log.display_name}</span>
+                            </Link>
+                          </td>
+                          <td className="text-start">
+                            {/* {log.status.charAt(0).toUpperCase() + log.status.slice(1)} */}
+                            {log.amendment_status}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+
+
+              </div>
+            </div>
+          )}
+
           </CollapsibleCard>
 
           <CollapsibleCard title="BOQ Items">
+           {activeTab === "details" && (
             <div className="m-0 p-0">
               <div
                 className="card-body mt-0 pt-0"
@@ -1007,6 +1076,7 @@ const BOQDetailsPageMaster = () => {
 
 
             </div>
+  )}
 
 
 
@@ -1181,15 +1251,15 @@ const BOQDetailsPageMaster = () => {
               )}
               {/* ✅ Toast Container */}
               <ToastContainer />
-               <div className="row  justify-content-center w-100">
-              <div className="col-md-2 mt-2">
-              <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
+              <div className="row  justify-content-center w-100">
+                <div className="col-md-2 mt-2">
+                  <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
+                </div>
+                <div className="col-md-2">
+                  <button className="purple-btn1 w-100" onClick={handleCancel}>Close</button>
+                </div>
               </div>
-              <div className="col-md-2">
-              <button className="purple-btn1 w-100" onClick={handleCancel}>Close</button>
-</div>
-</div>
-               
+
             </div>
           </CollapsibleCard>
 
@@ -1238,11 +1308,11 @@ const BOQDetailsPageMaster = () => {
 
                       boqDetails.audit_logs.map((log, index) => (
                         <tr key={log.id}>
-                          <td>{index + 1}</td>
-                          <td>{log.user}</td>
-                          <td>{log.date}</td>
-                          <td>{log.status}</td>
-                          <td>{log.remarks}</td>
+                          <td className="text-start">{index + 1}</td>
+                          <td className="text-start">{log.user}</td>
+                          <td className="text-start">{log.date}</td>
+                          <td className="text-start">{log.status}</td>
+                          <td className="text-start">{log.remarks}</td>
                         </tr>
                       ))
                     )}
@@ -1254,53 +1324,7 @@ const BOQDetailsPageMaster = () => {
 
             </div>
           </div>
-          {boqDetails.amendment_versions.length > 0 && (
-            <div className="row mx-2 mt-2 mb-5">
-              <h5>BOQ Amendment Versions</h5>
-              <div className="">
-                {/* <Table columns={auditLogColumns} data={auditLogData} /> */}
-                <div className="tbl-container  mt-1">
-                  <table className="w-100">
-                    <thead>
-                      <tr>
-                        <th >Sr.No.</th>
-                        <th>ID</th>
-                        <th>Item Name</th>
-                        <th>Version Number</th>
-                        <th>Status</th>
-                      </tr>
-
-                    </thead>
-                    <tbody>
-
-
-                      {boqDetails.amendment_versions.map((log, index) => (
-                        <tr key={log.id}>
-                          <td>{index + 1}</td>
-                          <td>
-                            <Link to={`/boq-details-page-master/${log.id}`}
-                              className="boq-id-link"
-                            >
-                              {log.id}
-                            </Link>
-                          </td>
-                          <td>{log.item_name}</td>
-                          <td>{log.version_number}</td>
-                          <td>
-                            {/* {log.status.charAt(0).toUpperCase() + log.status.slice(1)} */}
-                            {log.amendment_status}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-
-
-              </div>
-            </div>
-          )}
+         
           {/* </div> */}
           {/* </div> */}
 
@@ -1317,67 +1341,67 @@ const BOQDetailsPageMaster = () => {
         </Modal.Header>
         <Modal.Body>
 
-        <div className="row mt-2 px-2">
-                  <div className="col-12">
-                    <div className="tbl-container me-2 mt-3">
-                      {/* Check if approval_logs is empty or undefined */}
-                      {!boqDetails?.approval_logs ||
-                      boqDetails?.approval_logs.length === 0 ? (
-                        // Display a message if no logs are available
-                        <div className="text-center py-4">
-                          <p className="text-muted">
-                            No approval logs available.
-                          </p>
-                        </div>
-                      ) : (
-                        // Render the table if logs are available
-                        <table className="w-100" style={{ width: "100%" }}>
-                          <thead>
-                            <tr>
-                              <th style={{ width: "66px !important" }}>
-                                Sr.No.
-                              </th>
-                              <th>Approval Level</th>
-                              <th>Approved By</th>
-                              <th>Date</th>
-                              <th>Status</th>
-                              <th>Remark</th>
-                              <th>Users</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {boqDetails?.approval_logs.map((log, id) => (
-                              <tr key={id}>
-                                <td>{id + 1}</td>
-                                <td>{log.approval_level}</td>
-                                <td>{log.approved_by}</td>
-                                <td>{log.date}</td>
-                                <td>
-                                  <span
-                                    className="px-2 py-1 rounded text-white"
-                                    style={{
-                                      backgroundColor:
-                                        log.status === "Pending"
-                                          ? "red"
-                                          : "green",
-                                    }}
-                                  >
-                                    {log.status}
-                                  </span>
-                                </td>
-
-                                <td>
-                                  <p>{log.remark}</p>
-                                </td>
-                                <td>{log.users}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      )}
-                    </div>
+          <div className="row mt-2 px-2">
+            <div className="col-12">
+              <div className="tbl-container me-2 mt-3">
+                {/* Check if approval_logs is empty or undefined */}
+                {!boqDetails?.approval_logs ||
+                  boqDetails?.approval_logs.length === 0 ? (
+                  // Display a message if no logs are available
+                  <div className="text-center py-4">
+                    <p className="text-muted">
+                      No approval logs available.
+                    </p>
                   </div>
-                </div>
+                ) : (
+                  // Render the table if logs are available
+                  <table className="w-100" style={{ width: "100%" }}>
+                    <thead>
+                      <tr>
+                        <th style={{ width: "66px !important" }}>
+                          Sr.No.
+                        </th>
+                        <th>Approval Level</th>
+                        <th>Approved By</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Remark</th>
+                        <th>Users</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {boqDetails?.approval_logs.map((log, id) => (
+                        <tr key={id}>
+                          <td>{id + 1}</td>
+                          <td>{log.approval_level}</td>
+                          <td>{log.approved_by}</td>
+                          <td>{log.date}</td>
+                          <td>
+                            <span
+                              className="px-2 py-1 rounded text-white"
+                              style={{
+                                backgroundColor:
+                                  log.status === "Pending"
+                                    ? "red"
+                                    : "green",
+                              }}
+                            >
+                              {log.status}
+                            </span>
+                          </td>
+
+                          <td>
+                            <p>{log.remark}</p>
+                          </td>
+                          <td>{log.users}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          </div>
           {/* <div>
            
             <img src="#" className="img-thumbnail" alt="Document 1" />

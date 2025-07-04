@@ -246,7 +246,7 @@ const InitialBOQList = () => {
 
             axios
                 .get(
-                    `${baseURL}boq_details.json?project_id=${projectId}&site_id=${siteId}&wing_id=${wingId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                    `${baseURL}boq_details.json?q[id_eq]=${projectId}&q[pms_sites_id_eq]=${siteId}&q[pms_wings_id_eq]=${wingId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
                 )
                 .then((response) => {
                     setBoqList(response.data); // Set the fetched data to state
@@ -258,6 +258,22 @@ const InitialBOQList = () => {
                     setLoading(false); // Stop loading when request completes
                 });
 
+        }
+    };
+
+    const handleReset = async () => {
+        // setSelectedCompany(null);
+        setSelectedProject(null);
+        setSelectedSite(null);
+        setSelectedWing(null)
+        try {
+            const response = await axios.get(
+                `${baseURL}boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            );
+            setBoqList(response.data); // or setData(response.data) as per your structure
+            // Optionally, reset filter states here as well
+        } catch (error) {
+            console.error("Error fetching initial data:", error);
         }
     };
 
@@ -665,7 +681,7 @@ const InitialBOQList = () => {
 
         axios
             .get(
-                `${baseURL}boq_details.json?q[work_category_id]=${categoryId}&q[work_sub_category_id]=${subCategoryId}&q[status]=${status}&q[inventory_id]=${inventoryMaterialId}&q[inventory_type_id]=${inventoryTypeId}&search=${search}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}boq_details.json?q[company_company_name_or_pms_sites_name_or_pms_wings_name_cont]=${search}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
                 // https://marathon.lockated.com/boq_details.json?q[work_category_id]=&q[work_sub_category_id]=&q[status]=approved&q[inventory_id]=&q[inventory_type_id]=&search=FINES&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414
             )
             .then((response) => {
@@ -974,13 +990,33 @@ const InitialBOQList = () => {
                                                 />
                                             </div>
                                         </div>
-                                        <div className="col-md-3">
+                                        {/* <div className="col-md-3">
                                             <button type="" className="purple-btn2 mt-4" onClick={handleGoClick}>
                                                 Go
                                             </button>
+                                        </div> */}
+
+                                        <div className="col-md-1 mt-4 ms-3">
+                                            <button
+                                                className="purple-btn2"
+                                                onClick={handleGoClick}
+                                            // onClick={fetchFilteredData}
+
+                                            >
+                                                Go
+                                            </button>
                                         </div>
+                                        <div className="col-md-1 mt-3 ms-2">
+                                            <button
+                                                className="purple-btn1"
+                                                onClick={handleReset}
+                                            >
+                                                Reset
+                                            </button>
+                                        </div>
+
                                     </div>
-                               
+
                                 </div>
 
                                 {/* <BulkAction /> */}

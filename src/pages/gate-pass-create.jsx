@@ -160,6 +160,14 @@ const GatePassCreate = () => {
         return;
       }
     }
+      if (
+    maintenanceRows.some(
+      (row) => row.available_qty === "not_found"
+    )
+  ) {
+    alert("One or more materials have 'No matching inventory found'. Please correct before submitting.");
+    return;
+  }
 
     // Map attachments from documents state
     const attachments = (documents || [])
@@ -933,6 +941,7 @@ const GatePassCreate = () => {
         );
       }, 0);
     }
+    
     // If type changes, fetch sub-types and material names
     if (field === "material_type") fetchSubTypesAndNames(value, idx);
     // If material name changes, fetch details
