@@ -645,7 +645,7 @@ const GatePassEdit = () => {
     setFormData((prev) => ({
       ...prev,
       // to_vendor: null,
-      to_store_id: null,
+      // to_store_id: null,
       mto_po_number: "",
       material_items: [],
     }));
@@ -658,7 +658,7 @@ const GatePassEdit = () => {
   useEffect(() => {
     const selected = projects.find((p) => p.value === formData.project_id);
     setSubProjects(selected ? selected.subProjects : []);
-    setStores([]);
+    // setStores([]);
     // setToStores([]);
     setGateNumbers([]);
   }, [formData.project_id, projects]);
@@ -1537,6 +1537,7 @@ const GatePassEdit = () => {
       ]);
     }
   }, [selectedVendorOption, supplierOptions.length]);
+  
 
   return (
     <div className="main-content">
@@ -1694,9 +1695,16 @@ const GatePassEdit = () => {
                                     store_id: selected?.value,
                                   })
                                 }
-                                value={stores.find(
-                                  (s) => s.value === formData.store_id
-                                )}
+                                // value={stores.find(
+                                //   (s) => s.value === formData.store_id
+                                // )}
+                                value={
+                                  stores.find(
+                                    (s) =>
+                                      String(s.value) ===
+                                      String(formData.store_id)
+                                  ) || null
+                                }
                                 placeholder="Select From Store"
                               />
                             </div>
@@ -1906,9 +1914,15 @@ const GatePassEdit = () => {
                                     });
                                   }
                                 }}
-                                value={supplierOptions.find(
-                                  (v) => v.value === formData.to_vendor
-                                )}
+                                value={
+                                  supplierOptions.find(
+                                    (v) =>
+                                      String(v.value) ===
+                                      String(formData.to_vendor)
+                                  ) ||
+                                  selectedVendorOption ||
+                                  null
+                                }
                                 placeholder="Select Vendor"
                               />
                             </div>
@@ -3042,12 +3056,31 @@ const GatePassEdit = () => {
               Contact No <span style={{ color: "red" }}>*</span>
             </Form.Label>
             <Form.Control
+              // type="text"
+              // placeholder="Enter contact number"
+              // value={newVendorContact}
+              // onChange={(e) => setNewVendorContact(e.target.value)}
+              // required
               type="text"
+              className="form-control"
+              maxLength={10}
               placeholder="Enter contact number"
               value={newVendorContact}
-              onChange={(e) => setNewVendorContact(e.target.value)}
+              onChange={(e) => {
+                let value = e.target.value.replace(/\D/g, "");
+                if (value.length > 10) value = value.slice(0, 10);
+                setNewVendorContact(value);
+                if (value.length > 0 && value.length !== 10) {
+                  setContactNoError("Contact number must be exactly 10 digits");
+                } else {
+                  setContactNoError("");
+                }
+              }}
               required
             />
+            {contactNoError && (
+              <div style={{ color: "red", fontSize: 12 }}>{contactNoError}</div>
+            )}
           </Form.Group>
           <Form.Group className="mb-2">
             <Form.Label>
