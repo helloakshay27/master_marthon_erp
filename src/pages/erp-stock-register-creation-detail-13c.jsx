@@ -112,42 +112,42 @@ const ErpStockRegisterCreationDetail13C = () => {
   //     setSelectedStoreDetails(store || null);
   //   }
   // }
-    
+
   // }, [data, selectedStore]);
 
   useEffect(() => {
-  if (data) {
-    // Get store_id from URL (handle both ?store_id= and &store_id=)
-    const urlParams = new URLSearchParams(window.location.search);
-    let storeId = urlParams.get("store_id");
-    if (!storeId) {
-      // fallback for /:id&store_id=... style
-      const match = window.location.pathname.match(/stock_register_detail\/\d+&store_id=(\d+)/);
-      if (match) storeId = match[1];
-    }
-    // If storeId exists and no store is selected, preselect it
-    if (storeId && !selectedStore) {
-      const found = data.stores?.find((s) => String(s.store_id) === String(storeId));
-      if (found) {
-        setSelectedStore({ value: found.store_id, label: found.store_name });
-        setSelectedStoreDetails(found);
+    if (data) {
+      // Get store_id from URL (handle both ?store_id= and &store_id=)
+      const urlParams = new URLSearchParams(window.location.search);
+      let storeId = urlParams.get("store_id");
+      if (!storeId) {
+        // fallback for /:id&store_id=... style
+        const match = window.location.pathname.match(/stock_register_detail\/\d+&store_id=(\d+)/);
+        if (match) storeId = match[1];
+      }
+      // If storeId exists and no store is selected, preselect it
+      if (storeId && !selectedStore) {
+        const found = data.stores?.find((s) => String(s.store_id) === String(storeId));
+        if (found) {
+          setSelectedStore({ value: found.store_id, label: found.store_name });
+          setSelectedStoreDetails(found);
+          return;
+        }
+      }
+      // If no storeId in URL and no store is selected, select the first store by default
+      if (!storeId && !selectedStore && data.stores && data.stores.length > 0) {
+        const first = data.stores[0];
+        setSelectedStore({ value: first.store_id, label: first.store_name });
+        setSelectedStoreDetails(first);
         return;
       }
+      // If store is selected, update details as usual
+      if (selectedStore) {
+        const store = data.stores?.find((s) => s.store_id === selectedStore.value);
+        setSelectedStoreDetails(store || null);
+      }
     }
-    // If no storeId in URL and no store is selected, select the first store by default
-    if (!storeId && !selectedStore && data.stores && data.stores.length > 0) {
-      const first = data.stores[0];
-      setSelectedStore({ value: first.store_id, label: first.store_name });
-      setSelectedStoreDetails(first);
-      return;
-    }
-    // If store is selected, update details as usual
-    if (selectedStore) {
-      const store = data.stores?.find((s) => s.store_id === selectedStore.value);
-      setSelectedStoreDetails(store || null);
-    }
-  }
-}, [data, selectedStore]);
+  }, [data, selectedStore]);
 
   return (
     <>
@@ -338,7 +338,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                               aria-labelledby="nav-home-tab"
                               tabIndex={0}
                             >
-                              <div className="tbl-container me-2 mt-3" style={{maxHeight:"500px"}}>
+                              <div className="tbl-container me-2 mt-3" style={{ maxHeight: "500px" }}>
                                 <table className="w-100">
                                   <thead>
                                     <tr>
@@ -357,44 +357,46 @@ const ErpStockRegisterCreationDetail13C = () => {
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {(selectedStoreDetails?.stock_details || []).map((item, id) => (
-                                      <tr key={id}>
-                                        <td>{id + 1}</td>
-                                        <td>
-                                          {new Date(item?.created_at).toLocaleDateString(
-                                            "en-GB"
-                                          )}
+                                    {(!selectedStoreDetails || !selectedStoreDetails.stock_details || selectedStoreDetails.stock_details.length === 0) ? (
+                                      <tr>
+                                        <td colSpan={11} className="text-center text-muted">
+                                          Please select a store to view material details.
                                         </td>
-                                        <td>{item?.mor}</td>
-                                        <td>{item?.supplier || "-"}</td>
-                                        <td>{item?.resource_number}</td>
-                                        <td>{item?.status}</td>
-                                        <td>{item?.uom || "-"}</td>
-                                        <td>{item?.received_qty || "-"}</td>
-                                        <td>{item?.issued_qty || "-"}</td>
-                                        <td>{item?.returned_qty || "-"}</td>
-                                        <td></td>
-                                        {/* <td>-</td> */}
                                       </tr>
-                                    ))}
-                                    <tr>
-                                      <td></td>
-                                      <td>
-                                        <strong>Balanced Qty</strong>
-                                      </td>
-                                      <td></td>
-                                      <td></td>
-                                      <td></td>
-                                      <td></td>
-                                      <td></td>
-                                      <td></td>
-                                      <td></td>
-                                      <td></td>
-                                      <td>
-                                        <strong>{data?.stock_as_on}</strong>
-                                      </td>
-                                      {/* <td></td> */}
-                                    </tr>
+                                    ) : (
+                                      <>
+                                        {selectedStoreDetails.stock_details.map((item, id) => (
+                                          <tr key={id}>
+                                            <td>{id + 1}</td>
+                                            <td>{new Date(item?.created_at).toLocaleDateString("en-GB")}</td>
+                                            <td>{item?.mor}</td>
+                                            <td>{item?.supplier || "-"}</td>
+                                            <td>{item?.resource_number}</td>
+                                            <td>{item?.status}</td>
+                                            <td>{item?.uom || "-"}</td>
+                                            <td>{item?.received_qty || "-"}</td>
+                                            <td>{item?.issued_qty || "-"}</td>
+                                            <td>{item?.returned_qty || "-"}</td>
+                                            <td></td>
+                                          </tr>
+                                        ))}
+                                        {selectedStoreDetails.stock_details.map((item, id) => (
+                                          <tr key={`balance-${id}`}>
+                                            <td></td>
+                                            <td><strong>Balanced Qty</strong></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td><strong>{item?.balanced_qty}</strong></td>
+                                          </tr>
+                                        ))}
+                                      </>
+                                    )}
                                   </tbody>
                                 </table>
                               </div>
