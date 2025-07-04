@@ -498,7 +498,7 @@ const MaterialReconciliationDetail = () => {
                             <td>{item.adjustment_value}</td>
                             <td>{item.net_quantity}</td>
                             <td>{item.remarks}</td>
-                            <td>{item.reason}</td>
+                            <td>{item.reason?.name || item.reason || "-"}</td>
                             {/* <td>-</td> */}
                           </tr>
                         )

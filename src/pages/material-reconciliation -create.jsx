@@ -35,6 +35,34 @@ const MaterialReconciliationCreate = () => {
   const [selectedInventoryId, setSelectedInventoryId] = useState(null);
 
   const [selectAll, setSelectAll] = useState(false);
+  // Add these states at the top with other useState hooks
+  const [batchList, setBatchList] = useState([]);
+  const [batchLoading, setBatchLoading] = useState(false);
+  const [batchIssueQty, setBatchIssueQty] = useState({});
+  const [batchQtyError, setBatchQtyError] = useState("");
+  const [batchMaxQty, setBatchMaxQty] = useState(0);
+
+  // Add state for dynamic reasons
+  const [reasonOptions, setReasonOptions] = useState([]);
+
+  // Fetch reasons from API on mount
+  useEffect(() => {
+    axios
+      .get(
+        `https://marathon.lockated.com//material_reconciliation_reasons/fetch_reasons.json?token=${token}`
+      )
+      .then((response) => {
+        const options = response.data.map((reason) => ({
+          value: reason.id,
+          label: reason.name,
+        }));
+        setReasonOptions(options);
+      })
+      .catch((error) => {
+        setReasonOptions([]);
+        console.error("Error fetching reasons:", error);
+      });
+  }, [token]);
 
   // Add this function to handle select-all checkbox
   const handleSelectAll = (checked) => {
@@ -61,21 +89,27 @@ const MaterialReconciliationCreate = () => {
 
   const openBatchPopup = (inventoryId) => {
     setSelectedInventoryId(inventoryId);
-    // Fetch or set batchList here as needed
     setShowBatchModal(true);
+
+    // Find the selected inventory
+    const inv = acceptedInventories.find((inv) => inv.id === inventoryId);
+    if (inv) {
+      const maxQty =
+        (parseFloat(inv.deadstock_qty) || 0) +
+        (parseFloat(inv.theft_or_missing_qty) || 0) +
+        (parseFloat(inv.damage_qty) || 0);
+      setBatchMaxQty(maxQty);
+    } else {
+      setBatchMaxQty(0);
+    }
+    setBatchIssueQty({}); // Reset on open
+    setBatchQtyError("");
   };
 
   const [selectedStatus, setSelectedStatus] = useState({
     value: "",
     label: "Select Status",
   });
-
-  // Update the reasonOptions array
-  const reasonOptions = [
-    { value: "rmc_production", label: "RMC Production" },
-    { value: "sale_of_scrap", label: "Sale of Scrap" },
-    { value: "stock_adjustment", label: "Stock Adjustment" },
-  ];
 
   // Function to close the modal
   const closeAddMaterialModal = () => {
@@ -810,7 +844,10 @@ const MaterialReconciliationCreate = () => {
             ...inventory,
             [field]: value,
           };
-
+          // If field is 'reason', store as reason_id
+          if (field === "reason") {
+            updatedInventory.reason_id = value; // value is the id
+          }
           // Calculate net quantity when deadstock, theft, or adjustment quantity changes
           if (
             field === "deadstock_qty" ||
@@ -837,7 +874,6 @@ const MaterialReconciliationCreate = () => {
               newAdjustmentQty
             );
           }
-
           return updatedInventory;
         }
         return inventory;
@@ -890,7 +926,10 @@ const MaterialReconciliationCreate = () => {
                 ? parseFloat(inventory.net_quantity)
                 : null,
               remarks: inventory.remarks || "",
-              reason: inventory.reason || "",
+              reason_id: inventory.reason_id || null,
+              ...(inventory.mr_batches_attributes
+                ? { mr_batches_attributes: inventory.mr_batches_attributes }
+                : {}),
             })
           ),
         },
@@ -961,6 +1000,69 @@ const MaterialReconciliationCreate = () => {
   useEffect(() => {
     setSelectAll(false);
   }, [pagination.current_page]);
+
+  useEffect(() => {
+    if (showBatchModal && selectedInventoryId && selectedStore?.value) {
+      const fetchBatchList = async () => {
+        setBatchLoading(true);
+        try {
+          const response = await axios.get(
+            `https://marathon.lockated.com/material_reconciliations/grn_batches.json?q[material_inventory_id_eq]=${selectedInventoryId}&q[pms_store_id_eq]=${selectedStore.value}&token=${token}`
+          );
+          setBatchList(response.data || []);
+        } catch (error) {
+          setBatchList([]);
+          console.error("Error fetching batch list:", error);
+        } finally {
+          setBatchLoading(false);
+        }
+      };
+      fetchBatchList();
+    } else {
+      setBatchList([]);
+    }
+  }, [showBatchModal, selectedInventoryId, selectedStore]);
+
+  const handleBatchIssueQtyChange = (batchId, value) => {
+    // Parse value as number, default to 0 if empty
+    const newValue = parseFloat(value) || 0;
+    // Calculate new total
+    const newBatchIssueQty = { ...batchIssueQty, [batchId]: newValue };
+    const total = Object.values(newBatchIssueQty).reduce(
+      (sum, v) => sum + (parseFloat(v) || 0),
+      0
+    );
+
+    if (total > batchMaxQty) {
+      alert(`Total Issue QTY cannot exceed ${batchMaxQty}`);
+      // Optionally: do not update state, or set the value to the max allowed
+      return;
+    } else {
+      setBatchQtyError("");
+      setBatchIssueQty(newBatchIssueQty);
+    }
+  };
+
+  const handleBatchModalSubmit = () => {
+    // Prepare batch data
+    const batchData = Object.entries(batchIssueQty)
+      .filter(([batchId, qty]) => qty && Number(qty) > 0)
+      .map(([batchId, qty]) => ({
+        grn_batch_id: batchId,
+        grn_batch_qty: Number(qty),
+      }));
+
+    // Update the relevant inventory in acceptedInventories
+    setAcceptedInventories((prev) =>
+      prev.map((inv) =>
+        inv.id === selectedInventoryId
+          ? { ...inv, mr_batches_attributes: batchData }
+          : inv
+      )
+    );
+
+    setShowBatchModal(false);
+  };
 
   return (
     <div className="main-content">
@@ -1271,14 +1373,14 @@ const MaterialReconciliationCreate = () => {
                             options={reasonOptions}
                             value={
                               reasonOptions.find(
-                                (option) => option.value === inventory.reason
+                                (option) => option.value === inventory.reason_id
                               ) || null
                             }
                             onChange={(selectedOption) =>
                               handleItemInputChange(
                                 inventory.id,
                                 "reason",
-                                selectedOption ? selectedOption.value : ""
+                                selectedOption ? selectedOption.value : null
                               )
                             }
                             placeholder="Select Reason"
@@ -1467,7 +1569,7 @@ const MaterialReconciliationCreate = () => {
         </Modal.Header>
         <Modal.Body>
           <div className="row">
-            <div className="col-md-6">
+            <div className="col-md-4">
               <div className="form-group">
                 <label>Material Type</label>
                 <MultiSelector
@@ -1478,7 +1580,7 @@ const MaterialReconciliationCreate = () => {
                 />
               </div>
             </div>
-            <div className="col-md-6">
+            <div className="col-md-4">
               <div className="form-group">
                 <label>Material Sub-Type</label>
                 <MultiSelector
@@ -1489,7 +1591,7 @@ const MaterialReconciliationCreate = () => {
                 />
               </div>
             </div>
-            <div className="col-md-6">
+            <div className="col-md-4">
               <div className="form-group">
                 <label>Material</label>
                 <MultiSelector
@@ -1500,19 +1602,19 @@ const MaterialReconciliationCreate = () => {
                 />
               </div>
             </div>
-            <div className="col-md-6">
-              <div className="form-group">
+            <div className="col-md-4">
+              <div className="form-group mt-2">
                 <label>Generic Specification</label>
                 <SingleSelector
                   options={genericSpecifications}
                   onChange={handleGenericSpecChange}
                   value={selectedGenericSpec}
-                  placeholder="Select Generic Specification"
+                  placeholder="Select Gen Specification"
                 />
               </div>
             </div>
-            <div className="col-md-6">
-              <div className="form-group">
+            <div className="col-md-4">
+              <div className="form-group mt-2">
                 <label>Colour</label>
                 <SingleSelector
                   options={colors}
@@ -1522,8 +1624,8 @@ const MaterialReconciliationCreate = () => {
                 />
               </div>
             </div>
-            <div className="col-md-6">
-              <div className="form-group">
+            <div className="col-md-4">
+              <div className="form-group mt-2">
                 <label>Brand</label>
                 <SingleSelector
                   options={brands}
@@ -1533,8 +1635,8 @@ const MaterialReconciliationCreate = () => {
                 />
               </div>
             </div>
-            <div className="col-md-6">
-              <div className="form-group">
+            <div className="col-md-4">
+              <div className="form-group mt-2">
                 <label>UOM</label>
                 <SingleSelector
                   options={uoms}
@@ -1559,14 +1661,14 @@ const MaterialReconciliationCreate = () => {
           </div>
           {/* <div className="tbl-container mx-3 mt-3"> */}
           {/* <div className="d-flex justify-content-between align-items-center mb-3"> */}
-          <div className="card card-default mt-5">
-            <div className="card-body">
-              {/* <p>
+          {/* <div className=" mt-2"> */}
+          {/* <div className=""> */}
+          {/* <p>
                   Displaying page {pagination.current_page} of{" "}
                   {pagination.total_pages}
                 </p> */}
 
-              {/* <div className="d-flex align-items-center gap-2">
+          {/* <div className="d-flex align-items-center gap-2">
                 <label className="mb-0">Show</label>
                 <select
                   className="form-select form-select-sm"
@@ -1581,183 +1683,185 @@ const MaterialReconciliationCreate = () => {
                 </select>
                 <span>entries</span>
               </div> */}
-            </div>
+          {/* </div> */}
 
-            <div className="tbl-container  mt-3">
-              <table className="w-100 ">
-                <thead>
+          <div
+            className="tbl-container 
+             "
+            style={{ maxHeight: "400px" }}
+          >
+            <table
+              className="w-100 
+               "
+            >
+              <thead>
+                <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      checked={selectAll}
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      style={{ cursor: "pointer" }}
+                    />
+                  </th>
+                  <th>Material Type</th>
+                  <th>Material Sub-Type</th>
+                  <th>Material</th>
+                  <th>Generic Specification</th>
+                  <th>Colour</th>
+                  <th>Brand</th>
+                  <th>Qty</th>
+                  <th>UOM</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
                   <tr>
-                    <th>
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        checked={selectAll}
-                        onChange={(e) => handleSelectAll(e.target.checked)}
-                        style={{ cursor: "pointer" }}
-                      />
-                    </th>
-                    <th>Material Type</th>
-                    <th>Material Sub-Type</th>
-                    <th>Material</th>
-                    <th>Generic Specification</th>
-                    <th>Colour</th>
-                    <th>Brand</th>
-                    <th>Qty</th>
-                    <th>UOM</th>
+                    <td colSpan="9" className="text-center">
+                      Loading...
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan="9" className="text-center">
-                        Loading...
+                ) : morInventories.length === 0 ? (
+                  <tr>
+                    <td colSpan="9" className="text-center">
+                      No data found
+                    </td>
+                  </tr>
+                ) : (
+                  morInventories.map((inventory) => (
+                    <tr
+                      key={inventory.id}
+                      // style={{ minHeight: "12px", height: "12px" }}
+                    >
+                      <td>
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          checked={selectedInventories.some(
+                            (item) => item.id === inventory.id
+                          )}
+                          onChange={() => handleInventorySelect(inventory)}
+                          style={{ cursor: "pointer" }}
+                        />
                       </td>
+                      <td>{inventory.material_type || "-"}</td>
+                      <td>{inventory.material_sub_type || "-"}</td>
+                      <td>{inventory.material || "-"}</td>
+                      <td>{inventory.generic_specification || "-"}</td>
+                      <td>{inventory.colour || "-"}</td>
+                      <td>{inventory.brand || "-"}</td>
+                      <td>{inventory.qty || "-"}</td>
+                      <td>{inventory.uom || "-"}</td>
                     </tr>
-                  ) : morInventories.length === 0 ? (
-                    <tr>
-                      <td colSpan="9" className="text-center">
-                        No data found
-                      </td>
-                    </tr>
-                  ) : (
-                    morInventories.map((inventory) => (
-                      <tr key={inventory.id}>
-                        <td>
-                          <input
-                            type="checkbox"
-                            className="form-check-input"
-                            checked={selectedInventories.some(
-                              (item) => item.id === inventory.id
-                            )}
-                            onChange={() => handleInventorySelect(inventory)}
-                            style={{ cursor: "pointer" }}
-                          />
-                        </td>
-                        <td>{inventory.material_type || "-"}</td>
-                        <td>{inventory.material_sub_type || "-"}</td>
-                        <td>{inventory.material || "-"}</td>
-                        <td>{inventory.generic_specification || "-"}</td>
-                        <td>{inventory.colour || "-"}</td>
-                        <td>{inventory.brand || "-"}</td>
-                        <td>{inventory.qty || "-"}</td>
-                        <td>{inventory.uom || "-"}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                  ))
+                )}
+              </tbody>
+            </table>
 
-              {/* Pagination Controls */}
-              <div className="d-flex justify-content-between align-items-center px-3 mt-1 mb-2">
-                <ul className="pagination justify-content-center d-flex">
-                  {/* First Button */}
-                  <li
-                    className={`page-item ${
-                      pagination.current_page === 1 ? "disabled" : ""
-                    }`}
+            {/* Pagination Controls */}
+          </div>
+          <div className="d-flex justify-content-between align-items-center px-3 mt-1 mb-2">
+            <ul className="pagination justify-content-center d-flex">
+              {/* First Button */}
+              <li
+                className={`page-item ${
+                  pagination.current_page === 1 ? "disabled" : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(1)}
+                >
+                  First
+                </button>
+              </li>
+
+              {/* Previous Button */}
+              <li
+                className={`page-item ${
+                  pagination.current_page === 1 ? "disabled" : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(pagination.current_page - 1)}
+                  disabled={pagination.current_page === 1}
+                >
+                  Prev
+                </button>
+              </li>
+
+              {/* Dynamic Page Numbers */}
+              {getPageNumbers().map((pageNumber) => (
+                <li
+                  key={pageNumber}
+                  className={`page-item ${
+                    pagination.current_page === pageNumber ? "active" : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handlePageChange(pageNumber)}
                   >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(1)}
-                    >
-                      First
-                    </button>
-                  </li>
+                    {pageNumber}
+                  </button>
+                </li>
+              ))}
 
-                  {/* Previous Button */}
-                  <li
-                    className={`page-item ${
-                      pagination.current_page === 1 ? "disabled" : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() =>
-                        handlePageChange(pagination.current_page - 1)
-                      }
-                      disabled={pagination.current_page === 1}
-                    >
-                      Prev
-                    </button>
-                  </li>
+              {/* Next Button */}
+              <li
+                className={`page-item ${
+                  pagination.current_page === pagination.total_pages
+                    ? "disabled"
+                    : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(pagination.current_page + 1)}
+                  disabled={pagination.current_page === pagination.total_pages}
+                >
+                  Next
+                </button>
+              </li>
 
-                  {/* Dynamic Page Numbers */}
-                  {getPageNumbers().map((pageNumber) => (
-                    <li
-                      key={pageNumber}
-                      className={`page-item ${
-                        pagination.current_page === pageNumber ? "active" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(pageNumber)}
-                      >
-                        {pageNumber}
-                      </button>
-                    </li>
-                  ))}
+              {/* Last Button */}
+              <li
+                className={`page-item ${
+                  pagination.current_page === pagination.total_pages
+                    ? "disabled"
+                    : ""
+                }`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(pagination.total_pages)}
+                  disabled={pagination.current_page === pagination.total_pages}
+                >
+                  Last
+                </button>
+              </li>
+            </ul>
 
-                  {/* Next Button */}
-                  <li
-                    className={`page-item ${
-                      pagination.current_page === pagination.total_pages
-                        ? "disabled"
-                        : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() =>
-                        handlePageChange(pagination.current_page + 1)
-                      }
-                      disabled={
-                        pagination.current_page === pagination.total_pages
-                      }
-                    >
-                      Next
-                    </button>
-                  </li>
-
-                  {/* Last Button */}
-                  <li
-                    className={`page-item ${
-                      pagination.current_page === pagination.total_pages
-                        ? "disabled"
-                        : ""
-                    }`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => handlePageChange(pagination.total_pages)}
-                      disabled={
-                        pagination.current_page === pagination.total_pages
-                      }
-                    >
-                      Last
-                    </button>
-                  </li>
-                </ul>
-
-                {/* Showing entries count */}
-                <div>
-                  <p>
-                    Showing{" "}
-                    {Math.min(
-                      (pagination.current_page - 1) * pageSize + 1 || 1,
-                      pagination.total_count
-                    )}{" "}
-                    to{" "}
-                    {Math.min(
-                      pagination.current_page * pageSize,
-                      pagination.total_count
-                    )}{" "}
-                    of {pagination.total_count} entries
-                  </p>
-                </div>
-              </div>
+            {/* Showing entries count */}
+            <div>
+              <p>
+                Showing{" "}
+                {Math.min(
+                  (pagination.current_page - 1) * pageSize + 1 || 1,
+                  pagination.total_count
+                )}{" "}
+                to{" "}
+                {Math.min(
+                  pagination.current_page * pageSize,
+                  pagination.total_count
+                )}{" "}
+                of {pagination.total_count} entries
+              </p>
             </div>
           </div>
+          {/* </div> */}
           {/* </div> */}
 
           <div className="row mt-3 justify-content-center">
@@ -1796,6 +1900,7 @@ const MaterialReconciliationCreate = () => {
             <table className="w-100">
               <thead>
                 <tr>
+                  <th className="text-start">Sr. No.</th>
                   <th className="text-start">Batch No</th>
                   <th className="text-start">MOR No.</th>
                   <th className="text-start">GRN No</th>
@@ -1804,27 +1909,65 @@ const MaterialReconciliationCreate = () => {
                   <th className="text-start">Issue QTY</th>
                 </tr>
               </thead>
+
               <tbody>
-                <tr>
-                  <td className="text-start">1</td>
-                  <td className="text-start">MOR/2025/6020</td>
-                  <td className="text-start">07-02-25</td>
-                  <td className="text-start">40</td>
-                  <td className="text-start">50</td>
-                  <td className="text-start">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Enter..."
-                    />
-                  </td>
-                </tr>
+                {batchLoading ? (
+                  <tr>
+                    <td colSpan="7" className="text-center">
+                      Loading...
+                    </td>
+                  </tr>
+                ) : batchList.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="text-center">
+                      No batch data found
+                    </td>
+                  </tr>
+                ) : (
+                  batchList.map((batch, idx) => (
+                    <tr key={batch.id || idx}>
+                      <td className="text-start">{idx + 1}</td>
+                      <td className="text-start">
+                        {batch.batch_no || batch.id || "-"}
+                      </td>
+                      <td className="text-start">{batch.mor_number || "-"}</td>
+                      <td className="text-start">{batch.grn_number || "-"}</td>
+                      <td className="text-start">
+                        {batch.created_at
+                          ? new Date(batch.created_at).toLocaleDateString(
+                              "en-GB"
+                            )
+                          : "-"}
+                      </td>
+                      <td className="text-start">
+                        {batch.current_stock_qty ?? "-"}
+                      </td>
+                      <td className="text-start">
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="Enter..."
+                          min={0}
+                          value={batchIssueQty[batch.id] || ""}
+                          onChange={(e) =>
+                            handleBatchIssueQtyChange(batch.id, e.target.value)
+                          }
+                        />
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
           <div className="row mt-2 justify-content-center">
             <div className="col-md-2 mt-2">
-              <button className="purple-btn2 w-100">Submit</button>
+              <button
+                className="purple-btn2 w-100"
+                onClick={handleBatchModalSubmit}
+              >
+                Submit
+              </button>
             </div>
             <div className="col-md-2">
               <button
@@ -1835,6 +1978,11 @@ const MaterialReconciliationCreate = () => {
               </button>
             </div>
           </div>
+          {batchQtyError && (
+            <div style={{ color: "red", fontSize: 13, marginTop: 8 }}>
+              {batchQtyError}
+            </div>
+          )}
         </Modal.Body>
       </Modal>
     </div>
