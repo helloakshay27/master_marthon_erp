@@ -169,6 +169,12 @@ const GatePassEdit = () => {
         return;
       }
     }
+    if (maintenanceRows.some((row) => row.available_qty === "not_found")) {
+      alert(
+        "One or more materials have 'No matching inventory found'. Please correct before submitting."
+      );
+      return;
+    }
 
     // Map attachments from documents state
     const attachments = (documents || [])
@@ -1537,7 +1543,6 @@ const GatePassEdit = () => {
       ]);
     }
   }, [selectedVendorOption, supplierOptions.length]);
-  
 
   return (
     <div className="main-content">
