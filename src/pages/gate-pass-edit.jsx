@@ -1128,6 +1128,19 @@ const GatePassEdit = () => {
             value: row.material_name,
             label: row.other_material_name,
           });
+        } else if (
+          row.other_material_name &&
+          row.other_material_name.trim() !== ""
+        ) {
+          // If other_material_name exists but material_name doesn't start with "other"
+          // Create a proper other material option
+          const otherValue = `other_${row.other_material_name
+            .replace(/\s+/g, "_")
+            .toLowerCase()}`;
+          materialNameOptions.push({
+            value: otherValue,
+            label: row.other_material_name,
+          });
         }
 
         materialNameOptions.push({ value: "other", label: "Other" });
@@ -1380,9 +1393,14 @@ const GatePassEdit = () => {
       // For general/maintenance types
       const maintenanceMaterialRows = fetchedMaterials.map((m) => {
         const isOther = m.material_id === null && m.other_material_name;
-        const materialNameValue = isOther
-          ? `other_${m.other_material_name.replace(/\s+/g, "_").toLowerCase()}`
-          : m.material_id;
+        const hasOtherMaterial =
+          m.other_material_name && m.other_material_name.trim() !== "";
+        const materialNameValue =
+          isOther || hasOtherMaterial
+            ? `other_${m.other_material_name
+                .replace(/\s+/g, "_")
+                .toLowerCase()}`
+            : m.material_id;
         return {
           id: m.id,
           material_type: m.material_type_id,
