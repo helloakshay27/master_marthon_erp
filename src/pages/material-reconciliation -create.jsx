@@ -1009,7 +1009,8 @@ const MaterialReconciliationCreate = () => {
           const response = await axios.get(
             `https://marathon.lockated.com/material_reconciliations/grn_batches.json?q[material_inventory_id_eq]=${selectedInventoryId}&q[pms_store_id_eq]=${selectedStore.value}&token=${token}`
           );
-          setBatchList(response.data || []);
+          // setBatchList(response.data || []);
+          setBatchList(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
           setBatchList([]);
           console.error("Error fetching batch list:", error);
@@ -1023,25 +1024,60 @@ const MaterialReconciliationCreate = () => {
     }
   }, [showBatchModal, selectedInventoryId, selectedStore]);
 
+  // const handleBatchIssueQtyChange = (batchId, value) => {
+  //   // Parse value as number, default to 0 if empty
+  //   const newValue = parseFloat(value) || 0;
+  //   // Calculate new total
+  //   const newBatchIssueQty = { ...batchIssueQty, [batchId]: newValue };
+  //   const total = Object.values(newBatchIssueQty).reduce(
+  //     (sum, v) => sum + (parseFloat(v) || 0),
+  //     0
+  //   );
+
+  //   if (total > batchMaxQty) {
+  //     alert(`Total Issue QTY cannot exceed ${batchMaxQty}`);
+  //     // Optionally: do not update state, or set the value to the max allowed
+  //     return;
+  //   } else {
+  //     setBatchQtyError("");
+  //     setBatchIssueQty(newBatchIssueQty);
+  //   }
+  // };
+  // ...existing code...
+
   const handleBatchIssueQtyChange = (batchId, value) => {
-    // Parse value as number, default to 0 if empty
     const newValue = parseFloat(value) || 0;
-    // Calculate new total
+
+    // Find the batch to get available qty
+    const batch = batchList.find((b) => b.id === batchId);
+    const availableQty = parseFloat(batch?.current_stock_qty) || 0;
+
+    // 1. Cannot enter more than available qty for this batch
+    if (newValue > availableQty) {
+      alert(
+        `Issue QTY cannot exceed available qty (${availableQty}) for this batch.`
+      );
+      return;
+    }
+
+    // 2. Calculate total issue qty if this value is set
     const newBatchIssueQty = { ...batchIssueQty, [batchId]: newValue };
-    const total = Object.values(newBatchIssueQty).reduce(
-      (sum, v) => sum + (parseFloat(v) || 0),
+    const total = Object.entries(newBatchIssueQty).reduce(
+      (sum, [id, qty]) => sum + (parseFloat(qty) || 0),
       0
     );
 
+    // 3. Cannot exceed max allowed (deadstock+theft+damage)
     if (total > batchMaxQty) {
       alert(`Total Issue QTY cannot exceed ${batchMaxQty}`);
-      // Optionally: do not update state, or set the value to the max allowed
       return;
-    } else {
-      setBatchQtyError("");
-      setBatchIssueQty(newBatchIssueQty);
     }
+
+    setBatchQtyError("");
+    setBatchIssueQty(newBatchIssueQty);
   };
+
+  // ...existing code...
 
   const handleBatchModalSubmit = () => {
     // Prepare batch data
@@ -1711,7 +1747,7 @@ const MaterialReconciliationCreate = () => {
                   <th>Generic Specification</th>
                   <th>Colour</th>
                   <th>Brand</th>
-                  <th>Qty</th>
+                  <th>Stock As On</th>
                   <th>UOM</th>
                 </tr>
               </thead>
@@ -1751,7 +1787,7 @@ const MaterialReconciliationCreate = () => {
                       <td>{inventory.generic_specification || "-"}</td>
                       <td>{inventory.colour || "-"}</td>
                       <td>{inventory.brand || "-"}</td>
-                      <td>{inventory.qty || "-"}</td>
+                      <td>{inventory.stock_as_on || "-"}</td>
                       <td>{inventory.uom || "-"}</td>
                     </tr>
                   ))
@@ -1943,7 +1979,7 @@ const MaterialReconciliationCreate = () => {
                         {batch.current_stock_qty ?? "-"}
                       </td>
                       <td className="text-start">
-                        <input
+                        {/* <input
                           type="number"
                           className="form-control"
                           placeholder="Enter..."
@@ -1952,6 +1988,45 @@ const MaterialReconciliationCreate = () => {
                           onChange={(e) =>
                             handleBatchIssueQtyChange(batch.id, e.target.value)
                           }
+                        /> */}
+
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="Enter..."
+                          min={0}
+                          max={parseFloat(batch.current_stock_qty) || 0}
+                          value={batchIssueQty[batch.id] || ""}
+                          onChange={(e) =>
+                            handleBatchIssueQtyChange(batch.id, e.target.value)
+                          }
+                          disabled={(() => {
+                            // Sequential enabling logic
+                            // Find the first batch index that is not filled (0 or empty)
+                            const filledUpTo = batchList.findIndex(
+                              (b) =>
+                                !batchIssueQty[b.id] ||
+                                parseFloat(batchIssueQty[b.id]) === 0
+                            );
+                            // If idx > filledUpTo, disable this input
+                            if (filledUpTo !== -1 && idx > filledUpTo)
+                              return true;
+
+                            // Also, if total issued qty is already fulfilled, disable all except those already filled
+                            const totalIssued = Object.values(
+                              batchIssueQty
+                            ).reduce(
+                              (sum, qty) => sum + (parseFloat(qty) || 0),
+                              0
+                            );
+                            if (
+                              totalIssued >= batchMaxQty &&
+                              !(parseFloat(batchIssueQty[batch.id]) > 0)
+                            )
+                              return true;
+
+                            return false;
+                          })()}
                         />
                       </td>
                     </tr>
