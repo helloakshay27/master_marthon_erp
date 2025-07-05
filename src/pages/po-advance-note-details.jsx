@@ -315,7 +315,7 @@ const POAdvanceNoteDetails = () => {
 
   const [status, setStatus] = useState("");
 
-  const [attachments, setAttachments] = useState([]);
+  // const [attachments, setAttachments] = useState([]);
   const [documentRows, setDocumentRows] = useState([{ srNo: 1, upload: null }]);
   const documentRowsRef = useRef(documentRows);
 
@@ -363,35 +363,56 @@ const POAdvanceNoteDetails = () => {
       inputElement.value = ""; // Clear input value
     }
   };
+  const attachments = documentRows
+  .filter(row => row.upload)
+  .map(row => ({
+    filename: row.upload.filename,
+    content_type: row.upload.content_type,
+    content: row.upload.content, // base64 string
+  }));
 
   const handleSubmit = async () => {
+    // const payload = {
+    //   status_log: {
+    //     // status: "Approved", // Replace with dynamic status if needed
+    //     // remarks: "Status updated to Approved", // Replace with dynamic remarks if needed
+    //     // comments: "All checks passed", // Replace with dynamic comments if needed
+    //     // admin_comment: "Approved by admin", // Replace with dynamic admin comment if needed
+    //     status, // Dynamically pass the selected status
+    //     // remarks, // Dynamically pass the entered remarks
+    //     // comments, // Dynamically pass the entered comments
+    //     // admin_comment: "adminComment", // Dynamically pass the admin comment if needed
+    //   },
+    //   attachments,
+    // };
+
     const payload = {
-      status_log: {
-        // status: "Approved", // Replace with dynamic status if needed
-        // remarks: "Status updated to Approved", // Replace with dynamic remarks if needed
-        // comments: "All checks passed", // Replace with dynamic comments if needed
-        // admin_comment: "Approved by admin", // Replace with dynamic admin comment if needed
-        status, // Dynamically pass the selected status
-        // remarks, // Dynamically pass the entered remarks
-        // comments, // Dynamically pass the entered comments
-        // admin_comment: "adminComment", // Dynamically pass the admin comment if needed
-      },
-      attachments,
-    };
+  // status_log: {
+  //   status, // dynamically selected status
+  //   // remarks, comments, admin_comment can be added here if needed
+  // },
+  advance_note: {
+    company_id: advanceNote?.company_id,
+    project_id: advanceNote?.project_id,
+    advance_number: advanceNote?.advance_number,
+    supplier_name: advanceNote?.supplier_name,
+    attachments,
+  }
+};
 
     try {
-      const response = await axios.patch(
+      const response = await axios.put(
         // "https://marathon.lockated.com/advance_notes/3/update_status",
-        `${baseURL}advance_notes/${advanceNote.id}/update_status?token=${token}`, // Use the dynamic ID here
+        `${baseURL}advance_notes/${advanceNote.id}?token=${token}`, // Use the dynamic ID here
 
         payload
       );
       console.log("Status updated successfully:", response.data);
-      alert("Status updated successfully!");
+      alert("Advance Note updated successfully!");
       navigate(`/po-advance-note-list?token=${token}`); // Redirect to bill-booking-list
     } catch (error) {
       console.error("Error updating status:", error);
-      alert("Failed to update status.");
+      alert("Failed to update Advance Note.");
     }
   };
 
@@ -1523,7 +1544,7 @@ const POAdvanceNoteDetails = () => {
                 </div>
                 <div className="row mt-2 justify-content-end w-100">
                   <div className="col-md-2 mt-2">
-                    <button className="purple-btn2 w-100">Print</button>
+                    {/* <button className="purple-btn2 w-100">Print</button> */}
                   </div>
                   <div className="col-md-2 mt-2">
                     <button
