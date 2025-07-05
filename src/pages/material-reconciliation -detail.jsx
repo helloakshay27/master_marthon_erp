@@ -5,6 +5,7 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import { baseURL } from "../confi/apiDomain";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import { useParams, useNavigate } from "react-router-dom";
+import { Modal } from "react-bootstrap";
 
 const MaterialReconciliationDetail = () => {
   const [adminComment, setAdminComment] = useState("");
@@ -32,6 +33,7 @@ const MaterialReconciliationDetail = () => {
   });
   const [statusList, setStatusList] = useState([]);
   const [isStatusDisabled, setIsStatusDisabled] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const calculateNetQuantity = (
     stockAsOn,
@@ -52,6 +54,8 @@ const MaterialReconciliationDetail = () => {
     axios
       .get(`${baseURL}material_reconciliations/${id}.json?token=${token}`)
       .then((response) => {
+        console.log("API Response:", response.data);
+        console.log("Approval logs in response:", response.data.approval_logs);
         setDetails(response.data);
 
         // Set status list and selected status from API
@@ -206,6 +210,14 @@ const MaterialReconciliationDetail = () => {
     }
   };
 
+  const openModal = () => {
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
@@ -216,6 +228,33 @@ const MaterialReconciliationDetail = () => {
           <form onSubmit={handleSubmit}>
             <CollapsibleCard title="Material Reconciliation">
               <div className="card-body ">
+                {/* Debug info */}
+                {console.log("Details:", details)}
+                {console.log("Approval logs:", details?.approval_logs)}
+                {console.log(
+                  "Approval logs length:",
+                  details?.approval_logs?.length
+                )}
+
+                {/* Show button if approval logs exist */}
+                {details?.approval_logs && details.approval_logs.length > 0 && (
+                  <div className="row mt-1 justify-content-end">
+                    <div className="col-md-2 nav-item">
+                      <button
+                        type="button"
+                        className="purple-btn2"
+                        onClick={openModal}
+                        style={{
+                          backgroundColor:
+                            details?.status === "approved" ? "green" : "",
+                          border: "none",
+                        }}
+                      >
+                        <span>Approval Logs</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <div className="row mt-3">
                   <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                     <div className="col-6">
@@ -607,6 +646,69 @@ const MaterialReconciliationDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Approval Log Modal */}
+      <Modal size="xl" show={showModal} onHide={closeModal} centered>
+        <Modal.Header closeButton>
+          <h5>Approval Log</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row mt-2 px-2">
+            <div className="col-12">
+              <div className="tbl-container me-2 mt-3">
+                {/* Check if approval_logs is empty or undefined */}
+                {!details?.approval_logs ||
+                details?.approval_logs.length === 0 ? (
+                  // Display a message if no logs are available
+                  <div className="text-center py-4">
+                    <p className="text-muted">No approval logs available.</p>
+                  </div>
+                ) : (
+                  // Render the table if logs are available
+                  <table className="w-100" style={{ width: "100%" }}>
+                    <thead>
+                      <tr>
+                        <th style={{ width: "66px !important" }}>Sr.No.</th>
+                        <th>Approval Level</th>
+                        <th>Approved By</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Remark</th>
+                        <th>Users</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {details?.approval_logs.map((log, id) => (
+                        <tr key={id}>
+                          <td className="text-start">{id + 1}</td>
+                          <td className="text-start">{log.approval_level}</td>
+                          <td className="text-start">{log.approved_by}</td>
+                          <td className="text-start">{log.date}</td>
+                          <td className="text-start">
+                            <span
+                              className="px-2 py-1 rounded text-white"
+                              style={{
+                                backgroundColor:
+                                  log.status === "Pending" ? "red" : "green",
+                              }}
+                            >
+                              {log.status}
+                            </span>
+                          </td>
+                          <td className="text-start">
+                            <p>{log.remark || "-"}</p>
+                          </td>
+                          <td className="text-start">{log.users}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };
