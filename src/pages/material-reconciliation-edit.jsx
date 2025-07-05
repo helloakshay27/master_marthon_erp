@@ -47,6 +47,7 @@ const MaterialReconciliationEdit = () => {
 
   // Add state for dynamic reasons
   const [reasonOptions, setReasonOptions] = useState([]);
+  const [batchQtyError, setBatchQtyError] = useState("");
 
   // Fetch reasons from API on mount
   useEffect(() => {
@@ -139,10 +140,10 @@ const MaterialReconciliationEdit = () => {
         (parseFloat(inv.damage_qty) || 0);
       setBatchMaxQty(maxQty);
 
-      // If editing, prefill batchIssueQty from existing mr_batches_attributes
-      if (inv.mr_batches_attributes) {
+      // If editing, prefill batchIssueQty from existing batches
+      if (inv.batches && inv.batches.length > 0) {
         const prefill = {};
-        inv.mr_batches_attributes.forEach((batch) => {
+        inv.batches.forEach((batch) => {
           prefill[batch.grn_batch_id] = batch.grn_batch_qty;
         });
         setBatchIssueQty(prefill);
@@ -1103,6 +1104,7 @@ const MaterialReconciliationEdit = () => {
               remarks: item.remarks,
               reason_id: item.reason ? item.reason.id : null,
               uom: item.uom,
+              batches: item.batches || [], // Include batches data for prefill
             })),
         });
 
@@ -1291,7 +1293,7 @@ const MaterialReconciliationEdit = () => {
       ...prev,
       material_reconciliation_items_attributes:
         prev.material_reconciliation_items_attributes.map((item) =>
-          item.id === selectedInventoryId
+          item.material_inventory_id === selectedInventoryId
             ? { ...item, mr_batches_attributes: batchData }
             : item
         ),
@@ -2131,7 +2133,7 @@ const MaterialReconciliationEdit = () => {
             <table className="w-100">
               <thead>
                 <tr>
-                  <th className="text-start">Sr. No.</th>
+                  {/* <th className="text-start">Sr. No.</th> */}
                   <th className="text-start">Batch No</th>
                   <th className="text-start">MOR No.</th>
                   <th className="text-start">GRN No</th>
@@ -2158,9 +2160,9 @@ const MaterialReconciliationEdit = () => {
                   batchList.map((batch, idx) => (
                     <tr key={batch.id || idx}>
                       <td className="text-start">{idx + 1}</td>
-                      <td className="text-start">
+                      {/* <td className="text-start">
                         {batch.batch_no || batch.id || "-"}
-                      </td>
+                      </td> */}
                       <td className="text-start">{batch.mor_number || "-"}</td>
                       <td className="text-start">{batch.grn_number || "-"}</td>
                       <td className="text-start">
@@ -2174,17 +2176,6 @@ const MaterialReconciliationEdit = () => {
                         {batch.current_stock_qty ?? "-"}
                       </td>
                       <td className="text-start">
-                        {/* <input
-                          type="number"
-                          className="form-control"
-                          placeholder="Enter..."
-                          min={0}
-                          value={batchIssueQty[batch.id] || ""}
-                          onChange={(e) =>
-                            handleBatchIssueQtyChange(batch.id, e.target.value)
-                          }
-                        /> */}
-
                         <input
                           type="number"
                           className="form-control"

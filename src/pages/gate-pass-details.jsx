@@ -23,6 +23,7 @@ const GatePassDetails = () => {
   });
   const [statusList, setStatusList] = useState([]);
   const [isStatusDisabled, setIsStatusDisabled] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -80,6 +81,14 @@ const GatePassDetails = () => {
     }
   };
 
+  const openModal = () => {
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
   if (!details) return <p>No details found.</p>;
@@ -119,6 +128,24 @@ const GatePassDetails = () => {
           <form onSubmit={handleSubmit}>
             <CollapsibleCard title="Gate Pass Information">
               <div className="card-body">
+                {details?.approval_logs && details.approval_logs.length > 0 && (
+                  <div className="row mt-1 justify-content-end">
+                    <div className="col-md-2 nav-item">
+                      <button
+                        type="button"
+                        className="purple-btn2"
+                        onClick={openModal}
+                        style={{
+                          backgroundColor:
+                            details?.status === "approved" ? "green" : "",
+                          border: "none",
+                        }}
+                      >
+                        <span>Approval Logs</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <div className="details_page">
                   <div className="row px-3">
                     <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
@@ -511,6 +538,71 @@ const GatePassDetails = () => {
           </div>
         </div>
       </div>
+
+      {/* Approval Log Modal */}
+      <Modal size="xl" show={showModal} onHide={closeModal} centered>
+        <Modal.Header closeButton>
+          <h5>Approval Log</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row mt-2 px-2">
+            <div className="col-12">
+              <div className="tbl-container me-2 mt-3">
+                {/* Check if approval_logs is empty or undefined */}
+                {!details?.approval_logs ||
+                details?.approval_logs.length === 0 ? (
+                  // Display a message if no logs are available
+                  <div className="text-center py-4">
+                    <p className="text-muted">No approval logs available.</p>
+                  </div>
+                ) : (
+                  // Render the table if logs are available
+                  <table className="w-100" style={{ width: "100%" }}>
+                    <thead>
+                      <tr>
+                        <th style={{ width: "66px !important" }}>Sr.No.</th>
+                        <th>Approval Level</th>
+                        <th>Approved By</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Remark</th>
+                        <th>Users</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {details?.approval_logs.map((log, id) => (
+                        <tr key={id}>
+                          <td className="text-start">{id + 1}</td>
+                          <td className="text-start">{log.approval_level}</td>
+                          <td className="text-start">
+                            {log.approved_by || "-"}
+                          </td>
+                          <td className="text-start">{log.date}</td>
+                          <td className="text-start">
+                            <span
+                              className="px-2 py-1 rounded text-white"
+                              style={{
+                                backgroundColor:
+                                  log.status === "Pending" ? "red" : "green",
+                              }}
+                            >
+                              {log.status}
+                            </span>
+                          </td>
+                          <td className="text-start">
+                            <p>{log.remark || "-"}</p>
+                          </td>
+                          <td className="text-start">{log.users}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

@@ -1936,7 +1936,7 @@ const MaterialReconciliationCreate = () => {
             <table className="w-100">
               <thead>
                 <tr>
-                  <th className="text-start">Sr. No.</th>
+                  {/* <th className="text-start">Sr. No.</th> */}
                   <th className="text-start">Batch No</th>
                   <th className="text-start">MOR No.</th>
                   <th className="text-start">GRN No</th>
@@ -1963,9 +1963,9 @@ const MaterialReconciliationCreate = () => {
                   batchList.map((batch, idx) => (
                     <tr key={batch.id || idx}>
                       <td className="text-start">{idx + 1}</td>
-                      <td className="text-start">
+                      {/* <td className="text-start">
                         {batch.batch_no || batch.id || "-"}
-                      </td>
+                      </td> */}
                       <td className="text-start">{batch.mor_number || "-"}</td>
                       <td className="text-start">{batch.grn_number || "-"}</td>
                       <td className="text-start">
