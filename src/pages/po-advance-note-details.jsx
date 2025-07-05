@@ -23,6 +23,8 @@ const POAdvanceNoteDetails = () => {
   const [showRows, setShowRows] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [creditNoteAmount, setCreditNoteAmount] = useState(null);
+  
 
   // tax table functionality
 
@@ -77,6 +79,7 @@ const POAdvanceNoteDetails = () => {
         const data = response.data;
         console.log("data", data);
         setAdvanceNote(data);
+        setCreditNoteAmount(data.advance_amount || 0)
         setStatus(
           data.status?.charAt(0).toUpperCase() +
           data.status?.slice(1).toLowerCase() || ""
@@ -95,36 +98,36 @@ const POAdvanceNoteDetails = () => {
   }, [id]);
 
   const [rows, setRows] = useState([
-    {
-      id: 1,
-      type: "Handling Charges",
-      percentage: "Select Charges",
-      inclusive: false,
-      amount: "",
-      isEditable: false,
-      addition: true,
-    },
-    {
-      id: 2,
-      type: "Other charges",
-      percentage: "Select Charges",
-      inclusive: false,
-      amount: "",
-      isEditable: false,
-      addition: true,
-    },
-    {
-      id: 3,
-      type: "Freight",
-      percentage: "Select Charges",
-      inclusive: false,
-      amount: " ",
-      isEditable: false,
-      addition: true,
-    },
+    // {
+    //   id: 1,
+    //   type: "Handling Charges",
+    //   percentage: "Select Charges",
+    //   inclusive: false,
+    //   amount: "",
+    //   isEditable: false,
+    //   addition: true,
+    // },
+    // {
+    //   id: 2,
+    //   type: "Other charges",
+    //   percentage: "Select Charges",
+    //   inclusive: false,
+    //   amount: "",
+    //   isEditable: false,
+    //   addition: true,
+    // },
+    // {
+    //   id: 3,
+    //   type: "Freight",
+    //   percentage: "Select Charges",
+    //   inclusive: false,
+    //   amount: " ",
+    //   isEditable: false,
+    //   addition: true,
+    // },
   ]);
   const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
-  const [creditNoteAmount, setCreditNoteAmount] = useState(null);
+  
 
   // Fetch tax types from API
   useEffect(() => {
@@ -142,19 +145,63 @@ const POAdvanceNoteDetails = () => {
     fetchTaxTypes();
   }, []);
   // console.log("tax types:", taxTypes)
+  // const addRow = () => {
+  //   setRows((prevRows) => [
+  //     ...prevRows,
+  //     {
+  //       id: prevRows.length + 1,
+  //       type: "",
+  //       percentage: "0",
+  //       inclusive: false,
+  //       amount: "",
+  //       isEditable: true,
+  //       addition: true,
+  //     },
+  //   ]);
+  // };
+
   const addRow = () => {
-    setRows((prevRows) => [
-      ...prevRows,
-      {
-        id: prevRows.length + 1,
-        type: "",
-        percentage: "0",
-        inclusive: false,
-        amount: "",
-        isEditable: true,
-        addition: true,
-      },
-    ]);
+    // List of special types
+    const specialTypes = [
+      { type: "Handling Charges", resource_id: 2 },
+      { type: "Other charges", resource_id: 4 },
+      { type: "Freight", resource_id: 5 },
+    ];
+
+    // Find the first special type not yet added
+    const existingTypes = rows.map(r => r.type);
+    const nextSpecial = specialTypes.find(st => !existingTypes.includes(st.type));
+
+    if (nextSpecial) {
+      setRows(prevRows => [
+        ...prevRows,
+        {
+          id: prevRows.length + 1,
+          type: nextSpecial.type,
+          percentage: "",
+          inclusive: false,
+          amount: "",
+          isEditable: false,
+          addition: true,
+          resource_id: nextSpecial.resource_id,
+          resource_type: "TaxCharge",
+        },
+      ]);
+    } else {
+      // Add a generic editable row if all special types are already added
+      setRows(prevRows => [
+        ...prevRows,
+        {
+          id: prevRows.length + 1,
+          type: "",
+          percentage: "0",
+          inclusive: false,
+          amount: "",
+          isEditable: true,
+          addition: true,
+        },
+      ]);
+    }
   };
   // Function to calculate the subtotal of addition rows
   const calculateSubTotal = () => {
@@ -895,28 +942,81 @@ const POAdvanceNoteDetails = () => {
                                       //   )
                                       // }
 
-                                      onChange={(selectedOption) => {
-                                        console.log(
-                                          "Selected Option:",
-                                          selectedOption
-                                        ); // Log the selected option
-                                        setRows((prevRows) =>
-                                          prevRows.map((r) =>
-                                            r.id === row.id
-                                              ? {
-                                                ...r,
-                                                type:
-                                                  selectedOption?.value || "", // Handle null or undefined
-                                                resource_id:
-                                                  selectedOption?.id || null, // Handle null or undefined
-                                                resource_type:
-                                                  selectedOption?.tax || "", // Handle null or undefined
-                                              }
-                                              : r
-                                          )
-                                        );
-                                        console.log("Updated Rows:", rows); // Log the updated rows
-                                      }}
+                                      // onChange={(selectedOption) => {
+                                      //   console.log(
+                                      //     "Selected Option:",
+                                      //     selectedOption
+                                      //   ); // Log the selected option
+                                      //   setRows((prevRows) =>
+                                      //     prevRows.map((r) =>
+                                      //       r.id === row.id
+                                      //         ? {
+                                      //           ...r,
+                                      //           type:
+                                      //             selectedOption?.value || "", // Handle null or undefined
+                                      //           resource_id:
+                                      //             selectedOption?.id || null, // Handle null or undefined
+                                      //           resource_type:
+                                      //             selectedOption?.tax || "", // Handle null or undefined
+                                      //         }
+                                      //         : r
+                                      //     )
+                                      //   );
+                                      //   console.log("Updated Rows:", rows); // Log the updated rows
+                                      // }}
+
+                                        onChange={(selectedOption) => {
+                                          setRows((prevRows) => {
+                                            let updatedRows = prevRows.map((r) =>
+                                              r.id === row.id
+                                                ? {
+                                                  ...r,
+                                                  type: selectedOption?.value || "",
+                                                  resource_id: selectedOption?.id || null,
+                                                  resource_type: selectedOption?.tax || "",
+                                                }
+                                                : r
+                                            );
+
+                                            // Auto-add CGST if SGST is selected
+                                            if (selectedOption?.value === "SGST" && !prevRows.some(r => r.type === "CGST")) {
+                                              updatedRows = [
+                                                ...updatedRows,
+                                                {
+                                                  id: updatedRows.length + 1,
+                                                  type: "CGST",
+                                                  percentage: row.percentage,
+                                                  inclusive: row.inclusive,
+                                                  amount: row.amount,
+                                                  isEditable: true,
+                                                  addition: true,
+                                                  resource_id: taxTypes.find(t => t.name === "CGST")?.id || null,
+                                                  resource_type: taxTypes.find(t => t.name === "CGST")?.type || "",
+                                                },
+                                              ];
+                                            }
+
+                                            // Auto-add SGST if CGST is selected
+                                            if (selectedOption?.value === "CGST" && !prevRows.some(r => r.type === "SGST")) {
+                                              updatedRows = [
+                                                ...updatedRows,
+                                                {
+                                                  id: updatedRows.length + 1,
+                                                  type: "SGST",
+                                                  percentage: row.percentage,
+                                                  inclusive: row.inclusive,
+                                                  amount: row.amount,
+                                                  isEditable: true,
+                                                  addition: true,
+                                                  resource_id: taxTypes.find(t => t.name === "SGST")?.id || null,
+                                                  resource_type: taxTypes.find(t => t.name === "SGST")?.type || "",
+                                                },
+                                              ];
+                                            }
+
+                                            return updatedRows;
+                                          });
+                                        }}
                                       placeholder="Select Type"
                                       isDisabled={!row.isEditable} // Disable if not editable
                                     />

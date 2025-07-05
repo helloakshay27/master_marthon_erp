@@ -582,9 +582,9 @@ const DebitNoteCreate = () => {
 
 
   const [rows, setRows] = useState([
-    { id: 1, type: "Handling Charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, resource_id: 2, resource_type: "TaxCharge" },
-    { id: 2, type: "Other charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, resource_id: 4, resource_type: "TaxCharge" },
-    { id: 3, type: "Freight", percentage: "", inclusive: false, amount: ' ', isEditable: false, addition: true, resource_id: 5, resource_type: "TaxCharge" },
+    // { id: 1, type: "Handling Charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, resource_id: 2, resource_type: "TaxCharge" },
+    // { id: 2, type: "Other charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, resource_id: 4, resource_type: "TaxCharge" },
+    // { id: 3, type: "Freight", percentage: "", inclusive: false, amount: ' ', isEditable: false, addition: true, resource_id: 5, resource_type: "TaxCharge" },
   ]);
   const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
 
@@ -604,20 +604,68 @@ const DebitNoteCreate = () => {
     fetchTaxTypes();
   }, []);
   // console.log("tax types:", taxTypes)
+  // const addRow = () => {
+  //   setRows((prevRows) => [
+  //     ...prevRows,
+  //     {
+  //       id: prevRows.length + 1,
+  //       type: "",
+  //       percentage: "0",
+  //       inclusive: false,
+  //       amount: "",
+  //       isEditable: true,
+  //       addition: true,
+  //     },
+  //   ]);
+  // };
+
+
+
+
   const addRow = () => {
-    setRows((prevRows) => [
-      ...prevRows,
-      {
-        id: prevRows.length + 1,
-        type: "",
-        percentage: "0",
-        inclusive: false,
-        amount: "",
-        isEditable: true,
-        addition: true,
-      },
-    ]);
+    // List of special types
+    const specialTypes = [
+      { type: "Handling Charges", resource_id: 2 },
+      { type: "Other charges", resource_id: 4 },
+      { type: "Freight", resource_id: 5 },
+    ];
+
+    // Find the first special type not yet added
+    const existingTypes = rows.map(r => r.type);
+    const nextSpecial = specialTypes.find(st => !existingTypes.includes(st.type));
+
+    if (nextSpecial) {
+      setRows(prevRows => [
+        ...prevRows,
+        {
+          id: prevRows.length + 1,
+          type: nextSpecial.type,
+          percentage: "",
+          inclusive: false,
+          amount: "",
+          isEditable: false,
+          addition: true,
+          resource_id: nextSpecial.resource_id,
+          resource_type: "TaxCharge",
+        },
+      ]);
+    } else {
+      // Add a generic editable row if all special types are already added
+      setRows(prevRows => [
+        ...prevRows,
+        {
+          id: prevRows.length + 1,
+          type: "",
+          percentage: "0",
+          inclusive: false,
+          amount: "",
+          isEditable: true,
+          addition: true,
+        },
+      ]);
+    }
   };
+
   // Function to calculate the subtotal of addition rows
   const calculateSubTotal = () => {
     return rows
@@ -627,16 +675,16 @@ const DebitNoteCreate = () => {
 
   // Delete a row
   const deleteRow = (id) => {
-    // setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-    setRows((prevRows) =>
-      prevRows.filter((row, index) => {
-        // Prevent deletion of the first three rows
-        if (index < 3) {
-          return true;
-        }
-        return row.id !== id;
-      })
-    );
+    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+    // setRows((prevRows) =>
+    //   prevRows.filter((row, index) => {
+    //     // Prevent deletion of the first three rows
+    //     if (index < 3) {
+    //       return true;
+    //     }
+    //     return row.id !== id;
+    //   })
+    // );
   };
 
   // deduction
@@ -1362,25 +1410,80 @@ const DebitNoteCreate = () => {
                                         // }
 
 
-                                        onChange={(selectedOption) =>
-                                          setRows((prevRows) =>
-                                            prevRows.map((r) =>
+                                        // onChange={(selectedOption) =>
+                                        //   setRows((prevRows) =>
+                                        //     prevRows.map((r) =>
+                                        //       r.id === row.id
+                                        //         ? {
+                                        //           ...r,
+                                        //           type: selectedOption?.value || "", // Handle null or undefined
+                                        //           resource_id: selectedOption?.id || null, // Handle null or undefined
+                                        //           resource_type: selectedOption?.tax || "", // Handle null or undefined
+                                        //           // resource_id: selectedOption?.value || null, // Handle null or undefined
+                                        //           // resource_type: taxTypes.find((t) => t.id === selectedOption?.value)?.type || "", // Handle null or undefined
+                                        //         }
+                                        //         : r
+                                        //     )
+                                        //   )
+                                        // }
+
+
+                                        onChange={(selectedOption) => {
+                                          setRows((prevRows) => {
+                                            let updatedRows = prevRows.map((r) =>
                                               r.id === row.id
                                                 ? {
                                                   ...r,
-                                                  type: selectedOption?.value || "", // Handle null or undefined
-                                                  resource_id: selectedOption?.id || null, // Handle null or undefined
-                                                  resource_type: selectedOption?.tax || "", // Handle null or undefined
-                                                  // resource_id: selectedOption?.value || null, // Handle null or undefined
-                                                  // resource_type: taxTypes.find((t) => t.id === selectedOption?.value)?.type || "", // Handle null or undefined
+                                                  type: selectedOption?.value || "",
+                                                  resource_id: selectedOption?.id || null,
+                                                  resource_type: selectedOption?.tax || "",
                                                 }
                                                 : r
-                                            )
-                                          )
-                                        }
+                                            );
+
+                                            // Auto-add CGST if SGST is selected
+                                            if (selectedOption?.value === "SGST" && !prevRows.some(r => r.type === "CGST")) {
+                                              updatedRows = [
+                                                ...updatedRows,
+                                                {
+                                                  id: updatedRows.length + 1,
+                                                  type: "CGST",
+                                                  percentage: row.percentage,
+                                                  inclusive: row.inclusive,
+                                                  amount: row.amount,
+                                                  isEditable: true,
+                                                  addition: true,
+                                                  resource_id: taxTypes.find(t => t.name === "CGST")?.id || null,
+                                                  resource_type: taxTypes.find(t => t.name === "CGST")?.type || "",
+                                                },
+                                              ];
+                                            }
+
+                                            // Auto-add SGST if CGST is selected
+                                            if (selectedOption?.value === "CGST" && !prevRows.some(r => r.type === "SGST")) {
+                                              updatedRows = [
+                                                ...updatedRows,
+                                                {
+                                                  id: updatedRows.length + 1,
+                                                  type: "SGST",
+                                                  percentage: row.percentage,
+                                                  inclusive: row.inclusive,
+                                                  amount: row.amount,
+                                                  isEditable: true,
+                                                  addition: true,
+                                                  resource_id: taxTypes.find(t => t.name === "SGST")?.id || null,
+                                                  resource_type: taxTypes.find(t => t.name === "SGST")?.type || "",
+                                                },
+                                              ];
+                                            }
+
+                                            return updatedRows;
+                                          });
+                                        }}
                                         placeholder="Select Type"
-                                        isDisabled={!row.isEditable} // Disable if not editable
+                                      isDisabled={!row.isEditable} // Disable if not editable
                                       />
+
                                     </td>
                                     <td className="text-start">
                                       {row.isEditable ? (
@@ -1669,129 +1772,129 @@ const DebitNoteCreate = () => {
                           </div>
                           {/* advance note  */}
                           {debitNoteReason === "advance_note" && (
-  <>
-                          <div className="d-flex justify-content-between mt-5 me-1">
-                            <h5 className=" ">Advance Adjustment</h5>
-                            <button
-                              className="purple-btn2"
-                              onClick={openAdvanceNoteModal}
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width={20}
-                                height={20}
-                                fill="currentColor"
-                                className="bi bi-plus"
-                                viewBox="0 0 16 16"
-                              >
-                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                              </svg>
-                              <span>Select Advance Note</span>
-                            </button>
-                          </div>
-                          <div className="tbl-container mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th className="text-start">ID</th>
-                                  <th className="text-start">PO Display No.</th>
-                                  <th className="text-start">Project</th>
-                                  <th className="text-start">Advance Number</th>
+                            <>
+                              <div className="d-flex justify-content-between mt-5 me-1">
+                                <h5 className=" ">Advance Adjustment</h5>
+                                <button
+                                  className="purple-btn2"
+                                  onClick={openAdvanceNoteModal}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width={20}
+                                    height={20}
+                                    fill="currentColor"
+                                    className="bi bi-plus"
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                  </svg>
+                                  <span>Select Advance Note</span>
+                                </button>
+                              </div>
+                              <div className="tbl-container mt-3">
+                                <table className="w-100">
+                                  <thead>
+                                    <tr>
+                                      <th className="text-start">ID</th>
+                                      <th className="text-start">PO Display No.</th>
+                                      <th className="text-start">Project</th>
+                                      <th className="text-start">Advance Number</th>
 
-                                  <th className="text-start">Advance Amount (INR)</th>
-                                  <th className="text-start">Status</th>
-                                  <th className="text-start">
-                                    Debit Note For Advance (INR)
-                                  </th>
-                                  <th className="text-start">
-                                    Advance Adjusted Till Date (INR)
-                                  </th>
-                                  <th className="text-start">
-                                    Advance Outstanding till Certificate Date (INR)
-                                  </th>
-                                  <th className="text-start">
-                                    Advance Outstanding till current Date (INR)
-                                  </th>
-                                  <th className="text-start" style={{ width: "200px" }}>
-                                    This Recovery (INR)
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {selectedAdvanceNotes.length > 0 ? (
-                                  selectedAdvanceNotes.map((note) => (
-                                    <tr key={note.id}>
-                                      <td className="text-start">{note.id || "-"}</td>
-                                      <td className="text-start">
-                                        {note.po_number || "-"}
-                                      </td>
-                                      <td className="text-start">
-                                        {note.project_name || "-"}
-                                      </td>
-                                      <td className="text-start">
-                                        {note.advance_number || "-"}
-                                      </td>
-                                      <td className="text-start">
-                                        {note.advance_amount || "-"}
-                                      </td>
-                                      <td className="text-start">{note.status || "-"}</td>
-
-                                      <td className="text-start">
-                                        {note.debit_note_for_advance || "-"}
-                                      </td>
-                                      <td className="text-start">
-                                        {note.advance_adjusted_till_date || "-"}
-                                      </td>
-                                      <td className="text-start">
-                                        {note.advance_outstanding_till_certificate_date ||
-                                          "-"}
-                                      </td>
-                                      <td className="text-start">
-                                        {note.advance_outstanding_till_current_date ||
-                                          "-"}
-                                      </td>
-                                      <td className="text-start">
-                                        <input
-                                          type="number"
-                                          className="form-control"
-                                          value={note.this_recovery || ""}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            if (validateAdvanceRecovery(note, value)) {
-                                              setSelectedAdvanceNotes((prev) => {
-                                                const newNotes = prev.map((n) =>
-                                                  n.id === note.id
-                                                    ? { ...n, this_recovery: value }
-                                                    : n
-                                                );
-                                                // Update form data with new total after recovery amount changes
-                                                setFormData((prevForm) => ({
-                                                  ...prevForm,
-                                                  currentAdvanceDeduction:
-                                                    calculateTotalAdvanceRecovery(),
-                                                }));
-                                                return newNotes;
-                                              });
-                                            }
-                                          }}
-                                          min="0"
-                                          max={note.advance_amount}
-                                        />
-                                      </td>
+                                      <th className="text-start">Advance Amount (INR)</th>
+                                      <th className="text-start">Status</th>
+                                      <th className="text-start">
+                                        Debit Note For Advance (INR)
+                                      </th>
+                                      <th className="text-start">
+                                        Advance Adjusted Till Date (INR)
+                                      </th>
+                                      <th className="text-start">
+                                        Advance Outstanding till Certificate Date (INR)
+                                      </th>
+                                      <th className="text-start">
+                                        Advance Outstanding till current Date (INR)
+                                      </th>
+                                      <th className="text-start" style={{ width: "200px" }}>
+                                        This Recovery (INR)
+                                      </th>
                                     </tr>
-                                  ))
-                                ) : (
-                                  <tr>
-                                    <td className="text-start" colSpan="9">
-                                      No advance notes selected.
-                                    </td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
-                           </>
-)}
+                                  </thead>
+                                  <tbody>
+                                    {selectedAdvanceNotes.length > 0 ? (
+                                      selectedAdvanceNotes.map((note) => (
+                                        <tr key={note.id}>
+                                          <td className="text-start">{note.id || "-"}</td>
+                                          <td className="text-start">
+                                            {note.po_number || "-"}
+                                          </td>
+                                          <td className="text-start">
+                                            {note.project_name || "-"}
+                                          </td>
+                                          <td className="text-start">
+                                            {note.advance_number || "-"}
+                                          </td>
+                                          <td className="text-start">
+                                            {note.advance_amount || "-"}
+                                          </td>
+                                          <td className="text-start">{note.status || "-"}</td>
+
+                                          <td className="text-start">
+                                            {note.debit_note_for_advance || "-"}
+                                          </td>
+                                          <td className="text-start">
+                                            {note.advance_adjusted_till_date || "-"}
+                                          </td>
+                                          <td className="text-start">
+                                            {note.advance_outstanding_till_certificate_date ||
+                                              "-"}
+                                          </td>
+                                          <td className="text-start">
+                                            {note.advance_outstanding_till_current_date ||
+                                              "-"}
+                                          </td>
+                                          <td className="text-start">
+                                            <input
+                                              type="number"
+                                              className="form-control"
+                                              value={note.this_recovery || ""}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                if (validateAdvanceRecovery(note, value)) {
+                                                  setSelectedAdvanceNotes((prev) => {
+                                                    const newNotes = prev.map((n) =>
+                                                      n.id === note.id
+                                                        ? { ...n, this_recovery: value }
+                                                        : n
+                                                    );
+                                                    // Update form data with new total after recovery amount changes
+                                                    setFormData((prevForm) => ({
+                                                      ...prevForm,
+                                                      currentAdvanceDeduction:
+                                                        calculateTotalAdvanceRecovery(),
+                                                    }));
+                                                    return newNotes;
+                                                  });
+                                                }
+                                              }}
+                                              min="0"
+                                              max={note.advance_amount}
+                                            />
+                                          </td>
+                                        </tr>
+                                      ))
+                                    ) : (
+                                      <tr>
+                                        <td className="text-start" colSpan="9">
+                                          No advance notes selected.
+                                        </td>
+                                      </tr>
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </>
+                          )}
 
                           <div className="d-flex justify-content-between align-items-end  mt-5">
                             <h5 className="mt-3">
