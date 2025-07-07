@@ -2508,7 +2508,7 @@ const EditBOQNew = () => {
             <div className="website-content">
                 <div className="module-data-section p-4">
                     <a href="" style={{ color: "black" }}>
-                        Home &gt; Engineering &gt; Edit BOQ ;;;;;;;;;;;;;
+                        Home &gt; Engineering &gt;BOQ List &gt; BOQ info &gt;BOQ Details&gt; Edit BOQ
                     </a>
                     {/* <h5 className="mt-4">Create BOQ</h5> */}
                     <div className="tab-content1 active" id="total-content">

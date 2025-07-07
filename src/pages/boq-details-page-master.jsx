@@ -389,7 +389,7 @@ const BOQDetailsPageMaster = () => {
       <div className="website-content">
         <div className="module-data-section p-2">
           <a href="" style={{ color: 'black' }}>
-            Home &gt; Engineering  &gt; BOQ &gt; BOQ Details
+            Home &gt; Engineering  &gt; BOQ List &gt; BOQ info &gt; BOQ Details
           </a>
           {/* <div className="card mt-2 mb-5 p-4" id="total-content"> */}
           {/* Total Content Here  ..className="tab-content1 active" */}
