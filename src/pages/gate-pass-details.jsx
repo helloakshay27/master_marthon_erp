@@ -368,7 +368,22 @@ const GatePassDetails = () => {
                           <td>{index + 1}</td>
                           <td>{item.material_type}</td>
                           <td>{item.material_sub_type}</td>
-                          <td>{item.material}</td>
+                          {/* <td>{item.material}</td> */}
+                          {/* <td>{item.material_sub_type}</td> */}
+                          <td>
+                            {item.other_material_name
+                              ? item.other_material_name
+                              : item.material}
+                            {/* {
+                              item.other_material_description
+                              // <div
+                              //   style={{ fontSize: "0.85em", color: "#888" }}
+                              // >
+                              //   {item.other_material_description}
+                              // </div>
+                            } */}
+                          </td>
+
                           <td>{item.generic_specification}</td>
                           <td>{item.brand}</td>
                           <td>{item.colour}</td>

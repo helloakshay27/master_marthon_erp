@@ -605,7 +605,7 @@ const GatePassEdit = () => {
     const fetchGatePassTypes = async () => {
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com//gate_pass_types.json?token=${token}`
+          `${baseURL}//gate_pass_types.json?token=${token}`
         );
         if (Array.isArray(response.data)) {
           setGatePassTypes(
@@ -731,7 +731,7 @@ const GatePassEdit = () => {
       const fetchToStores = async () => {
         try {
           const response = await axios.get(
-            `https://marathon.lockated.com/pms/stores/store_dropdown.json?q[site_id_eq]=${formData.sub_project_id}&isformatted=true`
+            `${baseURL}/pms/stores/store_dropdown.json?q[site_id_eq]=${formData.sub_project_id}&isformatted=true`
           );
           if (Array.isArray(response.data)) {
             setToStores(response.data);
@@ -757,7 +757,7 @@ const GatePassEdit = () => {
       const fetchSuppliers = async () => {
         try {
           const response = await axios.get(
-            `https://marathon.lockated.com/pms/suppliers.json?token=${token}`
+            `${baseURL}/pms/suppliers.json?token=${token}`
           );
           if (Array.isArray(response.data)) {
             const vendors = response.data.map((item) => ({
@@ -786,7 +786,7 @@ const GatePassEdit = () => {
       const fetchGateNumbers = async () => {
         try {
           const response = await axios.get(
-            `https://marathon.lockated.com/gate_numbers/gate_numbers.json?q[project_id_eq]=${formData.project_id}&token=${token}`
+            `${baseURL}/gate_numbers/gate_numbers.json?q[project_id_eq]=${formData.project_id}&token=${token}`
           );
           if (Array.isArray(response.data)) {
             setGateNumbers(
@@ -1192,7 +1192,7 @@ const GatePassEdit = () => {
       if (id && gatePassTypes.length > 0) {
         try {
           const response = await axios.get(
-            `https://marathon.lockated.com/gate_passes/${id}.json?token=${token}`
+            `${baseURL}/gate_passes/${id}.json?token=${token}`
           );
           const data = response.data;
 
@@ -1313,7 +1313,7 @@ const GatePassEdit = () => {
       const fetchOtherVendor = async () => {
         try {
           const response = await axios.get(
-            `https://marathon.lockated.com//gate_passes/${otherVendorId}/fetch_other_vendor.json?token=${token}`
+            `${baseURL}//gate_passes/${otherVendorId}/fetch_other_vendor.json?token=${token}`
           );
           const data = response.data;
           setNewVendorName(data.name || "");
@@ -1749,7 +1749,7 @@ const GatePassEdit = () => {
                                     if (otherVendorId) {
                                       try {
                                         const response = await axios.get(
-                                          `https://marathon.lockated.com//gate_passes/${otherVendorId}/fetch_other_vendor.json?token=${token}`
+                                          `${baseURL}//gate_passes/${otherVendorId}/fetch_other_vendor.json?token=${token}`
                                         );
                                         const data = response.data;
                                         setNewVendorName(data.name || "");
@@ -1906,7 +1906,7 @@ const GatePassEdit = () => {
                                     if (otherVendorId) {
                                       try {
                                         const response = await axios.get(
-                                          `https://marathon.lockated.com//gate_passes/${otherVendorId}/fetch_other_vendor.json?token=${token}`
+                                          `${baseURL}//gate_passes/${otherVendorId}/fetch_other_vendor.json?token=${token}`
                                         );
                                         const data = response.data;
                                         setNewVendorName(data.name || "");
