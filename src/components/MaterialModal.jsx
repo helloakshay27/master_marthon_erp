@@ -9,6 +9,8 @@ import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 
 const MaterialModal = ({ show, handleClose, handleAdd }) => {
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const [selectedMaterials, setSelectedMaterials] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [page, setPage] = useState(1); // 1-based index
@@ -69,8 +71,8 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
         : [...prev, material] // Check: Add to selection
     );
   };
-  
-  
+
+
   const handleSelectAll = (isChecked) => {
     setSelectedMaterials(isChecked ? [...inventoryTableData] : []); // Select or deselect all
   };
@@ -79,7 +81,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
     if (selectedMaterials.length === 0) {
       setErrorMessage2("Please select at least one material."); // Show error message
       return;
-    }else{
+    } else {
       setErrorMessage2(""); // Show error message
     }
     handleAdd(selectedMaterials);
@@ -98,7 +100,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
 
   // Fetching inventory types data from API on component mount
   useEffect(() => {
-    axios.get(`${baseURL}pms/inventory_types.json?q[category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+    axios.get(`${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`)
       .then(response => {
         // Map the fetched data to the format required by react-select
         const options = response.data.map(inventory => ({
@@ -118,7 +120,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
     if (selectedInventory) {
       const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
 
-      axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${inventoryTypeIds}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${inventoryTypeIds}&token=${token}`)
         .then(response => {
           // Map the sub-types to options for the select dropdown
           const options = response.data.map(subType => ({
@@ -154,7 +156,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
     if (selectedInventory) {
       const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
 
-      axios.get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[material_category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      axios.get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[material_category_eq]=material&token=${token}`)
         .then(response => {
           // Map the sub-types to options for the select dropdown
           const options = response.data.map(subType => ({
@@ -187,7 +189,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
       // Set the error message state
       setErrorMessage("Please select Material Type");
       return;
-    }else{
+    } else {
       setErrorMessage("")
     }
 
@@ -198,7 +200,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
 
     // const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
     // const inventoryMaterialTypeIds = selectedInventoryMaterialTypes.map(item => item.value).join(',');
-    const apiUrl = `${baseURL}pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[id_in]=${inventoryMaterialTypeIds}&q[material_category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`;
+    const apiUrl = `${baseURL}pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[id_in]=${inventoryMaterialTypeIds}&q[material_category_eq]=material&token=${token}`;
 
     axios.get(apiUrl)
       .then(response => {
@@ -244,7 +246,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
                   placeholder={`Select Material Type`} // Dynamic placeholder
 
                 />
-                 {errorMessage && <div className="error-message" style={{ color: 'red' }}>{errorMessage}</div>}
+                {errorMessage && <div className="error-message" style={{ color: 'red' }}>{errorMessage}</div>}
               </div>
             </div>
             {/* <div className="col-md-4 mt-3">
@@ -352,7 +354,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
         </div>
         {errorMessage2 && <div style={{ color: 'red' }}>{errorMessage2}</div>}
         <div className="modal-footer justify-content-center">
-       
+
 
           <button type="button" className="purple-btn2 submit_mor" onClick={handleAddMaterials}>
             Accept Selected
