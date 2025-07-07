@@ -99,12 +99,8 @@ const MaterialReconciliationDetail = () => {
               adjustment_qty: item.adjustment_qty,
               adjustment_rate: item.adjustment_rate,
               adjustment_value: item.adjustment_value,
-              net_quantity: calculateNetQuantity(
-                item.stock_as_on,
-                item.deadstock_qty,
-                item.theft_or_missing_qty,
-                item.adjustment_qty
-              ),
+              net_quantity: item.net_quantity,
+
               remarks: item.remarks,
               reason: item.reason,
             })),
