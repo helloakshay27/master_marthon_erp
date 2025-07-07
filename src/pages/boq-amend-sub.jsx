@@ -44,7 +44,8 @@ const BoqAmendSub = ({
 //   console.log(' boq sub item  in sub table : ', boqSubItems)
 
   //Material modal and table data handle add or delete
-
+const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
   const [showModal, setShowModal] = useState(false);
   // const [materials, setMaterials] = useState([]);
   const [selectedMaterials, setSelectedMaterials] = useState([]); // To track selected rows
@@ -699,7 +700,7 @@ const BoqAmendSub = ({
       if (material.inventory_type_id) {
         axios
           .get(
-            `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${material.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${material.inventory_type_id}&token=${token}`
           )
           .then((response) => {
             const options = response.data.map((subType) => ({
@@ -725,7 +726,7 @@ const BoqAmendSub = ({
       if (asset.inventory_type_id) {
         axios
           .get(
-            `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${asset.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${asset.inventory_type_id}&token=${token}`
           )
           .then((response) => {
             const options = response.data.map((subType) => ({
@@ -779,7 +780,7 @@ const BoqAmendSub = ({
       if (material.pms_inventory_id || material.id) {
         axios
           .get(
-            `${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.pms_inventory_id ||material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.pms_inventory_id ||material.id}&token=${token}`
           )
           .then((response) => {
             const options = response.data.map((specification) => ({
@@ -818,7 +819,7 @@ const BoqAmendSub = ({
       if (asset.id) {
         axios
           .get(
-            `${baseURL}pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=${token}`
           )
           .then((response) => {
             const options = response.data.map((specification) => ({
@@ -880,7 +881,7 @@ const BoqAmendSub = ({
       if (material.pms_inventory_id ||material.id) {
         axios
           .get(
-            `${baseURL}pms/colours.json?q[material_id_eq]=${material.pms_inventory_id ||material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/colours.json?q[material_id_eq]=${material.pms_inventory_id ||material.id}&token=${token}`
           )
           .then((response) => {
             const options = response.data.map((color) => ({
@@ -906,7 +907,7 @@ const BoqAmendSub = ({
       if (asset.id) {
         axios
           .get(
-            `${baseURL}pms/colours.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/colours.json?q[material_id_eq]=${asset.id}&token=${token}`
           )
           .then((response) => {
             const options = response.data.map((color) => ({
@@ -956,7 +957,7 @@ const BoqAmendSub = ({
       if (material.pms_inventory_id ||material.id) {
         axios
           .get(
-            `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${material.pms_inventory_id ||material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${material.pms_inventory_id ||material.id}&token=${token}`
           )
           .then((response) => {
             const options = response.data.map((brand) => ({
@@ -982,7 +983,7 @@ const BoqAmendSub = ({
       if (asset.id) {
         axios
           .get(
-            `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${asset.id}&token=${token}`
           )
           .then((response) => {
             const options = response.data.map((brand) => ({
@@ -1028,7 +1029,7 @@ const BoqAmendSub = ({
   useEffect(() => {
     axios
       .get(
-        `${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}unit_of_measures.json?token=${token}`
       )
       .then((response) => {
         // Mapping the response to the format required by react-select
