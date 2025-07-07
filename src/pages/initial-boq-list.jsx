@@ -874,20 +874,6 @@ const InitialBOQList = () => {
                     toast.error("Failed to upload. Please try again.");
                     setShowModal(false);
                 }
-                // if (error.response && error.response.status === 422) {
-                //   console.log("422 response:", error.response.data);
-                //   if (Array.isArray(error.response.data.errors)) {
-                //     const firstError = error.response.data.errors[0];
-                //     if (firstError && firstError.error) {
-                //       toast.error(`${firstError.error}`);
-                //     }
-                //   } else if (typeof error.response.data.errors === "string") {
-                //     toast.error(error.response.data.errors);
-                //   }
-                // } else {
-                //   console.error(error);
-                // }
-                //   alert("File upload failed!");
                 console.error(error);
             }
         };
