@@ -49,7 +49,7 @@ const MaterialReconciliationCreate = () => {
   useEffect(() => {
     axios
       .get(
-        `https://marathon.lockated.com//material_reconciliation_reasons/fetch_reasons.json?token=${token}`
+        `${baseURL}//material_reconciliation_reasons/fetch_reasons.json?token=${token}`
       )
       .then((response) => {
         const options = response.data.map((reason) => ({
@@ -176,7 +176,7 @@ const MaterialReconciliationCreate = () => {
   useEffect(() => {
     axios
       .get(
-        `https://marathon.lockated.com/pms/company_setups.json?token=${token}`
+        `${baseURL}/pms/company_setups.json?token=${token}`
       )
       .then((response) => {
         setCompanies(response.data.companies);
@@ -1007,7 +1007,7 @@ const MaterialReconciliationCreate = () => {
         setBatchLoading(true);
         try {
           const response = await axios.get(
-            `https://marathon.lockated.com/material_reconciliations/grn_batches.json?q[material_inventory_id_eq]=${selectedInventoryId}&q[pms_store_id_eq]=${selectedStore.value}&token=${token}`
+            `${baseURL}/material_reconciliations/grn_batches.json?q[material_inventory_id_eq]=${selectedInventoryId}&q[pms_store_id_eq]=${selectedStore.value}&token=${token}`
           );
           // setBatchList(response.data || []);
           setBatchList(Array.isArray(response.data) ? response.data : []);
