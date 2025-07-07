@@ -1628,6 +1628,30 @@ const CreateBOQ = () => {
   const handleLevel5Change = (selectedOption) =>
     setSelectedSubCategoryLevel5(selectedOption);
 
+          const payloadData = {
+          boq_detail: {
+            project_id: selectedProject ? selectedProject.value : null,
+            pms_site_id: selectedSite ? selectedSite.value : null,
+            pms_wing_id: selectedWing ? selectedWing.value : null,
+            item_name: itemName,
+            description: description,
+            unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
+            quantity: boqQuantity,
+            note: note,
+            // Flattened category levels
+            level_one_id: selectedCategory?.value || "",
+            level_two_id: selectedSubCategory?.value || "",
+            level_three_id: selectedSubCategoryLevel3?.value || "",
+            level_four_id: selectedSubCategoryLevel4?.value || "",
+            level_five_id: selectedSubCategoryLevel5?.value || "",
+            // Directly include all predefined materials and assets
+            materials: predefinedMaterials || [],
+            assets: predefinedAssets || [],
+
+          },
+        }; 
+        // console.log("payload for materil option :", payloadData)
+
   const handleSubmitMaterialLabour = async () => {
     // Validate mandatory fields
     // Track validation errors

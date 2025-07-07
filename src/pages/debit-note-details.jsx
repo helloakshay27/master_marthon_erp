@@ -249,32 +249,55 @@ const DebitNoteDetails = () => {
     setComment(e.target.value);
   };
 
-  const payload = {
-    status_log: {
-      status: status,
-      remarks: remark,
-      comments: comment,
-    },
-  };
 
-  console.log("detail status change", payload);
+
 
   const handleSubmit = async () => {
     // Prepare the payload for the API
+    // const payload = {
+    //   // status_log: {
+    //   //   status: status,
+    //   //   remarks: remark,
+    //   //   comments: comment,
+    //   // },
+
+    //   taxes_and_charges,
+    // attachments,
+    // // status_log: {
+    // //   status: status,
+    // //   remarks: remark,
+    // //   comments: comment,
+    // // },
+    // };
+
     const payload = {
-      status_log: {
-        status: status,
-        remarks: remark,
-        comments: comment,
-      },
+
+      debit_note: {
+        // company_id: debitNoteData?.company_id,
+        // project_id: debitNoteData?.project_id,
+        // debit_note_no: debitNoteData?.debit_note_no,
+        // debit_note_amount: debitNoteData?.debit_note_amount,
+        // remark: debitNoteData?.remark,
+        // reason: debitNoteData?.reason,
+        taxes_and_charges,
+        attachments,
+        status_log: {
+          status: status,
+          remarks: remark,
+          comments: comment,
+        },
+      }
     };
+
+
+
 
     console.log("detail status change", payload);
     setLoading(true);
 
     try {
-      const response = await axios.patch(
-        `${baseURL}debit_notes/${id}/update_status.json?token=${token}`,
+      const response = await axios.put(
+        `${baseURL}debit_notes/${id}?token=${token}`,
         payload, // The request body containing status and remarks
         {
           headers: {
@@ -290,10 +313,11 @@ const DebitNoteDetails = () => {
         setComment("")
         // alert('Status updated successfully');
         // Handle success (e.g., update the UI, reset fields, etc.)
-        toast.success("Status updated successfully!");
+        toast.success("Debit Note updated successfully!");
+        // await fetchCreditNoteData();
       } else {
         console.log("Error updating status:", response.data);
-        toast.error("Failed to update status.");
+        toast.error("Failed to update Debit Note .");
         // Handle error (e.g., show an error message)
       }
     } catch (error) {
@@ -470,34 +494,34 @@ const DebitNoteDetails = () => {
   // };
 
   const handleFileChange = (index, file) => {
-  if (!file) return;
+    if (!file) return;
 
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    const base64String = reader.result.split(",")[1];
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result.split(",")[1];
 
-    setDocumentRows(prevRows => {
-      const updatedRows = [...prevRows];
-      updatedRows[index] = {
-        ...updatedRows[index],
-        upload: {
-          filename: file.name,
-          content: base64String,
-          content_type: file.type,
-        }
-      };
-      return updatedRows;
-    });
+      setDocumentRows(prevRows => {
+        const updatedRows = [...prevRows];
+        updatedRows[index] = {
+          ...updatedRows[index],
+          upload: {
+            filename: file.name,
+            content: base64String,
+            content_type: file.type,
+          }
+        };
+        return updatedRows;
+      });
+    };
+
+    reader.readAsDataURL(file);
+
+    // Reset the input field to allow re-selecting the same file
+    const inputElement = document.getElementById(`file-input-${index}`);
+    if (inputElement) {
+      inputElement.value = "";
+    }
   };
-
-  reader.readAsDataURL(file);
-
-  // Reset the input field to allow re-selecting the same file
-  const inputElement = document.getElementById(`file-input-${index}`);
-  if (inputElement) {
-    inputElement.value = "";
-  }
-};
   // tax table functionality
   // Function to handle tab change
   const handleTabChange = (tabId) => {
@@ -521,8 +545,55 @@ const DebitNoteDetails = () => {
     }
   };
 
+  const taxes_and_charges = [
+    ...rows.map(row => ({
+      inclusive: row.inclusive,
+      amount: parseFloat(row.amount) || 0,
+      remarks: row.type,
+      addition: true,
+      percentage: parseFloat(row.percentage) || 0,
+      resource_id: row.resource_id,
+      resource_type: row.resource_type,
+    })),
+    ...deductionRows.map(row => ({
+      inclusive: row.inclusive,
+      amount: parseFloat(row.amount) || 0,
+      remarks: row.type,
+      addition: false,
+      percentage: parseFloat(row.percentage) || 0,
+      resource_id: row.resource_id,
+      resource_type: row.resource_type,
+    }))
+  ];
 
+  // Only include new uploads (not API attachments)
+  const attachments = documentRows
+    .filter(row => !row.isApiAttachment && row.upload)
+    .map(row => ({
+      filename: row.upload.filename,
+      content_type: row.upload.content_type,
+      content: row.upload.content, // base64 string
+    }));
+  const payload = {
 
+    debit_note: {
+      // company_id: debitNoteData?.company_id,
+      // project_id: debitNoteData?.project_id,
+      // debit_note_no: debitNoteData?.debit_note_no,
+      // debit_note_amount: debitNoteData?.debit_note_amount,
+      // remark: debitNoteData?.remark,
+      // reason: debitNoteData?.reason,
+      taxes_and_charges,
+      attachments,
+      status_log: {
+        status: status,
+        remarks: remark,
+        comments: comment,
+      },
+    }
+  };
+
+  console.log("detail edit change", payload);
 
   return (
     <>
@@ -876,57 +947,75 @@ const DebitNoteDetails = () => {
                                       // }}
 
 
+                                      // onChange={(selectedOption) => {
+                                      //   setRows((prevRows) => {
+                                      //     let updatedRows = prevRows.map((r) =>
+                                      //       r.id === row.id
+                                      //         ? {
+                                      //           ...r,
+                                      //           type: selectedOption?.value || "",
+                                      //           resource_id: selectedOption?.id || null,
+                                      //           resource_type: selectedOption?.tax || "",
+                                      //         }
+                                      //         : r
+                                      //     );
+
+                                      //     // Auto-add CGST if SGST is selected
+                                      //     if (selectedOption?.value === "SGST" && !prevRows.some(r => r.type === "CGST")) {
+                                      //       updatedRows = [
+                                      //         ...updatedRows,
+                                      //         {
+                                      //           id: updatedRows.length + 1,
+                                      //           type: "CGST",
+                                      //           percentage: row.percentage,
+                                      //           inclusive: row.inclusive,
+                                      //           amount: row.amount,
+                                      //           isEditable: true,
+                                      //           addition: true,
+                                      //           resource_id: taxTypes.find(t => t.name === "CGST")?.id || null,
+                                      //           resource_type: taxTypes.find(t => t.name === "CGST")?.type || "",
+                                      //         },
+                                      //       ];
+                                      //     }
+
+                                      //     // Auto-add SGST if CGST is selected
+                                      //     if (selectedOption?.value === "CGST" && !prevRows.some(r => r.type === "SGST")) {
+                                      //       updatedRows = [
+                                      //         ...updatedRows,
+                                      //         {
+                                      //           id: updatedRows.length + 1,
+                                      //           type: "SGST",
+                                      //           percentage: row.percentage,
+                                      //           inclusive: row.inclusive,
+                                      //           amount: row.amount,
+                                      //           isEditable: true,
+                                      //           addition: true,
+                                      //           resource_id: taxTypes.find(t => t.name === "SGST")?.id || null,
+                                      //           resource_type: taxTypes.find(t => t.name === "SGST")?.type || "",
+                                      //         },
+                                      //       ];
+                                      //     }
+
+                                      //     return updatedRows;
+                                      //   });
+                                      // }}
+
+
                                       onChange={(selectedOption) => {
-                                        setRows((prevRows) => {
-                                          let updatedRows = prevRows.map((r) =>
+                                        console.log("Selected Option:", selectedOption); // Log the selected option
+                                        setRows((prevRows) =>
+                                          prevRows.map((r) =>
                                             r.id === row.id
                                               ? {
                                                 ...r,
-                                                type: selectedOption?.value || "",
-                                                resource_id: selectedOption?.id || null,
-                                                resource_type: selectedOption?.tax || "",
+                                                type: selectedOption?.value || "", // Handle null or undefined
+                                                resource_id: selectedOption?.id || null, // Handle null or undefined
+                                                resource_type: selectedOption?.tax || "", // Handle null or undefined
                                               }
                                               : r
-                                          );
-
-                                          // Auto-add CGST if SGST is selected
-                                          if (selectedOption?.value === "SGST" && !prevRows.some(r => r.type === "CGST")) {
-                                            updatedRows = [
-                                              ...updatedRows,
-                                              {
-                                                id: updatedRows.length + 1,
-                                                type: "CGST",
-                                                percentage: row.percentage,
-                                                inclusive: row.inclusive,
-                                                amount: row.amount,
-                                                isEditable: true,
-                                                addition: true,
-                                                resource_id: taxTypes.find(t => t.name === "CGST")?.id || null,
-                                                resource_type: taxTypes.find(t => t.name === "CGST")?.type || "",
-                                              },
-                                            ];
-                                          }
-
-                                          // Auto-add SGST if CGST is selected
-                                          if (selectedOption?.value === "CGST" && !prevRows.some(r => r.type === "SGST")) {
-                                            updatedRows = [
-                                              ...updatedRows,
-                                              {
-                                                id: updatedRows.length + 1,
-                                                type: "SGST",
-                                                percentage: row.percentage,
-                                                inclusive: row.inclusive,
-                                                amount: row.amount,
-                                                isEditable: true,
-                                                addition: true,
-                                                resource_id: taxTypes.find(t => t.name === "SGST")?.id || null,
-                                                resource_type: taxTypes.find(t => t.name === "SGST")?.type || "",
-                                              },
-                                            ];
-                                          }
-
-                                          return updatedRows;
-                                        });
+                                          )
+                                        );
+                                        console.log("Updated Rows:", rows); // Log the updated rows
                                       }}
                                       placeholder="Select Type"
                                       isDisabled={!row.isEditable}

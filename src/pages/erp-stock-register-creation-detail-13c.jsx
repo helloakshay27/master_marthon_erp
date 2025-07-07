@@ -380,7 +380,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                             <td></td>
                                           </tr>
                                         ))}
-                                        {selectedStoreDetails.stock_details.map((item, id) => (
+                                        {data?.stores.map((item, id) => (
                                           <tr key={`balance-${id}`}>
                                             <td></td>
                                             <td><strong>Balanced Qty</strong></td>

@@ -33,6 +33,7 @@ const BOQList = () => {
   const [loading2, setLoading2] = useState(true);
   const [showResultModal, setShowResultModal] = useState(false);
   const [resultMessages, setResultMessages] = useState([]);
+   const [selectedBoqDetails, setSelectedBoqDetails] = useState([]); // State to track selected boq detail IDs
 
   const [file, setFile] = useState(null);
   const handleFileChange = (e) => setFile(e.target.files[0]);
@@ -427,6 +428,15 @@ const BOQList = () => {
   // const [boqList, setBoqList] = useState([]);
   // const [loading, setLoading] = useState(false);
 
+    // Prepare data to send
+    const data = {
+      boq_detail_ids: selectedBoqDetails,
+      from_status: fromStatus,
+      to_status: toStatus,
+      comments: remark,
+    };
+    console.log("data for bulk action", data)
+
   // Handle input changes
   const handleStatusChange = (selectedOption) => {
     // const { name, value } = e.target;
@@ -493,7 +503,7 @@ const BOQList = () => {
       setLoading(true); // Show loading state while fetching
       axios
         .get(
-          `${baseURL}boq_details.json?q[status_eq]=${fromStatus}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}boq_details/${id}/boq_info.json?q[status_eq]=${fromStatus}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         )
         .then((response) => {
           setBoqList(response.data); // Set the fetched data to state
@@ -510,7 +520,7 @@ const BOQList = () => {
 
 
 
-  const [selectedBoqDetails, setSelectedBoqDetails] = useState([]); // State to track selected boq detail IDs
+ 
 
   // Function to toggle the checkbox selection
   const handleCheckboxChange = (boqDetailId) => {
@@ -950,8 +960,36 @@ const BOQList = () => {
 
         <div className="website-content">
           <div className="module-data-section p-4">
-            <a href="" style={{ color: 'black' }}>Home &gt; Engineering  &gt; BOQ List</a>
+            {/* <a href="" style={{ color: 'black' }}>Home &gt; Engineering  &gt; BOQ List  &gt; BOQ info </a> */}
 
+<div className="mt-0">
+  <span style={{ color: 'black' }}>
+    <Link
+      // to="/initial-boq-list"
+      replace
+      // style={{ color: 'black', textDecoration: 'underline', cursor: 'pointer' }}
+    >Home</Link> &gt; 
+     <Link
+      // to="/initial-boq-list"
+      replace
+      // style={{ color: 'black', textDecoration: 'underline', cursor: 'pointer' }}
+    >  Engineering</Link>
+    &gt;{' '}
+    <Link
+      to="/initial-boq-list"
+      replace
+      // style={{ color: 'black', textDecoration: 'underline', cursor: 'pointer' }}
+    >
+      BOQ List
+    </Link>
+    &nbsp;&gt; 
+    <Link
+      // to="/initial-boq-list"
+      replace
+      // style={{ color: 'black', textDecoration: 'underline', cursor: 'pointer' }}
+    > BOQ info</Link>
+  </span>
+</div>
 
 
             <div className="card mt-5 mb-5 ">
