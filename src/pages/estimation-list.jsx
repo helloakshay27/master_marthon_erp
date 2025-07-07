@@ -19,14 +19,20 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector"; // Adjust path as needed
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
+import { Modal, Button } from "react-bootstrap";
 
 
 const EstimationList = () => {
+    const [showModal, setShowModal] = useState(false);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchText, setSearchText] = useState("");
     const [data, setData] = useState(null); // To store the API response
     const [loading, setLoading] = useState(true); // To manage the loading state
     const [error, setError] = useState(null); // To store any error that occurs during fetching
+    const [showResultModal, setShowResultModal] = useState(false);
+    const [resultMessages, setResultMessages] = useState([]);
+    const [file, setFile] = useState(null);
+    const handleFileChange = (e) => setFile(e.target.files[0]);
 
 
     const handleSearchChange = (e) => {
@@ -156,7 +162,59 @@ const EstimationList = () => {
         value: company.id,
         label: company.company_name
     }));
+    const handleSubmitFile = async (e) => {
+        e.preventDefault();
+        if (!file) return;
+        console.log("file:", file)
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const base64String = event.target.result.split(",")[1];
+            // console.log("base64String:", base64String)
+            try {
+                const response = await axios.post(
+                    `${baseURL}boq_details/import.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                    { file: base64String },
+                    { headers: { "Content-Type": "application/json" } }
+                );
+                if (response.status === 200) {
+                    console.log("Upload response:", response.data);
+                    // toast.success(response.data.message);
+                    if (Array.isArray(response.data.message)) {
+                        setResultMessages(response.data.message);
+                        setShowResultModal(true);
+                    } else {
+                        toast.success(response.data.message);
+                    }
+                    // alert("File uploaded successfully!");
+                }
+                setShowModal(false);
+                setFile(null);
+            } catch (error) {
 
+                if (error.response && error.response.status === 422) {
+                    console.log("422 response:", error.response.data);
+                    if (Array.isArray(error.response.data.errors)) {
+                        error.response.data.errors.forEach(errObj => {
+                            const rowInfo = errObj.row ? `Row ${errObj.row}: ` : "";
+                            toast.error(`${rowInfo}${errObj.error}`);
+                            setShowModal(false);
+                        });
+                    } else if (typeof error.response.data.errors === "string") {
+                        toast.error(error.response.data.errors);
+                    } else if (error.response && error.response.status === 500) {
+                        toast.error("Server error occurred. Please try again later.");
+                        setShowModal(false);
+                    }
+                } else {
+                    console.error(error);
+                    toast.error("Failed to upload. Please try again.");
+                    setShowModal(false);
+                }
+                console.error(error);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
 
 
     return (
@@ -172,29 +230,6 @@ const EstimationList = () => {
                         {/* <EstimationQuickFilter/> */}
 
                         <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
-                            {/* <div className="card-body pt-0 mt-0">
-                <div className="row my-2 align-items-end">
-                  {["Company", "Project", "Sub-Project", "Wings"].map((label, idx) => (
-                    <div className="col-md-2" key={idx}>
-                      <div className="form-group">
-                        <label>{label}</label>
-                        <select className="form-control form-select" style={{ width: "100%" }}>
-                          <option selected="selected">Alabama</option>
-                          <option>Alaska</option>
-                          <option>California</option>
-                          <option>Delaware</option>
-                          <option>Tennessee</option>
-                          <option>Texas</option>
-                          <option>Washington</option>
-                        </select>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="col-md-2">
-                    <button className="purple-btn2 m-0">Go</button>
-                  </div>
-                </div>
-              </div> */}
                             <div className="card-body">
                                 <div className="row my-2 align-items-end">
                                     {/* Company Dropdown */}
@@ -242,7 +277,7 @@ const EstimationList = () => {
                                     {/* Wings Dropdown */}
                                     <div className="col-md-2">
                                         <div className="form-group">
-                                            <label>Wings</label>
+                                            <label>Wing</label>
                                             <SingleSelector
                                                 options={wingsOptions}
                                                 value={selectedWing}
@@ -262,37 +297,13 @@ const EstimationList = () => {
                                 </div>
 
                             </div>
-                            {/* <div className="card-body pt-0 mt-0">
-                    <div className="row my-2 align-items-end">
-                        {["Company", "Project", "Sub-Project", "Wings"].map((label, idx) => (
-                            <div className="col-md-2" key={idx}>
-                                <div className="form-group">
-                                    <label>{label}</label>
-                                    <SingleSelector
-                                        options={options}
-                                        value={values[label]} // Pass current value
-                                        onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                                        placeholder={`Select ${label}`} // Dynamic placeholder
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                        <div className="col-md-2">
-                            <button
-                                className="purple-btn2 m-0"
-                                onClick={() => console.log("Selected Values:", values)} // Log selected values on button click
-                            >
-                                Go
-                            </button>
-                        </div>
-                    </div>
-                </div> */}
+                           
                         </CollapsibleCard>
 
                         <div className="d-flex mt-3 align-items-end px-3">
-                            <div className="col-md-6">
-                                <form>
-                                    <div className="input-group">
+                            <div className="col-md-12">
+                                {/* <form> */}
+                                {/* <div className="input-group">
                                         <input
                                             type="search"
                                             id="searchInput"
@@ -311,8 +322,62 @@ const EstimationList = () => {
                                                 <SearchIcon />
                                             </button>
                                         </div>
+                                    </div> */}
+
+                                <div className="d-flex justify-content-between align-items-center me-2 mt-4">
+                                    {/* Search Input */}
+                                    <div className="col-md-4">
+                                        <form>
+                                            <div className="input-group ms-3">
+                                                <input
+                                                    type="search"
+                                                    id="searchInput"
+                                                    // value={searchKeyword}
+                                                    // onChange={(e) => setSearchKeyword(e.target.value)} // <- Add this line
+                                                    className="form-control tbl-search"
+                                                    placeholder="Type your keywords here"
+                                                />
+                                                <div className="input-group-append">
+                                                    <button type="button" className="btn btn-md btn-default"
+                                                    // onClick={handleApplyFilters} 
+                                                    >
+                                                        <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203" />
+                                                            <path d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z" fill="#8B0203" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
                                     </div>
-                                </form>
+
+                                    {/* Buttons & Filter Section */}
+                                    <div className="col-md-6">
+                                        <div className="d-flex justify-content-end align-items-center gap-3">
+
+                                            <button className="purple-btn2 me-3" onClick={() => setShowModal(true)}>Bulk Upload</button>
+
+
+                                            {/* Create BOQ Button */}
+                                            {/* <button className="purple-btn2 me-3"
+                                                // onClick={handleClick}
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        width="20"
+                                                        height="20"
+                                                        fill="white"
+                                                        className="bi bi-plus"
+                                                        viewBox="0 0 16 16"
+                                                    >
+                                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                                    </svg>
+                                                    <span> Create BOQ</span>
+                                                </button> */}
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* </form> */}
                             </div>
                             <div className="col-md-6">
                                 <div className="row justify-content-end">
@@ -366,37 +431,8 @@ const EstimationList = () => {
                             </div>
                         </div>
                         <div className="mx-3">
-                            {/* <Table columns={estimationListColumns} data={estimationListData} /> */}
-                            {/* <div className="tbl-container mx-3 mt-1">
-                            <table className="w-100">
-                                <thead>
-                                    <tr>
-                                    <th className="text-start">Sr.No.</th>
-                                        <th className="text-start">Certifying Company</th>
-                                        <th className="text-start">Project</th>
-                                        <th className="text-start">Sub-Project</th>
-                                        <th className="text-start">Wing</th>
-                                        <th className="text-start">Location</th>
-
-                                        
-                                        
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td className="text-start"></td>
-                                        <td className="text-start"></td>
-                                        <td className="text-start"></td>
-                                        <td className="text-start"></td>
-                                        <td className="text-start"></td>
-                                        <td className="text-start"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div> */}
-
                             <div className="mx-2">
-                                <div className="tbl-container  mt-3">
+                                <div className="tbl-container  mt-3" style={{ maxHeight: "500px" }}>
                                     <table className="w-100">
                                         <thead>
                                             <tr>
@@ -411,9 +447,6 @@ const EstimationList = () => {
                                         <tbody>
 
                                             {/* Map through the companies, projects, sites, and wings */}
-
-
-
                                             {data?.companies?.map((company, companyIndex) => {
                                                 return company.projects.map((project, projectIndex) => {
                                                     return project.pms_sites.map((site, siteIndex) => {
@@ -514,161 +547,133 @@ const EstimationList = () => {
                                                 });
                                             })}
 
-
-
-                                            {/* {data?.companies?.map((company, companyIndex) => {
-  return company.projects.map((project, projectIndex) => {
-    // Check if the project has no sites
-    if (project.pms_sites.length === 0) {
-      // If there are no sites, render the project with no sub-projects or wings
-      return (
-        <tr key={`${companyIndex}-${projectIndex}`}>
-          {/* Render Sr. No. for Company only */}
-                                            {/* {projectIndex === 0 && companyIndex === 0 ? (
-            <td className="text-start">{companyIndex + 1}</td>
-          ) : (
-            <td className="text-start"></td>
-          )}
-
-          {/* Render Company Name only once per company */}
-                                            {/* {projectIndex === 0 && companyIndex === 0 ? (
-            <td className="text-start">{company.company_name}</td>
-          ) : (
-            <td className="text-start"></td>
-          )} */}
-
-                                            {/* Render Project Name only once per project */}
-                                            {/* {projectIndex === 0 ? (
-            <td className="text-start">{project.name}</td>
-          ) : (
-            <td className="text-start"></td>
-          )} */}
-
-                                            {/* Render Sub-Project Name (empty, as no sites) */}
-                                            {/* <td className="text-start"></td> */}
-
-                                            {/* Render Wing Name as empty (no wings for this site) */}
-                                            {/* <td className="text-start"></td> */}
-
-                                            {/* Render Location (empty or can be added later) */}
-                                            {/* <td className="text-start"></td> */}
-                                            {/* </tr>
-      );
-    } */}
-
-                                            {/* // If there are sites, loop through them
-    return project.pms_sites.map((site, siteIndex) => { */}
-                                            {/* // Check if there are wings for the site
-      if (site.pms_wings.length > 0) {
-        return site.pms_wings.map((wing, wingIndex) => (
-          <tr key={`${companyIndex}-${projectIndex}-${siteIndex}-${wingIndex}`}> */}
-                                            {/* Render Sr. No. for Company only */}
-                                            {/* {wingIndex === 0 && siteIndex === 0 && projectIndex === 0 ? (
-              <td className="text-start">{companyIndex + 1}</td>
-            ) : (
-              <td className="text-start"></td>
-            )} */}
-
-                                            {/* Render Company Name only once per company */}
-                                            {/* {wingIndex === 0 && siteIndex === 0 && projectIndex === 0 ? (
-              <td className="text-start">{company.company_name}</td>
-            ) : (
-              <td className="text-start"></td>
-            )} */}
-
-                                            {/* Render Project Name only once per project */}
-                                            {/* {wingIndex === 0 && siteIndex === 0 ? (
-              <td className="text-start">{project.name}</td>
-            ) : (
-              <td className="text-start"></td>
-            )} */}
-
-                                            {/* Render Sub-Project Name only once per site */}
-                                            {/* {wingIndex === 0 ? (
-              <td className="text-start">{site.name}</td>
-            ) : (
-              <td className="text-start"></td>
-            )} */}
-
-                                            {/* Render Wing Name */}
-                                            {/* <td className="text-start">{wing.name}</td> */}
-
-                                            {/* Render Location (empty or can be added later) */}
-                                            {/* <td className="text-start"></td> */}
-                                            {/* </tr>
-        ));
-      } else { */}
-                                            {/* // If there are no wings for a particular site
-        return (
-          <tr key={`${companyIndex}-${projectIndex}-${siteIndex}`}> */}
-                                            {/* Render Sr. No. for Company only */}
-                                            {/* {siteIndex === 0 && projectIndex === 0 ? (
-              <td className="text-start">{companyIndex + 1}</td>
-            ) : (
-              <td className="text-start"></td>
-            )} */}
-
-                                            {/* Render Company Name only once per company */}
-                                            {/* {siteIndex === 0 && projectIndex === 0 ? (
-              <td className="text-start">{company.company_name}</td>
-            ) : (
-              <td className="text-start"></td>
-            )} */}
-
-                                            {/* Render Project Name only once per project */}
-                                            {/* {siteIndex === 0 ? (
-              <td className="text-start">{project.name}</td>
-            ) : (
-              <td className="text-start"></td>
-            )} */}
-
-                                            {/* Render Sub-Project Name */}
-                                            {/* <td className="text-start">{site.name}</td> */}
-
-                                            {/* Render Wing Name as empty (no wings for this site) */}
-                                            {/* <td className="text-start"></td> */}
-
-                                            {/* Render Location (empty or can be added later) */}
-                                            {/* <td className="text-start"></td>
-          </tr>
-        );
-      }
-    });
-  });
-})} */}
-
-
-
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
                         </div>
-                        <div className="row mt-3  px-3">
-                            {/* <div className="col-md-3">
-                                <div className="form-group">
-                                    <label htmlFor="">Rows Per Page</label>
-                                    <select
-                                        className="form-control form-select per_page"
-                                        style={{ width: "100%" }}
-                                    >
-                                        <option value={10} selected>
-                                            10 Rows
-                                        </option>
-                                        <option value={20}>20 Rows</option>
-                                        <option value={50}>50 Rows</option>
-                                        <option value={100}>100 Rows</option>
-                                    </select>
-                                </div>
-                            </div> */}
-                        </div>
+                       
                     </div>
                 </div>
             </div>
 
+
+
             <FilterModal show={show} handleClose={handleClose} />
             <LayoutModal show={settingShow} onHide={handleSettingClose} items={myArray} />
 
+
+
+            {/* bulk upload modal */}
+            <Modal show={showModal} onHide={() => setShowModal(false)} centered size="md">
+                <Modal.Header closeButton>
+                    <Modal.Title>Bulk Upload</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <form onSubmit={handleSubmitFile}>
+                        <div className="form-group mb-3">
+                            <label>Upload File</label>
+                            <input
+                                type="file"
+                                className="form-control"
+                                onChange={handleFileChange}
+                                required
+                            />
+                        </div>
+                        <div className="d-flex justify-content-between align-items-center">
+                            {/* Left: Download sample format */}
+                            <a
+                                href={`${baseURL}boq_details/download_boq_sample.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`}
+                                download
+                                className="d-flex align-items-center text-decoration-none"
+                                style={{ color: "#8b0203" }}
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="20"
+                                    height="20"
+                                    fill="#8b0203"
+                                    className="bi bi-download me-1"
+                                    viewBox="0 0 16 16"
+                                >
+                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v3.1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.1a.5.5 0 0 1 1 0v3.1A2 2 0 0 1 14 16H2a2 2 0 0 1-2-2v-3.1a.5.5 0 0 1 .5-.5z" />
+                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                                </svg>
+                                <span style={{ color: "#000" }}>Download Sample Format</span>
+                            </a>
+                            {/* Right: Submit and Cancel */}
+                            <div className="d-flex justify-content-center gap-2 w-70">
+                                <div className="flex-grow-1">
+                                    <button type="submit" className="purple-btn2 w-70 mt-2">
+                                        Upload
+                                    </button>
+                                </div>
+                                <div className="flex-grow-1">
+                                    <button
+                                        type="button"
+                                        className="purple-btn1 w-70"
+                                        onClick={() => setShowModal(false)}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </form>
+                </Modal.Body>
+            </Modal>
+
+
+            <Modal show={showResultModal} onHide={() => setShowResultModal(false)} centered size="xl">
+                <Modal.Header closeButton>
+                    <Modal.Title>Upload Result</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+
+                    {resultMessages.map((msg, idx) => (
+                        <div
+                            className="d-flex justify-content-between align-items-center mx-3 p-3 rounded-3 mb-3"
+                            style={{
+                                background: "linear-gradient(90deg, #fff3cd 0%, #ffeeba 100%)",
+                                border: "2px solid #ffc107",
+                                boxShadow: "0 2px 8px rgba(255,193,7,0.15)",
+                                color: "#856404",
+                            }}
+                            key={idx}
+                        >
+                            <div>
+                                <p style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: 4 }}>
+                                    <i className="bi bi-exclamation-triangle-fill me-2" style={{ color: "#856404" }} />
+                                    Row : {msg.row}
+
+                                </p>
+                                <span style={{ marginBottom: 0, fontSize: "16px" }}>
+                                    {msg.message}
+                                </span>
+                                <div className="m-0">
+                                    {msg.boq_id && (
+                                        <a
+                                            href={`/boq-details-page-master/${msg.boq_id}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{ color: "#8b0203", textDecoration: "underline", marginLeft: 8 }}
+                                        >
+                                            <span>View Details</span>
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+
+                        </div>
+                    ))}
+                </Modal.Body>
+                <Modal.Footer>
+                    <button className="purple-btn1" onClick={() => setShowResultModal(false)}>
+                        Close
+                    </button>
+                </Modal.Footer>
+            </Modal>
         </>
     );
 };

@@ -20,6 +20,8 @@ import { baseURL } from "../confi/apiDomain";
 import Select from "react-select";
 
 const CreateBOQ = () => {
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const [showMaterialLabour, setShowMaterialLabour] = useState(false);
   const [showBOQSubItem, setShowBOQSubItem] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -425,7 +427,7 @@ const CreateBOQ = () => {
     // Replace this with your actual API URL
     axios
       .get(
-        `${baseURL}pms/projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}pms/projects.json?token=${token}`
       )
       .then((response) => {
         setProjects(response.data.projects);
@@ -513,7 +515,7 @@ const CreateBOQ = () => {
   useEffect(() => {
     axios
       .get(
-        `${baseURL}work_categories/work_categories_and_subcategories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}work_categories/work_categories_and_subcategories.json?token=${token}`
       ) // Replace with your API endpoint
       .then((response) => {
         setWorkCategories(response.data.work_categories); // Save the categories to state
@@ -560,7 +562,7 @@ const CreateBOQ = () => {
     // Fetch sub-subcategories using the selected subcategory ID-- level3
     axios
       .get(
-        `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}work_sub_categories/${selectedOption.value}.json?token=${token}`
       )
       .then((response) => {
         const subSubCategories = response.data.work_sub_categories || [];
@@ -586,7 +588,7 @@ const CreateBOQ = () => {
     if (selectedOption && selectedOption.value) {
       axios
         .get(
-          `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}work_sub_categories/${selectedOption.value}.json?token=${token}`
         )
         .then((response) => {
           const subSubCategories = response.data.work_sub_categories || [];
@@ -612,7 +614,7 @@ const CreateBOQ = () => {
     if (selectedOption && selectedOption.value) {
       axios
         .get(
-          `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}work_sub_categories/${selectedOption.value}.json?token=${token}`
         )
         .then((response) => {
           const subSubCategories = response.data.work_sub_categories || [];
@@ -641,7 +643,7 @@ const CreateBOQ = () => {
   useEffect(() => {
     axios
       .get(
-        `${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        `${baseURL}unit_of_measures.json?token=${token}`
       )
       .then((response) => {
         // Mapping the response to the format required by react-select
@@ -700,7 +702,7 @@ const CreateBOQ = () => {
       if (material.inventory_type_id) {
         axios
           .get(
-            `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${material.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${material.inventory_type_id}&token=${token}`
           )
           .then((response) => {
             const options = response.data.map((subType) => ({
@@ -727,7 +729,7 @@ const CreateBOQ = () => {
         console.log("Assets inventory id:", asset.inventory_type_id);
         axios
           .get(
-            `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${asset.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${asset.inventory_type_id}&token=${token}`
           )
           .then((response) => {
             const options = response.data.map((subType) => ({
@@ -780,7 +782,7 @@ const CreateBOQ = () => {
       if (material.id) {
         axios
           .get(
-            `${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.id}&token=${token}`
           )
           .then((response) => {
             const options = response.data.map((specification) => ({
@@ -821,7 +823,7 @@ const CreateBOQ = () => {
       if (asset.id) {
         axios
           .get(
-            `${baseURL}pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=${token}`
           )
           .then((response) => {
             const options = response.data.map((specification) => ({
@@ -888,7 +890,7 @@ const CreateBOQ = () => {
       if (material.id) {
         axios
           .get(
-            `${baseURL}pms/colours.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/colours.json?q[material_id_eq]=${material.id}&token=${token}`
           )
           .then((response) => {
             const options = response.data.map((color) => ({
@@ -914,7 +916,7 @@ const CreateBOQ = () => {
       if (asset.id) {
         axios
           .get(
-            `${baseURL}pms/colours.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/colours.json?q[material_id_eq]=${asset.id}&token=${token}`
           )
           .then((response) => {
             const options = response.data.map((color) => ({
@@ -964,7 +966,7 @@ const CreateBOQ = () => {
       if (material.id) {
         axios
           .get(
-            `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${material.id}&token=${token}`
           )
           .then((response) => {
             const options = response.data.map((brand) => ({
@@ -993,7 +995,7 @@ const CreateBOQ = () => {
       if (asset.id) {
         axios
           .get(
-            `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${asset.id}&token=${token}`
           )
           .then((response) => {
             const options = response.data.map((brand) => ({
@@ -1800,7 +1802,7 @@ const CreateBOQ = () => {
 
         // Axios POST request
         const response = await axios.post(
-          `${baseURL}boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+          `${baseURL}boq_details.json?token=${token}`,
           payloadData
         );
 
@@ -1808,7 +1810,7 @@ const CreateBOQ = () => {
         if (response.data) {
           // navigate("/view-BOQ"); // Navigate to BOQ list on success
 
-          navigate(`/boq-details-page-master/${response.data.id}`);  // Redirect with ID
+          navigate(`/boq-details-page-master/${response.data.id}?token=${token}`);  // Redirect with ID
           // console.log("id in create responce:",response.data.id)
         } else {
           toast.error("Failed to create BOQ.", { position: "top-right" });
@@ -2073,13 +2075,13 @@ const CreateBOQ = () => {
         };
 
         const response = await axios.post(
-          `${baseURL}boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+          `${baseURL}boq_details.json?token=${token}`,
           payloadData2
         );
 
         if (response.data) {
           // navigate("/view-BOQ");
-          navigate(`/boq-details-page-master/${response.data.id}`);  // Redirect with ID
+          navigate(`/boq-details-page-master/${response.data.id}?token=${token}`);  // Redirect with ID
           // console.log("id in create responce:",response.data.id)
         } else {
           toast.error("Failed to create BOQ Sub Item.", { position: "top-right" });
@@ -2125,6 +2127,11 @@ const CreateBOQ = () => {
   const handleIconClick = () => {
     document.getElementById("file-input").click();
   };
+
+  const handleCancel = () => {
+    navigate(`/initial-boq-list?token=${token}`);
+  };
+
   return (
     <>
       <div className="website-content">
@@ -3379,7 +3386,7 @@ const CreateBOQ = () => {
                 </button>
               </div>
               <div className="col-md-2">
-                <button className="purple-btn1 w-100" fdprocessedid="u33pye">
+                <button className="purple-btn1 w-100" fdprocessedid="u33pye" onClick={handleCancel} >
                   Cancel
                 </button>
               </div>

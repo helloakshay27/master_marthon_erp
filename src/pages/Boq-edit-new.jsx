@@ -25,6 +25,8 @@ import { useParams } from 'react-router-dom';
 
 
 const EditBOQNew = () => {
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
     const { id } = useParams()
     const [showMaterialLabour, setShowMaterialLabour] = useState(null);
     const [showBOQSubItem, setShowBOQSubItem] = useState(null);
@@ -42,7 +44,7 @@ const EditBOQNew = () => {
     const fetchData = async () => {
 
         try {
-            const response = await axios.get(`${baseURL}boq_details/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
+            const response = await axios.get(`${baseURL}boq_details/${id}.json?token=${token}`);
             console.log("responce:", response.data)
             // Assuming the API returns data based on the id (you may need to adjust based on your response)
             setBoqDetails(response.data);
@@ -564,7 +566,7 @@ const EditBOQNew = () => {
         // Replace this with your actual API URL
         axios
             .get(
-                `${baseURL}pms/projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}pms/projects.json?token=${token}`
             )
             .then((response) => {
                 setProjects(response.data.projects);
@@ -652,7 +654,7 @@ const EditBOQNew = () => {
     useEffect(() => {
         axios
             .get(
-                `${baseURL}work_categories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}work_categories.json?token=${token}`
             ) // Replace with your API endpoint
             .then((response) => {
                 setWorkCategories(response.data.work_categories); // Save the categories to state
@@ -698,7 +700,7 @@ const EditBOQNew = () => {
         // Fetch sub-subcategories using the selected subcategory ID-- level3
         axios
             .get(
-                `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}work_sub_categories/${selectedOption.value}.json?token=${token}`
             )
             .then((response) => {
                 const subSubCategories = response.data.work_sub_categories || [];
@@ -724,7 +726,7 @@ const EditBOQNew = () => {
         if (selectedOption && selectedOption.value) {
             axios
                 .get(
-                    `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                    `${baseURL}work_sub_categories/${selectedOption.value}.json?token=${token}`
                 )
                 .then((response) => {
                     const subSubCategories = response.data.work_sub_categories || [];
@@ -750,7 +752,7 @@ const EditBOQNew = () => {
         if (selectedOption && selectedOption.value) {
             axios
                 .get(
-                    `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                    `${baseURL}work_sub_categories/${selectedOption.value}.json?token=${token}`
                 )
                 .then((response) => {
                     const subSubCategories = response.data.work_sub_categories || [];
@@ -779,7 +781,7 @@ const EditBOQNew = () => {
     useEffect(() => {
         axios
             .get(
-                `${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}unit_of_measures.json?token=${token}`
             )
             .then((response) => {
                 // Mapping the response to the format required by react-select
@@ -843,7 +845,7 @@ const EditBOQNew = () => {
             if (material.inventory_type_id) {
                 axios
                     .get(
-                        `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${material.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                        `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${material.inventory_type_id}&token=${token}`
                     )
                     .then((response) => {
                         const options = response.data.map((subType) => ({
@@ -870,7 +872,7 @@ const EditBOQNew = () => {
                 // console.log("Assets inventory id:", asset.inventory_type_id);
                 axios
                     .get(
-                        `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${asset.inventory_type_id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                        `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${asset.inventory_type_id}&token=${token}`
                     )
                     .then((response) => {
                         const options = response.data.map((subType) => ({
@@ -923,7 +925,7 @@ const EditBOQNew = () => {
             if (material.pms_inventory_id || material.id) {
                 axios
                     .get(
-                        `${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.pms_inventory_id || material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                        `${baseURL}pms/generic_infos.json?q[material_id_eq]=${material.pms_inventory_id || material.id}&token=${token}`
                     )
                     .then((response) => {
                         const options = response.data.map((specification) => ({
@@ -950,7 +952,7 @@ const EditBOQNew = () => {
             if (asset.id) {
                 axios
                     .get(
-                        `${baseURL}pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                        `${baseURL}pms/generic_infos.json?q[material_id_eq]=${asset.id}&token=${token}`
                     )
                     .then((response) => {
                         const options = response.data.map((specification) => ({
@@ -1004,7 +1006,7 @@ const EditBOQNew = () => {
             if (material.pms_inventory_id || material.id) {
                 axios
                     .get(
-                        `${baseURL}pms/colours.json?q[material_id_eq]=${material.pms_inventory_id || material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                        `${baseURL}pms/colours.json?q[material_id_eq]=${material.pms_inventory_id || material.id}&token=${token}`
                     )
                     .then((response) => {
                         const options = response.data.map((color) => ({
@@ -1030,7 +1032,7 @@ const EditBOQNew = () => {
             if (asset.id) {
                 axios
                     .get(
-                        `${baseURL}pms/colours.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                        `${baseURL}pms/colours.json?q[material_id_eq]=${asset.id}&token=${token}`
                     )
                     .then((response) => {
                         const options = response.data.map((color) => ({
@@ -1080,7 +1082,7 @@ const EditBOQNew = () => {
             if (material.pms_inventory_id || material.id) {
                 axios
                     .get(
-                        `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${material.pms_inventory_id || material.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                        `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${material.pms_inventory_id || material.id}&token=${token}`
                     )
                     .then((response) => {
                         const options = response.data.map((brand) => ({
@@ -1109,7 +1111,7 @@ const EditBOQNew = () => {
             if (asset.id) {
                 axios
                     .get(
-                        `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${asset.id}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                        `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${asset.id}&token=${token}`
                     )
                     .then((response) => {
                         const options = response.data.map((brand) => ({
@@ -2015,7 +2017,7 @@ const EditBOQNew = () => {
                 // console.log("boq data payload 1 ", payloadData)
 
                 const response = await axios.patch(
-                    `${baseURL}boq_details/${boqDetails?.id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                    `${baseURL}boq_details/${boqDetails?.id}.json?token=${token}`,
                     payload,
                     {
                         headers: {
@@ -2026,7 +2028,7 @@ const EditBOQNew = () => {
 
                 if (response.status === 200) {
                     alert("BOQ updated successfully!");
-                    navigate(`/boq-details-page-master/${boqDetails?.id}`); // Redirect to details page
+                    navigate(`/boq-details-page-master/${boqDetails?.id}?token=${token}`); // Redirect to details page
                 }
 
             } catch (error) {
@@ -2217,7 +2219,7 @@ const EditBOQNew = () => {
                 // console.log("boq data payload 1 ", payloadData)
 
                 const response = await axios.patch(
-                    `${baseURL}boq_details/${boqDetails?.id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                    `${baseURL}boq_details/${boqDetails?.id}.json?token=${token}`,
                     payload2,
                     {
                         headers: {
@@ -2228,7 +2230,7 @@ const EditBOQNew = () => {
 
                 if (response.status === 200) {
                     alert("BOQ updated successfully!");
-                    navigate(`/boq-details-page-master/${boqDetails?.id}`); // Redirect to details page
+                    navigate(`/boq-details-page-master/${boqDetails?.id}?token=${token}`); // Redirect to details page
                 }
 
                 setLoading(false);
@@ -3994,7 +3996,7 @@ const EditBOQNew = () => {
                   Cancel
                 </button> */}
 
-                                <Link to={`/boq-details-page-master/${boqDetails?.id}`}>
+                                <Link to={`/boq-details-page-master/${boqDetails?.id}?token=${token}`}>
                                     <button
                                         className="purple-btn1 w-100"
                                         fdprocessedid="u33pye"

@@ -311,7 +311,7 @@ function Members() {
                   <Link to="/view-BOQ">View BOQ</Link>
                 </li> */}
                 <li>
-                  <Link to="/initial-boq-list">Initial BOQ List</Link>
+                  <Link to="/initial-boq-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">Initial BOQ List</Link>
                 </li>
                 {/* <li>
                   <Link to="/boq-Edit-New">BOQ Edit</Link>

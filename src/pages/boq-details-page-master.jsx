@@ -20,6 +20,8 @@ import "react-toastify/dist/ReactToastify.css";
 
 const BOQDetailsPageMaster = () => {
   const { id } = useParams()
+   const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   const navigate = useNavigate(); // Initialize the navigate function
   const [boqDetails, setBoqDetails] = useState(null);  // State to hold the fetched data
   const [boqDetailsSub, setBoqDetailsSub] = useState(true);
@@ -87,7 +89,7 @@ const BOQDetailsPageMaster = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`${baseURL}boq_details/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`);
+      const response = await axios.get(`${baseURL}boq_details/${id}.json?token=${token}`);
 
       // Assuming the API returns data based on the id (you may need to adjust based on your response)
       setBoqDetails(response.data);
@@ -170,7 +172,7 @@ const BOQDetailsPageMaster = () => {
 
     try {
       const response = await axios.patch(
-        `${baseURL}boq_details/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        `${baseURL}boq_details/${id}/update_status.json?token=${token}`,
         payload,  // The request body containing status and remarks
         {
           headers: {
@@ -205,7 +207,7 @@ const BOQDetailsPageMaster = () => {
   const handleCancel = () => {
     // setStatus(initialStatus); // Reset status to the initial value
     // setRemark(''); // Optionally reset the remark as well
-    navigate(`/initial-boq-list`); // 🔥 Redirect to the /view-BOQ page
+    navigate(`/initial-boq-list?token=${token}`); // 🔥 Redirect to the /view-BOQ page
   };
 
   //status 
@@ -396,7 +398,7 @@ const BOQDetailsPageMaster = () => {
           <div className="d-flex justify-content-end m-4">
             {boqDetails.status === "draft" && (
               <Link
-                to={`/boq-edit-new/${id}`}
+                to={`/boq-edit-new/${id}?token=${token}`}
                 className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
 
                 <button class="purple-btn1" data-bs-toggle="modal" data-bs-target="#exampleModal">
@@ -410,7 +412,7 @@ const BOQDetailsPageMaster = () => {
             )}
             {boqDetails.show_amend === true && (
               <Link
-                to={`/boq-amend/${id}`}
+                to={`/boq-amend/${id}?token=${token}`}
                 className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
                 <button className="purple-btn2">Amend</button>
               </Link>
@@ -711,7 +713,7 @@ const BOQDetailsPageMaster = () => {
                           </td> */}
                           <td className="text-start">{log.item_name}</td>
                           <td className="text-start">
-                            <Link to={`/boq-details-page-master/${log.id}`}
+                            <Link to={`/boq-details-page-master/${log.id}?token=${token}`}
                               className="boq-id-link"
                             >
                               <span>{log.display_name}</span>
