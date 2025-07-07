@@ -18,6 +18,8 @@ import { toast, ToastContainer } from "react-toastify";
 
 
 const InitialBOQList = () => {
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
     const [showModal, setShowModal] = useState(false);
     const [show, setShow] = useState(false); // State to manage modal visibility for copy budget
     const handleShow = () => setShow(true);
@@ -40,7 +42,7 @@ const InitialBOQList = () => {
 
     const handleClick = () => {
         // Navigate to '/about' when the button is clicked
-        navigate('/create-BOQ');
+        navigate(`/create-BOQ?token=${token}`);
     };
 
     const handleModalShow = () => setShow(true);
@@ -114,7 +116,7 @@ const InitialBOQList = () => {
     // Fetch projects on mount
     useEffect(() => {
         // Replace this with your actual API URL
-        axios.get(`${baseURL}pms/projects.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios.get(`${baseURL}pms/projects.json?token=${token}`)
             .then(response => {
                 setProjects(response.data.projects);
             })
@@ -177,7 +179,7 @@ const InitialBOQList = () => {
     const fetchData = (page) => {
         setLoading(true);
         axios
-            .get(`${baseURL}boq_details.json?page=${page}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+            .get(`${baseURL}boq_details.json?page=${page}&token=${token}`)
             .then((response) => {
                 setBoqList(response.data); // Set the data in state
                 // console.log("data list ", response.data.pagination.total_entries)
@@ -246,7 +248,7 @@ const InitialBOQList = () => {
 
             axios
                 .get(
-                    `${baseURL}boq_details.json?q[id_eq]=${projectId}&q[pms_sites_id_eq]=${siteId}&q[pms_wings_id_eq]=${wingId}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                    `${baseURL}boq_details.json?q[id_eq]=${projectId}&q[pms_sites_id_eq]=${siteId}&q[pms_wings_id_eq]=${wingId}&token=${token}`
                 )
                 .then((response) => {
                     setBoqList(response.data); // Set the fetched data to state
@@ -268,7 +270,7 @@ const InitialBOQList = () => {
         setSelectedWing(null)
         try {
             const response = await axios.get(
-                `${baseURL}boq_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}boq_details.json?token=${token}`
             );
             setBoqList(response.data); // or setData(response.data) as per your structure
             // Optionally, reset filter states here as well
@@ -483,7 +485,7 @@ const InitialBOQList = () => {
         // Send data to API using axios
         axios
             .patch(
-                `${baseURL}boq_details/update_bulk_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                `${baseURL}boq_details/update_bulk_status.json?token=${token}`,
                 data
             )
             .then((response) => {
@@ -505,7 +507,7 @@ const InitialBOQList = () => {
             setLoading(true); // Show loading state while fetching
             axios
                 .get(
-                    `${baseURL}boq_details.json?q[status_eq]=${fromStatus}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                    `${baseURL}boq_details.json?q[status_eq]=${fromStatus}&token=${token}`
                 )
                 .then((response) => {
                     setBoqList(response.data); // Set the fetched data to state
@@ -567,7 +569,7 @@ const InitialBOQList = () => {
     useEffect(() => {
         axios
             .get(
-                `${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}unit_of_measures.json?token=${token}`
             )
             .then((response) => {
                 // Mapping the response to the format required by react-select
@@ -596,7 +598,7 @@ const InitialBOQList = () => {
     useEffect(() => {
         axios
             .get(
-                `${baseURL}work_categories/work_categories_and_subcategories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}work_categories/work_categories_and_subcategories.json?token=${token}`
             ) // Replace with your API endpoint
             .then((response) => {
                 setWorkCategories(response.data.work_categories); // Save the categories to state
@@ -632,7 +634,7 @@ const InitialBOQList = () => {
         // Fetch sub-subcategories using the selected subcategory
         axios
             .get(
-                `${baseURL}work_sub_categories.json?q[work_category_id_eq]=${selectedOption.value}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}work_sub_categories.json?q[work_category_id_eq]=${selectedOption.value}&token=${token}`
             )
             .then((response) => {
                 console.log("sub responce:", response)
@@ -681,8 +683,8 @@ const InitialBOQList = () => {
 
         axios
             .get(
-                `${baseURL}boq_details.json?q[company_company_name_or_pms_sites_name_or_pms_wings_name_cont]=${search}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-                // https://marathon.lockated.com/boq_details.json?q[work_category_id]=&q[work_sub_category_id]=&q[status]=approved&q[inventory_id]=&q[inventory_type_id]=&search=FINES&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414
+                `${baseURL}boq_details.json?q[company_company_name_or_pms_sites_name_or_pms_wings_name_cont]=${search}&token=${token}`
+                // https://marathon.lockated.com/boq_details.json?q[work_category_id]=&q[work_sub_category_id]=&q[status]=approved&q[inventory_id]=&q[inventory_type_id]=&search=FINES&token=${token}
             )
             .then((response) => {
                 setBoqList(response.data); // Set the fetched data to state
@@ -747,7 +749,7 @@ const InitialBOQList = () => {
     // useEffect(() => {
     //   axios
     //     .get(
-    //       `${baseURL}work_categories.json?search=${searchKeyword}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    //       `${baseURL}work_categories.json?search=${searchKeyword}&token=${token}`
     //     ) // Replace with your API endpoint
     //     .then((response) => {
     //       setBoqList(response.data); // Save the categories to state
@@ -778,7 +780,7 @@ const InitialBOQList = () => {
 
     // Fetching inventory types data from API on component mount
     useEffect(() => {
-        axios.get(`${baseURL}pms/inventory_types.json?q[category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios.get(`${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`)
             .then(response => {
                 // Map the fetched data to the format required by react-select
                 const options = response.data.map(inventory => ({
@@ -806,7 +808,7 @@ const InitialBOQList = () => {
             console.log("selected inventory:", selectedInventory)
             // const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
 
-            axios.get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${selectedInventory.value}&q[material_category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+            axios.get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${selectedInventory.value}&q[material_category_eq]=material&token=${token}`)
                 .then(response => {
                     // Map the sub-types to options for the select dropdown
                     const options = response.data.map(subType => ({
@@ -836,7 +838,7 @@ const InitialBOQList = () => {
             // console.log("base64String:", base64String)
             try {
                 const response = await axios.post(
-                    `${baseURL}boq_details/import.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                    `${baseURL}boq_details/import.json?token=${token}`,
                     { file: base64String },
                     { headers: { "Content-Type": "application/json" } }
                 );
@@ -1095,7 +1097,7 @@ const InitialBOQList = () => {
                                                                     <td className="text-start">
                                                                         {project.boq_id ? (
                                                                             <a
-                                                                                href={`/view-BOQ/${project.boq_id}`}
+                                                                                href={`/view-BOQ/${project.boq_id}?token=${token}`}
                                                                                 title={project.status ? `Status: ${project.status}` : ""}
                                                                                 style={{
                                                                                     cursor: project.status ? "pointer" : "default",
@@ -1127,7 +1129,7 @@ const InitialBOQList = () => {
                                                                     <td className="text-start">
                                                                         {site.boq_id ? (
                                                                             <a
-                                                                                href={`/view-BOQ/${site.boq_id}`}
+                                                                                href={`/view-BOQ/${site.boq_id}?token=${token}`}
                                                                                 title={site.status ? `Status: ${site.status}` : ""}
                                                                                 style={{
                                                                                     cursor: site.status ? "pointer" : "default",
@@ -1158,7 +1160,7 @@ const InitialBOQList = () => {
                                                                 <td className="text-start">
                                                                     {wing.boq_id ? (
                                                                         <a
-                                                                            href={`/view-BOQ/${wing.boq_id}`}
+                                                                            href={`/view-BOQ/${wing.boq_id}?token=${token}`}
                                                                             title={wing.status ? `Status: ${wing.status}` : ""}
                                                                             style={{
                                                                                 cursor: wing.status ? "pointer" : "default",
@@ -1197,7 +1199,7 @@ const InitialBOQList = () => {
                                                                     <td className="text-start">
                                                                         {project.boq_id ? (
                                                                             <a
-                                                                                href={`/view-BOQ/${project.boq_id}`}
+                                                                                href={`/view-BOQ/${project.boq_id}?token=${token}`}
                                                                                 title={project.status ? `Status: ${project.status}` : ""}
                                                                                 style={{
                                                                                     cursor: project.status ? "pointer" : "default",
@@ -1228,7 +1230,7 @@ const InitialBOQList = () => {
                                                                 <td className="text-start">
                                                                     {site.boq_id ? (
                                                                         <a
-                                                                            href={`/view-BOQ/${site.boq_id}`}
+                                                                            href={`/view-BOQ/${site.boq_id}?token=${token}`}
                                                                             title={site.status ? `Status: ${site.status}` : ""}
                                                                             style={{
                                                                                 cursor: site.status ? "pointer" : "default",
@@ -1336,7 +1338,7 @@ const InitialBOQList = () => {
                                         {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
 
                                         {totalEntries} entries
-                                        {console.log(".........", itemsPerPage)}
+                                        {/* {console.log(".........", itemsPerPage)} */}
                                     </div>
 
                                 </div>
@@ -1536,7 +1538,7 @@ const InitialBOQList = () => {
                         <div className="d-flex justify-content-between align-items-center">
                             {/* Left: Download sample format */}
                             <a
-                                href={`${baseURL}boq_details/download_boq_sample.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`}
+                                href={`${baseURL}boq_details/download_boq_sample.json?token=${token}`}
                                 download
                                 className="d-flex align-items-center text-decoration-none"
                                 style={{ color: "#8b0203" }}
@@ -1683,7 +1685,7 @@ const InitialBOQList = () => {
                                 <div className="m-0">
                                     {msg.boq_id && (
                                         <a
-                                            href={`/boq-details-page-master/${msg.boq_id}`}
+                                            href={`/boq-details-page-master/${msg.boq_id}?token=${token}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             style={{ color: "#8b0203", textDecoration: "underline", marginLeft: 8 }}
