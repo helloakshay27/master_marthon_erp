@@ -504,8 +504,8 @@ const ErpStockRegister13B = () => {
     theftMissing: true,
     uom_name: true,
     // Star: true,
-    mor: true, // Added Mor Number column
-    grn_number: true, //
+    // mor: true, // Added Mor Number column
+    // grn_number: true, //
   });
 
   const allColumns = [
@@ -519,7 +519,7 @@ const ErpStockRegister13B = () => {
     {
       field: "material_name",
       headerName: "Material Name",
-      width: 300,
+      width: 450,
       sortable: true,
       renderCell: (params) =>
         params.value && params.row.store_id ? (
@@ -602,13 +602,13 @@ const ErpStockRegister13B = () => {
     },
     { field: "uom_name", headerName: "UOM", width: 100, sortable: true },
     // { field: "Star", headerName: "Star", width: 80, sortable: false },
-    { field: "mor", headerName: "MOR Number", width: 120, sortable: true },
-    {
-      field: "grn_number",
-      headerName: "GRN Number",
-      width: 120,
-      sortable: true,
-    },
+    // { field: "mor", headerName: "MOR Number", width: 120, sortable: true },
+    // {
+    //   field: "grn_number",
+    //   headerName: "GRN Number",
+    //   width: 120,
+    //   sortable: true,
+    // },
   ];
 
 
