@@ -2662,7 +2662,10 @@ const GatePassEdit = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {formData.material_items
+                          {(formData.material_items.length > 0
+                            ? formData.material_items
+                            : fetchedMaterials
+                          )
                             .filter((item) => !item._destroy)
                             .map((item, index) => (
                               <tr key={index}>
