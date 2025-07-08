@@ -7,6 +7,7 @@ import { baseURL } from "../confi/apiDomain";
 import { Modal, Button, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { Table } from "../components";
+import { ShowIcon } from "../components";
 
 const GatePassCreate = () => {
   const urlParams = new URLSearchParams(location.search);
@@ -100,6 +101,15 @@ const GatePassCreate = () => {
   const [newMaterialRemark, setNewMaterialRemark] = useState("");
   const [materialRowIdx, setMaterialRowIdx] = useState(null); // which row to update
 
+  // Add these states at the top
+  const [showBatchModal, setShowBatchModal] = useState(false);
+  const [batchRowIdx, setBatchRowIdx] = useState(null);
+  const [batchList, setBatchList] = useState([]);
+  const [batchIssueQty, setBatchIssueQty] = useState({});
+  const [batchMaxQty, setBatchMaxQty] = useState(0);
+  const [batchLoading, setBatchLoading] = useState(false);
+  const [batchTableType, setBatchTableType] = useState("");
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -160,14 +170,12 @@ const GatePassCreate = () => {
         return;
       }
     }
-      if (
-    maintenanceRows.some(
-      (row) => row.available_qty === "not_found"
-    )
-  ) {
-    alert("One or more materials have 'No matching inventory found'. Please correct before submitting.");
-    return;
-  }
+    if (maintenanceRows.some((row) => row.available_qty === "not_found")) {
+      alert(
+        "One or more materials have 'No matching inventory found'. Please correct before submitting."
+      );
+      return;
+    }
 
     // Map attachments from documents state
     const attachments = (documents || [])
@@ -258,6 +266,8 @@ const GatePassCreate = () => {
                     other_material_name: row.other_material_name || null,
                     other_material_description:
                       row.other_material_description || null,
+                    gp_batches_attributes:
+                      row.gp_batches_attributes || undefined,
                   };
                 } else {
                   return {
@@ -278,6 +288,8 @@ const GatePassCreate = () => {
                     other_material_name: row.other_material_name || null,
                     other_material_description:
                       row.other_material_description || null,
+                    gp_batches_attributes:
+                      row.gp_batches_attributes || undefined,
                   };
                 }
               })
@@ -285,6 +297,7 @@ const GatePassCreate = () => {
                 gate_pass_qty: Number(item.gate_pass_qty) || null,
                 material_inventory_id:
                   item.material_inventory_id || item.id || null,
+                gp_batches_attributes: item.gp_batches_attributes || undefined,
               })),
         attachments: attachments.length > 0 ? attachments : null,
         to_resource_id: to_resource_id,
@@ -941,20 +954,20 @@ const GatePassCreate = () => {
   //       );
   //     }, 0);
   //   }
-    
+
   //   // If type changes, fetch sub-types and material names
   //   if (field === "material_type") fetchSubTypesAndNames(value, idx);
   //   // If material name changes, fetch details
   //   if (field === "material_name") fetchMaterialDetails(value, idx);
   // };
 
-   const findMatchingInventory = (row, idx) => {
+  const findMatchingInventory = (row, idx) => {
     // This function now simply calls fetchAvailableQty,
     // which contains all the necessary guard clauses.
     fetchAvailableQty(row, idx);
   };
 
-    const handleMaintenanceRowChange = (idx, field, value) => {
+  const handleMaintenanceRowChange = (idx, field, value) => {
     setMaintenanceRows((prevRows) => {
       const newRows = prevRows.map((row, i) =>
         i === idx ? { ...row, [field]: value } : row
@@ -1139,101 +1152,196 @@ const GatePassCreate = () => {
   //   }
   // };
 
-   const fetchAvailableQty = async (row, idx) => {
-      if (!formData.store_id) {
-        setMaintenanceRows((rows) =>
-          rows.map((r, i) =>
-            i === idx
-              ? { ...r, available_qty: null, material_inventory_id: null }
-              : r
-          )
-        );
-        return;
-      }
-  
-      const params = {
-        "q[pms_inventory_sub_type_id_eq]": row.material_sub_type,
-        "q[pms_inventory_id_eq]": row.material_name,
-        "q[pms_generic_info_id_eq]": row.generic_info,
-        "q[pms_colour_id_eq]": row.colour,
-        "q[pms_brand_id_eq]": row.brand,
-        "q[unit_of_measure_id_eq]": row.unit,
-      };
-      // Remove undefined/null params, and "other" material name
-      Object.keys(params).forEach((key) => {
-        if (
-          !params[key] ||
-          (key === "q[pms_inventory_id_eq]" &&
-            String(params[key]).startsWith("other"))
-        ) {
-          delete params[key];
-        }
-      });
-  
-      // If no filter criteria, don't fetch
-      if (Object.keys(params).length === 0) {
-        setMaintenanceRows((rows) =>
-          rows.map((r, i) =>
-            i === idx
-              ? { ...r, available_qty: null, material_inventory_id: null }
-              : r
-          )
-        );
-        return;
-      }
-  
-      const query = new URLSearchParams(params).toString();
-      try {
-        const res = await axios.get(
-          `${baseURL}pms/stores/find_matching_inventory?store_id=${formData.store_id}&${query}&token=${token}`
-        );
-  
-        let inventoryData = null;
-        if (Array.isArray(res.data) && res.data.length > 0) {
-          inventoryData = res.data[0];
-        } else if (
-          res.data &&
-          !Array.isArray(res.data) &&
-          Object.keys(res.data).length > 0
-        ) {
-          inventoryData = res.data;
-        }
-  
-        const qty = inventoryData?.stock_as_on;
-        const inventoryId = inventoryData?.id || null;
-  
-        if (qty === undefined || qty === null || qty === 0) {
-          setMaintenanceRows((rows) =>
-            rows.map((r, i) =>
-              i === idx
-                ? {
-                    ...r,
-                    available_qty: "not_found",
-                    material_inventory_id: null,
-                  }
-                : r
-            )
-          );
-        } else {
-          setMaintenanceRows((rows) =>
-            rows.map((r, i) =>
-              i === idx
-                ? { ...r, available_qty: qty, material_inventory_id: inventoryId }
-                : r
-            )
-          );
-        }
-      } catch {
-        setMaintenanceRows((rows) =>
-          rows.map((r, i) =>
-            i === idx
-              ? { ...r, available_qty: "not_found", material_inventory_id: null }
-              : r
-          )
-        );
-      }
+  const fetchAvailableQty = async (row, idx) => {
+    if (!formData.store_id) {
+      setMaintenanceRows((rows) =>
+        rows.map((r, i) =>
+          i === idx
+            ? { ...r, available_qty: null, material_inventory_id: null }
+            : r
+        )
+      );
+      return;
+    }
+
+    const params = {
+      "q[pms_inventory_sub_type_id_eq]": row.material_sub_type,
+      "q[pms_inventory_id_eq]": row.material_name,
+      "q[pms_generic_info_id_eq]": row.generic_info,
+      "q[pms_colour_id_eq]": row.colour,
+      "q[pms_brand_id_eq]": row.brand,
+      "q[unit_of_measure_id_eq]": row.unit,
     };
-  
+    // Remove undefined/null params, and "other" material name
+    Object.keys(params).forEach((key) => {
+      if (
+        !params[key] ||
+        (key === "q[pms_inventory_id_eq]" &&
+          String(params[key]).startsWith("other"))
+      ) {
+        delete params[key];
+      }
+    });
+
+    // If no filter criteria, don't fetch
+    if (Object.keys(params).length === 0) {
+      setMaintenanceRows((rows) =>
+        rows.map((r, i) =>
+          i === idx
+            ? { ...r, available_qty: null, material_inventory_id: null }
+            : r
+        )
+      );
+      return;
+    }
+
+    const query = new URLSearchParams(params).toString();
+    try {
+      const res = await axios.get(
+        `${baseURL}pms/stores/find_matching_inventory?store_id=${formData.store_id}&${query}&token=${token}`
+      );
+
+      let inventoryData = null;
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        inventoryData = res.data[0];
+      } else if (
+        res.data &&
+        !Array.isArray(res.data) &&
+        Object.keys(res.data).length > 0
+      ) {
+        inventoryData = res.data;
+      }
+
+      const qty = inventoryData?.stock_as_on;
+      const inventoryId = inventoryData?.id || null;
+
+      if (qty === undefined || qty === null || qty === 0) {
+        setMaintenanceRows((rows) =>
+          rows.map((r, i) =>
+            i === idx
+              ? {
+                  ...r,
+                  available_qty: "not_found",
+                  material_inventory_id: null,
+                }
+              : r
+          )
+        );
+      } else {
+        setMaintenanceRows((rows) =>
+          rows.map((r, i) =>
+            i === idx
+              ? { ...r, available_qty: qty, material_inventory_id: inventoryId }
+              : r
+          )
+        );
+      }
+    } catch {
+      setMaintenanceRows((rows) =>
+        rows.map((r, i) =>
+          i === idx
+            ? { ...r, available_qty: "not_found", material_inventory_id: null }
+            : r
+        )
+      );
+    }
+  };
+
+  // Handler to open batch modal
+  const openBatchPopup = async (rowIdx, tableType) => {
+    let row, inventoryId;
+    if (tableType === "maintenance") {
+      row = maintenanceRows[rowIdx];
+      inventoryId = row.material_inventory_id;
+    } else {
+      row = formData.material_items[rowIdx];
+      inventoryId = row.material_inventory_id;
+    }
+    if (!formData.store_id || !inventoryId) {
+      alert("Please select store and material first.");
+      return;
+    }
+    setBatchRowIdx(rowIdx);
+    setBatchTableType(tableType);
+    setShowBatchModal(true);
+    setBatchLoading(true);
+    setBatchIssueQty(row.batches || {});
+    setBatchMaxQty(Number(row.gate_pass_qty) || 0);
+
+    try {
+      const res = await axios.get(
+        `${baseURL}/material_reconciliations/grn_batches.json?q[material_inventory_id_eq]=${inventoryId}&q[pms_store_id_eq]=${formData.store_id}&token=${token}`
+      );
+      setBatchList(Array.isArray(res.data) ? res.data : []);
+    } catch {
+      setBatchList([]);
+    } finally {
+      setBatchLoading(false);
+    }
+  };
+
+  // Handler for batch qty change
+  const handleBatchIssueQtyChange = (batchId, value) => {
+    const newValue = parseFloat(value) || 0;
+    const batch = batchList.find((b) => b.id === batchId);
+    const availableQty = parseFloat(batch?.current_stock_qty) || 0;
+
+    if (newValue > availableQty) {
+      alert(
+        `Issue QTY cannot exceed available qty (${availableQty}) for this batch.`
+      );
+      return;
+    }
+
+    const newBatchIssueQty = { ...batchIssueQty, [batchId]: newValue };
+    const total = Object.values(newBatchIssueQty).reduce(
+      (sum, v) => sum + (parseFloat(v) || 0),
+      0
+    );
+
+    if (total > batchMaxQty) {
+      alert(`Total Issue QTY cannot exceed Gate Pass Qty (${batchMaxQty})`);
+      return;
+    }
+
+    setBatchIssueQty(newBatchIssueQty);
+  };
+
+  // Handler for batch modal submit
+  const handleBatchModalSubmit = () => {
+    // Convert batchIssueQty to array format
+    const gp_batches_attributes = Object.entries(batchIssueQty)
+      .filter(([batchId, qty]) => qty && Number(qty) > 0)
+      .map(([batchId, qty]) => ({
+        grn_batch_id: Number(batchId),
+        gp_batch_qty: Number(qty),
+      }));
+
+    if (batchTableType === "maintenance") {
+      setMaintenanceRows((rows) =>
+        rows.map((row, idx) =>
+          idx === batchRowIdx
+            ? { ...row, batches: batchIssueQty, gp_batches_attributes }
+            : row
+        )
+      );
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        material_items: prev.material_items.map((row, idx) =>
+          idx === batchRowIdx
+            ? { ...row, batches: batchIssueQty, gp_batches_attributes }
+            : row
+        ),
+      }));
+    }
+    setShowBatchModal(false);
+    setBatchRowIdx(null);
+    setBatchList([]);
+    setBatchIssueQty({});
+    setBatchTableType(null);
+  };
+
   return (
     <div className="main-content">
       <div className="website-content overflow-auto">
@@ -1779,11 +1887,14 @@ const GatePassCreate = () => {
                             <th>Colour</th>
                             <th>Unit</th>
                             <th>Gate Pass Qty</th>
+
+                            <th>Batch</th>
                             <th>
                               {formData.gate_pass_type === "general"
                                 ? "Remark"
                                 : "Reason for Maintenance"}
                             </th>
+
                             <th>Action</th>
                           </tr>
                         </thead>
@@ -1984,6 +2095,30 @@ const GatePassCreate = () => {
                                   </div>
                                 )}
                               </td>
+
+                              <td>
+                                <ShowIcon
+                                  onClick={() =>
+                                    openBatchPopup(idx, "maintenance")
+                                  }
+                                  style={{
+                                    cursor: "pointer",
+                                    width: "20px",
+                                    height: "20px",
+                                  }}
+                                />
+                                {row.batches &&
+                                  Object.keys(row.batches).length > 0 && (
+                                    <div style={{ fontSize: 12 }}>
+                                      {Object.entries(row.batches)
+                                        .map(
+                                          ([batchId, qty]) =>
+                                            `Batch ${batchId}: ${qty}`
+                                        )
+                                        .join(", ")}
+                                    </div>
+                                  )}
+                              </td>
                               <td style={{ minWidth: 225 }}>
                                 <input
                                   type="text"
@@ -2050,6 +2185,7 @@ const GatePassCreate = () => {
                             <th>Colour</th>
                             <th>Unit</th>
                             <th>Gate Pass Qty</th>
+                            <th>Batch</th>
                             <th>Action</th>
                           </tr>
                         </thead>
@@ -2095,6 +2231,27 @@ const GatePassCreate = () => {
                                     });
                                   }}
                                 />
+                              </td>
+                              <td>
+                                <ShowIcon
+                                  onClick={() => openBatchPopup(index, "po")}
+                                  style={{
+                                    cursor: "pointer",
+                                    width: "20px",
+                                    height: "20px",
+                                  }}
+                                />
+                                {item.batches &&
+                                  Object.keys(item.batches).length > 0 && (
+                                    <div style={{ fontSize: 12 }}>
+                                      {Object.entries(item.batches)
+                                        .map(
+                                          ([batchId, qty]) =>
+                                            `Batch ${batchId}: ${qty}`
+                                        )
+                                        .join(", ")}
+                                    </div>
+                                  )}
                               </td>
                               <td>
                                 <button
@@ -2640,29 +2797,26 @@ const GatePassCreate = () => {
               // value={newVendorContact}
               // onChange={(e) => setNewVendorContact(e.target.value)}
               // required
-               type="text"
-    className="form-control"
-    maxLength={10}
-    placeholder="Enter contact number"
-    value={newVendorContact}
-    onChange={(e) => {
-      let value = e.target.value.replace(/\D/g, "");
-      if (value.length > 10) value = value.slice(0, 10);
-      setNewVendorContact(value);
-      if (value.length > 0 && value.length !== 10) {
-        setContactNoError("Contact number must be exactly 10 digits");
-      } else {
-        setContactNoError("");
-      }
-    }}
-    required
-  />
-  {contactNoError && (
-    <div style={{ color: "red", fontSize: 12 }}>
-      {contactNoError}
-    </div>
-  )}
-            
+              type="text"
+              className="form-control"
+              maxLength={10}
+              placeholder="Enter contact number"
+              value={newVendorContact}
+              onChange={(e) => {
+                let value = e.target.value.replace(/\D/g, "");
+                if (value.length > 10) value = value.slice(0, 10);
+                setNewVendorContact(value);
+                if (value.length > 0 && value.length !== 10) {
+                  setContactNoError("Contact number must be exactly 10 digits");
+                } else {
+                  setContactNoError("");
+                }
+              }}
+              required
+            />
+            {contactNoError && (
+              <div style={{ color: "red", fontSize: 12 }}>{contactNoError}</div>
+            )}
           </Form.Group>
           <Form.Group className="mb-2">
             <Form.Label>
@@ -2741,6 +2895,123 @@ const GatePassCreate = () => {
             Add Material
           </Button>
         </Modal.Footer>
+      </Modal>
+
+      {/* Batch Modal JSX (add at the end of your component) */}
+      <Modal
+        show={showBatchModal}
+        onHide={() => setShowBatchModal(false)}
+        centered
+        size="xl"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Batch Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="tbl-container">
+            <table className="w-100">
+              <thead>
+                <tr>
+                  <th>Batch No</th>
+                  <th>MOR No.</th>
+                  <th>GRN No</th>
+                  <th>GRN Creation Date</th>
+                  <th>Available Qty</th>
+                  <th>Issue QTY</th>
+                </tr>
+              </thead>
+              <tbody>
+                {batchLoading ? (
+                  <tr>
+                    <td colSpan="6" className="text-center">
+                      Loading...
+                    </td>
+                  </tr>
+                ) : batchList.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="text-center">
+                      No batch data found
+                    </td>
+                  </tr>
+                ) : (
+                  batchList.map((batch, idx) => (
+                    <tr key={batch.id || idx}>
+                      <td>{batch.batch_no || batch.id || "-"}</td>
+                      <td>{batch.mor_number || "-"}</td>
+                      <td>{batch.grn_number || "-"}</td>
+                      <td>
+                        {batch.created_at
+                          ? new Date(batch.created_at).toLocaleDateString(
+                              "en-GB"
+                            )
+                          : "-"}
+                      </td>
+                      <td>{batch.current_stock_qty ?? "-"}</td>
+                      <td>
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="Enter..."
+                          min={0}
+                          max={parseFloat(batch.current_stock_qty) || 0}
+                          value={batchIssueQty[batch.id] || ""}
+                          onChange={(e) =>
+                            handleBatchIssueQtyChange(batch.id, e.target.value)
+                          }
+                          disabled={(() => {
+                            // Sequential enabling logic
+                            // Find the first batch index that is not filled (0 or empty)
+                            const filledUpTo = batchList.findIndex(
+                              (b) =>
+                                !batchIssueQty[b.id] ||
+                                parseFloat(batchIssueQty[b.id]) === 0
+                            );
+                            // If idx > filledUpTo, disable this input
+                            if (filledUpTo !== -1 && idx > filledUpTo)
+                              return true;
+
+                            // Also, if total issued qty is already fulfilled, disable all except those already filled
+                            const totalIssued = Object.values(
+                              batchIssueQty
+                            ).reduce(
+                              (sum, qty) => sum + (parseFloat(qty) || 0),
+                              0
+                            );
+                            if (
+                              totalIssued >= batchMaxQty &&
+                              !(parseFloat(batchIssueQty[batch.id]) > 0)
+                            )
+                              return true;
+
+                            return false;
+                          })()}
+                        />
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-2 mt-2">
+              <button
+                className="purple-btn2 w-100"
+                onClick={handleBatchModalSubmit}
+              >
+                Submit
+              </button>
+            </div>
+            <div className="col-md-2">
+              <button
+                className="purple-btn1 w-100"
+                onClick={() => setShowBatchModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </Modal.Body>
       </Modal>
     </div>
   );
