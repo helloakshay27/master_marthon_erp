@@ -248,7 +248,7 @@ const MaterialReconciliationList = () => {
 
     // Add search term if it exists
     if (search) {
-      url += `&q[reco_number_or_status_or_reco_date_or_pms_company_setup_company_name_or_pms_project_name_or_sub_project_name_or_pms_store_name_created_by_full_name_cont]=${search}`;
+      url += `&q[q[reco_number_or_list_status_or_reco_date_or_created_at_or_pms_company_setup_company_name_or_pms_project_name_or_sub_project_name_or_pms_store_name_or_created_by_full_name_cont]=]=${search}`;
     }
 
     axios
@@ -345,7 +345,7 @@ const MaterialReconciliationList = () => {
     {
       field: "reconciliation_date",
       headerName: "Reconciliation Date",
-      width: 250,
+      width: 150,
     },
     { field: "status", headerName: "Status", width: 200 },
 
@@ -439,7 +439,10 @@ const MaterialReconciliationList = () => {
       project_name: item.project,
       site_name: item.sub_project,
       store: item.store,
-      reconciliation_date: item.reco_date.split("-").reverse().join("-"),
+      reconciliation_date: (() => {
+        const [yyyy, mm, dd] = item.reco_date.split("-");
+        return `${dd}-${mm}-${yyyy.slice(2)}`;
+      })(),
       status: item.status.charAt(0).toUpperCase() + item.status.slice(1),
     }));
   };
@@ -512,8 +515,9 @@ const MaterialReconciliationList = () => {
               <div className="row separteinto7 justify-content-center">
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${activeStatusTab === "" ? "active" : ""
-                      }`}
+                    className={`content-box tab-button ${
+                      activeStatusTab === "" ? "active" : ""
+                    }`}
                     data-tab="total"
                     onClick={() => handleTabClick("")}
                   >
@@ -527,8 +531,9 @@ const MaterialReconciliationList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${activeStatusTab === "draft" ? "active" : ""
-                      }`}
+                    className={`content-box tab-button ${
+                      activeStatusTab === "draft" ? "active" : ""
+                    }`}
                     data-tab="draft"
                     onClick={() => handleTabClick("draft")}
                   >
@@ -540,8 +545,9 @@ const MaterialReconciliationList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${activeStatusTab === "approved" ? "active" : ""
-                      }`}
+                    className={`content-box tab-button ${
+                      activeStatusTab === "approved" ? "active" : ""
+                    }`}
                     data-tab="approved"
                     onClick={() => handleTabClick("approved")}
                   >
@@ -553,8 +559,9 @@ const MaterialReconciliationList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${activeStatusTab === "rejected" ? "active" : ""
-                      }`}
+                    className={`content-box tab-button ${
+                      activeStatusTab === "rejected" ? "active" : ""
+                    }`}
                     data-tab="rejected"
                     onClick={() => handleTabClick("rejected")}
                   >
@@ -784,7 +791,8 @@ const MaterialReconciliationList = () => {
                   autoHeight={false}
                   getRowId={(row) => row.id}
                   loading={loading}
-                  checkboxSelection
+                  // checkboxSelection
+                  checkboxSelection={!!fromStatus} //
                   selectionModel={selectedIds}
                   onSelectionModelChange={(ids) => {
                     setSelectedIds(ids.map(String));
@@ -816,9 +824,9 @@ const MaterialReconciliationList = () => {
                       color: "#8b0203",
                     },
                     "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root":
-                    {
-                      color: "#fff",
-                    },
+                      {
+                        color: "#fff",
+                      },
                     "& .MuiCheckbox-root .MuiSvgIcon-root": {
                       fontSize: "1.1rem",
                     },
@@ -966,7 +974,7 @@ const MaterialReconciliationList = () => {
         <Modal.Footer>
           <button className="purple-btn2" onClick={handleShowAll}>
             Show All
-        </button>
+          </button>
           <button className="purple-btn1" onClick={handleHideAll}>
             Hide All
           </button>
