@@ -135,7 +135,7 @@ const ApprovalMatrics = () => {
       setLoading(true);
       try {
         let queryParams = new URLSearchParams();
-
+        queryParams.append("q[approval_type_not_eq]", "vendor_category");
         // Preserve filters during pagination
         if (filters.company)
           queryParams.append("q[company_id_eq]", filters.company);
@@ -369,7 +369,7 @@ const ApprovalMatrics = () => {
 
     let queryParams = new URLSearchParams();
     console.log("Filters:", filters);
-
+    queryParams.append("q[approval_type_not_eq]", "vendor_category");
     // Construct query parameters following the API format
     if (filters.company)
       queryParams.append("q[company_id_eq]", filters.company);
@@ -561,7 +561,7 @@ const ApprovalMatrics = () => {
     setPagination((prev) => ({ ...prev, current_page: page }));
 
     let queryParams = new URLSearchParams();
-
+    queryParams.append("q[approval_type_not_eq]", "vendor_category");
     // Preserve filters
     if (filters.company)
       queryParams.append("q[company_id_eq]", filters.company);
