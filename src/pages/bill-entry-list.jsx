@@ -49,7 +49,7 @@ const BillEntryList = () => {
     site_name: true,
     // pms_supplier: true,
     supplier_name: true,
-    uam_number: true,
+    // uam_number: true,
     po_number: true,
     created_at: true,
     accepted_at: true,
@@ -120,7 +120,7 @@ const BillEntryList = () => {
       //   return orgName || "-";
       // },
     },
-    { field: "uam_number", headerName: "UAM No.", width: 150 },
+    // { field: "uam_number", headerName: "UAM No.", width: 150 },
     { field: "po_number", headerName: "PO No.", width: 150 },
     {
       field: "created_at",

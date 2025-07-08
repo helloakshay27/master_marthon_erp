@@ -282,6 +282,7 @@ const GatePassEdit = () => {
                     gp_batches_attributes:
                       row.gp_batches_attributes ||
                       (row.gp_batches_attributes === null ? null : undefined),
+                    _destroy: row._destroy || undefined, // <-- ADD THIS LINE
                   };
                 } else {
                   return {
@@ -306,6 +307,7 @@ const GatePassEdit = () => {
                     gp_batches_attributes:
                       row.gp_batches_attributes ||
                       (row.gp_batches_attributes === null ? null : undefined),
+                    _destroy: row._destroy || undefined, //
                   };
                 }
               })
@@ -317,6 +319,7 @@ const GatePassEdit = () => {
                 gp_batches_attributes:
                   item.gp_batches_attributes ||
                   (item.gp_batches_attributes === null ? null : undefined),
+                _destroy: item._destroy || undefined, // <-- ADD THIS LINE
               })),
         attachments: attachments.length > 0 ? attachments : null,
         to_resource_id: to_resource_id,
@@ -1215,9 +1218,8 @@ const GatePassEdit = () => {
             sub_project_id: data.sub_project?.id,
             gate_pass_no: data.gate_pass_no,
             gate_pass_type: gatePassType ? gatePassType.value : "",
-            is_returnable: data.expected_return_date
-              ? "returnable"
-              : "non_returnable",
+            is_returnable:
+              data.returnable === false ? "non_returnable" : "returnable",
             store_id: data.from_store?.id,
             vehicle_no: data.vehicle_no,
             driver_name: data.driver_name,
@@ -2577,7 +2579,7 @@ const GatePassEdit = () => {
                                       height: "20px",
                                     }}
                                   />
-                                  {row.batches &&
+                                  {/* {row.batches &&
                                     Object.keys(row.batches).length > 0 && (
                                       <div style={{ fontSize: 12 }}>
                                         {Object.entries(row.batches)
@@ -2587,7 +2589,7 @@ const GatePassEdit = () => {
                                           )
                                           .join(", ")}
                                       </div>
-                                    )}
+                                    )} */}
                                 </td>
                                 <td style={{ minWidth: 180 }}>
                                   <input
@@ -2713,7 +2715,7 @@ const GatePassEdit = () => {
                                       height: "20px",
                                     }}
                                   />
-                                  {item.batches &&
+                                  {/* {item.batches &&
                                     Object.keys(item.batches).length > 0 && (
                                       <div style={{ fontSize: 12 }}>
                                         {Object.entries(item.batches)
@@ -2723,7 +2725,7 @@ const GatePassEdit = () => {
                                           )
                                           .join(", ")}
                                       </div>
-                                    )}
+                                    )} */}
                                 </td>
                                 <td>
                                   <button
@@ -2827,7 +2829,7 @@ const GatePassEdit = () => {
                             {doc.uploadDate || "-"}
                           </td>
                           <td
-                            className="text-decoration-underline"
+                            className=" text-start text-decoration-underline"
                             style={{ cursor: "pointer" }}
                             onClick={() => handleViewDocument(idx)}
                           >
@@ -3430,7 +3432,7 @@ const GatePassEdit = () => {
                           min={0}
                           max={parseFloat(batch.current_stock_qty) || 0}
                           value={
-                            batchIssueQty[batch.id] !== undefined
+                            batchIssueQty[batch.id]
                               ? batchIssueQty[batch.id]
                               : ""
                           }

@@ -207,7 +207,7 @@ const BOQDetailsPageMaster = () => {
   const handleCancel = () => {
     // setStatus(initialStatus); // Reset status to the initial value
     // setRemark(''); // Optionally reset the remark as well
-    navigate(`/initial-boq-list?token=${token}`); // 🔥 Redirect to the /view-BOQ page
+    navigate(`/view-BOQ/${boqDetails?.boq_info_id}?token=${token}`); // 🔥 Redirect to the /view-BOQ page
   };
 
   //status 
@@ -390,9 +390,46 @@ const BOQDetailsPageMaster = () => {
       {/* <div className="website-content overflow-auto"> */}
       <div className="website-content">
         <div className="module-data-section p-2">
-          <a href="" style={{ color: 'black' }}>
+          {/* <a href="" style={{ color: 'black' }}>
             Home &gt; Engineering  &gt; BOQ List &gt; BOQ info &gt; BOQ Details
-          </a>
+          </a> */}
+
+          <div className="mt-0">
+                        <span style={{ color: 'black' }}>
+                          <Link
+                            // to="/initial-boq-list"
+                            replace
+                          // style={{ color: 'black', textDecoration: 'underline', cursor: 'pointer' }}
+                          >Home</Link> &gt;
+                          <Link
+                            // to="/initial-boq-list"
+                            replace
+                          // style={{ color: 'black', textDecoration: 'underline', cursor: 'pointer' }}
+                          >  Engineering</Link>
+                          &gt;{' '}
+                          <Link
+                            to={`/initial-boq-list?token=${token}`}
+                            replace
+                          // style={{ color: 'black', textDecoration: 'underline', cursor: 'pointer' }}
+                          >
+                            BOQ List
+                          </Link>
+                          &nbsp;&gt;
+                          <Link
+                            // to="/initial-boq-list"
+                             to={`/view-BOQ/${boqDetails?.boq_info_id}?token=${token}`}
+                            replace
+                          // style={{ color: 'black', textDecoration: 'underline', cursor: 'pointer' }}
+                          > BOQ info</Link>
+                          &gt;
+                          <Link
+                            // to="/initial-boq-list"
+                            //  to={`/view-BOQ/${boqDetails?.boq_info_id}?token=${token}`}
+                            replace
+                          // style={{ color: 'black', textDecoration: 'underline', cursor: 'pointer' }}
+                          > BOQ Details</Link>
+                        </span>
+                      </div>
           {/* <div className="card mt-2 mb-5 p-4" id="total-content"> */}
           {/* Total Content Here  ..className="tab-content1 active" */}
           <div className="d-flex justify-content-end m-4">

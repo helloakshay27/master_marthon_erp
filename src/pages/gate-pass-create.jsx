@@ -2107,7 +2107,7 @@ const GatePassCreate = () => {
                                     height: "20px",
                                   }}
                                 />
-                                {row.batches &&
+                                {/* {row.batches &&
                                   Object.keys(row.batches).length > 0 && (
                                     <div style={{ fontSize: 12 }}>
                                       {Object.entries(row.batches)
@@ -2117,7 +2117,7 @@ const GatePassCreate = () => {
                                         )
                                         .join(", ")}
                                     </div>
-                                  )}
+                                  )} */}
                               </td>
                               <td style={{ minWidth: 225 }}>
                                 <input
@@ -2241,7 +2241,7 @@ const GatePassCreate = () => {
                                     height: "20px",
                                   }}
                                 />
-                                {item.batches &&
+                                {/* {item.batches &&
                                   Object.keys(item.batches).length > 0 && (
                                     <div style={{ fontSize: 12 }}>
                                       {Object.entries(item.batches)
@@ -2251,7 +2251,7 @@ const GatePassCreate = () => {
                                         )
                                         .join(", ")}
                                     </div>
-                                  )}
+                                  )} */}
                               </td>
                               <td>
                                 <button
