@@ -42,6 +42,10 @@ const ErpStockRegister13B = () => {
   const [pinnedRows, setPinnedRows] = useState([]);
   const [errors, setErrors] = useState({});
   const [pagination, setPagination] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10; // Items per page
+  const [totalEntries, setTotalEntries] = useState(0);
 
 
 
@@ -160,90 +164,90 @@ const ErpStockRegister13B = () => {
     }
   }, [data]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // const urlParams = new URLSearchParams(location.search);
-        // const token = urlParams.get("token");
-        // const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
+  const fetchData2 = async (page) => {
+    try {
+      // const urlParams = new URLSearchParams(location.search);
+      // const token = urlParams.get("token");
+      // const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
 
-        const response = await fetch(
-          `${baseURL}/stock_details.json?token=${token}`
-          // &search=${encodeURIComponent(
-          //   searchTerm
-          // )}&q[generic_info_id]=${selectedIds.genericInfos
-          // }&q[material_type_id]=${selectedIds.materialTypes
-          // }&q[material_sub_type_id]=${selectedIds.materialSubTypes
-          // }&q[brand_id]=&q[uom_id]=${selectedIds.unitOfMeasures
-          // }&q[mor_number]=${selectedIds.morNumbers}&q[grn_number]=${selectedIds.grnNumbers
-          // }&q[store_id_eq]=${selectedStore?.value || ""}&page=${page}&per_page=${pageSize}`
-        );
+      const response = await fetch(
+        `${baseURL}/stock_details.json?page=${page}&token=${token}`
+        // &search=${encodeURIComponent(
+        //   searchTerm
+        // )}&q[generic_info_id]=${selectedIds.genericInfos
+        // }&q[material_type_id]=${selectedIds.materialTypes
+        // }&q[material_sub_type_id]=${selectedIds.materialSubTypes
+        // }&q[brand_id]=&q[uom_id]=${selectedIds.unitOfMeasures
+        // }&q[mor_number]=${selectedIds.morNumbers}&q[grn_number]=${selectedIds.grnNumbers
+        // }&q[store_id_eq]=${selectedStore?.value || ""}&page=${page}&per_page=${pageSize}`
+      );
 
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-
-        const result = await response.json();
-        console.log("result ---", result);
-        const transformedData = result?.mor_inventories?.map((item, index) => {
-          const materialUrl =
-            item.id && token
-              ? `/stock_register_detail/${item.id}/?token=${token}`
-              : "#";
-          const firstStore = item.stores && item.stores.length > 0 ? item.stores[0] : null;
-
-          return {
-
-
-            id: item.id ?? `row-${index + 1}`,
-            store_id: firstStore ? firstStore.store_id : null,
-            srNo: index + 1,
-            material: item.category || "-",
-            materialUrl: materialUrl,
-            material_name: item.material_name || "-",
-            lastReceived: item.last_received_on || "-",
-            total_received: item.total_received !== null && item.total_received !== undefined ? item.total_received : "-",
-            total_issued: item.total_issued !== null && item.total_issued !== undefined ? item.total_issued : "-",
-            deadstockQty: item.deadstock_qty !== null && item.deadstock_qty !== undefined ? item.deadstock_qty : "-",
-            stock_as_on: item.stock_as_on !== null && item.stock_as_on !== undefined ? item.stock_as_on : "-",
-            stockStatus: item.stock_details?.[0]?.status || "-",
-            theftMissing: item.missing_qty !== undefined && item.missing_qty !== null ? item.missing_qty : "-",
-            uom_name: item.uom || "-",
-            mor: item.stock_details?.map((stock) => stock.mor).join(", ") || "-",
-            grn_number: item.stock_details?.map((stock) => stock.grn_number).join(", ") || "-",
-            stock_details: item?.stock_details?.map((stock) => ({
-              stockId: stock.id,
-              createdAt: stock.created_at || "-",
-              mor: stock.mor || "-",
-              resourceNumber: stock.resource_number || "-",
-              receivedQty: stock.received_qty !== null && stock.receivedQty !== undefined ? stock.receivedQty : "-",
-              issuedQty: stock.issued_qty !== null && stock.issued_qty !== undefined ? stock.issued_qty : "-",
-              returnedQty: stock.returned_qty !== null && stock.returned_qty !== undefined ? stock.returned_qty : "-",
-              balancedQty: stock.balanced_qty !== null && stock.balanced_qty !== undefined ? stock.balanced_qty : "-",
-            })) || [],
-
-          };
-        });
-
-        setData(transformedData);
-        // setFilteredData(transformedData);
-        setLoading(false);
-        setPagination(result.pagination);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
       }
-    };
 
-    fetchData();
+      const result = await response.json();
+      console.log("result ---", result);
+      const transformedData = result?.mor_inventories?.map((item, index) => {
+        const materialUrl =
+          item.id && token
+            ? `/stock_register_detail/${item.id}/?page=${page}token=${token}`
+            : "#";
+        const firstStore = item.stores && item.stores.length > 0 ? item.stores[0] : null;
+
+        return {
+
+
+          id: item.id ?? `row-${index + 1}`,
+          store_id: firstStore ? firstStore.store_id : null,
+          srNo: (currentPage - 1) * pageSize + index + 1,
+          material: item.category || "-",
+          materialUrl: materialUrl,
+          material_name: item.material_name || "-",
+          lastReceived: item.last_received_on || "-",
+          total_received: item.total_received !== null && item.total_received !== undefined ? item.total_received : "-",
+          total_issued: item.total_issued !== null && item.total_issued !== undefined ? item.total_issued : "-",
+          deadstockQty: item.deadstock_qty !== null && item.deadstock_qty !== undefined ? item.deadstock_qty : "-",
+          stock_as_on: item.stock_as_on !== null && item.stock_as_on !== undefined ? item.stock_as_on : "-",
+          stockStatus: item.stock_details?.[0]?.status || "-",
+          theftMissing: item.missing_qty !== undefined && item.missing_qty !== null ? item.missing_qty : "-",
+          uom_name: item.uom || "-",
+          mor: item.stock_details?.map((stock) => stock.mor).join(", ") || "-",
+          grn_number: item.stock_details?.map((stock) => stock.grn_number).join(", ") || "-",
+          stock_details: item?.stock_details?.map((stock) => ({
+            stockId: stock.id,
+            createdAt: stock.created_at || "-",
+            mor: stock.mor || "-",
+            resourceNumber: stock.resource_number || "-",
+            receivedQty: stock.received_qty !== null && stock.receivedQty !== undefined ? stock.receivedQty : "-",
+            issuedQty: stock.issued_qty !== null && stock.issued_qty !== undefined ? stock.issued_qty : "-",
+            returnedQty: stock.returned_qty !== null && stock.returned_qty !== undefined ? stock.returned_qty : "-",
+            balancedQty: stock.balanced_qty !== null && stock.balanced_qty !== undefined ? stock.balanced_qty : "-",
+          })) || [],
+
+        };
+      });
+
+      setData(transformedData);
+      setTotalPages(result?.pagination.total_pages); // Set total pages
+      setTotalEntries(result?.pagination.total_count);
+      // setPagination(result.pagination);
+      // setFilteredData(transformedData);
+      setLoading(false);
+      setPagination(result.pagination);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setLoading(false);
+    }
+  };
+
+
+  console.log("total entries:", totalEntries)
+  useEffect(() => {
+
+    fetchData2(currentPage);
   }, [
-    location.search,
-    selectedCompany,
-    selectedProject,
-    page,
-    searchTerm,
-    selectedIds,
-    selectedSubProject,
+    currentPage
   ]);
 
   const handleResets = () => {
@@ -252,7 +256,11 @@ const ErpStockRegister13B = () => {
     setSelectedSubProject([]);
     setSelectedStore(null)
   };
-
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
   const getTransformedRows = () => {
     let rowsToShow = data;
 
@@ -426,21 +434,21 @@ const ErpStockRegister13B = () => {
   };
 
   // Pagination logic for custom UI
-  const totalPages = Number.isInteger(pagination?.total_pages)
-    ? pagination.total_pages
-    : 1;
-  const currentPage = Number.isInteger(pagination?.current_page)
-    ? pagination.current_page
-    : 1;
-  const pageNumbers = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pageNumbers.push(i);
-  }
-  const handlePageChange = (pageNumber) => {
-    if (pageNumber < 1 || pageNumber > totalPages) return;
-    setLoading(true); // Show loader immediately
-    setPage(pageNumber);
-  };
+  // const totalPages = Number.isInteger(pagination?.total_pages)
+  //   ? pagination.total_pages
+  //   : 1;
+  // const currentPage = Number.isInteger(pagination?.current_page)
+  //   ? pagination.current_page
+  //   : 1;
+  // const pageNumbers = [];
+  // for (let i = 1; i <= totalPages; i++) {
+  //   pageNumbers.push(i);
+  // }
+  // const handlePageChange = (pageNumber) => {
+  //   if (pageNumber < 1 || pageNumber > totalPages) return;
+  //   setLoading(true); // Show loader immediately
+  //   setPage(pageNumber);
+  // };
 
 
   const handleGoClick = async (e) => {
@@ -476,6 +484,8 @@ const ErpStockRegister13B = () => {
 
       // Handle response data
       console.log("Fetched stock data:", response.data);
+      setTotalPages(response.data?.pagination.total_pages); // Set total pages
+      setTotalEntries(response.data?.pagination.total_count);
       setFilteredData(response.data); // or any appropriate state you have
     } catch (error) {
       console.error("Error fetching stock details:", error);
@@ -875,7 +885,7 @@ const ErpStockRegister13B = () => {
 
           id: item.id ?? `row-${index + 1}`,
           store_id: firstStore ? firstStore.store_id : null,
-          srNo: index + 1,
+          srNo:(currentPage - 1) * pageSize + index + 1,
           material: item.category || "-",
           materialUrl: materialUrl,
           material_name: item.material_name || "-",
@@ -905,6 +915,8 @@ const ErpStockRegister13B = () => {
       setData(transformedData)
       setFilteredData(transformedData);
       setPagination(response.data?.pagination || {});
+      setTotalPages(response.data?.pagination.total_pages); // Set total pages
+      setTotalEntries(response.data?.pagination.total_count);
       setShow(false); // Close modal after filter
     } catch (error) {
       toast.error("Failed to fetch filtered data");
@@ -914,113 +926,113 @@ const ErpStockRegister13B = () => {
     }
   };
 
-//   const handleFilterReset =async () => {
-//     // setSelectedIds({
-//     //   genericInfos: [],
-//     //   materialSubTypes: [],
-//     //   materialTypes: [],
-//     //   unitOfMeasures: [],
-//     //   morNumbers: [],
-//     //   grnNumbers: [],
-//     // });
+  //   const handleFilterReset =async () => {
+  //     // setSelectedIds({
+  //     //   genericInfos: [],
+  //     //   materialSubTypes: [],
+  //     //   materialTypes: [],
+  //     //   unitOfMeasures: [],
+  //     //   morNumbers: [],
+  //     //   grnNumbers: [],
+  //     // });
 
-//     setSelectedInventory2(null)
-// setInventoryTypes2([])
-//     setSelectedSubType2(null); // Clear the selected sub-type when inventory type changes
-//     setInventorySubTypes2([]); // Reset the sub-types list
-//     setInventoryMaterialTypes2([]); // Reset the material types list
-//     setSelectedInventoryMaterialTypes2(null); // Clear selected material type
-//     setGenericSpecifications([])
-//     setSelectedGenericSpecifications(null)
-//     setColors([])
-//     setSelectedColors(null)
-//     setInventoryBrands([])
-//     setSelectedInventoryBrands(null)
-//     setSelectedUnit(null)
-//     setUnitOfMeasures([])
-//         // setShow(false)
-
-
-
-//          setLoading(true);
-//     try {
-//       const params = new URLSearchParams({
-//         token: "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
-//         search: "",
-//         "q[material_type_id_eq]": formData.materialType || "",
-//         "q[material_sub_type_id_eq]": formData.materialSubType || "",
-//         "q[material_id_eq]": formData.material || "",
-//         "q[generic_info_id_eq]": formData.genericSpecification || "",
-//         "q[unit_of_measure_id]": formData.uom || "",
-//         "q[status_eq]": "", // Add status if you have it in your form
-//         "q[brand_id_eq]": formData.brand || "",
-//         "q[colour_id_eq]": formData.colour || "",
-//         page: 1,
-//         per_page: 10,
-//       });
-
-//       const response = await axios.get(`https://marathon.lockated.com/stock_details.json?${params.toString()}`);
-//       console.log("response.data", response.data)
-//       // Handle response data
-//       const result = response.data;
-//       console.log("result ---", result);
-//       const transformedData = result?.mor_inventories?.map((item, index) => {
-//         const materialUrl =
-//           item.id && token
-//             ? `/stock_register_detail/${item.id}/?token=${token}`
-//             : "#";
-//         const firstStore = item.stores && item.stores.length > 0 ? item.stores[0] : null;
-
-//         return {
+  //     setSelectedInventory2(null)
+  // setInventoryTypes2([])
+  //     setSelectedSubType2(null); // Clear the selected sub-type when inventory type changes
+  //     setInventorySubTypes2([]); // Reset the sub-types list
+  //     setInventoryMaterialTypes2([]); // Reset the material types list
+  //     setSelectedInventoryMaterialTypes2(null); // Clear selected material type
+  //     setGenericSpecifications([])
+  //     setSelectedGenericSpecifications(null)
+  //     setColors([])
+  //     setSelectedColors(null)
+  //     setInventoryBrands([])
+  //     setSelectedInventoryBrands(null)
+  //     setSelectedUnit(null)
+  //     setUnitOfMeasures([])
+  //         // setShow(false)
 
 
-//           id: item.id ?? `row-${index + 1}`,
-//           store_id: firstStore ? firstStore.store_id : null,
-//           srNo: index + 1,
-//           material: item.category || "-",
-//           materialUrl: materialUrl,
-//           material_name: item.material_name || "-",
-//           lastReceived: item.last_received_on || "-",
-//           total_received: item.total_received !== null && item.total_received !== undefined ? item.total_received : "-",
-//           total_issued: item.total_issued !== null && item.total_issued !== undefined ? item.total_issued : "-",
-//           deadstockQty: item.deadstock_qty !== null && item.deadstock_qty !== undefined ? item.deadstock_qty : "-",
-//           stock_as_on: item.stock_as_on !== null && item.stock_as_on !== undefined ? item.stock_as_on : "-",
-//           stockStatus: item.stock_details?.[0]?.status || "-",
-//           theftMissing: item.missing_qty !== undefined && item.missing_qty !== null ? item.missing_qty : "-",
-//           uom_name: item.uom || "-",
-//           mor: item.stock_details?.map((stock) => stock.mor).join(", ") || "-",
-//           grn_number: item.stock_details?.map((stock) => stock.grn_number).join(", ") || "-",
-//           stock_details: item?.stock_details?.map((stock) => ({
-//             stockId: stock.id,
-//             createdAt: stock.created_at || "-",
-//             mor: stock.mor || "-",
-//             resourceNumber: stock.resource_number || "-",
-//             receivedQty: stock.received_qty !== null && stock.receivedQty !== undefined ? stock.receivedQty : "-",
-//             issuedQty: stock.issued_qty !== null && stock.issued_qty !== undefined ? stock.issued_qty : "-",
-//             returnedQty: stock.returned_qty !== null && stock.returned_qty !== undefined ? stock.returned_qty : "-",
-//             balancedQty: stock.balanced_qty !== null && stock.balanced_qty !== undefined ? stock.balanced_qty : "-",
-//           })) || [],
 
-//         };
-//       });
-//       setData(transformedData)
-//       setFilteredData(transformedData);
-//       setPagination(response.data?.pagination || {});
-//       setShow(false); // Close modal after filter
-//     } catch (error) {
-//       toast.error("Failed to fetch filtered data");
-//       console.error("Filter API error:", error);
-//     } finally {
-//       setLoading(false);
-//     }
+  //          setLoading(true);
+  //     try {
+  //       const params = new URLSearchParams({
+  //         token: "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+  //         search: "",
+  //         "q[material_type_id_eq]": formData.materialType || "",
+  //         "q[material_sub_type_id_eq]": formData.materialSubType || "",
+  //         "q[material_id_eq]": formData.material || "",
+  //         "q[generic_info_id_eq]": formData.genericSpecification || "",
+  //         "q[unit_of_measure_id]": formData.uom || "",
+  //         "q[status_eq]": "", // Add status if you have it in your form
+  //         "q[brand_id_eq]": formData.brand || "",
+  //         "q[colour_id_eq]": formData.colour || "",
+  //         page: 1,
+  //         per_page: 10,
+  //       });
 
-//   };
+  //       const response = await axios.get(`https://marathon.lockated.com/stock_details.json?${params.toString()}`);
+  //       console.log("response.data", response.data)
+  //       // Handle response data
+  //       const result = response.data;
+  //       console.log("result ---", result);
+  //       const transformedData = result?.mor_inventories?.map((item, index) => {
+  //         const materialUrl =
+  //           item.id && token
+  //             ? `/stock_register_detail/${item.id}/?token=${token}`
+  //             : "#";
+  //         const firstStore = item.stores && item.stores.length > 0 ? item.stores[0] : null;
+
+  //         return {
 
 
-   const handleFilterReset = () => {
+  //           id: item.id ?? `row-${index + 1}`,
+  //           store_id: firstStore ? firstStore.store_id : null,
+  //           srNo: index + 1,
+  //           material: item.category || "-",
+  //           materialUrl: materialUrl,
+  //           material_name: item.material_name || "-",
+  //           lastReceived: item.last_received_on || "-",
+  //           total_received: item.total_received !== null && item.total_received !== undefined ? item.total_received : "-",
+  //           total_issued: item.total_issued !== null && item.total_issued !== undefined ? item.total_issued : "-",
+  //           deadstockQty: item.deadstock_qty !== null && item.deadstock_qty !== undefined ? item.deadstock_qty : "-",
+  //           stock_as_on: item.stock_as_on !== null && item.stock_as_on !== undefined ? item.stock_as_on : "-",
+  //           stockStatus: item.stock_details?.[0]?.status || "-",
+  //           theftMissing: item.missing_qty !== undefined && item.missing_qty !== null ? item.missing_qty : "-",
+  //           uom_name: item.uom || "-",
+  //           mor: item.stock_details?.map((stock) => stock.mor).join(", ") || "-",
+  //           grn_number: item.stock_details?.map((stock) => stock.grn_number).join(", ") || "-",
+  //           stock_details: item?.stock_details?.map((stock) => ({
+  //             stockId: stock.id,
+  //             createdAt: stock.created_at || "-",
+  //             mor: stock.mor || "-",
+  //             resourceNumber: stock.resource_number || "-",
+  //             receivedQty: stock.received_qty !== null && stock.receivedQty !== undefined ? stock.receivedQty : "-",
+  //             issuedQty: stock.issued_qty !== null && stock.issued_qty !== undefined ? stock.issued_qty : "-",
+  //             returnedQty: stock.returned_qty !== null && stock.returned_qty !== undefined ? stock.returned_qty : "-",
+  //             balancedQty: stock.balanced_qty !== null && stock.balanced_qty !== undefined ? stock.balanced_qty : "-",
+  //           })) || [],
+
+  //         };
+  //       });
+  //       setData(transformedData)
+  //       setFilteredData(transformedData);
+  //       setPagination(response.data?.pagination || {});
+  //       setShow(false); // Close modal after filter
+  //     } catch (error) {
+  //       toast.error("Failed to fetch filtered data");
+  //       console.error("Filter API error:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+
+  //   };
+
+
+  const handleFilterReset = () => {
 
     //  setSelectedInventory2(null)
-// setInventoryTypes2([])
+    // setInventoryTypes2([])
     // setSelectedSubType2(null); // Clear the selected sub-type when inventory type changes
     // setInventorySubTypes2([]); // Reset the sub-types list
     // setInventoryMaterialTypes2([]); // Reset the material types list
@@ -1043,23 +1055,23 @@ const ErpStockRegister13B = () => {
     // console.log("Filters reset");
 
     setFormData({
-       materialType: "",
-    materialSubType: "",
-    material: "",
-    genericSpecification: "",
-    colour: "",
-    brand: "",
-    effectiveDate: "",
-    rate: "",
-    rateType: "",
-    poRate: "",
-    avgRate: "",
-    uom: "",
+      materialType: "",
+      materialSubType: "",
+      material: "",
+      genericSpecification: "",
+      colour: "",
+      brand: "",
+      effectiveDate: "",
+      rate: "",
+      rateType: "",
+      poRate: "",
+      avgRate: "",
+      uom: "",
     })
   };
 
 
-  if (loading) return <div>Loading...</div>;
+  // if (loading) return <div>Loading...</div>;
   return (
     <>
       <style type="text/css">
@@ -1376,22 +1388,26 @@ display:none !important;
                 </div>
               )}
             </div>
-            <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+
+
+
+            <div className="d-flex justify-content-between align-items-center px-1 mt-2  mb-3">
               <ul className="pagination justify-content-center d-flex">
-                {/* First Button */}
                 <li
-                  className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
+                  className={`page-item ${currentPage === 1 ? "disabled" : ""
+                    }`}
                 >
                   <button
                     className="page-link"
                     onClick={() => handlePageChange(1)}
+                    disabled={currentPage === 1}
                   >
                     First
                   </button>
                 </li>
-                {/* Previous Button */}
                 <li
-                  className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
+                  className={`page-item ${currentPage === 1 ? "disabled" : ""
+                    }`}
                 >
                   <button
                     className="page-link"
@@ -1401,22 +1417,22 @@ display:none !important;
                     Prev
                   </button>
                 </li>
-                {/* Dynamic Page Numbers */}
-                {pageNumbers.map((pageNumber) => (
+
+                {Array.from({ length: totalPages }, (_, index) => (
                   <li
-                    key={pageNumber}
-                    className={`page-item ${currentPage === pageNumber ? "active" : ""
+                    key={index + 1}
+                    className={`page-item ${currentPage === index + 1 ? "active" : ""
                       }`}
                   >
                     <button
                       className="page-link"
-                      onClick={() => handlePageChange(pageNumber)}
+                      onClick={() => handlePageChange(index + 1)}
                     >
-                      {pageNumber}
+                      {index + 1}
                     </button>
                   </li>
                 ))}
-                {/* Next Button */}
+
                 <li
                   className={`page-item ${currentPage === totalPages ? "disabled" : ""
                     }`}
@@ -1429,7 +1445,6 @@ display:none !important;
                     Next
                   </button>
                 </li>
-                {/* Last Button */}
                 <li
                   className={`page-item ${currentPage === totalPages ? "disabled" : ""
                     }`}
@@ -1443,22 +1458,14 @@ display:none !important;
                   </button>
                 </li>
               </ul>
-              {/* Showing entries count */}
               <div>
-                <p>
-                  Showing{" "}
-                  {Math.min(
-                    (currentPage - 1) * pageSize + 1,
-                    pagination?.total_count || 0
-                  )}{" "}
-                  to{" "}
-                  {Math.min(
-                    currentPage * pageSize,
-                    pagination?.total_count || 0
-                  )}{" "}
-                  of {pagination?.total_count || 0} entries
-                </p>
+                Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
+
+                {totalEntries} entries
+                {/* {console.log(".........", itemsPerPage)} */}
               </div>
+
             </div>
           </div>
         </div>
