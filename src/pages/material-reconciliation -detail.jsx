@@ -180,17 +180,27 @@ const MaterialReconciliationDetail = () => {
   //     alert("Failed to update material reconciliation");
   //   }
   // };
+   // Step 3: Handle remark change
 
+      const payload = {
+        status_log: {
+          status: selectedStatus?.value || "draft",
+         
+         remarks: adminComment,
+        },
+      };
+      // console.log("payload:",payload)
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const payload = {
         status_log: {
           status: selectedStatus?.value || "draft",
-          comments: formData.remarks || "",
-          admin_comment: adminComment,
+          // comments: formData.remarks || "",
+         remarks: adminComment,
         },
       };
+      console.log("payload on submit:",payload)
 
       const response = await axios.post(
         `${baseURL}material_reconciliations/${id}/update_status.json?token=${token}`,
@@ -199,6 +209,7 @@ const MaterialReconciliationDetail = () => {
 
       console.log("Status update successful:", response.data);
       alert("Status updated successfully!");
+      setAdminComment("")
       navigate(`/material-reconciliation-list?token=${token}`);
     } catch (error) {
       console.error("Error updating status:", error);
@@ -645,7 +656,7 @@ const MaterialReconciliationDetail = () => {
                     <td>
                       {log.status.charAt(0).toUpperCase() + log.status.slice(1)}
                     </td>
-                    <td>{log.admin_comment || "-"}</td>
+                    <td>{log.remarks || "-"}</td>
                     {/* <td>{log.admin_comment || "-"}</td> */}
                   </tr>
                 ))}
