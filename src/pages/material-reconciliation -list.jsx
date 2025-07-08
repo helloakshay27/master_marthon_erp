@@ -248,7 +248,7 @@ const MaterialReconciliationList = () => {
 
     // Add search term if it exists
     if (search) {
-      url += `&q[q[reco_number_or_list_status_or_reco_date_or_created_at_or_pms_company_setup_company_name_or_pms_project_name_or_sub_project_name_or_pms_store_name_or_created_by_full_name_cont]=]=${search}`;
+      url += `&q[reco_number_or_list_status_or_reco_date_or_created_at_or_pms_company_setup_company_name_or_pms_project_name_or_sub_project_name_or_pms_store_name_or_created_by_full_name_cont]=${search}`;
     }
 
     axios
@@ -719,6 +719,11 @@ const MaterialReconciliationList = () => {
                         <button
                           type="submit"
                           className="btn btn-md btn-default"
+                          onClick={() => {
+                            setSearchTerm("");
+                            setCurrentPage(1);
+                            fetchData(1, undefined, "");
+                          }}
                         >
                           <svg
                             width={16}
