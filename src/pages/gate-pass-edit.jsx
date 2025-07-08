@@ -658,6 +658,14 @@ const GatePassEdit = () => {
     // If you want to reset sub_project_id, uncomment above
   }, [formData.project_id, projects]);
 
+  useEffect(() => {
+    console.log(
+      "useEffect: formData.gate_pass_type changed",
+      formData.gate_pass_type
+    );
+    // ...existing code
+  }, [formData.gate_pass_type]);
+
   // 1. Clear materials when gate pass type changes
   useEffect(() => {
     setFormData((prev) => ({
@@ -1707,6 +1715,14 @@ const GatePassEdit = () => {
     setBatchTableType(null);
   };
 
+  // Before the return statement in your component:
+  console.log("formData.material_items", formData.material_items);
+  console.log("fetchedMaterials", fetchedMaterials);
+  console.log("poMaterials", poMaterials);
+
+  console.log("Token:", token);
+  console.log("Gate Pass Type:", formData.gate_pass_type);
+
   return (
     <div className="main-content">
       <div className="website-content overflow-auto">
@@ -2321,6 +2337,11 @@ const GatePassEdit = () => {
                     (t) => t.value === formData.gate_pass_type
                   );
                   const rawValue = selectedGatePassType?.rawValue;
+                  const tableData =
+                    formData.material_items.length > 0
+                      ? formData.material_items
+                      : fetchedMaterials;
+                  console.log("Rendering table with data:", tableData);
                   if (rawValue === "") {
                     return (
                       <button
