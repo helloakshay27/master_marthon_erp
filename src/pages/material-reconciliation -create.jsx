@@ -1178,8 +1178,8 @@ const MaterialReconciliationCreate = () => {
                     />
                   </div>
                 </div>
-                <div className="col-md-3 mt-2">
-                  {/* /.form-group */}
+                {/* <div className="col-md-3 mt-2">
+                
                   <div className="form-group">
                     <label>Date</label>
                     <input
@@ -1188,8 +1188,8 @@ const MaterialReconciliationCreate = () => {
                       placeholder="Default input"
                     />
                   </div>
-                  {/* /.form-group */}
-                </div>
+
+                </div> */}
               </div>
               <div className=" d-flex justify-content-between align-items-end px-2">
                 <h5 className=" mt-3">Material</h5>

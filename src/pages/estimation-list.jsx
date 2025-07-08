@@ -23,6 +23,8 @@ import { Modal, Button } from "react-bootstrap";
 
 
 const EstimationList = () => {
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
     const [showModal, setShowModal] = useState(false);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchText, setSearchText] = useState("");
@@ -66,7 +68,7 @@ const EstimationList = () => {
 
     // Fetch company data on component mount
     useEffect(() => {
-        axios.get(`${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+        axios.get(`${baseURL}pms/company_setups.json?token=${token}`)
             .then(response => {
                 setCompanies(response.data.companies);
                 setData(response.data);  // Set the data from the API to state
@@ -172,7 +174,7 @@ const EstimationList = () => {
             // console.log("base64String:", base64String)
             try {
                 const response = await axios.post(
-                    `${baseURL}boq_details/import.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                    `${baseURL}boq_details/import.json?token=${token}`,
                     { file: base64String },
                     { headers: { "Content-Type": "application/json" } }
                 );
@@ -355,7 +357,7 @@ const EstimationList = () => {
                                     <div className="col-md-6">
                                         <div className="d-flex justify-content-end align-items-center gap-3">
 
-                                            <button className="purple-btn2 me-3" onClick={() => setShowModal(true)}>Bulk Upload</button>
+                                            {/* <button className="purple-btn2 me-3" onClick={() => setShowModal(true)}>Bulk Upload</button> */}
 
 
                                             {/* Create BOQ Button */}
@@ -471,7 +473,7 @@ const EstimationList = () => {
                                                                     {/* Render Project Name only once per project */}
                                                                     {wingIndex === 0 && siteIndex === 0 ? (
                                                                         <td className="text-start">
-                                                                            <a href={`/estimation-details-project/${project.id}`}>
+                                                                            <a href={`/estimation-details-project/${project.id}?token=${token}`}>
                                                                                 <span style={{ color: "#8b0203", textDecoration: 'underline' }}>{project.name}</span>
                                                                             </a>
                                                                         </td>
@@ -482,7 +484,7 @@ const EstimationList = () => {
                                                                     {/* Render Sub-Project Name only once per site */}
                                                                     {wingIndex === 0 ? (
                                                                         <td className="text-start">
-                                                                            <a href={`/estimation-details-sub-project/${site.id}`}>
+                                                                            <a href={`/estimation-details-sub-project/${site.id}?token=${token}`}>
                                                                                 {/* {site.name} */}
                                                                                 <span style={{ color: "#8b0203", textDecoration: 'underline' }}>{site.name}</span>
                                                                             </a>
@@ -519,7 +521,7 @@ const EstimationList = () => {
                                                                     {/* Render Project Name only once per project */}
                                                                     {siteIndex === 0 ? (
                                                                         <td className="text-start">
-                                                                            <a href={`/estimation-details-project/${project.id}`}>
+                                                                            <a href={`/estimation-details-project/${project.id}?token=${token}`}>
                                                                                 {/* {project.name} */}
                                                                                 <span style={{ color: "#8b0203", textDecoration: 'underline' }}>{project.name}</span>
                                                                             </a>
@@ -530,7 +532,7 @@ const EstimationList = () => {
 
                                                                     {/* Render Sub-Project Name */}
                                                                     <td className="text-start">
-                                                                        <a href={`/estimation-details-sub-project/${site.id}`}>
+                                                                        <a href={`/estimation-details-sub-project/${site.id}?token=${token}`}>
                                                                             <span style={{ color: "#8b0203", textDecoration: 'underline' }}>{site.name}</span>
                                                                         </a>
                                                                     </td>
@@ -583,7 +585,7 @@ const EstimationList = () => {
                         <div className="d-flex justify-content-between align-items-center">
                             {/* Left: Download sample format */}
                             <a
-                                href={`${baseURL}boq_details/download_boq_sample.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`}
+                                href={`${baseURL}boq_details/download_boq_sample.json?token=${token}`}
                                 download
                                 className="d-flex align-items-center text-decoration-none"
                                 style={{ color: "#8b0203" }}
@@ -654,7 +656,7 @@ const EstimationList = () => {
                                 <div className="m-0">
                                     {msg.boq_id && (
                                         <a
-                                            href={`/boq-details-page-master/${msg.boq_id}`}
+                                            href={`/boq-details-page-master/${msg.boq_id}?token=${token}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             style={{ color: "#8b0203", textDecoration: "underline", marginLeft: 8 }}

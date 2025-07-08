@@ -85,10 +85,10 @@ const ErpStockRegister13B = () => {
   const startEntry = (page - 1) * pageSize + 1;
   // console.log("pagination:-", pagination);
 
-  const endEntry = Math.min(
-    pagination.current_page * pageSize,
-    pagination.total_count
-  );
+  // const endEntry = Math.min(
+  //   pagination.current_page * pageSize,
+  //   pagination.total_count
+  // );
 
   // (Removed duplicate columns declaration)
 
@@ -189,7 +189,7 @@ const ErpStockRegister13B = () => {
             item.id && token
               ? `/stock_register_detail/${item.id}/?token=${token}`
               : "#";
-              const firstStore = item.stores && item.stores.length > 0 ? item.stores[0] : null;
+          const firstStore = item.stores && item.stores.length > 0 ? item.stores[0] : null;
 
           return {
             // id: item.id ?? `row-${index + 1}`,
@@ -471,6 +471,18 @@ const ErpStockRegister13B = () => {
     setPage(pageNumber);
   };
 
+  const handleFilterReset = () => {
+  setSelectedIds({
+    genericInfos: [],
+    materialSubTypes: [],
+    materialTypes: [],
+    unitOfMeasures: [],
+    morNumbers: [],
+    grnNumbers: [],
+  });
+  // setShow(false)
+};
+
   const handleGoClick = async (e) => {
     console.log("handle go ....")
     e.preventDefault();
@@ -490,6 +502,12 @@ const ErpStockRegister13B = () => {
         // "q[stock_details_mor_inventory_material_order_request_project_id_eq]": selectedProject || "",
         // "q[stock_details_mor_inventory_material_order_request_pms_site_id_eq]": selectedSubProject || "",
         "q[store_id_eq]": selectedStore?.value || "",
+        "q[generic_info_id]": selectedIds.genericInfos.join(","),
+        "q[material_type_id]": selectedIds.materialTypes.join(","),
+        "q[material_sub_type_id]": selectedIds.materialSubTypes.join(","),
+        "q[uom_id]": selectedIds.unitOfMeasures.join(","),
+        "q[mor_number]": selectedIds.morNumbers.join(","),
+        "q[grn_number]": selectedIds.grnNumbers.join(","),
         page: 1,
         per_page: 10,
       });
@@ -545,9 +563,9 @@ const ErpStockRegister13B = () => {
       sortable: true,
       renderCell: (params) =>
         params.value && params.row.store_id ? (
-          <Link 
-          // to={`/stock_register_detail/${params.row.store_id}?token=${token}`
-        to={`/stock_register_detail/${params.row.id}&store_id=${selectedStore?.value}?token=${token}`}
+          <Link
+            // to={`/stock_register_detail/${params.row.store_id}?token=${token}`
+            to={`/stock_register_detail/${params.row.id}&store_id=${selectedStore?.value}?token=${token}`}
 
           >
             <span className="boq-id-link">{params.value}</span>
@@ -945,11 +963,11 @@ display:none !important;
                     ),
                   }}
                 />
-              ) : (
-                <div className="text-center mt-5">
-                  <p>No records found for the selected filters.</p>
+               ) : (
+               <div className="text-center mt-5">
+                 <p>No records found for the selected filters.</p>
                 </div>
-              )}
+               )} 
             </div>
             <div className="d-flex justify-content-between align-items-center px-3 mt-2">
               <ul className="pagination justify-content-center d-flex">
@@ -1076,13 +1094,14 @@ display:none !important;
                   Filter
                 </h3>
               </div>
-              <Link
+              <span
                 className="resetCSS"
                 style={{ fontSize: "14px", textDecoration: "underline" }}
                 to="#"
+                onClick={handleFilterReset}
               >
                 Reset
-              </Link>
+              </span>
             </div>
           </div>
         </Modal.Header>
