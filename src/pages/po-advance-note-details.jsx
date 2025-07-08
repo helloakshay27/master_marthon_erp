@@ -24,6 +24,8 @@ const POAdvanceNoteDetails = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [creditNoteAmount, setCreditNoteAmount] = useState(null);
+  const [remark, setRemark] = useState("");
+  const [comment, setComment] = useState("");
 
 
   // tax table functionality
@@ -371,16 +373,36 @@ const POAdvanceNoteDetails = () => {
       content: row.upload.content, // base64 string
     }));
 
+  const handleStatusChange = (selectedOption) => {
+    // setStatus(e.target.value);
+    setStatus(selectedOption.value);
+    // handleStatusChange(selectedOption); // Handle status change
+  };
+
+  // Step 3: Handle remark change
+  const handleRemarkChange = (e) => {
+    setRemark(e.target.value);
+  };
+
+  const handleCommentChange = (e) => {
+    setComment(e.target.value);
+  };
+
   const payload = {
 
     advance_note: {
       company_id: advanceNote?.company_id,
       project_id: advanceNote?.project_id,
       advance_number: advanceNote?.advance_number,
-      supplier_name: advanceNote?.supplier_name,
+      // supplier_name: advanceNote?.supplier_name,
       attachments,
       status_log: {
-        status, // dynamically selected status
+        status: status,
+        remarks: remark,
+        comments: comment,
+        // status, // dynamically selected status
+        // remarks, // Dynamically pass the entered remarks
+        // comments,
         // remarks, comments, admin_comment can be added here if needed
       },
     }
@@ -409,10 +431,12 @@ const POAdvanceNoteDetails = () => {
         company_id: advanceNote?.company_id,
         project_id: advanceNote?.project_id,
         advance_number: advanceNote?.advance_number,
-        supplier_name: advanceNote?.supplier_name,
+        // supplier_name: advanceNote?.supplier_name,
         attachments,
         status_log: {
-          status, // dynamically selected status
+          status: status,
+          remarks: remark,
+          comments: comment,
           // remarks, comments, admin_comment can be added here if needed
         },
       }
@@ -426,6 +450,8 @@ const POAdvanceNoteDetails = () => {
         payload
       );
       console.log("Status updated successfully:", response.data);
+      setRemark("");
+      setComment("")
       alert("Advance Note updated successfully!");
       navigate(`/po-advance-note-list?token=${token}`); // Redirect to bill-booking-list
     } catch (error) {
@@ -1498,6 +1524,8 @@ const POAdvanceNoteDetails = () => {
                         rows={3}
                         placeholder="Enter ..."
                         defaultValue={""}
+                        value={remark}
+                        onChange={handleRemarkChange}
                       />
                     </div>
                   </div>
@@ -1511,6 +1539,8 @@ const POAdvanceNoteDetails = () => {
                         rows={3}
                         placeholder="Enter ..."
                         defaultValue={""}
+                        value={comment}
+                        onChange={handleCommentChange}
                       />
                     </div>
                   </div>
@@ -1579,8 +1609,66 @@ const POAdvanceNoteDetails = () => {
                 <div className="row mt-2 w-100">
                   <div className="col-12 px-4">
                     <h5>Audit Log</h5>
+                    <div className="mx-0" >
+                      <div className="tbl-container mt-1" style={{ maxHeight: "450px" }} >
+                        <table className="w-100"  >
+                          <thead>
+                            <tr>
+                              <th>Sr.No.</th>
+                              <th>Created By</th>
+                              <th>Created At</th>
+                              <th>Status</th>
+                              <th>Remark</th>
+                              <th>Comment</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(advanceNote?.status_logs || [])
+                              .slice(0, 10)
+                              .map((log, index) => (
+                                <tr key={log.id}>
+                                  <td className="text-start">{index + 1}</td>
+                                  <td className="text-start">{""}</td>
+                                  <td className="text-start">
+                                    {log.created_at
+                                      ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric",
+                                      })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: true,
+                                      })}`
+                                      : ""}
+                                  </td>
+                                  <td className="text-start">
+                                    {log.status
+                                      ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                      : ""}
+                                  </td>
+                                  <td className="text-start">{log.remarks || ""}</td>
+                                  <td className="text-start">{log.comments || ""}</td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                        {/* Show "Show More" link if more than 10 records */}
+                        {advanceNote?.status_logs?.length > 10 && (
+                          <div className="mt-2 text-start">
+                            <span
+                              className="boq-id-link"
+                              style={{ fontWeight: "bold", cursor: "pointer" }}
+                              onClick={() => setShowAuditModal(true)}
+                            >
+                              Show More
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                     <div className="mx-0">
-                      <Table columns={auditLogColumns} data={auditLogData} />
+                      {/* <Table columns={auditLogColumns} data={auditLogData} /> */}
                     </div>
                   </div>
                 </div>

@@ -304,9 +304,9 @@ function Members() {
               </ul>
               <h1>BOQ</h1>
               <ul>
-                <li>
+                {/* <li>
                   <Link to="/create-BOQ">Create BOQ</Link>
-                </li>
+                </li> */}
                 {/* <li>
                   <Link to="/view-BOQ">View BOQ</Link>
                 </li> */}
@@ -317,7 +317,7 @@ function Members() {
                   <Link to="/boq-Edit-New">BOQ Edit</Link>
                 </li> */}
                 <li>
-                  <Link to="/boq-approval-list">BOQ Approval List</Link>
+                  <Link to="/boq-approval-list">--------------</Link>
                 </li>
 
                 <li>
@@ -562,7 +562,7 @@ function Members() {
                   <Link to="/estimation-creation">Estimation creation</Link>
                 </li>
                 <li>
-                  <Link to="/estimation-list">Estimation List Page</Link>
+                  <Link to="/estimation-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">Estimation List Page</Link>
                 </li>
                 <li>
                   <Link to="/estimation-details-project">
