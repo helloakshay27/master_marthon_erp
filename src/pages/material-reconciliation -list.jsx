@@ -9,6 +9,7 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import {
   DownloadIcon,
   FilterIcon,
+  MultiSelector,
   SearchIcon,
   SettingIcon,
   StarIcon,
@@ -50,7 +51,25 @@ const MaterialReconciliationList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const itemsPerPage = 10; // Add itemsPerPage constant
   const [activeStatusTab, setActiveStatusTab] = useState(""); // "" means all
+  const [show, setShow] = useState(false);
+  const [formData, setFormData] = useState({
+    materialType: "",
+    materialSubType: "",
+    material: "",
+    genericSpecification: "",
+    colour: "",
+    brand: "",
+    effectiveDate: "",
+    rate: "",
+    rateType: "",
+    poRate: "",
+    avgRate: "",
+    uom: "",
+  });
+  const [isFiltered, setIsFiltered] = useState(false);
 
+  const handleModalShow = () => setShow(true);
+  const handleClose = () => setShow(false);
   const options = [
     {
       label: "Select Status",
@@ -114,6 +133,7 @@ const MaterialReconciliationList = () => {
     setSearchTerm("");
     setCurrentPage(1);
     setActiveStatusTab("");
+    setIsFiltered(false); // Reset the filtered flag
 
     // Fetch unfiltered data by calling fetchData with default empty/null states
     fetchData(
@@ -289,8 +309,10 @@ const MaterialReconciliationList = () => {
 
   // Fetch data on component mount and when the page changes
   useEffect(() => {
-    fetchData(currentPage);
-  }, [currentPage]);
+    if (!isFiltered) {
+      fetchData(currentPage);
+    }
+  }, [currentPage, isFiltered]);
 
   // Handle page change
   const handlePageChange = (pageNumber) => {
@@ -313,6 +335,12 @@ const MaterialReconciliationList = () => {
     site_name: true,
     store: true,
     reconciliation_date: true,
+    // New material columns visible by default
+    materials_description: true,
+    stock_as_on: true,
+    deadstock_qty: true,
+    theft_or_missing_qty: true,
+    damage_qty: true,
     status: true,
     // edit: true,
   });
@@ -347,6 +375,20 @@ const MaterialReconciliationList = () => {
       headerName: "Reconciliation Date",
       width: 150,
     },
+    // New columns for material details
+    {
+      field: "materials_description",
+      headerName: "Material Description",
+      width: 400,
+    },
+    { field: "stock_as_on", headerName: "Stock As On", width: 120 },
+    { field: "deadstock_qty", headerName: "Deadstock Qty", width: 120 },
+    {
+      field: "theft_or_missing_qty",
+      headerName: "Theft/Missing Qty",
+      width: 140,
+    },
+    { field: "damage_qty", headerName: "Damage Qty", width: 120 },
     { field: "status", headerName: "Status", width: 200 },
 
     // {
@@ -429,22 +471,35 @@ const MaterialReconciliationList = () => {
     const isFiltered =
       selectedCompany || selectedProject || selectedSite || fromStatus;
 
-    return reconciliationData.map((item, index) => ({
-      id: item.id,
-      srNo: isFiltered
-        ? index + 1 // For filtered data, start from 1
-        : (currentPage - 1) * itemsPerPage + index + 1, // For unfiltered data, use page-based numbering
-      reconciliation_id: item.reco_number,
-      company_name: item.company_name,
-      project_name: item.project,
-      site_name: item.sub_project,
-      store: item.store,
-      reconciliation_date: (() => {
-        const [yyyy, mm, dd] = item.reco_date.split("-");
-        return `${dd}-${mm}-${yyyy.slice(2)}`;
-      })(),
-      status: item.status.charAt(0).toUpperCase() + item.status.slice(1),
-    }));
+    return reconciliationData.map((item, index) => {
+      // If the API returns a materials array, map the first material's details (or you can aggregate as needed)
+      return {
+        id: item.id,
+        srNo: isFiltered
+          ? index + 1 // For filtered data, start from 1
+          : (currentPage - 1) * itemsPerPage + index + 1, // For unfiltered data, use page-based numbering
+        reconciliation_id: item.reco_number,
+        company_name: item.company_name,
+        project_name: item.project,
+        site_name: item.sub_project,
+        store: item.store,
+        reconciliation_date: (() => {
+          const [yyyy, mm, dd] = item.reco_date.split("-");
+          return `${dd}-${mm}-${yyyy.slice(2)}`;
+        })(),
+        // New material fields
+        materials_description: item.materials_description || "-",
+        stock_as_on: item.stock_as_on !== undefined ? item.stock_as_on : "-",
+        deadstock_qty:
+          item.deadstock_qty !== undefined ? item.deadstock_qty : "-",
+        theft_or_missing_qty:
+          item.theft_or_missing_qty !== undefined
+            ? item.theft_or_missing_qty
+            : "-",
+        damage_qty: item.damage_qty !== undefined ? item.damage_qty : "-",
+        status: item.status.charAt(0).toUpperCase() + item.status.slice(1),
+      };
+    });
   };
 
   // Handle bulk status update
@@ -501,6 +556,512 @@ const MaterialReconciliationList = () => {
       status: status,
     });
   };
+
+  // // material type options
+  //   const [formData, setFormData] = useState({
+  //     materialType: "",
+  //     materialSubType: "",
+  //     material: "",
+  //     genericSpecification: "",
+  //     colour: "",
+  //     brand: "",
+  //     effectiveDate: "",
+  //     rate: "",
+  //     rateType: "",
+  //     poRate: "",
+  //     avgRate: "",
+  //     uom: "",
+  //   });
+
+  // material type options
+  const [inventoryTypes, setInventoryTypes] = useState([]); // State to hold the fetched data
+  const [selectedInventory, setSelectedInventory] = useState(null); // State to hold selected inventory type
+  const [inventorySubTypes, setInventorySubTypes] = useState([]); // State to hold the fetched inventory subtypes
+  const [selectedSubType, setSelectedSubType] = useState(null); // State to hold selected sub-type
+  const [inventoryMaterialTypes, setInventoryMaterialTypes] = useState([]); // State to hold the fetched inventory subtypes
+  const [selectedInventoryMaterialTypes, setSelectedInventoryMaterialTypes] =
+    useState(null); // State to hold selected sub-type
+  const [genericSpecifications, setGenericSpecifications] = useState([]); // State for generic specifications
+  const [selectedGenericSpec, setSelectedGenericSpec] = useState(null); // State for selected generic specification
+  const [colors, setColors] = useState([]); // State for colors
+  const [selectedColor, setSelectedColor] = useState(null); // State for selected color
+  const [brands, setBrands] = useState([]); // State for brands
+  const [selectedBrand, setSelectedBrand] = useState(null); // State for selected brand
+  const [uoms, setUoms] = useState([]); // State for UOMs
+  const [selectedUom, setSelectedUom] = useState(null); // State for selected UOM
+
+  // Define status options
+  const statusOptions = [
+    { value: "", label: "Select Status" },
+    { value: "draft", label: "Draft" },
+    { value: "submitted", label: "Submitted" },
+    { value: "approved", label: "Approved" },
+  ];
+
+  // Fetching inventory types data from API on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+
+    if (!token) {
+      console.error("No token found in URL");
+      return;
+    }
+
+    axios
+      .get(
+        `${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`
+      )
+      .then((response) => {
+        // Check if response.data is an array or has a data property
+        const inventoryData = Array.isArray(response.data)
+          ? response.data
+          : response.data.inventory_types || [];
+
+        // Map the fetched data to the format required by react-select
+        const options = inventoryData.map((inventory) => ({
+          value: inventory.id,
+          label: inventory.name,
+        }));
+        setInventoryTypes(options); // Set the inventory types to state
+      })
+      .catch((error) => {
+        console.error("Error fetching inventory types:", error);
+        setInventoryTypes([]); // Set empty array in case of error
+      });
+  }, []);
+
+  // Fetch inventory sub-types when an inventory type is selected
+  useEffect(() => {
+    if (selectedInventory) {
+      const inventoryTypeIds = selectedInventory
+        .map((item) => item.value)
+        .join(","); // Get the selected inventory type IDs as a comma-separated list
+
+      axios
+        .get(
+          `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${inventoryTypeIds}&token=${token}`
+        )
+        .then((response) => {
+          // Map the sub-types to options for the select dropdown
+          const options = response.data.map((subType) => ({
+            value: subType.id,
+            label: subType.name,
+          }));
+          setInventorySubTypes(options); // Set the fetched sub-types to state
+        })
+        .catch((error) => {
+          console.error("Error fetching inventory sub-types:", error);
+        });
+    }
+  }, [selectedInventory]); // Run this effect whenever the selectedInventory state changes
+
+  // Handler for inventory type selection change
+  const handleInventoryChange = (selectedOption) => {
+    setSelectedInventory(selectedOption);
+    setSelectedSubType(null); // Clear the selected sub-type when inventory type changes
+    setInventorySubTypes([]); // Reset the sub-types list
+    setInventoryMaterialTypes([]);
+    setSelectedInventoryMaterialTypes(null);
+  };
+
+  // Handler for inventory sub-type selection change
+  const handleSubTypeChange = (selectedOption) => {
+    setSelectedSubType(selectedOption); // Set the selected inventory sub-type
+  };
+
+  // Fetch UOMs on component mount
+  useEffect(() => {
+    axios
+      .get(`${baseURL}unit_of_measures.json?token=${token}`)
+      .then((response) => {
+        const options = response.data.map((uom) => ({
+          value: uom.id,
+          label: uom.name,
+        }));
+        setUoms(options);
+      })
+      .catch((error) => {
+        console.error("Error fetching UOMs:", error);
+      });
+  }, []);
+
+  // Fetch inventory Material when an inventory type is selected
+  useEffect(() => {
+    if (selectedInventory) {
+      const inventoryTypeIds = selectedInventory
+        .map((item) => item.value)
+        .join(","); // Get the selected inventory type IDs as a comma-separated list
+
+      axios
+        .get(
+          `${baseURL}pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[material_category_eq]=material&token=${token}`
+        )
+        .then((response) => {
+          // Map the sub-types to options for the select dropdown
+          const options = response.data.map((subType) => ({
+            value: subType.id,
+            label: subType.name,
+          }));
+          setInventoryMaterialTypes(options); // Set the fetched sub-types to state
+        })
+        .catch((error) => {
+          console.error("Error fetching inventory sub-types:", error);
+        });
+    }
+  }, [selectedInventory]); // Run this effect whenever the selectedInventory state changes
+
+  // Handler for UOM selection
+  const handleUomChange = (selectedOption) => {
+    setSelectedUom(selectedOption);
+  };
+
+  // Fetch generic specifications, colors and brands when material is selected
+  useEffect(() => {
+    if (selectedInventoryMaterialTypes) {
+      const materialIds = selectedInventoryMaterialTypes
+        .map((item) => item.value)
+        .join(",");
+
+      // Fetch generic specifications
+      axios
+        .get(
+          `${baseURL}pms/generic_infos.json?q[material_id_eq]=${materialIds}&token=${token}`
+        )
+        .then((response) => {
+          const options = response.data.map((spec) => ({
+            value: spec.id,
+            label: spec.generic_info,
+          }));
+          setGenericSpecifications(options);
+        })
+        .catch((error) => {
+          console.error("Error fetching generic specifications:", error);
+        });
+
+      // Fetch colors
+      axios
+        .get(
+          `${baseURL}pms/colours.json?q[material_id_eq]=${materialIds}&token=${token}`
+        )
+        .then((response) => {
+          const options = response.data.map((color) => ({
+            value: color.id,
+            label: color.colour,
+          }));
+          setColors(options);
+        })
+        .catch((error) => {
+          console.error("Error fetching colors:", error);
+        });
+
+      // Fetch brands
+      axios
+        .get(
+          `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${materialIds}&token=${token}`
+        )
+        .then((response) => {
+          const options = response.data.map((brand) => ({
+            value: brand.id,
+            label: brand.brand_name,
+          }));
+          setBrands(options);
+        })
+        .catch((error) => {
+          console.error("Error fetching brands:", error);
+        });
+    }
+  }, [selectedInventoryMaterialTypes]);
+
+  // Handler for inventory Material selection change
+  const handleInventoryMaterialTypeChange = (selectedOption) => {
+    setSelectedInventoryMaterialTypes(selectedOption); // Set the selected inventory sub-type
+    setSelectedGenericSpec(null); // Reset selected generic specification
+    setSelectedColor(null); // Reset selected color
+    setSelectedBrand(null); // Reset selected brand
+  };
+
+  // Handler for generic specification selection
+  const handleGenericSpecChange = (selectedOption) => {
+    setSelectedGenericSpec(selectedOption);
+  };
+
+  // Handler for color selection
+  const handleColorChange = (selectedOption) => {
+    setSelectedColor(selectedOption);
+  };
+
+  // Handler for brand selection
+  const handleBrandChange = (selectedOption) => {
+    setSelectedBrand(selectedOption);
+  };
+
+  const handleFilterGo = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        token: token, // use the token from your state or URL
+        page: 1,
+        per_page: 10,
+        // Company, Project, Site, Store
+        "q[pms_company_setup_id_in]": selectedFilterCompanies
+          .map((c) => c.value)
+          .join(","),
+        "q[pms_project_id_in]": selectedFilterProjects
+          .map((p) => p.value)
+          .join(","),
+        "q[pms_site_id_in]": selectedFilterSubProjects
+          .map((s) => s.value)
+          .join(","),
+        "q[pms_store_id_in]": selectedFilterStores
+          .map((s) => s.value)
+          .join(","),
+        // Material filters
+        "q[material_reconciliation_items_material_inventory_pms_brand_id_in]":
+          selectedBrand
+            ? Array.isArray(selectedBrand)
+              ? selectedBrand.map((b) => b.value).join(",")
+              : selectedBrand.value
+            : "",
+        "q[material_reconciliation_items_material_inventory_unit_of_measure_id_in]":
+          selectedUom
+            ? Array.isArray(selectedUom)
+              ? selectedUom.map((u) => u.value).join(",")
+              : selectedUom.value
+            : "",
+        "q[material_reconciliation_items_material_inventory_pms_inventory_id_in]":
+          selectedInventoryMaterialTypes
+            ? Array.isArray(selectedInventoryMaterialTypes)
+              ? selectedInventoryMaterialTypes.map((m) => m.value).join(",")
+              : selectedInventoryMaterialTypes.value
+            : "",
+        "q[material_reconciliation_items_material_inventory_pms_inventory_sub_type_id_in]":
+          selectedSubType
+            ? Array.isArray(selectedSubType)
+              ? selectedSubType.map((s) => s.value).join(",")
+              : selectedSubType.value
+            : "",
+        "q[material_reconciliation_items_material_inventory_pms_generic_info_id_in]":
+          selectedGenericSpec
+            ? Array.isArray(selectedGenericSpec)
+              ? selectedGenericSpec.map((g) => g.value).join(",")
+              : selectedGenericSpec.value
+            : "",
+        "q[id_in]": selectedRecoNumbers.map((r) => r.value).join(","),
+      });
+
+      const response = await axios.get(
+        `${baseURL}material_reconciliations.json?${params.toString()}`
+      );
+      console.log("response.data", response.data);
+      // Handle response data
+      const result = response.data;
+      console.log("result ---", result);
+      const transformedData = result?.mor_inventories?.map((item, index) => {
+        const materialUrl =
+          item.id && token
+            ? `/stock_register_detail/${item.id}/?token=${token}`
+            : "#";
+        const firstStore =
+          item.stores && item.stores.length > 0 ? item.stores[0] : null;
+
+        return {
+          id: item.id ?? `row-${index + 1}`,
+          store_id: firstStore ? firstStore.store_id : null,
+          srNo: index + 1,
+          material: item.category || "-",
+          materialUrl: materialUrl,
+          material_name: item.material_name || "-",
+          lastReceived: item.last_received_on || "-",
+          total_received:
+            item.total_received !== null && item.total_received !== undefined
+              ? item.total_received
+              : "-",
+          total_issued:
+            item.total_issued !== null && item.total_issued !== undefined
+              ? item.total_issued
+              : "-",
+          deadstockQty:
+            item.deadstock_qty !== null && item.deadstock_qty !== undefined
+              ? item.deadstock_qty
+              : "-",
+          stock_as_on:
+            item.stock_as_on !== null && item.stock_as_on !== undefined
+              ? item.stock_as_on
+              : "-",
+          stockStatus: item.stock_details?.[0]?.status || "-",
+          theftMissing:
+            item.missing_qty !== undefined && item.missing_qty !== null
+              ? item.missing_qty
+              : "-",
+          uom_name: item.uom || "-",
+          mor: item.stock_details?.map((stock) => stock.mor).join(", ") || "-",
+          grn_number:
+            item.stock_details?.map((stock) => stock.grn_number).join(", ") ||
+            "-",
+          stock_details:
+            item?.stock_details?.map((stock) => ({
+              stockId: stock.id,
+              createdAt: stock.created_at || "-",
+              mor: stock.mor || "-",
+              resourceNumber: stock.resource_number || "-",
+              receivedQty:
+                stock.received_qty !== null && stock.receivedQty !== undefined
+                  ? stock.receivedQty
+                  : "-",
+              issuedQty:
+                stock.issued_qty !== null && stock.issued_qty !== undefined
+                  ? stock.issued_qty
+                  : "-",
+              returnedQty:
+                stock.returned_qty !== null && stock.returned_qty !== undefined
+                  ? stock.returned_qty
+                  : "-",
+              balancedQty:
+                stock.balanced_qty !== null && stock.balanced_qty !== undefined
+                  ? stock.balanced_qty
+                  : "-",
+            })) || [],
+        };
+      });
+      setData(transformedData);
+      setReconciliationData(transformedData); // Set filtered data to reconciliationData
+      setTotalPages(response.data?.pagination?.total_pages || 1);
+      setTotalEntries(response.data?.pagination?.total_count || 0);
+      setShow(false); // Close modal after filter
+
+      // Set the filtered data to the table
+      if (response.data && response.data.data) {
+        setReconciliationData(response.data.data);
+        setData(response.data);
+
+        // Safely access meta data with fallback values
+        const totalPages = response.data.meta?.total_pages || 1;
+        const totalCount = response.data.meta?.total_count || 0;
+
+        setTotalPages(totalPages);
+        setTotalEntries(totalCount);
+      } else {
+        // Handle empty response
+        setReconciliationData([]);
+        setTotalPages(1);
+        setTotalEntries(0);
+      }
+      setIsFiltered(true); // Set filtered flag to true after successful filter
+    } catch (error) {
+      alert("Failed to fetch filtered data");
+      console.error("Filter API error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handler to reset all filter modal dropdowns and show unfiltered data
+  const handleFilterReset = () => {
+    setSelectedFilterCompanies([]);
+    setSelectedFilterProjects([]);
+    setSelectedFilterSubProjects([]);
+    setSelectedFilterStores([]);
+    setSelectedInventory(null);
+    setSelectedSubType(null);
+    setSelectedInventoryMaterialTypes(null);
+    setSelectedGenericSpec(null);
+    setSelectedColor(null);
+    setSelectedBrand(null);
+    setSelectedUom(null);
+    setSelectedIds([]);
+    setIsFiltered(false);
+    setShow(false); // Close the filter modal
+    setCurrentPage(1);
+    fetchData(1); // Fetch unfiltered data
+    setSelectedRecoNumbers([]);
+  };
+
+  const [selectedFilterCompanies, setSelectedFilterCompanies] = useState([]);
+  const [selectedFilterProjects, setSelectedFilterProjects] = useState([]);
+  const [selectedFilterSubProjects, setSelectedFilterSubProjects] = useState(
+    []
+  );
+  const [selectedFilterStores, setSelectedFilterStores] = useState([]);
+  const [filterProjectOptions, setFilterProjectOptions] = useState([]);
+  const [filterSubProjectOptions, setFilterSubProjectOptions] = useState([]);
+  const [filterStoreOptions, setFilterStoreOptions] = useState([]);
+
+  // When companies are selected, update project options
+  useEffect(() => {
+    if (selectedFilterCompanies.length > 0) {
+      const selectedCompanyIds = selectedFilterCompanies.map((c) => c.value);
+      const projects = companies
+        .filter((company) => selectedCompanyIds.includes(company.id))
+        .flatMap((company) => company.projects || [])
+        .map((prj) => ({ value: prj.id, label: prj.name }));
+      setFilterProjectOptions(projects);
+    } else {
+      setFilterProjectOptions([]);
+    }
+    setSelectedFilterProjects([]);
+    setSelectedFilterSubProjects([]);
+    setSelectedFilterStores([]);
+  }, [selectedFilterCompanies, companies]);
+
+  // When projects are selected, update sub-project options
+  useEffect(() => {
+    if (selectedFilterProjects.length > 0) {
+      const selectedProjectIds = selectedFilterProjects.map((p) => p.value);
+      const subProjects = companies
+        .flatMap((company) => company.projects || [])
+        .filter((prj) => selectedProjectIds.includes(prj.id))
+        .flatMap((prj) => prj.pms_sites || [])
+        .map((site) => ({ value: site.id, label: site.name }));
+      setFilterSubProjectOptions(subProjects);
+    } else {
+      setFilterSubProjectOptions([]);
+    }
+    setSelectedFilterSubProjects([]);
+    setSelectedFilterStores([]);
+  }, [selectedFilterProjects, companies]);
+
+  // When sub-projects are selected, update store options
+  useEffect(() => {
+    if (selectedFilterSubProjects.length > 0) {
+      // You may need to fetch stores from API if not present in sub-project data
+      // For now, assuming stores are in sub-project object as .stores
+      const selectedSubProjectIds = selectedFilterSubProjects.map(
+        (s) => s.value
+      );
+      const stores = companies
+        .flatMap((company) => company.projects || [])
+        .flatMap((prj) => prj.pms_sites || [])
+        .filter((site) => selectedSubProjectIds.includes(site.id))
+        .flatMap((site) => site.stores || [])
+        .map((store) => ({ value: store.id, label: store.name }));
+      setFilterStoreOptions(stores);
+    } else {
+      setFilterStoreOptions([]);
+    }
+    setSelectedFilterStores([]);
+  }, [selectedFilterSubProjects, companies]);
+
+  const [recoNumberOptions, setRecoNumberOptions] = useState([]);
+  const [selectedRecoNumbers, setSelectedRecoNumbers] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get(
+        "https://marathon.lockated.com//material_reconciliations/material_reco_numbers.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+      )
+      .then((response) => {
+        // Map to MultiSelector format
+        const options = (response.data || []).map((item) => ({
+          value: item.id,
+          label: item.reco_number,
+        }));
+        setRecoNumberOptions(options);
+      })
+      .catch((error) => {
+        setRecoNumberOptions([]);
+      });
+  }, []);
 
   return (
     <>
@@ -719,11 +1280,6 @@ const MaterialReconciliationList = () => {
                         <button
                           type="submit"
                           className="btn btn-md btn-default"
-                          onClick={() => {
-                            setSearchTerm("");
-                            setCurrentPage(1);
-                            fetchData(1, undefined, "");
-                          }}
                         >
                           <svg
                             width={16}
@@ -751,6 +1307,25 @@ const MaterialReconciliationList = () => {
                 <div className="col-md-6">
                   <div className="d-flex justify-content-end align-items-center gap-3">
                     {/* Column Visibility Setting Icon */}
+
+                    {/* <div className="col-md-3"> */}
+                    <button className="btn btn-md" onClick={handleModalShow}>
+                      <svg
+                        width={28}
+                        height={28}
+                        viewBox="0 0 32 32"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M6.66604 5.64722C6.39997 5.64722 6.15555 5.7938 6.03024 6.02851C5.90494 6.26322 5.91914 6.54788 6.06718 6.76895L13.7378 18.2238V29.0346C13.7378 29.2945 13.8778 29.5343 14.1041 29.6622C14.3305 29.79 14.6081 29.786 14.8307 29.6518L17.9136 27.7927C18.13 27.6622 18.2622 27.4281 18.2622 27.1755V18.225L25.9316 6.76888C26.0796 6.5478 26.0938 6.26316 25.9685 6.02847C25.8432 5.79378 25.5987 5.64722 25.3327 5.64722H6.66604ZM15.0574 17.6037L8.01605 7.08866H23.9829L16.9426 17.6051C16.8631 17.7237 16.8207 17.8633 16.8207 18.006V26.7685L15.1792 27.7584V18.0048C15.1792 17.862 15.1368 17.7224 15.0574 17.6037Z"
+                          fill="#8B0203"
+                        />
+                      </svg>
+                    </button>
+                    {/* </div> */}
                     <button
                       className="btn btn-md btn-default"
                       onClick={handleSettingModalShow}
@@ -984,6 +1559,334 @@ const MaterialReconciliationList = () => {
             Hide All
           </button>
         </Modal.Footer>
+      </Modal>
+
+      <Modal
+        show={show}
+        onHide={handleClose}
+        dialogClassName="modal-right"
+        className="setting-modal mb-5"
+        backdrop={true}
+      >
+        <Modal.Header>
+          <div className="container-fluid p-0">
+            <div className="border-0 d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <button
+                  type="button"
+                  className="btn"
+                  aria-label="Close"
+                  onClick={handleClose}
+                >
+                  <svg
+                    width="10"
+                    height="16"
+                    viewBox="0 0 10 18"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M9 1L1 9L9 17"
+                      stroke="#8B0203"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                <h3 className="modal-title m-0" style={{ fontWeight: 500 }}>
+                  Filter
+                </h3>
+              </div>
+              <span
+                className="resetCSS"
+                style={{ fontSize: "14px", textDecoration: "underline" }}
+                to="#"
+                onClick={handleFilterReset}
+              >
+                Reset
+              </span>
+            </div>
+          </div>
+        </Modal.Header>
+        <div className="modal-body" style={{ overflowY: scroll }}>
+          <div className="row justify-content-between align-items-center mt-2">
+            <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">Company</label>
+              <MultiSelector
+                options={companyOptions}
+                value={selectedFilterCompanies}
+                onChange={setSelectedFilterCompanies}
+                placeholder="Select Company"
+                isMulti
+              />
+            </div>
+            <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">Project</label>
+              <MultiSelector
+                options={filterProjectOptions}
+                value={selectedFilterProjects}
+                onChange={setSelectedFilterProjects}
+                placeholder="Select Project"
+                isMulti
+              />
+            </div>
+            <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">Sub-Project</label>
+              <MultiSelector
+                options={filterSubProjectOptions}
+                value={selectedFilterSubProjects}
+                onChange={setSelectedFilterSubProjects}
+                placeholder="Select Sub-Project"
+                isMulti
+              />
+            </div>
+            {/* <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">Store</label>
+              <MultiSelector
+                options={filterStoreOptions}
+                value={selectedFilterStores}
+                onChange={setSelectedFilterStores}
+                placeholder="Select Store"
+                isMulti
+              />
+            </div> */}
+
+            {/* <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">Material Type</label>
+
+              <MultiSelector
+                options={inventoryTypes2} // Provide the fetched options to the select component
+                value={inventoryTypes2.find(
+                  (option) => option.value === formData.materialType
+                )} // Bind value to state
+                placeholder={`Select Material Type`} // Dynamic placeholder
+                onChange={(selectedOption) =>
+                  handleSelectorChange("materialType", selectedOption)
+                }
+              />
+            </div>
+
+            <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">
+                Material Sub Type
+              </label>
+              <MultiSelector
+                options={inventorySubTypes2}
+                value={inventorySubTypes2.find(
+                  (option) => option.value === formData.materialSubType
+                )} // Bind value to state
+                placeholder={`Select Material Sub Type`} // Dynamic placeholder
+                onChange={(selectedOption) =>
+                  handleSelectorChange("materialSubType", selectedOption)
+                }
+              />
+            </div>
+
+            <div className="col-md-6 mt-2">
+              <div className="form-group">
+                <label className="po-fontBold">Material</label>
+                <MultiSelector
+                  options={inventoryMaterialTypes2}
+                  value={inventoryMaterialTypes2.find(
+                    (option) => option.value === formData.material
+                  )} // Bind value to state
+                  placeholder={`Select Material`} // Dynamic placeholder
+                  onChange={(selectedOption) =>
+                    handleSelectorChange("material", selectedOption)
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">Generic Info</label>
+              <MultiSelector
+                options={
+                  Array.isArray(genericSpecifications)
+                    ? genericSpecifications
+                    : []
+                }
+                value={genericSpecifications.find(
+                  (option) => option.value === formData.genericSpecification
+                )} // Bind value to state
+                placeholder={`Select Specification`} // Dynamic placeholder
+                onChange={(selectedOption) =>
+                  handleSelectorChange("genericSpecification", selectedOption)
+                }
+              />
+            </div>
+
+            <div className="col-md-6 mt-2">
+              <div className="form-group">
+                <label className="po-fontBold">Colour</label>
+                <MultiSelector
+                  options={colors || []}
+                  value={colors.find(
+                    (option) => option.value === formData.colour
+                  )} // Bind value to stat
+                  placeholder={`Select Colour`} // Dynamic placeholder
+                  onChange={(selectedOption) =>
+                    handleSelectorChange("colour", selectedOption)
+                  }
+                />
+              </div>
+            </div>
+            <div className="col-md-6 mt-2">
+              <div className="form-group">
+                <label className="po-fontBold">Brand</label>
+                <MultiSelector
+                  options={brands || []}
+                  value={brands.find(
+                    (option) => option.value === formData.brand
+                  )} // Bind value to state
+                  placeholder={`Select Brand`} // Dynamic placeholder
+                  onChange={(selectedOption) =>
+                    handleSelectorChange("brand", selectedOption)
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="col-6 mt-2 mb-5">
+              <label className="block text-sm font-medium">
+                Unit of Measures
+              </label>
+              <MultiSelector
+                options={uoms}
+                value={uoms.find(
+                  (option) => option.value === formData.uom
+                )} // Bind value to state
+                placeholder={`Select UOM`} // Dynamic placeholder
+                onChange={(selectedOption) =>
+                  handleSelectorChange("uom", selectedOption)
+                }
+              />
+            </div> */}
+
+            <div className="col-md-6">
+              <div className="form-group">
+                <label>Material Type</label>
+                <MultiSelector
+                  options={inventoryTypes}
+                  onChange={handleInventoryChange}
+                  value={selectedInventory}
+                  placeholder="Select Material Type"
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-group mt-2">
+                <label>Material Sub-Type</label>
+                <MultiSelector
+                  options={inventorySubTypes}
+                  onChange={handleSubTypeChange}
+                  value={selectedSubType}
+                  placeholder="Select Material Sub-Type"
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-group mt-2">
+                <label>Material</label>
+                <MultiSelector
+                  options={inventoryMaterialTypes}
+                  onChange={handleInventoryMaterialTypeChange}
+                  value={selectedInventoryMaterialTypes}
+                  placeholder="Select Material"
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-group mt-2">
+                <label>Generic Specification</label>
+                <SingleSelector
+                  options={genericSpecifications}
+                  onChange={handleGenericSpecChange}
+                  value={selectedGenericSpec}
+                  placeholder="Select Gen Specification"
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-group mt-2">
+                <label>Colour</label>
+                <SingleSelector
+                  options={colors}
+                  onChange={handleColorChange}
+                  value={selectedColor}
+                  placeholder="Select Colour"
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-group mt-2">
+                <label>Brand</label>
+                <SingleSelector
+                  options={brands}
+                  onChange={handleBrandChange}
+                  value={selectedBrand}
+                  placeholder="Select Brand"
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-group mt-2">
+                <label>UOM</label>
+                <SingleSelector
+                  options={uoms}
+                  onChange={handleUomChange}
+                  value={selectedUom}
+                  placeholder="Select UOM"
+                />
+              </div>
+            </div>
+            <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">
+                Reconciliation Number
+              </label>
+              <MultiSelector
+                options={recoNumberOptions}
+                value={selectedRecoNumbers}
+                onChange={setSelectedRecoNumbers}
+                placeholder="Select Reconciliation Number"
+                isMulti
+              />
+            </div>
+
+            {/* <div className="col-6 mt-2">
+                    <label className="block text-sm font-medium">MOR Numbers</label>
+                    <MultiSelector
+                      options={morOptions}
+                      isMulti
+                      value={getSelectedOptions("morNumbers", morOptions)}
+                      onChange={(selected) => handleChange("morNumbers", selected)}
+                      placeholder="Select MOR Numbers"
+                    />
+                  </div> */}
+
+            {/* <div className="col-6 mt-2">
+                    <label className="block text-sm font-medium">GRN Numbers</label>
+                    <MultiSelector
+                      options={grnOptions}
+                      isMulti
+                      value={getSelectedOptions("grnNumbers", grnOptions)}
+                      onChange={(selected) => handleChange("grnNumbers", selected)}
+                      placeholder="Select GRN Numbers"
+                    />
+                  </div> */}
+          </div>
+        </div>
+
+        <div className="modal-footer justify-content-center">
+          <button
+            className="btn"
+            style={{ backgroundColor: "#8b0203", color: "#fff" }}
+            onClick={handleFilterGo}
+          >
+            Go
+          </button>
+        </div>
       </Modal>
     </>
   );
