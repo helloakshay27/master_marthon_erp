@@ -1392,7 +1392,7 @@ const GatePassEdit = () => {
             gate_pass_qty: gpMaterial.gate_pass_qty || "",
             stock_as_on: m.stock_as_on,
             material_inventory_id: m.id,
-            gp_batches: gpMaterial.gp_batches || [], // <-- FIXED!
+            gp_batches: gpMaterial.gp_batches || [],
             available_qty: null,
           };
         });
