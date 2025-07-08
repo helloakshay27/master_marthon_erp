@@ -168,14 +168,15 @@ const ErpStockRegister13B = () => {
         // const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
 
         const response = await fetch(
-          `${baseURL}/stock_details.json?token=${token}&search=${encodeURIComponent(
-            searchTerm
-          )}&q[generic_info_id]=${selectedIds.genericInfos
-          }&q[material_type_id]=${selectedIds.materialTypes
-          }&q[material_sub_type_id]=${selectedIds.materialSubTypes
-          }&q[brand_id]=&q[uom_id]=${selectedIds.unitOfMeasures
-          }&q[mor_number]=${selectedIds.morNumbers}&q[grn_number]=${selectedIds.grnNumbers
-          }&q[store_id_eq]=${selectedStore?.value || ""}&page=${page}&per_page=${pageSize}`
+          `${baseURL}/stock_details.json?token=${token}`
+          // &search=${encodeURIComponent(
+          //   searchTerm
+          // )}&q[generic_info_id]=${selectedIds.genericInfos
+          // }&q[material_type_id]=${selectedIds.materialTypes
+          // }&q[material_sub_type_id]=${selectedIds.materialSubTypes
+          // }&q[brand_id]=&q[uom_id]=${selectedIds.unitOfMeasures
+          // }&q[mor_number]=${selectedIds.morNumbers}&q[grn_number]=${selectedIds.grnNumbers
+          // }&q[store_id_eq]=${selectedStore?.value || ""}&page=${page}&per_page=${pageSize}`
         );
 
         if (!response.ok) {
@@ -192,36 +193,6 @@ const ErpStockRegister13B = () => {
           const firstStore = item.stores && item.stores.length > 0 ? item.stores[0] : null;
 
           return {
-            // id: item.id ?? `row-${index + 1}`,
-            // srNo: index + 1,
-            // material: item.category || "-",
-            // materialUrl: materialUrl,
-            // material_name: item.material_name || "-",
-            // lastReceived: item.last_received_on || "-",
-            // total_received: item.total_received || "-",
-            // total_issued: item.total_issued || "-",
-            // deadstockQty: item.deadstock_qty || "-", // Corrected key
-            // stock_as_on: item.stock_as_on || "-",
-            // stockStatus: item.stock_details?.[0]?.status || "-",
-            // theftMissing:
-            //   item.missing_qty !== undefined ? item.missing_qty : "-", // Corrected key
-            // uom_name: item.uom || "-",
-            // mor:
-            //   item.stock_details?.map((stock) => stock.mor).join(", ") || "-",
-            // grn_number:
-            //   item.stock_details?.map((stock) => stock.grn_number).join(", ") ||
-            //   "-",
-            // stock_details:
-            //   item?.stock_details?.map((stock) => ({
-            //     stockId: stock.id,
-            //     createdAt: stock.created_at || "-",
-            //     mor: stock.mor || "-",
-            //     resourceNumber: stock.resource_number || "-",
-            //     receivedQty: stock.received_qty || "-",
-            //     issuedQty: stock.issued_qty || "-",
-            //     returnedQty: stock.returned_qty || "-",
-            //     balancedQty: stock.balanced_qty || "-", // Added balancedQty
-            //   })) || [],
 
 
             id: item.id ?? `row-${index + 1}`,
@@ -255,7 +226,7 @@ const ErpStockRegister13B = () => {
         });
 
         setData(transformedData);
-        setFilteredData(transformedData);
+        // setFilteredData(transformedData);
         setLoading(false);
         setPagination(result.pagination);
       } catch (error) {
@@ -405,7 +376,7 @@ const ErpStockRegister13B = () => {
   const [genericInfos, setGenericInfos] = useState([]);
   const [materialSubTypes, setMaterialSubTypes] = useState([]);
   const [materialTypes, setMaterialTypes] = useState([]);
-  const [unitOfMeasures, setUnitOfMeasures] = useState([]);
+  // const [unitOfMeasures, setUnitOfMeasures] = useState([]);
 
   const fetchData = async (url, setState) => {
     try {
@@ -471,17 +442,6 @@ const ErpStockRegister13B = () => {
     setPage(pageNumber);
   };
 
-  const handleFilterReset = () => {
-  setSelectedIds({
-    genericInfos: [],
-    materialSubTypes: [],
-    materialTypes: [],
-    unitOfMeasures: [],
-    morNumbers: [],
-    grnNumbers: [],
-  });
-  // setShow(false)
-};
 
   const handleGoClick = async (e) => {
     console.log("handle go ....")
@@ -539,7 +499,7 @@ const ErpStockRegister13B = () => {
     total_received: true,
     total_issued: true,
     stock_as_on: true,
-    status: true,
+    // status: true,
     deadstockQty: true,
     theftMissing: true,
     uom_name: true,
@@ -559,7 +519,7 @@ const ErpStockRegister13B = () => {
     {
       field: "material_name",
       headerName: "Material Name",
-      width: 250,
+      width: 300,
       sortable: true,
       renderCell: (params) =>
         params.value && params.row.store_id ? (
@@ -622,12 +582,12 @@ const ErpStockRegister13B = () => {
       width: 120,
       sortable: true,
     },
-    {
-      field: "status",
-      headerName: "Stock Status",
-      width: 120,
-      sortable: true,
-    },
+    // {
+    //   field: "status",
+    //   headerName: "Stock Status",
+    //   width: 120,
+    //   sortable: true,
+    // },
     {
       field: "deadstockQty",
       headerName: "Deadstock Qty",
@@ -650,6 +610,453 @@ const ErpStockRegister13B = () => {
       sortable: true,
     },
   ];
+
+
+  // material type options 
+  const [formData, setFormData] = useState({
+    materialType: "",
+    materialSubType: "",
+    material: "",
+    genericSpecification: "",
+    colour: "",
+    brand: "",
+    effectiveDate: "",
+    rate: "",
+    rateType: "",
+    poRate: "",
+    avgRate: "",
+    uom: "",
+  });
+
+  const [inventoryTypes2, setInventoryTypes2] = useState([]);  // State to hold the fetched data
+  const [selectedInventory2, setSelectedInventory2] = useState(null);  // State to hold selected inventory type
+  const [inventorySubTypes2, setInventorySubTypes2] = useState([]); // State to hold the fetched inventory subtypes
+  const [selectedSubType2, setSelectedSubType2] = useState(null); // State to hold selected sub-type
+  const [inventoryMaterialTypes2, setInventoryMaterialTypes2] = useState([]); // State to hold the fetched inventory subtypes
+  const [selectedInventoryMaterialTypes2, setSelectedInventoryMaterialTypes2] = useState(null); // State to hold selected sub-type
+  // Fetching inventory types data from API on component mount
+  useEffect(() => {
+    axios.get(`${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`)
+      .then(response => {
+        // Map the fetched data to the format required by react-select
+        const options = response.data.map(inventory => ({
+          value: inventory.id,
+          label: inventory.name
+        }));
+
+        setInventoryTypes2(options)
+      })
+      .catch(error => {
+        console.error('Error fetching inventory types:', error);
+      });
+  }, []);  // Empty dependency array to run only once on mount
+
+
+  // Fetch inventory sub-types when an inventory type is selected
+  useEffect(() => {
+    if (selectedInventory2) {
+      //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
+
+      axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${selectedInventory2?.value}&token=${token}`)
+        .then(response => {
+          // Map the sub-types to options for the select dropdown
+          const options = response.data.map(subType => ({
+            value: subType.id,
+            label: subType.name
+          }));
+
+          setInventorySubTypes2(options)
+        })
+        .catch(error => {
+          console.error('Error fetching inventory sub-types:', error);
+        });
+    }
+  }, [selectedInventory2]); // Run this effect whenever the selectedInventory state changes
+
+  // Fetch inventory Material when an inventory type is selected
+  useEffect(() => {
+    if (selectedInventory2) {
+      //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
+
+      axios.get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${selectedInventory2?.value}&q[material_category_eq]=material&token=${token}`)
+        .then(response => {
+          // Map the sub-types to options for the select dropdown
+          const options = response.data.map(subType => ({
+            value: subType.id,
+            label: subType.name
+          }));
+
+          setInventoryMaterialTypes2(options)
+        })
+        .catch(error => {
+          console.error('Error fetching inventory sub-types:', error);
+        });
+    }
+  }, [selectedInventory2]); // Run this effect whenever the selectedInventory state changes
+  // for generic specification
+  const [genericSpecifications, setGenericSpecifications] = useState([]); // State to hold the fetched generic specifications
+  const [selectedGenericSpecifications, setSelectedGenericSpecifications] = useState(null); // Holds the selected generic specifications for each material
+
+  // Fetch generic specifications for materials
+  useEffect(() => {
+
+    if (selectedInventoryMaterialTypes2) {
+      axios
+        .get(
+          `${baseURL}pms/generic_infos.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=${token}`
+        )
+        .then((response) => {
+          const options = response.data.map((specification) => ({
+            value: specification.id,
+            label: specification.generic_info,
+          }));
+
+          setGenericSpecifications(options);
+        })
+        .catch((error) => {
+          console.error("Error fetching generic specifications:", error);
+        });
+    }
+
+  }, [selectedInventoryMaterialTypes2, baseURL]); // Runs when materials or baseURL changes
+
+  // color
+  const [colors, setColors] = useState([]); // State to hold the fetched colors
+  const [selectedColors, setSelectedColors] = useState(null); // Holds the selected colors for each material
+  useEffect(() => {
+    if (selectedInventoryMaterialTypes2) {
+      axios
+        .get(
+          `${baseURL}pms/colours.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=${token}`
+        )
+        .then((response) => {
+          const options = response.data.map((color) => ({
+            value: color.id,
+            label: color.colour,
+          }));
+          setColors(options);
+        })
+        .catch((error) => {
+          console.error("Error fetching colors:", error);
+        });
+    }
+  }, [selectedInventoryMaterialTypes2, baseURL]); // Runs when materials or baseURL changes
+
+  //for brand in material table
+  const [inventoryBrands, setInventoryBrands] = useState([]); // State to hold the fetched inventory brands
+  const [selectedInventoryBrands, setSelectedInventoryBrands] = useState(null); // Holds the selected brands for each material
+  useEffect(() => {
+    if (selectedInventoryMaterialTypes2) {
+      axios
+        .get(
+          `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=${token}`
+        )
+        .then((response) => {
+          const options = response.data.map((brand) => ({
+            value: brand.id,
+            label: brand.brand_name,
+          }));
+          setInventoryBrands(options);
+        })
+        .catch((error) => {
+          console.error(
+            "Error fetching inventory brands for material:",
+            error
+          );
+        });
+    }
+  }, [selectedInventoryMaterialTypes2, baseURL]); // Runs when materials or baseURL changes
+  const handleSelectorChange = (field, selectedOption) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [field]: selectedOption?.value || "",
+      [`${field}Label`]: selectedOption?.label || "",
+    }));
+
+    if (field === "materialType") {
+      // Logic for materialType selection
+      setSelectedInventory2(selectedOption); // Set the selected inventory type
+      setSelectedSubType2(null); // Clear the selected sub-type when inventory type changes
+      setInventorySubTypes2([]); // Reset the sub-types list
+      setInventoryMaterialTypes2([]); // Reset the material types list
+      setSelectedInventoryMaterialTypes2(null); // Clear selected material type
+      setGenericSpecifications([])
+      setSelectedGenericSpecifications(null)
+      setColors([])
+      setSelectedColors(null)
+      setInventoryBrands([])
+      setSelectedInventoryBrands(null)
+    }
+
+    if (field === "materialSubType") {
+      // Logic for materialSubType selection
+      setSelectedSubType2(selectedOption); // Set the selected inventory sub-type
+    }
+    if (field === "material") {
+      // Logic for materialSubType selection
+      setSelectedInventoryMaterialTypes2(selectedOption); // Set the selected inventory sub-type
+
+    }
+    if (field === "uom") {
+      // Logic for materialSubType selection
+      setSelectedUnit(selectedOption); // Set the selected inventory sub-type
+    }
+    if (field === "genericSpecification") {
+      // Logic for materialSubType selection
+      setSelectedGenericSpecifications(selectedOption); // Set the selected inventory sub-type
+    }
+    if (field === "colour") {
+      // Logic for materialSubType selection
+      setSelectedColors(selectedOption); // Set the selected inventory sub-type
+    }
+    if (field === "brand") {
+      // Logic for materialSubType selection
+      setSelectedInventoryBrands(selectedOption); // Set the selected inventory sub-type
+    }
+  };
+
+  // umo api
+
+  const [unitOfMeasures, setUnitOfMeasures] = useState([]);
+  const [selectedUnit, setSelectedUnit] = useState(null);
+  // Fetching the unit of measures data on component mount
+  useEffect(() => {
+    axios
+      .get(
+        `${baseURL}unit_of_measures.json?token=${token}`
+      )
+      .then((response) => {
+        // Mapping the response to the format required by react-select
+        const options = response.data.map((unit) => ({
+          value: unit.id,
+          label: unit.name,
+        }));
+        setUnitOfMeasures(options); // Save the formatted options to state
+      })
+      .catch((error) => {
+        console.error("Error fetching unit of measures:", error);
+      });
+  }, []);
+
+
+  // Add this function inside your component
+  const handleFilterGo = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        token: "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+        search: "",
+        "q[material_type_id_eq]": formData.materialType || "",
+        "q[material_sub_type_id_eq]": formData.materialSubType || "",
+        "q[material_id_eq]": formData.material || "",
+        "q[generic_info_id_eq]": formData.genericSpecification || "",
+        "q[unit_of_measure_id]": formData.uom || "",
+        "q[status_eq]": "", // Add status if you have it in your form
+        "q[brand_id_eq]": formData.brand || "",
+        "q[colour_id_eq]": formData.colour || "",
+        page: 1,
+        per_page: 10,
+      });
+
+      const response = await axios.get(`https://marathon.lockated.com/stock_details.json?${params.toString()}`);
+      console.log("response.data", response.data)
+      // Handle response data
+      const result = response.data;
+      console.log("result ---", result);
+      const transformedData = result?.mor_inventories?.map((item, index) => {
+        const materialUrl =
+          item.id && token
+            ? `/stock_register_detail/${item.id}/?token=${token}`
+            : "#";
+        const firstStore = item.stores && item.stores.length > 0 ? item.stores[0] : null;
+
+        return {
+
+
+          id: item.id ?? `row-${index + 1}`,
+          store_id: firstStore ? firstStore.store_id : null,
+          srNo: index + 1,
+          material: item.category || "-",
+          materialUrl: materialUrl,
+          material_name: item.material_name || "-",
+          lastReceived: item.last_received_on || "-",
+          total_received: item.total_received !== null && item.total_received !== undefined ? item.total_received : "-",
+          total_issued: item.total_issued !== null && item.total_issued !== undefined ? item.total_issued : "-",
+          deadstockQty: item.deadstock_qty !== null && item.deadstock_qty !== undefined ? item.deadstock_qty : "-",
+          stock_as_on: item.stock_as_on !== null && item.stock_as_on !== undefined ? item.stock_as_on : "-",
+          stockStatus: item.stock_details?.[0]?.status || "-",
+          theftMissing: item.missing_qty !== undefined && item.missing_qty !== null ? item.missing_qty : "-",
+          uom_name: item.uom || "-",
+          mor: item.stock_details?.map((stock) => stock.mor).join(", ") || "-",
+          grn_number: item.stock_details?.map((stock) => stock.grn_number).join(", ") || "-",
+          stock_details: item?.stock_details?.map((stock) => ({
+            stockId: stock.id,
+            createdAt: stock.created_at || "-",
+            mor: stock.mor || "-",
+            resourceNumber: stock.resource_number || "-",
+            receivedQty: stock.received_qty !== null && stock.receivedQty !== undefined ? stock.receivedQty : "-",
+            issuedQty: stock.issued_qty !== null && stock.issued_qty !== undefined ? stock.issued_qty : "-",
+            returnedQty: stock.returned_qty !== null && stock.returned_qty !== undefined ? stock.returned_qty : "-",
+            balancedQty: stock.balanced_qty !== null && stock.balanced_qty !== undefined ? stock.balanced_qty : "-",
+          })) || [],
+
+        };
+      });
+      setData(transformedData)
+      setFilteredData(transformedData);
+      setPagination(response.data?.pagination || {});
+      setShow(false); // Close modal after filter
+    } catch (error) {
+      toast.error("Failed to fetch filtered data");
+      console.error("Filter API error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+//   const handleFilterReset =async () => {
+//     // setSelectedIds({
+//     //   genericInfos: [],
+//     //   materialSubTypes: [],
+//     //   materialTypes: [],
+//     //   unitOfMeasures: [],
+//     //   morNumbers: [],
+//     //   grnNumbers: [],
+//     // });
+
+//     setSelectedInventory2(null)
+// setInventoryTypes2([])
+//     setSelectedSubType2(null); // Clear the selected sub-type when inventory type changes
+//     setInventorySubTypes2([]); // Reset the sub-types list
+//     setInventoryMaterialTypes2([]); // Reset the material types list
+//     setSelectedInventoryMaterialTypes2(null); // Clear selected material type
+//     setGenericSpecifications([])
+//     setSelectedGenericSpecifications(null)
+//     setColors([])
+//     setSelectedColors(null)
+//     setInventoryBrands([])
+//     setSelectedInventoryBrands(null)
+//     setSelectedUnit(null)
+//     setUnitOfMeasures([])
+//         // setShow(false)
+
+
+
+//          setLoading(true);
+//     try {
+//       const params = new URLSearchParams({
+//         token: "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+//         search: "",
+//         "q[material_type_id_eq]": formData.materialType || "",
+//         "q[material_sub_type_id_eq]": formData.materialSubType || "",
+//         "q[material_id_eq]": formData.material || "",
+//         "q[generic_info_id_eq]": formData.genericSpecification || "",
+//         "q[unit_of_measure_id]": formData.uom || "",
+//         "q[status_eq]": "", // Add status if you have it in your form
+//         "q[brand_id_eq]": formData.brand || "",
+//         "q[colour_id_eq]": formData.colour || "",
+//         page: 1,
+//         per_page: 10,
+//       });
+
+//       const response = await axios.get(`https://marathon.lockated.com/stock_details.json?${params.toString()}`);
+//       console.log("response.data", response.data)
+//       // Handle response data
+//       const result = response.data;
+//       console.log("result ---", result);
+//       const transformedData = result?.mor_inventories?.map((item, index) => {
+//         const materialUrl =
+//           item.id && token
+//             ? `/stock_register_detail/${item.id}/?token=${token}`
+//             : "#";
+//         const firstStore = item.stores && item.stores.length > 0 ? item.stores[0] : null;
+
+//         return {
+
+
+//           id: item.id ?? `row-${index + 1}`,
+//           store_id: firstStore ? firstStore.store_id : null,
+//           srNo: index + 1,
+//           material: item.category || "-",
+//           materialUrl: materialUrl,
+//           material_name: item.material_name || "-",
+//           lastReceived: item.last_received_on || "-",
+//           total_received: item.total_received !== null && item.total_received !== undefined ? item.total_received : "-",
+//           total_issued: item.total_issued !== null && item.total_issued !== undefined ? item.total_issued : "-",
+//           deadstockQty: item.deadstock_qty !== null && item.deadstock_qty !== undefined ? item.deadstock_qty : "-",
+//           stock_as_on: item.stock_as_on !== null && item.stock_as_on !== undefined ? item.stock_as_on : "-",
+//           stockStatus: item.stock_details?.[0]?.status || "-",
+//           theftMissing: item.missing_qty !== undefined && item.missing_qty !== null ? item.missing_qty : "-",
+//           uom_name: item.uom || "-",
+//           mor: item.stock_details?.map((stock) => stock.mor).join(", ") || "-",
+//           grn_number: item.stock_details?.map((stock) => stock.grn_number).join(", ") || "-",
+//           stock_details: item?.stock_details?.map((stock) => ({
+//             stockId: stock.id,
+//             createdAt: stock.created_at || "-",
+//             mor: stock.mor || "-",
+//             resourceNumber: stock.resource_number || "-",
+//             receivedQty: stock.received_qty !== null && stock.receivedQty !== undefined ? stock.receivedQty : "-",
+//             issuedQty: stock.issued_qty !== null && stock.issued_qty !== undefined ? stock.issued_qty : "-",
+//             returnedQty: stock.returned_qty !== null && stock.returned_qty !== undefined ? stock.returned_qty : "-",
+//             balancedQty: stock.balanced_qty !== null && stock.balanced_qty !== undefined ? stock.balanced_qty : "-",
+//           })) || [],
+
+//         };
+//       });
+//       setData(transformedData)
+//       setFilteredData(transformedData);
+//       setPagination(response.data?.pagination || {});
+//       setShow(false); // Close modal after filter
+//     } catch (error) {
+//       toast.error("Failed to fetch filtered data");
+//       console.error("Filter API error:", error);
+//     } finally {
+//       setLoading(false);
+//     }
+
+//   };
+
+
+   const handleFilterReset = () => {
+
+    //  setSelectedInventory2(null)
+// setInventoryTypes2([])
+    // setSelectedSubType2(null); // Clear the selected sub-type when inventory type changes
+    // setInventorySubTypes2([]); // Reset the sub-types list
+    // setInventoryMaterialTypes2([]); // Reset the material types list
+    // setSelectedInventoryMaterialTypes2(null); // Clear selected material type
+    // setGenericSpecifications([])
+    // setSelectedGenericSpecifications(null)
+    // setColors([])
+    // setSelectedColors(null)
+    // setInventoryBrands([])
+    // setSelectedInventoryBrands(null)
+    // setSelectedUnit(null)
+    // setUnitOfMeasures([])
+    // setSelectedCategory(null);
+    // setSelectedSubCategory(null);
+    // setSelectedStatus(null);
+    // setSelectedUnit(null);
+    // setSelectedInventory(null)
+    // setSelectedInventoryMaterialTypes(null)
+    // Optionally, reset other states like `searchKeyword` if needed
+    // console.log("Filters reset");
+
+    setFormData({
+       materialType: "",
+    materialSubType: "",
+    material: "",
+    genericSpecification: "",
+    colour: "",
+    brand: "",
+    effectiveDate: "",
+    rate: "",
+    rateType: "",
+    poRate: "",
+    avgRate: "",
+    uom: "",
+    })
+  };
 
 
   if (loading) return <div>Loading...</div>;
@@ -963,11 +1370,11 @@ display:none !important;
                     ),
                   }}
                 />
-               ) : (
-               <div className="text-center mt-5">
-                 <p>No records found for the selected filters.</p>
+              ) : (
+                <div className="text-center mt-5">
+                  <p>No records found for the selected filters.</p>
                 </div>
-               )} 
+              )}
             </div>
             <div className="d-flex justify-content-between align-items-center px-3 mt-2">
               <ul className="pagination justify-content-center d-flex">
@@ -1061,7 +1468,7 @@ display:none !important;
         show={show}
         onHide={handleClose}
         dialogClassName="modal-right"
-        className="setting-modal"
+        className="setting-modal mb-5"
         backdrop={true}
       >
         <Modal.Header>
@@ -1109,14 +1516,12 @@ display:none !important;
           <div className="row justify-content-between align-items-center mt-2">
             <div className="col-6 mt-2">
               <label className="block text-sm font-medium">Material Type</label>
-              <MultiSelector
-                options={formatOptions(materialTypes)}
-                isMulti
-                value={getSelectedOptions(
-                  "materialTypes",
-                  formatOptions(materialTypes)
-                )} // Show selected options
-                onChange={(selected) => handleChange("materialTypes", selected)}
+
+              <SingleSelector
+                options={inventoryTypes2}  // Provide the fetched options to the select component
+                value={inventoryTypes2.find((option) => option.value === formData.materialType)} // Bind value to state
+                placeholder={`Select Material Type`} // Dynamic placeholder
+                onChange={(selectedOption) => handleSelectorChange("materialType", selectedOption)}
               />
             </div>
 
@@ -1124,50 +1529,74 @@ display:none !important;
               <label className="block text-sm font-medium">
                 Material Sub Type
               </label>
-              <MultiSelector
-                options={formatOptions(materialSubTypes)}
-                isMulti
-                value={getSelectedOptions(
-                  "materialSubTypes",
-                  formatOptions(materialSubTypes)
-                )}
-                onChange={(selected) =>
-                  handleChange("materialSubTypes", selected)
-                }
+              <SingleSelector
+                options={inventorySubTypes2}
+                value={inventorySubTypes2.find((option) => option.value === formData.materialSubType)} // Bind value to state
+                placeholder={`Select Material Sub Type`} // Dynamic placeholder
+                onChange={(selectedOption) => handleSelectorChange("materialSubType", selectedOption)}
               />
+
+            </div>
+
+            <div className="col-md-6 mt-2">
+              <div className="form-group">
+                <label className="po-fontBold">Material</label>
+                <SingleSelector
+                  options={inventoryMaterialTypes2}
+                  value={inventoryMaterialTypes2.find((option) => option.value === formData.material)} // Bind value to state
+                  placeholder={`Select Material`} // Dynamic placeholder
+                  onChange={(selectedOption) => handleSelectorChange("material", selectedOption)}
+                />
+
+              </div>
             </div>
 
             <div className="col-6 mt-2">
               <label className="block text-sm font-medium">Generic Info</label>
-              <MultiSelector
-                options={formatOptions(genericInfos)}
-                isMulti
-                value={getSelectedOptions(
-                  "genericInfos",
-                  formatOptions(genericInfos)
-                )}
-                onChange={(selected) => handleChange("genericInfos", selected)}
+              <SingleSelector
+                options={Array.isArray(genericSpecifications) ? genericSpecifications : []}
+                value={genericSpecifications.find((option) => option.value === formData.genericSpecification)} // Bind value to state
+                placeholder={`Select Specification`} // Dynamic placeholder
+                onChange={(selectedOption) => handleSelectorChange("genericSpecification", selectedOption)}
               />
             </div>
 
-            <div className="col-6 mt-2">
+            <div className="col-md-6 mt-2">
+              <div className="form-group">
+                <label className="po-fontBold">Colour</label>
+                <SingleSelector
+                  options={colors || []}
+                  value={colors.find((option) => option.value === formData.colour)} // Bind value to stat
+                  placeholder={`Select Colour`} // Dynamic placeholder
+                  onChange={(selectedOption) => handleSelectorChange("colour", selectedOption)}
+                />
+              </div>
+            </div>
+            <div className="col-md-6 mt-2">
+              <div className="form-group">
+                <label className="po-fontBold">Brand</label>
+                <SingleSelector
+                  options={inventoryBrands || []}
+                  value={inventoryBrands.find((option) => option.value === formData.brand)} // Bind value to state
+                  placeholder={`Select Brand`} // Dynamic placeholder
+                  onChange={(selectedOption) => handleSelectorChange("brand", selectedOption)}
+                />
+              </div>
+            </div>
+
+            <div className="col-6 mt-2 mb-5">
               <label className="block text-sm font-medium">
                 Unit of Measures
               </label>
-              <MultiSelector
-                options={formatOptions(unitOfMeasures)}
-                isMulti
-                value={getSelectedOptions(
-                  "unitOfMeasures",
-                  formatOptions(unitOfMeasures)
-                )}
-                onChange={(selected) =>
-                  handleChange("unitOfMeasures", selected)
-                }
+              <SingleSelector
+                options={unitOfMeasures}
+                value={unitOfMeasures.find((option) => option.value === formData.uom)} // Bind value to state
+                placeholder={`Select UOM`} // Dynamic placeholder
+                onChange={(selectedOption) => handleSelectorChange("uom", selectedOption)}
               />
             </div>
 
-            <div className="col-6 mt-2">
+            {/* <div className="col-6 mt-2">
               <label className="block text-sm font-medium">MOR Numbers</label>
               <MultiSelector
                 options={morOptions}
@@ -1176,9 +1605,9 @@ display:none !important;
                 onChange={(selected) => handleChange("morNumbers", selected)}
                 placeholder="Select MOR Numbers"
               />
-            </div>
+            </div> */}
 
-            <div className="col-6 mt-2">
+            {/* <div className="col-6 mt-2">
               <label className="block text-sm font-medium">GRN Numbers</label>
               <MultiSelector
                 options={grnOptions}
@@ -1187,7 +1616,7 @@ display:none !important;
                 onChange={(selected) => handleChange("grnNumbers", selected)}
                 placeholder="Select GRN Numbers"
               />
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -1195,7 +1624,7 @@ display:none !important;
           <button
             className="btn"
             style={{ backgroundColor: "#8b0203", color: "#fff" }}
-            onClick={handleClose}
+            onClick={handleFilterGo}
           >
             Go
           </button>

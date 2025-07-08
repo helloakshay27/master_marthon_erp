@@ -3235,6 +3235,7 @@ const BOQList = () => {
             <div className="row mt-3 align-items-end">
               <div className="col-md-12">
                 <div className="form-group">
+                  
                   <label>Material</label>
                   <SingleSelector
                     options={inventoryMaterialTypes}

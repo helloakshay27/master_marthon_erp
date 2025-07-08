@@ -380,7 +380,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                             <td></td>
                                           </tr>
                                         ))}
-                                        {data?.stores.map((item, id) => (
+                                        {/* {data?.stores.map((item, id) => (
                                           <tr key={`balance-${id}`}>
                                             <td></td>
                                             <td><strong>Balanced Qty</strong></td>
@@ -394,7 +394,25 @@ const ErpStockRegisterCreationDetail13C = () => {
                                             <td></td>
                                             <td><strong>{item?.balanced_qty}</strong></td>
                                           </tr>
-                                        ))}
+                                        ))} */}
+
+                                        {data?.stores
+                                          .filter((item) => String(item.store_id) === String(selectedStore?.value))
+                                          .map((item, id) => (
+                                            <tr key={`balance-${id}`}>
+                                              <td></td>
+                                              <td><strong>Balanced Qty</strong></td>
+                                              <td></td>
+                                              <td></td>
+                                              <td></td>
+                                              <td></td>
+                                              <td></td>
+                                              <td></td>
+                                              <td></td>
+                                              <td></td>
+                                              <td><strong>{item?.balanced_qty}</strong></td>
+                                            </tr>
+                                          ))}
                                       </>
                                     )}
                                   </tbody>
