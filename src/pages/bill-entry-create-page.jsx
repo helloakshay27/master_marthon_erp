@@ -670,7 +670,17 @@ const BillEntryListSubPage = () => {
   const handleBillEntrySubmit = async () => {
     // ✅ Validation for Invoice Number
     const billNoRegex = /^[a-zA-Z0-9]*$/;
-
+    if (!formData.bill_date) {
+      toast.error("Invoice Date is required.");
+      return;
+    }
+    if (!formData.bill_amount) {
+      toast.error("Bill Amount is required.");
+      return;
+    } else if (isNaN(formData.bill_amount) || parseFloat(formData.bill_amount) <= 0) {
+      toast.error("Bill Amount must be a valid positive number.");
+      return;
+    }
     if (!formData.bill_no) {
       toast.error("Invoice Number is required.");
       return;
@@ -680,6 +690,16 @@ const BillEntryListSubPage = () => {
     } else if (formData.bill_no.length > 16) {
       toast.error("Invoice Number must not exceed 16 characters.");
       return;
+    }
+
+    if (formData.bill_date && formData.bill_received_date) {
+      const billDate = new Date(formData.bill_date);
+      const receivedDate = new Date(formData.bill_received_date);
+
+      if (receivedDate < billDate) {
+        toast.error("Bill Received Date cannot be earlier than Invoice Date.");
+        return;
+      }
     }
     try {
       setLoading(true);
@@ -1149,7 +1169,7 @@ const BillEntryListSubPage = () => {
 
                 <div className="col-md-3 mt-2 ">
                   <div className="form-group">
-                    <label>Invoice Date</label>
+                    <label>Invoice Date <span>*</span></label>
                     <input
                       className="form-control"
                       type="date"
@@ -1163,7 +1183,7 @@ const BillEntryListSubPage = () => {
 
                 <div className="col-md-3 mt-2 ">
                   <div className="form-group">
-                    <label>Invoice Number</label>
+                    <label>Invoice Number  <span>*</span></label>
                     <input
                       className="form-control"
                       type="text"
@@ -1178,7 +1198,7 @@ const BillEntryListSubPage = () => {
 
                 <div className="col-md-3  mt-2">
                   <div className="form-group">
-                    <label>Bill Amount</label>
+                    <label>Bill Amount  <span>*</span></label>
                     <input
                       className="form-control"
                       type="number"
@@ -1939,8 +1959,8 @@ const BillEntryListSubPage = () => {
                       ))}
                       <li
                         className={`page-item ${pagination.current_page === pagination.total_pages
-                            ? "disabled"
-                            : ""
+                          ? "disabled"
+                          : ""
                           }`}
                       >
                         <button
@@ -1957,8 +1977,8 @@ const BillEntryListSubPage = () => {
                       </li>
                       <li
                         className={`page-item ${pagination.current_page === pagination.total_pages
-                            ? "disabled"
-                            : ""
+                          ? "disabled"
+                          : ""
                           }`}
                       >
                         <button

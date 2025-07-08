@@ -1327,7 +1327,7 @@ const BillBookingCreate = () => {
       if (selectedPO?.id) {
         try {
           const response = await axios.get(
-            `${baseURL}advance_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=${token}`
+            `${baseURL}advance_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&token=${token}`
           );
           setPendingAdvances(response.data.advance_notes || []);
         } catch (error) {
@@ -2035,7 +2035,7 @@ const BillBookingCreate = () => {
                   </table>
                 </div>
                 <div className="d-flex justify-content-between mt-3 me-2">
-                  <h5 className=" ">Pending Advances (&gt; 60 days)</h5>
+                  <h5 className=" ">Advance Notes</h5>
                 </div>
                 <div className="tbl-container mx-3 mt-3">
                   <table className="w-100">
@@ -2282,7 +2282,7 @@ const BillBookingCreate = () => {
                       </tr>
                       <tr>
                         <td className="text-start">Other Deductions</td>
-                        <td className="text-start">-{otherDeductions}</td>
+                        <td className="text-start">{otherDeductions}</td>
                       </tr>
                       <tr>
                         <th className="text-start">Total</th>

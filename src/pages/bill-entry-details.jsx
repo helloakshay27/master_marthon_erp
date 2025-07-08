@@ -632,7 +632,7 @@ const BillEntryDetails = () => {
                           .map((log, index) => (
                             <tr key={log.id}>
                               <td className="text-start">{index + 1}</td>
-                              <td className="text-start">{""}</td>
+                              <td className="text-start">{log.created_by_name}</td>
                               <td className="text-start">
                                 {log.created_at
                                   ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
