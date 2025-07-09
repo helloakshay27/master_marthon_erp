@@ -1152,7 +1152,6 @@ const ApprovalEdit = () => {
 
     // }));
     const invoiceApprovalLevels = approvalLevels.map((level) => ({
-      id: level.id,
       name: level.name,
       order: level.order,
       active: true,
