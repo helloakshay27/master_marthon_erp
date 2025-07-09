@@ -1358,7 +1358,6 @@ const GatePassEdit = () => {
 
   // Pre-fill materials table once all necessary data is available
   useEffect(() => {
-    // Only require fetchedMaterials for edit mode
     if (
       !formData.gate_pass_type ||
       gatePassTypes.length === 0 ||
@@ -1377,43 +1376,31 @@ const GatePassEdit = () => {
       gatePassType.rawValue === "PurchaseOrder" ||
       gatePassType.rawValue === "MaterialTransaferOrder"
     ) {
-      if (poMaterials.length === 0) return;
-
       if (id) {
-        // Edit mode: prefill from fetchedMaterials
-        const gatePassMaterialIds = fetchedMaterials.map(
-          (m) => m.material_inventory_id
-        );
-        const selectedMaterials = poMaterials
-          .filter((m) => gatePassMaterialIds.includes(m.id))
-          .map((m) => {
-            const gpMaterial =
-              fetchedMaterials.find(
-                (gpm) => gpm.material_inventory_id === m.id
-              ) || {};
-            return {
-              id: gpMaterial.id,
-              material_type: m.material_type,
-              material_sub_type: m.material_sub_type,
-              material_name: m.material,
-              material_details: m.generic_specification,
-              generic_specification: m.generic_specification,
-              brand: m.brand,
-              colour: m.colour,
-              unit: m.uom,
-              gate_pass_qty: gpMaterial.gate_pass_qty || "",
-              stock_as_on: m.stock_as_on,
-              material_inventory_id: m.id,
-              gp_batches: gpMaterial.gp_batches || [],
-              available_qty: null,
-            };
-          });
+        // Edit mode: always use fetchedMaterials for the table
+        const selectedMaterials = fetchedMaterials.map((m) => ({
+          id: m.id,
+          material_type: m.material_type,
+          material_sub_type: m.material_sub_type,
+          material_name: m.material,
+          material_details: m.generic_specification,
+          generic_specification: m.generic_specification,
+          brand: m.brand,
+          colour: m.colour,
+          unit: m.uom,
+          gate_pass_qty: m.gate_pass_qty || "",
+          stock_as_on: m.stock_as_on,
+          material_inventory_id: m.material_inventory_id,
+          gp_batches: m.gp_batches || [],
+          available_qty: null,
+        }));
 
         setFormData((prev) => ({
           ...prev,
           material_items: selectedMaterials,
         }));
       }
+      // In create mode, do not touch material_items here!
     } else if (gatePassType.rawValue === "" || !gatePassType.rawValue) {
       // For general/maintenance types
       const maintenanceMaterialRows = fetchedMaterials.map((m) => {
@@ -1452,13 +1439,7 @@ const GatePassEdit = () => {
       });
       prefillMaintenanceRowOptions(maintenanceMaterialRows);
     }
-  }, [
-    fetchedMaterials,
-    poMaterials,
-    formData.gate_pass_type,
-    gatePassTypes,
-    id,
-  ]);
+  }, [fetchedMaterials, formData.gate_pass_type, gatePassTypes, id]);
 
   const fetchAvailableQty = async (row, idx) => {
     if (!formData.store_id) {
