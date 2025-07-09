@@ -755,7 +755,7 @@ const BillBookingCreate = () => {
     paymentDueDate: "",
     attachments: [],
     currentAdvanceDeduction: "",
-    status: "draft",
+    status: "",
     roundOffAmount: "",
   });
 
@@ -1273,6 +1273,7 @@ const BillBookingCreate = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  console.log("status chnage:",formData.status)
   const handleSubmit = async () => {
     if (
       // !selectedCompany ||
@@ -1400,7 +1401,7 @@ const BillBookingCreate = () => {
           total_value: taxDeductionData.total_material_cost,
           payable_amount: payableAmount,
           remark: formData.remark || "",
-          status: "draft",
+          status: formData.status ||"draft",
           po_type: "domestic",
           payee_name: formData.pms_supplier_id || null,
           payment_mode: formData.paymentMode,
