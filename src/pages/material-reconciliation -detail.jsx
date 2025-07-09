@@ -210,7 +210,7 @@ const MaterialReconciliationDetail = () => {
       console.log("Status update successful:", response.data);
       alert("Status updated successfully!");
       setAdminComment("");
-      navigate(`/material-reconciliation-list?token=${token}`);
+      // navigate(`/material-reconciliation-list?token=${token}`);
     } catch (error) {
       console.error("Error updating status:", error);
       alert("Error updating status. Please try again.");

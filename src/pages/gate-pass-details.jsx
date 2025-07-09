@@ -74,7 +74,7 @@ const GatePassDetails = () => {
 
       console.log("Status update successful:", response.data);
       alert("Status updated successfully!");
-      navigate(`/gate-pass-list?token=${token}`);
+      // navigate(`/gate-pass-list?token=${token}`);
     } catch (error) {
       console.error("Error updating status:", error);
       alert("Error updating status. Please try again.");
