@@ -1996,7 +1996,7 @@ const BillBookingCreate = () => {
   const calculateDebitNoteAdjustment = () => {
     return selectedDebitNotes
       .reduce((total, note) => {
-        return total + (parseFloat(note.this_recovery) || 0);
+        return total - (parseFloat(note.this_recovery) || 0);
       }, 0)
       .toFixed(2);
   };
