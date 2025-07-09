@@ -324,7 +324,9 @@ const GatePassDetails = () => {
                             <label className="text">
                               <span className="me-3 text-dark">:</span>
                               {details.due_at
-                                ? new Date(details.due_at).toLocaleDateString()
+                                ? new Date(
+                                    details.due_date
+                                  ).toLocaleDateString()
                                 : "N/A"}
                             </label>
                           </div>

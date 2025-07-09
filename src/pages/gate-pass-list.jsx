@@ -149,6 +149,28 @@ const GatePassList = () => {
       minWidth: 250,
     },
     {
+      field: "materials_description",
+      headerName: "Material Description",
+      flex: 1,
+      minWidth: 350,
+      renderCell: (params) => (
+        <span
+          style={{
+            maxWidth: 400,
+            display: "inline-block",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            verticalAlign: "middle",
+            cursor: "pointer",
+          }}
+          title={params.value}
+        >
+          {params.value}
+        </span>
+      ),
+    },
+    {
       field: "po_or_mto_no",
       headerName: "PO / MTO No.",
       flex: 1,
@@ -295,12 +317,12 @@ const GatePassList = () => {
         const inventoryTypeIds = selectedInventory
           .map((inv) => inv.value)
           .join(",");
-        url += `&q[gate_pass_materials_material_inventory_pms_inventory_type_id_in]=${inventoryTypeIds}`;
+        url += `&q[gate_pass_materials_pms_inventory_type_id_in]=${inventoryTypeIds}`;
       }
 
       if (selectedSubType && selectedSubType.length > 0) {
         const subTypeIds = selectedSubType.map((sub) => sub.value).join(",");
-        url += `&q[gate_pass_materials_material_inventory_pms_inventory_sub_type_id_in]=${subTypeIds}`;
+        url += `&q[gate_pass_materials_pms_inventory_sub_type_id_in]=${subTypeIds}`;
       }
 
       if (
@@ -310,23 +332,23 @@ const GatePassList = () => {
         const materialIds = selectedInventoryMaterialTypes
           .map((m) => m.value)
           .join(",");
-        url += `&q[gate_pass_materials_material_inventory_pms_inventory_id_in]=${materialIds}`;
+        url += `&q[gate_pass_materials_pms_inventory_id_in]=${materialIds}`;
       }
 
       if (selectedGenericSpec) {
-        url += `&q[gate_pass_materials_material_inventory_pms_generic_info_id_in]=${selectedGenericSpec.value}`;
+        url += `&q[gate_pass_materials_pms_generic_info_id_in]=${selectedGenericSpec.value}`;
       }
 
       if (selectedColor) {
-        url += `&q[gate_pass_materials_material_inventory_pms_colour_id_in]=${selectedColor.value}`;
+        url += `&q[gate_pass_materials_pms_colour_id_in]=${selectedColor.value}`;
       }
 
       if (selectedBrand) {
-        url += `&q[gate_pass_materials_material_inventory_pms_brand_id_in]=${selectedBrand.value}`;
+        url += `&q[gate_pass_materials_pms_brand_id_in]=${selectedBrand.value}`;
       }
 
       if (selectedUom) {
-        url += `&q[gate_pass_materials_material_inventory_unit_of_measure_id_in]=${selectedUom.value}`;
+        url += `&q[gate_pass_materials_uom_id_in]=${selectedUom.value}`;
       }
 
       // Add gate pass specific filters
@@ -343,7 +365,7 @@ const GatePassList = () => {
 
       if (selectedPoNumbers.length > 0) {
         const poNumbers = selectedPoNumbers.map((p) => p.value).join(",");
-        url += `&q[po_or_mto_no_in]=${poNumbers}`;
+        url += `&q[by_po_numbers_in]=${poNumbers}`;
       }
 
       const response = await axios.get(url);
@@ -1621,7 +1643,7 @@ display:none !important;
                 options={poNumberOptions}
                 value={selectedPoNumbers}
                 onChange={handlePoNumberChange}
-                placeholder="Select PO / MTO No."
+                placeholder="Select PO No."
                 isMulti
               />
             </div>
