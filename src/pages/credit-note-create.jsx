@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate
 import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
+import { toast, ToastContainer } from "react-toastify";
 const creditnotecreate = () => {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(location.search);
@@ -511,11 +512,12 @@ const creditnotecreate = () => {
   };
 
   const [rows, setRows] = useState([
-    { id: 1, type: "Handling Charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, resource_id: 2, resource_type: "TaxCharge" },
-    { id: 2, type: "Other charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, resource_id: 4, resource_type: "TaxCharge" },
-    { id: 3, type: "Freight", percentage: "", inclusive: false, amount: ' ', isEditable: false, addition: true, resource_id: 5, resource_type: "TaxCharge" },
+    // { id: 1, type: "Handling Charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, resource_id: 2, resource_type: "TaxCharge" },
+    // { id: 2, type: "Other charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, resource_id: 4, resource_type: "TaxCharge" },
+    // { id: 3, type: "Freight", percentage: "", inclusive: false, amount: ' ', isEditable: false, addition: true, resource_id: 5, resource_type: "TaxCharge" },
   ]);
   const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
+  const [taxPercentages, setTaxPercentages] = useState([]);
 
   // Fetch tax types from API
   useEffect(() => {
@@ -532,20 +534,98 @@ const creditnotecreate = () => {
 
     fetchTaxTypes();
   }, []);
+
+  useEffect(() => {
+    const fetchTaxPercentages = async () => {
+      try {
+        const response = await fetch(`${baseURL}rfq/events/tax_percentage?token=${token}`);
+        const data = await response.json();
+        setTaxPercentages(data);
+      } catch (error) {
+        console.error("Error fetching tax percentages:", error);
+      }
+    };
+
+    fetchTaxPercentages();
+  }, []);
   // console.log("tax types:", taxTypes)
+  // const addRow = () => {
+  //   setRows((prevRows) => [
+  //     ...prevRows,
+  //     {
+  //       id: prevRows.length + 1,
+  //       type: "",
+  //       percentage: "0",
+  //       inclusive: false,
+  //       amount: "",
+  //       isEditable: true,
+  //       addition: true,
+  //     },
+  //   ]);
+  // };
+
+
   const addRow = () => {
-    setRows((prevRows) => [
-      ...prevRows,
-      {
-        id: prevRows.length + 1,
-        type: "",
-        percentage: "0",
-        inclusive: false,
-        amount: "",
-        isEditable: true,
-        addition: true,
-      },
-    ]);
+    const specialTypes = ["Handling Charges", "Other charges", "Freight"];
+    const existingTypes = rows.map((r) => r.type);
+
+    const hasSpecial = specialTypes.some((type) => existingTypes.includes(type));
+    const hasSGST = existingTypes.includes("SGST");
+    const hasCGST = existingTypes.includes("CGST");
+    const hasIGST = existingTypes.includes("IGST");
+
+    // 🔒 Lock condition: if any special type + (IGST or both SGST & CGST) are present
+    const isLockedCombo =
+      hasSpecial && (hasIGST || (hasSGST && hasCGST));
+
+    if (isLockedCombo) {
+      toast.error(
+        "Cannot add more Tax rows ."
+      );
+      return; // ❌ Don't add row
+    }
+
+    // Allow adding remaining special types if any
+    const allSpecialTypes = [
+      { type: "Handling Charges", resource_id: 2 },
+      { type: "Other charges", resource_id: 4 },
+      { type: "Freight", resource_id: 5 },
+    ];
+
+    const nextSpecial = allSpecialTypes.find(
+      (st) => !existingTypes.includes(st.type)
+    );
+
+    if (nextSpecial) {
+      setRows((prevRows) => [
+        ...prevRows,
+        {
+          id: prevRows.length + 1,
+          type: nextSpecial.type,
+          percentage: "",
+          inclusive: false,
+          amount: "",
+          isEditable: false,
+          addition: true,
+          resource_id: nextSpecial.resource_id,
+          resource_type: "TaxCharge",
+        },
+      ]);
+    } else {
+      // Add editable row for user-defined tax
+      setRows((prevRows) => [
+        ...prevRows,
+        {
+          id: prevRows.length + 1,
+          type: "",
+          percentage: "0",
+          inclusive: false,
+          amount: "",
+          isEditable: true,
+          addition: true,
+        },
+      ]);
+    }
   };
   // Function to calculate the subtotal of addition rows
   const calculateSubTotal = () => {
@@ -556,16 +636,16 @@ const creditnotecreate = () => {
 
   // Delete a row
   const deleteRow = (id) => {
-    // setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-    setRows((prevRows) =>
-      prevRows.filter((row, index) => {
-        // Prevent deletion of the first three rows
-        if (index < 3) {
-          return true;
-        }
-        return row.id !== id;
-      })
-    );
+    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+    // setRows((prevRows) =>
+    //   prevRows.filter((row, index) => {
+    //     // Prevent deletion of the first three rows
+    //     if (index < 3) {
+    //       return true;
+    //     }
+    //     return row.id !== id;
+    //   })
+    // );
   };
 
   // deduction
@@ -1090,7 +1170,9 @@ const creditnotecreate = () => {
                             <h5 className=" ">Tax Details</h5>
                           </div>
 
-                          <div className="tbl-container  mt-3">
+
+
+                          <div className="tbl-container mt-3" style={{ maxHeight: "500px" }}>
                             <table className="w-100">
                               <thead>
                                 <tr>
@@ -1115,22 +1197,23 @@ const creditnotecreate = () => {
                                   <td className="text-start" />
                                   <td className="text-start" />
                                   <td className="text-start" />
-                                  <td onClick={addRow}>
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      fill="currentColor"
-                                      className="bi bi-plus-circle"
-                                      viewBox="0 0 16 16"
-                                      style={{
-                                        transform: showRows ? "rotate(45deg)" : "none",
-                                        transition: "transform 0.3s ease",
-                                      }}
-                                    >
-                                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                    </svg>
+                                  <td className="text-start" onClick={addRow}>
+                                    {/* <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                width="16"
+                                                                height="16"
+                                                                fill="currentColor"
+                                                                className="bi bi-plus-circle"
+                                                                viewBox="0 0 16 16"
+                                                                style={{
+                                                                  transform: showRows ? "rotate(45deg)" : "none",
+                                                                  transition: "transform 0.3s ease",
+                                                                }}
+                                                              >
+                                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                                              </svg> */}
+                                    <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
                                   </td>
                                 </tr>
                                 {/* Dynamic Rows for Addition Tax */}
@@ -1147,6 +1230,7 @@ const creditnotecreate = () => {
                                             // Disable "Handling Charges", "Other charges", "Freight" for all rows
                                             ["Handling Charges", "Other charges", "Freight"].includes(type.name) ||
 
+
                                             // Disable "IGST" if "SGST" or "CGST" is selected in any row
                                             (type.name === "IGST" &&
                                               rows.some((r) => ["SGST", "CGST"].includes(r.type) && r.id !== row.id)) ||
@@ -1159,88 +1243,231 @@ const creditnotecreate = () => {
                                         // onChange={(selectedOption) =>
                                         //   setRows((prevRows) =>
                                         //     prevRows.map((r) =>
-                                        //       r.id === row.id ? { ...r, 
-                                        //         type: selectedOption.value,
-                                        //         resource_id: selectedOption.value, // Set the selected tax ID
-                                        //         resource_type: taxTypes.find((t) => t.id === selectedOption.value)?.type || "", // Set the tax type
-                                        //        } : r
+                                        //       r.id === row.id ? { ...r, type: selectedOption.value } : r
                                         //     )
                                         //   )
                                         // }
+
 
                                         // onChange={(selectedOption) =>
                                         //   setRows((prevRows) =>
                                         //     prevRows.map((r) =>
                                         //       r.id === row.id
                                         //         ? {
-                                        //             ...r,
-                                        //             type: selectedOption?.value || "", // Handle null or undefined
-                                        //             resource_id: selectedOption?.value || null, // Handle null or undefined
-                                        //             resource_type: taxTypes.find((t) => t.id === selectedOption?.value)?.type || "", // Handle null or undefined
-                                        //           }
+                                        //           ...r,
+                                        //           type: selectedOption?.value || "", // Handle null or undefined
+                                        //           resource_id: selectedOption?.id || null, // Handle null or undefined
+                                        //           resource_type: selectedOption?.tax || "", // Handle null or undefined
+                                        //           // resource_id: selectedOption?.value || null, // Handle null or undefined
+                                        //           // resource_type: taxTypes.find((t) => t.id === selectedOption?.value)?.type || "", // Handle null or undefined
+                                        //         }
                                         //         : r
                                         //     )
                                         //   )
                                         // }
 
+
                                         onChange={(selectedOption) => {
-                                          console.log("Selected Option:", selectedOption); // Log the selected option
-                                          setRows((prevRows) =>
-                                            prevRows.map((r) =>
+                                          setRows((prevRows) => {
+                                            let updatedRows = prevRows.map((r) =>
                                               r.id === row.id
                                                 ? {
                                                   ...r,
-                                                  type: selectedOption?.value || "", // Handle null or undefined
-                                                  resource_id: selectedOption?.id || null, // Handle null or undefined
-                                                  resource_type: selectedOption?.tax || "", // Handle null or undefined
+                                                  type: selectedOption?.value || "",
+                                                  resource_id: selectedOption?.id || null,
+                                                  resource_type: selectedOption?.tax || "",
                                                 }
                                                 : r
-                                            )
-                                          );
-                                          console.log("Updated Rows:", rows); // Log the updated rows
+                                            );
+
+                                            // Auto-add CGST if SGST is selected
+                                            if (selectedOption?.value === "SGST" && !prevRows.some(r => r.type === "CGST")) {
+                                              updatedRows = [
+                                                ...updatedRows,
+                                                {
+                                                  id: updatedRows.length + 1,
+                                                  type: "CGST",
+                                                  percentage: row.percentage,
+                                                  inclusive: row.inclusive,
+                                                  amount: row.amount,
+                                                  isEditable: true,
+                                                  addition: true,
+                                                  resource_id: taxTypes.find(t => t.name === "CGST")?.id || null,
+                                                  resource_type: taxTypes.find(t => t.name === "CGST")?.type || "",
+                                                },
+                                              ];
+                                            }
+
+                                            // Auto-add SGST if CGST is selected
+                                            if (selectedOption?.value === "CGST" && !prevRows.some(r => r.type === "SGST")) {
+                                              updatedRows = [
+                                                ...updatedRows,
+                                                {
+                                                  id: updatedRows.length + 1,
+                                                  type: "SGST",
+                                                  percentage: row.percentage,
+                                                  inclusive: row.inclusive,
+                                                  amount: row.amount,
+                                                  isEditable: true,
+                                                  addition: true,
+                                                  resource_id: taxTypes.find(t => t.name === "SGST")?.id || null,
+                                                  resource_type: taxTypes.find(t => t.name === "SGST")?.type || "",
+                                                },
+                                              ];
+                                            }
+
+                                            return updatedRows;
+                                          });
                                         }}
                                         placeholder="Select Type"
                                         isDisabled={!row.isEditable} // Disable if not editable
                                       />
+
                                     </td>
                                     <td className="text-start">
                                       {row.isEditable ? (
-                                        //                             <select
-                                        //                               className="form-control form-select"
-                                        //                               value={row.percentage}
-                                        //                               onChange={(e) =>
-                                        //                                 const percentage = parseFloat(e.target.value) || 0;
-                                        // const amount = ((selectedPO?.total_value || 0) * percentage) / 100;
-                                        //                                 setRows((prevRows) =>
-                                        //                                   prevRows.map((r) =>
-                                        //                                     r.id === row.id ? { ...r, percentage: e.target.value } : r
-                                        //                                   )
-                                        //                                 )
-                                        //                               }
-                                        //                             >
+                                        // <SingleSelector
+                                        //   className="form-control"
+                                        //   options={[
+                                        //     { value: "", label: "Select Tax" },
+                                        //     { value: "5%", label: "5%" },
+                                        //     { value: "12%", label: "12%" },
+                                        //     { value: "18%", label: "18%" },
+                                        //     { value: "28%", label: "28%" },
+                                        //   ]}
+                                        //   value={
+                                        //     [
+                                        //       { value: "", label: "Select Tax" },
+                                        //       { value: "5%", label: "5%" },
+                                        //       { value: "12%", label: "12%" },
+                                        //       { value: "18%", label: "18%" },
+                                        //       { value: "28%", label: "28%" },
+                                        //     ].find(opt => opt.value === row.percentage) || { value: "", label: "Select Tax" }
+                                        //   }
+                                        //   onChange={selected => {
+                                        //     const percentage = parseFloat(selected?.value) || 0;
+                                        //     const amount = ((creditNoteAmount || 0) * percentage) / 100;
 
-                                        <select
-                                          className="form-control form-select"
-                                          value={row.percentage}
-                                          onChange={(e) => {
-                                            const percentage = parseFloat(e.target.value) || 0;
+                                        //     setRows(prevRows =>
+                                        //       prevRows.map(r =>
+                                        //         r.id === row.id
+                                        //           ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
+                                        //           : r
+                                        //       )
+                                        //     );
+                                        //   }}
+                                        //   placeholder="Select Tax"
+                                        // />
+
+                                        // <SingleSelector
+                                        //   className="form-control"
+                                        //   options={
+                                        //     taxPercentages.find((t) => t.tax_name === row.type)?.percentage.map((percent) => ({
+                                        //       value: `${percent}%`,
+                                        //       label: `${percent}%`,
+                                        //     })) || []
+                                        //   }
+                                        //   value={
+                                        //     taxPercentages
+                                        //       .find((t) => t.tax_name === row.type)?.percentage
+                                        //       .map((p) => `${p}%`)
+                                        //       .includes(
+                                        //         row.percentage?.toString().includes("%")
+                                        //           ? row.percentage
+                                        //           : `${row.percentage}`
+                                        //       )
+                                        //       ? { value: `${row.percentage}%`, label: `${row.percentage}%` }
+                                        //       : null
+                                        //   }
+                                        //   onChange={(selectedOption) => {
+                                        //     setRows((prevRows) =>
+                                        //       prevRows.map((r) =>
+                                        //         r.id === row.id
+                                        //           ? {
+                                        //             ...r,
+                                        //             percentage: selectedOption
+                                        //               ? parseFloat(selectedOption.value.replace("%", ""))
+                                        //               : "",
+                                        //           }
+                                        //           : r
+                                        //       )
+                                        //     );
+                                        //   }}
+                                        //   placeholder="Select Tax %"
+                                        //   isDisabled={!row.isEditable}
+                                        // />
+
+
+
+                                        //                                         <select
+                                        //   className="form-control"
+                                        //   value={row.percentage}
+                                        //   onChange={(e) =>
+                                        //     setRows((prevRows) =>
+                                        //       prevRows.map((r) =>
+                                        //         r.id === row.id ? { ...r, percentage: parseFloat(e.target.value) } : r
+                                        //       )
+                                        //     )
+                                        //   }
+                                        // >
+                                        //   {taxPercentages
+                                        //     .find((t) => t.tax_name === row.type)?.percentage.map((percent) => (
+                                        //       <option key={percent} value={percent}>
+                                        //         {percent}%
+                                        //       </option>
+                                        //     ))}
+                                        // </select>
+
+
+
+                                        <SingleSelector
+                                          className="form-control"
+                                          options={
+                                            Array.isArray(
+                                              taxPercentages.find((t) => t.tax_name === row.type)?.percentage
+                                            )
+                                              ? taxPercentages
+                                                .find((t) => t.tax_name === row.type)
+                                                .percentage.map((percent) => ({
+                                                  value: `${percent}%`,
+                                                  label: `${percent}%`,
+                                                }))
+                                              : []
+                                          }
+                                          value={
+                                            row.percentage !== undefined && row.percentage !== null
+                                              ? {
+                                                value: `${parseFloat(row.percentage)}%`,
+                                                label: `${parseFloat(row.percentage)}%`,
+                                              }
+                                              : { value: "", label: "Select Tax" }
+                                          }
+                                          onChange={(selected) => {
+                                            const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
                                             const amount = ((creditNoteAmount || 0) * percentage) / 100;
 
                                             setRows((prevRows) =>
                                               prevRows.map((r) =>
                                                 r.id === row.id
-                                                  ? { ...r, percentage: e.target.value, amount: amount.toFixed(2) }
+                                                  ? {
+                                                    ...r,
+                                                    percentage: selected?.value,
+                                                    amount: amount.toFixed(2),
+                                                  }
                                                   : r
                                               )
                                             );
                                           }}
-                                        >
-                                          <option value="">Select Tax</option>
-                                          <option value="5%">5%</option>
-                                          <option value="12%">12%</option>
-                                          <option value="18%">18%</option>
-                                          <option value="28%">28%</option>
-                                        </select>
+                                          placeholder="Select Tax"
+                                          isDisabled={!row.isEditable}
+                                        />
+
+
+
+
+
+
+
                                       ) : (
                                         <input
                                           type="text"
@@ -1287,20 +1514,21 @@ const creditnotecreate = () => {
                                       onClick={() => deleteRow(row.id)}
                                       style={{ cursor: "pointer", color: "black" }}
                                     >
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="16"
-                                        height="16"
-                                        fill="currentColor"
-                                        className="bi bi-dash-circle"
-                                        viewBox="0 0 16 16"
-                                        style={{
-                                          transition: "transform 0.3s ease",
-                                        }}
-                                      >
-                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                                      </svg>
+                                      {/* <svg
+                                                                  xmlns="http://www.w3.org/2000/svg"
+                                                                  width="16"
+                                                                  height="16"
+                                                                  fill="currentColor"
+                                                                  className="bi bi-dash-circle"
+                                                                  viewBox="0 0 16 16"
+                                                                  style={{
+                                                                    transition: "transform 0.3s ease",
+                                                                  }}
+                                                                >
+                                                                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                                  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
+                                                                </svg> */}
+                                      <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
                                     </td>
                                   </tr>
                                 ))}
@@ -1325,22 +1553,23 @@ const creditnotecreate = () => {
                                   <td className="text-start" />
                                   <td className="" />
                                   <td className="text-start" />
-                                  <td onClick={addDeductionRow}>
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      fill="currentColor"
-                                      className="bi bi-plus-circle"
-                                      viewBox="0 0 16 16"
-                                      style={{
-                                        // transform: showDeductionRows ? "rotate(45deg)" : "none",
-                                        transition: "transform 0.3s ease",
-                                      }}
-                                    >
-                                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                    </svg>
+                                  <td className="text-start" onClick={addDeductionRow}>
+                                    {/* <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                width="16"
+                                                                height="16"
+                                                                fill="currentColor"
+                                                                className="bi bi-plus-circle"
+                                                                viewBox="0 0 16 16"
+                                                                style={{
+                                                                  // transform: showDeductionRows ? "rotate(45deg)" : "none",
+                                                                  transition: "transform 0.3s ease",
+                                                                }}
+                                                              >
+                                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                                              </svg> */}
+                                    <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
                                   </td>
                                 </tr>
                                 {/* Dynamic Rows for Deduction Tax */}
@@ -1355,6 +1584,15 @@ const creditnotecreate = () => {
                                           tax: type.type,
                                         }))}
                                         value={{ value: row.type, label: row.type }}
+                                        // onChange={(selectedOption) =>
+                                        //   setDeductionRows((prevRows) =>
+                                        //     prevRows.map((r) =>
+                                        //       r.id === row.id ? { ...r, type: selectedOption.value } : r
+                                        //     )
+                                        //   )
+                                        // }
+
+
                                         onChange={(selectedOption) =>
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
@@ -1371,41 +1609,79 @@ const creditnotecreate = () => {
                                       />
                                     </td>
                                     <td className="text-start">
-                                      {/* <select
-                                        className="form-control form-select"
-                                        value={row.percentage}
-                                        onChange={(e) =>
-                                          
-                                          setDeductionRows((prevRows) =>
-                                            prevRows.map((r) =>
-                                              r.id === row.id ? { ...r, percentage: e.target.value } : r
-                                            )
-                                          )
+                                      {/* <SingleSelector
+                                                                  className="form-control"
+                                                                  options={[
+                                                                    { value: "", label: "Select Tax" },
+                                                                    { value: "5%", label: "5%" },
+                                                                    { value: "12%", label: "12%" },
+                                                                    { value: "18%", label: "18%" },
+                                                                    { value: "28%", label: "28%" },
+                                                                  ]}
+                                                                  value={
+                                                                    [
+                                                                      { value: "", label: "Select Tax" },
+                                                                      { value: "5%", label: "5%" },
+                                                                      { value: "12%", label: "12%" },
+                                                                      { value: "18%", label: "18%" },
+                                                                      { value: "28%", label: "28%" },
+                                                                    ].find(opt => opt.value === row.percentage) || { value: "", label: "Select Tax" }
+                                                                  }
+                                                                  onChange={selected => {
+                                                                    const percentage = parseFloat(selected?.value) || 0;
+                                                                    const amount = ((creditNoteAmount || 0) * percentage) / 100;
+                          
+                                                                    setDeductionRows(prevRows =>
+                                                                      prevRows.map(r =>
+                                                                        r.id === row.id
+                                                                          ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
+                                                                          : r
+                                                                      )
+                                                                    );
+                                                                  }}
+                                                                  placeholder="Select Tax"
+                                                                /> */}
+
+
+                                      <SingleSelector
+                                        className="form-control"
+                                        options={
+                                          taxPercentages.find((t) => t.tax_name === row.type)?.percentage.map((p) => ({
+                                            value: `${p}%`,
+                                            label: `${p}%`,
+                                          })) || []
                                         }
-                                      > */}
-                                      <select
-                                        className="form-control form-select"
-                                        value={row.percentage}
-                                        onChange={(e) => {
-                                          const percentage = parseFloat(e.target.value) || 0;
+                                        value={
+                                          (() => {
+                                            const percent = row.percentage?.toString().includes("%")
+                                              ? row.percentage
+                                              : `${row.percentage}%`;
+
+                                            const options = taxPercentages.find((t) => t.tax_name === row.type)?.percentage || [];
+                                            return options.includes(parseFloat(percent))
+                                              ? { value: percent, label: percent }
+                                              : { value: "", label: "Select Tax" };
+                                          })()
+                                        }
+                                        onChange={(selected) => {
+                                          const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
                                           const amount = ((creditNoteAmount || 0) * percentage) / 100;
 
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
-                                                ? { ...r, percentage: e.target.value, amount: amount.toFixed(2) }
+                                                ? {
+                                                  ...r,
+                                                  percentage: percentage,
+                                                  amount: amount.toFixed(2),
+                                                }
                                                 : r
                                             )
                                           );
                                         }}
-                                      >
-                                        {console.log("percent deduction", row.percentage)}
-                                        <option value="">Select Tax</option>
-                                        <option value="1%">1%</option>
-                                        <option value="2%">2%</option>
-                                        <option value="10%">10%</option>
-                                        {/* <option value="28%">28%</option> */}
-                                      </select>
+                                        placeholder="Select Tax %"
+                                      // isDisabled={!row.isEditable}
+                                      />
                                     </td>
                                     <td>
                                       <input
@@ -1444,20 +1720,21 @@ const creditnotecreate = () => {
                                       onClick={() => deleteDeductionRow(row.id)}
                                       style={{ cursor: "pointer", color: "black" }}
                                     >
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="16"
-                                        height="16"
-                                        fill="currentColor"
-                                        className="bi bi-dash-circle"
-                                        viewBox="0 0 16 16"
-                                        style={{
-                                          transition: "transform 0.3s ease",
-                                        }}
-                                      >
-                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                                      </svg>
+                                      {/* <svg
+                                                                  xmlns="http://www.w3.org/2000/svg"
+                                                                  width="16"
+                                                                  height="16"
+                                                                  fill="currentColor"
+                                                                  className="bi bi-dash-circle"
+                                                                  viewBox="0 0 16 16"
+                                                                  style={{
+                                                                    transition: "transform 0.3s ease",
+                                                                  }}
+                                                                >
+                                                                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                                  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
+                                                                </svg> */}
+                                      <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
                                     </td>
                                   </tr>
                                 ))}
@@ -1626,7 +1903,7 @@ const creditnotecreate = () => {
                     <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
                   </div>
                   <div className="col-md-2">
-                    <button className="purple-btn1 w-100"  onClick={() => navigate(`/credit-note-list?token=${token}`)}>Cancel</button>
+                    <button className="purple-btn1 w-100" onClick={() => navigate(`/credit-note-list?token=${token}`)}>Cancel</button>
                   </div>
                 </div>
                 {/* <div className="row mt-2 w-100">
@@ -2470,6 +2747,19 @@ const creditnotecreate = () => {
           </div>
         </Modal.Body>
       </Modal>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 };
