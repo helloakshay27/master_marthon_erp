@@ -99,10 +99,22 @@ const MaterialReconciliationCreate = () => {
         (parseFloat(inv.theft_or_missing_qty) || 0) +
         (parseFloat(inv.damage_qty) || 0);
       setBatchMaxQty(maxQty);
+
+      // Prefill batchIssueQty if mr_batches_attributes exist
+      if (Array.isArray(inv.mr_batches_attributes)) {
+        // Convert array to { [batchId]: qty }
+        const batchQtyObj = {};
+        inv.mr_batches_attributes.forEach((b) => {
+          batchQtyObj[b.grn_batch_id] = b.grn_batch_qty;
+        });
+        setBatchIssueQty(batchQtyObj);
+      } else {
+        setBatchIssueQty({});
+      }
     } else {
       setBatchMaxQty(0);
+      setBatchIssueQty({});
     }
-    setBatchIssueQty({}); // Reset on open
     setBatchQtyError("");
   };
 
