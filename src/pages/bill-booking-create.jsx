@@ -24,6 +24,371 @@ const BillBookingCreate = () => {
 
   const [attachThreeModal, setattachThreeModal] = useState(false);
   const navigate = useNavigate();
+  const [withBillEntry, setWithBillEntry] = useState(false);
+  const [withoutBillEntry, setWithoutBillEntry] = useState(true);
+
+
+  const [selectPOModal, setselectPOModal] = useState(false);
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
+  const [selectedPO, setSelectedPO] = useState(null);
+
+
+  const [pageSize, setPageSize] = useState(5);
+  const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [sites, setSites] = useState([]);
+  const [selectedSite, setSelectedSite] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [companies, setCompanies] = useState([]);
+  const [selectedPOs, setSelectedPOs] = useState([]);
+  const [poTypes, setPoTypes] = useState([
+    { value: "", label: "All" },
+    { value: "Domestic", label: "Domestic" },
+    { value: "ROPO", label: "ROPO" },
+    { value: "Import", label: "Import" },
+  ]);
+
+  // add row & delete row
+
+  const [filterParams, setFilterParams] = useState({
+    startDate: "",
+    endDate: "",
+    poType: "",
+    poNumber: "",
+    selectedPOIds: [],
+    projectId: "",
+    siteId: "",
+  });
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    next_page: 2,
+    prev_page: null,
+    total_pages: 1,
+    total_count: 0,
+    per_page: 5,
+  });
+  const handlePOSelect = (po) => {
+    setSelectedPO(po);
+    setFilterParams((prev) => ({
+      ...prev,
+      selectedPOIds: [po.id],
+    }));
+
+    // Update form fields with selected PO details
+    if (po) {
+      // Update PO Date
+      const poDateInput = document.querySelector('input[name="po_date"]');
+      if (poDateInput) {
+        poDateInput.value = po.po_date;
+      }
+
+      // Update PO Value
+      const poValueInput = document.querySelector('input[name="po_value"]');
+      if (poValueInput) {
+        poValueInput.value = po.total_value;
+      }
+
+      // Update GSTIN Number
+      const gstinInput = document.querySelector('input[name="gstin_number"]');
+      if (gstinInput) {
+        gstinInput.value = po.gstin || "";
+      }
+
+      // Update PAN Number
+      const panInput = document.querySelector('input[name="pan_number"]');
+      if (panInput) {
+        panInput.value = po.pan || "";
+      }
+    }
+
+    closeSelectPOModal();
+  };
+
+  const handleCheckboxChange = (poId) => {
+    setSelectedPOs((prev) => {
+      if (prev.includes(poId)) {
+        return prev.filter((id) => id !== poId);
+      } else {
+        return [...prev, poId];
+      }
+    });
+  };
+
+  const handleSelectAll = (event) => {
+    if (event.target.checked) {
+      setSelectedPOs(purchaseOrders.map((po) => po.id));
+    } else {
+      setSelectedPOs([]);
+    }
+  };
+
+  // Fetch initial PO data when component mounts
+  useEffect(() => {
+    fetchPurchaseOrders(null, null, null, {
+      page: 1,
+      pageSize: pageSize,
+    });
+  }, []);
+
+  const fetchPurchaseOrders = async (
+    companyId = null,
+    projectId = null,
+    siteId = null,
+    filters = {
+      startDate: "",
+      endDate: "",
+      poType: "",
+      poNumber: "",
+      selectedPOIds: [],
+      supplierId: "",
+      page: 1,
+      pageSize: 5,
+    }
+  ) => {
+    try {
+      setLoading(true);
+      let url = `${baseURL}purchase_orders/grn_details.json?token=${token}`;
+
+      // Add filters only if they are provided
+      if (companyId) url += `&q[company_id_eq]=${companyId}`;
+      if (projectId) url += `&q[po_mor_inventories_project_id_eq]=${projectId}`;
+      if (siteId) url += `&q[po_mor_inventories_pms_site_id_eq]=${siteId}`;
+      if (filters?.supplierId)
+        url += `&q[supplier_id_eq]=${filters.supplierId}`;
+      if (filters?.startDate) url += `&q[po_date_gteq]=${filters.startDate}`;
+      if (filters?.endDate) url += `&q[po_date_lteq]=${filters.endDate}`;
+      if (filters?.selectedPOIds?.length > 0) {
+        url += `&q[id_in]=${filters.selectedPOIds.join(",")}`;
+      }
+
+      // Always add pagination parameters
+      url += `&page=${filters.page || 1}`;
+      url += `&per_page=${filters.pageSize || 5}`;
+
+      const response = await axios.get(url);
+      setPurchaseOrders(response.data.purchase_orders);
+
+      if (response.data.pagination) {
+        setPagination({
+          current_page: parseInt(response.data.pagination.current_page) || 1,
+          next_page: parseInt(response.data.pagination.next_page) || null,
+          prev_page: parseInt(response.data.pagination.prev_page) || null,
+          total_pages: parseInt(response.data.pagination.total_pages) || 1,
+          total_count: parseInt(response.data.pagination.total_count) || 0,
+          per_page: parseInt(response.data.pagination.per_page) || 5,
+        });
+      }
+    } catch (err) {
+      setError("Failed to fetch purchase orders");
+      console.error("Error fetching purchase orders:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = () => {
+    setPagination((prev) => ({
+      ...prev,
+      current_page: 1,
+    }));
+
+    fetchPurchaseOrders(
+      selectedCompany?.value,
+      selectedProject?.value,
+      selectedSite?.value,
+      {
+        ...filterParams,
+        page: 1,
+        pageSize: pageSize,
+      }
+    );
+  };
+
+  const handleReset = () => {
+    setFilterParams({
+      startDate: "",
+      endDate: "",
+      poType: "",
+      poNumber: "",
+      selectedPOIds: [],
+    });
+    setSelectedCompany(null);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setProjects([]);
+    setSites([]);
+    setPagination((prev) => ({
+      ...prev,
+      current_page: 1,
+    }));
+    fetchPurchaseOrders(null, null, null, {
+      page: 1,
+      pageSize: pageSize,
+    });
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const startPage = Math.max(1, pagination.current_page - 2);
+    const endPage = Math.min(
+      pagination.total_pages,
+      pagination.current_page + 2
+    );
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
+
+  const handlePageChange = (page) => {
+    setPagination((prev) => ({
+      ...prev,
+      current_page: page,
+    }));
+
+    fetchPurchaseOrders(
+      selectedCompany?.value,
+      selectedProject?.value,
+      selectedSite?.value,
+      {
+        ...filterParams,
+        page: page,
+        pageSize: pageSize,
+      }
+    );
+  };
+
+  // Function to handle tab change
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+  };
+
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 4;
+
+  // Function to handle the next step
+  const handleNext = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  // Function to handle the previous step
+  const handlePrev = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+  // tax table functionality
+
+  // tax table functionality
+
+  const handleProjectChange = (value) => {
+    setSelectedProject(value);
+    setSelectedSite(null);
+    setSites(
+      value?.sites?.map((site) => ({
+        value: site.id,
+        label: site.name,
+      })) || []
+    );
+  };
+
+  const handleSiteChange = (value) => {
+    setSelectedSite(value);
+  };
+
+  const handleCompanyChange = (selectedOption) => {
+    setSelectedCompany(selectedOption);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setProjects(
+      selectedOption?.projects?.map((project) => ({
+        value: project.id,
+        label: project.name,
+        sites: project.pms_sites,
+      })) || []
+    );
+    setSites([]);
+  };
+
+  const fetchProjects = async (companyId) => {
+    try {
+      const response = await axios.get(
+        `${baseURL}projects.json?token=${token}&q[company_id_eq]=${companyId}`
+      );
+      setProjects(
+        response.data.projects.map((project) => ({
+          value: project.id,
+          label: project.name,
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+    }
+  };
+
+  const fetchSites = async (projectId) => {
+    try {
+      const response = await axios.get(
+        `${baseURL}sites.json?token=${token}&q[project_id_eq]=${projectId}`
+      );
+      setSites(
+        response.data.sites.map((site) => ({
+          value: site.id,
+          label: site.name,
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching sites:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedProject?.value) {
+      fetchSites(selectedProject.value);
+    }
+  }, [selectedProject]);
+
+  const fetchCompanies = async () => {
+    try {
+      const response = await axios.get(
+        `${baseURL}pms/company_setups.json?token=${token}`
+      );
+      const formattedCompanies = response.data.companies.map((company) => ({
+        value: company.id,
+        label: company.company_name,
+        projects: company.projects,
+      }));
+      setCompanies(formattedCompanies);
+    } catch (error) {
+      console.error("Error fetching companies:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCompany?.value) {
+      fetchProjects(selectedCompany.value);
+    }
+  }, [selectedCompany]);
+
+  const getShowingEntriesText = () => {
+    if (!pagination.total_count) return "No entries found";
+
+    const start = (pagination.current_page - 1) * pagination.per_page + 1;
+    const end = Math.min(
+      start + pagination.per_page - 1,
+      pagination.total_count
+    );
+
+    return `Showing ${start} to ${end} of ${pagination.total_count} entries`;
+  };
+
 
   // calculation for tax details table
   const [rows, setRows] = useState([
@@ -224,7 +589,7 @@ const BillBookingCreate = () => {
         const response = await axios.get(
           `${baseURL}rfq/events/deduction_tax_details.json?token=${token}`
         );
-        console.log("Taxes response:", response.data);
+        // console.log("Taxes response:", response.data);
         if (response.data && response.data.taxes) {
           setTaxes(response.data.taxes);
         }
@@ -241,12 +606,12 @@ const BillBookingCreate = () => {
   const taxOptions =
     taxes && Array.isArray(taxes) && taxes.length > 0
       ? taxes.map((tax) => ({
-          value: tax.id,
-          label: tax.name,
-        }))
+        value: tax.id,
+        label: tax.name,
+      }))
       : [];
 
-  console.log("Tax options:", taxOptions); // Add this for debugging
+  // console.log("Tax options:", taxOptions); // Add this for debugging
 
   // action dropdown
   const actionDropdown = () => {
@@ -272,10 +637,19 @@ const BillBookingCreate = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [purchaseOrders, setPurchaseOrders] = useState([]);
-  const [selectedPO, setSelectedPO] = useState(null);
+  // const [purchaseOrders, setPurchaseOrders] = useState([]);
+  // const [selectedPO, setSelectedPO] = useState(null);
   const [selectedGRN, setSelectedGRN] = useState(null);
   const [selectedGRNs, setSelectedGRNs] = useState([]);
+
+
+  const openSelectPOModal = () => {
+    setselectPOModal(true);
+  };
+
+  const closeSelectPOModal = () => {
+    setselectPOModal(false);
+  };
 
   // Add this array at the top of your component
   const paymentModeOptions = [
@@ -1638,6 +2012,7 @@ const BillBookingCreate = () => {
     return !isNaN(num) && num >= 0;
   };
 
+  console.log("selected po:", selectedPO)
   return (
     <>
       <div className="website-content overflow-auto">
@@ -1648,18 +2023,84 @@ const BillBookingCreate = () => {
             <div className="col-md-12 ">
               <div className="card p-3">
                 <div className="row">
-                  <div className="col-md-4">
-                    <label htmlFor="event-no-select">Bill Entries</label>
-                    <span style={{ color: "#8b0203" }}> *</span>
-                    <div className="form-group">
-                      <SingleSelector
-                        options={billEntryOptions}
-                        onChange={setSelectedBillEntry}
-                        value={selectedBillEntry}
-                        placeholder="Select Bill Entry"
+                  <div className="row mb-3">
+                    <div className="col-md-2 d-flex align-items-center">
+                      <input
+                        type="checkbox"
+                        id="without-bill-entry"
+                        checked={withoutBillEntry}
+                        onChange={() => {
+                          setWithBillEntry(false);
+                          setWithoutBillEntry(true);
+                        }}
+                        className="me-2"
                       />
+                      <label
+                        htmlFor="without-bill-entry"
+                        className="mb-0"
+                      >
+                        Without Bill Entry
+                      </label>
+                    </div>
+                    <div className="col-md-2 d-flex align-items-center">
+                      <input
+                        type="checkbox"
+                        id="with-bill-entry"
+                        checked={withBillEntry}
+                        onChange={() => {
+                          setWithBillEntry(true);
+                          setWithoutBillEntry(false);
+                        }}
+                        className="me-2"
+                      />
+                      <label htmlFor="with-bill-entry" className="mb-0">
+                        With Bill Entry
+                      </label>
                     </div>
                   </div>
+                  {withBillEntry && !withoutBillEntry && (
+                    <div className="col-md-4">
+                      <label htmlFor="event-no-select">Bill Entries</label>
+                      <span style={{ color: "#8b0203" }}> *</span>
+                      <div className="form-group">
+                        <SingleSelector
+                          options={billEntryOptions}
+                          onChange={setSelectedBillEntry}
+                          value={selectedBillEntry}
+                          placeholder="Select Bill Entry"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {withoutBillEntry && !withBillEntry && (
+                    <>
+                      <div className="col-md-3 mt-2">
+                        <div className="form-group">
+                          <label>PO / WO Number</label>
+                          <input
+                            className="form-control"
+                            type="text"
+                            placeholder=""
+                            fdprocessedid="qv9ju9"
+                            value={selectedPO?.po_number || ""}
+                            disabled
+                          />
+                        </div>
+                      </div>
+                      <div
+                        className="col-md-1 pt-4"
+                        data-bs-toggle="modal"
+                        data-bs-target="#selectModal"
+                      >
+                        <p
+                          className="mt-2 text-decoration-underline"
+                          onClick={openSelectPOModal}
+                        >
+                          Select
+                        </p>
+                      </div>
+                    </>
+                  )}
                   <div className="col-md-4">
                     <div className="form-group">
                       <label>Company</label>
@@ -1667,7 +2108,16 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="text"
-                        value={displayCompany}
+                        // value={displayCompany || selectedPO?.company_name}
+                        // value={withoutBillEntry ? selectedPO.company_name : displayCompany}
+                        value={
+                          withoutBillEntry && selectedPO
+                            ? selectedPO.company_name
+                            : withBillEntry
+                              ? displayCompany
+                              : ""
+                        }
+
                         disabled
                       />
                     </div>
@@ -1680,7 +2130,15 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="text"
-                        value={displayProject}
+                        // value={displayProject }
+                        value={
+                          withoutBillEntry && selectedPO
+                            ? selectedPO.project_name
+                            : withBillEntry
+                              ? displayProject
+                              : ""
+                        }
+
                         disabled
                       />
                     </div>
@@ -1693,7 +2151,14 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="text"
-                        value={displaySite}
+                        // value={displaySite}
+                        value={
+                          withoutBillEntry && selectedPO
+                            ? selectedPO.site_name
+                            : withBillEntry
+                              ? displaySite
+                              : ""
+                        }
                         disabled
                       />
                     </div>
@@ -1714,7 +2179,14 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="text"
-                        value={supplierName}
+                        // value={supplierName|| selectedPO?.supplier_name}
+                        value={
+                          withoutBillEntry && selectedPO
+                            ? selectedPO.supplier_name
+                            : withBillEntry
+                              ? supplierName
+                              : ""
+                        }
                         disabled
                       />
                     </div>
@@ -1737,18 +2209,21 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>PO Number</label>
+                  {withBillEntry && !withoutBillEntry && (
+                    <div className="col-md-4 mt-2">
+                      <div className="form-group">
+                        <label>PO Number</label>
 
-                      <input
-                        className="form-control"
-                        type="text"
-                        value={formData.poNumber}
-                        disabled
-                      />
+                        <input
+                          className="form-control"
+                          type="text"
+                          value={formData.poNumber}
+                          disabled
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
+
 
                   <div className="d-flex justify-content-between mt-3 me-2">
                     <h5 className=" ">PO Details</h5>
@@ -1794,13 +2269,13 @@ const BillBookingCreate = () => {
                         className="form-control"
                         type="text"
                         value={formData.invoiceNumber}
-                        // onChange={(e) =>
-                        //   setFormData((prev) => ({
-                        //     ...prev,
-                        //     invoiceNumber: e.target.value,
-                        //   }))
-                        // }
-                        disabled
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            invoiceNumber: e.target.value,
+                          }))
+                        }
+                        disabled={!withoutBillEntry}
                       />
                     </div>
                   </div>
@@ -1815,17 +2290,49 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
+                   {withBillEntry && !withoutBillEntry && (
                   <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>Invoice Date</label>
                       <input
                         className="form-control"
                         type="text"
-                        value={formData.invoiceDate || getFormattedDate()} // Fallback to current date if empty
+                        // type={!withoutBillEntry ? "text" : "date"}
+                        value={formData.invoiceDate|| getFormattedDate() } // Fallback to current date if empty
                         readOnly
+                        // onChange={(e) =>
+                        //   setFormData((prev) => ({
+                        //     ...prev,
+                        //     invoiceDate: e.target.value,
+                        //   }))
+                        // }
+                        // disabled={!withoutBillEntry}
+                      />
+                    </div>
+                    {/* {console.log(".........invoice date:",formData.invoiceDate )} */}
+                  </div>
+                   )}
+  {withoutBillEntry&& !withBillEntry && (
+                   <div className="col-md-4 mt-3">
+                    <div className="form-group">
+                      <label>Invoice Date</label>
+                      <input
+                        className="form-control"
+                        type="date"
+                        // type={!withoutBillEntry ? "text" : "date"}
+                        value={formData.invoiceDate } // Fallback to current date if empty
+                        // readOnly
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            invoiceDate: e.target.value,
+                          }))
+                        }
+                        // disabled={!withoutBillEntry}
                       />
                     </div>
                   </div>
+  )}
                   <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>Invoice Amount</label>
@@ -1910,9 +2417,9 @@ const BillBookingCreate = () => {
                         value={
                           formData.typeOfCertificate
                             ? {
-                                value: formData.typeOfCertificate,
-                                label: formData.typeOfCertificate,
-                              }
+                              value: formData.typeOfCertificate,
+                              label: formData.typeOfCertificate,
+                            }
                             : null
                         }
                         onChange={(selected) =>
@@ -3402,7 +3909,7 @@ const BillBookingCreate = () => {
                   <button
                     className="purple-btn2 w-100"
                     onClick={handleSubmit}
-                    // disabled={isSubmitting}
+                  // disabled={isSubmitting}
                   >
                     Submit
                   </button>
@@ -3503,17 +4010,17 @@ const BillBookingCreate = () => {
         <Modal.Body>
           <div
             className="tbl-container  mt-3 "
-             style={{ maxHeight: "500px" }}
-            // style={{ maxHeight: 'none', overflowY: 'visible',
-            //   overflowX: 'visible'
+            style={{ maxHeight: "500px" }}
+          // style={{ maxHeight: 'none', overflowY: 'visible',
+          //   overflowX: 'visible'
 
-            //  }}
-            // style={{
-            //   maxHeight: "none",
-            //   overflowY: "visible !important",
-            //   overflowX: "visible !important",
-            //   width: "100%",
-            // }}
+          //  }}
+          // style={{
+          //   maxHeight: "none",
+          //   overflowY: "visible !important",
+          //   overflowX: "visible !important",
+          //   width: "100%",
+          // }}
           >
             <table className="w-100">
               <thead>
@@ -3574,7 +4081,7 @@ const BillBookingCreate = () => {
                       <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
                     </svg> */}
 
-                     <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
+                    <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
                   </td>
                 </tr>
                 {/* Dynamic Rows for Addition Tax */}
@@ -3632,11 +4139,11 @@ const BillBookingCreate = () => {
                           }))
                         }
                         value={{ value: row.type, label: row.type }}
-                        onChange={() => {}} // Empty onChange handler
+                        onChange={() => { }} // Empty onChange handler
                         placeholder="Select Type"
                         isDisabled={true} // Disable the entire selector
                       />
-                      {console.log("tax types:",taxTypes)}
+                      {/* {console.log("tax types:", taxTypes)} */}
                     </td>
                     <td className="text-start">
                       {row.isEditable ? (
@@ -3654,10 +4161,10 @@ const BillBookingCreate = () => {
                               prevRows.map((r) =>
                                 r.id === row.id
                                   ? {
-                                      ...r,
-                                      percentage: e.target.value,
-                                      amount: amount.toFixed(2),
-                                    }
+                                    ...r,
+                                    percentage: e.target.value,
+                                    amount: amount.toFixed(2),
+                                  }
                                   : r
                               )
                             );
@@ -3725,10 +4232,10 @@ const BillBookingCreate = () => {
                               prevRows.map((r) =>
                                 r.id === row.id
                                   ? {
-                                      ...r,
-                                      // amount: parseFloat(value) || 0,
-                                      amount: value === "" ? "0" : value, // Set to "0" when cleared
-                                    }
+                                    ...r,
+                                    // amount: parseFloat(value) || 0,
+                                    amount: value === "" ? "0" : value, // Set to "0" when cleared
+                                  }
                                   : r
                               )
                             );
@@ -3786,7 +4293,7 @@ const BillBookingCreate = () => {
                   <td className="text-start" />
                   <td className="" />
                   <td className="text-start" />
-                  <td onClick={addDeductionRow}  className="text-start">
+                  <td onClick={addDeductionRow} className="text-start">
                     {/* <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -3842,10 +4349,10 @@ const BillBookingCreate = () => {
                             prevRows.map((r) =>
                               r.id === row.id
                                 ? {
-                                    ...r,
-                                    percentage: e.target.value,
-                                    amount: amount.toFixed(2),
-                                  }
+                                  ...r,
+                                  percentage: e.target.value,
+                                  amount: amount.toFixed(2),
+                                }
                                 : r
                             )
                           );
@@ -3889,9 +4396,9 @@ const BillBookingCreate = () => {
                               prevRows.map((r) =>
                                 r.id === row.id
                                   ? {
-                                      ...r,
-                                      amount: parseFloat(value) || 0,
-                                    }
+                                    ...r,
+                                    amount: parseFloat(value) || 0,
+                                  }
                                   : r
                               )
                             );
@@ -3939,25 +4446,25 @@ const BillBookingCreate = () => {
                   <td className="text-start">{calculatePayableAmount()}</td>
                   <td />
                 </tr>
-                
+
               </tbody>
             </table>
-            
-           
+
+
           </div>
 
 
-           <div className="d-flex justify-content-center mt-3 mb-2">
-              <button
-                className="purple-btn2"
-                // onClick={handleSubmit}
-                // disabled={isSubmitting}
-                onClick={handleTaxChargesSubmit}
-              >
-                {/* {isSubmitting ? "Submitting..." : "Submit"} */}
-                Submit
-              </button>
-            </div>
+          <div className="d-flex justify-content-center mt-3 mb-2">
+            <button
+              className="purple-btn2"
+              // onClick={handleSubmit}
+              // disabled={isSubmitting}
+              onClick={handleTaxChargesSubmit}
+            >
+              {/* {isSubmitting ? "Submitting..." : "Submit"} */}
+              Submit
+            </button>
+          </div>
         </Modal.Body>
       </Modal>
       {/* Credit Note Modal */}
@@ -4318,6 +4825,307 @@ const BillBookingCreate = () => {
               >
                 Cancel
               </button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+
+      <Modal
+        centered
+        size="xl"
+        show={selectPOModal}
+        onHide={closeSelectPOModal}
+        backdrop="static"
+        keyboard={false}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Select PO</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row">
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Company</label>
+                <SingleSelector
+                  options={companies}
+                  value={selectedCompany}
+                  onChange={handleCompanyChange}
+                  placeholder="Select Company"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Project</label>
+                <SingleSelector
+                  options={projects}
+                  value={selectedProject}
+                  onChange={handleProjectChange}
+                  placeholder="Select Project"
+                  isDisabled={!selectedCompany}
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Sub-Project</label>
+                <SingleSelector
+                  options={sites}
+                  value={selectedSite}
+                  onChange={handleSiteChange}
+                  placeholder="Select Sub-Project"
+                  isDisabled={!selectedProject}
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>From Date</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={filterParams.startDate}
+                  onChange={(e) =>
+                    setFilterParams((prev) => ({
+                      ...prev,
+                      startDate: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>To Date</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={filterParams.endDate}
+                  onChange={(e) =>
+                    setFilterParams((prev) => ({
+                      ...prev,
+                      endDate: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>PO Type</label>
+                <SingleSelector
+                  options={poTypes}
+                  value={
+                    poTypes.find(
+                      (type) => type.value === filterParams.poType
+                    ) || poTypes[0]
+                  }
+                  onChange={(selected) =>
+                    setFilterParams((prev) => ({
+                      ...prev,
+                      poType: selected.value,
+                    }))
+                  }
+                  placeholder="Select PO Type"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>PO Number</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={filterParams.poNumber}
+                  onChange={(e) =>
+                    setFilterParams((prev) => ({
+                      ...prev,
+                      poNumber: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter PO Number"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row mt-3 justify-content-center">
+            {/* <div className="col-md-12 d-flex justify-content-end gap-2">
+                                <button
+                                  className="btn btn-secondary"
+                                  onClick={handleReset}
+                                  disabled={loading}
+                                >
+                                  Reset
+                                </button>
+                                <button
+                                  className="btn btn-primary"
+                                  onClick={handleSearch}
+                                  disabled={loading}
+                                >
+                                  Search
+                                </button>
+                              </div> */}
+            <div className="col-md-3">
+              <button className="purple-btn2 w-100" onClick={handleSearch}>
+                Search
+              </button>
+            </div>
+            <div className="col-md-3">
+              <button className="purple-btn1 w-100" onClick={handleReset}>
+                Reset
+              </button>
+            </div>
+          </div>
+          <div className="row mt-3">
+            <div className="col-md-12">
+              <div className="tbl-container mx-3 mt-3">
+                <table className="w-100">
+                  <thead>
+                    <tr>
+                      <th className="text-start">
+                        {/* <input
+                                type="checkbox"
+                                checked={selectedPOs.length === purchaseOrders.length}
+                                onChange={handleSelectAll}
+                              /> */}
+                        Sr.No.
+                      </th>
+                      <th className="text-start">PO Number</th>
+                      <th className="text-start">PO Date</th>
+                      <th className="text-start">PO Value</th>
+                      <th className="text-start">PO Type</th>
+                      <th className="text-start">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td colSpan="6" className="text-center">
+                          Loading...
+                        </td>
+                      </tr>
+                    ) : purchaseOrders.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="text-center">
+                          No purchase orders found
+                        </td>
+                      </tr>
+                    ) : (
+                      purchaseOrders.map((po, index) => (
+                        <tr key={po.id}>
+                          <td className="text-start">
+                            {/* <input
+                                    type="checkbox"
+                                    checked={selectedPOs.includes(po.id)}
+                                    onChange={() => handleCheckboxChange(po.id)}
+                                  /> */}
+                            {index + 1}
+                          </td>
+                          <td className="text-start">{po.po_number}</td>
+                          <td className="text-start">{po.po_date}</td>
+                          <td className="text-start">{po.total_value}</td>
+                          <td className="text-start">{po.po_type}</td>
+                          <td className="text-start">
+                            <button
+                              className=" purple-btn2"
+                              onClick={() => handlePOSelect(po)}
+                            >
+                              Select
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {purchaseOrders.length > 0 && (
+                <div className="d-flex justify-content-between align-items-center mt-3">
+                  <div className="showing-entries"></div>
+                  <nav>
+                    <ul className="pagination">
+                      <li
+                        className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
+                          }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(1)}
+                          disabled={pagination.current_page === 1}
+                        >
+                          First
+                        </button>
+                      </li>
+                      <li
+                        className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
+                          }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() =>
+                            handlePageChange(pagination.current_page - 1)
+                          }
+                          disabled={pagination.current_page === 1}
+                        >
+                          Prev
+                        </button>
+                      </li>
+                      {getPageNumbers().map((page) => (
+                        <li
+                          key={page}
+                          className={`page-item ${page === pagination.current_page ? "active" : ""
+                            }`}
+                        >
+                          <button
+                            className="page-link"
+                            onClick={() => handlePageChange(page)}
+                          >
+                            {page}
+                          </button>
+                        </li>
+                      ))}
+                      <li
+                        className={`page-item ${pagination.current_page === pagination.total_pages
+                          ? "disabled"
+                          : ""
+                          }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() =>
+                            handlePageChange(pagination.current_page + 1)
+                          }
+                          disabled={
+                            pagination.current_page === pagination.total_pages
+                          }
+                        >
+                          Next
+                        </button>
+                      </li>
+                      <li
+                        className={`page-item ${pagination.current_page === pagination.total_pages
+                          ? "disabled"
+                          : ""
+                          }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() =>
+                            handlePageChange(pagination.total_pages)
+                          }
+                          disabled={
+                            pagination.current_page === pagination.total_pages
+                          }
+                        >
+                          Last
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                  {getShowingEntriesText()}
+                </div>
+              )}
             </div>
           </div>
         </Modal.Body>
