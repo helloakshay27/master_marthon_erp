@@ -58,6 +58,8 @@ const DebitNoteDetails = () => {
     // { id: 3, type: "Freight", percentage: "", inclusive: false, amount: ' ', isEditable: false, addition: true, resource_id: 5, resource_type: "TaxCharge" },
   ]);
   const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
+  const [taxPercentages, setTaxPercentages] = useState([]);
+
 
   // Fetch tax types from API
   useEffect(() => {
@@ -73,6 +75,20 @@ const DebitNoteDetails = () => {
     };
 
     fetchTaxTypes();
+  }, []);
+
+  useEffect(() => {
+    const fetchTaxPercentages = async () => {
+      try {
+        const response = await fetch(`${baseURL}rfq/events/tax_percentage?token=${token}`);
+        const data = await response.json();
+        setTaxPercentages(data);
+      } catch (error) {
+        console.error("Error fetching tax percentages:", error);
+      }
+    };
+
+    fetchTaxPercentages();
   }, []);
   // console.log("tax types:", taxTypes)
   // const addRow = () => {
@@ -931,76 +947,6 @@ const DebitNoteDetails = () => {
                                             rows.some((r) => r.type === "IGST" && r.id !== row.id)),
                                       }))}
                                       value={{ value: row.type, label: row.type }}
-                                      // onChange={(selectedOption) => {
-                                      //     setRows((prevRows) =>
-                                      //         prevRows.map((r) =>
-                                      //             r.id === row.id
-                                      //                 ? {
-                                      //                     ...r,
-                                      //                     type: selectedOption?.value || "",
-                                      //                     resource_id: selectedOption?.id || null,
-                                      //                     resource_type: selectedOption?.tax || "",
-                                      //                 }
-                                      //                 : r
-                                      //         )
-                                      //     );
-                                      // }}
-
-
-                                      // onChange={(selectedOption) => {
-                                      //   setRows((prevRows) => {
-                                      //     let updatedRows = prevRows.map((r) =>
-                                      //       r.id === row.id
-                                      //         ? {
-                                      //           ...r,
-                                      //           type: selectedOption?.value || "",
-                                      //           resource_id: selectedOption?.id || null,
-                                      //           resource_type: selectedOption?.tax || "",
-                                      //         }
-                                      //         : r
-                                      //     );
-
-                                      //     // Auto-add CGST if SGST is selected
-                                      //     if (selectedOption?.value === "SGST" && !prevRows.some(r => r.type === "CGST")) {
-                                      //       updatedRows = [
-                                      //         ...updatedRows,
-                                      //         {
-                                      //           id: updatedRows.length + 1,
-                                      //           type: "CGST",
-                                      //           percentage: row.percentage,
-                                      //           inclusive: row.inclusive,
-                                      //           amount: row.amount,
-                                      //           isEditable: true,
-                                      //           addition: true,
-                                      //           resource_id: taxTypes.find(t => t.name === "CGST")?.id || null,
-                                      //           resource_type: taxTypes.find(t => t.name === "CGST")?.type || "",
-                                      //         },
-                                      //       ];
-                                      //     }
-
-                                      //     // Auto-add SGST if CGST is selected
-                                      //     if (selectedOption?.value === "CGST" && !prevRows.some(r => r.type === "SGST")) {
-                                      //       updatedRows = [
-                                      //         ...updatedRows,
-                                      //         {
-                                      //           id: updatedRows.length + 1,
-                                      //           type: "SGST",
-                                      //           percentage: row.percentage,
-                                      //           inclusive: row.inclusive,
-                                      //           amount: row.amount,
-                                      //           isEditable: true,
-                                      //           addition: true,
-                                      //           resource_id: taxTypes.find(t => t.name === "SGST")?.id || null,
-                                      //           resource_type: taxTypes.find(t => t.name === "SGST")?.type || "",
-                                      //         },
-                                      //       ];
-                                      //     }
-
-                                      //     return updatedRows;
-                                      //   });
-                                      // }}
-
-
                                       onChange={(selectedOption) => {
                                         console.log("Selected Option:", selectedOption); // Log the selected option
                                         setRows((prevRows) =>
@@ -1023,73 +969,86 @@ const DebitNoteDetails = () => {
                                   </td>
                                   <td className="text-start">
                                     {row.isEditable ? (
-                                      // <select
-                                      //   className="form-control form-select"
+
+                                      // <SingleSelector
+                                      //   className="form-control"
+                                      //   options={[
+                                      //     { value: "", label: "Select Tax" },
+                                      //     { value: "5%", label: "5%" },
+                                      //     { value: "12%", label: "12%" },
+                                      //     { value: "18%", label: "18%" },
+                                      //     { value: "28%", label: "28%" },
+                                      //   ]}
                                       //   value={
-                                      //     // If percentage already has %, use as is, else append %
-                                      //     row.percentage && row.percentage.toString().includes("%")
-                                      //       ? row.percentage
-                                      //       : row.percentage
-                                      //         ? `${row.percentage}%`
-                                      //         : ""
+                                      //     [
+                                      //       { value: "", label: "Select Tax" },
+                                      //       { value: "5%", label: "5%" },
+                                      //       { value: "12%", label: "12%" },
+                                      //       { value: "18%", label: "18%" },
+                                      //       { value: "28%", label: "28%" },
+                                      //     ].find(opt => opt.value === (
+                                      //       row.percentage && row.percentage.toString().includes("%")
+                                      //         ? row.percentage
+                                      //         : row.percentage
+                                      //           ? `${row.percentage}%`
+                                      //           : ""
+                                      //     )) || { value: "", label: "Select Tax" }
                                       //   }
-                                      //   onChange={(e) => {
-                                      //     // Remove % if present and parse as float
-                                      //     const value = e.target.value.replace("%", "");
+                                      //   onChange={selected => {
+                                      //     const value = selected?.value?.replace("%", "");
                                       //     const percentage = parseFloat(value) || 0;
                                       //     const amount = ((creditNoteAmount || 0) * percentage) / 100;
-                                      //     setRows((prevRows) =>
-                                      //       prevRows.map((r) =>
+                                      //     setRows(prevRows =>
+                                      //       prevRows.map(r =>
                                       //         r.id === row.id
-                                      //           ? { ...r, percentage: e.target.value, amount: amount.toFixed(2) }
+                                      //           ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
                                       //           : r
                                       //       )
                                       //     );
                                       //   }}
-                                      // >
-                                      //   <option value="">Select Tax</option>
-                                      //   <option value="5%">5%</option>
-                                      //   <option value="12%">12%</option>
-                                      //   <option value="18%">18%</option>
-                                      //   <option value="28%">28%</option>
-                                      // </select>
+                                      //   placeholder="Select Tax"
+                                      // />
+
                                       <SingleSelector
                                         className="form-control"
-                                        options={[
-                                          { value: "", label: "Select Tax" },
-                                          { value: "5%", label: "5%" },
-                                          { value: "12%", label: "12%" },
-                                          { value: "18%", label: "18%" },
-                                          { value: "28%", label: "28%" },
-                                        ]}
-                                        value={
-                                          [
-                                            { value: "", label: "Select Tax" },
-                                            { value: "5%", label: "5%" },
-                                            { value: "12%", label: "12%" },
-                                            { value: "18%", label: "18%" },
-                                            { value: "28%", label: "28%" },
-                                          ].find(opt => opt.value === (
-                                            row.percentage && row.percentage.toString().includes("%")
-                                              ? row.percentage
-                                              : row.percentage
-                                                ? `${row.percentage}%`
-                                                : ""
-                                          )) || { value: "", label: "Select Tax" }
+                                        options={
+                                          Array.isArray(
+                                            taxPercentages.find((t) => t.tax_name === row.type)?.percentage
+                                          )
+                                            ? taxPercentages
+                                              .find((t) => t.tax_name === row.type)
+                                              .percentage.map((percent) => ({
+                                                value: `${percent}%`,
+                                                label: `${percent}%`,
+                                              }))
+                                            : []
                                         }
-                                        onChange={selected => {
-                                          const value = selected?.value?.replace("%", "");
-                                          const percentage = parseFloat(value) || 0;
+                                        value={
+                                          row.percentage !== undefined && row.percentage !== null
+                                            ? {
+                                              value: `${parseFloat(row.percentage)}%`,
+                                              label: `${parseFloat(row.percentage)}%`,
+                                            }
+                                            : { value: "", label: "Select Tax" }
+                                        }
+                                        onChange={(selected) => {
+                                          const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
                                           const amount = ((creditNoteAmount || 0) * percentage) / 100;
-                                          setRows(prevRows =>
-                                            prevRows.map(r =>
+
+                                          setRows((prevRows) =>
+                                            prevRows.map((r) =>
                                               r.id === row.id
-                                                ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
+                                                ? {
+                                                  ...r,
+                                                  percentage: selected?.value,
+                                                  amount: amount.toFixed(2),
+                                                }
                                                 : r
                                             )
                                           );
                                         }}
                                         placeholder="Select Tax"
+                                        isDisabled={!row.isEditable}
                                       />
 
                                     ) : (
@@ -1272,7 +1231,7 @@ const DebitNoteDetails = () => {
                                     </select> */}
 
 
-                                    <SingleSelector
+                                    {/* <SingleSelector
                                       className="form-control"
                                       options={[
                                         { value: "", label: "Select Tax" },
@@ -1317,6 +1276,46 @@ const DebitNoteDetails = () => {
                                         );
                                       }}
                                       placeholder="Select Tax"
+                                    /> */}
+
+                                    <SingleSelector
+                                      className="form-control"
+                                      options={
+                                        taxPercentages.find((t) => t.tax_name === row.type)?.percentage.map((p) => ({
+                                          value: `${p}%`,
+                                          label: `${p}%`,
+                                        })) || []
+                                      }
+                                      value={
+                                        (() => {
+                                          const percent = row.percentage?.toString().includes("%")
+                                            ? row.percentage
+                                            : `${row.percentage}%`;
+
+                                          const options = taxPercentages.find((t) => t.tax_name === row.type)?.percentage || [];
+                                          return options.includes(parseFloat(percent))
+                                            ? { value: percent, label: percent }
+                                            : { value: "", label: "Select Tax" };
+                                        })()
+                                      }
+                                      onChange={(selected) => {
+                                        const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
+                                        const amount = ((creditNoteAmount || 0) * percentage) / 100;
+
+                                        setDeductionRows((prevRows) =>
+                                          prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? {
+                                                ...r,
+                                                percentage: percentage,
+                                                amount: amount.toFixed(2),
+                                              }
+                                              : r
+                                          )
+                                        );
+                                      }}
+                                      placeholder="Select Tax %"
+                                    // isDisabled={!row.isEditable}
                                     />
                                   </td>
                                   <td>

@@ -587,6 +587,7 @@ const DebitNoteCreate = () => {
     // { id: 3, type: "Freight", percentage: "", inclusive: false, amount: ' ', isEditable: false, addition: true, resource_id: 5, resource_type: "TaxCharge" },
   ]);
   const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
+  const [taxPercentages, setTaxPercentages] = useState([]);
 
   // Fetch tax types from API
   useEffect(() => {
@@ -602,6 +603,20 @@ const DebitNoteCreate = () => {
     };
 
     fetchTaxTypes();
+  }, []);
+
+  useEffect(() => {
+    const fetchTaxPercentages = async () => {
+      try {
+        const response = await fetch(`${baseURL}rfq/events/tax_percentage?token=${token}`);
+        const data = await response.json();
+        setTaxPercentages(data);
+      } catch (error) {
+        console.error("Error fetching tax percentages:", error);
+      }
+    };
+
+    fetchTaxPercentages();
   }, []);
   // console.log("tax types:", taxTypes)
   // const addRow = () => {
@@ -1481,44 +1496,152 @@ const DebitNoteCreate = () => {
                                           });
                                         }}
                                         placeholder="Select Type"
-                                      isDisabled={!row.isEditable} // Disable if not editable
+                                        isDisabled={!row.isEditable} // Disable if not editable
                                       />
 
                                     </td>
                                     <td className="text-start">
                                       {row.isEditable ? (
+                                        // <SingleSelector
+                                        //   className="form-control"
+                                        //   options={[
+                                        //     { value: "", label: "Select Tax" },
+                                        //     { value: "5%", label: "5%" },
+                                        //     { value: "12%", label: "12%" },
+                                        //     { value: "18%", label: "18%" },
+                                        //     { value: "28%", label: "28%" },
+                                        //   ]}
+                                        //   value={
+                                        //     [
+                                        //       { value: "", label: "Select Tax" },
+                                        //       { value: "5%", label: "5%" },
+                                        //       { value: "12%", label: "12%" },
+                                        //       { value: "18%", label: "18%" },
+                                        //       { value: "28%", label: "28%" },
+                                        //     ].find(opt => opt.value === row.percentage) || { value: "", label: "Select Tax" }
+                                        //   }
+                                        //   onChange={selected => {
+                                        //     const percentage = parseFloat(selected?.value) || 0;
+                                        //     const amount = ((creditNoteAmount || 0) * percentage) / 100;
+
+                                        //     setRows(prevRows =>
+                                        //       prevRows.map(r =>
+                                        //         r.id === row.id
+                                        //           ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
+                                        //           : r
+                                        //       )
+                                        //     );
+                                        //   }}
+                                        //   placeholder="Select Tax"
+                                        // />
+
+                                        // <SingleSelector
+                                        //   className="form-control"
+                                        //   options={
+                                        //     taxPercentages.find((t) => t.tax_name === row.type)?.percentage.map((percent) => ({
+                                        //       value: `${percent}%`,
+                                        //       label: `${percent}%`,
+                                        //     })) || []
+                                        //   }
+                                        //   value={
+                                        //     taxPercentages
+                                        //       .find((t) => t.tax_name === row.type)?.percentage
+                                        //       .map((p) => `${p}%`)
+                                        //       .includes(
+                                        //         row.percentage?.toString().includes("%")
+                                        //           ? row.percentage
+                                        //           : `${row.percentage}`
+                                        //       )
+                                        //       ? { value: `${row.percentage}%`, label: `${row.percentage}%` }
+                                        //       : null
+                                        //   }
+                                        //   onChange={(selectedOption) => {
+                                        //     setRows((prevRows) =>
+                                        //       prevRows.map((r) =>
+                                        //         r.id === row.id
+                                        //           ? {
+                                        //             ...r,
+                                        //             percentage: selectedOption
+                                        //               ? parseFloat(selectedOption.value.replace("%", ""))
+                                        //               : "",
+                                        //           }
+                                        //           : r
+                                        //       )
+                                        //     );
+                                        //   }}
+                                        //   placeholder="Select Tax %"
+                                        //   isDisabled={!row.isEditable}
+                                        // />
+
+
+
+                                        //                                         <select
+                                        //   className="form-control"
+                                        //   value={row.percentage}
+                                        //   onChange={(e) =>
+                                        //     setRows((prevRows) =>
+                                        //       prevRows.map((r) =>
+                                        //         r.id === row.id ? { ...r, percentage: parseFloat(e.target.value) } : r
+                                        //       )
+                                        //     )
+                                        //   }
+                                        // >
+                                        //   {taxPercentages
+                                        //     .find((t) => t.tax_name === row.type)?.percentage.map((percent) => (
+                                        //       <option key={percent} value={percent}>
+                                        //         {percent}%
+                                        //       </option>
+                                        //     ))}
+                                        // </select>
+
+
+
                                         <SingleSelector
                                           className="form-control"
-                                          options={[
-                                            { value: "", label: "Select Tax" },
-                                            { value: "5%", label: "5%" },
-                                            { value: "12%", label: "12%" },
-                                            { value: "18%", label: "18%" },
-                                            { value: "28%", label: "28%" },
-                                          ]}
-                                          value={
-                                            [
-                                              { value: "", label: "Select Tax" },
-                                              { value: "5%", label: "5%" },
-                                              { value: "12%", label: "12%" },
-                                              { value: "18%", label: "18%" },
-                                              { value: "28%", label: "28%" },
-                                            ].find(opt => opt.value === row.percentage) || { value: "", label: "Select Tax" }
+                                          options={
+                                            Array.isArray(
+                                              taxPercentages.find((t) => t.tax_name === row.type)?.percentage
+                                            )
+                                              ? taxPercentages
+                                                .find((t) => t.tax_name === row.type)
+                                                .percentage.map((percent) => ({
+                                                  value: `${percent}%`,
+                                                  label: `${percent}%`,
+                                                }))
+                                              : []
                                           }
-                                          onChange={selected => {
-                                            const percentage = parseFloat(selected?.value) || 0;
+                                          value={
+                                            row.percentage !== undefined && row.percentage !== null
+                                              ? {
+                                                value: `${parseFloat(row.percentage)}%`,
+                                                label: `${parseFloat(row.percentage)}%`,
+                                              }
+                                              : { value: "", label: "Select Tax" }
+                                          }
+                                          onChange={(selected) => {
+                                            const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
                                             const amount = ((creditNoteAmount || 0) * percentage) / 100;
 
-                                            setRows(prevRows =>
-                                              prevRows.map(r =>
+                                            setRows((prevRows) =>
+                                              prevRows.map((r) =>
                                                 r.id === row.id
-                                                  ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
+                                                  ? {
+                                                    ...r,
+                                                    percentage: selected?.value,
+                                                    amount: amount.toFixed(2),
+                                                  }
                                                   : r
                                               )
                                             );
                                           }}
                                           placeholder="Select Tax"
+                                          isDisabled={!row.isEditable}
                                         />
+
+
+
+
+
 
 
                                       ) : (
@@ -1662,7 +1785,7 @@ const DebitNoteCreate = () => {
                                       />
                                     </td>
                                     <td className="text-start">
-                                      <SingleSelector
+                                      {/* <SingleSelector
                                         className="form-control"
                                         options={[
                                           { value: "", label: "Select Tax" },
@@ -1693,6 +1816,47 @@ const DebitNoteCreate = () => {
                                           );
                                         }}
                                         placeholder="Select Tax"
+                                      /> */}
+
+
+                                      <SingleSelector
+                                        className="form-control"
+                                        options={
+                                          taxPercentages.find((t) => t.tax_name === row.type)?.percentage.map((p) => ({
+                                            value: `${p}%`,
+                                            label: `${p}%`,
+                                          })) || []
+                                        }
+                                        value={
+                                          (() => {
+                                            const percent = row.percentage?.toString().includes("%")
+                                              ? row.percentage
+                                              : `${row.percentage}%`;
+
+                                            const options = taxPercentages.find((t) => t.tax_name === row.type)?.percentage || [];
+                                            return options.includes(parseFloat(percent))
+                                              ? { value: percent, label: percent }
+                                              : { value: "", label: "Select Tax" };
+                                          })()
+                                        }
+                                        onChange={(selected) => {
+                                          const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
+                                          const amount = ((creditNoteAmount || 0) * percentage) / 100;
+
+                                          setDeductionRows((prevRows) =>
+                                            prevRows.map((r) =>
+                                              r.id === row.id
+                                                ? {
+                                                  ...r,
+                                                  percentage: percentage,
+                                                  amount: amount.toFixed(2),
+                                                }
+                                                : r
+                                            )
+                                          );
+                                        }}
+                                        placeholder="Select Tax %"
+                                      // isDisabled={!row.isEditable}
                                       />
                                     </td>
                                     <td>

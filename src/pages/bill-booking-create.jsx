@@ -717,7 +717,7 @@ const BillBookingCreate = () => {
     if (!selectedPO || !Array.isArray(selectedPO.grn_materials)) return null;
 
     return (
-      <div className="tbl-container mx-3 mt-3">
+      <div className="tbl-container  mt-3">
         <table className="w-100">
           <thead>
             <tr>
@@ -3502,17 +3502,18 @@ const BillBookingCreate = () => {
         </Modal.Header>
         <Modal.Body>
           <div
-            className="tbl-container mx-3 mt-3 "
+            className="tbl-container  mt-3 "
+             style={{ maxHeight: "500px" }}
             // style={{ maxHeight: 'none', overflowY: 'visible',
             //   overflowX: 'visible'
 
             //  }}
-            style={{
-              maxHeight: "none",
-              overflowY: "visible !important",
-              overflowX: "visible !important",
-              width: "100%",
-            }}
+            // style={{
+            //   maxHeight: "none",
+            //   overflowY: "visible !important",
+            //   overflowX: "visible !important",
+            //   width: "100%",
+            // }}
           >
             <table className="w-100">
               <thead>
@@ -3556,8 +3557,8 @@ const BillBookingCreate = () => {
                   <td className="text-start" />
                   <td className="text-start" />
                   <td className="text-start" />
-                  <td onClick={addRow}>
-                    <svg
+                  <td className="text-start" onClick={addRow}>
+                    {/* <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
                       height="16"
@@ -3571,7 +3572,9 @@ const BillBookingCreate = () => {
                     >
                       <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                       <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                    </svg>
+                    </svg> */}
+
+                     <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
                   </td>
                 </tr>
                 {/* Dynamic Rows for Addition Tax */}
@@ -3622,8 +3625,7 @@ const BillBookingCreate = () => {
                     <td className="text-start">
                       <SingleSelector
                         options={
-                          taxTypes ||
-                          [].map((type) => ({
+                          taxTypes.map((type) => ({
                             value: type.name,
                             label: type.name,
                             isDisabled: true, // Make all options disabled
@@ -3634,6 +3636,7 @@ const BillBookingCreate = () => {
                         placeholder="Select Type"
                         isDisabled={true} // Disable the entire selector
                       />
+                      {console.log("tax types:",taxTypes)}
                     </td>
                     <td className="text-start">
                       {row.isEditable ? (
@@ -3740,7 +3743,7 @@ const BillBookingCreate = () => {
                       onClick={() => deleteRow(row.id)}
                       style={{ cursor: "pointer", color: "black" }}
                     >
-                      <svg
+                      {/* <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
                         height="16"
@@ -3753,7 +3756,8 @@ const BillBookingCreate = () => {
                       >
                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                         <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                      </svg>
+                      </svg> */}
+                      <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
                     </td>
                   </tr>
                 ))}
@@ -3782,8 +3786,8 @@ const BillBookingCreate = () => {
                   <td className="text-start" />
                   <td className="" />
                   <td className="text-start" />
-                  <td onClick={addDeductionRow}>
-                    <svg
+                  <td onClick={addDeductionRow}  className="text-start">
+                    {/* <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
                       height="16"
@@ -3797,7 +3801,9 @@ const BillBookingCreate = () => {
                     >
                       <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                       <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                    </svg>
+                    </svg> */}
+
+                    <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
                   </td>
                 </tr>
                 {/* Dynamic Rows for Deduction Tax */}
@@ -3823,18 +3829,6 @@ const BillBookingCreate = () => {
                       />
                     </td>
                     <td className="text-start">
-                      {/* <select
-                                                  className="form-control form-select"
-                                                  value={row.percentage}
-                                                  onChange={(e) =>
-                                                    
-                                                    setDeductionRows((prevRows) =>
-                                                      prevRows.map((r) =>
-                                                        r.id === row.id ? { ...r, percentage: e.target.value } : r
-                                                      )
-                                                    )
-                                                  }
-                                                > */}
                       <select
                         className="form-control form-select"
                         value={row.percentage}
@@ -3911,7 +3905,7 @@ const BillBookingCreate = () => {
                       onClick={() => deleteDeductionRow(row.id)}
                       style={{ cursor: "pointer", color: "black" }}
                     >
-                      <svg
+                      {/* <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="16"
                         height="16"
@@ -3924,7 +3918,9 @@ const BillBookingCreate = () => {
                       >
                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                         <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                      </svg>
+                      </svg> */}
+
+                      <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
                     </td>
                   </tr>
                 ))}
@@ -3943,10 +3939,15 @@ const BillBookingCreate = () => {
                   <td className="text-start">{calculatePayableAmount()}</td>
                   <td />
                 </tr>
-                ``
+                
               </tbody>
             </table>
-            <div className="d-flex justify-content-center mt-3 mb-2">
+            
+           
+          </div>
+
+
+           <div className="d-flex justify-content-center mt-3 mb-2">
               <button
                 className="purple-btn2"
                 // onClick={handleSubmit}
@@ -3957,7 +3958,6 @@ const BillBookingCreate = () => {
                 Submit
               </button>
             </div>
-          </div>
         </Modal.Body>
       </Modal>
       {/* Credit Note Modal */}
