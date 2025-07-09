@@ -379,7 +379,23 @@ const MaterialReconciliationList = () => {
     {
       field: "materials_description",
       headerName: "Material Description",
-      width: 400,
+      width: 350,
+      renderCell: (params) => (
+        <span
+          style={{
+            maxWidth: 330, // slightly less than column width for padding
+            display: "inline-block",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            verticalAlign: "middle",
+            cursor: "pointer",
+          }}
+          title={params.value}
+        >
+          {params.value}
+        </span>
+      ),
     },
     { field: "stock_as_on", headerName: "Stock As On", width: 120 },
     { field: "deadstock_qty", headerName: "Deadstock Qty", width: 120 },
