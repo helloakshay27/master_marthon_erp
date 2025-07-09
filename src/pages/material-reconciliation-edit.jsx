@@ -221,9 +221,7 @@ const MaterialReconciliationEdit = () => {
   // Fetch company data on component mount
   useEffect(() => {
     axios
-      .get(
-        `${baseURL}/pms/company_setups.json?token=${token}`
-      )
+      .get(`${baseURL}/pms/company_setups.json?token=${token}`)
       .then((response) => {
         setCompanies(response.data.companies);
       })
@@ -994,9 +992,7 @@ const MaterialReconciliationEdit = () => {
 
         // Fetch projects for the selected company
         axios
-          .get(
-            `${baseURL}/pms/company_setups.json?token=${token}`
-          )
+          .get(`${baseURL}/pms/company_setups.json?token=${token}`)
           .then((companyResponse) => {
             const selectedCompanyData = companyResponse.data.companies.find(
               (company) => company.id === data.company.id
@@ -1146,6 +1142,35 @@ const MaterialReconciliationEdit = () => {
   }, [id, token]);
 
   const handleSubmit = async () => {
+    // Validation: company, project, subproject, store mandatory
+    if (!selectedCompany) {
+      alert("Please select a company.");
+      return;
+    }
+    if (!selectedProject) {
+      alert("Please select a project.");
+      return;
+    }
+    if (!selectedSite) {
+      alert("Please select a sub-project.");
+      return;
+    }
+    if (!selectedStore) {
+      alert("Please select a store.");
+      return;
+    }
+    // Validation: at least one material must be present
+    if (
+      !formData.material_reconciliation_items_attributes ||
+      formData.material_reconciliation_items_attributes.filter(
+        (item) => !item._destroy
+      ).length === 0
+    ) {
+      alert(
+        "Please select and accept at least one material before submitting."
+      );
+      return;
+    }
     try {
       // Prepare the payload
       const payload = {
@@ -1380,7 +1405,9 @@ const MaterialReconciliationEdit = () => {
               <div className="row">
                 <div className="col-md-3">
                   <div className="form-group">
-                    <label>Company </label>
+                    <label>
+                      Company <span style={{ color: "red" }}>*</span>
+                    </label>
                     <SingleSelector
                       options={companyOptions}
                       onChange={handleCompanyChange}
@@ -1391,7 +1418,9 @@ const MaterialReconciliationEdit = () => {
                 </div>
                 <div className="col-md-3">
                   <div className="form-group">
-                    <label>Project </label>
+                    <label>
+                      Project <span style={{ color: "red" }}>*</span>
+                    </label>
                     <SingleSelector
                       options={projects}
                       onChange={handleProjectChange}
@@ -1402,7 +1431,9 @@ const MaterialReconciliationEdit = () => {
                 </div>
                 <div className="col-md-3">
                   <div className="form-group">
-                    <label>Sub-Project </label>
+                    <label>
+                      Sub-Project <span style={{ color: "red" }}>*</span>
+                    </label>
                     <SingleSelector
                       options={siteOptions}
                       onChange={handleSiteChange}
@@ -1424,7 +1455,9 @@ const MaterialReconciliationEdit = () => {
                 </div>
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
-                    <label>Store</label>
+                    <label>
+                      Store <span style={{ color: "red" }}>*</span>
+                    </label>
                     <SingleSelector
                       options={stores}
                       onChange={handleStoreChange}

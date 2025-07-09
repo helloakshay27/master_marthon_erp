@@ -45,41 +45,85 @@ const BillEntryDetails = () => {
   const closeviewDocumentModal = () => setviewDocumentModal(false);
 
   // const navigate = useNavigate();
-
-  const statusOptions = [
+   const [statusOptions, setStatusOptions] = useState([
     {
       label: "Select Status",
       value: "",
     },
-    {
-      label: "Open",
-      value: "open",
-    },
-    // {
-    //   label: "Verified",
-    //   value: "verified",
-    // },
-    // {
-    //   label: "All",
-    //   value: "all",
-    // },
-    {
-      label: "Submited",
-      value: "submited",
-    },
-    {
-      label: "Request for revision",
-      value: "request_for_revision",
-    },
-    // {
-    //   label: "Proceed",
-    //   value: "proceed",
-    // },
-    // {
-    //   label: "Approved",
-    //   value: "approved",
-    // },
-  ];
+  ]);
+
+  useEffect(() => {
+      const fetchStatusOptions = async () => {
+        try {
+          const response = await axios.get(
+            `${baseURL}statuses_list?model=BillEntry&token=${token}`
+          );
+  
+          // Ensure we're handling the response data safely
+          const statusData = Array.isArray(response.data) ? response.data : [];
+  
+          // Map the API response to the format needed for SingleSelector
+          const options = statusData.map((status) => ({
+            value: status.value, // Use the value directly from API
+            label: status.name, // Use the name directly from API
+          }));
+  
+          // Add the default "Select Status" option at the beginning
+          setStatusOptions([
+            {
+              label: "Select Status",
+              value: "",
+            },
+            ...options,
+          ]);
+        } catch (error) {
+          console.error("Error fetching status options:", error);
+          setStatusOptions([
+            {
+              label: "Select Status",
+              value: "",
+            },
+          ]);
+        }
+      };
+  
+      fetchStatusOptions();
+    }, [token]); // Keep token as dependency
+
+  // const statusOptions = [
+  //   {
+  //     label: "Select Status",
+  //     value: "",
+  //   },
+  //   {
+  //     label: "Open",
+  //     value: "open",
+  //   },
+  //   // {
+  //   //   label: "Verified",
+  //   //   value: "verified",
+  //   // },
+  //   // {
+  //   //   label: "All",
+  //   //   value: "all",
+  //   // },
+  //   {
+  //     label: "Submited",
+  //     value: "submited",
+  //   },
+  //   {
+  //     label: "Request for revision",
+  //     value: "request_for_revision",
+  //   },
+  //   // {
+  //   //   label: "Proceed",
+  //   //   value: "proceed",
+  //   // },
+  //   // {
+  //   //   label: "Approved",
+  //   //   value: "approved",
+  //   // },
+  // ];
 
   const handleStatusChange = (selectedOption) => {
     // setStatus(e.target.value);

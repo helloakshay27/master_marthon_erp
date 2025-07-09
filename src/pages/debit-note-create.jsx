@@ -15,74 +15,6 @@ const DebitNoteCreate = () => {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
-  // const [showRows, setShowRows] = useState(false);
-  // const [attachOneModal, setattachOneModal] = useState(false);
-  // const [attachTwoModal, setattachTwoModal] = useState(false);
-  // const [attachThreeModal, setattachThreeModal] = useState(false);
-  // const [taxesRowDetails, settaxesRowDetails] = useState(false);
-
-  // const taxesRowDropdown = () => {
-  //   settaxesRowDetails(!taxesRowDetails);
-  // };
-
-  // const openAttachOneModal = () => setattachOneModal(true);
-  // const closeAttachOneModal = () => setattachOneModal(false);
-
-  // const openAttachTwoModal = () => setattachTwoModal(true);
-  // const closeAttachTwoModal = () => setattachTwoModal(false);
-
-  // const openAttachThreeModal = () => setattachThreeModal(true);
-  // const closeAttachThreeModal = () => setattachThreeModal(false);
-
-  // // tax table functionality
-
-  // const [rows, setRows] = useState([
-  //   {
-  //     id: 1,
-  //     type: "TDS 1",
-  //     charges: "100",
-  //     inclusive: false,
-  //     amount: 50.0,
-  //   },
-  // ]);
-
-  // // Toggle visibility of rows
-  // const toggleRows = () => {
-  //   setShowRows((prev) => !prev);
-  // };
-
-  // // Delete a specific row
-  // const deleteRow = (id) => {
-  //   setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-  // };
-
-  // // Calculate Sub Total (Addition)
-  // const calculateSubTotal = () => {
-  //   return rows.reduce((total, row) => total + row.amount, 0).toFixed(2); // Sum of all amounts
-  // };
-  // // tax table functionality
-
-  //   // Function to handle tab change
-  //   const handleTabChange = (tabId) => {
-  //     setActiveTab(tabId);
-  //   };
-
-  //   const [currentStep, setCurrentStep] = useState(1);
-  //   const totalSteps = 4;
-
-  //   // Function to handle the next step
-  //   const handleNext = () => {
-  //     if (currentStep < totalSteps) {
-  //       setCurrentStep(currentStep + 1);
-  //     }
-  //   };
-
-  //   // Function to handle the previous step
-  //   const handlePrev = () => {
-  //     if (currentStep > 1) {
-  //       setCurrentStep(currentStep - 1);
-  //     }
-  //   };
 
   const [showRows, setShowRows] = useState(false);
   const [debitNoteReason, setDebitNoteReason] = useState("");
@@ -111,53 +43,13 @@ const DebitNoteCreate = () => {
 
   // tax table functionality
 
-  // const [rows, setRows] = useState([
-  //   {
-  //     id: 1,
-  //     type: "TDS 1",
-  //     charges: "100",
-  //     inclusive: false,
-  //     amount: 50.0,
-  //   },
-  // ]);
+ 
 
   // Toggle visibility of rows
   const toggleRows = () => {
     setShowRows((prev) => !prev);
   };
 
-  // Delete a specific row
-  // const deleteRow = (id) => {
-  //   setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-  // };
-
-  // Calculate Sub Total (Addition)
-  // const calculateSubTotal = () => {
-  //   return rows.reduce((total, row) => total + row.amount, 0).toFixed(2); // Sum of all amounts
-  // };
-  // tax table functionality
-
-  // Function to handle tab change
-  // const handleTabChange = (tabId) => {
-  //   setActiveTab(tabId);
-  // };
-
-  // const [currentStep, setCurrentStep] = useState(1);
-  // const totalSteps = 4;
-
-  // // Function to handle the next step
-  // const handleNext = () => {
-  //   if (currentStep < totalSteps) {
-  //     setCurrentStep(currentStep + 1);
-  //   }
-  // };
-
-  // // Function to handle the previous step
-  // const handlePrev = () => {
-  //   if (currentStep > 1) {
-  //     setCurrentStep(currentStep - 1);
-  //   }
-  // };
   const [pageSize, setPageSize] = useState(5);
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);

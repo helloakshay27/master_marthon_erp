@@ -1371,7 +1371,6 @@ const MaterialReconciliationList = () => {
                   autoHeight={false}
                   getRowId={(row) => row.id}
                   loading={loading}
-                  // checkboxSelection
                   checkboxSelection={!!fromStatus} //
                   selectionModel={selectedIds}
                   onSelectionModelChange={(ids) => {
@@ -1413,31 +1412,82 @@ const MaterialReconciliationList = () => {
                   }}
                 />
               </div>
-
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-                padding={2}
-              >
-                <Pagination
-                  count={totalPages}
-                  page={currentPage}
-                  onChange={(e, page) => handlePageChange(page)}
-                  siblingCount={1}
-                  boundaryCount={1}
-                  color="primary"
-                  showFirstButton
-                  showLastButton
-                  disabled={totalPages <= 1}
-                />
-
-                <Typography variant="body2">
+              <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+                <ul className="pagination justify-content-center d-flex">
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(1)}
+                      disabled={currentPage === 1}
+                    >
+                      First
+                    </button>
+                  </li>
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      Prev
+                    </button>
+                  </li>
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <li
+                      key={index + 1}
+                      className={`page-item ${
+                        currentPage === index + 1 ? "active" : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(index + 1)}
+                      >
+                        {index + 1}
+                      </button>
+                    </li>
+                  ))}
+                  <li
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </button>
+                  </li>
+                  <li
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(totalPages)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Last
+                    </button>
+                  </li>
+                </ul>
+                <div>
                   Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
                   {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
                   {totalEntries} entries
-                </Typography>
-              </Stack>
+                </div>
+              </div>
             </div>
           </div>
           <div className="tab-content1" id="draft-content"></div>
