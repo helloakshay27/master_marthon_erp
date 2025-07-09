@@ -118,6 +118,8 @@ const GatePassEdit = () => {
   const [batchLoading, setBatchLoading] = useState(false);
   const [batchTableType, setBatchTableType] = useState("");
 
+  const [poMaterialsLoading, setPoMaterialsLoading] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -698,6 +700,7 @@ const GatePassEdit = () => {
       selectedPO.id &&
       formData.store_id
     ) {
+      setPoMaterialsLoading(true);
       const fetchMaterials = async () => {
         try {
           const response = await axios.get(
@@ -705,7 +708,7 @@ const GatePassEdit = () => {
           );
           if (response.data) {
             if (Array.isArray(response.data.inventories)) {
-              setPoMaterials(response.data.inventories); // <-- for modal
+              setPoMaterials(response.data.inventories);
             } else if (Array.isArray(response.data)) {
               setPoMaterials(response.data);
             } else {
@@ -716,11 +719,12 @@ const GatePassEdit = () => {
           }
         } catch (error) {
           setPoMaterials([]);
+        } finally {
+          setPoMaterialsLoading(false);
         }
       };
       fetchMaterials();
     }
-    // eslint-disable-next-line
   }, [selectedPO, formData.gate_pass_type, formData.store_id, token]);
 
   useEffect(() => {
@@ -1354,11 +1358,11 @@ const GatePassEdit = () => {
 
   // Pre-fill materials table once all necessary data is available
   useEffect(() => {
-    // Wait until all necessary data is available
+    // Only require fetchedMaterials for edit mode
     if (
       !formData.gate_pass_type ||
-      fetchedMaterials.length === 0 ||
-      gatePassTypes.length === 0
+      gatePassTypes.length === 0 ||
+      (id && fetchedMaterials.length === 0)
     ) {
       return;
     }
@@ -1373,42 +1377,43 @@ const GatePassEdit = () => {
       gatePassType.rawValue === "PurchaseOrder" ||
       gatePassType.rawValue === "MaterialTransaferOrder"
     ) {
-      // For PO-based types, we need poMaterials to be loaded
       if (poMaterials.length === 0) return;
 
-      const gatePassMaterialIds = fetchedMaterials.map(
-        (m) => m.material_inventory_id
-      );
+      if (id) {
+        // Edit mode: prefill from fetchedMaterials
+        const gatePassMaterialIds = fetchedMaterials.map(
+          (m) => m.material_inventory_id
+        );
+        const selectedMaterials = poMaterials
+          .filter((m) => gatePassMaterialIds.includes(m.id))
+          .map((m) => {
+            const gpMaterial =
+              fetchedMaterials.find(
+                (gpm) => gpm.material_inventory_id === m.id
+              ) || {};
+            return {
+              id: gpMaterial.id,
+              material_type: m.material_type,
+              material_sub_type: m.material_sub_type,
+              material_name: m.material,
+              material_details: m.generic_specification,
+              generic_specification: m.generic_specification,
+              brand: m.brand,
+              colour: m.colour,
+              unit: m.uom,
+              gate_pass_qty: gpMaterial.gate_pass_qty || "",
+              stock_as_on: m.stock_as_on,
+              material_inventory_id: m.id,
+              gp_batches: gpMaterial.gp_batches || [],
+              available_qty: null,
+            };
+          });
 
-      const selectedMaterials = poMaterials
-        .filter((m) => gatePassMaterialIds.includes(m.id))
-        .map((m) => {
-          const gpMaterial =
-            fetchedMaterials.find(
-              (gpm) => gpm.material_inventory_id === m.id
-            ) || {};
-          return {
-            id: gpMaterial.id,
-            material_type: m.material_type,
-            material_sub_type: m.material_sub_type,
-            material_name: m.material,
-            material_details: m.generic_specification,
-            generic_specification: m.generic_specification,
-            brand: m.brand,
-            colour: m.colour,
-            unit: m.uom,
-            gate_pass_qty: gpMaterial.gate_pass_qty || "",
-            stock_as_on: m.stock_as_on,
-            material_inventory_id: m.id,
-            gp_batches: gpMaterial.gp_batches || [],
-            available_qty: null,
-          };
-        });
-
-      setFormData((prev) => ({
-        ...prev,
-        material_items: selectedMaterials,
-      }));
+        setFormData((prev) => ({
+          ...prev,
+          material_items: selectedMaterials,
+        }));
+      }
     } else if (gatePassType.rawValue === "" || !gatePassType.rawValue) {
       // For general/maintenance types
       const maintenanceMaterialRows = fetchedMaterials.map((m) => {
@@ -1447,7 +1452,13 @@ const GatePassEdit = () => {
       });
       prefillMaintenanceRowOptions(maintenanceMaterialRows);
     }
-  }, [fetchedMaterials, poMaterials, formData.gate_pass_type, gatePassTypes]);
+  }, [
+    fetchedMaterials,
+    poMaterials,
+    formData.gate_pass_type,
+    gatePassTypes,
+    id,
+  ]);
 
   const fetchAvailableQty = async (row, idx) => {
     if (!formData.store_id) {
@@ -3193,32 +3204,46 @@ const GatePassEdit = () => {
                 </tr>
               </thead>
               <tbody>
-                {poMaterials.map((item, idx) => (
-                  <tr key={item.id || idx}>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={selectedMaterialIndexes.includes(idx)}
-                        onChange={() => {
-                          setSelectedMaterialIndexes((prev) =>
-                            prev.includes(idx)
-                              ? prev.filter((i) => i !== idx)
-                              : [...prev, idx]
-                          );
-                        }}
-                      />
+                {poMaterialsLoading ? (
+                  <tr>
+                    <td colSpan={10} className="text-center">
+                      Loading materials...
                     </td>
-                    <td>{idx + 1}</td>
-                    <td>{item.material_type}</td>
-                    <td>{item.material_sub_type}</td>
-                    <td>{item.material}</td>
-                    <td>{item.generic_specification}</td>
-                    <td>{item.brand}</td>
-                    <td>{item.colour}</td>
-                    <td>{item.uom}</td>
-                    <td>{item.stock_as_on}</td>
                   </tr>
-                ))}
+                ) : poMaterials.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="text-center">
+                      No materials found for this PO.
+                    </td>
+                  </tr>
+                ) : (
+                  poMaterials.map((item, idx) => (
+                    <tr key={item.id || idx}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedMaterialIndexes.includes(idx)}
+                          onChange={() => {
+                            setSelectedMaterialIndexes((prev) =>
+                              prev.includes(idx)
+                                ? prev.filter((i) => i !== idx)
+                                : [...prev, idx]
+                            );
+                          }}
+                        />
+                      </td>
+                      <td>{idx + 1}</td>
+                      <td>{item.material_type}</td>
+                      <td>{item.material_sub_type}</td>
+                      <td>{item.material}</td>
+                      <td>{item.generic_specification}</td>
+                      <td>{item.brand}</td>
+                      <td>{item.colour}</td>
+                      <td>{item.uom}</td>
+                      <td>{item.stock_as_on}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
