@@ -180,16 +180,16 @@ const MaterialReconciliationDetail = () => {
   //     alert("Failed to update material reconciliation");
   //   }
   // };
-   // Step 3: Handle remark change
+  // Step 3: Handle remark change
 
-      const payload = {
-        status_log: {
-          status: selectedStatus?.value || "draft",
-         
-         remarks: adminComment,
-        },
-      };
-      // console.log("payload:",payload)
+  const payload = {
+    status_log: {
+      status: selectedStatus?.value || "draft",
+
+      remarks: adminComment,
+    },
+  };
+  // console.log("payload:",payload)
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -197,10 +197,10 @@ const MaterialReconciliationDetail = () => {
         status_log: {
           status: selectedStatus?.value || "draft",
           // comments: formData.remarks || "",
-         remarks: adminComment,
+          remarks: adminComment,
         },
       };
-      console.log("payload on submit:",payload)
+      console.log("payload on submit:", payload);
 
       const response = await axios.post(
         `${baseURL}material_reconciliations/${id}/update_status.json?token=${token}`,
@@ -209,7 +209,7 @@ const MaterialReconciliationDetail = () => {
 
       console.log("Status update successful:", response.data);
       alert("Status updated successfully!");
-      setAdminComment("")
+      setAdminComment("");
       navigate(`/material-reconciliation-list?token=${token}`);
     } catch (error) {
       console.error("Error updating status:", error);
@@ -239,15 +239,31 @@ const MaterialReconciliationDetail = () => {
             {details?.status === "draft" && (
               <Link
                 to={`/material-reconciliation-edit/${id}?token=${token}`}
-                className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
-
-                <button class="purple-btn1" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="#8b0203" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z" fill="#8b0203" />
-                    <path d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#8b0203" />
+                className="d-flex align-items-center"
+                style={{ borderColor: "#8b0203" }}
+              >
+                <button
+                  class="purple-btn1"
+                  data-bs-toggle="modal"
+                  data-bs-target="#exampleModal"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="#8b0203"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z"
+                      fill="#8b0203"
+                    />
+                    <path
+                      d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z"
+                      fill="#8b0203"
+                    />
                   </svg>
                 </button>
-
               </Link>
             )}
           </div>
@@ -674,7 +690,7 @@ const MaterialReconciliationDetail = () => {
       </div>
 
       {/* Approval Log Modal */}
-      <Modal size="xl" show={showModal} onHide={closeModal} centered>
+      <Modal size="lg" show={showModal} onHide={closeModal} centered>
         <Modal.Header closeButton>
           <h5>Approval Log</h5>
         </Modal.Header>
@@ -684,7 +700,7 @@ const MaterialReconciliationDetail = () => {
               <div className="tbl-container me-2 mt-3">
                 {/* Check if approval_logs is empty or undefined */}
                 {!details?.approval_logs ||
-                  details?.approval_logs.length === 0 ? (
+                details?.approval_logs.length === 0 ? (
                   // Display a message if no logs are available
                   <div className="text-center py-4">
                     <p className="text-muted">No approval logs available.</p>

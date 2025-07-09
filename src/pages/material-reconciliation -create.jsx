@@ -972,7 +972,14 @@ const MaterialReconciliationCreate = () => {
 
       // Show success alert
       alert("Record created successfully!");
-      navigate(`/material-reconciliation-list?token=${token}`);
+      // Get the created id from response
+      const createdId =
+        response.data?.material_reconciliation?.id || response.data?.id;
+      if (createdId) {
+        navigate(`/material-reconciliation-detail/${createdId}?token=${token}`);
+      } else {
+        navigate(`/material-reconciliation-list?token=${token}`);
+      }
     } catch (error) {
       console.error("Error submitting material reconciliation:", error);
       alert("Error creating record. Please try again.");
@@ -1144,7 +1151,8 @@ const MaterialReconciliationCreate = () => {
                 <div className="col-md-3">
                   <div className="form-group">
                     <label>
-                      Company <span style={{ color: "red" }}>*</span>
+                      Company{" "}
+                      <span style={{ color: "red", fontSize: "14px" }}>*</span>
                     </label>
                     <SingleSelector
                       options={companyOptions}
@@ -1159,7 +1167,8 @@ const MaterialReconciliationCreate = () => {
                 <div className="col-md-3">
                   <div className="form-group">
                     <label>
-                      Project <span style={{ color: "red" }}>*</span>
+                      Project{" "}
+                      <span style={{ color: "red", fontSize: "14px" }}>*</span>
                     </label>
                     <SingleSelector
                       options={projects}
@@ -1176,7 +1185,8 @@ const MaterialReconciliationCreate = () => {
                   {/* /.form-group */}
                   <div className="form-group">
                     <label>
-                      Sub-Project <span style={{ color: "red" }}>*</span>
+                      Sub-Project{" "}
+                      <span style={{ color: "red", fontSize: "14px" }}>*</span>
                     </label>
                     <SingleSelector
                       options={siteOptions}
@@ -1202,7 +1212,8 @@ const MaterialReconciliationCreate = () => {
                 <div className="col-md-3 mt-2">
                   <div className="form-group">
                     <label>
-                      Store <span style={{ color: "red" }}>*</span>
+                      Store{" "}
+                      <span style={{ color: "red", fontSize: "14px" }}>*</span>
                     </label>
                     <SingleSelector
                       options={stores}
@@ -1226,7 +1237,11 @@ const MaterialReconciliationCreate = () => {
                 </div> */}
               </div>
               <div className=" d-flex justify-content-between align-items-end px-2">
-                <h5 className=" mt-3">Material</h5>
+                <h5 className=" mt-3">
+                  Material
+                  <span style={{ color: "red", fontSize: "14px" }}> *</span>
+                </h5>
+
                 <button
                   className="purple-btn2 "
                   data-bs-toggle="modal"
@@ -2029,23 +2044,74 @@ const MaterialReconciliationCreate = () => {
                           className="form-control"
                           placeholder="Enter..."
                           min={0}
-                          max={parseFloat(batch.current_stock_qty) || 0}
-                          value={batchIssueQty[batch.id] || ""}
-                          onChange={(e) =>
-                            handleBatchIssueQtyChange(batch.id, e.target.value)
-                          }
-                          disabled={(() => {
-                            // Sequential enabling logic
-                            // Find the first batch index that is not filled (0 or empty)
-                            const filledUpTo = batchList.findIndex(
-                              (b) =>
-                                !batchIssueQty[b.id] ||
-                                parseFloat(batchIssueQty[b.id]) === 0
+                          max={(() => {
+                            // Calculate the remaining qty needed for total
+                            const prevTotal = batchList
+                              .slice(0, idx)
+                              .reduce(
+                                (sum, b) =>
+                                  sum + (parseFloat(batchIssueQty[b.id]) || 0),
+                                0
+                              );
+                            const remaining = batchMaxQty - prevTotal;
+                            // The max you can enter in this batch is the lesser of available and remaining
+                            return Math.min(
+                              parseFloat(batch.current_stock_qty) || 0,
+                              remaining
                             );
-                            // If idx > filledUpTo, disable this input
-                            if (filledUpTo !== -1 && idx > filledUpTo)
-                              return true;
-
+                          })()}
+                          value={batchIssueQty[batch.id] || ""}
+                          onChange={(e) => {
+                            let value = e.target.value;
+                            // Only allow up to max
+                            const max = (() => {
+                              const prevTotal = batchList
+                                .slice(0, idx)
+                                .reduce(
+                                  (sum, b) =>
+                                    sum +
+                                    (parseFloat(batchIssueQty[b.id]) || 0),
+                                  0
+                                );
+                              const remaining = batchMaxQty - prevTotal;
+                              return Math.min(
+                                parseFloat(batch.current_stock_qty) || 0,
+                                remaining
+                              );
+                            })();
+                            if (Number(value) > max) {
+                              alert(
+                                `Issue QTY cannot exceed ${max} for this batch.`
+                              );
+                              return;
+                            }
+                            handleBatchIssueQtyChange(batch.id, value);
+                          }}
+                          disabled={(() => {
+                            // Sequential enabling logic: only enable if all previous batches are fully filled
+                            if (idx === 0) return false; // First batch always enabled
+                            // All previous batches must be fully filled (issue qty === available qty or max allowed for that batch)
+                            for (let j = 0; j < idx; j++) {
+                              const prevBatch = batchList[j];
+                              const prevTotal = batchList
+                                .slice(0, j)
+                                .reduce(
+                                  (sum, b) =>
+                                    sum +
+                                    (parseFloat(batchIssueQty[b.id]) || 0),
+                                  0
+                                );
+                              const prevMax = Math.min(
+                                parseFloat(prevBatch.current_stock_qty) || 0,
+                                batchMaxQty - prevTotal
+                              );
+                              if (
+                                parseFloat(batchIssueQty[prevBatch.id]) !==
+                                prevMax
+                              ) {
+                                return true;
+                              }
+                            }
                             // Also, if total issued qty is already fulfilled, disable all except those already filled
                             const totalIssued = Object.values(
                               batchIssueQty
@@ -2058,7 +2124,6 @@ const MaterialReconciliationCreate = () => {
                               !(parseFloat(batchIssueQty[batch.id]) > 0)
                             )
                               return true;
-
                             return false;
                           })()}
                         />
