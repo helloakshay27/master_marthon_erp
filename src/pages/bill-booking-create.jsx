@@ -1890,7 +1890,8 @@ const BillBookingCreate = () => {
   // };
 
   const validateDebitRecovery = (note, value) => {
-    const recovery = parseFloat(value) || 0;
+    // const recovery = parseFloat(value) || 0;
+    const recovery =(parseFloat(value) || 0) + (parseFloat(note.recovered_amount) || 0);
     const debitAmount = parseFloat(note.debit_note_amount) || 0;
     // const outstandingAmount = parseFloat(note.outstanding_current_date) || 0;
     if (recovery > debitAmount) {
@@ -2606,8 +2607,9 @@ const BillBookingCreate = () => {
                               {advance.paid_amount || "-"}
                             </td>
                             <td className="text-start">
-                              {advance.adjusted_amount || "-"}
+                              {advance.recovered_amount || "0"}
                             </td>
+                            {/* {console.log("advance recoverd:",advance.recovered_amount )} */}
                             <td className="text-start">
                               {advance.balance_amount || "-"}
                             </td>
@@ -2641,6 +2643,7 @@ const BillBookingCreate = () => {
                       </tr> */}
                     </tbody>
                   </table>
+                  
                 </div>
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Debit Note</h5>
@@ -2689,7 +2692,7 @@ const BillBookingCreate = () => {
                               {note.debit_note_amount || "-"}
                             </td>
                             <td className="text-start">
-                              {note.recovery_till_date || "-"}
+                              {note.recovered_amount || "0"}
                             </td>
                             <td className="text-start">
                               {note.waive_off_till_date || "-"}
@@ -3409,7 +3412,7 @@ const BillBookingCreate = () => {
                               {note.debit_note_for_advance || "-"}
                             </td>
                             <td className="text-start">
-                              {note.advance_adjusted_till_date || "-"}
+                              {note.recovered_amount|| "0"}
                             </td>
                             <td className="text-start">
                               {note.advance_outstanding_till_certificate_date ||
@@ -3561,7 +3564,7 @@ const BillBookingCreate = () => {
                               {note.debit_note_amount || "-"}
                             </td>
                             <td className="text-start">
-                              {note.recovery_till_date || "-"}
+                              {note.recovered_amount || "0"}
                             </td>
                             <td className="text-start">
                               {note.waive_off_till_date || "-"}
@@ -4682,7 +4685,7 @@ const BillBookingCreate = () => {
                         {note.debit_note_amount || "-"}
                       </td>
                       <td className="text-start">
-                        {note.recovery_till_date || "-"}
+                        {note.recovered_amount || "0"}
                       </td>
                       <td className="text-start">
                         {note.waive_off_till_date || "-"}
@@ -4809,7 +4812,7 @@ const BillBookingCreate = () => {
                         {note.debit_note_for_advance || "-"}
                       </td>
                       <td className="text-start">
-                        {note.advance_adjusted_till_date || "-"}
+                        {note.recovered_amount || "0"}
                       </td>
                       <td className="text-start">
                         {note.advance_outstanding_till_certificate_date || "-"}

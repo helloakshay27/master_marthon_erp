@@ -1187,9 +1187,12 @@ const BillBookingDetails = () => {
                             </td>
                             <td className="text-start">
                               {
-                                /* Waive off Till Date (add logic if available) */ "-"
+                                /* Waive off Till Date (add logic if available) */ 
                               }
+
+                              {note.advance_note?.recovered_amount || "0"}
                             </td>
+                            {/* {console.log("recovery adjusted:",note.advance_note?.recovered_amount)} */}
                             <td className="text-start">
                               {/* Outstanding Amount (Certificate Date) */ "-"}
                             </td>
@@ -1289,9 +1292,12 @@ const BillBookingDetails = () => {
                             </td>
                             <td className="text-start">
                               {
-                                /* Credit Note Recovery Till Date (add logic if available) */ "-"
+                                /* Credit Note Recovery Till Date (add logic if available) */ 
                               }
+
+                               {note.debit_note?.recovered_amount || "0"}
                             </td>
+                            {/* {console.log("recovery debit:",note.debit_note?.recovered_amount)} */}
                             <td className="text-start">
                               {
                                 /* Waive off Till Date (add logic if available) */ "-"
