@@ -6,7 +6,13 @@ import { Modal, Button } from "react-bootstrap";
 import { DataGrid } from "@mui/x-data-grid";
 import { Stack, Typography, Pagination } from "@mui/material";
 import SingleSelector from "../components/base/Select/SingleSelector";
-import { DownloadIcon, FilterIcon, StarIcon, SettingIcon, MultiSelector } from "../components";
+import {
+  DownloadIcon,
+  FilterIcon,
+  StarIcon,
+  SettingIcon,
+  MultiSelector,
+} from "../components";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import { Link } from "react-router-dom";
@@ -54,17 +60,20 @@ const GatePassList = () => {
   const [filterShow, setFilterShow] = useState(false);
   const [selectedFilterCompanies, setSelectedFilterCompanies] = useState([]);
   const [selectedFilterProjects, setSelectedFilterProjects] = useState([]);
-  const [selectedFilterSubProjects, setSelectedFilterSubProjects] = useState([]);
+  const [selectedFilterSubProjects, setSelectedFilterSubProjects] = useState(
+    []
+  );
   const [filterProjectOptions, setFilterProjectOptions] = useState([]);
   const [filterSubProjectOptions, setFilterSubProjectOptions] = useState([]);
-  
+
   // Material filter states (similar to reconciliation)
   const [inventoryTypes, setInventoryTypes] = useState([]);
   const [selectedInventory, setSelectedInventory] = useState(null);
   const [inventorySubTypes, setInventorySubTypes] = useState([]);
   const [selectedSubType, setSelectedSubType] = useState(null);
   const [inventoryMaterialTypes, setInventoryMaterialTypes] = useState([]);
-  const [selectedInventoryMaterialTypes, setSelectedInventoryMaterialTypes] = useState(null);
+  const [selectedInventoryMaterialTypes, setSelectedInventoryMaterialTypes] =
+    useState(null);
   const [genericSpecifications, setGenericSpecifications] = useState([]);
   const [selectedGenericSpec, setSelectedGenericSpec] = useState(null);
   const [colors, setColors] = useState([]);
@@ -73,7 +82,7 @@ const GatePassList = () => {
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [uoms, setUoms] = useState([]);
   const [selectedUom, setSelectedUom] = useState(null);
-  
+
   // Gate pass specific filters
   const [gatePassOptions, setGatePassOptions] = useState([]);
   const [selectedGatePass, setSelectedGatePass] = useState(null);
@@ -261,7 +270,9 @@ const GatePassList = () => {
 
       // Add company filter
       if (selectedFilterCompanies.length > 0) {
-        const companyIds = selectedFilterCompanies.map((c) => c.value).join(",");
+        const companyIds = selectedFilterCompanies
+          .map((c) => c.value)
+          .join(",");
         url += `&q[company_id_in]=${companyIds}`;
       }
 
@@ -273,13 +284,17 @@ const GatePassList = () => {
 
       // Add sub-project filter
       if (selectedFilterSubProjects.length > 0) {
-        const subProjectIds = selectedFilterSubProjects.map((s) => s.value).join(",");
+        const subProjectIds = selectedFilterSubProjects
+          .map((s) => s.value)
+          .join(",");
         url += `&q[sub_project_id_in]=${subProjectIds}`;
       }
 
       // Add material filters
       if (selectedInventory && selectedInventory.length > 0) {
-        const inventoryTypeIds = selectedInventory.map((inv) => inv.value).join(",");
+        const inventoryTypeIds = selectedInventory
+          .map((inv) => inv.value)
+          .join(",");
         url += `&q[gate_pass_materials_material_inventory_pms_inventory_type_id_in]=${inventoryTypeIds}`;
       }
 
@@ -288,8 +303,13 @@ const GatePassList = () => {
         url += `&q[gate_pass_materials_material_inventory_pms_inventory_sub_type_id_in]=${subTypeIds}`;
       }
 
-      if (selectedInventoryMaterialTypes && selectedInventoryMaterialTypes.length > 0) {
-        const materialIds = selectedInventoryMaterialTypes.map((m) => m.value).join(",");
+      if (
+        selectedInventoryMaterialTypes &&
+        selectedInventoryMaterialTypes.length > 0
+      ) {
+        const materialIds = selectedInventoryMaterialTypes
+          .map((m) => m.value)
+          .join(",");
         url += `&q[gate_pass_materials_material_inventory_pms_inventory_id_in]=${materialIds}`;
       }
 
@@ -315,7 +335,9 @@ const GatePassList = () => {
       }
 
       if (selectedGatePassNumbers.length > 0) {
-        const gatePassIds = selectedGatePassNumbers.map((g) => g.value).join(",");
+        const gatePassIds = selectedGatePassNumbers
+          .map((g) => g.value)
+          .join(",");
         url += `&q[id_in]=${gatePassIds}`;
       }
 
@@ -325,7 +347,7 @@ const GatePassList = () => {
       }
 
       const response = await axios.get(url);
-      
+
       // Transform the data same as the main useEffect
       const data = (response.data.gate_passes || []).map((entry, index) => ({
         id: entry.id,
@@ -370,7 +392,7 @@ const GatePassList = () => {
     setSelectedPoNumbers([]);
     setFilterShow(false);
     setCurrentPage(1);
-    
+
     // Reset current filters and refetch unfiltered data
     setCurrentFilters({
       companyId: "",
@@ -422,9 +444,11 @@ const GatePassList = () => {
   // Fetch inventory types for filter
   useEffect(() => {
     if (!token) return;
-    
+
     axios
-      .get(`${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`)
+      .get(
+        `${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`
+      )
       .then((response) => {
         const inventoryData = Array.isArray(response.data)
           ? response.data
@@ -444,7 +468,7 @@ const GatePassList = () => {
   // Fetch UOMs for filter
   useEffect(() => {
     if (!token) return;
-    
+
     axios
       .get(`${baseURL}unit_of_measures.json?token=${token}`)
       .then((response) => {
@@ -462,7 +486,7 @@ const GatePassList = () => {
   // Fetch gate pass numbers and PO numbers for filter
   useEffect(() => {
     if (!token) return;
-    
+
     // Fetch gate pass types
     axios
       .get(`${baseURL}gate_pass_types.json?token=${token}`)
@@ -493,7 +517,7 @@ const GatePassList = () => {
         setGatePassNumberOptions([]);
       });
 
-    // Fetch PO numbers - updated endpoint  
+    // Fetch PO numbers - updated endpoint
     axios
       .get(`${baseURL}gate_passes/po_numbers.json?token=${token}`)
       .then((response) => {
@@ -518,7 +542,9 @@ const GatePassList = () => {
         .join(",");
 
       axios
-        .get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${inventoryTypeIds}&token=${token}`)
+        .get(
+          `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${inventoryTypeIds}&token=${token}`
+        )
         .then((response) => {
           const options = response.data.map((subType) => ({
             value: subType.id,
@@ -540,7 +566,9 @@ const GatePassList = () => {
         .join(",");
 
       axios
-        .get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[material_category_eq]=material&token=${token}`)
+        .get(
+          `${baseURL}pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[material_category_eq]=material&token=${token}`
+        )
         .then((response) => {
           const options = response.data.map((subType) => ({
             value: subType.id,
@@ -563,7 +591,9 @@ const GatePassList = () => {
 
       // Fetch generic specifications
       axios
-        .get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${materialIds}&token=${token}`)
+        .get(
+          `${baseURL}pms/generic_infos.json?q[material_id_eq]=${materialIds}&token=${token}`
+        )
         .then((response) => {
           const options = response.data.map((spec) => ({
             value: spec.id,
@@ -577,7 +607,9 @@ const GatePassList = () => {
 
       // Fetch colors
       axios
-        .get(`${baseURL}pms/colours.json?q[material_id_eq]=${materialIds}&token=${token}`)
+        .get(
+          `${baseURL}pms/colours.json?q[material_id_eq]=${materialIds}&token=${token}`
+        )
         .then((response) => {
           const options = response.data.map((color) => ({
             value: color.id,
@@ -591,7 +623,9 @@ const GatePassList = () => {
 
       // Fetch brands
       axios
-        .get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${materialIds}&token=${token}`)
+        .get(
+          `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${materialIds}&token=${token}`
+        )
         .then((response) => {
           const options = response.data.map((brand) => ({
             value: brand.id,
@@ -1155,28 +1189,119 @@ display:none !important;
               />
             </div>
 
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              padding={2}
-            >
-              <Pagination
-                count={totalPages}
-                page={currentPage}
-                onChange={handlePageChange}
-                siblingCount={1}
-                boundaryCount={1}
-                color="primary"
-                showFirstButton
-                showLastButton
-                disabled={totalPages <= 1}
-              />
-
-              <Typography variant="body2">
-                Showing {startEntry} to {endEntry} of {totalEntries} entries
-              </Typography>
-            </Stack>
+            {/* Bootstrap-style Pagination Bar */}
+            <div className="d-flex justify-content-between align-items-center px-3 py-2">
+              <nav aria-label="Page navigation example">
+                <ul className="pagination mb-0">
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                    >
+                      First
+                    </button>
+                  </li>
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      Prev
+                    </button>
+                  </li>
+                  {/* Page numbers */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(
+                      (page) =>
+                        page === 1 ||
+                        page === totalPages ||
+                        (page >= currentPage - 1 && page <= currentPage + 1)
+                    )
+                    .map((page, idx, arr) => {
+                      // Add ellipsis if needed
+                      if (idx > 0 && page - arr[idx - 1] > 1) {
+                        return [
+                          <li
+                            key={`ellipsis-${page}`}
+                            className="page-item disabled"
+                          >
+                            <span className="page-link">...</span>
+                          </li>,
+                          <li
+                            key={page}
+                            className={`page-item ${
+                              currentPage === page ? "active" : ""
+                            }`}
+                          >
+                            <button
+                              className="page-link"
+                              onClick={() => setCurrentPage(page)}
+                            >
+                              {page}
+                            </button>
+                          </li>,
+                        ];
+                      }
+                      return (
+                        <li
+                          key={page}
+                          className={`page-item ${
+                            currentPage === page ? "active" : ""
+                          }`}
+                        >
+                          <button
+                            className="page-link"
+                            onClick={() => setCurrentPage(page)}
+                          >
+                            {page}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  <li
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </button>
+                  </li>
+                  <li
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Last
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+              <div className="ms-3">
+                <span>
+                  Showing {startEntry} to {endEntry} of {totalEntries} entries
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1467,7 +1592,9 @@ display:none !important;
               </div>
             </div>
             <div className="col-6 mt-2">
-              <label className="block text-sm font-medium">Gate Pass Type</label>
+              <label className="block text-sm font-medium">
+                Gate Pass Type
+              </label>
               <SingleSelector
                 options={gatePassOptions}
                 value={selectedGatePass}
