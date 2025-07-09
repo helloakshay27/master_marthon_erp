@@ -1230,7 +1230,7 @@ const MaterialReconciliationEdit = () => {
 
       // Show success alert
       alert("Record updated successfully!");
-      navigate(`/material-reconciliation-list?token=${token}`);
+      navigate(`/material-reconciliation-detail/${id}?token=${token}`);
     } catch (error) {
       console.error("Error updating material reconciliation:", error);
       alert("Error updating record. Please try again.");
@@ -1479,7 +1479,10 @@ const MaterialReconciliationEdit = () => {
                 </div>
               </div>
               <div className=" d-flex justify-content-between align-items-end px-2">
-                <h5 className=" mt-3">Material</h5>
+                <h5 className=" mt-3">
+                  Material
+                  <span style={{ color: "red", fontSize: "14px" }}> *</span>
+                </h5>
                 <button
                   className="purple-btn2 "
                   data-bs-toggle="modal"
@@ -2214,23 +2217,114 @@ const MaterialReconciliationEdit = () => {
                           className="form-control"
                           placeholder="Enter..."
                           min={0}
-                          max={parseFloat(batch.current_stock_qty) || 0}
+                          max={(() => {
+                            // Calculate the remaining qty needed for total
+                            const prevTotal = batchList
+                              .slice(0, idx)
+                              .reduce(
+                                (sum, b) =>
+                                  sum + (parseFloat(batchIssueQty[b.id]) || 0),
+                                0
+                              );
+                            const remaining = batchMaxQty - prevTotal;
+                            // The max you can enter in this batch is the lesser of available and remaining
+                            return Math.min(
+                              parseFloat(batch.current_stock_qty) || 0,
+                              remaining
+                            );
+                          })()}
                           value={batchIssueQty[batch.id] || ""}
-                          onChange={(e) =>
-                            handleBatchIssueQtyChange(batch.id, e.target.value)
-                          }
+                          onChange={(e) => {
+                            let value = e.target.value;
+                            // Only allow up to max
+                            const max = (() => {
+                              const prevTotal = batchList
+                                .slice(0, idx)
+                                .reduce(
+                                  (sum, b) =>
+                                    sum +
+                                    (parseFloat(batchIssueQty[b.id]) || 0),
+                                  0
+                                );
+                              const remaining = batchMaxQty - prevTotal;
+                              return Math.min(
+                                parseFloat(batch.current_stock_qty) || 0,
+                                remaining
+                              );
+                            })();
+                            if (Number(value) > max) {
+                              alert(
+                                `Issue QTY cannot exceed ${max} for this batch.`
+                              );
+                              return;
+                            }
+                            // Sequential logic: only allow editing this batch if all previous are fully filled
+                            let canEdit = true;
+                            for (let i = 0; i < idx; i++) {
+                              const prevBatch = batchList[i];
+                              const prevMax = (() => {
+                                const prevPrevTotal = batchList
+                                  .slice(0, i)
+                                  .reduce(
+                                    (sum, b) =>
+                                      sum +
+                                      (parseFloat(batchIssueQty[b.id]) || 0),
+                                    0
+                                  );
+                                const prevRemaining =
+                                  batchMaxQty - prevPrevTotal;
+                                return Math.min(
+                                  parseFloat(prevBatch.current_stock_qty) || 0,
+                                  prevRemaining
+                                );
+                              })();
+                              if (
+                                (parseFloat(batchIssueQty[prevBatch.id]) || 0) <
+                                prevMax
+                              ) {
+                                canEdit = false;
+                                break;
+                              }
+                            }
+                            if (!canEdit) {
+                              alert(
+                                "Please fully fill previous batch before entering this batch."
+                              );
+                              return;
+                            }
+                            handleBatchIssueQtyChange(batch.id, value);
+                          }}
                           disabled={(() => {
                             // Sequential enabling logic
-                            // Find the first batch index that is not filled (0 or empty)
-                            const filledUpTo = batchList.findIndex(
-                              (b) =>
-                                !batchIssueQty[b.id] ||
-                                parseFloat(batchIssueQty[b.id]) === 0
-                            );
-                            // If idx > filledUpTo, disable this input
-                            if (filledUpTo !== -1 && idx > filledUpTo)
-                              return true;
-
+                            // Only enable if all previous batches are fully filled
+                            if (idx === 0) return false;
+                            let canEdit = true;
+                            for (let i = 0; i < idx; i++) {
+                              const prevBatch = batchList[i];
+                              const prevMax = (() => {
+                                const prevPrevTotal = batchList
+                                  .slice(0, i)
+                                  .reduce(
+                                    (sum, b) =>
+                                      sum +
+                                      (parseFloat(batchIssueQty[b.id]) || 0),
+                                    0
+                                  );
+                                const prevRemaining =
+                                  batchMaxQty - prevPrevTotal;
+                                return Math.min(
+                                  parseFloat(prevBatch.current_stock_qty) || 0,
+                                  prevRemaining
+                                );
+                              })();
+                              if (
+                                (parseFloat(batchIssueQty[prevBatch.id]) || 0) <
+                                prevMax
+                              ) {
+                                canEdit = false;
+                                break;
+                              }
+                            }
                             // Also, if total issued qty is already fulfilled, disable all except those already filled
                             const totalIssued = Object.values(
                               batchIssueQty
@@ -2243,8 +2337,7 @@ const MaterialReconciliationEdit = () => {
                               !(parseFloat(batchIssueQty[batch.id]) > 0)
                             )
                               return true;
-
-                            return false;
+                            return !canEdit;
                           })()}
                         />
                       </td>
