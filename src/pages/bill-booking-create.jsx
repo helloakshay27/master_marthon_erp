@@ -2290,16 +2290,16 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
-                   {withBillEntry && !withoutBillEntry && (
-                  <div className="col-md-4 mt-3">
-                    <div className="form-group">
-                      <label>Invoice Date</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        // type={!withoutBillEntry ? "text" : "date"}
-                        value={formData.invoiceDate|| getFormattedDate() } // Fallback to current date if empty
-                        readOnly
+                  {withBillEntry && !withoutBillEntry && (
+                    <div className="col-md-4 mt-3">
+                      <div className="form-group">
+                        <label>Invoice Date</label>
+                        <input
+                          className="form-control"
+                          type="text"
+                          // type={!withoutBillEntry ? "text" : "date"}
+                          value={formData.invoiceDate || getFormattedDate()} // Fallback to current date if empty
+                          readOnly
                         // onChange={(e) =>
                         //   setFormData((prev) => ({
                         //     ...prev,
@@ -2307,32 +2307,32 @@ const BillBookingCreate = () => {
                         //   }))
                         // }
                         // disabled={!withoutBillEntry}
-                      />
+                        />
+                      </div>
+                      {/* {console.log(".........invoice date:",formData.invoiceDate )} */}
                     </div>
-                    {/* {console.log(".........invoice date:",formData.invoiceDate )} */}
-                  </div>
-                   )}
-  {withoutBillEntry&& !withBillEntry && (
-                   <div className="col-md-4 mt-3">
-                    <div className="form-group">
-                      <label>Invoice Date</label>
-                      <input
-                        className="form-control"
-                        type="date"
-                        // type={!withoutBillEntry ? "text" : "date"}
-                        value={formData.invoiceDate } // Fallback to current date if empty
-                        // readOnly
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            invoiceDate: e.target.value,
-                          }))
-                        }
+                  )}
+                  {withoutBillEntry && !withBillEntry && (
+                    <div className="col-md-4 mt-3">
+                      <div className="form-group">
+                        <label>Invoice Date</label>
+                        <input
+                          className="form-control"
+                          type="date"
+                          // type={!withoutBillEntry ? "text" : "date"}
+                          value={formData.invoiceDate} // Fallback to current date if empty
+                          // readOnly
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              invoiceDate: e.target.value,
+                            }))
+                          }
                         // disabled={!withoutBillEntry}
-                      />
+                        />
+                      </div>
                     </div>
-                  </div>
-  )}
+                  )}
                   <div className="col-md-4 mt-3">
                     <div className="form-group">
                       <label>Invoice Amount</label>
@@ -2973,12 +2973,16 @@ const BillBookingCreate = () => {
                       <input
                         className="form-control"
                         type="number"
-                        value={calculateDebitNoteAdjustment()}
+                        value={Math.abs(calculateDebitNoteAdjustment())}
+                        // value={calculateDebitNoteAdjustment()}
                         disabled
                         placeholder="Debit note adjustment amount"
                       />
                     </div>
                   </div>
+                  {/* <h1 className="text-end">
+                    ₹ {Math.abs(calculateDebitNoteAdjustment())}
+                  </h1> */}
 
                   <div className="col-md-4 mt-2">
                     <div className="form-group">

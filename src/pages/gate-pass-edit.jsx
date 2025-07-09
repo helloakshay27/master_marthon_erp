@@ -132,6 +132,10 @@ const GatePassEdit = () => {
       alert("Please select Sub-Project.");
       return;
     }
+    if (!formData.store_id) {
+      alert("Please select From Store.");
+      return;
+    }
     if (!formData.gate_pass_type) {
       alert("Please select Gate Pass Type.");
       return;
@@ -156,6 +160,34 @@ const GatePassEdit = () => {
       !formData.expected_return_date
     ) {
       alert("Please enter Expected Return Date for Returnable Gate Pass");
+      return;
+    }
+    // Validation: Expected Return Date cannot be before today
+    if (formData.expected_return_date) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(formData.expected_return_date);
+      if (selectedDate < today) {
+        alert("Expected Return Date cannot be before today.");
+        return;
+      }
+    }
+    // Validation: At least one material must be selected for certain gate pass types
+    if (
+      (formData.gate_pass_type === "return_to_vendor" ||
+        formData.gate_pass_type === "testing_calibration") &&
+      (!formData.material_items ||
+        formData.material_items.filter((item) => !item._destroy).length === 0)
+    ) {
+      alert("Please select at least one material before submitting.");
+      return;
+    }
+    if (
+      formData.gate_pass_type === "repair_maintenance" &&
+      (!maintenanceRows ||
+        maintenanceRows.filter((row) => !row._destroy).length === 0)
+    ) {
+      alert("Please select at least one material before submitting.");
       return;
     }
     if (contactNoError || driverContactNoError) {
@@ -1862,7 +1894,10 @@ const GatePassEdit = () => {
                         <>
                           <div className="col-md-3 ">
                             <div className="form-group">
-                              <label>From Store</label>
+                              <label>
+                                From Store{" "}
+                                <span style={{ color: "red" }}>*</span>
+                              </label>
                               <SingleSelector
                                 options={stores}
                                 onChange={(selected) =>
@@ -2161,6 +2196,7 @@ const GatePassEdit = () => {
                         })
                       }
                       required={formData.gate_pass_type === "return_to_vendor"}
+                      min={new Date().toISOString().split("T")[0]}
                     />
                   </div>
                 </div>
@@ -3460,27 +3496,74 @@ const GatePassEdit = () => {
                           className="form-control"
                           placeholder="Enter..."
                           min={0}
-                          max={parseFloat(batch.current_stock_qty) || 0}
-                          value={
-                            batchIssueQty[batch.id]
-                              ? batchIssueQty[batch.id]
-                              : ""
-                          }
-                          onChange={(e) =>
-                            handleBatchIssueQtyChange(batch.id, e.target.value)
-                          }
-                          disabled={(() => {
-                            // Sequential enabling logic
-                            // Find the first batch index that is not filled (0 or empty)
-                            const filledUpTo = batchList.findIndex(
-                              (b) =>
-                                !batchIssueQty[b.id] ||
-                                parseFloat(batchIssueQty[b.id]) === 0
+                          max={(() => {
+                            // Calculate the remaining qty needed for gate pass
+                            const prevTotal = batchList
+                              .slice(0, idx)
+                              .reduce(
+                                (sum, b) =>
+                                  sum + (parseFloat(batchIssueQty[b.id]) || 0),
+                                0
+                              );
+                            const remaining = batchMaxQty - prevTotal;
+                            // The max you can enter in this batch is the lesser of available and remaining
+                            return Math.min(
+                              parseFloat(batch.current_stock_qty) || 0,
+                              remaining
                             );
-                            // If idx > filledUpTo, disable this input
-                            if (filledUpTo !== -1 && idx > filledUpTo)
-                              return true;
-
+                          })()}
+                          value={batchIssueQty[batch.id] || ""}
+                          onChange={(e) => {
+                            let value = e.target.value;
+                            // Only allow up to max
+                            const max = (() => {
+                              const prevTotal = batchList
+                                .slice(0, idx)
+                                .reduce(
+                                  (sum, b) =>
+                                    sum +
+                                    (parseFloat(batchIssueQty[b.id]) || 0),
+                                  0
+                                );
+                              const remaining = batchMaxQty - prevTotal;
+                              return Math.min(
+                                parseFloat(batch.current_stock_qty) || 0,
+                                remaining
+                              );
+                            })();
+                            if (Number(value) > max) {
+                              alert(
+                                `Issue QTY cannot exceed gate pass qty ${max} for this batch.`
+                              );
+                              return;
+                            }
+                            handleBatchIssueQtyChange(batch.id, value);
+                          }}
+                          disabled={(() => {
+                            // Sequential enabling logic: only enable if all previous batches are fully filled
+                            if (idx === 0) return false; // First batch always enabled
+                            // All previous batches must be fully filled (issue qty === available qty or max allowed for that batch)
+                            for (let j = 0; j < idx; j++) {
+                              const prevBatch = batchList[j];
+                              const prevTotal = batchList
+                                .slice(0, j)
+                                .reduce(
+                                  (sum, b) =>
+                                    sum +
+                                    (parseFloat(batchIssueQty[b.id]) || 0),
+                                  0
+                                );
+                              const prevMax = Math.min(
+                                parseFloat(prevBatch.current_stock_qty) || 0,
+                                batchMaxQty - prevTotal
+                              );
+                              if (
+                                parseFloat(batchIssueQty[prevBatch.id]) !==
+                                prevMax
+                              ) {
+                                return true;
+                              }
+                            }
                             // Also, if total issued qty is already fulfilled, disable all except those already filled
                             const totalIssued = Object.values(
                               batchIssueQty
@@ -3493,7 +3576,6 @@ const GatePassEdit = () => {
                               !(parseFloat(batchIssueQty[batch.id]) > 0)
                             )
                               return true;
-
                             return false;
                           })()}
                         />
