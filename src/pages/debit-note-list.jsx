@@ -584,7 +584,7 @@ const DebitNoteList = () => {
     debit_note_no: true,
     debit_note_date: true,
 
-    debit_note_type: true,
+    reason: true,
     created_at: true,
 
     po_number: true,
@@ -632,7 +632,7 @@ const DebitNoteList = () => {
         ),
     },
     { field: "debit_note_date", headerName: "Date", width: 150 },
-    { field: "debit_note_type", headerName: "Debit Note Type", width: 150 },
+    { field: "reason", headerName: "Debit Note Reason", width: 150 },
     {
       field: "created_at",
       headerName: "Created On",

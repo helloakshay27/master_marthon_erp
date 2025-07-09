@@ -1696,6 +1696,25 @@ const BillBookingCreate = () => {
   }, []);
 
   const [pendingAdvances, setPendingAdvances] = useState([]);
+  const [pendingAdvances2, setPendingAdvances2] = useState([]);
+
+  useEffect(() => {
+    const fetchPendingAdvances = async () => {
+      if (selectedPO?.id) {
+        try {
+          const response = await axios.get(
+            `${baseURL}advance_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=${formData.status || "proceed"}&token=${token}`
+          );
+          setPendingAdvances(response.data.advance_notes || []);
+        } catch (error) {
+          console.error("Error fetching pending advances:", error);
+          setPendingAdvances([]);
+        }
+      }
+    };
+
+    fetchPendingAdvances();
+  }, [selectedPO, formData.pms_supplier_id,formData.status]);
 
   useEffect(() => {
     const fetchPendingAdvances = async () => {
@@ -1704,10 +1723,10 @@ const BillBookingCreate = () => {
           const response = await axios.get(
             `${baseURL}advance_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&token=${token}`
           );
-          setPendingAdvances(response.data.advance_notes || []);
+          setPendingAdvances2(response.data.advance_notes || []);
         } catch (error) {
           console.error("Error fetching pending advances:", error);
-          setPendingAdvances([]);
+          setPendingAdvances2([]);
         }
       }
     };
@@ -2565,8 +2584,8 @@ const BillBookingCreate = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {pendingAdvances.length > 0 ? (
-                        pendingAdvances.map((advance, index) => (
+                      {pendingAdvances2.length > 0 ? (
+                        pendingAdvances2.map((advance, index) => (
                           <tr key={index}>
                             <td className="text-start">
                               {advance.project_name || "-"}

@@ -11,6 +11,7 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { toast, ToastContainer } from "react-toastify";
 const DebitNoteCreate = () => {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(location.search);
@@ -43,7 +44,7 @@ const DebitNoteCreate = () => {
 
   // tax table functionality
 
- 
+
 
   // Toggle visibility of rows
   const toggleRows = () => {
@@ -529,20 +530,84 @@ const DebitNoteCreate = () => {
 
 
 
+  // const addRow = () => {
+  //   // List of special types
+  //   const specialTypes = [
+  //     { type: "Handling Charges", resource_id: 2 },
+  //     { type: "Other charges", resource_id: 4 },
+  //     { type: "Freight", resource_id: 5 },
+  //   ];
+
+  //   // Find the first special type not yet added
+  //   const existingTypes = rows.map(r => r.type);
+  //   const nextSpecial = specialTypes.find(st => !existingTypes.includes(st.type));
+
+  //   if (nextSpecial) {
+  //     setRows(prevRows => [
+  //       ...prevRows,
+  //       {
+  //         id: prevRows.length + 1,
+  //         type: nextSpecial.type,
+  //         percentage: "",
+  //         inclusive: false,
+  //         amount: "",
+  //         isEditable: false,
+  //         addition: true,
+  //         resource_id: nextSpecial.resource_id,
+  //         resource_type: "TaxCharge",
+  //       },
+  //     ]);
+  //   } else {
+  //     // Add a generic editable row if all special types are already added
+  //     setRows(prevRows => [
+  //       ...prevRows,
+  //       {
+  //         id: prevRows.length + 1,
+  //         type: "",
+  //         percentage: "0",
+  //         inclusive: false,
+  //         amount: "",
+  //         isEditable: true,
+  //         addition: true,
+  //       },
+  //     ]);
+  //   }
+  // };
+
+
   const addRow = () => {
-    // List of special types
-    const specialTypes = [
+    const specialTypes = ["Handling Charges", "Other charges", "Freight"];
+    const existingTypes = rows.map((r) => r.type);
+
+    const hasSpecial = specialTypes.some((type) => existingTypes.includes(type));
+    const hasSGST = existingTypes.includes("SGST");
+    const hasCGST = existingTypes.includes("CGST");
+    const hasIGST = existingTypes.includes("IGST");
+
+    // 🔒 Lock condition: if any special type + (IGST or both SGST & CGST) are present
+    const isLockedCombo =
+      hasSpecial && (hasIGST || (hasSGST && hasCGST));
+
+    if (isLockedCombo) {
+      toast.error(
+        "Cannot add more Tax rows ."
+      );
+      return; // ❌ Don't add row
+    }
+
+    // Allow adding remaining special types if any
+    const allSpecialTypes = [
       { type: "Handling Charges", resource_id: 2 },
       { type: "Other charges", resource_id: 4 },
       { type: "Freight", resource_id: 5 },
     ];
 
-    // Find the first special type not yet added
-    const existingTypes = rows.map(r => r.type);
-    const nextSpecial = specialTypes.find(st => !existingTypes.includes(st.type));
+    const nextSpecial = allSpecialTypes.find(
+      (st) => !existingTypes.includes(st.type)
+    );
 
     if (nextSpecial) {
-      setRows(prevRows => [
+      setRows((prevRows) => [
         ...prevRows,
         {
           id: prevRows.length + 1,
@@ -557,8 +622,8 @@ const DebitNoteCreate = () => {
         },
       ]);
     } else {
-      // Add a generic editable row if all special types are already added
-      setRows(prevRows => [
+      // Add editable row for user-defined tax
+      setRows((prevRows) => [
         ...prevRows,
         {
           id: prevRows.length + 1,
@@ -572,6 +637,7 @@ const DebitNoteCreate = () => {
       ]);
     }
   };
+
 
   // Function to calculate the subtotal of addition rows
   const calculateSubTotal = () => {
@@ -3057,6 +3123,19 @@ const DebitNoteCreate = () => {
           </div>
         </Modal.Body>
       </Modal>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 };

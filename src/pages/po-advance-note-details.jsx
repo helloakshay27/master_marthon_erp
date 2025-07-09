@@ -13,6 +13,7 @@ import { baseURL } from "../confi/apiDomain";
 
 import { useEffect } from "react";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
 
 const POAdvanceNoteDetails = () => {
   const urlParams = new URLSearchParams(location.search);
@@ -129,6 +130,7 @@ const POAdvanceNoteDetails = () => {
     // },
   ]);
   const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
+  const [taxPercentages, setTaxPercentages] = useState([]);
 
 
   // Fetch tax types from API
@@ -146,6 +148,20 @@ const POAdvanceNoteDetails = () => {
 
     fetchTaxTypes();
   }, []);
+
+  useEffect(() => {
+    const fetchTaxPercentages = async () => {
+      try {
+        const response = await fetch(`${baseURL}rfq/events/tax_percentage?token=${token}`);
+        const data = await response.json();
+        setTaxPercentages(data);
+      } catch (error) {
+        console.error("Error fetching tax percentages:", error);
+      }
+    };
+
+    fetchTaxPercentages();
+  }, []);
   // console.log("tax types:", taxTypes)
   // const addRow = () => {
   //   setRows((prevRows) => [
@@ -162,20 +178,84 @@ const POAdvanceNoteDetails = () => {
   //   ]);
   // };
 
+  // const addRow = () => {
+  //   // List of special types
+  //   const specialTypes = [
+  //     { type: "Handling Charges", resource_id: 2 },
+  //     { type: "Other charges", resource_id: 4 },
+  //     { type: "Freight", resource_id: 5 },
+  //   ];
+
+  //   // Find the first special type not yet added
+  //   const existingTypes = rows.map(r => r.type);
+  //   const nextSpecial = specialTypes.find(st => !existingTypes.includes(st.type));
+
+  //   if (nextSpecial) {
+  //     setRows(prevRows => [
+  //       ...prevRows,
+  //       {
+  //         id: prevRows.length + 1,
+  //         type: nextSpecial.type,
+  //         percentage: "",
+  //         inclusive: false,
+  //         amount: "",
+  //         isEditable: false,
+  //         addition: true,
+  //         resource_id: nextSpecial.resource_id,
+  //         resource_type: "TaxCharge",
+  //       },
+  //     ]);
+  //   } else {
+  //     // Add a generic editable row if all special types are already added
+  //     setRows(prevRows => [
+  //       ...prevRows,
+  //       {
+  //         id: prevRows.length + 1,
+  //         type: "",
+  //         percentage: "0",
+  //         inclusive: false,
+  //         amount: "",
+  //         isEditable: true,
+  //         addition: true,
+  //       },
+  //     ]);
+  //   }
+  // };
+
+
   const addRow = () => {
-    // List of special types
-    const specialTypes = [
+    const specialTypes = ["Handling Charges", "Other charges", "Freight"];
+    const existingTypes = rows.map((r) => r.type);
+
+    const hasSpecial = specialTypes.some((type) => existingTypes.includes(type));
+    const hasSGST = existingTypes.includes("SGST");
+    const hasCGST = existingTypes.includes("CGST");
+    const hasIGST = existingTypes.includes("IGST");
+
+    // 🔒 Lock condition: if any special type + (IGST or both SGST & CGST) are present
+    const isLockedCombo =
+      hasSpecial && (hasIGST || (hasSGST && hasCGST));
+
+    if (isLockedCombo) {
+      toast.error(
+        "Cannot add more Tax rows ."
+      );
+      return; // ❌ Don't add row
+    }
+
+    // Allow adding remaining special types if any
+    const allSpecialTypes = [
       { type: "Handling Charges", resource_id: 2 },
       { type: "Other charges", resource_id: 4 },
       { type: "Freight", resource_id: 5 },
     ];
 
-    // Find the first special type not yet added
-    const existingTypes = rows.map(r => r.type);
-    const nextSpecial = specialTypes.find(st => !existingTypes.includes(st.type));
+    const nextSpecial = allSpecialTypes.find(
+      (st) => !existingTypes.includes(st.type)
+    );
 
     if (nextSpecial) {
-      setRows(prevRows => [
+      setRows((prevRows) => [
         ...prevRows,
         {
           id: prevRows.length + 1,
@@ -190,8 +270,8 @@ const POAdvanceNoteDetails = () => {
         },
       ]);
     } else {
-      // Add a generic editable row if all special types are already added
-      setRows(prevRows => [
+      // Add editable row for user-defined tax
+      setRows((prevRows) => [
         ...prevRows,
         {
           id: prevRows.length + 1,
@@ -205,6 +285,7 @@ const POAdvanceNoteDetails = () => {
       ]);
     }
   };
+
   // Function to calculate the subtotal of addition rows
   const calculateSubTotal = () => {
     return rows
@@ -215,16 +296,16 @@ const POAdvanceNoteDetails = () => {
 
   // Delete a row
   const deleteRow = (id) => {
-    // setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-    setRows((prevRows) =>
-      prevRows.filter((row, index) => {
-        // Prevent deletion of the first three rows
-        if (index < 3) {
-          return true;
-        }
-        return row.id !== id;
-      })
-    );
+    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+    // setRows((prevRows) =>
+    //   prevRows.filter((row, index) => {
+    //     // Prevent deletion of the first three rows
+    //     if (index < 3) {
+    //       return true;
+    //     }
+    //     return row.id !== id;
+    //   })
+    // );
   };
 
   // deduction
@@ -899,19 +980,15 @@ const POAdvanceNoteDetails = () => {
                           <h5 className=" ">Tax Details</h5>
                         </div>
 
-                        <div className="tbl-container  mt-3" style={{ maxHeight: "500px" }}>
+
+
+                        <div className="tbl-container mt-3" style={{ maxHeight: "500px" }}>
                           <table className="w-100">
                             <thead>
                               <tr>
-                                <th className="text-start">
-                                  Tax / Charge Type
-                                </th>
-                                <th className="text-start">
-                                  Tax / Charges per UOM (INR)
-                                </th>
-                                <th className="text-start">
-                                  Inclusive / Exclusive
-                                </th>
+                                <th className="text-start">Tax / Charge Type</th>
+                                <th className="text-start">Tax / Charges per UOM (INR)</th>
+                                <th className="text-start">Inclusive / Exclusive</th>
                                 <th className="text-start">Amount</th>
                                 <th className="text-start">Action</th>
                               </tr>
@@ -922,23 +999,31 @@ const POAdvanceNoteDetails = () => {
                                 <th className="text-start">Total Base Cost</th>
                                 <td className="text-start" />
                                 <td className="text-start" />
-                                <td className="text-start">
-                                  {" "}
-                                  {creditNoteAmount || ""}
-                                </td>
+                                <td className="text-start"> {creditNoteAmount || ""}</td>
                                 <td />
                               </tr>
                               <tr>
-                                <th className="text-start">
-                                  Addition Tax & Charges
-                                </th>
+                                <th className="text-start">Addition Tax & Charges</th>
                                 <td className="text-start" />
                                 <td className="text-start" />
                                 <td className="text-start" />
-                                <td onClick={addRow} className="text-start">
-
+                                <td className="text-start" onClick={addRow}>
+                                  {/* <svg
+                                                              xmlns="http://www.w3.org/2000/svg"
+                                                              width="16"
+                                                              height="16"
+                                                              fill="currentColor"
+                                                              className="bi bi-plus-circle"
+                                                              viewBox="0 0 16 16"
+                                                              style={{
+                                                                transform: showRows ? "rotate(45deg)" : "none",
+                                                                transition: "transform 0.3s ease",
+                                                              }}
+                                                            >
+                                                              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                              <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                                            </svg> */}
                                   <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
-
                                 </td>
                               </tr>
                               {/* Dynamic Rows for Addition Tax */}
@@ -953,82 +1038,44 @@ const POAdvanceNoteDetails = () => {
                                         tax: type.type,
                                         isDisabled:
                                           // Disable "Handling Charges", "Other charges", "Freight" for all rows
-                                          [
-                                            "Handling Charges",
-                                            "Other charges",
-                                            "Freight",
-                                          ].includes(type.name) ||
+                                          ["Handling Charges", "Other charges", "Freight"].includes(type.name) ||
+
+
                                           // Disable "IGST" if "SGST" or "CGST" is selected in any row
                                           (type.name === "IGST" &&
-                                            rows.some(
-                                              (r) =>
-                                                ["SGST", "CGST"].includes(
-                                                  r.type
-                                                ) && r.id !== row.id
-                                            )) ||
+                                            rows.some((r) => ["SGST", "CGST"].includes(r.type) && r.id !== row.id)) ||
                                           // Disable "SGST" and "CGST" if "IGST" is selected in any row
-                                          (["SGST", "CGST"].includes(
-                                            type.name
-                                          ) &&
-                                            rows.some(
-                                              (r) =>
-                                                r.type === "IGST" &&
-                                                r.id !== row.id
-                                            )),
+                                          (["SGST", "CGST"].includes(type.name) &&
+                                            rows.some((r) => r.type === "IGST" && r.id !== row.id)),
+
                                       }))}
-                                      value={{
-                                        value: row.type,
-                                        label: row.type,
-                                      }}
+                                      value={{ value: row.type, label: row.type }}
                                       // onChange={(selectedOption) =>
                                       //   setRows((prevRows) =>
                                       //     prevRows.map((r) =>
-                                      //       r.id === row.id ? { ...r,
-                                      //         type: selectedOption.value,
-                                      //         resource_id: selectedOption.value, // Set the selected tax ID
-                                      //         resource_type: taxTypes.find((t) => t.id === selectedOption.value)?.type || "", // Set the tax type
-                                      //        } : r
+                                      //       r.id === row.id ? { ...r, type: selectedOption.value } : r
                                       //     )
                                       //   )
                                       // }
 
-                                      // onChange={(selectedOption) =>
-                                      //   setRows((prevRows) =>
-                                      //     prevRows.map((r) =>
-                                      //       r.id === row.id
-                                      //         ? {
-                                      //             ...r,
-                                      //             type: selectedOption?.value || "", // Handle null or undefined
-                                      //             resource_id: selectedOption?.value || null, // Handle null or undefined
-                                      //             resource_type: taxTypes.find((t) => t.id === selectedOption?.value)?.type || "", // Handle null or undefined
-                                      //           }
-                                      //         : r
-                                      //     )
-                                      //   )
-                                      // }
 
-                                      // onChange={(selectedOption) => {
-                                      //   console.log(
-                                      //     "Selected Option:",
-                                      //     selectedOption
-                                      //   ); // Log the selected option
+                                      // onChange={(selectedOption) =>
                                       //   setRows((prevRows) =>
                                       //     prevRows.map((r) =>
                                       //       r.id === row.id
                                       //         ? {
                                       //           ...r,
-                                      //           type:
-                                      //             selectedOption?.value || "", // Handle null or undefined
-                                      //           resource_id:
-                                      //             selectedOption?.id || null, // Handle null or undefined
-                                      //           resource_type:
-                                      //             selectedOption?.tax || "", // Handle null or undefined
+                                      //           type: selectedOption?.value || "", // Handle null or undefined
+                                      //           resource_id: selectedOption?.id || null, // Handle null or undefined
+                                      //           resource_type: selectedOption?.tax || "", // Handle null or undefined
+                                      //           // resource_id: selectedOption?.value || null, // Handle null or undefined
+                                      //           // resource_type: taxTypes.find((t) => t.id === selectedOption?.value)?.type || "", // Handle null or undefined
                                       //         }
                                       //         : r
                                       //     )
-                                      //   );
-                                      //   console.log("Updated Rows:", rows); // Log the updated rows
-                                      // }}
+                                      //   )
+                                      // }
+
 
                                       onChange={(selectedOption) => {
                                         setRows((prevRows) => {
@@ -1085,41 +1132,152 @@ const POAdvanceNoteDetails = () => {
                                       placeholder="Select Type"
                                       isDisabled={!row.isEditable} // Disable if not editable
                                     />
+
                                   </td>
                                   <td className="text-start">
                                     {row.isEditable ? (
+                                      // <SingleSelector
+                                      //   className="form-control"
+                                      //   options={[
+                                      //     { value: "", label: "Select Tax" },
+                                      //     { value: "5%", label: "5%" },
+                                      //     { value: "12%", label: "12%" },
+                                      //     { value: "18%", label: "18%" },
+                                      //     { value: "28%", label: "28%" },
+                                      //   ]}
+                                      //   value={
+                                      //     [
+                                      //       { value: "", label: "Select Tax" },
+                                      //       { value: "5%", label: "5%" },
+                                      //       { value: "12%", label: "12%" },
+                                      //       { value: "18%", label: "18%" },
+                                      //       { value: "28%", label: "28%" },
+                                      //     ].find(opt => opt.value === row.percentage) || { value: "", label: "Select Tax" }
+                                      //   }
+                                      //   onChange={selected => {
+                                      //     const percentage = parseFloat(selected?.value) || 0;
+                                      //     const amount = ((creditNoteAmount || 0) * percentage) / 100;
+
+                                      //     setRows(prevRows =>
+                                      //       prevRows.map(r =>
+                                      //         r.id === row.id
+                                      //           ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
+                                      //           : r
+                                      //       )
+                                      //     );
+                                      //   }}
+                                      //   placeholder="Select Tax"
+                                      // />
+
+                                      // <SingleSelector
+                                      //   className="form-control"
+                                      //   options={
+                                      //     taxPercentages.find((t) => t.tax_name === row.type)?.percentage.map((percent) => ({
+                                      //       value: `${percent}%`,
+                                      //       label: `${percent}%`,
+                                      //     })) || []
+                                      //   }
+                                      //   value={
+                                      //     taxPercentages
+                                      //       .find((t) => t.tax_name === row.type)?.percentage
+                                      //       .map((p) => `${p}%`)
+                                      //       .includes(
+                                      //         row.percentage?.toString().includes("%")
+                                      //           ? row.percentage
+                                      //           : `${row.percentage}`
+                                      //       )
+                                      //       ? { value: `${row.percentage}%`, label: `${row.percentage}%` }
+                                      //       : null
+                                      //   }
+                                      //   onChange={(selectedOption) => {
+                                      //     setRows((prevRows) =>
+                                      //       prevRows.map((r) =>
+                                      //         r.id === row.id
+                                      //           ? {
+                                      //             ...r,
+                                      //             percentage: selectedOption
+                                      //               ? parseFloat(selectedOption.value.replace("%", ""))
+                                      //               : "",
+                                      //           }
+                                      //           : r
+                                      //       )
+                                      //     );
+                                      //   }}
+                                      //   placeholder="Select Tax %"
+                                      //   isDisabled={!row.isEditable}
+                                      // />
+
+
+
+                                      //                                         <select
+                                      //   className="form-control"
+                                      //   value={row.percentage}
+                                      //   onChange={(e) =>
+                                      //     setRows((prevRows) =>
+                                      //       prevRows.map((r) =>
+                                      //         r.id === row.id ? { ...r, percentage: parseFloat(e.target.value) } : r
+                                      //       )
+                                      //     )
+                                      //   }
+                                      // >
+                                      //   {taxPercentages
+                                      //     .find((t) => t.tax_name === row.type)?.percentage.map((percent) => (
+                                      //       <option key={percent} value={percent}>
+                                      //         {percent}%
+                                      //       </option>
+                                      //     ))}
+                                      // </select>
+
+
+
                                       <SingleSelector
                                         className="form-control"
-                                        options={[
-                                          { value: "", label: "Select Tax" },
-                                          { value: "5%", label: "5%" },
-                                          { value: "12%", label: "12%" },
-                                          { value: "18%", label: "18%" },
-                                          { value: "28%", label: "28%" },
-                                        ]}
-                                        value={
-                                          [
-                                            { value: "", label: "Select Tax" },
-                                            { value: "5%", label: "5%" },
-                                            { value: "12%", label: "12%" },
-                                            { value: "18%", label: "18%" },
-                                            { value: "28%", label: "28%" },
-                                          ].find(opt => opt.value === row.percentage) || { value: "", label: "Select Tax" }
+                                        options={
+                                          Array.isArray(
+                                            taxPercentages.find((t) => t.tax_name === row.type)?.percentage
+                                          )
+                                            ? taxPercentages
+                                              .find((t) => t.tax_name === row.type)
+                                              .percentage.map((percent) => ({
+                                                value: `${percent}%`,
+                                                label: `${percent}%`,
+                                              }))
+                                            : []
                                         }
-                                        onChange={selected => {
-                                          const percentage = parseFloat(selected?.value) || 0;
+                                        value={
+                                          row.percentage !== undefined && row.percentage !== null
+                                            ? {
+                                              value: `${parseFloat(row.percentage)}%`,
+                                              label: `${parseFloat(row.percentage)}%`,
+                                            }
+                                            : { value: "", label: "Select Tax" }
+                                        }
+                                        onChange={(selected) => {
+                                          const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
                                           const amount = ((creditNoteAmount || 0) * percentage) / 100;
 
-                                          setRows(prevRows =>
-                                            prevRows.map(r =>
+                                          setRows((prevRows) =>
+                                            prevRows.map((r) =>
                                               r.id === row.id
-                                                ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
+                                                ? {
+                                                  ...r,
+                                                  percentage: selected?.value,
+                                                  amount: amount.toFixed(2),
+                                                }
                                                 : r
                                             )
                                           );
                                         }}
                                         placeholder="Select Tax"
+                                        isDisabled={!row.isEditable}
                                       />
+
+
+
+
+
+
+
                                     ) : (
                                       <input
                                         type="text"
@@ -1137,10 +1295,7 @@ const POAdvanceNoteDetails = () => {
                                         setRows((prevRows) =>
                                           prevRows.map((r) =>
                                             r.id === row.id
-                                              ? {
-                                                ...r,
-                                                inclusive: e.target.checked,
-                                              }
+                                              ? { ...r, inclusive: e.target.checked }
                                               : r
                                           )
                                         )
@@ -1157,13 +1312,7 @@ const POAdvanceNoteDetails = () => {
                                         setRows((prevRows) =>
                                           prevRows.map((r) =>
                                             r.id === row.id
-                                              ? {
-                                                ...r,
-                                                amount:
-                                                  parseFloat(
-                                                    e.target.value
-                                                  ) || 0,
-                                              }
+                                              ? { ...r, amount: parseFloat(e.target.value) || 0 }
                                               : r
                                           )
                                         )
@@ -1173,39 +1322,39 @@ const POAdvanceNoteDetails = () => {
                                   <td
                                     className="text-start"
                                     onClick={() => deleteRow(row.id)}
-                                    style={{
-                                      cursor: "pointer",
-                                      color: "black",
-                                    }}
+                                    style={{ cursor: "pointer", color: "black" }}
                                   >
-
+                                    {/* <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                width="16"
+                                                                height="16"
+                                                                fill="currentColor"
+                                                                className="bi bi-dash-circle"
+                                                                viewBox="0 0 16 16"
+                                                                style={{
+                                                                  transition: "transform 0.3s ease",
+                                                                }}
+                                                              >
+                                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                                <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
+                                                              </svg> */}
                                     <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
                                   </td>
                                 </tr>
                               ))}
 
                               <tr>
-                                <th className="text-start">
-                                  Sub Total A (Addition)
-                                </th>
+                                <th className="text-start">Sub Total A (Addition)</th>
                                 <td className="text-start" />
                                 <td className="" />
-                                <td className="text-start">
-                                  {calculateSubTotal()}
-                                </td>
+                                <td className="text-start">{calculateSubTotal()}</td>
                                 <td />
                               </tr>
                               <tr>
                                 <th className="text-start">Gross Amount</th>
                                 <td className="text-start" />
                                 <td className="" />
-                                <td className="text-start">
-                                  {" "}
-                                  {(
-                                    parseFloat(calculateSubTotal()) +
-                                    (parseFloat(creditNoteAmount) || 0)
-                                  ).toFixed(2)}
-                                </td>
+                                <td className="text-start">  {(parseFloat(calculateSubTotal()) + (parseFloat(creditNoteAmount) || 0)).toFixed(2)}</td>
                                 <td />
                               </tr>
                               {/* Deduction Tax Section */}
@@ -1215,7 +1364,21 @@ const POAdvanceNoteDetails = () => {
                                 <td className="" />
                                 <td className="text-start" />
                                 <td className="text-start" onClick={addDeductionRow}>
-
+                                  {/* <svg
+                                                              xmlns="http://www.w3.org/2000/svg"
+                                                              width="16"
+                                                              height="16"
+                                                              fill="currentColor"
+                                                              className="bi bi-plus-circle"
+                                                              viewBox="0 0 16 16"
+                                                              style={{
+                                                                // transform: showDeductionRows ? "rotate(45deg)" : "none",
+                                                                transition: "transform 0.3s ease",
+                                                              }}
+                                                            >
+                                                              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                              <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                                            </svg> */}
                                   <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
                                 </td>
                               </tr>
@@ -1230,24 +1393,25 @@ const POAdvanceNoteDetails = () => {
                                         id: type.id,
                                         tax: type.type,
                                       }))}
-                                      value={{
-                                        value: row.type,
-                                        label: row.type,
-                                      }}
+                                      value={{ value: row.type, label: row.type }}
+                                      // onChange={(selectedOption) =>
+                                      //   setDeductionRows((prevRows) =>
+                                      //     prevRows.map((r) =>
+                                      //       r.id === row.id ? { ...r, type: selectedOption.value } : r
+                                      //     )
+                                      //   )
+                                      // }
+
+
                                       onChange={(selectedOption) =>
                                         setDeductionRows((prevRows) =>
                                           prevRows.map((r) =>
-                                            r.id === row.id
-                                              ? {
-                                                ...r,
-                                                type:
-                                                  selectedOption?.value || "", // Handle null or undefined
-                                                resource_id:
-                                                  selectedOption?.id || null, // Handle null or undefined
-                                                resource_type:
-                                                  selectedOption?.tax || "", // Handle null or undefined
-                                              }
-                                              : r
+                                            r.id === row.id ? {
+                                              ...r,
+                                              type: selectedOption?.value || "", // Handle null or undefined
+                                              resource_id: selectedOption?.id || null, // Handle null or undefined
+                                              resource_type: selectedOption?.tax || "", // Handle null or undefined
+                                            } : r
                                           )
                                         )
                                       }
@@ -1255,37 +1419,78 @@ const POAdvanceNoteDetails = () => {
                                     />
                                   </td>
                                   <td className="text-start">
+                                    {/* <SingleSelector
+                                                                className="form-control"
+                                                                options={[
+                                                                  { value: "", label: "Select Tax" },
+                                                                  { value: "5%", label: "5%" },
+                                                                  { value: "12%", label: "12%" },
+                                                                  { value: "18%", label: "18%" },
+                                                                  { value: "28%", label: "28%" },
+                                                                ]}
+                                                                value={
+                                                                  [
+                                                                    { value: "", label: "Select Tax" },
+                                                                    { value: "5%", label: "5%" },
+                                                                    { value: "12%", label: "12%" },
+                                                                    { value: "18%", label: "18%" },
+                                                                    { value: "28%", label: "28%" },
+                                                                  ].find(opt => opt.value === row.percentage) || { value: "", label: "Select Tax" }
+                                                                }
+                                                                onChange={selected => {
+                                                                  const percentage = parseFloat(selected?.value) || 0;
+                                                                  const amount = ((creditNoteAmount || 0) * percentage) / 100;
+                        
+                                                                  setDeductionRows(prevRows =>
+                                                                    prevRows.map(r =>
+                                                                      r.id === row.id
+                                                                        ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
+                                                                        : r
+                                                                    )
+                                                                  );
+                                                                }}
+                                                                placeholder="Select Tax"
+                                                              /> */}
+
+
                                     <SingleSelector
                                       className="form-control"
-                                      options={[
-                                        { value: "", label: "Select Tax" },
-                                        { value: "5%", label: "5%" },
-                                        { value: "12%", label: "12%" },
-                                        { value: "18%", label: "18%" },
-                                        { value: "28%", label: "28%" },
-                                      ]}
-                                      value={
-                                        [
-                                          { value: "", label: "Select Tax" },
-                                          { value: "5%", label: "5%" },
-                                          { value: "12%", label: "12%" },
-                                          { value: "18%", label: "18%" },
-                                          { value: "28%", label: "28%" },
-                                        ].find(opt => opt.value === row.percentage) || { value: "", label: "Select Tax" }
+                                      options={
+                                        taxPercentages.find((t) => t.tax_name === row.type)?.percentage.map((p) => ({
+                                          value: `${p}%`,
+                                          label: `${p}%`,
+                                        })) || []
                                       }
-                                      onChange={selected => {
-                                        const percentage = parseFloat(selected?.value) || 0;
+                                      value={
+                                        (() => {
+                                          const percent = row.percentage?.toString().includes("%")
+                                            ? row.percentage
+                                            : `${row.percentage}%`;
+
+                                          const options = taxPercentages.find((t) => t.tax_name === row.type)?.percentage || [];
+                                          return options.includes(parseFloat(percent))
+                                            ? { value: percent, label: percent }
+                                            : { value: "", label: "Select Tax" };
+                                        })()
+                                      }
+                                      onChange={(selected) => {
+                                        const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
                                         const amount = ((creditNoteAmount || 0) * percentage) / 100;
 
-                                        setDeductionRows(prevRows =>
-                                          prevRows.map(r =>
+                                        setDeductionRows((prevRows) =>
+                                          prevRows.map((r) =>
                                             r.id === row.id
-                                              ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
+                                              ? {
+                                                ...r,
+                                                percentage: percentage,
+                                                amount: amount.toFixed(2),
+                                              }
                                               : r
                                           )
                                         );
                                       }}
-                                      placeholder="Select Tax"
+                                      placeholder="Select Tax %"
+                                    // isDisabled={!row.isEditable}
                                     />
                                   </td>
                                   <td>
@@ -1296,10 +1501,7 @@ const POAdvanceNoteDetails = () => {
                                         setDeductionRows((prevRows) =>
                                           prevRows.map((r) =>
                                             r.id === row.id
-                                              ? {
-                                                ...r,
-                                                inclusive: e.target.checked,
-                                              }
+                                              ? { ...r, inclusive: e.target.checked }
                                               : r
                                           )
                                         )
@@ -1316,13 +1518,7 @@ const POAdvanceNoteDetails = () => {
                                         setDeductionRows((prevRows) =>
                                           prevRows.map((r) =>
                                             r.id === row.id
-                                              ? {
-                                                ...r,
-                                                amount:
-                                                  parseFloat(
-                                                    e.target.value
-                                                  ) || 0,
-                                              }
+                                              ? { ...r, amount: parseFloat(e.target.value) || 0 }
                                               : r
                                           )
                                         )
@@ -1332,36 +1528,43 @@ const POAdvanceNoteDetails = () => {
                                   <td
                                     className="text-start"
                                     onClick={() => deleteDeductionRow(row.id)}
-                                    style={{
-                                      cursor: "pointer",
-                                      color: "black",
-                                    }}
+                                    style={{ cursor: "pointer", color: "black" }}
                                   >
+                                    {/* <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                width="16"
+                                                                height="16"
+                                                                fill="currentColor"
+                                                                className="bi bi-dash-circle"
+                                                                viewBox="0 0 16 16"
+                                                                style={{
+                                                                  transition: "transform 0.3s ease",
+                                                                }}
+                                                              >
+                                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                                <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
+                                                              </svg> */}
                                     <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
                                   </td>
                                 </tr>
                               ))}
                               {/* Static Rows */}
                               <tr>
-                                <th className="text-start">
-                                  Sub Total B (Deductions)
-                                </th>
+                                <th className="text-start">Sub Total B (Deductions)</th>
                                 <td className="text-start" />
                                 <td className="" />
-                                <td className="text-start">
-                                  {calculateDeductionSubTotal()}
-                                </td>
+                                <td className="text-start">{calculateDeductionSubTotal()}</td>
                                 <td />
                               </tr>
                               <tr>
                                 <th className="text-start">Payable Amount</th>
                                 <td className="text-start" />
                                 <td className="" />
-                                <td className="text-start">
-                                  {calculatePayableAmount()}
-                                </td>
+                                <td className="text-start">{calculatePayableAmount()}</td>
                                 <td />
                               </tr>
+
+
                             </tbody>
                           </table>
                         </div>
@@ -1693,6 +1896,19 @@ const POAdvanceNoteDetails = () => {
           </div>
         </div>
       </div>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 };
