@@ -1384,6 +1384,9 @@ const MaterialReconciliationList = () => {
                   components={{
                     ColumnMenu: () => null,
                   }}
+                  localeText={{
+                    noRowsLabel: "No data available",
+                  }}
                   sx={{
                     "& .MuiDataGrid-columnHeaders": {
                       backgroundColor: "#f8f9fa",
