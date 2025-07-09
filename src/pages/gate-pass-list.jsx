@@ -6,7 +6,7 @@ import { Modal, Button } from "react-bootstrap";
 import { DataGrid } from "@mui/x-data-grid";
 import { Stack, Typography, Pagination } from "@mui/material";
 import SingleSelector from "../components/base/Select/SingleSelector";
-import { DownloadIcon, FilterIcon, StarIcon, SettingIcon } from "../components";
+import { DownloadIcon, FilterIcon, StarIcon, SettingIcon, MultiSelector } from "../components";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import { Link } from "react-router-dom";
@@ -49,6 +49,38 @@ const GatePassList = () => {
     rejected: 0,
   });
   const [returnableFilter, setReturnableFilter] = useState(null);
+
+  // Filter modal state
+  const [filterShow, setFilterShow] = useState(false);
+  const [selectedFilterCompanies, setSelectedFilterCompanies] = useState([]);
+  const [selectedFilterProjects, setSelectedFilterProjects] = useState([]);
+  const [selectedFilterSubProjects, setSelectedFilterSubProjects] = useState([]);
+  const [filterProjectOptions, setFilterProjectOptions] = useState([]);
+  const [filterSubProjectOptions, setFilterSubProjectOptions] = useState([]);
+  
+  // Material filter states (similar to reconciliation)
+  const [inventoryTypes, setInventoryTypes] = useState([]);
+  const [selectedInventory, setSelectedInventory] = useState(null);
+  const [inventorySubTypes, setInventorySubTypes] = useState([]);
+  const [selectedSubType, setSelectedSubType] = useState(null);
+  const [inventoryMaterialTypes, setInventoryMaterialTypes] = useState([]);
+  const [selectedInventoryMaterialTypes, setSelectedInventoryMaterialTypes] = useState(null);
+  const [genericSpecifications, setGenericSpecifications] = useState([]);
+  const [selectedGenericSpec, setSelectedGenericSpec] = useState(null);
+  const [colors, setColors] = useState([]);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [brands, setBrands] = useState([]);
+  const [selectedBrand, setSelectedBrand] = useState(null);
+  const [uoms, setUoms] = useState([]);
+  const [selectedUom, setSelectedUom] = useState(null);
+  
+  // Gate pass specific filters
+  const [gatePassOptions, setGatePassOptions] = useState([]);
+  const [selectedGatePass, setSelectedGatePass] = useState(null);
+  const [gatePassNumberOptions, setGatePassNumberOptions] = useState([]);
+  const [selectedGatePassNumbers, setSelectedGatePassNumbers] = useState([]);
+  const [poNumberOptions, setPoNumberOptions] = useState([]);
+  const [selectedPoNumbers, setSelectedPoNumbers] = useState([]);
 
   const allColumns = [
     {
@@ -166,6 +198,187 @@ const GatePassList = () => {
   const handleSettingModalShow = () => setSettingShow(true);
   const handleModalShow = () => setShow(true);
 
+  // Filter modal handlers
+  const handleFilterModalShow = () => setFilterShow(true);
+  const handleFilterClose = () => setFilterShow(false);
+
+  // Material filter handlers
+  const handleInventoryChange = (selectedOption) => {
+    setSelectedInventory(selectedOption);
+    setSelectedSubType(null);
+    setInventorySubTypes([]);
+    setInventoryMaterialTypes([]);
+    setSelectedInventoryMaterialTypes(null);
+  };
+
+  const handleSubTypeChange = (selectedOption) => {
+    setSelectedSubType(selectedOption);
+  };
+
+  const handleInventoryMaterialTypeChange = (selectedOption) => {
+    setSelectedInventoryMaterialTypes(selectedOption);
+    setSelectedGenericSpec(null);
+    setSelectedColor(null);
+    setSelectedBrand(null);
+  };
+
+  const handleGenericSpecChange = (selectedOption) => {
+    setSelectedGenericSpec(selectedOption);
+  };
+
+  const handleColorChange = (selectedOption) => {
+    setSelectedColor(selectedOption);
+  };
+
+  const handleBrandChange = (selectedOption) => {
+    setSelectedBrand(selectedOption);
+  };
+
+  const handleUomChange = (selectedOption) => {
+    setSelectedUom(selectedOption);
+  };
+
+  // Gate pass filter handlers
+  const handleGatePassChange = (selectedOption) => {
+    setSelectedGatePass(selectedOption);
+  };
+
+  const handleGatePassNumberChange = (selectedOption) => {
+    setSelectedGatePassNumbers(selectedOption);
+  };
+
+  const handlePoNumberChange = (selectedOption) => {
+    // selectedOption will be an array of objects with value and label
+    // where both value and label are the PO number strings
+    setSelectedPoNumbers(selectedOption);
+  };
+
+  // Filter apply and reset handlers
+  const handleFilterGo = async () => {
+    setLoading(true);
+    try {
+      let url = `${baseURL}gate_passes.json?token=${token}&page=1&per_page=${pageSize}`;
+
+      // Add company filter
+      if (selectedFilterCompanies.length > 0) {
+        const companyIds = selectedFilterCompanies.map((c) => c.value).join(",");
+        url += `&q[company_id_in]=${companyIds}`;
+      }
+
+      // Add project filter
+      if (selectedFilterProjects.length > 0) {
+        const projectIds = selectedFilterProjects.map((p) => p.value).join(",");
+        url += `&q[project_id_in]=${projectIds}`;
+      }
+
+      // Add sub-project filter
+      if (selectedFilterSubProjects.length > 0) {
+        const subProjectIds = selectedFilterSubProjects.map((s) => s.value).join(",");
+        url += `&q[sub_project_id_in]=${subProjectIds}`;
+      }
+
+      // Add material filters
+      if (selectedInventory && selectedInventory.length > 0) {
+        const inventoryTypeIds = selectedInventory.map((inv) => inv.value).join(",");
+        url += `&q[gate_pass_materials_material_inventory_pms_inventory_type_id_in]=${inventoryTypeIds}`;
+      }
+
+      if (selectedSubType && selectedSubType.length > 0) {
+        const subTypeIds = selectedSubType.map((sub) => sub.value).join(",");
+        url += `&q[gate_pass_materials_material_inventory_pms_inventory_sub_type_id_in]=${subTypeIds}`;
+      }
+
+      if (selectedInventoryMaterialTypes && selectedInventoryMaterialTypes.length > 0) {
+        const materialIds = selectedInventoryMaterialTypes.map((m) => m.value).join(",");
+        url += `&q[gate_pass_materials_material_inventory_pms_inventory_id_in]=${materialIds}`;
+      }
+
+      if (selectedGenericSpec) {
+        url += `&q[gate_pass_materials_material_inventory_pms_generic_info_id_in]=${selectedGenericSpec.value}`;
+      }
+
+      if (selectedColor) {
+        url += `&q[gate_pass_materials_material_inventory_pms_colour_id_in]=${selectedColor.value}`;
+      }
+
+      if (selectedBrand) {
+        url += `&q[gate_pass_materials_material_inventory_pms_brand_id_in]=${selectedBrand.value}`;
+      }
+
+      if (selectedUom) {
+        url += `&q[gate_pass_materials_material_inventory_unit_of_measure_id_in]=${selectedUom.value}`;
+      }
+
+      // Add gate pass specific filters
+      if (selectedGatePass) {
+        url += `&q[gate_pass_type_id_eq]=${selectedGatePass.value}`;
+      }
+
+      if (selectedGatePassNumbers.length > 0) {
+        const gatePassIds = selectedGatePassNumbers.map((g) => g.value).join(",");
+        url += `&q[id_in]=${gatePassIds}`;
+      }
+
+      if (selectedPoNumbers.length > 0) {
+        const poNumbers = selectedPoNumbers.map((p) => p.value).join(",");
+        url += `&q[po_or_mto_no_in]=${poNumbers}`;
+      }
+
+      const response = await axios.get(url);
+      
+      // Transform the data same as the main useEffect
+      const data = (response.data.gate_passes || []).map((entry, index) => ({
+        id: entry.id,
+        srNo: index + 1,
+        ...entry,
+        due_date: formatDate(entry.due_date),
+        gate_pass_date: formatDate(entry.gate_pass_date),
+        expected_return_date: formatDate(entry.expected_return_date),
+        created_at: formatDate(entry.created_at),
+        updated_at: formatDate(entry.updated_at),
+        due_at: formatDate(entry.due_at),
+      }));
+
+      setBillEntries(data);
+      setMeta(response.data.pagination || {});
+      setTotalPages(response.data.pagination?.total_pages || 1);
+      setTotalEntries(response.data.pagination?.total_count || data.length);
+      setStatusCounts(response.data.status_counts || {});
+      setCurrentPage(1);
+      setFilterShow(false);
+    } catch (error) {
+      console.error("Filter API error:", error);
+      alert("Failed to fetch filtered data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterReset = () => {
+    setSelectedFilterCompanies([]);
+    setSelectedFilterProjects([]);
+    setSelectedFilterSubProjects([]);
+    setSelectedInventory(null);
+    setSelectedSubType(null);
+    setSelectedInventoryMaterialTypes(null);
+    setSelectedGenericSpec(null);
+    setSelectedColor(null);
+    setSelectedBrand(null);
+    setSelectedUom(null);
+    setSelectedGatePass(null);
+    setSelectedGatePassNumbers([]);
+    setSelectedPoNumbers([]);
+    setFilterShow(false);
+    setCurrentPage(1);
+    
+    // Reset current filters and refetch unfiltered data
+    setCurrentFilters({
+      companyId: "",
+      projectId: "",
+      siteId: "",
+    });
+  };
+
   const handleToggleColumn = (field) => {
     setColumnVisibility((prev) => ({ ...prev, [field]: !prev[field] }));
   };
@@ -205,6 +418,224 @@ const GatePassList = () => {
         console.error("Error fetching company data:", error);
       });
   }, []);
+
+  // Fetch inventory types for filter
+  useEffect(() => {
+    if (!token) return;
+    
+    axios
+      .get(`${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`)
+      .then((response) => {
+        const inventoryData = Array.isArray(response.data)
+          ? response.data
+          : response.data.inventory_types || [];
+        const options = inventoryData.map((inventory) => ({
+          value: inventory.id,
+          label: inventory.name,
+        }));
+        setInventoryTypes(options);
+      })
+      .catch((error) => {
+        console.error("Error fetching inventory types:", error);
+        setInventoryTypes([]);
+      });
+  }, [token]);
+
+  // Fetch UOMs for filter
+  useEffect(() => {
+    if (!token) return;
+    
+    axios
+      .get(`${baseURL}unit_of_measures.json?token=${token}`)
+      .then((response) => {
+        const options = response.data.map((uom) => ({
+          value: uom.id,
+          label: uom.name,
+        }));
+        setUoms(options);
+      })
+      .catch((error) => {
+        console.error("Error fetching UOMs:", error);
+      });
+  }, [token]);
+
+  // Fetch gate pass numbers and PO numbers for filter
+  useEffect(() => {
+    if (!token) return;
+    
+    // Fetch gate pass types
+    axios
+      .get(`${baseURL}gate_pass_types.json?token=${token}`)
+      .then((response) => {
+        const options = (response.data || []).map((item) => ({
+          value: item.id,
+          label: item.name,
+        }));
+        setGatePassOptions(options);
+      })
+      .catch((error) => {
+        console.error("Error fetching gate pass types:", error);
+        setGatePassOptions([]);
+      });
+
+    // Fetch gate pass numbers - updated endpoint
+    axios
+      .get(`${baseURL}gate_passes/gate_pass_nos.json?token=${token}`)
+      .then((response) => {
+        const options = (response.data || []).map((item) => ({
+          value: item.id,
+          label: item.gate_pass_no,
+        }));
+        setGatePassNumberOptions(options);
+      })
+      .catch((error) => {
+        console.error("Error fetching gate pass numbers:", error);
+        setGatePassNumberOptions([]);
+      });
+
+    // Fetch PO numbers - updated endpoint  
+    axios
+      .get(`${baseURL}gate_passes/po_numbers.json?token=${token}`)
+      .then((response) => {
+        // API returns array of strings, not objects
+        const options = (response.data || []).map((poNumber, index) => ({
+          value: poNumber,
+          label: poNumber,
+        }));
+        setPoNumberOptions(options);
+      })
+      .catch((error) => {
+        console.error("Error fetching PO numbers:", error);
+        setPoNumberOptions([]);
+      });
+  }, [token]);
+
+  // Fetch inventory sub-types when an inventory type is selected
+  useEffect(() => {
+    if (selectedInventory) {
+      const inventoryTypeIds = selectedInventory
+        .map((item) => item.value)
+        .join(",");
+
+      axios
+        .get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${inventoryTypeIds}&token=${token}`)
+        .then((response) => {
+          const options = response.data.map((subType) => ({
+            value: subType.id,
+            label: subType.name,
+          }));
+          setInventorySubTypes(options);
+        })
+        .catch((error) => {
+          console.error("Error fetching inventory sub-types:", error);
+        });
+    }
+  }, [selectedInventory]);
+
+  // Fetch inventory materials when an inventory type is selected
+  useEffect(() => {
+    if (selectedInventory) {
+      const inventoryTypeIds = selectedInventory
+        .map((item) => item.value)
+        .join(",");
+
+      axios
+        .get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${inventoryTypeIds}&q[material_category_eq]=material&token=${token}`)
+        .then((response) => {
+          const options = response.data.map((subType) => ({
+            value: subType.id,
+            label: subType.name,
+          }));
+          setInventoryMaterialTypes(options);
+        })
+        .catch((error) => {
+          console.error("Error fetching inventory materials:", error);
+        });
+    }
+  }, [selectedInventory]);
+
+  // Fetch generic specifications, colors and brands when material is selected
+  useEffect(() => {
+    if (selectedInventoryMaterialTypes) {
+      const materialIds = selectedInventoryMaterialTypes
+        .map((item) => item.value)
+        .join(",");
+
+      // Fetch generic specifications
+      axios
+        .get(`${baseURL}pms/generic_infos.json?q[material_id_eq]=${materialIds}&token=${token}`)
+        .then((response) => {
+          const options = response.data.map((spec) => ({
+            value: spec.id,
+            label: spec.generic_info,
+          }));
+          setGenericSpecifications(options);
+        })
+        .catch((error) => {
+          console.error("Error fetching generic specifications:", error);
+        });
+
+      // Fetch colors
+      axios
+        .get(`${baseURL}pms/colours.json?q[material_id_eq]=${materialIds}&token=${token}`)
+        .then((response) => {
+          const options = response.data.map((color) => ({
+            value: color.id,
+            label: color.colour,
+          }));
+          setColors(options);
+        })
+        .catch((error) => {
+          console.error("Error fetching colors:", error);
+        });
+
+      // Fetch brands
+      axios
+        .get(`${baseURL}pms/inventory_brands.json?q[material_id_eq]=${materialIds}&token=${token}`)
+        .then((response) => {
+          const options = response.data.map((brand) => ({
+            value: brand.id,
+            label: brand.brand_name,
+          }));
+          setBrands(options);
+        })
+        .catch((error) => {
+          console.error("Error fetching brands:", error);
+        });
+    }
+  }, [selectedInventoryMaterialTypes]);
+
+  // Filter companies cascade - update project options
+  useEffect(() => {
+    if (selectedFilterCompanies.length > 0) {
+      const selectedCompanyIds = selectedFilterCompanies.map((c) => c.value);
+      const projects = companies
+        .filter((company) => selectedCompanyIds.includes(company.id))
+        .flatMap((company) => company.projects || [])
+        .map((prj) => ({ value: prj.id, label: prj.name }));
+      setFilterProjectOptions(projects);
+    } else {
+      setFilterProjectOptions([]);
+    }
+    setSelectedFilterProjects([]);
+    setSelectedFilterSubProjects([]);
+  }, [selectedFilterCompanies, companies]);
+
+  // Filter projects cascade - update sub-project options
+  useEffect(() => {
+    if (selectedFilterProjects.length > 0) {
+      const selectedProjectIds = selectedFilterProjects.map((p) => p.value);
+      const subProjects = companies
+        .flatMap((company) => company.projects || [])
+        .filter((prj) => selectedProjectIds.includes(prj.id))
+        .flatMap((prj) => prj.pms_sites || [])
+        .map((site) => ({ value: site.id, label: site.name }));
+      setFilterSubProjectOptions(subProjects);
+    } else {
+      setFilterSubProjectOptions([]);
+    }
+    setSelectedFilterSubProjects([]);
+  }, [selectedFilterProjects, companies]);
 
   // Handle company selection
   const handleCompanyChange = (selectedOption) => {
@@ -659,6 +1090,13 @@ display:none !important;
                 <button
                   type="button"
                   className="btn btn-md"
+                  onClick={handleFilterModalShow}
+                >
+                  <FilterIcon />
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-md"
                   onClick={handleSettingModalShow}
                 >
                   <SettingIcon />
@@ -863,6 +1301,212 @@ display:none !important;
             Hide All
           </button>
         </Modal.Footer>
+      </Modal>
+
+      {/* Filter Modal */}
+      <Modal
+        show={filterShow}
+        onHide={handleFilterClose}
+        dialogClassName="modal-right"
+        className="setting-modal mb-5"
+        backdrop={true}
+      >
+        <Modal.Header>
+          <div className="container-fluid p-0">
+            <div className="border-0 d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <button
+                  type="button"
+                  className="btn"
+                  aria-label="Close"
+                  onClick={handleFilterClose}
+                >
+                  <svg
+                    width="10"
+                    height="16"
+                    viewBox="0 0 10 18"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M9 1L1 9L9 17"
+                      stroke="#8B0203"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                <h3 className="modal-title m-0" style={{ fontWeight: 500 }}>
+                  Filter
+                </h3>
+              </div>
+              <span
+                className="resetCSS"
+                style={{ fontSize: "14px", textDecoration: "underline" }}
+                onClick={handleFilterReset}
+                role="button"
+              >
+                Reset
+              </span>
+            </div>
+          </div>
+        </Modal.Header>
+
+        <div className="modal-body" style={{ overflowY: "scroll" }}>
+          <div className="row justify-content-between align-items-center mt-2">
+            <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">Company</label>
+              <MultiSelector
+                options={companies.map((c) => ({
+                  value: c.id,
+                  label: c.company_name,
+                }))}
+                value={selectedFilterCompanies}
+                onChange={setSelectedFilterCompanies}
+                placeholder="Select Company"
+                isMulti
+              />
+            </div>
+            <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">Project</label>
+              <MultiSelector
+                options={filterProjectOptions}
+                value={selectedFilterProjects}
+                onChange={setSelectedFilterProjects}
+                placeholder="Select Project"
+                isMulti
+              />
+            </div>
+            <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">Sub-Project</label>
+              <MultiSelector
+                options={filterSubProjectOptions}
+                value={selectedFilterSubProjects}
+                onChange={setSelectedFilterSubProjects}
+                placeholder="Select Sub-Project"
+                isMulti
+              />
+            </div>
+
+            <div className="col-md-6">
+              <div className="form-group">
+                <label>Material Type</label>
+                <MultiSelector
+                  options={inventoryTypes}
+                  onChange={handleInventoryChange}
+                  value={selectedInventory}
+                  placeholder="Select Material Type"
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-group mt-2">
+                <label>Material Sub-Type</label>
+                <MultiSelector
+                  options={inventorySubTypes}
+                  onChange={handleSubTypeChange}
+                  value={selectedSubType}
+                  placeholder="Select Material Sub-Type"
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-group mt-2">
+                <label>Material</label>
+                <MultiSelector
+                  options={inventoryMaterialTypes}
+                  onChange={handleInventoryMaterialTypeChange}
+                  value={selectedInventoryMaterialTypes}
+                  placeholder="Select Material"
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-group mt-2">
+                <label>Generic Specification</label>
+                <SingleSelector
+                  options={genericSpecifications}
+                  onChange={handleGenericSpecChange}
+                  value={selectedGenericSpec}
+                  placeholder="Select Gen Specification"
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-group mt-2">
+                <label>Colour</label>
+                <SingleSelector
+                  options={colors}
+                  onChange={handleColorChange}
+                  value={selectedColor}
+                  placeholder="Select Colour"
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-group mt-2">
+                <label>Brand</label>
+                <SingleSelector
+                  options={brands}
+                  onChange={handleBrandChange}
+                  value={selectedBrand}
+                  placeholder="Select Brand"
+                />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-group mt-2">
+                <label>UOM</label>
+                <SingleSelector
+                  options={uoms}
+                  onChange={handleUomChange}
+                  value={selectedUom}
+                  placeholder="Select UOM"
+                />
+              </div>
+            </div>
+            <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">Gate Pass Type</label>
+              <SingleSelector
+                options={gatePassOptions}
+                value={selectedGatePass}
+                onChange={handleGatePassChange}
+                placeholder="Select Gate Pass Type"
+              />
+            </div>
+            <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">Gate Pass No.</label>
+              <MultiSelector
+                options={gatePassNumberOptions}
+                value={selectedGatePassNumbers}
+                onChange={handleGatePassNumberChange}
+                placeholder="Select Gate Pass No."
+                isMulti
+              />
+            </div>
+            <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">PO / MTO No.</label>
+              <MultiSelector
+                options={poNumberOptions}
+                value={selectedPoNumbers}
+                onChange={handlePoNumberChange}
+                placeholder="Select PO / MTO No."
+                isMulti
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="modal-footer justify-content-center">
+          <button
+            className="btn"
+            style={{ backgroundColor: "#8b0203", color: "#fff" }}
+            onClick={handleFilterGo}
+          >
+            Go
+          </button>
+        </div>
       </Modal>
     </>
   );
