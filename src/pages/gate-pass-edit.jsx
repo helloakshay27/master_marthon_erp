@@ -384,7 +384,7 @@ const GatePassEdit = () => {
 
       if (response.status === 200 || response.status === 201) {
         alert(`Gate Pass ${id ? "updated" : "created"} successfully!`);
-        navigate(`/gate-pass-list?token=${token}`);
+        navigate(`/gate-pass-details/${id || response.data.id}?token=${token}`);
       }
     } catch (error) {
       console.error(`Error ${id ? "updating" : "creating"} gate pass:`, error);

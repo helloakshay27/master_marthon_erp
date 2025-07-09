@@ -368,6 +368,24 @@ const GatePassList = () => {
         url += `&q[by_po_numbers_in]=${poNumbers}`;
       }
 
+      // Status
+      if (selectedStatuses.length > 0) {
+        const statusList = selectedStatuses.map((s) => s.value).join(",");
+        url += `&q[list_status_in]=${statusList}`;
+      }
+
+      // Created By
+      if (selectedCreatedBy.length > 0) {
+        const createdByIds = selectedCreatedBy.map((u) => u.value).join(",");
+        url += `&q[created_by_id_in]=${createdByIds}`;
+      }
+
+      // Approved By
+      if (selectedApprovedBy.length > 0) {
+        const approvedByIds = selectedApprovedBy.map((u) => u.value).join(",");
+        url += `&q[approved_by_id_in]=${approvedByIds}`;
+      }
+
       const response = await axios.get(url);
 
       // Transform the data same as the main useEffect
@@ -412,6 +430,9 @@ const GatePassList = () => {
     setSelectedGatePass(null);
     setSelectedGatePassNumbers([]);
     setSelectedPoNumbers([]);
+    setSelectedStatuses([]);
+    setSelectedCreatedBy([]);
+    setSelectedApprovedBy([]);
     setFilterShow(false);
     setCurrentPage(1);
 
@@ -894,6 +915,57 @@ const GatePassList = () => {
   // Calculate displayed rows for the current page
   const startEntry = (currentPage - 1) * pageSize + 1;
   const endEntry = Math.min(currentPage * pageSize, totalEntries);
+
+  const [statusOptions, setStatusOptions] = useState([]);
+  const [createdByOptions, setCreatedByOptions] = useState([]);
+  const [approvedByOptions, setApprovedByOptions] = useState([]);
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
+  const [selectedCreatedBy, setSelectedCreatedBy] = useState([]);
+  const [selectedApprovedBy, setSelectedApprovedBy] = useState([]);
+
+  useEffect(() => {
+    if (!token) return;
+
+    // Status options
+    axios
+      .get(`${baseURL}gate_passes/unique_statuses.json?token=${token}`)
+      .then((response) => {
+        const options = (response.data || []).map((status) => ({
+          value: status,
+          label: status.charAt(0).toUpperCase() + status.slice(1),
+        }));
+        setStatusOptions(options);
+      })
+      .catch(() => setStatusOptions([]));
+
+    // Created By options
+    axios
+      .get(
+        `${baseURL}gate_passes/gate_pass_users.json?created_by=true&token=${token}`
+      )
+      .then((response) => {
+        const options = (response.data || []).map((user) => ({
+          value: user.id,
+          label: user.name,
+        }));
+        setCreatedByOptions(options);
+      })
+      .catch(() => setCreatedByOptions([]));
+
+    // Approved By options
+    axios
+      .get(
+        `${baseURL}gate_passes/gate_pass_users.json?approved_by=true&token=${token}`
+      )
+      .then((response) => {
+        const options = (response.data || []).map((user) => ({
+          value: user.id,
+          label: user.name,
+        }));
+        setApprovedByOptions(options);
+      })
+      .catch(() => setApprovedByOptions([]));
+  }, [token]);
 
   return (
     <>
@@ -1644,6 +1716,36 @@ display:none !important;
                 value={selectedPoNumbers}
                 onChange={handlePoNumberChange}
                 placeholder="Select PO No."
+                isMulti
+              />
+            </div>
+            <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">Status</label>
+              <MultiSelector
+                options={statusOptions}
+                value={selectedStatuses}
+                onChange={setSelectedStatuses}
+                placeholder="Select Status"
+                isMulti
+              />
+            </div>
+            <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">Issued By</label>
+              <MultiSelector
+                options={createdByOptions}
+                value={selectedCreatedBy}
+                onChange={setSelectedCreatedBy}
+                placeholder="Select Issued By"
+                isMulti
+              />
+            </div>
+            <div className="col-6 mt-2">
+              <label className="block text-sm font-medium">Approved By</label>
+              <MultiSelector
+                options={approvedByOptions}
+                value={selectedApprovedBy}
+                onChange={setSelectedApprovedBy}
+                placeholder="Select Approved By"
                 isMulti
               />
             </div>
