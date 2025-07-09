@@ -24,8 +24,8 @@ const BillBookingCreate = () => {
 
   const [attachThreeModal, setattachThreeModal] = useState(false);
   const navigate = useNavigate();
-  const [withBillEntry, setWithBillEntry] = useState(false);
-  const [withoutBillEntry, setWithoutBillEntry] = useState(true);
+  const [withBillEntry, setWithBillEntry] = useState(true);
+  const [withoutBillEntry, setWithoutBillEntry] = useState(false);
 
 
   const [selectPOModal, setselectPOModal] = useState(false);
