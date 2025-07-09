@@ -201,7 +201,7 @@ const GatePassList = () => {
       minWidth: 100,
     },
     {
-      field: "expected_return_date",
+      field: "due_date",
       headerName: "Due Date",
       flex: 1,
       minWidth: 120,
