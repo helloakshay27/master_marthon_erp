@@ -13,10 +13,12 @@ import { DownloadIcon } from "../components";
 import CreditNoteDetails from "./credit-note-details"
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+
 const MiscellaneousBillEdit = () => {
     const { id } = useParams();
     const urlParams = new URLSearchParams(location.search);
-  const token = urlParams.get("token");
+    const token = urlParams.get("token");
     const navigate = useNavigate();
     const [showAuditModal, setShowAuditModal] = useState(false);
     const [showRows, setShowRows] = useState(false);
@@ -173,6 +175,7 @@ const MiscellaneousBillEdit = () => {
         { id: 3, type: "Freight", percentage: "", inclusive: false, amount: ' ', isEditable: false, addition: true, resource_id: 5, resource_type: "TaxCharge" },
     ]);
     const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
+    const [taxPercentages, setTaxPercentages] = useState([]);
 
     // Fetch tax types from API
     useEffect(() => {
@@ -189,20 +192,97 @@ const MiscellaneousBillEdit = () => {
 
         fetchTaxTypes();
     }, []);
+
+    useEffect(() => {
+        const fetchTaxPercentages = async () => {
+            try {
+                const response = await fetch(`${baseURL}rfq/events/tax_percentage?token=${token}`);
+                const data = await response.json();
+                setTaxPercentages(data);
+            } catch (error) {
+                console.error("Error fetching tax percentages:", error);
+            }
+        };
+
+        fetchTaxPercentages();
+    }, []);
     // console.log("tax types:", taxTypes)
+    // const addRow = () => {
+    //     setRows((prevRows) => [
+    //         ...prevRows,
+    //         {
+    //             id: prevRows.length + 1,
+    //             type: "",
+    //             percentage: "0",
+    //             inclusive: false,
+    //             amount: "",
+    //             isEditable: true,
+    //             addition: true,
+    //         },
+    //     ]);
+    // };
+
     const addRow = () => {
-        setRows((prevRows) => [
-            ...prevRows,
-            {
-                id: prevRows.length + 1,
-                type: "",
-                percentage: "0",
-                inclusive: false,
-                amount: "",
-                isEditable: true,
-                addition: true,
-            },
-        ]);
+        const specialTypes = ["Handling Charges", "Other charges", "Freight"];
+        const existingTypes = rows.map((r) => r.type);
+
+        const hasSpecial = specialTypes.some((type) => existingTypes.includes(type));
+        const hasSGST = existingTypes.includes("SGST");
+        const hasCGST = existingTypes.includes("CGST");
+        const hasIGST = existingTypes.includes("IGST");
+
+        // 🔒 Lock condition: if any special type + (IGST or both SGST & CGST) are present
+        const isLockedCombo =
+            hasSpecial && (hasIGST || (hasSGST && hasCGST));
+
+        if (isLockedCombo) {
+            toast.error(
+                "Cannot add more Tax rows ."
+            );
+            return; // ❌ Don't add row
+        }
+
+        // Allow adding remaining special types if any
+        const allSpecialTypes = [
+            { type: "Handling Charges", resource_id: 2 },
+            { type: "Other charges", resource_id: 4 },
+            { type: "Freight", resource_id: 5 },
+        ];
+
+        const nextSpecial = allSpecialTypes.find(
+            (st) => !existingTypes.includes(st.type)
+        );
+
+        if (nextSpecial) {
+            setRows((prevRows) => [
+                ...prevRows,
+                {
+                    id: prevRows.length + 1,
+                    type: nextSpecial.type,
+                    percentage: "",
+                    inclusive: false,
+                    amount: "",
+                    isEditable: false,
+                    addition: true,
+                    resource_id: nextSpecial.resource_id,
+                    resource_type: "TaxCharge",
+                },
+            ]);
+        } else {
+            // Add editable row for user-defined tax
+            setRows((prevRows) => [
+                ...prevRows,
+                {
+                    id: prevRows.length + 1,
+                    type: "",
+                    percentage: "0",
+                    inclusive: false,
+                    amount: "",
+                    isEditable: true,
+                    addition: true,
+                },
+            ]);
+        }
     };
 
     const [billNumber, setBillNumber] = useState("");
@@ -287,16 +367,16 @@ const MiscellaneousBillEdit = () => {
 
     // Delete a row
     const deleteRow = (id) => {
-        // setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-        setRows((prevRows) =>
-            prevRows.filter((row, index) => {
-                // Prevent deletion of the first three rows
-                if (index < 3) {
-                    return true;
-                }
-                return row.id !== id;
-            })
-        );
+        setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+        // setRows((prevRows) =>
+        //     prevRows.filter((row, index) => {
+        //         // Prevent deletion of the first three rows
+        //         if (index < 3) {
+        //             return true;
+        //         }
+        //         return row.id !== id;
+        //     })
+        // );
     };
 
     // deduction
@@ -720,7 +800,9 @@ const MiscellaneousBillEdit = () => {
                                                     <h5 className=" ">Tax Details</h5>
                                                 </div>
 
-                                                <div className="tbl-container  mt-3 mb-5">
+                                               
+
+                                                <div className="tbl-container  mt-3 mb-5" style={{ maxHeight: "500px" }}>
                                                     <table className="w-100">
                                                         <thead>
                                                             <tr>
@@ -745,8 +827,8 @@ const MiscellaneousBillEdit = () => {
                                                                 <td className="text-start" />
                                                                 <td className="text-start" />
                                                                 <td className="text-start" />
-                                                                <td onClick={addRow}>
-                                                                    <svg
+                                                                <td className="text-start" onClick={addRow}>
+                                                                    {/* <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
                                                                         width="16"
                                                                         height="16"
@@ -760,7 +842,8 @@ const MiscellaneousBillEdit = () => {
                                                                     >
                                                                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                                                                         <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                                                    </svg>
+                                                                    </svg> */}
+                                                                    <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
                                                                 </td>
                                                             </tr>
                                                             {/* Dynamic Rows for Addition Tax */}
@@ -785,18 +868,20 @@ const MiscellaneousBillEdit = () => {
                                                                             }))}
                                                                             value={{ value: row.type, label: row.type }}
                                                                             onChange={(selectedOption) => {
+                                                                                console.log("Selected Option:", selectedOption); // Log the selected option
                                                                                 setRows((prevRows) =>
                                                                                     prevRows.map((r) =>
                                                                                         r.id === row.id
                                                                                             ? {
                                                                                                 ...r,
-                                                                                                type: selectedOption?.value || "",
-                                                                                                resource_id: selectedOption?.id || null,
-                                                                                                resource_type: selectedOption?.tax || "",
+                                                                                                type: selectedOption?.value || "", // Handle null or undefined
+                                                                                                resource_id: selectedOption?.id || null, // Handle null or undefined
+                                                                                                resource_type: selectedOption?.tax || "", // Handle null or undefined
                                                                                             }
                                                                                             : r
                                                                                     )
                                                                                 );
+                                                                                console.log("Updated Rows:", rows); // Log the updated rows
                                                                             }}
                                                                             placeholder="Select Type"
                                                                             isDisabled={!row.isEditable}
@@ -804,36 +889,88 @@ const MiscellaneousBillEdit = () => {
                                                                     </td>
                                                                     <td className="text-start">
                                                                         {row.isEditable ? (
-                                                                            <select
-                                                                                className="form-control form-select"
-                                                                                value={
-                                                                                    // If percentage already has %, use as is, else append %
-                                                                                    row.percentage && row.percentage.toString().includes("%")
-                                                                                        ? row.percentage
-                                                                                        : row.percentage
-                                                                                            ? `${row.percentage}%`
-                                                                                            : ""
+
+                                                                            // <SingleSelector
+                                                                            //   className="form-control"
+                                                                            //   options={[
+                                                                            //     { value: "", label: "Select Tax" },
+                                                                            //     { value: "5%", label: "5%" },
+                                                                            //     { value: "12%", label: "12%" },
+                                                                            //     { value: "18%", label: "18%" },
+                                                                            //     { value: "28%", label: "28%" },
+                                                                            //   ]}
+                                                                            //   value={
+                                                                            //     [
+                                                                            //       { value: "", label: "Select Tax" },
+                                                                            //       { value: "5%", label: "5%" },
+                                                                            //       { value: "12%", label: "12%" },
+                                                                            //       { value: "18%", label: "18%" },
+                                                                            //       { value: "28%", label: "28%" },
+                                                                            //     ].find(opt => opt.value === (
+                                                                            //       row.percentage && row.percentage.toString().includes("%")
+                                                                            //         ? row.percentage
+                                                                            //         : row.percentage
+                                                                            //           ? `${row.percentage}%`
+                                                                            //           : ""
+                                                                            //     )) || { value: "", label: "Select Tax" }
+                                                                            //   }
+                                                                            //   onChange={selected => {
+                                                                            //     const value = selected?.value?.replace("%", "");
+                                                                            //     const percentage = parseFloat(value) || 0;
+                                                                            //     const amount = ((creditNoteAmount || 0) * percentage) / 100;
+                                                                            //     setRows(prevRows =>
+                                                                            //       prevRows.map(r =>
+                                                                            //         r.id === row.id
+                                                                            //           ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
+                                                                            //           : r
+                                                                            //       )
+                                                                            //     );
+                                                                            //   }}
+                                                                            //   placeholder="Select Tax"
+                                                                            // />
+
+                                                                            <SingleSelector
+                                                                                className="form-control"
+                                                                                options={
+                                                                                    Array.isArray(
+                                                                                        taxPercentages.find((t) => t.tax_name === row.type)?.percentage
+                                                                                    )
+                                                                                        ? taxPercentages
+                                                                                            .find((t) => t.tax_name === row.type)
+                                                                                            .percentage.map((percent) => ({
+                                                                                                value: `${percent}%`,
+                                                                                                label: `${percent}%`,
+                                                                                            }))
+                                                                                        : []
                                                                                 }
-                                                                                onChange={(e) => {
-                                                                                    // Remove % if present and parse as float
-                                                                                    const value = e.target.value.replace("%", "");
-                                                                                    const percentage = parseFloat(value) || 0;
+                                                                                value={
+                                                                                    row.percentage !== undefined && row.percentage !== null
+                                                                                        ? {
+                                                                                            value: `${parseFloat(row.percentage)}%`,
+                                                                                            label: `${parseFloat(row.percentage)}%`,
+                                                                                        }
+                                                                                        : { value: "", label: "Select Tax" }
+                                                                                }
+                                                                                onChange={(selected) => {
+                                                                                    const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
                                                                                     const amount = ((creditNoteAmount || 0) * percentage) / 100;
+
                                                                                     setRows((prevRows) =>
                                                                                         prevRows.map((r) =>
                                                                                             r.id === row.id
-                                                                                                ? { ...r, percentage: e.target.value, amount: amount.toFixed(2) }
+                                                                                                ? {
+                                                                                                    ...r,
+                                                                                                    percentage: selected?.value,
+                                                                                                    amount: amount.toFixed(2),
+                                                                                                }
                                                                                                 : r
                                                                                         )
                                                                                     );
                                                                                 }}
-                                                                            >
-                                                                                <option value="">Select Tax</option>
-                                                                                <option value="5%">5%</option>
-                                                                                <option value="12%">12%</option>
-                                                                                <option value="18%">18%</option>
-                                                                                <option value="28%">28%</option>
-                                                                            </select>
+                                                                                placeholder="Select Tax"
+                                                                                isDisabled={!row.isEditable}
+                                                                            />
+
                                                                         ) : (
                                                                             <input
                                                                                 type="text"
@@ -888,21 +1025,24 @@ const MiscellaneousBillEdit = () => {
                                                                         style={{ cursor: "pointer", color: "black" }}
                                                                     >
                                                                         {index > 2 && (
-                                                                            <svg
-                                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                                width="16"
-                                                                                height="16"
-                                                                                fill="currentColor"
-                                                                                className="bi bi-dash-circle"
-                                                                                viewBox="0 0 16 16"
-                                                                                style={{
-                                                                                    transition: "transform 0.3s ease",
-                                                                                }}
-                                                                            >
-                                                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                                                                <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                                                                            </svg>
+                                                                            // <svg
+                                                                            //     xmlns="http://www.w3.org/2000/svg"
+                                                                            //     width="16"
+                                                                            //     height="16"
+                                                                            //     fill="currentColor"
+                                                                            //     className="bi bi-dash-circle"
+                                                                            //     viewBox="0 0 16 16"
+                                                                            //     style={{
+                                                                            //         transition: "transform 0.3s ease",
+                                                                            //     }}
+                                                                            // >
+                                                                            //     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                                            //     <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
+                                                                            // </svg>
+                                                                            <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
                                                                         )}
+
+
                                                                     </td>
                                                                 </tr>
                                                             ))}
@@ -927,8 +1067,8 @@ const MiscellaneousBillEdit = () => {
                                                                 <td className="text-start" />
                                                                 <td className="" />
                                                                 <td className="text-start" />
-                                                                <td onClick={addDeductionRow}>
-                                                                    <svg
+                                                                <td className="text-start" onClick={addDeductionRow}>
+                                                                    {/* <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
                                                                         width="16"
                                                                         height="16"
@@ -942,7 +1082,8 @@ const MiscellaneousBillEdit = () => {
                                                                     >
                                                                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                                                                         <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                                                    </svg>
+                                                                    </svg> */}
+                                                                    <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
                                                                 </td>
                                                             </tr>
                                                             {/* Dynamic Rows for Deduction Tax */}
@@ -978,36 +1119,124 @@ const MiscellaneousBillEdit = () => {
                                                                         />
                                                                     </td>
                                                                     <td className="text-start">
-                                                                        <select
-                                                                            className="form-control form-select"
-                                                                            value={
-                                                                                row.percentage && row.percentage.toString().includes("%")
-                                                                                    ? row.percentage
-                                                                                    : row.percentage
-                                                                                        ? `${row.percentage}%`
-                                                                                        : ""
+                                                                        {/* <select
+                                      className="form-control form-select"
+                                      value={
+                                        row.percentage && row.percentage.toString().includes("%")
+                                          ? row.percentage
+                                          : row.percentage
+                                            ? `${row.percentage}%`
+                                            : ""
+                                      }
+                                      onChange={(e) => {
+                                       
+                                        const value = e.target.value.replace("%", "");
+                                        const percentage = parseFloat(value) || 0;
+                                        const amount = ((creditNoteAmount || 0) * percentage) / 100;
+
+                                        setDeductionRows((prevRows) =>
+                                          prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? { ...r, percentage: e.target.value, amount: amount.toFixed(2) }
+                                              : r
+                                          )
+                                        );
+                                      }}
+                                    >
+                                      <option value="">Select Tax</option>
+                                      <option value="1%">1%</option>
+                                      <option value="2%">2%</option>
+                                      <option value="10%">10%</option>
+                                    
+                                    </select> */}
+
+
+                                                                        {/* <SingleSelector
+                                      className="form-control"
+                                      options={[
+                                        { value: "", label: "Select Tax" },
+                                        // { value: "1%", label: "1%" },
+                                        // { value: "2%", label: "2%" },
+                                        // { value: "10%", label: "10%" },
+                                        { value: "5%", label: "5%" },
+                                        { value: "12%", label: "12%" },
+                                        { value: "18%", label: "18%" },
+                                        { value: "28%", label: "28%" },
+
+                                      ]}
+                                      value={
+                                        [
+                                          { value: "", label: "Select Tax" },
+                                          // { value: "1%", label: "1%" },
+                                          // { value: "2%", label: "2%" },
+                                          // { value: "10%", label: "10%" },
+                                          { value: "5%", label: "5%" },
+                                          { value: "12%", label: "12%" },
+                                          { value: "18%", label: "18%" },
+                                          { value: "28%", label: "28%" },
+
+                                        ].find(opt => opt.value === (
+                                          row.percentage && row.percentage.toString().includes("%")
+                                            ? row.percentage
+                                            : row.percentage
+                                              ? `${row.percentage}%`
+                                              : ""
+                                        )) || { value: "", label: "Select Tax" }
+                                      }
+                                      onChange={selected => {
+                                        const value = selected?.value?.replace("%", "");
+                                        const percentage = parseFloat(value) || 0;
+                                        const amount = ((creditNoteAmount || 0) * percentage) / 100;
+                                        setDeductionRows(prevRows =>
+                                          prevRows.map(r =>
+                                            r.id === row.id
+                                              ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
+                                              : r
+                                          )
+                                        );
+                                      }}
+                                      placeholder="Select Tax"
+                                    /> */}
+
+                                                                        <SingleSelector
+                                                                            className="form-control"
+                                                                            options={
+                                                                                taxPercentages.find((t) => t.tax_name === row.type)?.percentage.map((p) => ({
+                                                                                    value: `${p}%`,
+                                                                                    label: `${p}%`,
+                                                                                })) || []
                                                                             }
-                                                                            onChange={(e) => {
-                                                                                // Remove % if present and parse as float
-                                                                                const value = e.target.value.replace("%", "");
-                                                                                const percentage = parseFloat(value) || 0;
+                                                                            value={
+                                                                                (() => {
+                                                                                    const percent = row.percentage?.toString().includes("%")
+                                                                                        ? row.percentage
+                                                                                        : `${row.percentage}%`;
+
+                                                                                    const options = taxPercentages.find((t) => t.tax_name === row.type)?.percentage || [];
+                                                                                    return options.includes(parseFloat(percent))
+                                                                                        ? { value: percent, label: percent }
+                                                                                        : { value: "", label: "Select Tax" };
+                                                                                })()
+                                                                            }
+                                                                            onChange={(selected) => {
+                                                                                const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
                                                                                 const amount = ((creditNoteAmount || 0) * percentage) / 100;
 
                                                                                 setDeductionRows((prevRows) =>
                                                                                     prevRows.map((r) =>
                                                                                         r.id === row.id
-                                                                                            ? { ...r, percentage: e.target.value, amount: amount.toFixed(2) }
+                                                                                            ? {
+                                                                                                ...r,
+                                                                                                percentage: percentage,
+                                                                                                amount: amount.toFixed(2),
+                                                                                            }
                                                                                             : r
                                                                                     )
                                                                                 );
                                                                             }}
-                                                                        >
-                                                                            <option value="">Select Tax</option>
-                                                                            <option value="1%">1%</option>
-                                                                            <option value="2%">2%</option>
-                                                                            <option value="10%">10%</option>
-                                                                            {/* <option value="28%">28%</option> */}
-                                                                        </select>
+                                                                            placeholder="Select Tax %"
+                                                                        // isDisabled={!row.isEditable}
+                                                                        />
                                                                     </td>
                                                                     <td>
                                                                         <input
@@ -1046,7 +1275,7 @@ const MiscellaneousBillEdit = () => {
                                                                         onClick={() => deleteDeductionRow(row.id)}
                                                                         style={{ cursor: "pointer", color: "black" }}
                                                                     >
-                                                                        <svg
+                                                                        {/* <svg
                                                                             xmlns="http://www.w3.org/2000/svg"
                                                                             width="16"
                                                                             height="16"
@@ -1059,7 +1288,8 @@ const MiscellaneousBillEdit = () => {
                                                                         >
                                                                             <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                                                                             <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                                                                        </svg>
+                                                                        </svg> */}
+                                                                        <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
                                                                     </td>
                                                                 </tr>
                                                             ))}
@@ -1231,49 +1461,49 @@ const MiscellaneousBillEdit = () => {
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                       
+
 
                                                         {(creditNoteData?.status_logs || [])
-                              .slice(0, 10)
-                              .map((log, index) => (
-                                <tr key={log.id}>
-                                  <td className="text-start">{index + 1}</td>
-                                  <td className="text-start">{""}</td>
-                                  <td className="text-start">
-                                    {log.created_at
-                                      ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
-                                        day: "2-digit",
-                                        month: "2-digit",
-                                        year: "numeric",
-                                      })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                        hour12: true,
-                                      })}`
-                                      : ""}
-                                  </td>
-                                  <td className="text-start">
-                                    {log.status
-                                      ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
-                                      : ""}
-                                  </td>
-                                  <td className="text-start">{log.remarks || ""}</td>
-                                  <td className="text-start">{log.comments || ""}</td>
-                                </tr>
-                              ))}
+                                                            .slice(0, 10)
+                                                            .map((log, index) => (
+                                                                <tr key={log.id}>
+                                                                    <td className="text-start">{index + 1}</td>
+                                                                    <td className="text-start">{""}</td>
+                                                                    <td className="text-start">
+                                                                        {log.created_at
+                                                                            ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                                                                day: "2-digit",
+                                                                                month: "2-digit",
+                                                                                year: "numeric",
+                                                                            })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                                                                hour: "2-digit",
+                                                                                minute: "2-digit",
+                                                                                hour12: true,
+                                                                            })}`
+                                                                            : ""}
+                                                                    </td>
+                                                                    <td className="text-start">
+                                                                        {log.status
+                                                                            ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                                                            : ""}
+                                                                    </td>
+                                                                    <td className="text-start">{log.remarks || ""}</td>
+                                                                    <td className="text-start">{log.comments || ""}</td>
+                                                                </tr>
+                                                            ))}
                                                     </tbody>
                                                 </table>
                                                 {creditNoteData?.status_logs?.length > 10 && (
-                          <div className="mt-2 text-start">
-                            <span
-                              className="boq-id-link"
-                              style={{ fontWeight: "bold", cursor: "pointer" }}
-                              onClick={() => setShowAuditModal(true)}
-                            >
-                              Show More
-                            </span>
-                          </div>
-                        )}
+                                                    <div className="mt-2 text-start">
+                                                        <span
+                                                            className="boq-id-link"
+                                                            style={{ fontWeight: "bold", cursor: "pointer" }}
+                                                            onClick={() => setShowAuditModal(true)}
+                                                        >
+                                                            Show More
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
 
                                         </div>
@@ -1316,55 +1546,68 @@ const MiscellaneousBillEdit = () => {
                 </div>
             )}
             {/* Modal for all audit logs */}
-                        <Modal show={showAuditModal} onHide={() => setShowAuditModal(false)} size="xl">
-                          <Modal.Header closeButton>
-                            <Modal.Title>All Audit Logs</Modal.Title>
-                          </Modal.Header>
-                          <Modal.Body>
-                            <div className="tbl-container" style={{ maxHeight: "700px" }}>
-                              <table className="w-100">
-                                <thead>
-                                  <tr>
+            <Modal show={showAuditModal} onHide={() => setShowAuditModal(false)} size="xl">
+                <Modal.Header closeButton>
+                    <Modal.Title>All Audit Logs</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="tbl-container" style={{ maxHeight: "700px" }}>
+                        <table className="w-100">
+                            <thead>
+                                <tr>
                                     <th>Sr.No.</th>
                                     <th>Created By</th>
                                     <th>Created At</th>
                                     <th>Status</th>
                                     <th>Remark</th>
                                     <th>Comment</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {(creditNoteData?.status_logs || []).map((log, index) => (
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {(creditNoteData?.status_logs || []).map((log, index) => (
                                     <tr key={log.id}>
-                                      <td className="text-start">{index + 1}</td>
-                                      <td className="text-start">{""}</td>
-                                      <td className="text-start">
-                                        {log.created_at
-                                          ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
-                                            day: "2-digit",
-                                            month: "2-digit",
-                                            year: "numeric",
-                                          })} ${new Date(log.created_at).toLocaleTimeString("en-GB", {
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                            hour12: true,
-                                          })}`
-                                          : ""}
-                                      </td>
-                                      <td className="text-start">
-                                        {log.status
-                                          ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
-                                          : ""}
-                                      </td>
-                                      <td className="text-start">{log.remarks || ""}</td>
-                                      <td className="text-start">{log.comments || ""}</td>
+                                        <td className="text-start">{index + 1}</td>
+                                        <td className="text-start">{""}</td>
+                                        <td className="text-start">
+                                            {log.created_at
+                                                ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                                    day: "2-digit",
+                                                    month: "2-digit",
+                                                    year: "numeric",
+                                                })} ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                    hour12: true,
+                                                })}`
+                                                : ""}
+                                        </td>
+                                        <td className="text-start">
+                                            {log.status
+                                                ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                                : ""}
+                                        </td>
+                                        <td className="text-start">{log.remarks || ""}</td>
+                                        <td className="text-start">{log.comments || ""}</td>
                                     </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </Modal.Body>
-                        </Modal>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </Modal.Body>
+            </Modal>
+
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
         </>
     );
 };
