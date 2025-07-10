@@ -6,6 +6,9 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import { baseURL } from "../confi/apiDomain";
 import { Modal, Button, Form } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom"; // Add this
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 // import at the top
 import { ShowIcon } from "../components";
 const MaterialReconciliationEdit = () => {
@@ -1137,26 +1140,26 @@ const MaterialReconciliationEdit = () => {
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
-        alert("Error loading data");
+        toast.error("Error loading data");
       });
   }, [id, token]);
 
   const handleSubmit = async () => {
     // Validation: company, project, subproject, store mandatory
     if (!selectedCompany) {
-      alert("Please select a company.");
+      toast.error("Please select a company.");
       return;
     }
     if (!selectedProject) {
-      alert("Please select a project.");
+      toast.error("Please select a project.");
       return;
     }
     if (!selectedSite) {
-      alert("Please select a sub-project.");
+      toast.error("Please select a sub-project.");
       return;
     }
     if (!selectedStore) {
-      alert("Please select a store.");
+      toast.error("Please select a store.");
       return;
     }
     // Validation: at least one material must be present
@@ -1166,12 +1169,13 @@ const MaterialReconciliationEdit = () => {
         (item) => !item._destroy
       ).length === 0
     ) {
-      alert(
+      toast.error(
         "Please select and accept at least one material before submitting."
       );
       return;
     }
     try {
+      setLoading(true);
       // Prepare the payload
       const payload = {
         material_reconciliation: {
@@ -1228,12 +1232,17 @@ const MaterialReconciliationEdit = () => {
 
       console.log("Update successful:", response.data);
 
-      // Show success alert
-      alert("Record updated successfully!");
-      navigate(`/material-reconciliation-detail/${id}?token=${token}`);
+      // Show success toast
+      toast.success("Material Reconciliation updated successfully!");
+      setTimeout(() => {
+        navigate(`/material-reconciliation-detail/${id}?token=${token}`);
+      }, 1200);
     } catch (error) {
       console.error("Error updating material reconciliation:", error);
-      alert("Error updating record. Please try again.");
+      toast.error("Error updating record. Please try again.");
+      setLoading(false);
+    } finally {
+      setLoading(false); // Set loading to false after the API call
     }
   };
 
@@ -1338,7 +1347,7 @@ const MaterialReconciliationEdit = () => {
 
     // 1. Cannot enter more than available qty for this batch
     if (newValue > availableQty) {
-      alert(
+      toast.error(
         `Issue QTY cannot exceed available qty (${availableQty}) for this batch.`
       );
       return;
@@ -1353,7 +1362,7 @@ const MaterialReconciliationEdit = () => {
 
     // 3. Cannot exceed max allowed (deadstock+theft+damage)
     if (total > batchMaxQty) {
-      alert(`Total Issue QTY cannot exceed ${batchMaxQty}`);
+      toast.error(`Total Issue QTY cannot exceed ${batchMaxQty}`);
       return;
     }
 
@@ -1848,6 +1857,21 @@ const MaterialReconciliationEdit = () => {
           </div>
         </div>
       </div>
+      {loading && (
+        <div className="loader-container">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>loading...</p>
+        </div>
+      )}
       <Modal
         centered
         size="lg"
@@ -2131,8 +2155,6 @@ const MaterialReconciliationEdit = () => {
             </div>
           </div>
 
-          {/* </div> */}
-
           <div className="row mt-3 justify-content-center">
             <div className="col-md-3">
               <button
@@ -2253,7 +2275,7 @@ const MaterialReconciliationEdit = () => {
                               );
                             })();
                             if (Number(value) > max) {
-                              alert(
+                              toast.error(
                                 `Issue QTY cannot exceed ${max} for this batch.`
                               );
                               return;
@@ -2287,7 +2309,7 @@ const MaterialReconciliationEdit = () => {
                               }
                             }
                             if (!canEdit) {
-                              alert(
+                              toast.error(
                                 "Please fully fill previous batch before entering this batch."
                               );
                               return;
@@ -2367,6 +2389,18 @@ const MaterialReconciliationEdit = () => {
           </div>
         </Modal.Body>
       </Modal>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
   );
 };

@@ -6,6 +6,8 @@ import { baseURL } from "../confi/apiDomain";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Modal } from "react-bootstrap";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const MaterialReconciliationDetail = () => {
   const [adminComment, setAdminComment] = useState("");
@@ -51,6 +53,7 @@ const MaterialReconciliationDetail = () => {
   };
 
   useEffect(() => {
+    // setLoading(true);
     axios
       .get(`${baseURL}material_reconciliations/${id}.json?token=${token}`)
       .then((response) => {
@@ -193,6 +196,7 @@ const MaterialReconciliationDetail = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // setLoading(true);
       const payload = {
         status_log: {
           status: selectedStatus?.value || "draft",
@@ -208,13 +212,18 @@ const MaterialReconciliationDetail = () => {
       );
 
       console.log("Status update successful:", response.data);
-      alert("Status updated successfully!");
+      toast.success("Status updated successfully!");
       setAdminComment("");
-      window.location.reload();
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
       // navigate(`/material-reconciliation-list?token=${token}`);
     } catch (error) {
       console.error("Error updating status:", error);
-      alert("Error updating status. Please try again.");
+      toast.error("Error updating status. Please try again.");
+      setLoading(false);
+    } finally {
+      setLoading(false); // Set loading to false after the API call
     }
   };
 
@@ -226,8 +235,31 @@ const MaterialReconciliationDetail = () => {
     setShowModal(false);
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
+  if (loading) {
+    return (
+      <div className="loader-container">
+        <div className="lds-ring">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <p>loading...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
+
+  if (!details) {
+    return null;
+  }
 
   return (
     <div>
@@ -689,7 +721,6 @@ const MaterialReconciliationDetail = () => {
           </div>
         </div>
       </div>
-
       {/* Approval Log Modal */}
       <Modal size="lg" show={showModal} onHide={closeModal} centered>
         <Modal.Header closeButton>
@@ -752,6 +783,18 @@ const MaterialReconciliationDetail = () => {
           </div>
         </Modal.Body>
       </Modal>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
   );
 };
