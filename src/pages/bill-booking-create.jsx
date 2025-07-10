@@ -1273,7 +1273,7 @@ const BillBookingCreate = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  console.log("status chnage:",formData.status)
+  console.log("status chnage:", formData.status)
   const handleSubmit = async () => {
     if (
       // !selectedCompany ||
@@ -1401,7 +1401,7 @@ const BillBookingCreate = () => {
           total_value: taxDeductionData.total_material_cost,
           payable_amount: payableAmount,
           remark: formData.remark || "",
-          status: formData.status ||"draft",
+          status: formData.status || "draft",
           po_type: "domestic",
           payee_name: formData.pms_supplier_id || null,
           payment_mode: formData.paymentMode,
@@ -1703,7 +1703,7 @@ const BillBookingCreate = () => {
       if (selectedPO?.id) {
         try {
           const response = await axios.get(
-            `${baseURL}advance_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=${formData.status || "proceed"}&token=${token}`
+            `${baseURL}advance_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=${token}`
           );
           setPendingAdvances(response.data.advance_notes || []);
         } catch (error) {
@@ -1714,7 +1714,7 @@ const BillBookingCreate = () => {
     };
 
     fetchPendingAdvances();
-  }, [selectedPO, formData.pms_supplier_id,formData.status]);
+  }, [selectedPO, formData.pms_supplier_id, formData.status]);
 
   useEffect(() => {
     const fetchPendingAdvances = async () => {
@@ -1768,20 +1768,21 @@ const BillBookingCreate = () => {
 
   // Add validation handler
   const validateAdvanceRecovery = (note, value) => {
-    const recovery = parseFloat(value) || 0;
+    // const recovery = parseFloat(value) || 0;
+    const recovery = (parseFloat(value) || 0) + (parseFloat(note.recovered_amount) || 0);
     const advanceAmount = parseFloat(note.advance_amount) || 0;
 
     if (recovery > advanceAmount) {
-      // alert("Recovery amount cannot exceed advance amount");
+      alert("Recovery amount cannot exceed advance amount.");
       // return false;
-      toast.error("Recovery amount cannot exceed advance amount", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      // toast.error("Recovery amount cannot exceed advance amount", {
+      //   position: "top-right",
+      //   autoClose: 3000,
+      //   hideProgressBar: false,
+      //   closeOnClick: true,
+      //   pauseOnHover: true,
+      //   draggable: true,
+      // });
       return false;
     }
     return true;
@@ -1891,7 +1892,7 @@ const BillBookingCreate = () => {
 
   const validateDebitRecovery = (note, value) => {
     // const recovery = parseFloat(value) || 0;
-    const recovery =(parseFloat(value) || 0) + (parseFloat(note.recovered_amount) || 0);
+    const recovery = (parseFloat(value) || 0) + (parseFloat(note.recovered_amount) || 0);
     const debitAmount = parseFloat(note.debit_note_amount) || 0;
     // const outstandingAmount = parseFloat(note.outstanding_current_date) || 0;
     if (recovery > debitAmount) {
@@ -2643,7 +2644,7 @@ const BillBookingCreate = () => {
                       </tr> */}
                     </tbody>
                   </table>
-                  
+
                 </div>
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Debit Note</h5>
@@ -3412,7 +3413,7 @@ const BillBookingCreate = () => {
                               {note.debit_note_for_advance || "-"}
                             </td>
                             <td className="text-start">
-                              {note.recovered_amount|| "0"}
+                              {note.recovered_amount || "0"}
                             </td>
                             <td className="text-start">
                               {note.advance_outstanding_till_certificate_date ||

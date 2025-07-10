@@ -1777,6 +1777,38 @@ const GatePassEdit = () => {
   console.log("Token:", token);
   console.log("Gate Pass Type:", formData.gate_pass_type);
 
+  useEffect(() => {
+    // Only run for edit mode, with a selected PO and store
+    if (
+      id &&
+      selectedPO &&
+      formData.store_id &&
+      formData.material_items.length > 0
+    ) {
+      axios
+        .get(
+          `${baseURL}pms/stores/fetch_store_inventories.json?token=${token}&store_id=${formData.store_id}&po_id=${selectedPO.id}`
+        )
+        .then((res) => {
+          const inventories = Array.isArray(res.data.inventories)
+            ? res.data.inventories
+            : [];
+          setFormData((prev) => {
+            const updated = prev.material_items.map((item) => {
+              const inv = inventories.find(
+                (inv) => inv.id === item.material_inventory_id
+              );
+              return {
+                ...item,
+                stock_as_on: inv ? inv.stock_as_on : item.stock_as_on,
+              };
+            });
+            return { ...prev, material_items: updated };
+          });
+        });
+    }
+  }, [id, selectedPO, formData.store_id, formData.material_items.length]);
+
   return (
     <div className="main-content">
       <div className="website-content overflow-auto">
