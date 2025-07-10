@@ -7,6 +7,8 @@ import { Modal, Button, Form } from "react-bootstrap";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import { DownloadIcon } from "../components";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const GatePassDetails = () => {
   const urlParams = new URLSearchParams(location.search);
@@ -73,11 +75,13 @@ const GatePassDetails = () => {
       );
 
       console.log("Status update successful:", response.data);
-      alert("Status updated successfully!");
-      window.location.reload();
+      toast.success("Status updated successfully!");
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     } catch (error) {
       console.error("Error updating status:", error);
-      alert("Error updating status. Please try again.");
+      toast.error("Error updating status. Please try again.");
     }
   };
 
@@ -89,7 +93,22 @@ const GatePassDetails = () => {
     setShowModal(false);
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading)
+    return (
+      <div className="loader-container">
+        <div className="lds-ring">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <p>loading...</p>
+      </div>
+    );
   if (error) return <p>{error}</p>;
   if (!details) return <p>No details found.</p>;
 
@@ -622,6 +641,18 @@ const GatePassDetails = () => {
           </div>
         </Modal.Body>
       </Modal>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
   );
 };

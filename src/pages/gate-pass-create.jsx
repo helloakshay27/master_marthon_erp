@@ -8,6 +8,8 @@ import { Modal, Button, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { Table } from "../components";
 import { ShowIcon } from "../components";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const GatePassCreate = () => {
   const urlParams = new URLSearchParams(location.search);
@@ -109,25 +111,31 @@ const GatePassCreate = () => {
   const [batchMaxQty, setBatchMaxQty] = useState(0);
   const [batchLoading, setBatchLoading] = useState(false);
   const [batchTableType, setBatchTableType] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Required fields validation (star mark fields)
     if (!formData.project_id) {
-      alert("Please select Project.");
+      toast.error("Please select Project.");
+      setLoading(false);
       return;
     }
     if (!formData.sub_project_id) {
-      alert("Please select Sub-Project.");
+      toast.error("Please select Sub-Project.");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.gate_pass_type) {
+      toast.error("Please select Gate Pass Type.");
+      setLoading(false);
       return;
     }
     if (!formData.store_id) {
-      alert("Please select From Store.");
-      return;
-    }
-    if (!formData.gate_pass_type) {
-      alert("Please select Gate Pass Type.");
+      toast.error("Please select From Store.");
+      setLoading(false);
       return;
     }
     // For PurchaseOrder type, PO/WO No is required
@@ -136,11 +144,13 @@ const GatePassCreate = () => {
     );
     const rawValue = selectedGatePassType?.rawValue;
     if (rawValue === "PurchaseOrder" && !formData.mto_po_number) {
-      alert("Please select PO/WO No.");
+      toast.error("Please select PO/WO No.");
+      setLoading(false);
       return;
     }
     if (rawValue === "MaterialTransaferOrder" && !formData.mto_po_number) {
-      alert("Please enter MTO/SO Number.");
+      toast.error("Please enter MTO/SO Number.");
+      setLoading(false);
       return;
     }
 
@@ -149,7 +159,8 @@ const GatePassCreate = () => {
       formData.is_returnable === "returnable" &&
       !formData.expected_return_date
     ) {
-      alert("Please enter Expected Return Date for Returnable Gate Pass");
+      toast.error("Please enter Expected Return Date for Returnable Gate Pass");
+      setLoading(false);
       return;
     }
     // Validation: Expected Return Date cannot be before today
@@ -158,7 +169,8 @@ const GatePassCreate = () => {
       today.setHours(0, 0, 0, 0);
       const selectedDate = new Date(formData.expected_return_date);
       if (selectedDate < today) {
-        alert("Expected Return Date cannot be before today.");
+        toast.error("Expected Return Date cannot be before today.");
+        setLoading(false);
         return;
       }
     }
@@ -168,18 +180,23 @@ const GatePassCreate = () => {
         formData.gate_pass_type === "testing_calibration") &&
       (!formData.material_items || formData.material_items.length === 0)
     ) {
-      alert("Please select at least one material before submitting.");
+      toast.error("Please select at least one material before submitting.");
+      setLoading(false);
       return;
     }
     if (
       formData.gate_pass_type === "repair_maintenance" &&
       (!maintenanceRows || maintenanceRows.length === 0)
     ) {
-      alert("Please select at least one material before submitting.");
+      toast.error("Please select at least one material before submitting.");
+      setLoading(false);
       return;
     }
     if (contactNoError || driverContactNoError) {
-      alert("Please correct the contact number fields before submitting.");
+      toast.error(
+        "Please correct the contact number fields before submitting."
+      );
+      setLoading(false);
       return;
     }
 
@@ -192,18 +209,20 @@ const GatePassCreate = () => {
         item.stock_as_on !== undefined &&
         Number(item.gate_pass_qty) > Number(item.stock_as_on)
       ) {
-        alert(
+        toast.error(
           `Gate Pass Qty for ${
             item.material_name || "material"
           } cannot exceed Stock As On (${item.stock_as_on})!`
         );
+        setLoading(false);
         return;
       }
     }
     if (maintenanceRows.some((row) => row.available_qty === "not_found")) {
-      alert(
+      toast.error(
         "One or more materials have 'No matching inventory found'. Please correct before submitting."
       );
+      setLoading(false);
       return;
     }
 
@@ -342,23 +361,29 @@ const GatePassCreate = () => {
     };
 
     try {
+      setLoading(true);
       const response = await axios.post(
         `${baseURL}gate_passes.json?token=${token}`,
         payload
       );
 
       if (response.status === 200 || response.status === 201) {
-        alert("Gate Pass created successfully!");
+        toast.success("Gate Pass created successfully!");
         const id = response.data?.gate_pass?.id || response.data?.id;
-        if (id) {
-          navigate(`/gate-pass-details/${id}?token=${token}`);
-        } else {
-          navigate(`/gate-pass-list?token=${token}`);
-        }
+        setTimeout(() => {
+          if (id) {
+            navigate(`/gate-pass-details/${id}?token=${token}`);
+          } else {
+            navigate(`/gate-pass-list?token=${token}`);
+          }
+        }, 1500);
       }
     } catch (error) {
       console.error("Error creating gate pass:", error);
-      alert("Failed to create gate pass. Please try again.");
+      toast.error("Failed to create gate pass. Please try again.");
+      setLoading(false);
+    } finally {
+      setLoading(false); // Set loading to false after the API call
     }
   };
 
@@ -523,7 +548,7 @@ const GatePassCreate = () => {
       !newVendorAddress.trim() ||
       !newVendorRemark.trim()
     ) {
-      alert("All fields are mandatory for Non-Master Vendor.");
+      toast.error("All fields are mandatory for Non-Master Vendor.");
       return;
     }
     const newVendor = {
@@ -1072,7 +1097,7 @@ const GatePassCreate = () => {
   // Add new material to the row's materialNameOptions and select it
   const handleAddMaterial = () => {
     if (!newMaterialName.trim()) {
-      alert("Please enter a material/asset name.");
+      toast.error("Please enter a material/asset name.");
       return;
     }
     const newMaterial = {
@@ -1293,7 +1318,7 @@ const GatePassCreate = () => {
       inventoryId = row.material_inventory_id;
     }
     if (!formData.store_id || !inventoryId) {
-      alert("Please select store and material first.");
+      toast.error("Please select store and material first.");
       return;
     }
     setBatchRowIdx(rowIdx);
@@ -1322,7 +1347,7 @@ const GatePassCreate = () => {
     const availableQty = parseFloat(batch?.current_stock_qty) || 0;
 
     if (newValue > availableQty) {
-      alert(
+      toast.error(
         `Issue QTY cannot exceed available qty (${availableQty}) for this batch.`
       );
       return;
@@ -1335,7 +1360,9 @@ const GatePassCreate = () => {
     );
 
     if (total > batchMaxQty) {
-      alert(`Total Issue QTY cannot exceed Gate Pass Qty (${batchMaxQty})`);
+      toast.error(
+        `Total Issue QTY cannot exceed Gate Pass Qty (${batchMaxQty})`
+      );
       return;
     }
 
@@ -2096,7 +2123,7 @@ const GatePassCreate = () => {
                                       row.available_qty === "not_found" &&
                                       Number(val) > 0
                                     ) {
-                                      alert(
+                                      toast.error(
                                         "No matching inventory found. Quantity cannot be greater than 0."
                                       );
                                       handleMaintenanceRowChange(
@@ -2112,7 +2139,7 @@ const GatePassCreate = () => {
                                       val !== "" &&
                                       Number(val) > Number(row.available_qty)
                                     ) {
-                                      alert(
+                                      toast.error(
                                         `Gate Pass Qty cannot exceed Stock As On (${row.available_qty})!`
                                       );
                                       return;
@@ -2261,7 +2288,7 @@ const GatePassCreate = () => {
                                       value !== "" &&
                                       Number(value) > Number(item.stock_as_on)
                                     ) {
-                                      alert(
+                                      toast.error(
                                         `Gate Pass Qty cannot exceed Stock As On (${item.stock_as_on})!`
                                       );
                                       return; // Do not update value
@@ -2412,6 +2439,21 @@ const GatePassCreate = () => {
                   </tbody>
                 </table>
               </div>
+              {loading && (
+                <div className="loader-container">
+                  <div className="lds-ring">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                  </div>
+                  <p>loading...</p>
+                </div>
+              )}
               {/* Attach Modal (advanced, from Bill Entry Create) */}
               <Modal
                 centered
@@ -3034,7 +3076,7 @@ const GatePassCreate = () => {
                               );
                             })();
                             if (Number(value) > max) {
-                              alert(
+                              toast.error(
                                 `Issue QTY cannot exceed gate pass qty ${max} for this batch.`
                               );
                               return;
@@ -3108,6 +3150,18 @@ const GatePassCreate = () => {
           </div>
         </Modal.Body>
       </Modal>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
   );
 };
