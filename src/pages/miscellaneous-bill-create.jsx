@@ -13,6 +13,7 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import { useLocation } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 const MiscellaneousBillCreate = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -33,6 +34,8 @@ const MiscellaneousBillCreate = () => {
     settaxesRowDetails(!taxesRowDetails);
   };
 
+
+  const [pageSize, setPageSize] = useState(5);
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
   const [sites, setSites] = useState([]);
@@ -42,6 +45,233 @@ const MiscellaneousBillCreate = () => {
 
   const [billNumber, setBillNumber] = useState("");
   const [billDate, setBillDate] = useState("");
+
+  const [selectedPOs, setSelectedPOs] = useState([]);
+  const [poTypes, setPoTypes] = useState([
+    { value: "", label: "All" },
+    { value: "Domestic", label: "Domestic" },
+    { value: "ROPO", label: "ROPO" },
+    { value: "Import", label: "Import" },
+  ]);
+
+  // add row & delete row
+
+  const [filterParams, setFilterParams] = useState({
+    startDate: "",
+    endDate: "",
+    poType: "",
+    poNumber: "",
+    selectedPOIds: [],
+    projectId: "",
+    siteId: "",
+  });
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    next_page: 2,
+    prev_page: null,
+    total_pages: 1,
+    total_count: 0,
+    per_page: 5,
+  });
+  const openSelectPOModal = () => {
+    setselectPOModal(true);
+  };
+
+  const closeSelectPOModal = () => {
+    setselectPOModal(false);
+  };
+
+  const handlePOSelect = (po) => {
+    setSelectedPO(po);
+    setFilterParams((prev) => ({
+      ...prev,
+      selectedPOIds: [po.id],
+    }));
+
+    // Update form fields with selected PO details
+    if (po) {
+      // Update PO Date
+      const poDateInput = document.querySelector('input[name="po_date"]');
+      if (poDateInput) {
+        poDateInput.value = po.po_date;
+      }
+
+      // Update PO Value
+      const poValueInput = document.querySelector('input[name="po_value"]');
+      if (poValueInput) {
+        poValueInput.value = po.total_value;
+      }
+
+      // Update GSTIN Number
+      const gstinInput = document.querySelector('input[name="gstin_number"]');
+      if (gstinInput) {
+        gstinInput.value = po.gstin || "";
+      }
+
+      // Update PAN Number
+      const panInput = document.querySelector('input[name="pan_number"]');
+      if (panInput) {
+        panInput.value = po.pan || "";
+      }
+    }
+
+    closeSelectPOModal();
+  };
+  const handleCheckboxChange = (poId) => {
+    setSelectedPOs((prev) => {
+      if (prev.includes(poId)) {
+        return prev.filter((id) => id !== poId);
+      } else {
+        return [...prev, poId];
+      }
+    });
+  };
+
+  const handleSelectAll = (event) => {
+    if (event.target.checked) {
+      setSelectedPOs(purchaseOrders.map((po) => po.id));
+    } else {
+      setSelectedPOs([]);
+    }
+  };
+
+  // Fetch initial PO data when component mounts
+  useEffect(() => {
+    fetchPurchaseOrders(null, null, null, {
+      page: 1,
+      pageSize: pageSize,
+    });
+  }, []);
+
+  const fetchPurchaseOrders = async (
+    companyId = null,
+    projectId = null,
+    siteId = null,
+    filters = {
+      startDate: "",
+      endDate: "",
+      poType: "",
+      poNumber: "",
+      selectedPOIds: [],
+      supplierId: "",
+      page: 1,
+      pageSize: 5,
+    }
+  ) => {
+    try {
+      setLoading(true);
+      let url = `${baseURL}purchase_orders/grn_details.json?token=${token}`;
+
+      // Add filters only if they are provided
+      if (companyId) url += `&q[company_id_eq]=${companyId}`;
+      if (projectId) url += `&q[po_mor_inventories_project_id_eq]=${projectId}`;
+      if (siteId) url += `&q[po_mor_inventories_pms_site_id_eq]=${siteId}`;
+      if (filters?.supplierId)
+        url += `&q[supplier_id_eq]=${filters.supplierId}`;
+      if (filters?.startDate) url += `&q[po_date_gteq]=${filters.startDate}`;
+      if (filters?.endDate) url += `&q[po_date_lteq]=${filters.endDate}`;
+      if (filters?.selectedPOIds?.length > 0) {
+        url += `&q[id_in]=${filters.selectedPOIds.join(",")}`;
+      }
+
+      // Always add pagination parameters
+      url += `&page=${filters.page || 1}`;
+      url += `&per_page=${filters.pageSize || 5}`;
+
+      const response = await axios.get(url);
+      setPurchaseOrders(response.data.purchase_orders);
+
+      if (response.data.pagination) {
+        setPagination({
+          current_page: parseInt(response.data.pagination.current_page) || 1,
+          next_page: parseInt(response.data.pagination.next_page) || null,
+          prev_page: parseInt(response.data.pagination.prev_page) || null,
+          total_pages: parseInt(response.data.pagination.total_pages) || 1,
+          total_count: parseInt(response.data.pagination.total_count) || 0,
+          per_page: parseInt(response.data.pagination.per_page) || 5,
+        });
+      }
+    } catch (err) {
+      setError("Failed to fetch purchase orders");
+      console.error("Error fetching purchase orders:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = () => {
+    setPagination((prev) => ({
+      ...prev,
+      current_page: 1,
+    }));
+
+    fetchPurchaseOrders(
+      selectedCompany?.value,
+      selectedProject?.value,
+      selectedSite?.value,
+      {
+        ...filterParams,
+        page: 1,
+        pageSize: pageSize,
+      }
+    );
+  };
+
+  const handleReset = () => {
+    setFilterParams({
+      startDate: "",
+      endDate: "",
+      poType: "",
+      poNumber: "",
+      selectedPOIds: [],
+    });
+    setSelectedCompany(null);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setProjects([]);
+    setSites([]);
+    setPagination((prev) => ({
+      ...prev,
+      current_page: 1,
+    }));
+    fetchPurchaseOrders(null, null, null, {
+      page: 1,
+      pageSize: pageSize,
+    });
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const startPage = Math.max(1, pagination.current_page - 2);
+    const endPage = Math.min(
+      pagination.total_pages,
+      pagination.current_page + 2
+    );
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
+
+  const handlePageChange = (page) => {
+    setPagination((prev) => ({
+      ...prev,
+      current_page: page,
+    }));
+
+    fetchPurchaseOrders(
+      selectedCompany?.value,
+      selectedProject?.value,
+      selectedSite?.value,
+      {
+        ...filterParams,
+        page: page,
+        pageSize: pageSize,
+      }
+    );
+  };
+
 
   // tax table functionality
 
@@ -199,41 +429,42 @@ const MiscellaneousBillCreate = () => {
   };
 
   const [rows, setRows] = useState([
-    {
-      id: 1,
-      type: "Handling Charges",
-      percentage: "",
-      inclusive: false,
-      amount: "",
-      isEditable: false,
-      addition: true,
-      resource_id: 2,
-      resource_type: "TaxCharge",
-    },
-    {
-      id: 2,
-      type: "Other charges",
-      percentage: "",
-      inclusive: false,
-      amount: "",
-      isEditable: false,
-      addition: true,
-      resource_id: 4,
-      resource_type: "TaxCharge",
-    },
-    {
-      id: 3,
-      type: "Freight",
-      percentage: "",
-      inclusive: false,
-      amount: " ",
-      isEditable: false,
-      addition: true,
-      resource_id: 5,
-      resource_type: "TaxCharge",
-    },
+    // {
+    //   id: 1,
+    //   type: "Handling Charges",
+    //   percentage: "",
+    //   inclusive: false,
+    //   amount: "",
+    //   isEditable: false,
+    //   addition: true,
+    //   resource_id: 2,
+    //   resource_type: "TaxCharge",
+    // },
+    // {
+    //   id: 2,
+    //   type: "Other charges",
+    //   percentage: "",
+    //   inclusive: false,
+    //   amount: "",
+    //   isEditable: false,
+    //   addition: true,
+    //   resource_id: 4,
+    //   resource_type: "TaxCharge",
+    // },
+    // {
+    //   id: 3,
+    //   type: "Freight",
+    //   percentage: "",
+    //   inclusive: false,
+    //   amount: " ",
+    //   isEditable: false,
+    //   addition: true,
+    //   resource_id: 5,
+    //   resource_type: "TaxCharge",
+    // },
   ]);
   const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
+  const [taxPercentages, setTaxPercentages] = useState([]);
 
   // Fetch tax types from API
   useEffect(() => {
@@ -250,21 +481,99 @@ const MiscellaneousBillCreate = () => {
 
     fetchTaxTypes();
   }, []);
+
+  useEffect(() => {
+    const fetchTaxPercentages = async () => {
+      try {
+        const response = await fetch(`${baseURL}rfq/events/tax_percentage?token=${token}`);
+        const data = await response.json();
+        setTaxPercentages(data);
+      } catch (error) {
+        console.error("Error fetching tax percentages:", error);
+      }
+    };
+
+    fetchTaxPercentages();
+  }, []);
   // console.log("tax types:", taxTypes)
+  // const addRow = () => {
+  //   setRows((prevRows) => [
+  //     ...prevRows,
+  //     {
+  //       id: prevRows.length + 1,
+  //       type: "",
+  //       percentage: "0",
+  //       inclusive: false,
+  //       amount: "",
+  //       isEditable: true,
+  //       addition: true,
+  //     },
+  //   ]);
+  // };
+
   const addRow = () => {
-    setRows((prevRows) => [
-      ...prevRows,
-      {
-        id: prevRows.length + 1,
-        type: "",
-        percentage: "0",
-        inclusive: false,
-        amount: "",
-        isEditable: true,
-        addition: true,
-      },
-    ]);
+    const specialTypes = ["Handling Charges", "Other charges", "Freight"];
+    const existingTypes = rows.map((r) => r.type);
+
+    const hasSpecial = specialTypes.some((type) => existingTypes.includes(type));
+    const hasSGST = existingTypes.includes("SGST");
+    const hasCGST = existingTypes.includes("CGST");
+    const hasIGST = existingTypes.includes("IGST");
+
+    // 🔒 Lock condition: if any special type + (IGST or both SGST & CGST) are present
+    const isLockedCombo =
+      hasSpecial && (hasIGST || (hasSGST && hasCGST));
+
+    if (isLockedCombo) {
+      toast.error(
+        "Cannot add more Tax rows ."
+      );
+      return; // ❌ Don't add row
+    }
+
+    // Allow adding remaining special types if any
+    const allSpecialTypes = [
+      { type: "Handling Charges", resource_id: 2 },
+      { type: "Other charges", resource_id: 4 },
+      { type: "Freight", resource_id: 5 },
+    ];
+
+    const nextSpecial = allSpecialTypes.find(
+      (st) => !existingTypes.includes(st.type)
+    );
+
+    if (nextSpecial) {
+      setRows((prevRows) => [
+        ...prevRows,
+        {
+          id: prevRows.length + 1,
+          type: nextSpecial.type,
+          percentage: "",
+          inclusive: false,
+          amount: "",
+          isEditable: false,
+          addition: true,
+          resource_id: nextSpecial.resource_id,
+          resource_type: "TaxCharge",
+        },
+      ]);
+    } else {
+      // Add editable row for user-defined tax
+      setRows((prevRows) => [
+        ...prevRows,
+        {
+          id: prevRows.length + 1,
+          type: "",
+          percentage: "0",
+          inclusive: false,
+          amount: "",
+          isEditable: true,
+          addition: true,
+        },
+      ]);
+    }
   };
+
   // Function to calculate the subtotal of addition rows
   const calculateSubTotal = () => {
     return rows
@@ -275,16 +584,16 @@ const MiscellaneousBillCreate = () => {
 
   // Delete a row
   const deleteRow = (id) => {
-    // setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-    setRows((prevRows) =>
-      prevRows.filter((row, index) => {
-        // Prevent deletion of the first three rows
-        if (index < 3) {
-          return true;
-        }
-        return row.id !== id;
-      })
-    );
+    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+    // setRows((prevRows) =>
+    //   prevRows.filter((row, index) => {
+    //     // Prevent deletion of the first three rows
+    //     if (index < 3) {
+    //       return true;
+    //     }
+    //     return row.id !== id;
+    //   })
+    // );
   };
 
   // deduction
@@ -491,7 +800,7 @@ const MiscellaneousBillCreate = () => {
       company_id: selectedCompany?.value || billEntryData?.company_id || "",
       site_id: selectedSite?.value || billEntryData?.site_id || "",
       project_id: selectedProject?.value || billEntryData?.project_id || "",
-      //   purchase_order_id: selectedPO?.id || "",
+      purchase_order_id: selectedPO?.id || "",
       bill_no: billNumber || billEntryData?.bill_no || "",
       bill_date: billDate || billEntryData?.bill_date || "",
       amount: creditNoteAmount || 0,
@@ -542,7 +851,7 @@ const MiscellaneousBillCreate = () => {
         company_id: selectedCompany?.value || billEntryData?.company_id || "",
         site_id: selectedSite?.value || billEntryData?.site_id || "",
         project_id: selectedProject?.value || billEntryData?.project_id || "",
-        //   purchase_order_id: selectedPO?.id || "",
+        purchase_order_id: selectedPO?.id || "",
         bill_no: billNumber || billEntryData?.bill_no || "",
         bill_date: billDate || billEntryData?.bill_date || "",
         amount: creditNoteAmount || 0,
@@ -891,6 +1200,32 @@ const MiscellaneousBillCreate = () => {
                                   />
                                 </div>
                               </div>
+                               <div className="col-md-3 mt-2">
+                                <div className="form-group">
+                                  <label>PO / WO Number</label>
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    placeholder=""
+                                    fdprocessedid="qv9ju9"
+                                    value={selectedPO?.po_number || ""}
+                                    disabled
+                                  />
+                                </div>
+                                {/* {console.log("selected po id:", selectedPO)} */}
+                              </div>
+                              <div
+                                className="col-md-1 pt-4"
+                                data-bs-toggle="modal"
+                                data-bs-target="#selectModal"
+                              >
+                                <p
+                                  className="mt-2 text-decoration-underline"
+                                  onClick={openSelectPOModal}
+                                >
+                                  Select
+                                </p>
+                              </div>
                               <div className="col-md-4 mt-2">
                                 <div className="form-group">
                                   <label>Remark</label>
@@ -906,6 +1241,7 @@ const MiscellaneousBillCreate = () => {
                               </div>
                             </div>
                           )}
+
 
                           {withoutBillEntry && !withBillEntry && (
                             <div className="row mt-2">
@@ -1050,13 +1386,13 @@ const MiscellaneousBillCreate = () => {
                                     value={
                                       selectedSupplier
                                         ? {
-                                            label:
-                                              selectedSupplier.organization_name,
-                                            value: selectedSupplier.id,
-                                            gstin: selectedSupplier.gstin,
-                                            pan_number:
-                                              selectedSupplier.pan_number,
-                                          }
+                                          label:
+                                            selectedSupplier.organization_name,
+                                          value: selectedSupplier.id,
+                                          gstin: selectedSupplier.gstin,
+                                          pan_number:
+                                            selectedSupplier.pan_number,
+                                        }
                                         : null
                                     }
                                     onChange={(option) => {
@@ -1095,6 +1431,32 @@ const MiscellaneousBillCreate = () => {
                                   />
                                 </div>
                               </div>
+                              <div className="col-md-3 mt-2">
+                                <div className="form-group">
+                                  <label>PO / WO Number</label>
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    placeholder=""
+                                    fdprocessedid="qv9ju9"
+                                    value={selectedPO?.po_number || ""}
+                                    disabled
+                                  />
+                                </div>
+                                {console.log("selected po id:", selectedPO)}
+                              </div>
+                              <div
+                                className="col-md-1 pt-4"
+                                data-bs-toggle="modal"
+                                data-bs-target="#selectModal"
+                              >
+                                <p
+                                  className="mt-2 text-decoration-underline"
+                                  onClick={openSelectPOModal}
+                                >
+                                  Select
+                                </p>
+                              </div>
 
                               <div className="col-md-4 mt-2">
                                 <div className="form-group">
@@ -1115,19 +1477,13 @@ const MiscellaneousBillCreate = () => {
                             <h5 className=" ">Tax Details</h5>
                           </div>
 
-                          <div className="tbl-container  mt-3">
+                          <div className="tbl-container mt-3" style={{ maxHeight: "500px" }}>
                             <table className="w-100">
                               <thead>
                                 <tr>
-                                  <th className="text-start">
-                                    Tax / Charge Type
-                                  </th>
-                                  <th className="text-start">
-                                    Tax / Charges per UOM (INR)
-                                  </th>
-                                  <th className="text-start">
-                                    Inclusive / Exclusive
-                                  </th>
+                                  <th className="text-start">Tax / Charge Type</th>
+                                  <th className="text-start">Tax / Charges per UOM (INR)</th>
+                                  <th className="text-start">Inclusive / Exclusive</th>
                                   <th className="text-start">Amount</th>
                                   <th className="text-start">Action</th>
                                 </tr>
@@ -1135,42 +1491,34 @@ const MiscellaneousBillCreate = () => {
                               <tbody>
                                 {/* Static Rows for Addition Tax */}
                                 <tr>
-                                  <th className="text-start">
-                                    Total Base Cost
-                                  </th>
+                                  <th className="text-start">Total Base Cost</th>
                                   <td className="text-start" />
                                   <td className="text-start" />
-                                  <td className="text-start">
-                                    {" "}
-                                    {creditNoteAmount || ""}
-                                  </td>
+                                  <td className="text-start"> {creditNoteAmount || ""}</td>
                                   <td />
                                 </tr>
                                 <tr>
-                                  <th className="text-start">
-                                    Addition Tax & Charges
-                                  </th>
+                                  <th className="text-start">Addition Tax & Charges</th>
                                   <td className="text-start" />
                                   <td className="text-start" />
                                   <td className="text-start" />
-                                  <td onClick={addRow}>
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      fill="currentColor"
-                                      className="bi bi-plus-circle"
-                                      viewBox="0 0 16 16"
-                                      style={{
-                                        transform: showRows
-                                          ? "rotate(45deg)"
-                                          : "none",
-                                        transition: "transform 0.3s ease",
-                                      }}
-                                    >
-                                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                    </svg>
+                                  <td className="text-start" onClick={addRow}>
+                                    {/* <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                width="16"
+                                                                height="16"
+                                                                fill="currentColor"
+                                                                className="bi bi-plus-circle"
+                                                                viewBox="0 0 16 16"
+                                                                style={{
+                                                                  transform: showRows ? "rotate(45deg)" : "none",
+                                                                  transition: "transform 0.3s ease",
+                                                                }}
+                                                              >
+                                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                                              </svg> */}
+                                    <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
                                   </td>
                                 </tr>
                                 {/* Dynamic Rows for Addition Tax */}
@@ -1185,135 +1533,246 @@ const MiscellaneousBillCreate = () => {
                                           tax: type.type,
                                           isDisabled:
                                             // Disable "Handling Charges", "Other charges", "Freight" for all rows
-                                            [
-                                              "Handling Charges",
-                                              "Other charges",
-                                              "Freight",
-                                            ].includes(type.name) ||
+                                            ["Handling Charges", "Other charges", "Freight"].includes(type.name) ||
+
+
                                             // Disable "IGST" if "SGST" or "CGST" is selected in any row
                                             (type.name === "IGST" &&
-                                              rows.some(
-                                                (r) =>
-                                                  ["SGST", "CGST"].includes(
-                                                    r.type
-                                                  ) && r.id !== row.id
-                                              )) ||
+                                              rows.some((r) => ["SGST", "CGST"].includes(r.type) && r.id !== row.id)) ||
                                             // Disable "SGST" and "CGST" if "IGST" is selected in any row
-                                            (["SGST", "CGST"].includes(
-                                              type.name
-                                            ) &&
-                                              rows.some(
-                                                (r) =>
-                                                  r.type === "IGST" &&
-                                                  r.id !== row.id
-                                              )),
+                                            (["SGST", "CGST"].includes(type.name) &&
+                                              rows.some((r) => r.type === "IGST" && r.id !== row.id)),
+
                                         }))}
-                                        value={{
-                                          value: row.type,
-                                          label: row.type,
-                                        }}
+                                        value={{ value: row.type, label: row.type }}
                                         // onChange={(selectedOption) =>
                                         //   setRows((prevRows) =>
                                         //     prevRows.map((r) =>
-                                        //       r.id === row.id ? { ...r,
-                                        //         type: selectedOption.value,
-                                        //         resource_id: selectedOption.value, // Set the selected tax ID
-                                        //         resource_type: taxTypes.find((t) => t.id === selectedOption.value)?.type || "", // Set the tax type
-                                        //        } : r
+                                        //       r.id === row.id ? { ...r, type: selectedOption.value } : r
                                         //     )
                                         //   )
                                         // }
+
 
                                         // onChange={(selectedOption) =>
                                         //   setRows((prevRows) =>
                                         //     prevRows.map((r) =>
                                         //       r.id === row.id
                                         //         ? {
-                                        //             ...r,
-                                        //             type: selectedOption?.value || "", // Handle null or undefined
-                                        //             resource_id: selectedOption?.value || null, // Handle null or undefined
-                                        //             resource_type: taxTypes.find((t) => t.id === selectedOption?.value)?.type || "", // Handle null or undefined
-                                        //           }
+                                        //           ...r,
+                                        //           type: selectedOption?.value || "", // Handle null or undefined
+                                        //           resource_id: selectedOption?.id || null, // Handle null or undefined
+                                        //           resource_type: selectedOption?.tax || "", // Handle null or undefined
+                                        //           // resource_id: selectedOption?.value || null, // Handle null or undefined
+                                        //           // resource_type: taxTypes.find((t) => t.id === selectedOption?.value)?.type || "", // Handle null or undefined
+                                        //         }
                                         //         : r
                                         //     )
                                         //   )
                                         // }
 
+
                                         onChange={(selectedOption) => {
-                                          console.log(
-                                            "Selected Option:",
-                                            selectedOption
-                                          ); // Log the selected option
-                                          setRows((prevRows) =>
-                                            prevRows.map((r) =>
+                                          setRows((prevRows) => {
+                                            let updatedRows = prevRows.map((r) =>
                                               r.id === row.id
                                                 ? {
-                                                    ...r,
-                                                    type:
-                                                      selectedOption?.value ||
-                                                      "", // Handle null or undefined
-                                                    resource_id:
-                                                      selectedOption?.id ||
-                                                      null, // Handle null or undefined
-                                                    resource_type:
-                                                      selectedOption?.tax || "", // Handle null or undefined
-                                                  }
+                                                  ...r,
+                                                  type: selectedOption?.value || "",
+                                                  resource_id: selectedOption?.id || null,
+                                                  resource_type: selectedOption?.tax || "",
+                                                }
                                                 : r
-                                            )
-                                          );
-                                          console.log("Updated Rows:", rows); // Log the updated rows
+                                            );
+
+                                            // Auto-add CGST if SGST is selected
+                                            if (selectedOption?.value === "SGST" && !prevRows.some(r => r.type === "CGST")) {
+                                              updatedRows = [
+                                                ...updatedRows,
+                                                {
+                                                  id: updatedRows.length + 1,
+                                                  type: "CGST",
+                                                  percentage: row.percentage,
+                                                  inclusive: row.inclusive,
+                                                  amount: row.amount,
+                                                  isEditable: true,
+                                                  addition: true,
+                                                  resource_id: taxTypes.find(t => t.name === "CGST")?.id || null,
+                                                  resource_type: taxTypes.find(t => t.name === "CGST")?.type || "",
+                                                },
+                                              ];
+                                            }
+
+                                            // Auto-add SGST if CGST is selected
+                                            if (selectedOption?.value === "CGST" && !prevRows.some(r => r.type === "SGST")) {
+                                              updatedRows = [
+                                                ...updatedRows,
+                                                {
+                                                  id: updatedRows.length + 1,
+                                                  type: "SGST",
+                                                  percentage: row.percentage,
+                                                  inclusive: row.inclusive,
+                                                  amount: row.amount,
+                                                  isEditable: true,
+                                                  addition: true,
+                                                  resource_id: taxTypes.find(t => t.name === "SGST")?.id || null,
+                                                  resource_type: taxTypes.find(t => t.name === "SGST")?.type || "",
+                                                },
+                                              ];
+                                            }
+
+                                            return updatedRows;
+                                          });
                                         }}
                                         placeholder="Select Type"
                                         isDisabled={!row.isEditable} // Disable if not editable
                                       />
+
                                     </td>
                                     <td className="text-start">
                                       {row.isEditable ? (
-                                        //                             <select
-                                        //                               className="form-control form-select"
-                                        //                               value={row.percentage}
-                                        //                               onChange={(e) =>
-                                        //                                 const percentage = parseFloat(e.target.value) || 0;
-                                        // const amount = ((selectedPO?.total_value || 0) * percentage) / 100;
-                                        //                                 setRows((prevRows) =>
-                                        //                                   prevRows.map((r) =>
-                                        //                                     r.id === row.id ? { ...r, percentage: e.target.value } : r
-                                        //                                   )
-                                        //                                 )
-                                        //                               }
-                                        //                             >
+                                        // <SingleSelector
+                                        //   className="form-control"
+                                        //   options={[
+                                        //     { value: "", label: "Select Tax" },
+                                        //     { value: "5%", label: "5%" },
+                                        //     { value: "12%", label: "12%" },
+                                        //     { value: "18%", label: "18%" },
+                                        //     { value: "28%", label: "28%" },
+                                        //   ]}
+                                        //   value={
+                                        //     [
+                                        //       { value: "", label: "Select Tax" },
+                                        //       { value: "5%", label: "5%" },
+                                        //       { value: "12%", label: "12%" },
+                                        //       { value: "18%", label: "18%" },
+                                        //       { value: "28%", label: "28%" },
+                                        //     ].find(opt => opt.value === row.percentage) || { value: "", label: "Select Tax" }
+                                        //   }
+                                        //   onChange={selected => {
+                                        //     const percentage = parseFloat(selected?.value) || 0;
+                                        //     const amount = ((creditNoteAmount || 0) * percentage) / 100;
 
-                                        <select
-                                          className="form-control form-select"
-                                          value={row.percentage}
-                                          onChange={(e) => {
-                                            const percentage =
-                                              parseFloat(e.target.value) || 0;
-                                            const amount =
-                                              ((creditNoteAmount || 0) *
-                                                percentage) /
-                                              100;
+                                        //     setRows(prevRows =>
+                                        //       prevRows.map(r =>
+                                        //         r.id === row.id
+                                        //           ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
+                                        //           : r
+                                        //       )
+                                        //     );
+                                        //   }}
+                                        //   placeholder="Select Tax"
+                                        // />
+
+                                        // <SingleSelector
+                                        //   className="form-control"
+                                        //   options={
+                                        //     taxPercentages.find((t) => t.tax_name === row.type)?.percentage.map((percent) => ({
+                                        //       value: `${percent}%`,
+                                        //       label: `${percent}%`,
+                                        //     })) || []
+                                        //   }
+                                        //   value={
+                                        //     taxPercentages
+                                        //       .find((t) => t.tax_name === row.type)?.percentage
+                                        //       .map((p) => `${p}%`)
+                                        //       .includes(
+                                        //         row.percentage?.toString().includes("%")
+                                        //           ? row.percentage
+                                        //           : `${row.percentage}`
+                                        //       )
+                                        //       ? { value: `${row.percentage}%`, label: `${row.percentage}%` }
+                                        //       : null
+                                        //   }
+                                        //   onChange={(selectedOption) => {
+                                        //     setRows((prevRows) =>
+                                        //       prevRows.map((r) =>
+                                        //         r.id === row.id
+                                        //           ? {
+                                        //             ...r,
+                                        //             percentage: selectedOption
+                                        //               ? parseFloat(selectedOption.value.replace("%", ""))
+                                        //               : "",
+                                        //           }
+                                        //           : r
+                                        //       )
+                                        //     );
+                                        //   }}
+                                        //   placeholder="Select Tax %"
+                                        //   isDisabled={!row.isEditable}
+                                        // />
+
+
+
+                                        //                                         <select
+                                        //   className="form-control"
+                                        //   value={row.percentage}
+                                        //   onChange={(e) =>
+                                        //     setRows((prevRows) =>
+                                        //       prevRows.map((r) =>
+                                        //         r.id === row.id ? { ...r, percentage: parseFloat(e.target.value) } : r
+                                        //       )
+                                        //     )
+                                        //   }
+                                        // >
+                                        //   {taxPercentages
+                                        //     .find((t) => t.tax_name === row.type)?.percentage.map((percent) => (
+                                        //       <option key={percent} value={percent}>
+                                        //         {percent}%
+                                        //       </option>
+                                        //     ))}
+                                        // </select>
+
+
+
+                                        <SingleSelector
+                                          className="form-control"
+                                          options={
+                                            Array.isArray(
+                                              taxPercentages.find((t) => t.tax_name === row.type)?.percentage
+                                            )
+                                              ? taxPercentages
+                                                .find((t) => t.tax_name === row.type)
+                                                .percentage.map((percent) => ({
+                                                  value: `${percent}%`,
+                                                  label: `${percent}%`,
+                                                }))
+                                              : []
+                                          }
+                                          value={
+                                            row.percentage !== undefined && row.percentage !== null
+                                              ? {
+                                                value: `${parseFloat(row.percentage)}%`,
+                                                label: `${parseFloat(row.percentage)}%`,
+                                              }
+                                              : { value: "", label: "Select Tax" }
+                                          }
+                                          onChange={(selected) => {
+                                            const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
+                                            const amount = ((creditNoteAmount || 0) * percentage) / 100;
 
                                             setRows((prevRows) =>
                                               prevRows.map((r) =>
                                                 r.id === row.id
                                                   ? {
-                                                      ...r,
-                                                      percentage:
-                                                        e.target.value,
-                                                      amount: amount.toFixed(2),
-                                                    }
+                                                    ...r,
+                                                    percentage: selected?.value,
+                                                    amount: amount.toFixed(2),
+                                                  }
                                                   : r
                                               )
                                             );
                                           }}
-                                        >
-                                          <option value="">Select Tax</option>
-                                          <option value="5%">5%</option>
-                                          <option value="12%">12%</option>
-                                          <option value="18%">18%</option>
-                                          <option value="28%">28%</option>
-                                        </select>
+                                          placeholder="Select Tax"
+                                          isDisabled={!row.isEditable}
+                                        />
+
+
+
+
+
+
+
                                       ) : (
                                         <input
                                           type="text"
@@ -1331,10 +1790,7 @@ const MiscellaneousBillCreate = () => {
                                           setRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
-                                                ? {
-                                                    ...r,
-                                                    inclusive: e.target.checked,
-                                                  }
+                                                ? { ...r, inclusive: e.target.checked }
                                                 : r
                                             )
                                           )
@@ -1351,13 +1807,7 @@ const MiscellaneousBillCreate = () => {
                                           setRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
-                                                ? {
-                                                    ...r,
-                                                    amount:
-                                                      parseFloat(
-                                                        e.target.value
-                                                      ) || 0,
-                                                  }
+                                                ? { ...r, amount: parseFloat(e.target.value) || 0 }
                                                 : r
                                             )
                                           )
@@ -1367,51 +1817,39 @@ const MiscellaneousBillCreate = () => {
                                     <td
                                       className="text-start"
                                       onClick={() => deleteRow(row.id)}
-                                      style={{
-                                        cursor: "pointer",
-                                        color: "black",
-                                      }}
+                                      style={{ cursor: "pointer", color: "black" }}
                                     >
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="16"
-                                        height="16"
-                                        fill="currentColor"
-                                        className="bi bi-dash-circle"
-                                        viewBox="0 0 16 16"
-                                        style={{
-                                          transition: "transform 0.3s ease",
-                                        }}
-                                      >
-                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                                      </svg>
+                                      {/* <svg
+                                                                  xmlns="http://www.w3.org/2000/svg"
+                                                                  width="16"
+                                                                  height="16"
+                                                                  fill="currentColor"
+                                                                  className="bi bi-dash-circle"
+                                                                  viewBox="0 0 16 16"
+                                                                  style={{
+                                                                    transition: "transform 0.3s ease",
+                                                                  }}
+                                                                >
+                                                                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                                  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
+                                                                </svg> */}
+                                      <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
                                     </td>
                                   </tr>
                                 ))}
 
                                 <tr>
-                                  <th className="text-start">
-                                    Sub Total A (Addition)
-                                  </th>
+                                  <th className="text-start">Sub Total A (Addition)</th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start">
-                                    {calculateSubTotal()}
-                                  </td>
+                                  <td className="text-start">{calculateSubTotal()}</td>
                                   <td />
                                 </tr>
                                 <tr>
                                   <th className="text-start">Gross Amount</th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start">
-                                    {" "}
-                                    {(
-                                      parseFloat(calculateSubTotal()) +
-                                      (parseFloat(creditNoteAmount) || 0)
-                                    ).toFixed(2)}
-                                  </td>
+                                  <td className="text-start">  {(parseFloat(calculateSubTotal()) + (parseFloat(creditNoteAmount) || 0)).toFixed(2)}</td>
                                   <td />
                                 </tr>
                                 {/* Deduction Tax Section */}
@@ -1420,22 +1858,23 @@ const MiscellaneousBillCreate = () => {
                                   <td className="text-start" />
                                   <td className="" />
                                   <td className="text-start" />
-                                  <td onClick={addDeductionRow}>
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="16"
-                                      height="16"
-                                      fill="currentColor"
-                                      className="bi bi-plus-circle"
-                                      viewBox="0 0 16 16"
-                                      style={{
-                                        // transform: showDeductionRows ? "rotate(45deg)" : "none",
-                                        transition: "transform 0.3s ease",
-                                      }}
-                                    >
-                                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                    </svg>
+                                  <td className="text-start" onClick={addDeductionRow}>
+                                    {/* <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                width="16"
+                                                                height="16"
+                                                                fill="currentColor"
+                                                                className="bi bi-plus-circle"
+                                                                viewBox="0 0 16 16"
+                                                                style={{
+                                                                  // transform: showDeductionRows ? "rotate(45deg)" : "none",
+                                                                  transition: "transform 0.3s ease",
+                                                                }}
+                                                              >
+                                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                                              </svg> */}
+                                    <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
                                   </td>
                                 </tr>
                                 {/* Dynamic Rows for Deduction Tax */}
@@ -1449,26 +1888,25 @@ const MiscellaneousBillCreate = () => {
                                           id: type.id,
                                           tax: type.type,
                                         }))}
-                                        value={{
-                                          value: row.type,
-                                          label: row.type,
-                                        }}
+                                        value={{ value: row.type, label: row.type }}
+                                        // onChange={(selectedOption) =>
+                                        //   setDeductionRows((prevRows) =>
+                                        //     prevRows.map((r) =>
+                                        //       r.id === row.id ? { ...r, type: selectedOption.value } : r
+                                        //     )
+                                        //   )
+                                        // }
+
+
                                         onChange={(selectedOption) =>
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
-                                              r.id === row.id
-                                                ? {
-                                                    ...r,
-                                                    type:
-                                                      selectedOption?.value ||
-                                                      "", // Handle null or undefined
-                                                    resource_id:
-                                                      selectedOption?.id ||
-                                                      null, // Handle null or undefined
-                                                    resource_type:
-                                                      selectedOption?.tax || "", // Handle null or undefined
-                                                  }
-                                                : r
+                                              r.id === row.id ? {
+                                                ...r,
+                                                type: selectedOption?.value || "", // Handle null or undefined
+                                                resource_id: selectedOption?.id || null, // Handle null or undefined
+                                                resource_type: selectedOption?.tax || "", // Handle null or undefined
+                                              } : r
                                             )
                                           )
                                         }
@@ -1476,52 +1914,79 @@ const MiscellaneousBillCreate = () => {
                                       />
                                     </td>
                                     <td className="text-start">
-                                      {/* <select
-                                        className="form-control form-select"
-                                        value={row.percentage}
-                                        onChange={(e) =>
-                                          
-                                          setDeductionRows((prevRows) =>
-                                            prevRows.map((r) =>
-                                              r.id === row.id ? { ...r, percentage: e.target.value } : r
-                                            )
-                                          )
+                                      {/* <SingleSelector
+                                                                  className="form-control"
+                                                                  options={[
+                                                                    { value: "", label: "Select Tax" },
+                                                                    { value: "5%", label: "5%" },
+                                                                    { value: "12%", label: "12%" },
+                                                                    { value: "18%", label: "18%" },
+                                                                    { value: "28%", label: "28%" },
+                                                                  ]}
+                                                                  value={
+                                                                    [
+                                                                      { value: "", label: "Select Tax" },
+                                                                      { value: "5%", label: "5%" },
+                                                                      { value: "12%", label: "12%" },
+                                                                      { value: "18%", label: "18%" },
+                                                                      { value: "28%", label: "28%" },
+                                                                    ].find(opt => opt.value === row.percentage) || { value: "", label: "Select Tax" }
+                                                                  }
+                                                                  onChange={selected => {
+                                                                    const percentage = parseFloat(selected?.value) || 0;
+                                                                    const amount = ((creditNoteAmount || 0) * percentage) / 100;
+                          
+                                                                    setDeductionRows(prevRows =>
+                                                                      prevRows.map(r =>
+                                                                        r.id === row.id
+                                                                          ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
+                                                                          : r
+                                                                      )
+                                                                    );
+                                                                  }}
+                                                                  placeholder="Select Tax"
+                                                                /> */}
+
+
+                                      <SingleSelector
+                                        className="form-control"
+                                        options={
+                                          taxPercentages.find((t) => t.tax_name === row.type)?.percentage.map((p) => ({
+                                            value: `${p}%`,
+                                            label: `${p}%`,
+                                          })) || []
                                         }
-                                      > */}
-                                      <select
-                                        className="form-control form-select"
-                                        value={row.percentage}
-                                        onChange={(e) => {
-                                          const percentage =
-                                            parseFloat(e.target.value) || 0;
-                                          const amount =
-                                            ((creditNoteAmount || 0) *
-                                              percentage) /
-                                            100;
+                                        value={
+                                          (() => {
+                                            const percent = row.percentage?.toString().includes("%")
+                                              ? row.percentage
+                                              : `${row.percentage}%`;
+
+                                            const options = taxPercentages.find((t) => t.tax_name === row.type)?.percentage || [];
+                                            return options.includes(parseFloat(percent))
+                                              ? { value: percent, label: percent }
+                                              : { value: "", label: "Select Tax" };
+                                          })()
+                                        }
+                                        onChange={(selected) => {
+                                          const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
+                                          const amount = ((creditNoteAmount || 0) * percentage) / 100;
 
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
                                                 ? {
-                                                    ...r,
-                                                    percentage: e.target.value,
-                                                    amount: amount.toFixed(2),
-                                                  }
+                                                  ...r,
+                                                  percentage: percentage,
+                                                  amount: amount.toFixed(2),
+                                                }
                                                 : r
                                             )
                                           );
                                         }}
-                                      >
-                                        {console.log(
-                                          "percent deduction",
-                                          row.percentage
-                                        )}
-                                        <option value="">Select Tax</option>
-                                        <option value="1%">1%</option>
-                                        <option value="2%">2%</option>
-                                        <option value="10%">10%</option>
-                                        {/* <option value="28%">28%</option> */}
-                                      </select>
+                                        placeholder="Select Tax %"
+                                      // isDisabled={!row.isEditable}
+                                      />
                                     </td>
                                     <td>
                                       <input
@@ -1531,10 +1996,7 @@ const MiscellaneousBillCreate = () => {
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
-                                                ? {
-                                                    ...r,
-                                                    inclusive: e.target.checked,
-                                                  }
+                                                ? { ...r, inclusive: e.target.checked }
                                                 : r
                                             )
                                           )
@@ -1551,13 +2013,7 @@ const MiscellaneousBillCreate = () => {
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
-                                                ? {
-                                                    ...r,
-                                                    amount:
-                                                      parseFloat(
-                                                        e.target.value
-                                                      ) || 0,
-                                                  }
+                                                ? { ...r, amount: parseFloat(e.target.value) || 0 }
                                                 : r
                                             )
                                           )
@@ -1567,49 +2023,43 @@ const MiscellaneousBillCreate = () => {
                                     <td
                                       className="text-start"
                                       onClick={() => deleteDeductionRow(row.id)}
-                                      style={{
-                                        cursor: "pointer",
-                                        color: "black",
-                                      }}
+                                      style={{ cursor: "pointer", color: "black" }}
                                     >
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="16"
-                                        height="16"
-                                        fill="currentColor"
-                                        className="bi bi-dash-circle"
-                                        viewBox="0 0 16 16"
-                                        style={{
-                                          transition: "transform 0.3s ease",
-                                        }}
-                                      >
-                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                                      </svg>
+                                      {/* <svg
+                                                                  xmlns="http://www.w3.org/2000/svg"
+                                                                  width="16"
+                                                                  height="16"
+                                                                  fill="currentColor"
+                                                                  className="bi bi-dash-circle"
+                                                                  viewBox="0 0 16 16"
+                                                                  style={{
+                                                                    transition: "transform 0.3s ease",
+                                                                  }}
+                                                                >
+                                                                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                                  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
+                                                                </svg> */}
+                                      <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
                                     </td>
                                   </tr>
                                 ))}
                                 {/* Static Rows */}
                                 <tr>
-                                  <th className="text-start">
-                                    Sub Total B (Deductions)
-                                  </th>
+                                  <th className="text-start">Sub Total B (Deductions)</th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start">
-                                    {calculateDeductionSubTotal()}
-                                  </td>
+                                  <td className="text-start">{calculateDeductionSubTotal()}</td>
                                   <td />
                                 </tr>
                                 <tr>
                                   <th className="text-start">Payable Amount</th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start">
-                                    {calculatePayableAmount()}
-                                  </td>
+                                  <td className="text-start">{calculatePayableAmount()}</td>
                                   <td />
                                 </tr>
+
+
                               </tbody>
                             </table>
                           </div>
@@ -1811,6 +2261,320 @@ const MiscellaneousBillCreate = () => {
           <p>Submitting...</p>
         </div>
       )}
+
+      <Modal
+        centered
+        size="xl"
+        show={selectPOModal}
+        onHide={closeSelectPOModal}
+        backdrop="static"
+        keyboard={false}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Select PO</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row">
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Company</label>
+                <SingleSelector
+                  options={companies}
+                  value={selectedCompany}
+                  onChange={handleCompanyChange}
+                  placeholder="Select Company"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Project</label>
+                <SingleSelector
+                  options={projects}
+                  value={selectedProject}
+                  onChange={handleProjectChange}
+                  placeholder="Select Project"
+                  isDisabled={!selectedCompany}
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>Sub-Project</label>
+                <SingleSelector
+                  options={sites}
+                  value={selectedSite}
+                  onChange={handleSiteChange}
+                  placeholder="Select Sub-Project"
+                  isDisabled={!selectedProject}
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>From Date</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={filterParams.startDate}
+                  onChange={(e) =>
+                    setFilterParams((prev) => ({
+                      ...prev,
+                      startDate: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>To Date</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={filterParams.endDate}
+                  onChange={(e) =>
+                    setFilterParams((prev) => ({
+                      ...prev,
+                      endDate: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>PO Type</label>
+                <SingleSelector
+                  options={poTypes}
+                  value={
+                    poTypes.find(
+                      (type) => type.value === filterParams.poType
+                    ) || poTypes[0]
+                  }
+                  onChange={(selected) =>
+                    setFilterParams((prev) => ({
+                      ...prev,
+                      poType: selected.value,
+                    }))
+                  }
+                  placeholder="Select PO Type"
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label>PO Number</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={filterParams.poNumber}
+                  onChange={(e) =>
+                    setFilterParams((prev) => ({
+                      ...prev,
+                      poNumber: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter PO Number"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="row mt-3 justify-content-center">
+            {/* <div className="col-md-12 d-flex justify-content-end gap-2">
+                                <button
+                                  className="btn btn-secondary"
+                                  onClick={handleReset}
+                                  disabled={loading}
+                                >
+                                  Reset
+                                </button>
+                                <button
+                                  className="btn btn-primary"
+                                  onClick={handleSearch}
+                                  disabled={loading}
+                                >
+                                  Search
+                                </button>
+                              </div> */}
+            <div className="col-md-3">
+              <button className="purple-btn2 w-100 mt-2" onClick={handleSearch}>
+                Search
+              </button>
+            </div>
+            <div className="col-md-3">
+              <button className="purple-btn1 w-100" onClick={handleReset}>
+                Reset
+              </button>
+            </div>
+          </div>
+          <div className="row mt-3">
+            <div className="col-md-12">
+              <div className="tbl-container mx-3 mt-3">
+                <table className="w-100">
+                  <thead>
+                    <tr>
+                      <th className="text-start">
+                        {/* <input
+                                type="checkbox"
+                                checked={selectedPOs.length === purchaseOrders.length}
+                                onChange={handleSelectAll}
+                              /> */}
+                        Sr.No.
+                      </th>
+                      <th className="text-start">PO Number</th>
+                      <th className="text-start">PO Date</th>
+                      <th className="text-start">PO Value</th>
+                      <th className="text-start">PO Type</th>
+                      <th className="text-start">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td colSpan="6" className="text-center">
+                          Loading...
+                        </td>
+                      </tr>
+                    ) : purchaseOrders.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="text-center">
+                          No purchase orders found
+                        </td>
+                      </tr>
+                    ) : (
+                      purchaseOrders.map((po, index) => (
+                        <tr key={po.id}>
+                          <td className="text-start">
+                            {/* <input
+                                    type="checkbox"
+                                    checked={selectedPOs.includes(po.id)}
+                                    onChange={() => handleCheckboxChange(po.id)}
+                                  /> */}
+                            {index + 1}
+                          </td>
+                          <td className="text-start">{po.po_number}</td>
+                          <td className="text-start">{po.po_date}</td>
+                          <td className="text-start">{po.total_value}</td>
+                          <td className="text-start">{po.po_type}</td>
+                          <td className="text-start">
+                            <button
+                              className=" purple-btn2"
+                              onClick={() => handlePOSelect(po)}
+                            >
+                              Select
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {purchaseOrders.length > 0 && (
+                <div className="d-flex justify-content-between align-items-center mt-3">
+                  <div className="showing-entries"></div>
+                  <nav>
+                    <ul className="pagination">
+                      <li
+                        className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
+                          }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(1)}
+                          disabled={pagination.current_page === 1}
+                        >
+                          First
+                        </button>
+                      </li>
+                      <li
+                        className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
+                          }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() =>
+                            handlePageChange(pagination.current_page - 1)
+                          }
+                          disabled={pagination.current_page === 1}
+                        >
+                          Prev
+                        </button>
+                      </li>
+                      {getPageNumbers().map((page) => (
+                        <li
+                          key={page}
+                          className={`page-item ${page === pagination.current_page ? "active" : ""
+                            }`}
+                        >
+                          <button
+                            className="page-link"
+                            onClick={() => handlePageChange(page)}
+                          >
+                            {page}
+                          </button>
+                        </li>
+                      ))}
+                      <li
+                        className={`page-item ${pagination.current_page === pagination.total_pages
+                          ? "disabled"
+                          : ""
+                          }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() =>
+                            handlePageChange(pagination.current_page + 1)
+                          }
+                          disabled={
+                            pagination.current_page === pagination.total_pages
+                          }
+                        >
+                          Next
+                        </button>
+                      </li>
+                      <li
+                        className={`page-item ${pagination.current_page === pagination.total_pages
+                          ? "disabled"
+                          : ""
+                          }`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() =>
+                            handlePageChange(pagination.total_pages)
+                          }
+                          disabled={
+                            pagination.current_page === pagination.total_pages
+                          }
+                        >
+                          Last
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                  {getShowingEntriesText()}
+                </div>
+              )}
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 };

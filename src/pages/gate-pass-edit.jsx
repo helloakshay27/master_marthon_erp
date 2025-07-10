@@ -8,6 +8,8 @@ import { Modal, Button, Form } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { Table } from "../components";
 import { ShowIcon } from "../components";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const GatePassEdit = () => {
   const urlParams = new URLSearchParams(location.search);
@@ -119,25 +121,31 @@ const GatePassEdit = () => {
   const [batchTableType, setBatchTableType] = useState("");
 
   const [poMaterialsLoading, setPoMaterialsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     // Required fields validation (star mark fields)
     if (!formData.project_id) {
-      alert("Please select Project.");
+      toast.error("Please select Project.");
+      setLoading(false);
       return;
     }
     if (!formData.sub_project_id) {
-      alert("Please select Sub-Project.");
+      toast.error("Please select Sub-Project.");
+      setLoading(false);
       return;
     }
     if (!formData.store_id) {
-      alert("Please select From Store.");
+      toast.error("Please select From Store.");
+      setLoading(false);
       return;
     }
     if (!formData.gate_pass_type) {
-      alert("Please select Gate Pass Type.");
+      toast.error("Please select Gate Pass Type.");
+      setLoading(false);
       return;
     }
     // For PurchaseOrder type, PO/WO No is required
@@ -146,11 +154,13 @@ const GatePassEdit = () => {
     );
     const rawValue = selectedGatePassType?.rawValue;
     if (rawValue === "PurchaseOrder" && !formData.mto_po_number) {
-      alert("Please select PO/WO No.");
+      toast.error("Please select PO/WO No.");
+      setLoading(false);
       return;
     }
     if (rawValue === "MaterialTransaferOrder" && !formData.mto_po_number) {
-      alert("Please enter MTO/SO Number.");
+      toast.error("Please enter MTO/SO Number.");
+      setLoading(false);
       return;
     }
 
@@ -159,7 +169,8 @@ const GatePassEdit = () => {
       formData.is_returnable === "returnable" &&
       !formData.expected_return_date
     ) {
-      alert("Please enter Expected Return Date for Returnable Gate Pass");
+      toast.error("Please enter Expected Return Date for Returnable Gate Pass");
+      setLoading(false);
       return;
     }
     // Validation: Expected Return Date cannot be before today
@@ -168,7 +179,8 @@ const GatePassEdit = () => {
       today.setHours(0, 0, 0, 0);
       const selectedDate = new Date(formData.expected_return_date);
       if (selectedDate < today) {
-        alert("Expected Return Date cannot be before today.");
+        toast.error("Expected Return Date cannot be before today.");
+        setLoading(false);
         return;
       }
     }
@@ -179,7 +191,8 @@ const GatePassEdit = () => {
       (!formData.material_items ||
         formData.material_items.filter((item) => !item._destroy).length === 0)
     ) {
-      alert("Please select at least one material before submitting.");
+      toast.error("Please select at least one material before submitting.");
+      setLoading(false);
       return;
     }
     if (
@@ -187,11 +200,15 @@ const GatePassEdit = () => {
       (!maintenanceRows ||
         maintenanceRows.filter((row) => !row._destroy).length === 0)
     ) {
-      alert("Please select at least one material before submitting.");
+      toast.error("Please select at least one material before submitting.");
+      setLoading(false);
       return;
     }
     if (contactNoError || driverContactNoError) {
-      alert("Please correct the contact number fields before submitting.");
+      toast.error(
+        "Please correct the contact number fields before submitting."
+      );
+      setLoading(false);
       return;
     }
 
@@ -204,18 +221,20 @@ const GatePassEdit = () => {
         item.stock_as_on !== undefined &&
         Number(item.gate_pass_qty) > Number(item.stock_as_on)
       ) {
-        alert(
+        toast.error(
           `Gate Pass Qty for ${
             item.material_name || "material"
           } cannot exceed Stock As On (${item.stock_as_on})!`
         );
+        setLoading(false);
         return;
       }
     }
     if (maintenanceRows.some((row) => row.available_qty === "not_found")) {
-      alert(
+      toast.error(
         "One or more materials have 'No matching inventory found'. Please correct before submitting."
       );
+      setLoading(false);
       return;
     }
 
@@ -383,15 +402,21 @@ const GatePassEdit = () => {
       }
 
       if (response.status === 200 || response.status === 201) {
-        alert(`Gate Pass ${id ? "updated" : "created"} successfully!`);
-        navigate(`/gate-pass-details/${id || response.data.id}?token=${token}`);
+        toast.success(`Gate Pass ${id ? "updated" : "created"} successfully!`);
+        setTimeout(() => {
+          navigate(
+            `/gate-pass-details/${id || response.data.id}?token=${token}`
+          );
+        }, 1500);
       }
     } catch (error) {
       console.error(`Error ${id ? "updating" : "creating"} gate pass:`, error);
-      alert(
+      toast.error(
         `Failed to ${id ? "update" : "create"} gate pass. Please try again.`
       );
+      setLoading(false);
     }
+    setLoading(false);
   };
 
   const handleRemoveMaterial = (index) => {
@@ -561,7 +586,7 @@ const GatePassEdit = () => {
       !newVendorAddress.trim() ||
       !newVendorRemark.trim()
     ) {
-      alert("All fields are mandatory for Non-Master Vendor.");
+      toast.error("All fields are mandatory for Non-Master Vendor.");
       return;
     }
     const newVendor = {
@@ -1114,7 +1139,7 @@ const GatePassEdit = () => {
   // Add new material to the row's materialNameOptions and select it
   const handleAddMaterial = () => {
     if (!newMaterialName.trim()) {
-      alert("Please enter a material/asset name.");
+      toast.error("Please enter a material/asset name.");
       return;
     }
     const newMaterial = {
@@ -1620,9 +1645,10 @@ const GatePassEdit = () => {
     }
 
     if (!row) {
-      alert("Material row not found.");
+      toast.error("Material row not found.");
       return;
     }
+    setLoading(true);
     setBatchRowIdx(rowIdx);
     setBatchTableType(tableType);
     setShowBatchModal(true);
@@ -1664,8 +1690,10 @@ const GatePassEdit = () => {
       setBatchList(mergedBatchList);
     } catch {
       setBatchList([]);
+      toast.error("Failed to fetch batch data.");
     } finally {
       setBatchLoading(false);
+      setLoading(false);
     }
   };
 
@@ -1676,7 +1704,7 @@ const GatePassEdit = () => {
     const availableQty = parseFloat(batch?.current_stock_qty) || 0;
 
     if (newValue > availableQty) {
-      alert(
+      toast.error(
         `Issue QTY cannot exceed available qty (${availableQty}) for this batch.`
       );
       return;
@@ -1689,7 +1717,9 @@ const GatePassEdit = () => {
     );
 
     if (total > batchMaxQty) {
-      alert(`Total Issue QTY cannot exceed Gate Pass Qty (${batchMaxQty})`);
+      toast.error(
+        `Total Issue QTY cannot exceed Gate Pass Qty (${batchMaxQty})`
+      );
       return;
     }
 
@@ -3532,7 +3562,7 @@ const GatePassEdit = () => {
                               );
                             })();
                             if (Number(value) > max) {
-                              alert(
+                              toast.error(
                                 `Issue QTY cannot exceed gate pass qty ${max} for this batch.`
                               );
                               return;
@@ -3606,6 +3636,33 @@ const GatePassEdit = () => {
           </div>
         </Modal.Body>
       </Modal>
+      {loading && (
+        <div className="loader-container">
+          <div className="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p>loading...</p>
+        </div>
+      )}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </div>
   );
 };
