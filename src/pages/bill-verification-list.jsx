@@ -13,7 +13,6 @@ import { baseURL } from "../confi/apiDomain";
 import { DataGrid } from "@mui/x-data-grid";
 import { useLocation } from "react-router-dom";
 
-
 const BillVerificationList = () => {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(location.search);
@@ -32,7 +31,6 @@ const BillVerificationList = () => {
   const [filterCompanyId, setFilterCompanyId] = useState("");
   const [filterProjectId, setFilterProjectId] = useState("");
   const [filterSiteId, setFilterSiteId] = useState("");
-
 
   // Handle value change in SingleSelector
   const handleChange = (value) => {
@@ -156,9 +154,7 @@ const BillVerificationList = () => {
   // Fetch company data on component mount
   useEffect(() => {
     axios
-      .get(
-        `${baseURL}pms/company_setups.json?token=${token}`
-      )
+      .get(`${baseURL}pms/company_setups.json?token=${token}`)
       .then((response) => {
         setCompanies(response.data.companies);
       })
@@ -297,9 +293,7 @@ const BillVerificationList = () => {
 
     // Fetch unfiltered data
     axios
-      .get(
-        `${baseURL}bill_entries?page=1&token=${token}`
-      )
+      .get(`${baseURL}bill_entries?page=1&token=${token}`)
       .then((response) => {
         const transformedData = response.data.bill_entries.map(
           (entry, index) => {
@@ -518,8 +512,9 @@ const BillVerificationList = () => {
 
   //card filter
   const fetchFilteredData2 = (status) => {
-    const url = `${baseURL}bill_entries?page=1&token=${token}${status ? `&q[status_eq]=${status}` : ""
-      }`;
+    const url = `${baseURL}bill_entries?page=1&token=${token}${
+      status ? `&q[status_eq]=${status}` : ""
+    }`;
 
     axios
       .get(url)
@@ -707,7 +702,9 @@ const BillVerificationList = () => {
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/bill-booking-create/${params.row.id}?token=${token}`);
+                    navigate(
+                      `/bill-booking-create/${params.row.id}?token=${token}`
+                    );
                   }}
                 >
                   <svg
@@ -734,7 +731,9 @@ const BillVerificationList = () => {
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/miscellaneous-bill-create/${params.row.id}?token=${token}`);
+                    navigate(
+                      `/miscellaneous-bill-create/${params.row.id}?token=${token}`
+                    );
                   }}
                 >
                   <svg
@@ -759,7 +758,9 @@ const BillVerificationList = () => {
       width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
-          <Link to={`/bill-verification-details/${params.row.id}?token=${token}`}>
+          <Link
+            to={`/bill-verification-details/${params.row.id}?token=${token}`}
+          >
             <span className="boq-id-link">{params.value}</span>
           </Link>
         ) : (
@@ -794,7 +795,9 @@ const BillVerificationList = () => {
       width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
-          <Link to={`/bill-verification-details/${params.row.id}?token=${token}`}>
+          <Link
+            to={`/bill-verification-details/${params.row.id}?token=${token}`}
+          >
             <span className="boq-id-link">{params.value}</span>
           </Link>
         ) : (
@@ -880,6 +883,25 @@ const BillVerificationList = () => {
 
   return (
     <>
+      <style type="text/css">
+        {`.tbl-container {
+
+height: auto !important;
+max-height: 100% !important;
+
+}
+.css-5n0k77:last-child{
+display:none !important;
+}
+.MuiDataGrid-cell, .MuiDataGrid-cell > div {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+        `}
+      </style>
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">Home &gt; Billing &gt; MOR &gt; Bill Verification</a>
@@ -940,8 +962,9 @@ const BillVerificationList = () => {
                   <div
                     // className="content-box tab-button active"
                     data-tab="total"
-                    className={`content-box tab-button ${activeTab === "total" ? "active" : ""
-                      }`}
+                    className={`content-box tab-button ${
+                      activeTab === "total" ? "active" : ""
+                    }`}
                     onClick={() => {
                       setActiveTab("total");
                       fetchFilteredData2("");
@@ -955,8 +978,9 @@ const BillVerificationList = () => {
                   <div
                     // className="content-box tab-button"
                     data-tab="open"
-                    className={`content-box tab-button ${activeTab === "open" ? "active" : ""
-                      }`}
+                    className={`content-box tab-button ${
+                      activeTab === "open" ? "active" : ""
+                    }`}
                     onClick={() => {
                       setActiveTab("open");
                       fetchFilteredData2("open");
@@ -972,8 +996,9 @@ const BillVerificationList = () => {
                   <div
                     // className="content-box tab-button"
                     data-tab="pending-approval"
-                    className={`content-box tab-button ${activeTab === "recieved_for_verification" ? "active" : ""
-                      }`}
+                    className={`content-box tab-button ${
+                      activeTab === "recieved_for_verification" ? "active" : ""
+                    }`}
                     onClick={() => {
                       setActiveTab("recieved_for_verification");
                       fetchFilteredData2("recieved_for_verification");
@@ -991,8 +1016,9 @@ const BillVerificationList = () => {
                   <div
                     // className="content-box tab-button"
                     data-tab="self-overdue"
-                    className={`content-box tab-button ${activeTab === "verified" ? "active" : ""
-                      }`}
+                    className={`content-box tab-button ${
+                      activeTab === "verified" ? "active" : ""
+                    }`}
                     onClick={() => {
                       setActiveTab("verified");
                       fetchFilteredData2("verified");
@@ -1270,9 +1296,9 @@ const BillVerificationList = () => {
                     },
                     // Black for header (select all) checkbox, even when checked
                     "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root":
-                    {
-                      color: "#fff",
-                    },
+                      {
+                        color: "#fff",
+                      },
                     // Make checkboxes smaller
                     "& .MuiCheckbox-root .MuiSvgIcon-root": {
                       fontSize: "1.1rem", // adjust as needed (default is 1.5rem)
@@ -1287,8 +1313,9 @@ const BillVerificationList = () => {
               <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                 <ul className="pagination justify-content-center d-flex">
                   <li
-                    className={`page-item ${currentPage === 1 ? "disabled" : ""
-                      }`}
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -1299,8 +1326,9 @@ const BillVerificationList = () => {
                     </button>
                   </li>
                   <li
-                    className={`page-item ${currentPage === 1 ? "disabled" : ""
-                      }`}
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -1314,8 +1342,9 @@ const BillVerificationList = () => {
                   {Array.from({ length: totalPages }, (_, index) => (
                     <li
                       key={index + 1}
-                      className={`page-item ${currentPage === index + 1 ? "active" : ""
-                        }`}
+                      className={`page-item ${
+                        currentPage === index + 1 ? "active" : ""
+                      }`}
                     >
                       <button
                         className="page-link"
@@ -1327,8 +1356,9 @@ const BillVerificationList = () => {
                   ))}
 
                   <li
-                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
-                      }`}
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -1339,8 +1369,9 @@ const BillVerificationList = () => {
                     </button>
                   </li>
                   <li
-                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
-                      }`}
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -1436,7 +1467,7 @@ const BillVerificationList = () => {
               >
                 <div className="col-md-6">
                   <button type="submit" className="btn btn-md">
-                    <svg
+                    {/* <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="22"
                       height="22"
@@ -1448,6 +1479,20 @@ const BillVerificationList = () => {
                       strokeLinejoin="round"
                     >
                       <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                    </svg> */}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={22}
+                      height={22}
+                      viewBox="0 0 48 48"
+                      fill="none"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
+                        fill="black"
+                      />
                     </svg>
                   </button>
                   <label>{column.headerName}</label>
