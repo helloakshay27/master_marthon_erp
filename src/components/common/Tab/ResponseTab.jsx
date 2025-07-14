@@ -1308,30 +1308,37 @@ export default function ResponseTab({ isCounterOffer }) {
                               isDisableFirstOption={true}
                               disabled={true}
                             />
-                          </td>
+                          </td>{
+                          console.log("item",item)}
+                          
                           <td>
-                            <select
-                              className="form-select"
-                              defaultValue={item?.tax_percentage}
-                              // value={item.taxChargePerUom}
-                              onChange={(e) =>
-                                handleTaxChargeChange(
-                                  selectedMaterialIndex,
-                                  item.id,
-                                  "taxChargePerUom",
-                                  e.target.value,
-                                  "addition"
-                                )
-                              }
-                              disabled={true}
-                            >
-                              <option value="">Select Tax</option>
-                              <option value="5%">5%</option>
-                              <option value="12%">12%</option>
-                              <option value="18%">18%</option>
-                              <option value="28%">28%</option>
-                            </select>
-                          </td>
+  <select
+    className="form-select"
+    defaultValue={
+      item?.tax_percentage 
+        ? (item.tax_percentage.includes('%') ? item.tax_percentage : `${item.tax_percentage}%`)
+        : item?.taxChargePerUom 
+        ? (item.taxChargePerUom.includes('%') ? item.taxChargePerUom : `${item.taxChargePerUom}%`)
+        : ""
+    }
+    onChange={(e) =>
+      handleTaxChargeChange(
+        selectedMaterialIndex,
+        item.id,
+        "taxChargePerUom",
+        e.target.value,
+        "addition"
+      )
+    }
+    disabled={true}
+  >
+    <option value="">Select Tax</option>
+    <option value="5%">5%</option>
+    <option value="12%">12%</option>
+    <option value="18%">18%</option>
+    <option value="28%">28%</option>
+  </select>
+</td>
                           <td className="text-center">
                             <input
                               type="checkbox"

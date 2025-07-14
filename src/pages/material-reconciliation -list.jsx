@@ -501,7 +501,7 @@ const MaterialReconciliationList = () => {
         store: item.store,
         reconciliation_date: (() => {
           const [yyyy, mm, dd] = item.reco_date.split("-");
-          return `${dd}-${mm}-${yyyy.slice(2)}`;
+          return `${dd}-${mm}-${yyyy.slice()}`;
         })(),
         // New material fields
         materials_description: item.materials_description || "-",

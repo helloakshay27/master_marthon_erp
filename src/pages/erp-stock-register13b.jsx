@@ -25,7 +25,6 @@ import MultiSelector from "../components/base/Select/MultiSelector";
 import { toast, ToastContainer } from "react-toastify";
 // import { useLocation } from "react-router-dom";
 
-
 const ErpStockRegister13B = () => {
   // const location = useLocation(); // ✅ this gives you the current location object
   const [data, setData] = useState([]);
@@ -46,9 +45,6 @@ const ErpStockRegister13B = () => {
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10; // Items per page
   const [totalEntries, setTotalEntries] = useState(0);
-
-
-
 
   // Column settings modal handlers (keep only one set, remove duplicates below)
   const handleToggleColumn = (field) => {
@@ -193,11 +189,10 @@ const ErpStockRegister13B = () => {
           item.id && token
             ? `/stock_register_detail/${item.id}/?page=${page}token=${token}`
             : "#";
-        const firstStore = item.stores && item.stores.length > 0 ? item.stores[0] : null;
+        const firstStore =
+          item.stores && item.stores.length > 0 ? item.stores[0] : null;
 
         return {
-
-
           id: item.id ?? `row-${index + 1}`,
           store_id: firstStore ? firstStore.store_id : null,
           srNo: (currentPage - 1) * pageSize + index + 1,
@@ -205,26 +200,60 @@ const ErpStockRegister13B = () => {
           materialUrl: materialUrl,
           material_name: item.material_name || "-",
           lastReceived: item.last_received_on || "-",
-          total_received: item.total_received !== null && item.total_received !== undefined ? item.total_received : "-",
-          total_issued: item.total_issued !== null && item.total_issued !== undefined ? item.total_issued : "-",
-          deadstockQty: item.deadstock_qty !== null && item.deadstock_qty !== undefined ? item.deadstock_qty : "-",
-          stock_as_on: item.stock_as_on !== null && item.stock_as_on !== undefined ? item.stock_as_on : "-",
+          total_received:
+            item.total_received !== null && item.total_received !== undefined
+              ? item.total_received
+              : "-",
+          total_issued:
+            item.total_issued !== null && item.total_issued !== undefined
+              ? item.total_issued
+              : "-",
+          deadstockQty:
+            item.deadstock_qty !== null && item.deadstock_qty !== undefined
+              ? item.deadstock_qty
+              : "-",
+          stock_as_on:
+            item.stock_as_on !== null && item.stock_as_on !== undefined
+              ? item.stock_as_on
+              : "-",
+
           stockStatus: item.stock_details?.[0]?.status || "-",
-          theftMissing: item.missing_qty !== undefined && item.missing_qty !== null ? item.missing_qty : "-",
+          theftMissing:
+            item.missing_qty !== undefined && item.missing_qty !== null
+              ? item.missing_qty
+              : "-",
           uom_name: item.uom || "-",
           mor: item.stock_details?.map((stock) => stock.mor).join(", ") || "-",
-          grn_number: item.stock_details?.map((stock) => stock.grn_number).join(", ") || "-",
-          stock_details: item?.stock_details?.map((stock) => ({
-            stockId: stock.id,
-            createdAt: stock.created_at || "-",
-            mor: stock.mor || "-",
-            resourceNumber: stock.resource_number || "-",
-            receivedQty: stock.received_qty !== null && stock.receivedQty !== undefined ? stock.receivedQty : "-",
-            issuedQty: stock.issued_qty !== null && stock.issued_qty !== undefined ? stock.issued_qty : "-",
-            returnedQty: stock.returned_qty !== null && stock.returned_qty !== undefined ? stock.returned_qty : "-",
-            balancedQty: stock.balanced_qty !== null && stock.balanced_qty !== undefined ? stock.balanced_qty : "-",
-          })) || [],
-
+          grn_number:
+            item.stock_details?.map((stock) => stock.grn_number).join(", ") ||
+            "-",
+          stock_details:
+            item?.stock_details?.map((stock) => ({
+              stockId: stock.id,
+              createdAt: stock.created_at || "-",
+              mor: stock.mor || "-",
+              resourceNumber: stock.resource_number || "-",
+              receivedQty:
+                stock.received_qty !== null && stock.receivedQty !== undefined
+                  ? stock.receivedQty
+                  : "-",
+              issuedQty:
+                stock.issued_qty !== null && stock.issued_qty !== undefined
+                  ? stock.issued_qty
+                  : "-",
+              returnedQty:
+                stock.returned_qty !== null && stock.returned_qty !== undefined
+                  ? stock.returned_qty
+                  : "-",
+              balancedQty:
+                stock.balanced_qty !== null && stock.balanced_qty !== undefined
+                  ? stock.balanced_qty
+                  : "-",
+            })) || [],
+          damage_qty:
+            item.damage_qty !== null && item.damage_qty !== undefined
+              ? item.damage_qty
+              : "-",
         };
       });
 
@@ -241,20 +270,16 @@ const ErpStockRegister13B = () => {
     }
   };
 
-
-  console.log("total entries:", totalEntries)
+  console.log("total entries:", totalEntries);
   useEffect(() => {
-
     fetchData2(currentPage);
-  }, [
-    currentPage
-  ]);
+  }, [currentPage]);
 
   const handleResets = () => {
     setSelectedCompany([]);
     setSelectedProject([]);
     setSelectedSubProject([]);
-    setSelectedStore(null)
+    setSelectedStore(null);
   };
   const handlePageChange = (pageNumber) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
@@ -346,15 +371,13 @@ const ErpStockRegister13B = () => {
 
   // Handle Subproject Selection
 
-
-
   // / Update handleSubProjectChange to also set the store
   const handleSubProjectChange = (subProjectId) => {
     setSelectedSubProject(subProjectId);
-    console.log("sub prj-----", subProjectId)
+    console.log("sub prj-----", subProjectId);
     // Find the selected sub-project from subProjects array
     const subProjectObj = subProjects.find((s) => s.value === subProjectId);
-    console.log("sub prj obj", subProjectObj)
+    console.log("sub prj obj", subProjectObj);
     if (subProjectObj && subProjectObj.store_id && subProjectObj.store_name) {
       setSelectedStore({
         value: subProjectObj.store_id,
@@ -364,10 +387,12 @@ const ErpStockRegister13B = () => {
       setSelectedStore(null);
     }
   };
-  console.log("selected store:", selectedStore)
+  console.log("selected store:", selectedStore);
   // Prepare store options based on selected sub-project
   const storeOptions = (() => {
-    const subProjectObj = subProjects.find((s) => s.value === selectedSubProject);
+    const subProjectObj = subProjects.find(
+      (s) => s.value === selectedSubProject
+    );
     if (subProjectObj && subProjectObj.store_id && subProjectObj.store_name) {
       return [
         {
@@ -378,8 +403,6 @@ const ErpStockRegister13B = () => {
     }
     return [];
   })();
-
-
 
   const [genericInfos, setGenericInfos] = useState([]);
   const [materialSubTypes, setMaterialSubTypes] = useState([]);
@@ -450,12 +473,16 @@ const ErpStockRegister13B = () => {
   //   setPage(pageNumber);
   // };
 
-
   const handleGoClick = async (e) => {
-    console.log("handle go ....")
+    console.log("handle go ....");
     e.preventDefault();
 
-    if (!selectedCompany || !selectedProject || !selectedSubProject || !selectedStore) {
+    if (
+      !selectedCompany ||
+      !selectedProject ||
+      !selectedSubProject ||
+      !selectedStore
+    ) {
       toast.error("Please select Company, Project, Sub-project, and Store");
       return;
     }
@@ -480,7 +507,9 @@ const ErpStockRegister13B = () => {
         per_page: 10,
       });
 
-      const response = await axios.get(`https://marathon.lockated.com/stock_details.json?${params.toString()}`);
+      const response = await axios.get(
+        `https://marathon.lockated.com/stock_details.json?${params.toString()}`
+      );
 
       // Handle response data
       console.log("Fetched stock data:", response.data);
@@ -494,7 +523,6 @@ const ErpStockRegister13B = () => {
       setLoading(false);
     }
   };
-
 
   // Update columnVisibility to the correct fields and remove duplicate/conflicting declarations
   const [columnVisibility, setColumnVisibility] = useState({
@@ -513,6 +541,7 @@ const ErpStockRegister13B = () => {
     deadstockQty: true,
     theftMissing: true,
     uom_name: true,
+    damage_qty: true,
     // Star: true,
     // mor: true, // Added Mor Number column
     // grn_number: true, //
@@ -536,7 +565,6 @@ const ErpStockRegister13B = () => {
           <Link
             // to={`/stock_register_detail/${params.row.store_id}?token=${token}`
             to={`/stock_register_detail/${params.row.id}&store_id=${selectedStore?.value}?token=${token}`}
-
           >
             <span className="boq-id-link">{params.value}</span>
           </Link>
@@ -610,6 +638,13 @@ const ErpStockRegister13B = () => {
       width: 140,
       sortable: true,
     },
+
+    {
+      field: "damage_qty",
+      headerName: "Damage Qty",
+      width: 140,
+      sortable: true,
+    },
     { field: "uom_name", headerName: "UOM", width: 100, sortable: true },
     // { field: "Star", headerName: "Star", width: 80, sortable: false },
     // { field: "mor", headerName: "MOR Number", width: 120, sortable: true },
@@ -621,8 +656,7 @@ const ErpStockRegister13B = () => {
     // },
   ];
 
-
-  // material type options 
+  // material type options
   const [formData, setFormData] = useState({
     materialType: "",
     materialSubType: "",
@@ -638,47 +672,53 @@ const ErpStockRegister13B = () => {
     uom: "",
   });
 
-  const [inventoryTypes2, setInventoryTypes2] = useState([]);  // State to hold the fetched data
-  const [selectedInventory2, setSelectedInventory2] = useState(null);  // State to hold selected inventory type
+  const [inventoryTypes2, setInventoryTypes2] = useState([]); // State to hold the fetched data
+  const [selectedInventory2, setSelectedInventory2] = useState(null); // State to hold selected inventory type
   const [inventorySubTypes2, setInventorySubTypes2] = useState([]); // State to hold the fetched inventory subtypes
   const [selectedSubType2, setSelectedSubType2] = useState(null); // State to hold selected sub-type
   const [inventoryMaterialTypes2, setInventoryMaterialTypes2] = useState([]); // State to hold the fetched inventory subtypes
-  const [selectedInventoryMaterialTypes2, setSelectedInventoryMaterialTypes2] = useState(null); // State to hold selected sub-type
+  const [selectedInventoryMaterialTypes2, setSelectedInventoryMaterialTypes2] =
+    useState(null); // State to hold selected sub-type
   // Fetching inventory types data from API on component mount
   useEffect(() => {
-    axios.get(`${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`)
-      .then(response => {
+    axios
+      .get(
+        `${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`
+      )
+      .then((response) => {
         // Map the fetched data to the format required by react-select
-        const options = response.data.map(inventory => ({
+        const options = response.data.map((inventory) => ({
           value: inventory.id,
-          label: inventory.name
+          label: inventory.name,
         }));
 
-        setInventoryTypes2(options)
+        setInventoryTypes2(options);
       })
-      .catch(error => {
-        console.error('Error fetching inventory types:', error);
+      .catch((error) => {
+        console.error("Error fetching inventory types:", error);
       });
-  }, []);  // Empty dependency array to run only once on mount
-
+  }, []); // Empty dependency array to run only once on mount
 
   // Fetch inventory sub-types when an inventory type is selected
   useEffect(() => {
     if (selectedInventory2) {
       //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
 
-      axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${selectedInventory2?.value}&token=${token}`)
-        .then(response => {
+      axios
+        .get(
+          `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${selectedInventory2?.value}&token=${token}`
+        )
+        .then((response) => {
           // Map the sub-types to options for the select dropdown
-          const options = response.data.map(subType => ({
+          const options = response.data.map((subType) => ({
             value: subType.id,
-            label: subType.name
+            label: subType.name,
           }));
 
-          setInventorySubTypes2(options)
+          setInventorySubTypes2(options);
         })
-        .catch(error => {
-          console.error('Error fetching inventory sub-types:', error);
+        .catch((error) => {
+          console.error("Error fetching inventory sub-types:", error);
         });
     }
   }, [selectedInventory2]); // Run this effect whenever the selectedInventory state changes
@@ -688,28 +728,31 @@ const ErpStockRegister13B = () => {
     if (selectedInventory2) {
       //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
 
-      axios.get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${selectedInventory2?.value}&q[material_category_eq]=material&token=${token}`)
-        .then(response => {
+      axios
+        .get(
+          `${baseURL}pms/inventories.json?q[inventory_type_id_in]=${selectedInventory2?.value}&q[material_category_eq]=material&token=${token}`
+        )
+        .then((response) => {
           // Map the sub-types to options for the select dropdown
-          const options = response.data.map(subType => ({
+          const options = response.data.map((subType) => ({
             value: subType.id,
-            label: subType.name
+            label: subType.name,
           }));
 
-          setInventoryMaterialTypes2(options)
+          setInventoryMaterialTypes2(options);
         })
-        .catch(error => {
-          console.error('Error fetching inventory sub-types:', error);
+        .catch((error) => {
+          console.error("Error fetching inventory sub-types:", error);
         });
     }
   }, [selectedInventory2]); // Run this effect whenever the selectedInventory state changes
   // for generic specification
   const [genericSpecifications, setGenericSpecifications] = useState([]); // State to hold the fetched generic specifications
-  const [selectedGenericSpecifications, setSelectedGenericSpecifications] = useState(null); // Holds the selected generic specifications for each material
+  const [selectedGenericSpecifications, setSelectedGenericSpecifications] =
+    useState(null); // Holds the selected generic specifications for each material
 
   // Fetch generic specifications for materials
   useEffect(() => {
-
     if (selectedInventoryMaterialTypes2) {
       axios
         .get(
@@ -727,7 +770,6 @@ const ErpStockRegister13B = () => {
           console.error("Error fetching generic specifications:", error);
         });
     }
-
   }, [selectedInventoryMaterialTypes2, baseURL]); // Runs when materials or baseURL changes
 
   // color
@@ -769,10 +811,7 @@ const ErpStockRegister13B = () => {
           setInventoryBrands(options);
         })
         .catch((error) => {
-          console.error(
-            "Error fetching inventory brands for material:",
-            error
-          );
+          console.error("Error fetching inventory brands for material:", error);
         });
     }
   }, [selectedInventoryMaterialTypes2, baseURL]); // Runs when materials or baseURL changes
@@ -790,12 +829,12 @@ const ErpStockRegister13B = () => {
       setInventorySubTypes2([]); // Reset the sub-types list
       setInventoryMaterialTypes2([]); // Reset the material types list
       setSelectedInventoryMaterialTypes2(null); // Clear selected material type
-      setGenericSpecifications([])
-      setSelectedGenericSpecifications(null)
-      setColors([])
-      setSelectedColors(null)
-      setInventoryBrands([])
-      setSelectedInventoryBrands(null)
+      setGenericSpecifications([]);
+      setSelectedGenericSpecifications(null);
+      setColors([]);
+      setSelectedColors(null);
+      setInventoryBrands([]);
+      setSelectedInventoryBrands(null);
     }
 
     if (field === "materialSubType") {
@@ -805,7 +844,6 @@ const ErpStockRegister13B = () => {
     if (field === "material") {
       // Logic for materialSubType selection
       setSelectedInventoryMaterialTypes2(selectedOption); // Set the selected inventory sub-type
-
     }
     if (field === "uom") {
       // Logic for materialSubType selection
@@ -832,9 +870,7 @@ const ErpStockRegister13B = () => {
   // Fetching the unit of measures data on component mount
   useEffect(() => {
     axios
-      .get(
-        `${baseURL}unit_of_measures.json?token=${token}`
-      )
+      .get(`${baseURL}unit_of_measures.json?token=${token}`)
       .then((response) => {
         // Mapping the response to the format required by react-select
         const options = response.data.map((unit) => ({
@@ -847,7 +883,6 @@ const ErpStockRegister13B = () => {
         console.error("Error fetching unit of measures:", error);
       });
   }, []);
-
 
   // Add this function inside your component
   const handleFilterGo = async () => {
@@ -868,8 +903,10 @@ const ErpStockRegister13B = () => {
         per_page: 10,
       });
 
-      const response = await axios.get(`https://marathon.lockated.com/stock_details.json?${params.toString()}`);
-      console.log("response.data", response.data)
+      const response = await axios.get(
+        `https://marathon.lockated.com/stock_details.json?${params.toString()}`
+      );
+      console.log("response.data", response.data);
       // Handle response data
       const result = response.data;
       console.log("result ---", result);
@@ -878,41 +915,73 @@ const ErpStockRegister13B = () => {
           item.id && token
             ? `/stock_register_detail/${item.id}/?token=${token}`
             : "#";
-        const firstStore = item.stores && item.stores.length > 0 ? item.stores[0] : null;
+        const firstStore =
+          item.stores && item.stores.length > 0 ? item.stores[0] : null;
 
         return {
-
-
           id: item.id ?? `row-${index + 1}`,
           store_id: firstStore ? firstStore.store_id : null,
-          srNo:(currentPage - 1) * pageSize + index + 1,
+          srNo: (currentPage - 1) * pageSize + index + 1,
           material: item.category || "-",
           materialUrl: materialUrl,
           material_name: item.material_name || "-",
           lastReceived: item.last_received_on || "-",
-          total_received: item.total_received !== null && item.total_received !== undefined ? item.total_received : "-",
-          total_issued: item.total_issued !== null && item.total_issued !== undefined ? item.total_issued : "-",
-          deadstockQty: item.deadstock_qty !== null && item.deadstock_qty !== undefined ? item.deadstock_qty : "-",
-          stock_as_on: item.stock_as_on !== null && item.stock_as_on !== undefined ? item.stock_as_on : "-",
+          total_received:
+            item.total_received !== null && item.total_received !== undefined
+              ? item.total_received
+              : "-",
+          total_issued:
+            item.total_issued !== null && item.total_issued !== undefined
+              ? item.total_issued
+              : "-",
+          deadstockQty:
+            item.deadstock_qty !== null && item.deadstock_qty !== undefined
+              ? item.deadstock_qty
+              : "-",
+          stock_as_on:
+            item.stock_as_on !== null && item.stock_as_on !== undefined
+              ? item.stock_as_on
+              : "-",
           stockStatus: item.stock_details?.[0]?.status || "-",
-          theftMissing: item.missing_qty !== undefined && item.missing_qty !== null ? item.missing_qty : "-",
+          theftMissing:
+            item.missing_qty !== undefined && item.missing_qty !== null
+              ? item.missing_qty
+              : "-",
           uom_name: item.uom || "-",
           mor: item.stock_details?.map((stock) => stock.mor).join(", ") || "-",
-          grn_number: item.stock_details?.map((stock) => stock.grn_number).join(", ") || "-",
-          stock_details: item?.stock_details?.map((stock) => ({
-            stockId: stock.id,
-            createdAt: stock.created_at || "-",
-            mor: stock.mor || "-",
-            resourceNumber: stock.resource_number || "-",
-            receivedQty: stock.received_qty !== null && stock.receivedQty !== undefined ? stock.receivedQty : "-",
-            issuedQty: stock.issued_qty !== null && stock.issued_qty !== undefined ? stock.issued_qty : "-",
-            returnedQty: stock.returned_qty !== null && stock.returned_qty !== undefined ? stock.returned_qty : "-",
-            balancedQty: stock.balanced_qty !== null && stock.balanced_qty !== undefined ? stock.balanced_qty : "-",
-          })) || [],
-
+          grn_number:
+            item.stock_details?.map((stock) => stock.grn_number).join(", ") ||
+            "-",
+          stock_details:
+            item?.stock_details?.map((stock) => ({
+              stockId: stock.id,
+              createdAt: stock.created_at || "-",
+              mor: stock.mor || "-",
+              resourceNumber: stock.resource_number || "-",
+              receivedQty:
+                stock.received_qty !== null && stock.receivedQty !== undefined
+                  ? stock.receivedQty
+                  : "-",
+              issuedQty:
+                stock.issued_qty !== null && stock.issued_qty !== undefined
+                  ? stock.issued_qty
+                  : "-",
+              returnedQty:
+                stock.returned_qty !== null && stock.returned_qty !== undefined
+                  ? stock.returned_qty
+                  : "-",
+              balancedQty:
+                stock.balanced_qty !== null && stock.balanced_qty !== undefined
+                  ? stock.balanced_qty
+                  : "-",
+            })) || [],
+          damage_qty:
+            item.damage_qty !== null && item.damage_qty !== undefined
+              ? item.damage_qty
+              : "-",
         };
       });
-      setData(transformedData)
+      setData(transformedData);
       setFilteredData(transformedData);
       setPagination(response.data?.pagination || {});
       setTotalPages(response.data?.pagination.total_pages); // Set total pages
@@ -952,8 +1021,6 @@ const ErpStockRegister13B = () => {
   //     setUnitOfMeasures([])
   //         // setShow(false)
 
-
-
   //          setLoading(true);
   //     try {
   //       const params = new URLSearchParams({
@@ -984,7 +1051,6 @@ const ErpStockRegister13B = () => {
   //         const firstStore = item.stores && item.stores.length > 0 ? item.stores[0] : null;
 
   //         return {
-
 
   //           id: item.id ?? `row-${index + 1}`,
   //           store_id: firstStore ? firstStore.store_id : null,
@@ -1028,9 +1094,7 @@ const ErpStockRegister13B = () => {
 
   //   };
 
-
   const handleFilterReset = () => {
-
     //  setSelectedInventory2(null)
     // setInventoryTypes2([])
     // setSelectedSubType2(null); // Clear the selected sub-type when inventory type changes
@@ -1067,9 +1131,8 @@ const ErpStockRegister13B = () => {
       poRate: "",
       avgRate: "",
       uom: "",
-    })
+    });
   };
-
 
   // if (loading) return <div>Loading...</div>;
   return (
@@ -1116,11 +1179,11 @@ display:none !important;
                       value={
                         companies.find((c) => c.id === selectedCompany)
                           ? {
-                            value: selectedCompany,
-                            label: companies.find(
-                              (c) => c.id === selectedCompany
-                            ).company_name,
-                          }
+                              value: selectedCompany,
+                              label: companies.find(
+                                (c) => c.id === selectedCompany
+                              ).company_name,
+                            }
                           : null
                       }
                       placeholder="Select Company"
@@ -1140,13 +1203,15 @@ display:none !important;
                         null
                       }
                       placeholder="Select Project"
-                    // isDisabled={!selectedCompany}
+                      // isDisabled={!selectedCompany}
                     />
                   </div>
                 </div>
                 <div className="col-md-2">
                   <div className="form-group">
-                    <label>Sub-project <span>*</span></label>
+                    <label>
+                      Sub-project <span>*</span>
+                    </label>
                     <SingleSelector
                       options={subProjects}
                       onChange={(option) =>
@@ -1158,19 +1223,21 @@ display:none !important;
                         ) || null
                       }
                       placeholder="Select Sub-project"
-                    // isDisabled={!selectedProject}
+                      // isDisabled={!selectedProject}
                     />
                   </div>
                 </div>
                 <div className="col-md-2">
                   <div className="form-group">
-                    <label>Store <span>*</span></label>
+                    <label>
+                      Store <span>*</span>
+                    </label>
                     <SingleSelector
                       options={storeOptions}
                       onChange={setSelectedStore}
                       value={selectedStore}
                       placeholder="Select Store"
-                    // isDisabled={!selectedSubProject}
+                      // isDisabled={!selectedSubProject}
                     />
                     {console.log("store options:", storeOptions)}
                   </div>
@@ -1389,13 +1456,10 @@ display:none !important;
               )}
             </div>
 
-
-
             <div className="d-flex justify-content-between align-items-center px-1 mt-2  mb-3">
               <ul className="pagination justify-content-center d-flex">
                 <li
-                  className={`page-item ${currentPage === 1 ? "disabled" : ""
-                    }`}
+                  className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
                 >
                   <button
                     className="page-link"
@@ -1406,8 +1470,7 @@ display:none !important;
                   </button>
                 </li>
                 <li
-                  className={`page-item ${currentPage === 1 ? "disabled" : ""
-                    }`}
+                  className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
                 >
                   <button
                     className="page-link"
@@ -1421,8 +1484,9 @@ display:none !important;
                 {Array.from({ length: totalPages }, (_, index) => (
                   <li
                     key={index + 1}
-                    className={`page-item ${currentPage === index + 1 ? "active" : ""
-                      }`}
+                    className={`page-item ${
+                      currentPage === index + 1 ? "active" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -1434,8 +1498,9 @@ display:none !important;
                 ))}
 
                 <li
-                  className={`page-item ${currentPage === totalPages ? "disabled" : ""
-                    }`}
+                  className={`page-item ${
+                    currentPage === totalPages ? "disabled" : ""
+                  }`}
                 >
                   <button
                     className="page-link"
@@ -1446,8 +1511,9 @@ display:none !important;
                   </button>
                 </li>
                 <li
-                  className={`page-item ${currentPage === totalPages ? "disabled" : ""
-                    }`}
+                  className={`page-item ${
+                    currentPage === totalPages ? "disabled" : ""
+                  }`}
                 >
                   <button
                     className="page-link"
@@ -1461,11 +1527,9 @@ display:none !important;
               <div>
                 Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
                 {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
-
                 {totalEntries} entries
                 {/* {console.log(".........", itemsPerPage)} */}
               </div>
-
             </div>
           </div>
         </div>
@@ -1525,10 +1589,14 @@ display:none !important;
               <label className="block text-sm font-medium">Material Type</label>
 
               <SingleSelector
-                options={inventoryTypes2}  // Provide the fetched options to the select component
-                value={inventoryTypes2.find((option) => option.value === formData.materialType)} // Bind value to state
+                options={inventoryTypes2} // Provide the fetched options to the select component
+                value={inventoryTypes2.find(
+                  (option) => option.value === formData.materialType
+                )} // Bind value to state
                 placeholder={`Select Material Type`} // Dynamic placeholder
-                onChange={(selectedOption) => handleSelectorChange("materialType", selectedOption)}
+                onChange={(selectedOption) =>
+                  handleSelectorChange("materialType", selectedOption)
+                }
               />
             </div>
 
@@ -1538,11 +1606,14 @@ display:none !important;
               </label>
               <SingleSelector
                 options={inventorySubTypes2}
-                value={inventorySubTypes2.find((option) => option.value === formData.materialSubType)} // Bind value to state
+                value={inventorySubTypes2.find(
+                  (option) => option.value === formData.materialSubType
+                )} // Bind value to state
                 placeholder={`Select Material Sub Type`} // Dynamic placeholder
-                onChange={(selectedOption) => handleSelectorChange("materialSubType", selectedOption)}
+                onChange={(selectedOption) =>
+                  handleSelectorChange("materialSubType", selectedOption)
+                }
               />
-
             </div>
 
             <div className="col-md-6 mt-2">
@@ -1550,21 +1621,32 @@ display:none !important;
                 <label className="po-fontBold">Material</label>
                 <SingleSelector
                   options={inventoryMaterialTypes2}
-                  value={inventoryMaterialTypes2.find((option) => option.value === formData.material)} // Bind value to state
+                  value={inventoryMaterialTypes2.find(
+                    (option) => option.value === formData.material
+                  )} // Bind value to state
                   placeholder={`Select Material`} // Dynamic placeholder
-                  onChange={(selectedOption) => handleSelectorChange("material", selectedOption)}
+                  onChange={(selectedOption) =>
+                    handleSelectorChange("material", selectedOption)
+                  }
                 />
-
               </div>
             </div>
 
             <div className="col-6 mt-2">
               <label className="block text-sm font-medium">Generic Info</label>
               <SingleSelector
-                options={Array.isArray(genericSpecifications) ? genericSpecifications : []}
-                value={genericSpecifications.find((option) => option.value === formData.genericSpecification)} // Bind value to state
+                options={
+                  Array.isArray(genericSpecifications)
+                    ? genericSpecifications
+                    : []
+                }
+                value={genericSpecifications.find(
+                  (option) => option.value === formData.genericSpecification
+                )} // Bind value to state
                 placeholder={`Select Specification`} // Dynamic placeholder
-                onChange={(selectedOption) => handleSelectorChange("genericSpecification", selectedOption)}
+                onChange={(selectedOption) =>
+                  handleSelectorChange("genericSpecification", selectedOption)
+                }
               />
             </div>
 
@@ -1573,9 +1655,13 @@ display:none !important;
                 <label className="po-fontBold">Colour</label>
                 <SingleSelector
                   options={colors || []}
-                  value={colors.find((option) => option.value === formData.colour)} // Bind value to stat
+                  value={colors.find(
+                    (option) => option.value === formData.colour
+                  )} // Bind value to stat
                   placeholder={`Select Colour`} // Dynamic placeholder
-                  onChange={(selectedOption) => handleSelectorChange("colour", selectedOption)}
+                  onChange={(selectedOption) =>
+                    handleSelectorChange("colour", selectedOption)
+                  }
                 />
               </div>
             </div>
@@ -1584,9 +1670,13 @@ display:none !important;
                 <label className="po-fontBold">Brand</label>
                 <SingleSelector
                   options={inventoryBrands || []}
-                  value={inventoryBrands.find((option) => option.value === formData.brand)} // Bind value to state
+                  value={inventoryBrands.find(
+                    (option) => option.value === formData.brand
+                  )} // Bind value to state
                   placeholder={`Select Brand`} // Dynamic placeholder
-                  onChange={(selectedOption) => handleSelectorChange("brand", selectedOption)}
+                  onChange={(selectedOption) =>
+                    handleSelectorChange("brand", selectedOption)
+                  }
                 />
               </div>
             </div>
@@ -1597,9 +1687,13 @@ display:none !important;
               </label>
               <SingleSelector
                 options={unitOfMeasures}
-                value={unitOfMeasures.find((option) => option.value === formData.uom)} // Bind value to state
+                value={unitOfMeasures.find(
+                  (option) => option.value === formData.uom
+                )} // Bind value to state
                 placeholder={`Select UOM`} // Dynamic placeholder
-                onChange={(selectedOption) => handleSelectorChange("uom", selectedOption)}
+                onChange={(selectedOption) =>
+                  handleSelectorChange("uom", selectedOption)
+                }
               />
             </div>
 
@@ -1730,7 +1824,6 @@ display:none !important;
         </Modal.Body>
       </Modal>
       <ToastContainer position="top-right" autoClose={3000} />
-
     </>
   );
 };
