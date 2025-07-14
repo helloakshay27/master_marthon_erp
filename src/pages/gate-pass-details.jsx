@@ -331,7 +331,7 @@ const GatePassDetails = () => {
                           <div className="col-6">
                             <label className="text">
                               <span className="me-3 text-dark">:</span>
-                              {details.expected_return_date || "-"}
+                              {formatDate(details.expected_return_date)}
                             </label>
                           </div>
                         </div>
@@ -655,6 +655,16 @@ const GatePassDetails = () => {
       />
     </div>
   );
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "-";
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
 };
 
 export default GatePassDetails;

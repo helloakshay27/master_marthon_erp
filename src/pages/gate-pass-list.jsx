@@ -847,7 +847,7 @@ const GatePassList = () => {
       // Get day, month, and year (last two digits)
       const day = date.getDate().toString().padStart(2, "0");
       const month = (date.getMonth() + 1).toString().padStart(2, "0");
-      const year = date.getFullYear().toString().slice(-2); // Only last two digits
+      const year = date.getFullYear().toString().slice(); // Only last two digits
 
       // Return in DD-MM-YY format
       return `${day}-${month}-${year}`;
