@@ -21,11 +21,11 @@ const DebitNoteList = () => {
   const [debitNotes, setDebitNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [meta, setMeta] = useState(null)
+  const [meta, setMeta] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10; // Items per page
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [activeTab, setActiveTab] = useState("total"); // State to track the active tab
 
   const [pageSize, setPageSize] = useState(10);
@@ -34,7 +34,6 @@ const DebitNoteList = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [settingShow, setSettingShow] = useState(false);
   const [show, setShow] = useState(false);
-  
 
   // Handle value change in SingleSelector
   const handleChange = (value) => {
@@ -66,18 +65,15 @@ const DebitNoteList = () => {
   const [siteOptions, setSiteOptions] = useState([]);
   // const [wingsOptions, setWingsOptions] = useState([]);
 
-  const [activeSearch, setActiveSearch] = useState('');
+  const [activeSearch, setActiveSearch] = useState("");
   const [filterCompanyId, setFilterCompanyId] = useState("");
   const [filterProjectId, setFilterProjectId] = useState("");
   const [filterSiteId, setFilterSiteId] = useState("");
 
-
   // Fetch company data on component mount
   useEffect(() => {
     axios
-      .get(
-        `${baseURL}pms/company_setups.json?token=${token}`
-      )
+      .get(`${baseURL}pms/company_setups.json?token=${token}`)
       .then((response) => {
         setCompanies(response.data.companies);
       })
@@ -147,8 +143,6 @@ const DebitNoteList = () => {
     label: company.company_name,
   }));
 
-
-
   const fetchCreditNotes = async (page) => {
     try {
       // const response = await axios.get(
@@ -167,32 +161,33 @@ const DebitNoteList = () => {
       // );
       const response = await axios.get(url);
 
-      const transformedData = response.data.debit_notes.map(
-        (entry, index) => {
-          // console.log("created_at raw:", entry.created_at);
-          let formattedDate = "-";
-          if (entry.created_at) {
-            try {
-              formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
-            } catch (e) {
-              formattedDate = "-";
-            }
+      const transformedData = response.data.debit_notes.map((entry, index) => {
+        // console.log("created_at raw:", entry.created_at);
+        let formattedDate = "-";
+        if (entry.created_at) {
+          try {
+            formattedDate = new Date(entry.created_at)
+              .toISOString()
+              .slice(0, 10);
+          } catch (e) {
+            formattedDate = "-";
           }
-          let status = entry.status;
-          if (status && typeof status === "string") {
-            status = status.charAt(0).toUpperCase() + status.slice(1);
-          }
-          return {
-            id: entry.id,
-            srNo: (page - 1) * pageSize + index + 1,
-            ...entry,
-            created_at: formattedDate,
-            status,
-          }
-        })
-      console.log("transform data:", transformedData)
+        }
+        let status = entry.status;
+        if (status && typeof status === "string") {
+          status = status.charAt(0).toUpperCase() + status.slice(1);
+        }
+        return {
+          id: entry.id,
+          srNo: (page - 1) * pageSize + index + 1,
+          ...entry,
+          created_at: formattedDate,
+          status,
+        };
+      });
+      console.log("transform data:", transformedData);
       setDebitNotes(transformedData);
-      setMeta(response.data.meta)
+      setMeta(response.data.meta);
       setTotalPages(response.data.meta.total_pages); // Set total pages
       setTotalEntries(response.data.meta.total_count);
       setLoading(false);
@@ -205,8 +200,6 @@ const DebitNoteList = () => {
   // Fetch credit notes data
   const [totalEntries, setTotalEntries] = useState(0);
   useEffect(() => {
-
-
     fetchCreditNotes(currentPage);
   }, [currentPage]);
 
@@ -217,7 +210,7 @@ const DebitNoteList = () => {
     }
   };
 
-  console.log("debit list data:", debitNotes)
+  console.log("debit list data:", debitNotes);
 
   // filter
   const fetchFilteredData = () => {
@@ -228,7 +221,7 @@ const DebitNoteList = () => {
     setFilterCompanyId(companyId);
     setFilterProjectId(projectId);
     setFilterSiteId(siteId);
-    console.log("ids filter:", companyId, projectId, siteId)
+    console.log("ids filter:", companyId, projectId, siteId);
     const url = `${baseURL}debit_notes?page=1&token=${token}&q[company_id_eq]=${companyId}&q[project_id_eq]=${projectId}&q[site_id_eq]=${siteId}`;
 
     // console.log("url:",url)
@@ -241,7 +234,9 @@ const DebitNoteList = () => {
             let formattedDate = "-";
             if (entry.created_at) {
               try {
-                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                formattedDate = new Date(entry.created_at)
+                  .toISOString()
+                  .slice(0, 10);
               } catch (e) {
                 formattedDate = "-";
               }
@@ -256,13 +251,13 @@ const DebitNoteList = () => {
               ...entry,
               created_at: formattedDate,
               status,
-            }
-          })
+            };
+          }
+        );
         setDebitNotes(transformedData);
-        setMeta(response.data.meta)
+        setMeta(response.data.meta);
         setTotalPages(response.data.meta.total_pages); // Set total pages
         setTotalEntries(response.data.meta.total_count);
-
       })
       .catch((error) => {
         console.error("Error fetching filtered data:", error);
@@ -284,14 +279,15 @@ const DebitNoteList = () => {
     axios
       .get(`${baseURL}debit_notes?page=1&token=${token}`)
       .then((response) => {
-
         const transformedData = response.data.debit_notes.map(
           (entry, index) => {
             // console.log("created_at raw:", entry.created_at);
             let formattedDate = "-";
             if (entry.created_at) {
               try {
-                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                formattedDate = new Date(entry.created_at)
+                  .toISOString()
+                  .slice(0, 10);
               } catch (e) {
                 formattedDate = "-";
               }
@@ -306,53 +302,51 @@ const DebitNoteList = () => {
               ...entry,
               created_at: formattedDate,
               status,
-            }
-          })
+            };
+          }
+        );
         setDebitNotes(transformedData);
-        setMeta(response.data.meta)
+        setMeta(response.data.meta);
         setTotalPages(response.data.meta.total_pages); // Set total pages
         setTotalEntries(response.data.meta.total_count);
-
       })
       .catch((error) => {
         console.error("Error resetting data:", error);
       });
   };
 
-  //  bulk action 
-  //bulkaction options 
+  //  bulk action
+  //bulkaction options
   const options = [
     {
-      label: 'Select Status',
-      value: '',
+      label: "Select Status",
+      value: "",
     },
     {
-      label: 'Draft',
-      value: 'draft',
+      label: "Draft",
+      value: "draft",
     },
     {
-      label: 'Verified',
-      value: 'verified',
+      label: "Verified",
+      value: "verified",
     },
     {
-      label: 'Submitted',
-      value: 'submitted',
+      label: "Submitted",
+      value: "submitted",
     },
     {
-      label: 'Proceed',
-      value: 'proceed',
+      label: "Proceed",
+      value: "proceed",
     },
     {
-      label: 'Approved',
-      value: 'approved',
+      label: "Approved",
+      value: "approved",
     },
-
   ];
 
   const [fromStatus, setFromStatus] = useState("");
   const [toStatus, setToStatus] = useState("");
   const [remark, setRemark] = useState("");
-
 
   // Handle input changes
   const handleStatusChange = (selectedOption) => {
@@ -371,14 +365,13 @@ const DebitNoteList = () => {
     setToStatus(selectedOption.value);
   };
 
-
   const handleRemarkChange = (e) => {
     setRemark(e.target.value);
   };
 
   const [selectedBoqDetails, setSelectedBoqDetails] = useState("");
 
-  console.log("data for bulk action")
+  console.log("data for bulk action");
   const handleSubmit = () => {
     console.log("data for bulk action");
 
@@ -397,27 +390,27 @@ const DebitNoteList = () => {
 
     // Send data to API using axios
     axios
-      .patch(
-        `${baseURL}debit_notes/update_bulk_status?token=${token}`,
-        data
-      )
+      .patch(`${baseURL}debit_notes/update_bulk_status?token=${token}`, data)
       .then((response) => {
-        console.log('Success:', response.data);
-        alert('Status updated successfully ....');
+        console.log("Success:", response.data);
+        alert("Status updated successfully ....");
         // Fetch data again after successful update
         fetchCreditNotes(currentPage);
       })
       .catch((error) => {
-        console.error('Error:', error);
+        console.error("Error:", error);
       });
   };
 
   // Fetch the data when 'fromStatus' changes
   useEffect(() => {
-    if (fromStatus) { // Only fetch data if a status is selected
+    if (fromStatus) {
+      // Only fetch data if a status is selected
       setLoading(true); // Show loading state while fetching
       axios
-        .get(`${baseURL}debit_notes?page=1&token=${token}&q[status_eq]=${fromStatus}`)
+        .get(
+          `${baseURL}debit_notes?page=1&token=${token}&q[status_eq]=${fromStatus}`
+        )
         .then((response) => {
           const transformedData = response.data.debit_notes.map(
             (entry, index) => {
@@ -425,7 +418,9 @@ const DebitNoteList = () => {
               let formattedDate = "-";
               if (entry.created_at) {
                 try {
-                  formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                  formattedDate = new Date(entry.created_at)
+                    .toISOString()
+                    .slice(0, 10);
                 } catch (e) {
                   formattedDate = "-";
                 }
@@ -440,13 +435,13 @@ const DebitNoteList = () => {
                 ...entry,
                 created_at: formattedDate,
                 status,
-              }
-            })
+              };
+            }
+          );
           setDebitNotes(transformedData);
-          setMeta(response.data.meta)
+          setMeta(response.data.meta);
           setTotalPages(response.data.meta.total_pages); // Set total pages
           setTotalEntries(response.data.meta.total_count);
-
         })
         .catch((error) => {
           console.error("Error resetting data:", error);
@@ -455,9 +450,7 @@ const DebitNoteList = () => {
           setLoading(false); // Stop loading when request is complete
         });
     }
-  }, [fromStatus]);  // This will run every time 'fromStatus' changes
-
-
+  }, [fromStatus]); // This will run every time 'fromStatus' changes
 
   // State to track selected bill detail IDs
   const handleCheckboxChange = (boqDetailId) => {
@@ -474,7 +467,6 @@ const DebitNoteList = () => {
     //   }
     // });
 
-
     setSelectedBoqDetails((prevSelected) => {
       if (prevSelected.includes(boqDetailId)) {
         // If already selected, remove it from the array
@@ -486,12 +478,13 @@ const DebitNoteList = () => {
     });
   };
 
-  console.log("selected bill id array :", selectedBoqDetails)
+  console.log("selected bill id array :", selectedBoqDetails);
 
   //card filter
   const fetchFilteredData2 = (status) => {
-    const url = `${baseURL}debit_notes?page=1&token=${token}${status ? `&q[status_eq]=${status}` : ""
-      }`;
+    const url = `${baseURL}debit_notes?page=1&token=${token}${
+      status ? `&q[status_eq]=${status}` : ""
+    }`;
 
     axios
       .get(url)
@@ -502,7 +495,9 @@ const DebitNoteList = () => {
             let formattedDate = "-";
             if (entry.created_at) {
               try {
-                formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
+                formattedDate = new Date(entry.created_at)
+                  .toISOString()
+                  .slice(0, 10);
               } catch (e) {
                 formattedDate = "-";
               }
@@ -517,8 +512,9 @@ const DebitNoteList = () => {
               ...entry,
               created_at: formattedDate,
               status,
-            }
-          })
+            };
+          }
+        );
         setDebitNotes(transformedData);
         // setMeta(response.data.meta)
         setTotalPages(response.data.meta.total_pages); // Set total pages
@@ -535,29 +531,30 @@ const DebitNoteList = () => {
       const response = await axios.get(
         `${baseURL}debit_notes?page=1&per_page=10&token=${token}&q[debit_note_no_or_debit_note_date_or_debit_note_amount_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_purchase_order_supplier_full_name_cont]=${searchKeyword}`
       );
-      const transformedData = response.data.debit_notes.map(
-        (entry, index) => {
-          // console.log("created_at raw:", entry.created_at);
-          let formattedDate = "-";
-          if (entry.created_at) {
-            try {
-              formattedDate = new Date(entry.created_at).toISOString().slice(0, 10);
-            } catch (e) {
-              formattedDate = "-";
-            }
+      const transformedData = response.data.debit_notes.map((entry, index) => {
+        // console.log("created_at raw:", entry.created_at);
+        let formattedDate = "-";
+        if (entry.created_at) {
+          try {
+            formattedDate = new Date(entry.created_at)
+              .toISOString()
+              .slice(0, 10);
+          } catch (e) {
+            formattedDate = "-";
           }
-          let status = entry.status;
-          if (status && typeof status === "string") {
-            status = status.charAt(0).toUpperCase() + status.slice(1);
-          }
-          return {
-            id: entry.id,
-            srNo: (currentPage - 1) * pageSize + index + 1,
-            ...entry,
-            created_at: formattedDate,
-            status,
-          }
-        })
+        }
+        let status = entry.status;
+        if (status && typeof status === "string") {
+          status = status.charAt(0).toUpperCase() + status.slice(1);
+        }
+        return {
+          id: entry.id,
+          srNo: (currentPage - 1) * pageSize + index + 1,
+          ...entry,
+          created_at: formattedDate,
+          status,
+        };
+      });
       setDebitNotes(transformedData);
       // setBillEntries(response.data.bill_entries);
       setMeta(response.data.meta);
@@ -573,9 +570,9 @@ const DebitNoteList = () => {
   // if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  //   column sort and setting 
+  //   column sort and setting
   const [columnVisibility, setColumnVisibility] = useState({
-    //  select: true, 
+    //  select: true,
     srNo: true,
     // mode_of_submission: true,
     company_name: true,
@@ -604,7 +601,6 @@ const DebitNoteList = () => {
   });
 
   const allColumns = [
-
     {
       field: "srNo",
       headerName: "Sr. No.",
@@ -619,12 +615,12 @@ const DebitNoteList = () => {
     { field: "project_name", headerName: "Project", width: 180 },
     { field: "site_name", headerName: "Sub Project", width: 150 },
     {
-      field: "debit_note_no", headerName: "Debit Note No.", width: 150,
+      field: "debit_note_no",
+      headerName: "Debit Note No.",
+      width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
-          <Link to={`/debit-note-details/${params.row.id}?token=${token}`}
-
-          >
+          <Link to={`/debit-note-details/${params.row.id}?token=${token}`}>
             <span className="boq-id-link">{params.value}</span>
           </Link>
         ) : (
@@ -654,7 +650,6 @@ const DebitNoteList = () => {
     { field: "due_date", headerName: "Due Date", width: 150 },
     { field: "overdue", headerName: "Overdue", width: 150 },
     { field: "due_at", headerName: "Due At", width: 150 },
-
   ];
 
   const columns = allColumns.filter((col) => columnVisibility[col.field]);
@@ -710,13 +705,11 @@ const DebitNoteList = () => {
     return rowsToShow;
   };
 
-
-
   // Calculate displayed rows for the current page
   const startEntry = (currentPage - 1) * pageSize + 1;
   const endEntry = Math.min(currentPage * pageSize, totalEntries);
 
-  console.log("selected bill id array :", selectedBoqDetails)
+  console.log("selected bill id array :", selectedBoqDetails);
   return (
     <>
       <div className="website-content overflow-auto">
@@ -728,11 +721,13 @@ const DebitNoteList = () => {
               <div className="row separteinto7 justify-content-center">
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${activeTab === "total" ? "active" : ""}`}
+                    className={`content-box tab-button ${
+                      activeTab === "total" ? "active" : ""
+                    }`}
                     data-tab="total"
                     onClick={() => {
-                      setActiveTab("total")
-                      fetchFilteredData2("")
+                      setActiveTab("total");
+                      fetchFilteredData2("");
                     }} // Fetch all data (no status filter)
                   >
                     <h4 className="content-box-title fw-semibold">Total</h4>
@@ -741,36 +736,44 @@ const DebitNoteList = () => {
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div className={`content-box tab-button ${activeTab === "draft" ? "active" : ""}`} data-tab="draft"
+                  <div
+                    className={`content-box tab-button ${
+                      activeTab === "draft" ? "active" : ""
+                    }`}
+                    data-tab="draft"
                     onClick={() => {
-                      setActiveTab("draft")
-                      fetchFilteredData2("draft")
+                      setActiveTab("draft");
+                      fetchFilteredData2("draft");
                     }} // Fetch data with status "draft"
                   >
-                    <h4 className="content-box-title fw-semibold">
-                      Draft
-                    </h4>
+                    <h4 className="content-box-title fw-semibold">Draft</h4>
                     <p className="content-box-sub">{meta?.draft_count}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
-                  <div className={`content-box tab-button ${activeTab === "verified" ? "active" : ""}`} data-tab="draft"
+                  <div
+                    className={`content-box tab-button ${
+                      activeTab === "verified" ? "active" : ""
+                    }`}
+                    data-tab="draft"
                     onClick={() => {
-                      setActiveTab("verified"); fetchFilteredData2("verified")
-                    }}>
-                    <h4 className="content-box-title fw-semibold">
-                      Verified
-                    </h4>
+                      setActiveTab("verified");
+                      fetchFilteredData2("verified");
+                    }}
+                  >
+                    <h4 className="content-box-title fw-semibold">Verified</h4>
                     <p className="content-box-sub">{meta?.verified_count}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${activeTab === "submited" ? "active" : ""}`}
+                    className={`content-box tab-button ${
+                      activeTab === "submited" ? "active" : ""
+                    }`}
                     data-tab="pending-approval"
                     onClick={() => {
                       setActiveTab("submited");
-                      fetchFilteredData2("submited")
+                      fetchFilteredData2("submited");
                     }}
                   >
                     <h4 className="content-box-title fw-semibold">Submit</h4>
@@ -779,11 +782,13 @@ const DebitNoteList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${activeTab === "approved" ? "active" : ""}`}
+                    className={`content-box tab-button ${
+                      activeTab === "approved" ? "active" : ""
+                    }`}
                     data-tab="self-overdue"
                     onClick={() => {
                       setActiveTab("approved");
-                      fetchFilteredData2("approved")
+                      fetchFilteredData2("approved");
                     }}
                   >
                     <h4 className="content-box-title fw-semibold">Approved</h4>
@@ -792,10 +797,13 @@ const DebitNoteList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${activeTab === "proceed" ? "active" : ""}`}
+                    className={`content-box tab-button ${
+                      activeTab === "proceed" ? "active" : ""
+                    }`}
                     data-tab="self-overdue"
                     onClick={() => {
-                      setActiveTab("proceed"); fetchFilteredData2("proceed")
+                      setActiveTab("proceed");
+                      fetchFilteredData2("proceed");
                     }}
                   >
                     <h4 className="content-box-title fw-semibold">Proceed</h4>
@@ -803,7 +811,6 @@ const DebitNoteList = () => {
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
           <div className="tab-content1 active" id="total-content">
@@ -857,18 +864,12 @@ const DebitNoteList = () => {
                     </div>
                   </div>
                   <div className="col-md-1 mt-4 d-flex justify-content-center">
-                    <button
-                      className="purple-btn2"
-                      onClick={fetchFilteredData}
-                    >
+                    <button className="purple-btn2" onClick={fetchFilteredData}>
                       Go
                     </button>
                   </div>
                   <div className="col-md-1 mt-4 d-flex justify-content-center">
-                    <button
-                      className="purple-btn2"
-                      onClick={handleReset}
-                    >
+                    <button className="purple-btn2" onClick={handleReset}>
                       Reset
                     </button>
                   </div>
@@ -884,7 +885,9 @@ const DebitNoteList = () => {
                         <SingleSelector
                           options={options}
                           // value={options.value}
-                          value={options.find(option => option.value === fromStatus)}
+                          value={options.find(
+                            (option) => option.value === fromStatus
+                          )}
                           onChange={handleStatusChange}
                           // onChange={handleStatusChange}
                           // options.find(option => option.value === status)
@@ -901,7 +904,9 @@ const DebitNoteList = () => {
                           options={options}
                           // value={options.value}
                           onChange={handleToStatusChange}
-                          value={options.find(option => option.value === toStatus)}
+                          value={options.find(
+                            (option) => option.value === toStatus
+                          )}
                           // onChange={handleStatusChange}
                           // options.find(option => option.value === status)
                           // value={filteredOptions.find(option => option.value === status)}
@@ -938,7 +943,6 @@ const DebitNoteList = () => {
                 </div>
               </CollapsibleCard>
 
-
               <div className="d-flex justify-content-between align-items-center me-2 mt-4">
                 {/* Search Input */}
                 <div className="col-md-4">
@@ -953,12 +957,26 @@ const DebitNoteList = () => {
                         placeholder="Type your keywords here"
                       />
                       <div className="input-group-append">
-                        <button type="button" className="btn btn-md btn-default"
+                        <button
+                          type="button"
+                          className="btn btn-md btn-default"
                           onClick={() => fetchSearchResults()}
                         >
-                          <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z" fill="#8B0203" />
-                            <path d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z" fill="#8B0203" />
+                          <svg
+                            width={16}
+                            height={16}
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
+                              fill="#8B0203"
+                            />
+                            <path
+                              d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
+                              fill="#8B0203"
+                            />
                           </svg>
                         </button>
                       </div>
@@ -995,8 +1013,11 @@ const DebitNoteList = () => {
                     >
                       <SettingIcon />
                     </button>
-                    <button className="purple-btn2 me-2"
-                      onClick={() => navigate(`/debit-note-create?token=${token}`)}
+                    <button
+                      className="purple-btn2 me-2"
+                      onClick={() =>
+                        navigate(`/debit-note-create?token=${token}`)
+                      }
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -1025,7 +1046,6 @@ const DebitNoteList = () => {
                   overflowY: "hidden",
                 }}
               >
-
                 <DataGrid
                   rows={getTransformedRows()}
                   columns={columns}
@@ -1045,7 +1065,6 @@ const DebitNoteList = () => {
                     setSelectedBoqDetails(ids.map(String));
                     console.log("Selected Row IDs:", ids); // This will log the selected row ids array
                   }}
-
                   onRowSelectionModelChange={(ids) => {
                     setSelectedBoqDetails(ids);
                     console.log("Selected Row IDs: 2", ids);
@@ -1073,9 +1092,10 @@ const DebitNoteList = () => {
                       color: "#8b0203",
                     },
                     // Black for header (select all) checkbox, even when checked
-                    "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root": {
-                      color: "#fff",
-                    },
+                    "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root":
+                      {
+                        color: "#fff",
+                      },
                     // Make checkboxes smaller
                     "& .MuiCheckbox-root .MuiSvgIcon-root": {
                       fontSize: "1.1rem", // adjust as needed (default is 1.5rem)
@@ -1085,7 +1105,11 @@ const DebitNoteList = () => {
               </div>
               <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                 <ul className="pagination justify-content-center d-flex">
-                  <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
                     <button
                       className="page-link"
                       onClick={() => handlePageChange(1)}
@@ -1094,7 +1118,11 @@ const DebitNoteList = () => {
                       First
                     </button>
                   </li>
-                  <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
                     <button
                       className="page-link"
                       onClick={() => handlePageChange(currentPage - 1)}
@@ -1107,7 +1135,9 @@ const DebitNoteList = () => {
                   {Array.from({ length: totalPages }, (_, index) => (
                     <li
                       key={index + 1}
-                      className={`page-item ${currentPage === index + 1 ? "active" : ""}`}
+                      className={`page-item ${
+                        currentPage === index + 1 ? "active" : ""
+                      }`}
                     >
                       <button
                         className="page-link"
@@ -1119,7 +1149,9 @@ const DebitNoteList = () => {
                   ))}
 
                   <li
-                    className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -1130,7 +1162,9 @@ const DebitNoteList = () => {
                     </button>
                   </li>
                   <li
-                    className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -1143,8 +1177,8 @@ const DebitNoteList = () => {
                 </ul>
                 <div>
                   Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                  {Math.min(currentPage * itemsPerPage, totalEntries)} of {totalEntries}{" "}
-                  entries
+                  {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
+                  {totalEntries} entries
                 </div>
               </div>
             </div>
@@ -1225,7 +1259,7 @@ const DebitNoteList = () => {
               >
                 <div className="col-md-6">
                   <button type="submit" className="btn btn-md">
-                    <svg
+                    {/* <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="22"
                       height="22"
@@ -1237,6 +1271,20 @@ const DebitNoteList = () => {
                       strokeLinejoin="round"
                     >
                       <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                    </svg> */}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={22}
+                      height={22}
+                      viewBox="0 0 48 48"
+                      fill="none"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
+                        fill="black"
+                      />
                     </svg>
                   </button>
                   <label>{column.headerName}</label>

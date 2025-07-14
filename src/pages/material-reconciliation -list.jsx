@@ -366,10 +366,10 @@ const MaterialReconciliationList = () => {
           "-"
         ),
     },
-    { field: "company_name", headerName: "Company", width: 250 },
+    { field: "company_name", headerName: "Company", width: 200 },
     { field: "project_name", headerName: "Project", width: 200 },
-    { field: "site_name", headerName: "Sub Project", width: 200 },
-    { field: "store", headerName: "Store", width: 250 },
+    { field: "site_name", headerName: "Sub Project", width: 150 },
+    { field: "store", headerName: "Store", width: 150 },
     {
       field: "reconciliation_date",
       headerName: "Reconciliation Date",
@@ -379,23 +379,23 @@ const MaterialReconciliationList = () => {
     {
       field: "materials_description",
       headerName: "Material Description",
-      width: 350,
-      renderCell: (params) => (
-        <span
-          style={{
-            maxWidth: 330, // slightly less than column width for padding
-            display: "inline-block",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            verticalAlign: "middle",
-            cursor: "pointer",
-          }}
-          title={params.value}
-        >
-          {params.value}
-        </span>
-      ),
+      width: 250,
+      // renderCell: (params) => (
+      //   <span
+      //     style={{
+      //       maxWidth: 330, // slightly less than column width for padding
+      //       display: "inline-block",
+      //       whiteSpace: "nowrap",
+      //       overflow: "hidden",
+      //       textOverflow: "ellipsis",
+      //       verticalAlign: "middle",
+      //       cursor: "pointer",
+      //     }}
+      //     title={params.value}
+      //   >
+      //     {params.value}
+      //   </span>
+      // ),
     },
     { field: "stock_as_on", headerName: "Stock As On", width: 120 },
     { field: "deadstock_qty", headerName: "Deadstock Qty", width: 120 },
@@ -1081,6 +1081,25 @@ const MaterialReconciliationList = () => {
 
   return (
     <>
+      <style type="text/css">
+        {`.tbl-container {
+
+height: auto !important;
+max-height: 100% !important;
+
+}
+.css-5n0k77:last-child{
+display:none !important;
+}
+.MuiDataGrid-cell, .MuiDataGrid-cell > div {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+        `}
+      </style>
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">

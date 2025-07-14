@@ -95,32 +95,32 @@ const GatePassList = () => {
     {
       field: "srNo",
       headerName: "Sr. No.",
-      flex: 1,
-      minWidth: 80,
+
+      sortable: true,
     },
     {
       field: "company_name",
       headerName: "Company",
-      flex: 1,
-      minWidth: 200,
+      sortable: true,
+      width: 150,
     },
     {
       field: "project_name",
       headerName: "Project",
-      flex: 1,
-      minWidth: 200,
+      sortable: true,
+      width: 150,
     },
     {
       field: "sub_project_name",
       headerName: "Subproject",
-      flex: 1,
-      minWidth: 180,
+      sortable: true,
+      width: 120,
     },
     {
       field: "gate_pass_no",
       headerName: "Gate Pass No",
-      flex: 1,
-      minWidth: 140,
+      sortable: true,
+      width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
           <Link to={`/gate-pass-details/${params.row.id}?token=${token}`}>
@@ -133,84 +133,90 @@ const GatePassList = () => {
     {
       field: "gate_pass_type_name",
       headerName: "Gate Pass Type",
-      flex: 1,
-      minWidth: 200,
+      sortable: true,
+      width: 150,
     },
     {
       field: "matarial_type_name",
       headerName: "Material Type",
-      flex: 1,
-      minWidth: 250,
+      // flex: 1,
+      sortable: true,
+      width: 100,
     },
     {
       field: "material_sub_type_name",
       headerName: " Material Sub Type",
-      flex: 1,
-      minWidth: 250,
+      // flex: 1,
+
+      width: 200,
+      sortable: true,
     },
     {
       field: "materials_description",
       headerName: "Material Description",
-      flex: 1,
-      minWidth: 350,
-      renderCell: (params) => (
-        <span
-          style={{
-            maxWidth: 400,
-            display: "inline-block",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            verticalAlign: "middle",
-            cursor: "pointer",
-          }}
-          title={params.value}
-        >
-          {params.value}
-        </span>
-      ),
+      width: 200,
+      sortable: true,
+      // flex: 1,
+      // Width: 180,
+      // renderCell: (params) => (
+      //   <span
+      //     style={{
+      //       maxWidth: 400,
+      //       display: "inline-block",
+      //       // whiteSpace: "nowrap",
+      //       overflow: "hidden",
+      //       textOverflow: "ellipsis",
+      //       verticalAlign: "middle",
+      //       cursor: "pointer",
+      //       textWrap: "wrap",
+      //     }}
+      //     title={params.value}
+      //   >
+      //     {params.value}
+      //   </span>
+      // ),
     },
     {
       field: "po_or_mto_no",
       headerName: "PO / MTO No.",
-      flex: 1,
-      minWidth: 150,
+      sortable: true,
+      width: 150,
     },
     {
       field: "gate_pass_date",
       headerName: "Gate Pass Date",
-      flex: 1,
-      minWidth: 150,
+      sortable: true,
+      width: 120,
     },
     {
       field: "created_by_name",
       headerName: "Issued By",
-      flex: 1,
-      minWidth: 150,
+      sortable: true,
+      width: 120,
     },
     {
       field: "approved_by_name",
       headerName: "Approved By",
-      flex: 1,
-      minWidth: 120,
+      sortable: true,
+      width: 120,
     },
     {
       field: "status",
       headerName: "Status",
-      flex: 1,
-      minWidth: 100,
+      sortable: true,
+      width: 100,
     },
     {
       field: "due_date",
       headerName: "Due Date",
-      flex: 1,
-      minWidth: 120,
+      sortable: true,
+      width: 120,
     },
     {
       field: "overdue",
       headerName: "Overdue",
-      flex: 1,
-      minWidth: 100,
+      sortable: true,
+      width: 100,
     },
     // {
     //   field: "due_at",
@@ -984,7 +990,27 @@ display:none !important;
 
 
 `}
+
       </style> */}
+      <style type="text/css">
+        {`.tbl-container {
+
+height: auto !important;
+max-height: 100% !important;
+
+}
+.css-5n0k77:last-child{
+display:none !important;
+}
+.MuiDataGrid-cell, .MuiDataGrid-cell > div {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+        `}
+      </style>
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">Home &gt; Store &gt; Store Operations &gt; Gate Pass</a>
@@ -1163,32 +1189,6 @@ display:none !important;
                     onChange={(e) => setSearchInput(e.target.value)}
                   />
                   <div className="input-group-append">
-                    {/* {searchInput && (
-                      <button
-                        type="button"
-                        className="btn btn-md btn-default"
-                        onClick={handleClearSearch}
-                      >
-                         ✕ {/* Cross icon */}
-                    {/* </button> */}
-                    {searchInput && (
-                      <button
-                        type="button"
-                        className="btn btn-md btn-default"
-                        // onClick={() => {
-                        //   setSearchTerm(""); // Clear the search term
-                        //   fetchData();
-                        //   // activeTab,
-                        //   // filters,
-                        //   // pagination.current_page,
-                        //   // "" // Fetch data without search
-                        // }}
-                        onClick={handleClearSearch}
-                      >
-                        ✕ {/* Cross icon */}
-                      </button>
-                    )}
-                    {/* )} */}
                     <button
                       type="submit"
                       className="btn btn-md btn-default"
@@ -1214,7 +1214,7 @@ display:none !important;
                   </div>
                 </div>
               </div>
-              <div className="col-md-5 d-flex justify-content-end align-items-center gap-5 mt-4">
+              <div className="col-md-5 d-flex justify-content-end align-items-center gap-2 mt-4">
                 <button
                   type="button"
                   className="btn btn-md"
@@ -1224,7 +1224,7 @@ display:none !important;
                 </button>
                 <button
                   type="button"
-                  className="btn btn-md"
+                  className="btn btn-md me-4"
                   onClick={handleSettingModalShow}
                 >
                   <SettingIcon />
@@ -1237,8 +1237,14 @@ display:none !important;
                 </button>
               </div>
             </div>
-
-            <div className="mx-1 mt-3" style={{ width: "100%" }}>
+            <div
+              className="tbl-container  px-1 mt-3"
+              style={{
+                width: "max-congent",
+                height: "300px !important",
+                boxShadow: "unset",
+              }}
+            >
               <DataGrid
                 rows={getTransformedRows()}
                 columns={columns}
