@@ -13,6 +13,15 @@ import { baseURL } from "../confi/apiDomain";
 import { DataGrid } from "@mui/x-data-grid";
 import { useLocation } from "react-router-dom";
 
+function formatDateDDMMYYYY(dateString) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (isNaN(date)) return "-";
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
 
 const BillApprovalList = () => {
   const navigate = useNavigate();
@@ -32,7 +41,6 @@ const BillApprovalList = () => {
   const [filterCompanyId, setFilterCompanyId] = useState("");
   const [filterProjectId, setFilterProjectId] = useState("");
   const [filterSiteId, setFilterSiteId] = useState("");
-
 
   // Handle value change in SingleSelector
   const handleChange = (value) => {
@@ -110,9 +118,9 @@ const BillApprovalList = () => {
           id: entry.id,
           srNo: (page - 1) * pageSize + index + 1,
           ...entry,
-          created_at: formattedDate,
-          // pms_supplier: entry.supplier?.organization_name || "-",
-          due_date: formattedDue,
+          created_at: formatDateDDMMYYYY(entry.created_at),
+          bill_date: formatDateDDMMYYYY(entry.bill_date),
+          due_date: formatDateDDMMYYYY(entry.due_date),
           status,
         };
       });
@@ -156,9 +164,7 @@ const BillApprovalList = () => {
   // Fetch company data on component mount
   useEffect(() => {
     axios
-      .get(
-        `${baseURL}pms/company_setups.json?token=${token}`
-      )
+      .get(`${baseURL}pms/company_setups.json?token=${token}`)
       .then((response) => {
         setCompanies(response.data.companies);
       })
@@ -268,8 +274,8 @@ const BillApprovalList = () => {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate,
-              due_date: formattedDue,
+              created_at: formatDateDDMMYYYY(entry.created_at),
+              due_date: formatDateDDMMYYYY(entry.due_date),
               status,
             };
           }
@@ -297,9 +303,7 @@ const BillApprovalList = () => {
 
     // Fetch unfiltered data
     axios
-      .get(
-        `${baseURL}bill_entries?page=1&token=${token}`
-      )
+      .get(`${baseURL}bill_entries?page=1&token=${token}`)
       .then((response) => {
         const transformedData = response.data.bill_entries.map(
           (entry, index) => {
@@ -333,8 +337,8 @@ const BillApprovalList = () => {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate,
-              due_date: formattedDue,
+              created_at: formatDateDDMMYYYY(entry.created_at),
+              due_date: formatDateDDMMYYYY(entry.due_date),
               status,
             };
           }
@@ -475,8 +479,8 @@ const BillApprovalList = () => {
                 id: entry.id,
                 srNo: (currentPage - 1) * pageSize + index + 1,
                 ...entry,
-                created_at: formattedDate,
-                due_date: formattedDue,
+                created_at: formatDateDDMMYYYY(entry.created_at),
+                due_date: formatDateDDMMYYYY(entry.due_date),
                 status,
               };
             }
@@ -518,8 +522,9 @@ const BillApprovalList = () => {
 
   //card filter
   const fetchFilteredData2 = (status) => {
-    const url = `${baseURL}bill_entries?page=1&token=${token}${status ? `&q[status_eq]=${status}` : ""
-      }`;
+    const url = `${baseURL}bill_entries?page=1&token=${token}${
+      status ? `&q[status_eq]=${status}` : ""
+    }`;
 
     axios
       .get(url)
@@ -556,8 +561,8 @@ const BillApprovalList = () => {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate,
-              due_date: formattedDue,
+              created_at: formatDateDDMMYYYY(entry.created_at),
+              due_date: formatDateDDMMYYYY(entry.due_date),
               status,
             };
           }
@@ -607,8 +612,8 @@ const BillApprovalList = () => {
           id: entry.id,
           srNo: (currentPage - 1) * pageSize + index + 1,
           ...entry,
-          created_at: formattedDate,
-          due_date: formattedDue,
+          created_at: formatDateDDMMYYYY(entry.created_at),
+          due_date: formatDateDDMMYYYY(entry.due_date),
           status,
         };
       });
@@ -707,7 +712,9 @@ const BillApprovalList = () => {
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/bill-booking-create/${params.row.id}?token=${token}`);
+                    navigate(
+                      `/bill-booking-create/${params.row.id}?token=${token}`
+                    );
                   }}
                 >
                   <svg
@@ -734,7 +741,9 @@ const BillApprovalList = () => {
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/miscellaneous-bill-create/${params.row.id}?token=${token}`);
+                    navigate(
+                      `/miscellaneous-bill-create/${params.row.id}?token=${token}`
+                    );
                   }}
                 >
                   <svg
@@ -794,7 +803,9 @@ const BillApprovalList = () => {
       width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
-          <Link to={`/bill-verification-details/${params.row.id}?token=${token}`}>
+          <Link
+            to={`/bill-verification-details/${params.row.id}?token=${token}`}
+          >
             <span className="boq-id-link">{params.value}</span>
           </Link>
         ) : (
@@ -940,8 +951,9 @@ const BillApprovalList = () => {
                   <div
                     // className="content-box tab-button active"
                     data-tab="total"
-                    className={`content-box tab-button ${activeTab === "total" ? "active" : ""
-                      }`}
+                    className={`content-box tab-button ${
+                      activeTab === "total" ? "active" : ""
+                    }`}
                     onClick={() => {
                       setActiveTab("total");
                       fetchFilteredData2("");
@@ -955,8 +967,9 @@ const BillApprovalList = () => {
                   <div
                     // className="content-box tab-button"
                     data-tab="open"
-                    className={`content-box tab-button ${activeTab === "open" ? "active" : ""
-                      }`}
+                    className={`content-box tab-button ${
+                      activeTab === "open" ? "active" : ""
+                    }`}
                     onClick={() => {
                       setActiveTab("open");
                       fetchFilteredData2("open");
@@ -972,8 +985,9 @@ const BillApprovalList = () => {
                   <div
                     // className="content-box tab-button"
                     data-tab="pending-approval"
-                    className={`content-box tab-button ${activeTab === "recieved_for_verification" ? "active" : ""
-                      }`}
+                    className={`content-box tab-button ${
+                      activeTab === "recieved_for_verification" ? "active" : ""
+                    }`}
                     onClick={() => {
                       setActiveTab("recieved_for_verification");
                       fetchFilteredData2("recieved_for_verification");
@@ -991,8 +1005,9 @@ const BillApprovalList = () => {
                   <div
                     // className="content-box tab-button"
                     data-tab="self-overdue"
-                    className={`content-box tab-button ${activeTab === "verified" ? "active" : ""
-                      }`}
+                    className={`content-box tab-button ${
+                      activeTab === "verified" ? "active" : ""
+                    }`}
                     onClick={() => {
                       setActiveTab("verified");
                       fetchFilteredData2("verified");
@@ -1270,9 +1285,9 @@ const BillApprovalList = () => {
                     },
                     // Black for header (select all) checkbox, even when checked
                     "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root":
-                    {
-                      color: "#fff",
-                    },
+                      {
+                        color: "#fff",
+                      },
                     // Make checkboxes smaller
                     "& .MuiCheckbox-root .MuiSvgIcon-root": {
                       fontSize: "1.1rem", // adjust as needed (default is 1.5rem)
@@ -1287,8 +1302,9 @@ const BillApprovalList = () => {
               <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                 <ul className="pagination justify-content-center d-flex">
                   <li
-                    className={`page-item ${currentPage === 1 ? "disabled" : ""
-                      }`}
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -1299,8 +1315,9 @@ const BillApprovalList = () => {
                     </button>
                   </li>
                   <li
-                    className={`page-item ${currentPage === 1 ? "disabled" : ""
-                      }`}
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -1314,8 +1331,9 @@ const BillApprovalList = () => {
                   {Array.from({ length: totalPages }, (_, index) => (
                     <li
                       key={index + 1}
-                      className={`page-item ${currentPage === index + 1 ? "active" : ""
-                        }`}
+                      className={`page-item ${
+                        currentPage === index + 1 ? "active" : ""
+                      }`}
                     >
                       <button
                         className="page-link"
@@ -1327,8 +1345,9 @@ const BillApprovalList = () => {
                   ))}
 
                   <li
-                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
-                      }`}
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"
@@ -1339,8 +1358,9 @@ const BillApprovalList = () => {
                     </button>
                   </li>
                   <li
-                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
-                      }`}
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
                   >
                     <button
                       className="page-link"

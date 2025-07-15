@@ -178,8 +178,8 @@ const BillApproval = () => {
         // alert("Bill verification updated successfully");
         setLoading(false);
         toast.success("Status updated successfully!");
-        setRemarks("")
-        setComments("")
+        setRemarks("");
+        setComments("");
         // navigate(`/bill-verification-list?token=${token}`);
         // Reset form
       }
@@ -265,13 +265,21 @@ const BillApproval = () => {
     fetchStatusOptions();
   }, [token]); // Keep token as dependency
 
+  function formatDateDDMMYYYY(dateString) {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    if (isNaN(date)) return "-";
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
   return (
     <>
       <div className="website-content overflow-auto">
         <div className="module-data-section ms-2 mt-3 ">
-          <a href="">
-            Home &gt; Billing  &gt;Bill Approval
-          </a>
+          <a href="">Home &gt; Billing &gt;Bill Approval</a>
           <h5 className="mt-3">Bill Approval </h5>
           <div className="row my-4 align-items-center container-fluid mb-5">
             <div className="mor-tabs mt-4">
@@ -410,7 +418,9 @@ const BillApproval = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.bill_date || ""}
+                          {billDetails?.bill_date
+                            ? formatDateDDMMYYYY(billDetails.bill_date)
+                            : ""}
                         </label>
                       </div>
                     </div>
@@ -545,7 +555,10 @@ const BillApproval = () => {
                     </div>
                   </div> */}
                 </div>
-                <div className="tbl-container mt-3" style={{ maxHeight: "400px" }}>
+                <div
+                  className="tbl-container mt-3"
+                  style={{ maxHeight: "400px" }}
+                >
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -761,7 +774,9 @@ const BillApproval = () => {
                           .map((log, index) => (
                             <tr key={log.id}>
                               <td className="text-start">{index + 1}</td>
-                              <td className="text-start">{log.created_by_name}</td>
+                              <td className="text-start">
+                                {log.created_by_name}
+                              </td>
                               <td className="text-start">
                                 {log.created_at
                                   ? `${new Date(
@@ -1087,10 +1102,16 @@ const BillApproval = () => {
                   {selectedDocument?.attachments.map((attachment, index) => (
                     <tr key={index}>
                       <td className="text-start">{index + 1}</td>
-                      <td className="text-start">{selectedDocument.document_type}</td>
+                      <td className="text-start">
+                        {selectedDocument.document_type}
+                      </td>
                       <td className="text-start">{attachment.filename}</td>
-                      <td className="text-start">{new Date().toLocaleDateString()}</td>
-                      <td className="text-start" style={{ width: "150px" }}>{attachment.created_by}</td>
+                      <td className="text-start">
+                        {new Date().toLocaleDateString()}
+                      </td>
+                      <td className="text-start" style={{ width: "150px" }}>
+                        {attachment.created_by}
+                      </td>
                       <td className="text-start">
                         {/* <button
                           className="btn btn-link p-0 text-decoration-underline"
@@ -1135,10 +1156,16 @@ const BillApproval = () => {
                   {selectedDocument?.attachments.map((attachment, index) => (
                     <tr key={index}>
                       <td className="text-start">{index + 1}</td>
-                      <td className="text-start">{selectedDocument.document_type}</td>
+                      <td className="text-start">
+                        {selectedDocument.document_type}
+                      </td>
                       <td className="text-start">{attachment.filename}</td>
-                      <td className="text-start">{new Date().toLocaleDateString()}</td>
-                      <td className="text-start" style={{ width: "150px" }}>{attachment.created_by}</td>
+                      <td className="text-start">
+                        {new Date().toLocaleDateString()}
+                      </td>
+                      <td className="text-start" style={{ width: "150px" }}>
+                        {attachment.created_by}
+                      </td>
                       {/* <td> */}
                       {/* <button
                           className="btn btn-link p-0 text-decoration-underline"

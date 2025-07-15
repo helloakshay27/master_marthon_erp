@@ -19,6 +19,16 @@ import { Link } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
 import { useLocation } from "react-router-dom";
 
+function formatDateDDMMYYYY(dateString) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (isNaN(date)) return "-";
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 const BillBookingList = () => {
   const navigate = useNavigate(); // Initialize navigation
   const location = useLocation();
@@ -70,9 +80,7 @@ const BillBookingList = () => {
           let formattedDate = "-";
           if (entry.created_at) {
             try {
-              formattedDate = new Date(entry.created_at)
-                .toISOString()
-                .slice(0, 10);
+              formattedDate = formatDateDDMMYYYY(entry.created_at);
             } catch (e) {
               formattedDate = "-";
             }
@@ -86,6 +94,8 @@ const BillBookingList = () => {
             srNo: (page - 1) * pageSize + index + 1,
             ...entry,
             created_at: formattedDate,
+            payment_due_date: formatDateDDMMYYYY(entry.payment_due_date),
+            inventory_date: formatDateDDMMYYYY(entry.inventory_date),
             status,
           };
         }
@@ -244,9 +254,7 @@ const BillBookingList = () => {
             let formattedDate = "-";
             if (entry.created_at) {
               try {
-                formattedDate = new Date(entry.created_at)
-                  .toISOString()
-                  .slice(0, 10);
+                formattedDate = formatDateDDMMYYYY(entry.created_at);
               } catch (e) {
                 formattedDate = "-";
               }
@@ -260,6 +268,8 @@ const BillBookingList = () => {
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
               created_at: formattedDate,
+              payment_due_date: formatDateDDMMYYYY(entry.payment_due_date),
+              inventory_date: formatDateDDMMYYYY(entry.inventory_date),
               status,
             };
           }
@@ -295,9 +305,7 @@ const BillBookingList = () => {
             let formattedDate = "-";
             if (entry.created_at) {
               try {
-                formattedDate = new Date(entry.created_at)
-                  .toISOString()
-                  .slice(0, 10);
+                formattedDate = formatDateDDMMYYYY(entry.created_at);
               } catch (e) {
                 formattedDate = "-";
               }
@@ -311,6 +319,8 @@ const BillBookingList = () => {
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
               created_at: formattedDate,
+              payment_due_date: formatDateDDMMYYYY(entry.payment_due_date),
+              inventory_date: formatDateDDMMYYYY(entry.inventory_date),
               status,
             };
           }
@@ -431,9 +441,7 @@ const BillBookingList = () => {
               let formattedDate = "-";
               if (entry.created_at) {
                 try {
-                  formattedDate = new Date(entry.created_at)
-                    .toISOString()
-                    .slice(0, 10);
+                  formattedDate = formatDateDDMMYYYY(entry.created_at);
                 } catch (e) {
                   formattedDate = "-";
                 }
@@ -447,6 +455,8 @@ const BillBookingList = () => {
                 srNo: (currentPage - 1) * pageSize + index + 1,
                 ...entry,
                 created_at: formattedDate,
+                payment_due_date: formatDateDDMMYYYY(entry.payment_due_date),
+                inventory_date: formatDateDDMMYYYY(entry.inventory_date),
                 status,
               };
             }
@@ -500,9 +510,7 @@ const BillBookingList = () => {
             let formattedDate = "-";
             if (entry.created_at) {
               try {
-                formattedDate = new Date(entry.created_at)
-                  .toISOString()
-                  .slice(0, 10);
+                formattedDate = formatDateDDMMYYYY(entry.created_at);
               } catch (e) {
                 formattedDate = "-";
               }
@@ -516,6 +524,8 @@ const BillBookingList = () => {
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
               created_at: formattedDate,
+              payment_due_date: formatDateDDMMYYYY(entry.payment_due_date),
+              inventory_date: formatDateDDMMYYYY(entry.inventory_date),
               status,
             };
           }
@@ -543,9 +553,7 @@ const BillBookingList = () => {
           let formattedDate = "-";
           if (entry.created_at) {
             try {
-              formattedDate = new Date(entry.created_at)
-                .toISOString()
-                .slice(0, 10);
+              formattedDate = formatDateDDMMYYYY(entry.created_at);
             } catch (e) {
               formattedDate = "-";
             }
@@ -559,6 +567,8 @@ const BillBookingList = () => {
             srNo: (currentPage - 1) * pageSize + index + 1,
             ...entry,
             created_at: formattedDate,
+            payment_due_date: formatDateDDMMYYYY(entry.payment_due_date),
+            inventory_date: formatDateDDMMYYYY(entry.inventory_date),
             status,
           };
         }

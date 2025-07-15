@@ -13,6 +13,17 @@ import { baseURL } from "../confi/apiDomain";
 import { DataGrid } from "@mui/x-data-grid";
 import { useLocation } from "react-router-dom";
 
+// Add this utility function near the top (after imports or before component):
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "-";
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+
 const BillVerificationList = () => {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(location.search);
@@ -108,9 +119,9 @@ const BillVerificationList = () => {
           id: entry.id,
           srNo: (page - 1) * pageSize + index + 1,
           ...entry,
-          created_at: formattedDate,
+          created_at: formatDate(entry.created_at),
           // pms_supplier: entry.supplier?.organization_name || "-",
-          due_date: formattedDue,
+          due_date: formatDate(entry.due_date),
           status,
         };
       });
@@ -264,8 +275,8 @@ const BillVerificationList = () => {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate,
-              due_date: formattedDue,
+              created_at: formatDate(entry.created_at),
+              due_date: formatDate(entry.due_date),
               status,
             };
           }
@@ -327,8 +338,8 @@ const BillVerificationList = () => {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate,
-              due_date: formattedDue,
+              created_at: formatDate(entry.created_at),
+              due_date: formatDate(entry.due_date),
               status,
             };
           }
@@ -469,8 +480,8 @@ const BillVerificationList = () => {
                 id: entry.id,
                 srNo: (currentPage - 1) * pageSize + index + 1,
                 ...entry,
-                created_at: formattedDate,
-                due_date: formattedDue,
+                created_at: formatDate(entry.created_at),
+                due_date: formatDate(entry.due_date),
                 status,
               };
             }
@@ -551,8 +562,8 @@ const BillVerificationList = () => {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate,
-              due_date: formattedDue,
+              created_at: formatDate(entry.created_at),
+              due_date: formatDate(entry.due_date),
               status,
             };
           }
@@ -602,8 +613,8 @@ const BillVerificationList = () => {
           id: entry.id,
           srNo: (currentPage - 1) * pageSize + index + 1,
           ...entry,
-          created_at: formattedDate,
-          due_date: formattedDue,
+          created_at: formatDate(entry.created_at),
+          due_date: formatDate(entry.due_date),
           status,
         };
       });

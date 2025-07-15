@@ -14,6 +14,16 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Stack, Typography, Pagination } from "@mui/material";
 import { useLocation } from "react-router-dom";
 
+function formatDateDDMMYYYY(dateString) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (isNaN(date)) return "-";
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 const CreditNoteList = () => {
   const navigate = useNavigate(); // Initialize navigation
   const urlParams = new URLSearchParams(location.search);
@@ -118,7 +128,9 @@ const CreditNoteList = () => {
           id: entry.id,
           srNo: (page - 1) * pageSize + index + 1,
           ...entry,
-          created_at: formattedDate,
+          credit_note_date: formatDateDDMMYYYY(entry.credit_note_date),
+          created_at: formatDateDDMMYYYY(entry.created_at),
+          po_date: formatDateDDMMYYYY(entry.po_date),
           status,
         };
       });
@@ -237,7 +249,9 @@ const CreditNoteList = () => {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate,
+              credit_note_date: formatDateDDMMYYYY(entry.credit_note_date),
+              created_at: formatDateDDMMYYYY(entry.created_at),
+              po_date: formatDateDDMMYYYY(entry.po_date),
               status,
             };
           }
@@ -288,7 +302,9 @@ const CreditNoteList = () => {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate,
+              credit_note_date: formatDateDDMMYYYY(entry.credit_note_date),
+              created_at: formatDateDDMMYYYY(entry.created_at),
+              po_date: formatDateDDMMYYYY(entry.po_date),
               status,
             };
           }
@@ -426,7 +442,9 @@ const CreditNoteList = () => {
                 id: entry.id,
                 srNo: (currentPage - 1) * pageSize + index + 1,
                 ...entry,
-                created_at: formattedDate,
+                credit_note_date: formatDateDDMMYYYY(entry.credit_note_date),
+                created_at: formatDateDDMMYYYY(entry.created_at),
+                po_date: formatDateDDMMYYYY(entry.po_date),
                 status,
               };
             }
@@ -476,7 +494,9 @@ const CreditNoteList = () => {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate,
+              credit_note_date: formatDateDDMMYYYY(entry.credit_note_date),
+              created_at: formatDateDDMMYYYY(entry.created_at),
+              po_date: formatDateDDMMYYYY(entry.po_date),
               status,
             };
           }
@@ -519,7 +539,9 @@ const CreditNoteList = () => {
           id: entry.id,
           srNo: (currentPage - 1) * pageSize + index + 1,
           ...entry,
-          created_at: formattedDate,
+          credit_note_date: formatDateDDMMYYYY(entry.credit_note_date),
+          created_at: formatDateDDMMYYYY(entry.created_at),
+          po_date: formatDateDDMMYYYY(entry.po_date),
           status,
         };
       });

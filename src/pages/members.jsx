@@ -311,7 +311,9 @@ function Members() {
                   <Link to="/view-BOQ">View BOQ</Link>
                 </li> */}
                 <li>
-                  <Link to="/initial-boq-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">Initial BOQ List</Link>
+                  <Link to="/initial-boq-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    Initial BOQ List
+                  </Link>
                 </li>
                 {/* <li>
                   <Link to="/boq-Edit-New">BOQ Edit</Link>
@@ -456,7 +458,9 @@ function Members() {
                   <Link to="/bill-payment-details">Bill Payment Details</Link>
                 </li>
                 <li>
-                  <Link to="/bill-payment-list">Bill payment List</Link>
+                  <Link to="/bill-payment-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    Bill payment List
+                  </Link>
                 </li>
 
                 <h5>____Bill Booking____</h5>
@@ -522,7 +526,9 @@ function Members() {
                 </li>
 
                 <li>
-                  <Link to="/po-advance-note-list">Po Advance Note List</Link>
+                  <Link to="/po-advance-note-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    Po Advance Note List
+                  </Link>
                 </li>
 
                 <li>
@@ -562,7 +568,9 @@ function Members() {
                   <Link to="/estimation-creation">Estimation creation</Link>
                 </li>
                 <li>
-                  <Link to="/estimation-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">Estimation List Page</Link>
+                  <Link to="/estimation-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    Estimation List Page
+                  </Link>
                 </li>
                 <li>
                   <Link to="/estimation-details-project">

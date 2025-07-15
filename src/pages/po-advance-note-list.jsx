@@ -14,6 +14,16 @@ import { SettingIcon } from "../components";
 import { DataGrid } from "@mui/x-data-grid";
 import { Stack, Pagination, Typography } from "@mui/material";
 
+function formatDateDDMMYYYY(dateString) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (isNaN(date)) return "-";
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 const PoAdvanceNoteList = () => {
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
@@ -184,36 +194,15 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
         : [];
 
       const transformedData = data.map((entry, index) => {
-        // Format created_at date
-        let formattedCreatedAt = "-";
-        if (entry.created_at) {
-          try {
-            formattedCreatedAt = new Date(entry.created_at)
-              .toISOString()
-              .slice(0, 10);
-          } catch (e) {
-            formattedCreatedAt = "-";
-          }
-        }
-
-        // Format expected_payment_date
-        let formattedExpectedPaymentDate = "-";
-        if (entry.expected_payment_date) {
-          try {
-            formattedExpectedPaymentDate = new Date(entry.expected_payment_date)
-              .toISOString()
-              .slice(0, 10);
-          } catch (e) {
-            formattedExpectedPaymentDate = "-";
-          }
-        }
-
         return {
           id: entry.id,
           srNo: (currentPage - 1) * itemsPerPage + index + 1,
           ...entry,
-          created_at: formattedCreatedAt,
-          expected_payment_date: formattedExpectedPaymentDate,
+          created_at: formatDateDDMMYYYY(entry.created_at),
+          po_date: formatDateDDMMYYYY(entry.po_date),
+          expected_payment_date: formatDateDDMMYYYY(
+            entry.expected_payment_date
+          ),
         };
       });
       setCreditNotes(transformedData);
@@ -477,8 +466,6 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
     company_name: true,
     project_name: true,
     advance_number: true,
-    invoice_date: true,
-    payment_mode: true,
     created_at: true,
     po_number: true,
     po_date: true,
@@ -513,7 +500,7 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
     },
     {
       field: "advance_number",
-      headerName: "Debit Note No.",
+      headerName: "Advance Number",
       width: 150,
       renderCell: (params) => (
         <Link
@@ -523,24 +510,6 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
           <span className="boq-id-link">{params.value}</span>
         </Link>
       ),
-    },
-    {
-      field: "invoice_date",
-      headerName: "Date",
-      width: 150,
-      // valueFormatter: (params) => {
-      //   if (!params?.value) return "-";
-      //   try {
-      //     return new Date(params.value).toLocaleDateString();
-      //   } catch (error) {
-      //     return "-";
-      //   }
-      // },
-    },
-    {
-      field: "payment_mode",
-      headerName: "Credit Note Type",
-      width: 150,
     },
     {
       field: "created_at",
@@ -1190,30 +1159,84 @@ display:none !important;
                 />
               </div>
 
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-                padding={2}
-              >
-                <Pagination
-                  count={totalPages}
-                  page={currentPage}
-                  onChange={(event, value) => handlePageChange(value)}
-                  siblingCount={1}
-                  boundaryCount={1}
-                  color="primary"
-                  showFirstButton
-                  showLastButton
-                  disabled={totalPages <= 1}
-                />
+              <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+                <ul className="pagination justify-content-center d-flex">
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(1)}
+                      disabled={currentPage === 1}
+                    >
+                      First
+                    </button>
+                  </li>
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      Prev
+                    </button>
+                  </li>
 
-                <Typography variant="body2">
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <li
+                      key={index + 1}
+                      className={`page-item ${
+                        currentPage === index + 1 ? "active" : ""
+                      }`}
+                    >
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(index + 1)}
+                      >
+                        {index + 1}
+                      </button>
+                    </li>
+                  ))}
+
+                  <li
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </button>
+                  </li>
+                  <li
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(totalPages)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Last
+                    </button>
+                  </li>
+                </ul>
+                <div>
                   Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
                   {Math.min(currentPage * itemsPerPage, totalEntries)} of{" "}
                   {totalEntries} entries
-                </Typography>
-              </Stack>
+                </div>
+              </div>
             </div>
           </div>
         </div>

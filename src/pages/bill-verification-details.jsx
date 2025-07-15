@@ -14,6 +14,16 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "-";
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+
 const BillVerificationDetails = () => {
   const { id } = useParams();
   const [showAuditModal, setShowAuditModal] = useState(false);
@@ -269,6 +279,20 @@ const BillVerificationDetails = () => {
       // Validate required fields
       setLoading(true);
 
+      const poValue = parseFloat(billDetails?.po_value) || 0;
+      const billAmount = parseFloat(editableBillAmount) || 0;
+      if (poValue > 0 && billAmount > poValue) {
+        toast.error("Bill amount cannot be greater than PO value", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        return;
+      }
+
       // Create payload
       const payload = {
         bill_entry: {
@@ -383,6 +407,17 @@ const BillVerificationDetails = () => {
 
     fetchStatusOptions();
   }, [token]); // Keep token as dependency
+
+  // Find the index of the current status
+  const currentStatusIndex = statusOptions.findIndex(
+    (option) => option.value === status
+  );
+
+  // Map statusOptions to disable previous statuses
+  const statusOptionsWithDisabled = statusOptions.map((option, idx) => ({
+    ...option,
+    isDisabled: idx < currentStatusIndex && option.value !== "", // Don't disable the default "Select Status"
+  }));
 
   return (
     <>
@@ -508,6 +543,19 @@ const BillVerificationDetails = () => {
                         </label>
                       </div>
                     </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>PO Value</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {billDetails?.po_value || "-"}
+                        </label>
+                      </div>
+                    </div>
                     {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                       <div className="col-6 ">
                         <label>Bill Number</label>
@@ -556,11 +604,7 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.created_at
-                            ? new Date(
-                                billDetails.created_at
-                              ).toLocaleDateString()
-                            : "-"}
+                          {formatDate(billDetails?.created_at)}
                         </label>
                       </div>
                     </div>
@@ -599,7 +643,7 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.bill_date || "-"}
+                          {formatDate(billDetails?.bill_date)}
                         </label>
                       </div>
                     </div>
@@ -795,7 +839,10 @@ const BillVerificationDetails = () => {
                   </table>
                 </div> */}
 
-                <div className="tbl-container mt-3" style={{ maxHeight: "400px" }}>
+                <div
+                  className="tbl-container mt-3"
+                  style={{ maxHeight: "400px" }}
+                >
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -909,14 +956,13 @@ const BillVerificationDetails = () => {
                       Status
                     </label>
                     <SingleSelector
-                      options={statusOptions}
+                      options={statusOptionsWithDisabled}
                       onChange={handleStatusChange}
-                      value={statusOptions.find(
+                      value={statusOptionsWithDisabled.find(
                         (option) => option.value === status
-                      )} // Set "Draft" as the selected status
+                      )}
                       placeholder="Select Status"
-                      // isClearable={false}
-                      // isDisabled={true} // Disable the selector
+                      isOptionDisabled={(option) => option.isDisabled}
                       classNamePrefix="react-select"
                     />
                   </div>
@@ -1011,7 +1057,10 @@ const BillVerificationDetails = () => {
                           .map((log, index) => (
                             <tr key={log.id}>
                               <td className="text-start">{index + 1}</td>
-                              <td className="text-start">{""}{log.created_by_name}</td>
+                              <td className="text-start">
+                                {""}
+                                {log.created_by_name}
+                              </td>
                               <td className="text-start">
                                 {log.created_at
                                   ? `${new Date(
@@ -1337,10 +1386,16 @@ const BillVerificationDetails = () => {
                   {selectedDocument?.attachments.map((attachment, index) => (
                     <tr key={index}>
                       <td className="text-start">{index + 1}</td>
-                      <td className="text-start">{selectedDocument.document_type}</td>
+                      <td className="text-start">
+                        {selectedDocument.document_type}
+                      </td>
                       <td className="text-start">{attachment.filename}</td>
-                      <td className="text-start">{new Date().toLocaleDateString()}</td>
-                      <td className="text-start" style={{ width: "150px" }}>{attachment.created_by}</td>
+                      <td className="text-start">
+                        {new Date().toLocaleDateString()}
+                      </td>
+                      <td className="text-start" style={{ width: "150px" }}>
+                        {attachment.created_by}
+                      </td>
                       <td className="text-start">
                         {/* <button
                           className="btn btn-link p-0 text-decoration-underline"
@@ -1385,10 +1440,16 @@ const BillVerificationDetails = () => {
                   {selectedDocument?.attachments.map((attachment, index) => (
                     <tr key={index}>
                       <td className="text-start">{index + 1}</td>
-                      <td className="text-start">{selectedDocument.document_type}</td>
+                      <td className="text-start">
+                        {selectedDocument.document_type}
+                      </td>
                       <td className="text-start">{attachment.filename}</td>
-                      <td className="text-start">{new Date().toLocaleDateString()}</td>
-                      <td className="text-start" style={{ width: "150px" }}>{attachment.created_by}</td>
+                      <td className="text-start">
+                        {new Date().toLocaleDateString()}
+                      </td>
+                      <td className="text-start" style={{ width: "150px" }}>
+                        {attachment.created_by}
+                      </td>
                       {/* <td> */}
                       {/* <button
                           className="btn btn-link p-0 text-decoration-underline"
