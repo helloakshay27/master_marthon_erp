@@ -15,6 +15,16 @@ import { useEffect } from "react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 
+function formatDateDDMMYYYY(dateString) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (isNaN(date)) return "-";
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 const POAdvanceNoteDetails = () => {
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
@@ -828,7 +838,7 @@ const POAdvanceNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {advanceNote?.po_date || ""}
+                                  {advanceNote?.po_date ? formatDateDDMMYYYY(advanceNote.po_date) : ""}
                                 </label>
                               </div>
                             </div>
@@ -997,7 +1007,7 @@ const POAdvanceNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {advanceNote?.expected_payment_date || ""}
+                                  {advanceNote?.expected_payment_date ? formatDateDDMMYYYY(advanceNote.expected_payment_date) : ""}
                                 </label>
                               </div>
                             </div>

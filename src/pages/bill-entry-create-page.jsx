@@ -665,7 +665,7 @@ const BillEntryListSubPage = () => {
       [name]: value,
     }));
   };
-  console.log("token:", token)
+  console.log("token:", token);
 
   const handleBillEntrySubmit = async () => {
     // ✅ Validation for Invoice Number
@@ -677,7 +677,10 @@ const BillEntryListSubPage = () => {
     if (!formData.bill_amount) {
       toast.error("Bill Amount is required.");
       return;
-    } else if (isNaN(formData.bill_amount) || parseFloat(formData.bill_amount) <= 0) {
+    } else if (
+      isNaN(formData.bill_amount) ||
+      parseFloat(formData.bill_amount) <= 0
+    ) {
       toast.error("Bill Amount must be a valid positive number.");
       return;
     }
@@ -690,6 +693,23 @@ const BillEntryListSubPage = () => {
     } else if (formData.bill_no.length > 16) {
       toast.error("Invoice Number must not exceed 16 characters.");
       return;
+    }
+
+    // Additional validation: Bill Amount should not exceed PO Value (when PO is selected and not misc tab)
+    if (activeTab !== "misc" && selectedPO) {
+      const poValue = parseFloat(selectedPO.total_value) || 0;
+      const billAmount = parseFloat(formData.bill_amount) || 0;
+      if (billAmount > poValue) {
+        toast.error("Bill amount cannot be greater than PO value", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        return;
+      }
     }
 
     if (formData.bill_date && formData.bill_received_date) {
@@ -809,7 +829,12 @@ const BillEntryListSubPage = () => {
         const errors = error.response.data.errors;
 
         // If errors is an object and contains bill_no key
-        if (errors && typeof errors === "object" && errors.bill_no && Array.isArray(errors.bill_no)) {
+        if (
+          errors &&
+          typeof errors === "object" &&
+          errors.bill_no &&
+          Array.isArray(errors.bill_no)
+        ) {
           toast.error(`Invoice Number ${errors.bill_no[0]}`);
         } else {
           toast.error("Validation failed. Please check your inputs.");
@@ -913,8 +938,9 @@ const BillEntryListSubPage = () => {
           >
             <li className="nav-item" role="presentation">
               <button
-                className={`nav-link ${activeTab === "material" ? "active" : ""
-                  }`}
+                className={`nav-link ${
+                  activeTab === "material" ? "active" : ""
+                }`}
                 onClick={() => handleTabClick("material")}
                 type="button"
               >
@@ -923,8 +949,9 @@ const BillEntryListSubPage = () => {
             </li>
             <li className="nav-item" role="presentation">
               <button
-                className={`nav-link ${activeTab === "service" ? "active" : ""
-                  }`}
+                className={`nav-link ${
+                  activeTab === "service" ? "active" : ""
+                }`}
                 onClick={() => handleTabClick("service")}
                 type="button"
               >
@@ -1125,11 +1152,11 @@ const BillEntryListSubPage = () => {
                           value={
                             selectedSupplier
                               ? {
-                                label: selectedSupplier.organization_name,
-                                value: selectedSupplier.id,
-                                gstin: selectedSupplier.gstin,
-                                pan_number: selectedSupplier.pan_number,
-                              }
+                                  label: selectedSupplier.organization_name,
+                                  value: selectedSupplier.id,
+                                  gstin: selectedSupplier.gstin,
+                                  pan_number: selectedSupplier.pan_number,
+                                }
                               : null
                           }
                           onChange={(option) => {
@@ -1169,7 +1196,9 @@ const BillEntryListSubPage = () => {
 
                 <div className="col-md-3 mt-2 ">
                   <div className="form-group">
-                    <label>Invoice Date <span>*</span></label>
+                    <label>
+                      Invoice Date <span>*</span>
+                    </label>
                     <input
                       className="form-control"
                       type="date"
@@ -1183,7 +1212,9 @@ const BillEntryListSubPage = () => {
 
                 <div className="col-md-3 mt-2 ">
                   <div className="form-group">
-                    <label>Invoice Number  <span>*</span></label>
+                    <label>
+                      Invoice Number <span>*</span>
+                    </label>
                     <input
                       className="form-control"
                       type="text"
@@ -1191,14 +1222,16 @@ const BillEntryListSubPage = () => {
                       value={formData.bill_no}
                       onChange={handleInputChange}
                       placeholder=""
-                    // disabled
+                      // disabled
                     />
                   </div>
                 </div>
 
                 <div className="col-md-3  mt-2">
                   <div className="form-group">
-                    <label>Bill Amount  <span>*</span></label>
+                    <label>
+                      Bill Amount <span>*</span>
+                    </label>
                     <input
                       className="form-control"
                       type="number"
@@ -1311,7 +1344,10 @@ const BillEntryListSubPage = () => {
                   </div>
                 </div>
               </div>
-              <div className="tbl-container mt-3" style={{ maxHeight: "400px" }}>
+              <div
+                className="tbl-container mt-3"
+                style={{ maxHeight: "400px" }}
+              >
                 <table className="w-100">
                   <thead>
                     <tr>
@@ -1377,10 +1413,10 @@ const BillEntryListSubPage = () => {
                   <button className="purple-btn1 w-100">Cancel</button>
                 </div>
               </div>
-              <h5 className=" mt-3">Audit Log</h5>
+              {/* <h5 className=" mt-3">Audit Log</h5>
               <div className="pb-4 mb-4">
                 <Table columns={auditLogColumns} data={auditLogData} />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -1642,11 +1678,11 @@ const BillEntryListSubPage = () => {
               <div className="form-group">
                 <label>Name of the Document</label>
                 {newDocument.document_type &&
-                  documents.find(
-                    (doc) =>
-                      doc.isDefault &&
-                      doc.document_type === newDocument.document_type
-                  ) ? (
+                documents.find(
+                  (doc) =>
+                    doc.isDefault &&
+                    doc.document_type === newDocument.document_type
+                ) ? (
                   // For default document types - show as disabled input
                   <input
                     type="text"
@@ -1851,7 +1887,7 @@ const BillEntryListSubPage = () => {
           </div>
           <div className="row mt-3">
             <div className="col-md-12">
-              <div className="tbl-container mx-3 mt-3">
+              <div className="tbl-container  mt-3">
                 <table className="w-100">
                   <thead>
                     <tr>
@@ -1918,8 +1954,9 @@ const BillEntryListSubPage = () => {
                   <nav>
                     <ul className="pagination">
                       <li
-                        className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
-                          }`}
+                        className={`page-item ${
+                          pagination.current_page === 1 ? "disabled" : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -1930,8 +1967,9 @@ const BillEntryListSubPage = () => {
                         </button>
                       </li>
                       <li
-                        className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
-                          }`}
+                        className={`page-item ${
+                          pagination.current_page === 1 ? "disabled" : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -1946,8 +1984,9 @@ const BillEntryListSubPage = () => {
                       {getPageNumbers().map((page) => (
                         <li
                           key={page}
-                          className={`page-item ${page === pagination.current_page ? "active" : ""
-                            }`}
+                          className={`page-item ${
+                            page === pagination.current_page ? "active" : ""
+                          }`}
                         >
                           <button
                             className="page-link"
@@ -1958,10 +1997,11 @@ const BillEntryListSubPage = () => {
                         </li>
                       ))}
                       <li
-                        className={`page-item ${pagination.current_page === pagination.total_pages
-                          ? "disabled"
-                          : ""
-                          }`}
+                        className={`page-item ${
+                          pagination.current_page === pagination.total_pages
+                            ? "disabled"
+                            : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -1976,10 +2016,11 @@ const BillEntryListSubPage = () => {
                         </button>
                       </li>
                       <li
-                        className={`page-item ${pagination.current_page === pagination.total_pages
-                          ? "disabled"
-                          : ""
-                          }`}
+                        className={`page-item ${
+                          pagination.current_page === pagination.total_pages
+                            ? "disabled"
+                            : ""
+                        }`}
                       >
                         <button
                           className="page-link"

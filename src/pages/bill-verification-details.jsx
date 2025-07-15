@@ -279,6 +279,20 @@ const BillVerificationDetails = () => {
       // Validate required fields
       setLoading(true);
 
+      const poValue = parseFloat(billDetails?.po_value) || 0;
+      const billAmount = parseFloat(editableBillAmount) || 0;
+      if (poValue > 0 && billAmount > poValue) {
+        toast.error("Bill amount cannot be greater than PO value", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        return;
+      }
+
       // Create payload
       const payload = {
         bill_entry: {
@@ -393,6 +407,17 @@ const BillVerificationDetails = () => {
 
     fetchStatusOptions();
   }, [token]); // Keep token as dependency
+
+  // Find the index of the current status
+  const currentStatusIndex = statusOptions.findIndex(
+    (option) => option.value === status
+  );
+
+  // Map statusOptions to disable previous statuses
+  const statusOptionsWithDisabled = statusOptions.map((option, idx) => ({
+    ...option,
+    isDisabled: idx < currentStatusIndex && option.value !== "", // Don't disable the default "Select Status"
+  }));
 
   return (
     <>
@@ -515,6 +540,19 @@ const BillVerificationDetails = () => {
                             <span className="text-dark">:</span>
                           </span>
                           {billDetails?.po_number || "-"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>PO Value</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">
+                            <span className="text-dark">:</span>
+                          </span>
+                          {billDetails?.po_value || "-"}
                         </label>
                       </div>
                     </div>
@@ -918,14 +956,13 @@ const BillVerificationDetails = () => {
                       Status
                     </label>
                     <SingleSelector
-                      options={statusOptions}
+                      options={statusOptionsWithDisabled}
                       onChange={handleStatusChange}
-                      value={statusOptions.find(
+                      value={statusOptionsWithDisabled.find(
                         (option) => option.value === status
-                      )} // Set "Draft" as the selected status
+                      )}
                       placeholder="Select Status"
-                      // isClearable={false}
-                      // isDisabled={true} // Disable the selector
+                      isOptionDisabled={(option) => option.isDisabled}
                       classNamePrefix="react-select"
                     />
                   </div>

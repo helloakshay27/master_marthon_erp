@@ -32,6 +32,8 @@ const BillEntryDetails = () => {
   const [attachModal, setattachModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [documents, setDocuments] = useState([]);
+  const [remarks, setRemarks] = useState("");
+  const [comments, setComments] = useState("");
   const [newDocument, setNewDocument] = useState({
     document_type: "",
     attachments: [],
@@ -45,7 +47,7 @@ const BillEntryDetails = () => {
   const closeviewDocumentModal = () => setviewDocumentModal(false);
 
   // const navigate = useNavigate();
-   const [statusOptions, setStatusOptions] = useState([
+  const [statusOptions, setStatusOptions] = useState([
     {
       label: "Select Status",
       value: "",
@@ -53,42 +55,42 @@ const BillEntryDetails = () => {
   ]);
 
   useEffect(() => {
-      const fetchStatusOptions = async () => {
-        try {
-          const response = await axios.get(
-            `${baseURL}statuses_list?model=BillEntry&token=${token}`
-          );
-  
-          // Ensure we're handling the response data safely
-          const statusData = Array.isArray(response.data) ? response.data : [];
-  
-          // Map the API response to the format needed for SingleSelector
-          const options = statusData.map((status) => ({
-            value: status.value, // Use the value directly from API
-            label: status.name, // Use the name directly from API
-          }));
-  
-          // Add the default "Select Status" option at the beginning
-          setStatusOptions([
-            {
-              label: "Select Status",
-              value: "",
-            },
-            ...options,
-          ]);
-        } catch (error) {
-          console.error("Error fetching status options:", error);
-          setStatusOptions([
-            {
-              label: "Select Status",
-              value: "",
-            },
-          ]);
-        }
-      };
-  
-      fetchStatusOptions();
-    }, [token]); // Keep token as dependency
+    const fetchStatusOptions = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}statuses_list?model=BillEntry&token=${token}`
+        );
+
+        // Ensure we're handling the response data safely
+        const statusData = Array.isArray(response.data) ? response.data : [];
+
+        // Map the API response to the format needed for SingleSelector
+        const options = statusData.map((status) => ({
+          value: status.value, // Use the value directly from API
+          label: status.name, // Use the name directly from API
+        }));
+
+        // Add the default "Select Status" option at the beginning
+        setStatusOptions([
+          {
+            label: "Select Status",
+            value: "",
+          },
+          ...options,
+        ]);
+      } catch (error) {
+        console.error("Error fetching status options:", error);
+        setStatusOptions([
+          {
+            label: "Select Status",
+            value: "",
+          },
+        ]);
+      }
+    };
+
+    fetchStatusOptions();
+  }, [token]); // Keep token as dependency
 
   // const statusOptions = [
   //   {
@@ -131,6 +133,19 @@ const BillEntryDetails = () => {
     // handleStatusChange(selectedOption); // Handle status change
   };
 
+  // Find the index of the current status in the statusOptions array
+  const currentStatusIndex = statusOptions.findIndex(
+    (option) => option.value === status
+  );
+  // Map statusOptions to disable previous statuses
+  const statusOptionsWithDisabled = statusOptions.map((option, idx) => {
+    if (idx === 0) return option; // 'Select Status' always enabled
+    return {
+      ...option,
+      isDisabled: idx < currentStatusIndex,
+    };
+  });
+
   const fetchBillDetails = async () => {
     try {
       const response = await axios.get(
@@ -148,7 +163,6 @@ const BillEntryDetails = () => {
   };
 
   useEffect(() => {
-
     fetchBillDetails();
   }, [id]);
   useEffect(() => {
@@ -220,6 +234,8 @@ const BillEntryDetails = () => {
   const payload = {
     bill_entry: {
       status: status || "",
+      remarks: remarks,
+      comments: comments,
       bill_no: editableBillNo,
       bill_date: editableBillDate,
       bill_amount: editableBillAmount,
@@ -236,6 +252,20 @@ const BillEntryDetails = () => {
   console.log("bill entry update payload:", payload);
 
   const handleUpdateBillEntry = async () => {
+    // Validation: Bill Amount should not exceed PO Value (if PO Value is present)
+    const poValue = parseFloat(billDetails?.po_value) || 0;
+    const billAmount = parseFloat(editableBillAmount) || 0;
+    if (poValue > 0 && billAmount > poValue) {
+      toast.error("Bill amount cannot be greater than PO value", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
+    }
     try {
       setLoading(true);
       // const payload = {
@@ -247,6 +277,8 @@ const BillEntryDetails = () => {
       const payload = {
         bill_entry: {
           status: status || "",
+          remarks: remarks,
+          comments: comments,
           bill_no: editableBillNo,
           bill_date: editableBillDate,
           bill_amount: editableBillAmount,
@@ -318,6 +350,17 @@ const BillEntryDetails = () => {
                         <label className="text">
                           <span className="me-3">:-</span>
                           {billDetails?.po_number || "-"}
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                      <div className="col-6 ">
+                        <label>PO Value</label>
+                      </div>
+                      <div className="col-6">
+                        <label className="text">
+                          <span className="me-3">:-</span>
+                          {billDetails?.po_value || "-"}
                         </label>
                       </div>
                     </div>
@@ -397,8 +440,8 @@ const BillEntryDetails = () => {
                           {/* {billDetails?.due_date || "-"} */}
                           {billDetails?.due_date
                             ? new Date(billDetails.due_date)
-                              .toISOString()
-                              .slice(0, 10)
+                                .toISOString()
+                                .slice(0, 10)
                             : "-"}
                         </label>
                       </div>
@@ -531,58 +574,91 @@ const BillEntryDetails = () => {
                   </div>
                 </div>
               </div>
-              <div className="tbl-container mt-3" style={{ maxHeight: "400px" }}>
+              <div
+                className="tbl-container mt-3"
+                style={{ maxHeight: "400px" }}
+              >
                 <table className="w-100">
-                    <thead>
-                      <tr>
-                        <th className="text-start">Sr. No.</th>
-                        <th className="text-start">Document Name</th>
-                        <th className="text-start">No. of Documents</th>
-                        <th className="text-start">Attach Additional Copy</th>
-                      </tr>
-                    </thead>
-                    {/* // Replace your existing table body with this */}
-                    <tbody>
-                      {documents.map((doc, index) => (
-                        <tr key={index}>
-                          <td className="text-start">{index + 1}</td>
-                          <td className="text-start">{doc.document_type}</td>
-                          <td
-                            className="text-start"
+                  <thead>
+                    <tr>
+                      <th className="text-start">Sr. No.</th>
+                      <th className="text-start">Document Name</th>
+                      <th className="text-start">No. of Documents</th>
+                      <th className="text-start">Attach Additional Copy</th>
+                    </tr>
+                  </thead>
+                  {/* // Replace your existing table body with this */}
+                  <tbody>
+                    {documents.map((doc, index) => (
+                      <tr key={index}>
+                        <td className="text-start">{index + 1}</td>
+                        <td className="text-start">{doc.document_type}</td>
+                        <td
+                          className="text-start"
+                          style={{
+                            color: "#8b0203",
+                            textDecoration: "underline",
+                            cursor: "pointer",
+                          }}
+                          onClick={() =>
+                            handleDocumentCountClick(doc.document_type)
+                          }
+                        >
+                          {doc.attachments.length}
+                        </td>
+                        <td className="text-start">
+                          <button
+                            className="text-decoration-underline border-0 bg-transparent"
                             style={{
                               color: "#8b0203",
                               textDecoration: "underline",
                               cursor: "pointer",
                             }}
-                            onClick={() =>
-                              handleDocumentCountClick(doc.document_type)
-                            }
+                            onClick={() => {
+                              setNewDocument((prev) => ({
+                                ...prev,
+                                document_type: doc.document_type,
+                              }));
+                              openattachModal();
+                            }}
                           >
-                            {doc.attachments.length}
-                          </td>
-                          <td className="text-start">
-                            <button
-                              className="text-decoration-underline border-0 bg-transparent"
-                              style={{
-                                color: "#8b0203",
-                                textDecoration: "underline",
-                                cursor: "pointer",
-                              }}
-                              onClick={() => {
-                                setNewDocument((prev) => ({
-                                  ...prev,
-                                  document_type: doc.document_type,
-                                }));
-                                openattachModal();
-                              }}
-                            >
-                              + Attach
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                            + Attach
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="row">
+                <div className="col-md-12">
+                  <div className="form-group">
+                    <label>Remark</label>
+                    <textarea
+                      className="form-control"
+                      rows={3}
+                      placeholder="Enter ..."
+                      defaultValue={""}
+                      value={remarks}
+                      onChange={(e) => setRemarks(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="row mt-3">
+                <div className="col-md-12">
+                  <div className="form-group">
+                    <label>Comments</label>
+                    <textarea
+                      className="form-control"
+                      rows={2}
+                      placeholder="Enter ..."
+                      defaultValue={""}
+                      value={comments}
+                      onChange={(e) => setComments(e.target.value)}
+                    />
+                  </div>
+                </div>
               </div>
               <div className="row mt-4 justify-content-end align-items-center mx-2">
                 <div className="col-md-3">
@@ -591,14 +667,12 @@ const BillEntryDetails = () => {
                       Status
                     </label>
                     <SingleSelector
-                      options={statusOptions}
+                      options={statusOptionsWithDisabled}
                       onChange={handleStatusChange}
-                      value={statusOptions.find(
+                      value={statusOptionsWithDisabled.find(
                         (option) => option.value === status
-                      )} // Set "Draft" as the selected status
+                      )}
                       placeholder="Select Status"
-                      // isClearable={false}
-                      // isDisabled={true} // Disable the selector
                       classNamePrefix="react-select"
                     />
                   </div>
@@ -614,7 +688,12 @@ const BillEntryDetails = () => {
                   </button>
                 </div>
                 <div className="col-md-2">
-                  <button className="purple-btn1 w-100" onClick={() => navigate(`/bill-entry-list?token=${token}`)}>Cancel</button>
+                  <button
+                    className="purple-btn1 w-100"
+                    onClick={() => navigate(`/bill-entry-list?token=${token}`)}
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
 
@@ -626,7 +705,10 @@ const BillEntryDetails = () => {
               <div className=" mb-5">
                 <h5>Audit Log</h5>
                 <div className="mx-0">
-                  <div className="tbl-container mt-1" style={{ maxHeight: "450px" }}>
+                  <div
+                    className="tbl-container mt-1"
+                    style={{ maxHeight: "450px" }}
+                  >
                     <table className="w-100">
                       <thead>
                         <tr>
@@ -676,27 +758,38 @@ const BillEntryDetails = () => {
                           .map((log, index) => (
                             <tr key={log.id}>
                               <td className="text-start">{index + 1}</td>
-                              <td className="text-start">{log.created_by_name}</td>
+                              <td className="text-start">
+                                {log.created_by_name}
+                              </td>
                               <td className="text-start">
                                 {log.created_at
-                                  ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "numeric",
-                                  })}      ${new Date(log.created_at).toLocaleTimeString("en-GB", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    hour12: true,
-                                  })}`
+                                  ? `${new Date(
+                                      log.created_at
+                                    ).toLocaleDateString("en-GB", {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                    })}      ${new Date(
+                                      log.created_at
+                                    ).toLocaleTimeString("en-GB", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      hour12: true,
+                                    })}`
                                   : ""}
                               </td>
                               <td className="text-start">
                                 {log.status
-                                  ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                  ? log.status.charAt(0).toUpperCase() +
+                                    log.status.slice(1)
                                   : ""}
                               </td>
-                              <td className="text-start">{log.remarks || ""}</td>
-                              <td className="text-start">{log.comments || ""}</td>
+                              <td className="text-start">
+                                {log.remarks || ""}
+                              </td>
+                              <td className="text-start">
+                                {log.comments || ""}
+                              </td>
                             </tr>
                           ))}
                       </tbody>
@@ -784,278 +877,289 @@ const BillEntryDetails = () => {
         </Modal.Footer>
       </Modal>
       {/* document add */}
-    
 
-       <Modal
-              centered
-              size="lg"
-              show={viewDocumentModal}
-              onHide={() => {
-                setviewDocumentModal(false);
-                setSelectedDocument(null);
-              }}
-              backdrop="true"
-              keyboard={true}
-              className="modal-centered-custom"
-            >
-              <Modal.Header closeButton>
-                <h5>Document Attachment</h5>
-              </Modal.Header>
-              <Modal.Body>
-                <div>
-                  <div className="d-flex justify-content-between mt-3 me-2">
-                    <h5>Latest Documents</h5>
-                    <div className="card-tools d-flex">
-                      <button
-                        className="purple-btn2 rounded-3"
-                        onClick={() => {
-                          setviewDocumentModal(false);
-                          setNewDocument((prev) => ({
-                            ...prev,
-                            document_type: selectedDocument?.document_type,
-                          }));
-                          openattachModal();
-                        }}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width={20}
-                          height={20}
-                          fill="currentColor"
-                          className="bi bi-plus"
-                          viewBox="0 0 16 16"
+      <Modal
+        centered
+        size="lg"
+        show={viewDocumentModal}
+        onHide={() => {
+          setviewDocumentModal(false);
+          setSelectedDocument(null);
+        }}
+        backdrop="true"
+        keyboard={true}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Document Attachment</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div>
+            <div className="d-flex justify-content-between mt-3 me-2">
+              <h5>Latest Documents</h5>
+              <div className="card-tools d-flex">
+                <button
+                  className="purple-btn2 rounded-3"
+                  onClick={() => {
+                    setviewDocumentModal(false);
+                    setNewDocument((prev) => ({
+                      ...prev,
+                      document_type: selectedDocument?.document_type,
+                    }));
+                    openattachModal();
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width={20}
+                    height={20}
+                    fill="currentColor"
+                    className="bi bi-plus"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                  </svg>
+                  <span>Attach</span>
+                </button>
+              </div>
+            </div>
+            <div className="tbl-container px-0">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr.No.</th>
+                    <th>Document Name</th>
+                    <th>Attachment Name</th>
+                    <th>Upload Date</th>
+                    <th>Uploaded By</th>
+                    <th>Document Preview</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedDocument?.attachments.map((attachment, index) => (
+                    <tr key={index}>
+                      <td className="text-start">{index + 1}</td>
+                      <td className="text-start">
+                        {selectedDocument.document_type}
+                      </td>
+                      <td className="text-start">{attachment.filename}</td>
+                      <td className="text-start">
+                        {new Date().toLocaleDateString()}
+                      </td>
+                      <td className="text-start" style={{ width: "150px" }}>
+                        {attachment.created_by}
+                      </td>
+                      <td className="text-start">
+                        {/* <button
+                                className="btn btn-link p-0 text-decoration-underline"
+                                onClick={() => handleDownload(attachment.blob_id)}
+                              >
+                                <DownloadIcon />
+                              </button> */}
+                        <a
+                          href={
+                            // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                            // `${baseURL}bill_entries/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
+                            attachment.url
+                          }
+                          target="_blank"
+                          // rel="noopener noreferrer"
+                          download={attachment.filename}
                         >
-                          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                        </svg>
-                        <span>Attach</span>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="tbl-container px-0">
-                    <table className="w-100">
-                      <thead>
-                        <tr>
-                          <th>Sr.No.</th>
-                          <th>Document Name</th>
-                          <th>Attachment Name</th>
-                          <th>Upload Date</th>
-                          <th>Uploaded By</th>
-                          <th>Document Preview</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedDocument?.attachments.map((attachment, index) => (
-                          <tr key={index}>
-                            <td className="text-start">{index + 1}</td>
-                            <td className="text-start">{selectedDocument.document_type}</td>
-                            <td className="text-start">{attachment.filename}</td>
-                            <td className="text-start">{new Date().toLocaleDateString()}</td>
-                            <td className="text-start" style={{ width: "150px" }}>{attachment.created_by}</td>
-                            <td className="text-start">
-                              {/* <button
+                          <DownloadIcon />
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-3 me-2">
+              <h5>Document Attachment History</h5>
+            </div>
+            <div className="tbl-container px-0">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr.No.</th>
+                    <th>Document Name</th>
+                    <th>Attachment Name</th>
+                    <th>Upload Date</th>
+                    <th>Uploaded By</th>
+                    <th>Document Preview</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedDocument?.attachments.map((attachment, index) => (
+                    <tr key={index}>
+                      <td className="text-start">{index + 1}</td>
+                      <td className="text-start">
+                        {selectedDocument.document_type}
+                      </td>
+                      <td className="text-start">{attachment.filename}</td>
+                      <td className="text-start">
+                        {new Date().toLocaleDateString()}
+                      </td>
+                      <td className="text-start" style={{ width: "150px" }}>
+                        {attachment.created_by}
+                      </td>
+                      {/* <td> */}
+                      {/* <button
                                 className="btn btn-link p-0 text-decoration-underline"
                                 onClick={() => handleDownload(attachment.blob_id)}
                               >
                                 <DownloadIcon />
                               </button> */}
-                              <a
-                                href={
-                                  // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
-                                  // `${baseURL}bill_entries/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
-                                  attachment.url
-                                }
-                                target="_blank"
-                                // rel="noopener noreferrer"
-                                download={attachment.filename}
-                              >
-                                <DownloadIcon />
-                              </a>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="mt-3 me-2">
-                    <h5>Document Attachment History</h5>
-                  </div>
-                  <div className="tbl-container px-0">
-                    <table className="w-100">
-                      <thead>
-                        <tr>
-                          <th>Sr.No.</th>
-                          <th>Document Name</th>
-                          <th>Attachment Name</th>
-                          <th>Upload Date</th>
-                          <th>Uploaded By</th>
-                          <th>Document Preview</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedDocument?.attachments.map((attachment, index) => (
-                          <tr key={index}>
-                            <td className="text-start">{index + 1}</td>
-                            <td className="text-start">{selectedDocument.document_type}</td>
-                            <td className="text-start">{attachment.filename}</td>
-                            <td className="text-start">{new Date().toLocaleDateString()}</td>
-                            <td className="text-start" style={{ width: "150px" }}>{attachment.created_by}</td>
-                            {/* <td> */}
-                            {/* <button
-                                className="btn btn-link p-0 text-decoration-underline"
-                                onClick={() => handleDownload(attachment.blob_id)}
-                              >
-                                <DownloadIcon />
-                              </button> */}
-      
-                            <td className="text-start">
-                              <a
-                                href={
-                                  // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
-                                  // `${baseURL}bill_entries/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
-                                  attachment.url
-                                }
-                                target="_blank"
-                                // rel="noopener noreferrer"
-                                download={attachment.filename}
-                              >
-                                <DownloadIcon />
-                              </a>
-                            </td>
-                            {/* </td> */}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                <div className="row mt-2 justify-content-center">
-                  <div className="col-md-3">
-                    <button
-                      className="purple-btn1 w-100"
-                      onClick={() => {
-                        setviewDocumentModal(false);
-                        setSelectedDocument(null);
-                      }}
-                    >
-                      Close
-                    </button>
-                  </div>
-                </div>
-              </Modal.Body>
-            </Modal>
+
+                      <td className="text-start">
+                        <a
+                          href={
+                            // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                            // `${baseURL}bill_entries/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
+                            attachment.url
+                          }
+                          target="_blank"
+                          // rel="noopener noreferrer"
+                          download={attachment.filename}
+                        >
+                          <DownloadIcon />
+                        </a>
+                      </td>
+                      {/* </td> */}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-3">
+              <button
+                className="purple-btn1 w-100"
+                onClick={() => {
+                  setviewDocumentModal(false);
+                  setSelectedDocument(null);
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
 
       {/* attach document */}
 
-        <Modal
-              centered
-              size="l"
-              show={attachModal}
-              onHide={closeattachModal}
-              backdrop="true"
-              keyboard={true}
-              className="modal-centered-custom"
-            >
-              <Modal.Header closeButton>
-                <h5>Attach Document</h5>
-              </Modal.Header>
-              <Modal.Body>
-                <div className="row">
-                  <div className="col-md-12">
-                    <div className="form-group">
-                      <label>Name of the Document</label>
-                      {newDocument.document_type &&
-                      documents.find(
-                        (doc) =>
-                          doc.isDefault &&
-                          doc.document_type === newDocument.document_type
-                      ) ? (
-                        // For default document types - show as disabled input
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={newDocument.document_type}
-                          disabled
-                        />
-                      ) : (
-                        // For new document types - allow input
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={newDocument.document_type}
-                          onChange={(e) =>
-                            setNewDocument((prev) => ({
-                              ...prev,
-                              document_type: e.target.value,
-                            }))
-                          }
-                          placeholder="Enter document name"
-                        />
-                      )}
-                    </div>
-                  </div>
-                  <div className="col-md-12 mt-2">
-                    <div className="form-group">
-                      <label>Upload File</label>
-                      <input
-                        type="file"
-                        className="form-control"
-                        onChange={handleFileUpload}
-                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                      />
-                    </div>
-                  </div>
-                  {/* Add this new section for file name editing */}
-                  {newDocument.attachments.length > 0 && (
-                    <div className="col-md-12 mt-2">
-                      <div className="form-group">
-                        <label>File Name</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={newDocument.attachments[0].filename}
-                          onChange={(e) => {
-                            setNewDocument((prev) => ({
-                              ...prev,
-                              attachments: [
-                                {
-                                  ...prev.attachments[0],
-                                  filename: e.target.value,
-                                },
-                              ],
-                            }));
-                          }}
-                          placeholder="Enter file name"
-                        />
-                      </div>
-                    </div>
-                  )}
+      <Modal
+        centered
+        size="l"
+        show={attachModal}
+        onHide={closeattachModal}
+        backdrop="true"
+        keyboard={true}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Attach Document</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row">
+            <div className="col-md-12">
+              <div className="form-group">
+                <label>Name of the Document</label>
+                {newDocument.document_type &&
+                documents.find(
+                  (doc) =>
+                    doc.isDefault &&
+                    doc.document_type === newDocument.document_type
+                ) ? (
+                  // For default document types - show as disabled input
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.document_type}
+                    disabled
+                  />
+                ) : (
+                  // For new document types - allow input
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.document_type}
+                    onChange={(e) =>
+                      setNewDocument((prev) => ({
+                        ...prev,
+                        document_type: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter document name"
+                  />
+                )}
+              </div>
+            </div>
+            <div className="col-md-12 mt-2">
+              <div className="form-group">
+                <label>Upload File</label>
+                <input
+                  type="file"
+                  className="form-control"
+                  onChange={handleFileUpload}
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                />
+              </div>
+            </div>
+            {/* Add this new section for file name editing */}
+            {newDocument.attachments.length > 0 && (
+              <div className="col-md-12 mt-2">
+                <div className="form-group">
+                  <label>File Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.attachments[0].filename}
+                    onChange={(e) => {
+                      setNewDocument((prev) => ({
+                        ...prev,
+                        attachments: [
+                          {
+                            ...prev.attachments[0],
+                            filename: e.target.value,
+                          },
+                        ],
+                      }));
+                    }}
+                    placeholder="Enter file name"
+                  />
                 </div>
-      
-                <div className="row mt-3 justify-content-center">
-                  <div className="col-md-8 d-flex justify-content-center align-items-center gap-4">
-                    <div className="col-md-4">
-                      <button
-                        className="purple-btn2 w-100"
-                        onClick={handleAttachDocument}
-                        disabled={
-                          !newDocument.document_type ||
-                          newDocument.attachments.length === 0
-                        }
-                      >
-                        Attach
-                      </button>
-                    </div>
-                    <div className="col-md-4 ">
-                      <button
-                        className="purple-btn1 w-100"
-                        onClick={closeattachModal}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                {/* <div className="row mt-3 justify-content-center">
+              </div>
+            )}
+          </div>
+
+          <div className="row mt-3 justify-content-center">
+            <div className="col-md-8 d-flex justify-content-center align-items-center gap-4">
+              <div className="col-md-4">
+                <button
+                  className="purple-btn2 w-100"
+                  onClick={handleAttachDocument}
+                  disabled={
+                    !newDocument.document_type ||
+                    newDocument.attachments.length === 0
+                  }
+                >
+                  Attach
+                </button>
+              </div>
+              <div className="col-md-4 ">
+                <button
+                  className="purple-btn1 w-100"
+                  onClick={closeattachModal}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+          {/* <div className="row mt-3 justify-content-center">
                        <div className="col-md-4">
                          <button
                            className="purple-btn2 w-100"
@@ -1074,13 +1178,16 @@ const BillEntryDetails = () => {
                          </button>
                        </div>
                      </div> */}
-              </Modal.Body>
-            </Modal>
+        </Modal.Body>
+      </Modal>
       {/* attach document */}
 
-
       {/* Modal for all audit logs */}
-      <Modal show={showAuditModal} onHide={() => setShowAuditModal(false)} size="xl">
+      <Modal
+        show={showAuditModal}
+        onHide={() => setShowAuditModal(false)}
+        size="xl"
+      >
         <Modal.Header closeButton>
           <Modal.Title>All Audit Logs</Modal.Title>
         </Modal.Header>
@@ -1104,20 +1211,27 @@ const BillEntryDetails = () => {
                     <td className="text-start">{""}</td>
                     <td className="text-start">
                       {log.created_at
-                        ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        })} ${new Date(log.created_at).toLocaleTimeString("en-GB", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true,
-                        })}`
+                        ? `${new Date(log.created_at).toLocaleDateString(
+                            "en-GB",
+                            {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            }
+                          )} ${new Date(log.created_at).toLocaleTimeString(
+                            "en-GB",
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            }
+                          )}`
                         : ""}
                     </td>
                     <td className="text-start">
                       {log.status
-                        ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                        ? log.status.charAt(0).toUpperCase() +
+                          log.status.slice(1)
                         : ""}
                     </td>
                     <td className="text-start">{log.remarks || ""}</td>
