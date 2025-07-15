@@ -14,6 +14,16 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "-";
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+
 const BillVerificationDetails = () => {
   const { id } = useParams();
   const [showAuditModal, setShowAuditModal] = useState(false);
@@ -556,11 +566,7 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.created_at
-                            ? new Date(
-                                billDetails.created_at
-                              ).toLocaleDateString()
-                            : "-"}
+                          {formatDate(billDetails?.created_at)}
                         </label>
                       </div>
                     </div>
@@ -599,7 +605,7 @@ const BillVerificationDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.bill_date || "-"}
+                          {formatDate(billDetails?.bill_date)}
                         </label>
                       </div>
                     </div>
@@ -795,7 +801,10 @@ const BillVerificationDetails = () => {
                   </table>
                 </div> */}
 
-                <div className="tbl-container mt-3" style={{ maxHeight: "400px" }}>
+                <div
+                  className="tbl-container mt-3"
+                  style={{ maxHeight: "400px" }}
+                >
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -1011,7 +1020,10 @@ const BillVerificationDetails = () => {
                           .map((log, index) => (
                             <tr key={log.id}>
                               <td className="text-start">{index + 1}</td>
-                              <td className="text-start">{""}{log.created_by_name}</td>
+                              <td className="text-start">
+                                {""}
+                                {log.created_by_name}
+                              </td>
                               <td className="text-start">
                                 {log.created_at
                                   ? `${new Date(
@@ -1337,10 +1349,16 @@ const BillVerificationDetails = () => {
                   {selectedDocument?.attachments.map((attachment, index) => (
                     <tr key={index}>
                       <td className="text-start">{index + 1}</td>
-                      <td className="text-start">{selectedDocument.document_type}</td>
+                      <td className="text-start">
+                        {selectedDocument.document_type}
+                      </td>
                       <td className="text-start">{attachment.filename}</td>
-                      <td className="text-start">{new Date().toLocaleDateString()}</td>
-                      <td className="text-start" style={{ width: "150px" }}>{attachment.created_by}</td>
+                      <td className="text-start">
+                        {new Date().toLocaleDateString()}
+                      </td>
+                      <td className="text-start" style={{ width: "150px" }}>
+                        {attachment.created_by}
+                      </td>
                       <td className="text-start">
                         {/* <button
                           className="btn btn-link p-0 text-decoration-underline"
@@ -1385,10 +1403,16 @@ const BillVerificationDetails = () => {
                   {selectedDocument?.attachments.map((attachment, index) => (
                     <tr key={index}>
                       <td className="text-start">{index + 1}</td>
-                      <td className="text-start">{selectedDocument.document_type}</td>
+                      <td className="text-start">
+                        {selectedDocument.document_type}
+                      </td>
                       <td className="text-start">{attachment.filename}</td>
-                      <td className="text-start">{new Date().toLocaleDateString()}</td>
-                      <td className="text-start" style={{ width: "150px" }}>{attachment.created_by}</td>
+                      <td className="text-start">
+                        {new Date().toLocaleDateString()}
+                      </td>
+                      <td className="text-start" style={{ width: "150px" }}>
+                        {attachment.created_by}
+                      </td>
                       {/* <td> */}
                       {/* <button
                           className="btn btn-link p-0 text-decoration-underline"

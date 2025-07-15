@@ -13,6 +13,17 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Stack, Typography, Pagination } from "@mui/material";
 import { DownloadIcon, FilterIcon, StarIcon, SettingIcon } from "../components";
 
+// Add date formatting function at the top (after imports)
+function formatDateDDMMYYYY(dateString) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (isNaN(date)) return "-";
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 const DebitNoteList = () => {
   const navigate = useNavigate(); // Initialize navigation
   const urlParams = new URLSearchParams(location.search);
@@ -162,17 +173,6 @@ const DebitNoteList = () => {
       const response = await axios.get(url);
 
       const transformedData = response.data.debit_notes.map((entry, index) => {
-        // console.log("created_at raw:", entry.created_at);
-        let formattedDate = "-";
-        if (entry.created_at) {
-          try {
-            formattedDate = new Date(entry.created_at)
-              .toISOString()
-              .slice(0, 10);
-          } catch (e) {
-            formattedDate = "-";
-          }
-        }
         let status = entry.status;
         if (status && typeof status === "string") {
           status = status.charAt(0).toUpperCase() + status.slice(1);
@@ -181,7 +181,9 @@ const DebitNoteList = () => {
           id: entry.id,
           srNo: (page - 1) * pageSize + index + 1,
           ...entry,
-          created_at: formattedDate,
+          debit_note_date: formatDateDDMMYYYY(entry.debit_note_date),
+          created_at: formatDateDDMMYYYY(entry.created_at),
+          po_date: formatDateDDMMYYYY(entry.po_date),
           status,
         };
       });
@@ -230,17 +232,6 @@ const DebitNoteList = () => {
       .then((response) => {
         const transformedData = response.data.debit_notes.map(
           (entry, index) => {
-            // console.log("created_at raw:", entry.created_at);
-            let formattedDate = "-";
-            if (entry.created_at) {
-              try {
-                formattedDate = new Date(entry.created_at)
-                  .toISOString()
-                  .slice(0, 10);
-              } catch (e) {
-                formattedDate = "-";
-              }
-            }
             let status = entry.status;
             if (status && typeof status === "string") {
               status = status.charAt(0).toUpperCase() + status.slice(1);
@@ -249,7 +240,9 @@ const DebitNoteList = () => {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate,
+              debit_note_date: formatDateDDMMYYYY(entry.debit_note_date),
+              created_at: formatDateDDMMYYYY(entry.created_at),
+              po_date: formatDateDDMMYYYY(entry.po_date),
               status,
             };
           }
@@ -281,17 +274,6 @@ const DebitNoteList = () => {
       .then((response) => {
         const transformedData = response.data.debit_notes.map(
           (entry, index) => {
-            // console.log("created_at raw:", entry.created_at);
-            let formattedDate = "-";
-            if (entry.created_at) {
-              try {
-                formattedDate = new Date(entry.created_at)
-                  .toISOString()
-                  .slice(0, 10);
-              } catch (e) {
-                formattedDate = "-";
-              }
-            }
             let status = entry.status;
             if (status && typeof status === "string") {
               status = status.charAt(0).toUpperCase() + status.slice(1);
@@ -300,7 +282,9 @@ const DebitNoteList = () => {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate,
+              debit_note_date: formatDateDDMMYYYY(entry.debit_note_date),
+              created_at: formatDateDDMMYYYY(entry.created_at),
+              po_date: formatDateDDMMYYYY(entry.po_date),
               status,
             };
           }
@@ -414,17 +398,6 @@ const DebitNoteList = () => {
         .then((response) => {
           const transformedData = response.data.debit_notes.map(
             (entry, index) => {
-              // console.log("created_at raw:", entry.created_at);
-              let formattedDate = "-";
-              if (entry.created_at) {
-                try {
-                  formattedDate = new Date(entry.created_at)
-                    .toISOString()
-                    .slice(0, 10);
-                } catch (e) {
-                  formattedDate = "-";
-                }
-              }
               let status = entry.status;
               if (status && typeof status === "string") {
                 status = status.charAt(0).toUpperCase() + status.slice(1);
@@ -433,7 +406,9 @@ const DebitNoteList = () => {
                 id: entry.id,
                 srNo: (currentPage - 1) * pageSize + index + 1,
                 ...entry,
-                created_at: formattedDate,
+                debit_note_date: formatDateDDMMYYYY(entry.debit_note_date),
+                created_at: formatDateDDMMYYYY(entry.created_at),
+                po_date: formatDateDDMMYYYY(entry.po_date),
                 status,
               };
             }
@@ -491,17 +466,6 @@ const DebitNoteList = () => {
       .then((response) => {
         const transformedData = response.data.debit_notes.map(
           (entry, index) => {
-            // console.log("created_at raw:", entry.created_at);
-            let formattedDate = "-";
-            if (entry.created_at) {
-              try {
-                formattedDate = new Date(entry.created_at)
-                  .toISOString()
-                  .slice(0, 10);
-              } catch (e) {
-                formattedDate = "-";
-              }
-            }
             let status = entry.status;
             if (status && typeof status === "string") {
               status = status.charAt(0).toUpperCase() + status.slice(1);
@@ -510,7 +474,9 @@ const DebitNoteList = () => {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate,
+              debit_note_date: formatDateDDMMYYYY(entry.debit_note_date),
+              created_at: formatDateDDMMYYYY(entry.created_at),
+              po_date: formatDateDDMMYYYY(entry.po_date),
               status,
             };
           }
@@ -532,17 +498,6 @@ const DebitNoteList = () => {
         `${baseURL}debit_notes?page=1&per_page=10&token=${token}&q[debit_note_no_or_debit_note_date_or_debit_note_amount_or_status_or_company_company_name_or_project_name_or_pms_site_name_or_purchase_order_supplier_full_name_cont]=${searchKeyword}`
       );
       const transformedData = response.data.debit_notes.map((entry, index) => {
-        // console.log("created_at raw:", entry.created_at);
-        let formattedDate = "-";
-        if (entry.created_at) {
-          try {
-            formattedDate = new Date(entry.created_at)
-              .toISOString()
-              .slice(0, 10);
-          } catch (e) {
-            formattedDate = "-";
-          }
-        }
         let status = entry.status;
         if (status && typeof status === "string") {
           status = status.charAt(0).toUpperCase() + status.slice(1);
@@ -551,7 +506,9 @@ const DebitNoteList = () => {
           id: entry.id,
           srNo: (currentPage - 1) * pageSize + index + 1,
           ...entry,
-          created_at: formattedDate,
+          debit_note_date: formatDateDDMMYYYY(entry.debit_note_date),
+          created_at: formatDateDDMMYYYY(entry.created_at),
+          po_date: formatDateDDMMYYYY(entry.po_date),
           status,
         };
       });

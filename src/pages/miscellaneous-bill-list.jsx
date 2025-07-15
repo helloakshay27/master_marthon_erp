@@ -13,6 +13,16 @@ import { DownloadIcon, FilterIcon, StarIcon, SettingIcon } from "../components";
 import { DataGrid } from "@mui/x-data-grid";
 import { Stack, Typography, Pagination } from "@mui/material";
 
+function formatDateDDMMYYYY(dateString) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (isNaN(date)) return "-";
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 const MiscellaneousBillList = () => {
   const navigate = useNavigate(); // Initialize navigation
   const urlParams = new URLSearchParams(location.search);
@@ -99,17 +109,6 @@ const MiscellaneousBillList = () => {
       const response = await axios.get(url);
       console.log("res:", response.data);
       const transformedData = response.data.bills.map((entry, index) => {
-        // console.log("created_at raw:", entry.created_at);
-        let formattedDate = "-";
-        if (entry.created_at) {
-          try {
-            formattedDate = new Date(entry.created_at)
-              .toISOString()
-              .slice(0, 10);
-          } catch (e) {
-            formattedDate = "-";
-          }
-        }
         let status = entry.status;
         if (status && typeof status === "string") {
           status = status.charAt(0).toUpperCase() + status.slice(1);
@@ -118,8 +117,9 @@ const MiscellaneousBillList = () => {
           id: entry.id,
           srNo: (page - 1) * pageSize + index + 1,
           ...entry,
-          created_at: formattedDate,
-          // pms_supplier: entry.supplier?.organization_name || "-", // <-- add this line
+          created_at: formatDateDDMMYYYY(entry.created_at),
+          bill_date: formatDateDDMMYYYY(entry.bill_date),
+          due_date: formatDateDDMMYYYY(entry.due_date),
           status,
         };
       });
@@ -218,17 +218,6 @@ const MiscellaneousBillList = () => {
       .get(url)
       .then((response) => {
         const transformedData = response.data.bills.map((entry, index) => {
-          // console.log("created_at raw:", entry.created_at);
-          let formattedDate = "-";
-          if (entry.created_at) {
-            try {
-              formattedDate = new Date(entry.created_at)
-                .toISOString()
-                .slice(0, 10);
-            } catch (e) {
-              formattedDate = "-";
-            }
-          }
           let status = entry.status;
           if (status && typeof status === "string") {
             status = status.charAt(0).toUpperCase() + status.slice(1);
@@ -237,7 +226,9 @@ const MiscellaneousBillList = () => {
             id: entry.id,
             srNo: (currentPage - 1) * pageSize + index + 1,
             ...entry,
-            created_at: formattedDate,
+            created_at: formatDateDDMMYYYY(entry.created_at),
+            bill_date: formatDateDDMMYYYY(entry.bill_date),
+            due_date: formatDateDDMMYYYY(entry.due_date),
             status,
           };
         });
@@ -267,17 +258,6 @@ const MiscellaneousBillList = () => {
       .get(`${baseURL}miscellaneous_bills?page=1&token=${token}`)
       .then((response) => {
         const transformedData = response.data.bills.map((entry, index) => {
-          // console.log("created_at raw:", entry.created_at);
-          let formattedDate = "-";
-          if (entry.created_at) {
-            try {
-              formattedDate = new Date(entry.created_at)
-                .toISOString()
-                .slice(0, 10);
-            } catch (e) {
-              formattedDate = "-";
-            }
-          }
           let status = entry.status;
           if (status && typeof status === "string") {
             status = status.charAt(0).toUpperCase() + status.slice(1);
@@ -286,7 +266,9 @@ const MiscellaneousBillList = () => {
             id: entry.id,
             srNo: (currentPage - 1) * pageSize + index + 1,
             ...entry,
-            created_at: formattedDate,
+            created_at: formatDateDDMMYYYY(entry.created_at),
+            bill_date: formatDateDDMMYYYY(entry.bill_date),
+            due_date: formatDateDDMMYYYY(entry.due_date),
             status,
           };
         });
@@ -406,17 +388,6 @@ const MiscellaneousBillList = () => {
         )
         .then((response) => {
           const transformedData = response.data.bills.map((entry, index) => {
-            // console.log("created_at raw:", entry.created_at);
-            let formattedDate = "-";
-            if (entry.created_at) {
-              try {
-                formattedDate = new Date(entry.created_at)
-                  .toISOString()
-                  .slice(0, 10);
-              } catch (e) {
-                formattedDate = "-";
-              }
-            }
             let status = entry.status;
             if (status && typeof status === "string") {
               status = status.charAt(0).toUpperCase() + status.slice(1);
@@ -425,7 +396,9 @@ const MiscellaneousBillList = () => {
               id: entry.id,
               srNo: (currentPage - 1) * pageSize + index + 1,
               ...entry,
-              created_at: formattedDate,
+              created_at: formatDateDDMMYYYY(entry.created_at),
+              bill_date: formatDateDDMMYYYY(entry.bill_date),
+              due_date: formatDateDDMMYYYY(entry.due_date),
               status,
             };
           });
@@ -454,17 +427,6 @@ const MiscellaneousBillList = () => {
       .get(url)
       .then((response) => {
         const transformedData = response.data.bills.map((entry, index) => {
-          // console.log("created_at raw:", entry.created_at);
-          let formattedDate = "-";
-          if (entry.created_at) {
-            try {
-              formattedDate = new Date(entry.created_at)
-                .toISOString()
-                .slice(0, 10);
-            } catch (e) {
-              formattedDate = "-";
-            }
-          }
           let status = entry.status;
           if (status && typeof status === "string") {
             status = status.charAt(0).toUpperCase() + status.slice(1);
@@ -473,7 +435,9 @@ const MiscellaneousBillList = () => {
             id: entry.id,
             srNo: (currentPage - 1) * pageSize + index + 1,
             ...entry,
-            created_at: formattedDate,
+            created_at: formatDateDDMMYYYY(entry.created_at),
+            bill_date: formatDateDDMMYYYY(entry.bill_date),
+            due_date: formatDateDDMMYYYY(entry.due_date),
             status,
           };
         });
