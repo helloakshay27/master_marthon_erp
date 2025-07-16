@@ -26,6 +26,13 @@ const creditnotecreate = () => {
   const [selectedPO, setSelectedPO] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loading2, setLoading2] = useState(false);
+  const [attachModal, setattachModal] = useState(false);
+  const [viewDocumentModal, setviewDocumentModal] = useState(false);
+
+  const openattachModal = () => setattachModal(true);
+  const closeattachModal = () => setattachModal(false);
+  const openviewDocumentModal = () => setviewDocumentModal(true);
+  const closeviewDocumentModal = () => setviewDocumentModal(false);
 
   const taxesRowDropdown = () => {
     settaxesRowDetails(!taxesRowDetails);
@@ -463,54 +470,6 @@ const creditnotecreate = () => {
     return `Showing ${start} to ${end} of ${pagination.total_count} entries`;
   };
 
-  const [documentRows, setDocumentRows] = useState([{ srNo: 1, upload: null }]);
-  const documentRowsRef = useRef(documentRows);
-
-  const handleAddDocumentRow = () => {
-    const newRow = { srNo: documentRows.length + 1, upload: null };
-    documentRowsRef.current.push(newRow);
-    setDocumentRows([...documentRowsRef.current]);
-  };
-
-  const handleRemoveDocumentRow = (index) => {
-    if (documentRows.length > 1) {
-      const updatedRows = documentRows.filter((_, i) => i !== index);
-
-      // Reset row numbers properly
-      updatedRows.forEach((row, i) => {
-        row.srNo = i + 1;
-      });
-
-      documentRowsRef.current = updatedRows;
-      setDocumentRows([...updatedRows]);
-    }
-  };
-
-  const handleFileChange = (index, file) => {
-    if (!file) return; // Ensure a file is selected
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result.split(",")[1];
-
-      documentRowsRef.current[index].upload = {
-        filename: file.name,
-        content: base64String,
-        content_type: file.type,
-      };
-
-      setDocumentRows([...documentRowsRef.current]);
-    };
-
-    reader.readAsDataURL(file);
-
-    // Reset the input field to allow re-selecting the same file
-    const inputElement = document.getElementById(`file-input-${index}`);
-    if (inputElement) {
-      inputElement.value = ""; // Clear input value
-    }
-  };
-
   const [rows, setRows] = useState([
     // { id: 1, type: "Handling Charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, resource_id: 2, resource_type: "TaxCharge" },
     // { id: 2, type: "Other charges", percentage: "", inclusive: false, amount: '', isEditable: false, addition: true, resource_id: 4, resource_type: "TaxCharge" },
@@ -538,7 +497,9 @@ const creditnotecreate = () => {
   useEffect(() => {
     const fetchTaxPercentages = async () => {
       try {
-        const response = await fetch(`${baseURL}rfq/events/tax_percentage?token=${token}`);
+        const response = await fetch(
+          `${baseURL}rfq/events/tax_percentage?token=${token}`
+        );
         const data = await response.json();
         setTaxPercentages(data);
       } catch (error) {
@@ -564,24 +525,22 @@ const creditnotecreate = () => {
   //   ]);
   // };
 
-
   const addRow = () => {
     const specialTypes = ["Handling Charges", "Other charges", "Freight"];
     const existingTypes = rows.map((r) => r.type);
 
-    const hasSpecial = specialTypes.some((type) => existingTypes.includes(type));
+    const hasSpecial = specialTypes.some((type) =>
+      existingTypes.includes(type)
+    );
     const hasSGST = existingTypes.includes("SGST");
     const hasCGST = existingTypes.includes("CGST");
     const hasIGST = existingTypes.includes("IGST");
 
     // 🔒 Lock condition: if any special type + (IGST or both SGST & CGST) are present
-    const isLockedCombo =
-      hasSpecial && (hasIGST || (hasSGST && hasCGST));
+    const isLockedCombo = hasSpecial && (hasIGST || (hasSGST && hasCGST));
 
     if (isLockedCombo) {
-      toast.error(
-        "Cannot add more Tax rows ."
-      );
+      toast.error("Cannot add more Tax rows .");
       return; // ❌ Don't add row
     }
 
@@ -631,7 +590,8 @@ const creditnotecreate = () => {
   const calculateSubTotal = () => {
     return rows
       .filter((row) => !row.inclusive)
-      .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
+      .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0)
+      .toFixed(2);
   };
 
   // Delete a row
@@ -680,7 +640,14 @@ const creditnotecreate = () => {
   const addDeductionRow = () => {
     if (deductionRows.length === 0) {
       setDeductionRows([
-        { id: 1, type: "", percentage: "", inclusive: false, amount: "", addition: false, },
+        {
+          id: 1,
+          type: "",
+          percentage: "",
+          inclusive: false,
+          amount: "",
+          addition: false,
+        },
       ]);
     }
   };
@@ -688,11 +655,13 @@ const creditnotecreate = () => {
   const calculateDeductionSubTotal = () => {
     return deductionRows
       .filter((row) => !row.inclusive)
-      .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
+      .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0)
+      .toFixed(2);
   };
   // Function to calculate the payable amount
   const calculatePayableAmount = () => {
-    const grossAmount = parseFloat(calculateSubTotal()) + (parseFloat(creditNoteAmount) || 0);
+    const grossAmount =
+      parseFloat(calculateSubTotal()) + (parseFloat(creditNoteAmount) || 0);
     const deductionSubTotal = parseFloat(calculateDeductionSubTotal()) || 0;
     return (grossAmount - deductionSubTotal).toFixed(2);
   };
@@ -729,7 +698,7 @@ const creditnotecreate = () => {
 
   const [remark, setRemark] = useState("");
   const [comment, setComment] = useState("");
-  console.log("status:", status)
+  console.log("status:", status);
   // Step 2: Handle status change
   const handleStatusChange = (selectedOption) => {
     // setStatus(e.target.value);
@@ -751,12 +720,11 @@ const creditnotecreate = () => {
   const handleRemarkChange2 = (e) => {
     setRemark2(e.target.value);
   };
-  console.log("remark:", remark2)
+  console.log("remark:", remark2);
   const [creditNoteDate, setCreditNoteDate] = useState(""); // State to store the date
   const [creditNoteAmount, setCreditNoteAmount] = useState(null); // State to store the amount
 
   const payload = {
-
     credit_note: {
       company_id: selectedCompany?.value || "",
       site_id: selectedSite?.value || "",
@@ -784,7 +752,7 @@ const creditnotecreate = () => {
           addition: row.addition,
           percentage: parseFloat(row.percentage) || 0,
           resource_id: row.resource_id || null,
-          resource_type: row.resource_type || ""
+          resource_type: row.resource_type || "",
         })),
         ...deductionRows.map((row) => ({
           inclusive: row.inclusive,
@@ -793,7 +761,7 @@ const creditnotecreate = () => {
           addition: row.addition || false, // Ensure addition is false for deductions
           percentage: parseFloat(row.percentage) || 0,
           resource_id: row.resource_id || null,
-          resource_type: row.resource_type || ""
+          resource_type: row.resource_type || "",
         })),
       ],
       // attachments: [
@@ -804,21 +772,31 @@ const creditnotecreate = () => {
       //   }
       // ]
 
-      attachments: documentRows.map((row) => ({
-        filename: row.upload?.filename || "",
-        content: row.upload?.content || "",
-        content_type: row.upload?.content_type || "",
-      })),
-    }
-
-
+      // attachments: documentRows.map((row) => ({
+      //   filename: row.upload?.filename || "",
+      //   content: row.upload?.content || "",
+      //   content_type: row.upload?.content_type || "",
+      // })),
+    },
   };
 
-  console.log("payload:", payload)
-  console.log("addition tax rows:", rows)
+  console.log("payload:", payload);
+  console.log("addition tax rows:", rows);
 
   const handleSubmit = async () => {
-    setLoading2(true)
+    setLoading2(true);
+    const attachments = (documents || [])
+      .map((doc) =>
+        doc.attachments && doc.attachments[0]
+          ? {
+              filename: doc.attachments[0].filename || null,
+              content: doc.attachments[0].content || null,
+              content_type: doc.attachments[0].content_type || null,
+              document_name: doc.document_type || null,
+            }
+          : null
+      )
+      .filter(Boolean);
     const payload = {
       credit_note: {
         // company_id: selectedCompany?.value || "",
@@ -838,7 +816,7 @@ const creditnotecreate = () => {
             addition: row.addition,
             percentage: parseFloat(row.percentage) || 0,
             resource_id: row.resource_id || null,
-            resource_type: row.resource_type || ""
+            resource_type: row.resource_type || "",
           })),
           ...deductionRows.map((row) => ({
             inclusive: row.inclusive,
@@ -847,14 +825,15 @@ const creditnotecreate = () => {
             addition: row.addition || false,
             percentage: parseFloat(row.percentage) || 0,
             resource_id: row.resource_id || null,
-            resource_type: row.resource_type || ""
+            resource_type: row.resource_type || "",
           })),
         ],
-        attachments: documentRows.map((row) => ({
-          filename: row.upload?.filename || "",
-          content: row.upload?.content || "",
-          content_type: row.upload?.content_type || "",
-        })),
+        // attachments: documentRows.map((row) => ({
+        //   filename: row.upload?.filename || "",
+        //   content: row.upload?.content || "",
+        //   content_type: row.upload?.content_type || "",
+        // })),
+        attachments: attachments.length > 0 ? attachments : null,
       },
     };
 
@@ -865,15 +844,70 @@ const creditnotecreate = () => {
       );
       console.log("Response:", response.data);
       alert("Credit Note submitted successfully!");
-      setLoading2(false)
+      setLoading2(false);
       navigate(`/credit-note-list?token=${token}`); // Navigate to the list page
     } catch (error) {
       console.error("Error submitting Credit Note:", error);
-      setLoading2(false)
+      setLoading2(false);
       alert("Failed to submit Credit Note. Please try again.");
     } finally {
-      setLoading2(false)
+      setLoading2(false);
     }
+  };
+
+  // Document attachment state and handlers for advanced modal
+  const [newDocument, setNewDocument] = useState({
+    document_type: "",
+    attachments: [],
+  });
+  const [documents, setDocuments] = useState([]); // If you want to keep a list
+
+  // Handle file upload
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewDocument((prev) => ({
+        ...prev,
+        attachments: [
+          {
+            filename: file.name,
+            content: reader.result.split(",")[1],
+            content_type: file.type,
+          },
+        ],
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle attach document
+  const handleAttachDocument = () => {
+    if (!newDocument.document_type || newDocument.attachments.length === 0)
+      return;
+    const now = new Date();
+    const uploadDate = `${now.getDate().toString().padStart(2, "0")}-${(
+      now.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}-${now.getFullYear()}`;
+    setDocuments((prev) => [
+      ...prev,
+      {
+        ...newDocument,
+        uploadDate,
+      },
+    ]);
+    setNewDocument({ document_type: "", attachments: [] });
+    closeattachModal();
+  };
+
+  // For viewing a specific document
+  const [viewDocIndex, setViewDocIndex] = useState(null);
+  const handleViewDocument = (index) => {
+    setViewDocIndex(index);
+    openviewDocumentModal();
   };
   return (
     <>
@@ -901,8 +935,9 @@ const creditnotecreate = () => {
                             <div className="progress">
                               <span
                                 style={{
-                                  width: `${((currentStep - 1) / (totalSteps - 1)) * 100
-                                    }%`,
+                                  width: `${
+                                    ((currentStep - 1) / (totalSteps - 1)) * 100
+                                  }%`,
                                 }}
                               ></span>
                             </div>
@@ -910,8 +945,9 @@ const creditnotecreate = () => {
                               {[...Array(totalSteps)].map((_, index) => (
                                 <div className="layer1" key={index}>
                                   <div
-                                    className={`step ${currentStep > index + 1 ? "active" : ""
-                                      }`}
+                                    className={`step ${
+                                      currentStep > index + 1 ? "active" : ""
+                                    }`}
                                     data-step={index + 1}
                                   >
                                     <span></span>
@@ -924,8 +960,9 @@ const creditnotecreate = () => {
                           <div className="buttons d-m">
                             {/* Prev Button */}
                             <button
-                              className={`btn btn-prev ${currentStep === 1 ? "disabled" : ""
-                                }`}
+                              className={`btn btn-prev ${
+                                currentStep === 1 ? "disabled" : ""
+                              }`}
                               onClick={handlePrev}
                               disabled={currentStep === 1}
                             >
@@ -933,8 +970,9 @@ const creditnotecreate = () => {
                             </button>
                             {/* Next Button */}
                             <button
-                              className={`btn btn-next ${currentStep === totalSteps ? "disabled" : ""
-                                }`}
+                              className={`btn btn-next ${
+                                currentStep === totalSteps ? "disabled" : ""
+                              }`}
                               onClick={handleNext}
                               disabled={currentStep === totalSteps}
                             >
@@ -1011,7 +1049,6 @@ const creditnotecreate = () => {
                               </div>
                             </div> */}
 
-
                             <div className="col-md-3 mt-2">
                               <div className="form-group">
                                 <label>PO / WO Number</label>
@@ -1045,7 +1082,9 @@ const creditnotecreate = () => {
                                   className="input-group date"
                                   data-date-format="mm-dd-yyyy"
                                 >
-                                  <input className="form-control" type="text"
+                                  <input
+                                    className="form-control"
+                                    type="text"
                                     value={selectedPO?.po_date || ""}
                                     disabled
                                   />
@@ -1074,11 +1113,14 @@ const creditnotecreate = () => {
                                   className="input-group date"
                                   data-date-format="mm-dd-yyyy"
                                 >
-                                  <input className="form-control" type="text"
-                                    value={new Date().toLocaleDateString("en-GB")} // Format: DD/MM/YYYY
+                                  <input
+                                    className="form-control"
+                                    type="text"
+                                    value={new Date().toLocaleDateString(
+                                      "en-GB"
+                                    )} // Format: DD/MM/YYYY
                                     disabled // Makes the input field non-editable
                                   />
-
                                 </div>
                               </div>
                             </div>
@@ -1130,7 +1172,11 @@ const creditnotecreate = () => {
                                   placeholder=""
                                   fdprocessedid="qv9ju9"
                                   value={creditNoteAmount} // Bind to state
-                                  onChange={(e) => setCreditNoteAmount(Number(e.target.value) || 0)} // Update state on change
+                                  onChange={(e) =>
+                                    setCreditNoteAmount(
+                                      Number(e.target.value) || 0
+                                    )
+                                  } // Update state on change
                                 />
                               </div>
                             </div>
@@ -1142,12 +1188,14 @@ const creditnotecreate = () => {
                                   className="input-group date"
                                   data-date-format="mm-dd-yyyy"
                                 >
-                                  <input className="form-control"
-
+                                  <input
+                                    className="form-control"
                                     type="date"
                                     name="creditNoteDate"
                                     value={creditNoteDate} // Bind to state
-                                    onChange={(e) => setCreditNoteDate(e.target.value)} // Update state on change
+                                    onChange={(e) =>
+                                      setCreditNoteDate(e.target.value)
+                                    } // Update state on change
                                   />
                                 </div>
                               </div>
@@ -1170,15 +1218,22 @@ const creditnotecreate = () => {
                             <h5 className=" ">Tax Details</h5>
                           </div>
 
-
-
-                          <div className="tbl-container mt-3" style={{ maxHeight: "500px" }}>
+                          <div
+                            className="tbl-container mt-3"
+                            style={{ maxHeight: "500px" }}
+                          >
                             <table className="w-100">
                               <thead>
                                 <tr>
-                                  <th className="text-start">Tax / Charge Type</th>
-                                  <th className="text-start">Tax / Charges per UOM (INR)</th>
-                                  <th className="text-start">Inclusive / Exclusive</th>
+                                  <th className="text-start">
+                                    Tax / Charge Type
+                                  </th>
+                                  <th className="text-start">
+                                    Tax / Charges per UOM (INR)
+                                  </th>
+                                  <th className="text-start">
+                                    Inclusive / Exclusive
+                                  </th>
                                   <th className="text-start">Amount</th>
                                   <th className="text-start">Action</th>
                                 </tr>
@@ -1186,14 +1241,21 @@ const creditnotecreate = () => {
                               <tbody>
                                 {/* Static Rows for Addition Tax */}
                                 <tr>
-                                  <th className="text-start">Total Base Cost</th>
+                                  <th className="text-start">
+                                    Total Base Cost
+                                  </th>
                                   <td className="text-start" />
                                   <td className="text-start" />
-                                  <td className="text-start"> {creditNoteAmount || ""}</td>
+                                  <td className="text-start">
+                                    {" "}
+                                    {creditNoteAmount || ""}
+                                  </td>
                                   <td />
                                 </tr>
                                 <tr>
-                                  <th className="text-start">Addition Tax & Charges</th>
+                                  <th className="text-start">
+                                    Addition Tax & Charges
+                                  </th>
                                   <td className="text-start" />
                                   <td className="text-start" />
                                   <td className="text-start" />
@@ -1213,7 +1275,9 @@ const creditnotecreate = () => {
                                                                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                                                                 <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
                                                               </svg> */}
-                                    <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
+                                    <button class="btn btn-outline-danger btn-sm">
+                                      <span>+</span>
+                                    </button>
                                   </td>
                                 </tr>
                                 {/* Dynamic Rows for Addition Tax */}
@@ -1228,18 +1292,33 @@ const creditnotecreate = () => {
                                           tax: type.type,
                                           isDisabled:
                                             // Disable "Handling Charges", "Other charges", "Freight" for all rows
-                                            ["Handling Charges", "Other charges", "Freight"].includes(type.name) ||
-
-
+                                            [
+                                              "Handling Charges",
+                                              "Other charges",
+                                              "Freight",
+                                            ].includes(type.name) ||
                                             // Disable "IGST" if "SGST" or "CGST" is selected in any row
                                             (type.name === "IGST" &&
-                                              rows.some((r) => ["SGST", "CGST"].includes(r.type) && r.id !== row.id)) ||
+                                              rows.some(
+                                                (r) =>
+                                                  ["SGST", "CGST"].includes(
+                                                    r.type
+                                                  ) && r.id !== row.id
+                                              )) ||
                                             // Disable "SGST" and "CGST" if "IGST" is selected in any row
-                                            (["SGST", "CGST"].includes(type.name) &&
-                                              rows.some((r) => r.type === "IGST" && r.id !== row.id)),
-
+                                            (["SGST", "CGST"].includes(
+                                              type.name
+                                            ) &&
+                                              rows.some(
+                                                (r) =>
+                                                  r.type === "IGST" &&
+                                                  r.id !== row.id
+                                              )),
                                         }))}
-                                        value={{ value: row.type, label: row.type }}
+                                        value={{
+                                          value: row.type,
+                                          label: row.type,
+                                        }}
                                         // onChange={(selectedOption) =>
                                         //   setRows((prevRows) =>
                                         //     prevRows.map((r) =>
@@ -1247,7 +1326,6 @@ const creditnotecreate = () => {
                                         //     )
                                         //   )
                                         // }
-
 
                                         // onChange={(selectedOption) =>
                                         //   setRows((prevRows) =>
@@ -1266,22 +1344,34 @@ const creditnotecreate = () => {
                                         //   )
                                         // }
 
-
                                         onChange={(selectedOption) => {
                                           setRows((prevRows) => {
-                                            let updatedRows = prevRows.map((r) =>
-                                              r.id === row.id
-                                                ? {
-                                                  ...r,
-                                                  type: selectedOption?.value || "",
-                                                  resource_id: selectedOption?.id || null,
-                                                  resource_type: selectedOption?.tax || "",
-                                                }
-                                                : r
+                                            let updatedRows = prevRows.map(
+                                              (r) =>
+                                                r.id === row.id
+                                                  ? {
+                                                      ...r,
+                                                      type:
+                                                        selectedOption?.value ||
+                                                        "",
+                                                      resource_id:
+                                                        selectedOption?.id ||
+                                                        null,
+                                                      resource_type:
+                                                        selectedOption?.tax ||
+                                                        "",
+                                                    }
+                                                  : r
                                             );
 
                                             // Auto-add CGST if SGST is selected
-                                            if (selectedOption?.value === "SGST" && !prevRows.some(r => r.type === "CGST")) {
+                                            if (
+                                              selectedOption?.value ===
+                                                "SGST" &&
+                                              !prevRows.some(
+                                                (r) => r.type === "CGST"
+                                              )
+                                            ) {
                                               updatedRows = [
                                                 ...updatedRows,
                                                 {
@@ -1292,14 +1382,26 @@ const creditnotecreate = () => {
                                                   amount: row.amount,
                                                   isEditable: true,
                                                   addition: true,
-                                                  resource_id: taxTypes.find(t => t.name === "CGST")?.id || null,
-                                                  resource_type: taxTypes.find(t => t.name === "CGST")?.type || "",
+                                                  resource_id:
+                                                    taxTypes.find(
+                                                      (t) => t.name === "CGST"
+                                                    )?.id || null,
+                                                  resource_type:
+                                                    taxTypes.find(
+                                                      (t) => t.name === "CGST"
+                                                    )?.type || "",
                                                 },
                                               ];
                                             }
 
                                             // Auto-add SGST if CGST is selected
-                                            if (selectedOption?.value === "CGST" && !prevRows.some(r => r.type === "SGST")) {
+                                            if (
+                                              selectedOption?.value ===
+                                                "CGST" &&
+                                              !prevRows.some(
+                                                (r) => r.type === "SGST"
+                                              )
+                                            ) {
                                               updatedRows = [
                                                 ...updatedRows,
                                                 {
@@ -1310,8 +1412,14 @@ const creditnotecreate = () => {
                                                   amount: row.amount,
                                                   isEditable: true,
                                                   addition: true,
-                                                  resource_id: taxTypes.find(t => t.name === "SGST")?.id || null,
-                                                  resource_type: taxTypes.find(t => t.name === "SGST")?.type || "",
+                                                  resource_id:
+                                                    taxTypes.find(
+                                                      (t) => t.name === "SGST"
+                                                    )?.id || null,
+                                                  resource_type:
+                                                    taxTypes.find(
+                                                      (t) => t.name === "SGST"
+                                                    )?.type || "",
                                                 },
                                               ];
                                             }
@@ -1322,7 +1430,6 @@ const creditnotecreate = () => {
                                         placeholder="Select Type"
                                         isDisabled={!row.isEditable} // Disable if not editable
                                       />
-
                                     </td>
                                     <td className="text-start">
                                       {row.isEditable ? (
@@ -1397,8 +1504,6 @@ const creditnotecreate = () => {
                                         //   isDisabled={!row.isEditable}
                                         // />
 
-
-
                                         //                                         <select
                                         //   className="form-control"
                                         //   value={row.percentage}
@@ -1418,42 +1523,65 @@ const creditnotecreate = () => {
                                         //     ))}
                                         // </select>
 
-
-
                                         <SingleSelector
                                           className="form-control"
                                           options={
                                             Array.isArray(
-                                              taxPercentages.find((t) => t.tax_name === row.type)?.percentage
+                                              taxPercentages.find(
+                                                (t) => t.tax_name === row.type
+                                              )?.percentage
                                             )
                                               ? taxPercentages
-                                                .find((t) => t.tax_name === row.type)
-                                                .percentage.map((percent) => ({
-                                                  value: `${percent}%`,
-                                                  label: `${percent}%`,
-                                                }))
+                                                  .find(
+                                                    (t) =>
+                                                      t.tax_name === row.type
+                                                  )
+                                                  .percentage.map(
+                                                    (percent) => ({
+                                                      value: `${percent}%`,
+                                                      label: `${percent}%`,
+                                                    })
+                                                  )
                                               : []
                                           }
                                           value={
-                                            row.percentage !== undefined && row.percentage !== null
+                                            row.percentage !== undefined &&
+                                            row.percentage !== null
                                               ? {
-                                                value: `${parseFloat(row.percentage)}%`,
-                                                label: `${parseFloat(row.percentage)}%`,
-                                              }
-                                              : { value: "", label: "Select Tax" }
+                                                  value: `${parseFloat(
+                                                    row.percentage
+                                                  )}%`,
+                                                  label: `${parseFloat(
+                                                    row.percentage
+                                                  )}%`,
+                                                }
+                                              : {
+                                                  value: "",
+                                                  label: "Select Tax",
+                                                }
                                           }
                                           onChange={(selected) => {
-                                            const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
-                                            const amount = ((creditNoteAmount || 0) * percentage) / 100;
+                                            const percentage =
+                                              parseFloat(
+                                                selected?.value?.replace(
+                                                  "%",
+                                                  ""
+                                                )
+                                              ) || 0;
+                                            const amount =
+                                              ((creditNoteAmount || 0) *
+                                                percentage) /
+                                              100;
 
                                             setRows((prevRows) =>
                                               prevRows.map((r) =>
                                                 r.id === row.id
                                                   ? {
-                                                    ...r,
-                                                    percentage: selected?.value,
-                                                    amount: amount.toFixed(2),
-                                                  }
+                                                      ...r,
+                                                      percentage:
+                                                        selected?.value,
+                                                      amount: amount.toFixed(2),
+                                                    }
                                                   : r
                                               )
                                             );
@@ -1461,13 +1589,6 @@ const creditnotecreate = () => {
                                           placeholder="Select Tax"
                                           isDisabled={!row.isEditable}
                                         />
-
-
-
-
-
-
-
                                       ) : (
                                         <input
                                           type="text"
@@ -1485,7 +1606,10 @@ const creditnotecreate = () => {
                                           setRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
-                                                ? { ...r, inclusive: e.target.checked }
+                                                ? {
+                                                    ...r,
+                                                    inclusive: e.target.checked,
+                                                  }
                                                 : r
                                             )
                                           )
@@ -1502,7 +1626,13 @@ const creditnotecreate = () => {
                                           setRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
-                                                ? { ...r, amount: parseFloat(e.target.value) || 0 }
+                                                ? {
+                                                    ...r,
+                                                    amount:
+                                                      parseFloat(
+                                                        e.target.value
+                                                      ) || 0,
+                                                  }
                                                 : r
                                             )
                                           )
@@ -1512,7 +1642,10 @@ const creditnotecreate = () => {
                                     <td
                                       className="text-start"
                                       onClick={() => deleteRow(row.id)}
-                                      style={{ cursor: "pointer", color: "black" }}
+                                      style={{
+                                        cursor: "pointer",
+                                        color: "black",
+                                      }}
                                     >
                                       {/* <svg
                                                                   xmlns="http://www.w3.org/2000/svg"
@@ -1528,23 +1661,35 @@ const creditnotecreate = () => {
                                                                   <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                                                                   <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
                                                                 </svg> */}
-                                      <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
+                                      <button class="btn btn-outline-danger btn-sm">
+                                        <span>×</span>
+                                      </button>
                                     </td>
                                   </tr>
                                 ))}
 
                                 <tr>
-                                  <th className="text-start">Sub Total A (Addition)</th>
+                                  <th className="text-start">
+                                    Sub Total A (Addition)
+                                  </th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start">{calculateSubTotal()}</td>
+                                  <td className="text-start">
+                                    {calculateSubTotal()}
+                                  </td>
                                   <td />
                                 </tr>
                                 <tr>
                                   <th className="text-start">Gross Amount</th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start">  {(parseFloat(calculateSubTotal()) + (parseFloat(creditNoteAmount) || 0)).toFixed(2)}</td>
+                                  <td className="text-start">
+                                    {" "}
+                                    {(
+                                      parseFloat(calculateSubTotal()) +
+                                      (parseFloat(creditNoteAmount) || 0)
+                                    ).toFixed(2)}
+                                  </td>
                                   <td />
                                 </tr>
                                 {/* Deduction Tax Section */}
@@ -1553,7 +1698,10 @@ const creditnotecreate = () => {
                                   <td className="text-start" />
                                   <td className="" />
                                   <td className="text-start" />
-                                  <td className="text-start" onClick={addDeductionRow}>
+                                  <td
+                                    className="text-start"
+                                    onClick={addDeductionRow}
+                                  >
                                     {/* <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                 width="16"
@@ -1569,7 +1717,9 @@ const creditnotecreate = () => {
                                                                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                                                                 <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
                                                               </svg> */}
-                                    <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
+                                    <button class="btn btn-outline-danger btn-sm">
+                                      <span>+</span>
+                                    </button>
                                   </td>
                                 </tr>
                                 {/* Dynamic Rows for Deduction Tax */}
@@ -1583,7 +1733,10 @@ const creditnotecreate = () => {
                                           id: type.id,
                                           tax: type.type,
                                         }))}
-                                        value={{ value: row.type, label: row.type }}
+                                        value={{
+                                          value: row.type,
+                                          label: row.type,
+                                        }}
                                         // onChange={(selectedOption) =>
                                         //   setDeductionRows((prevRows) =>
                                         //     prevRows.map((r) =>
@@ -1592,16 +1745,22 @@ const creditnotecreate = () => {
                                         //   )
                                         // }
 
-
                                         onChange={(selectedOption) =>
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
-                                              r.id === row.id ? {
-                                                ...r,
-                                                type: selectedOption?.value || "", // Handle null or undefined
-                                                resource_id: selectedOption?.id || null, // Handle null or undefined
-                                                resource_type: selectedOption?.tax || "", // Handle null or undefined
-                                              } : r
+                                              r.id === row.id
+                                                ? {
+                                                    ...r,
+                                                    type:
+                                                      selectedOption?.value ||
+                                                      "", // Handle null or undefined
+                                                    resource_id:
+                                                      selectedOption?.id ||
+                                                      null, // Handle null or undefined
+                                                    resource_type:
+                                                      selectedOption?.tax || "", // Handle null or undefined
+                                                  }
+                                                : r
                                             )
                                           )
                                         }
@@ -1642,45 +1801,62 @@ const creditnotecreate = () => {
                                                                   placeholder="Select Tax"
                                                                 /> */}
 
-
                                       <SingleSelector
                                         className="form-control"
                                         options={
-                                          taxPercentages.find((t) => t.tax_name === row.type)?.percentage.map((p) => ({
-                                            value: `${p}%`,
-                                            label: `${p}%`,
-                                          })) || []
+                                          taxPercentages
+                                            .find(
+                                              (t) => t.tax_name === row.type
+                                            )
+                                            ?.percentage.map((p) => ({
+                                              value: `${p}%`,
+                                              label: `${p}%`,
+                                            })) || []
                                         }
-                                        value={
-                                          (() => {
-                                            const percent = row.percentage?.toString().includes("%")
-                                              ? row.percentage
-                                              : `${row.percentage}%`;
+                                        value={(() => {
+                                          const percent = row.percentage
+                                            ?.toString()
+                                            .includes("%")
+                                            ? row.percentage
+                                            : `${row.percentage}%`;
 
-                                            const options = taxPercentages.find((t) => t.tax_name === row.type)?.percentage || [];
-                                            return options.includes(parseFloat(percent))
-                                              ? { value: percent, label: percent }
-                                              : { value: "", label: "Select Tax" };
-                                          })()
-                                        }
+                                          const options =
+                                            taxPercentages.find(
+                                              (t) => t.tax_name === row.type
+                                            )?.percentage || [];
+                                          return options.includes(
+                                            parseFloat(percent)
+                                          )
+                                            ? { value: percent, label: percent }
+                                            : {
+                                                value: "",
+                                                label: "Select Tax",
+                                              };
+                                        })()}
                                         onChange={(selected) => {
-                                          const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
-                                          const amount = ((creditNoteAmount || 0) * percentage) / 100;
+                                          const percentage =
+                                            parseFloat(
+                                              selected?.value?.replace("%", "")
+                                            ) || 0;
+                                          const amount =
+                                            ((creditNoteAmount || 0) *
+                                              percentage) /
+                                            100;
 
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
                                                 ? {
-                                                  ...r,
-                                                  percentage: percentage,
-                                                  amount: amount.toFixed(2),
-                                                }
+                                                    ...r,
+                                                    percentage: percentage,
+                                                    amount: amount.toFixed(2),
+                                                  }
                                                 : r
                                             )
                                           );
                                         }}
                                         placeholder="Select Tax %"
-                                      // isDisabled={!row.isEditable}
+                                        // isDisabled={!row.isEditable}
                                       />
                                     </td>
                                     <td>
@@ -1691,7 +1867,10 @@ const creditnotecreate = () => {
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
-                                                ? { ...r, inclusive: e.target.checked }
+                                                ? {
+                                                    ...r,
+                                                    inclusive: e.target.checked,
+                                                  }
                                                 : r
                                             )
                                           )
@@ -1708,7 +1887,13 @@ const creditnotecreate = () => {
                                           setDeductionRows((prevRows) =>
                                             prevRows.map((r) =>
                                               r.id === row.id
-                                                ? { ...r, amount: parseFloat(e.target.value) || 0 }
+                                                ? {
+                                                    ...r,
+                                                    amount:
+                                                      parseFloat(
+                                                        e.target.value
+                                                      ) || 0,
+                                                  }
                                                 : r
                                             )
                                           )
@@ -1718,7 +1903,10 @@ const creditnotecreate = () => {
                                     <td
                                       className="text-start"
                                       onClick={() => deleteDeductionRow(row.id)}
-                                      style={{ cursor: "pointer", color: "black" }}
+                                      style={{
+                                        cursor: "pointer",
+                                        color: "black",
+                                      }}
                                     >
                                       {/* <svg
                                                                   xmlns="http://www.w3.org/2000/svg"
@@ -1734,111 +1922,111 @@ const creditnotecreate = () => {
                                                                   <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                                                                   <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
                                                                 </svg> */}
-                                      <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
+                                      <button class="btn btn-outline-danger btn-sm">
+                                        <span>×</span>
+                                      </button>
                                     </td>
                                   </tr>
                                 ))}
                                 {/* Static Rows */}
                                 <tr>
-                                  <th className="text-start">Sub Total B (Deductions)</th>
+                                  <th className="text-start">
+                                    Sub Total B (Deductions)
+                                  </th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start">{calculateDeductionSubTotal()}</td>
+                                  <td className="text-start">
+                                    {calculateDeductionSubTotal()}
+                                  </td>
                                   <td />
                                 </tr>
                                 <tr>
                                   <th className="text-start">Payable Amount</th>
                                   <td className="text-start" />
                                   <td className="" />
-                                  <td className="text-start">{calculatePayableAmount()}</td>
+                                  <td className="text-start">
+                                    {calculatePayableAmount()}
+                                  </td>
                                   <td />
                                 </tr>
-
-
                               </tbody>
                             </table>
                           </div>
-                          <div>
-                            <div className="d-flex justify-content-between align-items-end  mt-5">
-                              <h5 className="mt-3">
-                                Document Attachments{" "}
-                                <span
-                                  style={{ color: "red", fontSize: "16px" }}
-                                >
-                                  *
-                                </span>
-                              </h5>
+                          <div className="d-flex justify-content-between mt-3 me-2">
+                            <h5 className=" ">Document Attachment</h5>
+                            <div
+                              className="card-tools d-flex"
+                              data-bs-toggle="modal"
+                              data-bs-target="#attachModal"
+                              onClick={openattachModal}
+                            >
                               <button
-                                className="purple-btn2 mt-3"
-                                onClick={handleAddDocumentRow}
+                                className="purple-btn2 rounded-3"
+                                data-bs-toggle="modal"
+                                data-bs-target="#attachModal"
                               >
-                                <span className="material-symbols-outlined align-text-top me-2">
-                                  add
-                                </span>
-                                <span>Add</span>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width={20}
+                                  height={20}
+                                  fill="currentColor"
+                                  className="bi bi-plus"
+                                  viewBox="0 0 16 16"
+                                >
+                                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                </svg>
+                                <span>Attach</span>
                               </button>
                             </div>
-
-                            <Table
-                              columns={[
-                                { label: "Sr No", key: "srNo" },
-                                { label: "Upload File", key: "upload" },
-                                { label: "Action", key: "action" },
-                                { label: "view", key: "view" },
-                              ]}
-                              data={documentRows.map((row, index) => ({
-                                srNo: index + 1,
-                                upload: (
-                                  <td style={{ border: "none" }}>
-                                    {/* Hidden file input */}
-                                    <input
-                                      type="file"
-                                      id={`file-input-${index}`}
-                                      key={row?.srNo}
-                                      style={{ display: "none" }} // Hide input
-                                      onChange={(e) =>
-                                        handleFileChange(
-                                          index,
-                                          e.target.files[0]
-                                        )
-                                      }
-                                      accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
-                                    />
-
-                                    <label
-                                      htmlFor={`file-input-${index}`}
-                                      style={{
-                                        display: "inline-block",
-                                        width: "300px",
-                                        padding: "10px",
-                                        border: "1px solid #ccc",
-                                        borderRadius: "4px",
-                                        cursor: "pointer",
-                                        color: "#555",
-                                        backgroundColor: "#f5f5f5",
-                                        textAlign: "center",
-                                      }}
-                                    >
-                                      {row.upload?.filename
-                                        ? row.upload.filename
-                                        : "Choose File"}
-                                    </label>
-                                  </td>
-                                ),
-                                action: (
-                                  <button
-                                    className="btn btn-danger"
-                                    onClick={() =>
-                                      handleRemoveDocumentRow(index)
-                                    }
-                                    disabled={documentRows.length === 1}
-                                  >
-                                    Remove
-                                  </button>
-                                ),
-                              }))}
-                              isAccordion={false}
-                            />
+                          </div>
+                          {/* Document Table (dynamic) */}
+                          <div className="tbl-container mx-3 mt-3">
+                            <table className="w-100">
+                              <thead>
+                                <tr>
+                                  <th className="text-start">Sr. No.</th>
+                                  <th className="text-start">Document Name</th>
+                                  <th className="text-start">File Name</th>
+                                  {/* <th className="text-start">File Type</th> */}
+                                  <th className="text-start">Upload Date</th>
+                                  <th className="text-start">Action</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {documents.length === 0 ? (
+                                  <tr>
+                                    <td colSpan={6} className="text-center">
+                                      No documents attached
+                                    </td>
+                                  </tr>
+                                ) : (
+                                  documents.map((doc, idx) => (
+                                    <tr key={idx}>
+                                      <td className="text-start">{idx + 1}</td>
+                                      <td className="text-start">
+                                        {doc.document_type}
+                                      </td>
+                                      <td className="text-start">
+                                        {doc.attachments[0]?.filename || "-"}
+                                      </td>
+                                      {/* <td className="text-start">
+                            {doc.attachments[0]?.content_type || "-"}
+                          </td> */}
+                                      <td className="text-start">
+                                        {doc.uploadDate || "-"}
+                                      </td>
+                                      <td
+                                        className="text-decoration-underline"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => handleViewDocument(idx)}
+                                      >
+                                        View
+                                      </td>
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
                           </div>
                         </div>
                       </div>
@@ -1876,7 +2064,6 @@ const creditnotecreate = () => {
                   </div>
                 </div>
 
-
                 <div className="row mt-4 justify-content-end align-items-center mx-2">
                   <div className="col-md-3">
                     <div className="form-group d-flex gap-3 align-items-center mx-3">
@@ -1886,7 +2073,9 @@ const creditnotecreate = () => {
                       <SingleSelector
                         options={statusOptions}
                         onChange={handleStatusChange}
-                        value={statusOptions.find((option) => option.value === "draft")} // Set "Draft" as the selected status
+                        value={statusOptions.find(
+                          (option) => option.value === "draft"
+                        )} // Set "Draft" as the selected status
                         placeholder="Select Status"
                         isClearable={false}
                         isDisabled={true} // Disable the selector
@@ -1900,10 +2089,22 @@ const creditnotecreate = () => {
                     <button className="purple-btn2 w-100">Print</button>
                   </div> */}
                   <div className="col-md-2 mt-2">
-                    <button className="purple-btn2 w-100" onClick={handleSubmit}>Submit</button>
+                    <button
+                      className="purple-btn2 w-100"
+                      onClick={handleSubmit}
+                    >
+                      Submit
+                    </button>
                   </div>
                   <div className="col-md-2">
-                    <button className="purple-btn1 w-100" onClick={() => navigate(`/credit-note-list?token=${token}`)}>Cancel</button>
+                    <button
+                      className="purple-btn1 w-100"
+                      onClick={() =>
+                        navigate(`/credit-note-list?token=${token}`)
+                      }
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </div>
                 {/* <div className="row mt-2 w-100">
@@ -2663,8 +2864,9 @@ const creditnotecreate = () => {
                   <nav>
                     <ul className="pagination">
                       <li
-                        className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
-                          }`}
+                        className={`page-item ${
+                          pagination.current_page === 1 ? "disabled" : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -2675,8 +2877,9 @@ const creditnotecreate = () => {
                         </button>
                       </li>
                       <li
-                        className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
-                          }`}
+                        className={`page-item ${
+                          pagination.current_page === 1 ? "disabled" : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -2691,8 +2894,9 @@ const creditnotecreate = () => {
                       {getPageNumbers().map((page) => (
                         <li
                           key={page}
-                          className={`page-item ${page === pagination.current_page ? "active" : ""
-                            }`}
+                          className={`page-item ${
+                            page === pagination.current_page ? "active" : ""
+                          }`}
                         >
                           <button
                             className="page-link"
@@ -2703,10 +2907,11 @@ const creditnotecreate = () => {
                         </li>
                       ))}
                       <li
-                        className={`page-item ${pagination.current_page === pagination.total_pages
-                          ? "disabled"
-                          : ""
-                          }`}
+                        className={`page-item ${
+                          pagination.current_page === pagination.total_pages
+                            ? "disabled"
+                            : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -2721,10 +2926,11 @@ const creditnotecreate = () => {
                         </button>
                       </li>
                       <li
-                        className={`page-item ${pagination.current_page === pagination.total_pages
-                          ? "disabled"
-                          : ""
-                          }`}
+                        className={`page-item ${
+                          pagination.current_page === pagination.total_pages
+                            ? "disabled"
+                            : ""
+                        }`}
                       >
                         <button
                           className="page-link"
@@ -2743,6 +2949,249 @@ const creditnotecreate = () => {
                   {getShowingEntriesText()}
                 </div>
               )}
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+      {/* Attach Modal (advanced, from Bill Entry Create) */}
+      <Modal
+        centered
+        size="l"
+        show={attachModal}
+        onHide={closeattachModal}
+        backdrop="true"
+        keyboard={true}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Attach Document</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row">
+            <div className="col-md-12">
+              <div className="form-group">
+                <label>Name of the Document</label>
+                {newDocument.document_type &&
+                documents.find(
+                  (doc) =>
+                    doc.isDefault &&
+                    doc.document_type === newDocument.document_type
+                ) ? (
+                  // For default document types - show as disabled input
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.document_type}
+                    disabled
+                  />
+                ) : (
+                  // For new document types - allow input
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.document_type}
+                    onChange={(e) =>
+                      setNewDocument((prev) => ({
+                        ...prev,
+                        document_type: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter document name"
+                  />
+                )}
+              </div>
+            </div>
+            <div className="col-md-12 mt-2">
+              <div className="form-group">
+                <label>Upload File</label>
+                <input
+                  type="file"
+                  className="form-control"
+                  onChange={handleFileUpload}
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                />
+              </div>
+            </div>
+            {/* Add this new section for file name editing */}
+            {newDocument.attachments.length > 0 && (
+              <div className="col-md-12 mt-2">
+                <div className="form-group">
+                  <label>File Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.attachments[0].filename}
+                    onChange={(e) => {
+                      setNewDocument((prev) => ({
+                        ...prev,
+                        attachments: [
+                          {
+                            ...prev.attachments[0],
+                            filename: e.target.value,
+                          },
+                        ],
+                      }));
+                    }}
+                    placeholder="Enter file name"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-4">
+              <button
+                className="purple-btn2 w-100 mt-2"
+                onClick={handleAttachDocument}
+                disabled={
+                  !newDocument.document_type ||
+                  newDocument.attachments.length === 0
+                }
+              >
+                Attach
+              </button>
+            </div>
+            <div className="col-md-4">
+              <button className="purple-btn1 w-100" onClick={closeattachModal}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+      {/* View Document Modal (dynamic) */}
+      <Modal
+        centered
+        size="lg"
+        show={viewDocumentModal}
+        onHide={closeviewDocumentModal}
+        backdrop="true"
+        keyboard={true}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Document Attachment</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div>
+            <div className="d-flex justify-content-between mt-3 me-2">
+              <h5 className=" ">Latest Documents</h5>
+              <div
+                className="card-tools d-flex"
+                data-bs-toggle="modal"
+                data-bs-target="#attachModal"
+              >
+                <button
+                  className="purple-btn2 rounded-3"
+                  data-bs-toggle="modal"
+                  data-bs-target="#attachModal"
+                  onClick={openattachModal}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width={20}
+                    height={20}
+                    fill="currentColor"
+                    className="bi bi-plus"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                  </svg>
+                  <span>Attach</span>
+                </button>
+              </div>
+            </div>
+            <div className="tbl-container px-0">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr.No.</th>
+                    <th>Document Name</th>
+                    <th>Attachment Name</th>
+                    {/* <th>File Type</th> */}
+                    <th>Upload Date</th>
+                    {/* <th>Action</th> */}
+                  </tr>
+                </thead>
+                <tbody>
+                  {documents.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center">
+                        No documents attached
+                      </td>
+                    </tr>
+                  ) : (
+                    documents.map((doc, idx) => (
+                      <tr key={idx}>
+                        <td>{idx + 1}</td>
+                        <td>{doc.document_type}</td>
+                        <td>{doc.attachments[0]?.filename || "-"}</td>
+                        {/* <td className="text-start">
+                                              {doc.attachments[0]?.content_type || "-"}
+                                            </td> */}
+                        <td className="text-start">{doc.uploadDate || "-"}</td>
+                        {/* <td>
+                                              <i
+                                                className="fa-regular fa-eye"
+                                                style={{ fontSize: 18, cursor: "pointer" }}
+                                                // You can add onClick to preview/download if needed
+                                              />
+                                            </td> */}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className=" mt-3 me-2">
+              <h5 className=" ">Document Attachment History</h5>
+            </div>
+            <div className="tbl-container px-0">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr.No.</th>
+                    <th>Document Name</th>
+                    <th>Attachment Name</th>
+                    {/* <th>File Type</th> */}
+                    <th>Upload Date</th>
+                    {/* <th>Action</th> */}
+                  </tr>
+                </thead>
+                <tbody>
+                  {documents.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center">
+                        No documents attached
+                      </td>
+                    </tr>
+                  ) : (
+                    documents.map((doc, idx) => (
+                      <tr key={idx}>
+                        <td>{idx + 1}</td>
+                        <td>{doc.document_type}</td>
+                        <td>{doc.attachments[0]?.filename || "-"}</td>
+                        {/* <td>
+                                              {doc.attachments[0]?.content_type || "-"}
+                                            </td> */}
+                        <td className="text-start">{doc.uploadDate || "-"}</td>
+                        {/* <td>
+                                              <i
+                                                className="fa-regular fa-eye"
+                                                style={{ fontSize: 18, cursor: "pointer" }}
+                                                // You can add onClick to preview/download if needed
+                                              />
+                                            </td> */}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-3">
+              <button className="purple-btn1 w-100">Close</button>
             </div>
           </div>
         </Modal.Body>

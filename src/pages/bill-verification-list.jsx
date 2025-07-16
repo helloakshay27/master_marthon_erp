@@ -523,9 +523,8 @@ const BillVerificationList = () => {
 
   //card filter
   const fetchFilteredData2 = (status) => {
-    const url = `${baseURL}bill_entries?page=1&token=${token}${
-      status ? `&q[status_eq]=${status}` : ""
-    }`;
+    const url = `${baseURL}bill_entries?page=1&token=${token}${status ? `&q[status_eq]=${status}` : ""
+      }`;
 
     axios
       .get(url)
@@ -816,7 +815,16 @@ const BillVerificationList = () => {
         ),
     },
 
-    { field: "bill_date", headerName: "Invoice Date", width: 150 },
+    {
+      field: "bill_date", headerName: "Invoice Date", width: 150,
+      renderCell: (params) => {
+        const dateStr = params.value;
+        if (!dateStr) return "-";
+
+        const [year, month, day] = dateStr.split("-");
+        return `${day}-${month}-${year}`;
+      },
+    },
     { field: "bill_amount", headerName: "Bill Amount", width: 150 },
     { field: "bill_type", headerName: "Bill Type", width: 150 },
     { field: "bill_copies", headerName: "Bill Copies", width: 150 },
@@ -973,9 +981,8 @@ display:none !important;
                   <div
                     // className="content-box tab-button active"
                     data-tab="total"
-                    className={`content-box tab-button ${
-                      activeTab === "total" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "total" ? "active" : ""
+                      }`}
                     onClick={() => {
                       setActiveTab("total");
                       fetchFilteredData2("");
@@ -989,9 +996,8 @@ display:none !important;
                   <div
                     // className="content-box tab-button"
                     data-tab="open"
-                    className={`content-box tab-button ${
-                      activeTab === "open" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "open" ? "active" : ""
+                      }`}
                     onClick={() => {
                       setActiveTab("open");
                       fetchFilteredData2("open");
@@ -1007,9 +1013,8 @@ display:none !important;
                   <div
                     // className="content-box tab-button"
                     data-tab="pending-approval"
-                    className={`content-box tab-button ${
-                      activeTab === "recieved_for_verification" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "recieved_for_verification" ? "active" : ""
+                      }`}
                     onClick={() => {
                       setActiveTab("recieved_for_verification");
                       fetchFilteredData2("recieved_for_verification");
@@ -1027,9 +1032,8 @@ display:none !important;
                   <div
                     // className="content-box tab-button"
                     data-tab="self-overdue"
-                    className={`content-box tab-button ${
-                      activeTab === "verified" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "verified" ? "active" : ""
+                      }`}
                     onClick={() => {
                       setActiveTab("verified");
                       fetchFilteredData2("verified");
@@ -1307,9 +1311,9 @@ display:none !important;
                     },
                     // Black for header (select all) checkbox, even when checked
                     "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root":
-                      {
-                        color: "#fff",
-                      },
+                    {
+                      color: "#fff",
+                    },
                     // Make checkboxes smaller
                     "& .MuiCheckbox-root .MuiSvgIcon-root": {
                       fontSize: "1.1rem", // adjust as needed (default is 1.5rem)
@@ -1324,9 +1328,8 @@ display:none !important;
               <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                 <ul className="pagination justify-content-center d-flex">
                   <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === 1 ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1337,9 +1340,8 @@ display:none !important;
                     </button>
                   </li>
                   <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === 1 ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1353,9 +1355,8 @@ display:none !important;
                   {Array.from({ length: totalPages }, (_, index) => (
                     <li
                       key={index + 1}
-                      className={`page-item ${
-                        currentPage === index + 1 ? "active" : ""
-                      }`}
+                      className={`page-item ${currentPage === index + 1 ? "active" : ""
+                        }`}
                     >
                       <button
                         className="page-link"
@@ -1367,9 +1368,8 @@ display:none !important;
                   ))}
 
                   <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1380,9 +1380,8 @@ display:none !important;
                     </button>
                   </li>
                   <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"

@@ -60,6 +60,7 @@ const EditBoqSub = ({
   };
 
   const [unitOfMeasures, setUnitOfMeasures] = useState([]);
+  const [unitOfMeasures2, setUnitOfMeasures2] = useState([]);
 
   useEffect(() => {
     if (materials?.length > 0) {
@@ -1049,6 +1050,36 @@ const EditBoqSub = ({
   //   setSelectedUnit2(selectedOption);  // Update selected unit state
   // };
 
+
+   useEffect(() => {
+          materials.forEach((material, index) => {
+            if (material.pms_inventory_id || material.id) {
+              axios
+                .get(
+                  `${baseURL}unit_of_measures.json?q[material_uoms_material_id_eq]=${material.pms_inventory_id || material.id}&token=${token}`
+                )
+                .then((response) => {
+                  // Mapping the response to the format required by react-select
+                  // console.log("option  for unit related to material++:", response.data)
+                  const options = response.data.map((unit) => ({
+                    value: unit.id,
+                    label: unit.name,
+                  }));
+                  setUnitOfMeasures2((prev) => {
+                  const newOptions = [...prev];
+                  newOptions[index] = options;
+                  return newOptions;
+                });
+                  // console.log("option  for unit related to material:", options)
+                  // console.log(" material selected unit2 :", selectedUnit2)
+                })
+                .catch((error) => {
+                  console.error("Error fetching unit of measures:", error);
+                });
+      
+            }
+          });
+        }, [materials, baseURL]);
   const handleUnitChange2 = (index, selectedOption) => {
     setSelectedUnit2((prevSelectedUnits) => {
       const newSelectedUnits = [...prevSelectedUnits];
@@ -1922,7 +1953,7 @@ const EditBoqSub = ({
                                 </td>
                                 <td>
                                   <SingleSelector
-                                    options={unitOfMeasures} // Providing the options to the select component
+                                    options={unitOfMeasures2[index] || []} // Providing the options to the select component
                                     onChange={(selectedOption) =>
                                       handleUnitChange2(index, selectedOption)
                                     } // Update UOM for the specific material
