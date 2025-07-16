@@ -31,6 +31,13 @@ const BillBookingCreate = () => {
   const [selectPOModal, setselectPOModal] = useState(false);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [selectedPO, setSelectedPO] = useState(null);
+   const [attachModal, setattachModal] = useState(false);
+    const [viewDocumentModal, setviewDocumentModal] = useState(false);
+  
+    const openattachModal = () => setattachModal(true);
+    const closeattachModal = () => setattachModal(false);
+    const openviewDocumentModal = () => setviewDocumentModal(true);
+    const closeviewDocumentModal = () => setviewDocumentModal(false);
 
 
   const [pageSize, setPageSize] = useState(5);
@@ -1275,6 +1282,10 @@ const BillBookingCreate = () => {
 
   console.log("status chnage:", formData.status)
   const handleSubmit = async () => {
+
+
+
+
     if (
       // !selectedCompany ||
       // !selectedProject ||
@@ -1328,6 +1339,7 @@ const BillBookingCreate = () => {
       return;
     }
 
+
     // Invoice amount check
     const baseCost = getSelectedGRNsBaseCost();
     const allInclusiveCost = getSelectedGRNsAllIncTax();
@@ -1367,6 +1379,20 @@ const BillBookingCreate = () => {
     }));
 
     setLoading(true);
+
+
+    const attachments = (documents || [])
+      .map((doc) =>
+        doc.attachments && doc.attachments[0]
+          ? {
+              filename: doc.attachments[0].filename || null,
+              content: doc.attachments[0].content || null,
+              content_type: doc.attachments[0].content_type || null,
+              document_name: doc.document_type || null,
+            }
+          : null
+      )
+      .filter(Boolean);
 
     try {
       const payload = {
@@ -1415,11 +1441,12 @@ const BillBookingCreate = () => {
               grn_ids: selectedGRNs.map((grn) => grn.id),
             },
           ],
-          attachments: documentRows.map((row) => ({
-            filename: row.upload?.filename || "",
-            content: row.upload?.content || "",
-            content_type: row.upload?.content_type || "",
-          })),
+          // attachments: documentRows.map((row) => ({
+          //   filename: row.upload?.filename || "",
+          //   content: row.upload?.content || "",
+          //   content_type: row.upload?.content_type || "",
+          // })),
+           attachments: attachments.length > 0 ? attachments : null,
           debit_note_adjustment,
           credit_note_adjustment,
           advance_note_adjustment,
@@ -1470,53 +1497,7 @@ const BillBookingCreate = () => {
     }
   };
 
-  const [documentRows, setDocumentRows] = useState([{ srNo: 1, upload: null }]);
-  const documentRowsRef = useRef(documentRows);
-
-  const handleAddDocumentRow = () => {
-    const newRow = { srNo: documentRows.length + 1, upload: null };
-    documentRowsRef.current.push(newRow);
-    setDocumentRows([...documentRowsRef.current]);
-  };
-
-  const handleRemoveDocumentRow = (index) => {
-    if (documentRows.length > 1) {
-      const updatedRows = documentRows.filter((_, i) => i !== index);
-
-      // Reset row numbers properly
-      updatedRows.forEach((row, i) => {
-        row.srNo = i + 1;
-      });
-
-      documentRowsRef.current = updatedRows;
-      setDocumentRows([...updatedRows]);
-    }
-  };
-
-  const handleFileChange = (index, file) => {
-    if (!file) return; // Ensure a file is selected
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result.split(",")[1];
-
-      documentRowsRef.current[index].upload = {
-        filename: file.name,
-        content: base64String,
-        content_type: file.type,
-      };
-
-      setDocumentRows([...documentRowsRef.current]);
-    };
-
-    reader.readAsDataURL(file);
-
-    // Reset the input field to allow re-selecting the same file
-    const inputElement = document.getElementById(`file-input-${index}`);
-    if (inputElement) {
-      inputElement.value = ""; // Clear input value
-    }
-  };
+  
 
   const [otherDeductions, setOtherDeductions] = useState(0);
   const [otherAdditions, setOtherAdditions] = useState(0);
@@ -2035,6 +2016,60 @@ const BillBookingCreate = () => {
   };
 
   console.log("selected po:", selectedPO)
+  // Document attachment state and handlers for advanced modal
+    const [newDocument, setNewDocument] = useState({
+      document_type: "",
+      attachments: [],
+    });
+    const [documents, setDocuments] = useState([]); // If you want to keep a list
+  
+    // Handle file upload
+    const handleFileUpload = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewDocument((prev) => ({
+          ...prev,
+          attachments: [
+            {
+              filename: file.name,
+              content: reader.result.split(",")[1],
+              content_type: file.type,
+            },
+          ],
+        }));
+      };
+      reader.readAsDataURL(file);
+    };
+  
+    // Handle attach document
+    const handleAttachDocument = () => {
+      if (!newDocument.document_type || newDocument.attachments.length === 0)
+        return;
+      const now = new Date();
+      const uploadDate = `${now.getDate().toString().padStart(2, "0")}-${(
+        now.getMonth() + 1
+      )
+        .toString()
+        .padStart(2, "0")}-${now.getFullYear()}`;
+      setDocuments((prev) => [
+        ...prev,
+        {
+          ...newDocument,
+          uploadDate,
+        },
+      ]);
+      setNewDocument({ document_type: "", attachments: [] });
+      closeattachModal();
+    };
+  
+    // For viewing a specific document
+    const [viewDocIndex, setViewDocIndex] = useState(null);
+    const handleViewDocument = (index) => {
+      setViewDocIndex(index);
+      openviewDocumentModal();
+    };
   return (
     <>
       <div className="website-content overflow-auto">
@@ -3719,198 +3754,84 @@ const BillBookingCreate = () => {
                     </tbody>
                   </table>
                 </div> */}
-                {/* <div className="d-flex justify-content-between mt-3 me-2">
-                  <h5 className=" ">Document Attachment</h5>
-                  <div
-                    className="card-tools d-flex"
-                    data-bs-toggle="modal"
-                    data-bs-target="#exampleModal"
-                  >
-                    <button
-                      className="purple-btn2 rounded-3"
-                      data-bs-toggle="modal"
-                      data-bs-target="#viewDocumentModal"
-                      fdprocessedid="xn3e6n"
-                      onClick={openAttachTwoModal}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width={20}
-                        height={20}
-                        fill="currentColor"
-                        className="bi bi-plus"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                      </svg>
-                      <span>Attach</span>
-                    </button>
-                  </div>
-                </div>
-                <div className="tbl-container mx-3 mt-3">
-                  <table className="w-100">
-                    <thead>
-                      <tr>
-                        <th className="text-start">Sr. No.</th>
-                        <th className="text-start">Document Name</th>
-                        <th className="text-start">File Name</th>
-                        <th className="text-start">File Type</th>
-                        <th className="text-start">Upload Date</th>
-                        <th className="text-start">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start" />
-                        <td className="text-start">PO.pdf</td>
-                        <td className="text-start">04-03-2024</td>
-                        <td
-                          className="text-decoration-underline cursor-pointer"
-                          // data-bs-toggle="modal"
-                          // data-bs-target="#RevisionModal"
-                          onClick={openAttachOneModal}
-                        >
-                          View
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div> */}
-                {/* // Replace the existing Document Attachment section with this
-                code */}
-                <div>
-                  <div className="d-flex justify-content-between align-items-end mx-1 mt-5">
-                    <h5 className="mt-3">
-                      Document Attachments{" "}
-                      {/* <span style={{ color: "red", fontSize: "16px" }}>*</span> */}
-                    </h5>
-                    <button
-                      className="purple-btn2 mt-3"
-                      onClick={handleAddDocumentRow}
-                    >
-                      <span className="material-symbols-outlined align-text-top me-2">
-                        add
-                      </span>
-                      <span>Add</span>
-                    </button>
-                  </div>
-
-                  <Table
-                    columns={[
-                      { label: "Sr No", key: "srNo" },
-                      { label: "Upload File", key: "upload" },
-                      { label: "Action", key: "action" },
-                      // { label: "view", key: "view" },
-                    ]}
-                    data={documentRows.map((row, index) => ({
-                      srNo: index + 1,
-                      upload: (
-                        <td style={{ border: "none" }}>
-                          {/* Hidden file input */}
-                          <input
-                            type="file"
-                            id={`file-input-${index}`}
-                            key={row?.srNo}
-                            style={{ display: "none" }} // Hide input
-                            onChange={(e) =>
-                              handleFileChange(index, e.target.files[0])
-                            }
-                            accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
-                          />
-
-                          <label
-                            htmlFor={`file-input-${index}`}
-                            style={{
-                              display: "inline-block",
-                              width: "300px",
-                              padding: "10px",
-                              border: "1px solid #ccc",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                              color: "#555",
-                              backgroundColor: "#f5f5f5",
-                              textAlign: "center",
-                            }}
-                          >
-                            {row.upload?.filename
-                              ? row.upload.filename
-                              : "Choose File"}
-                          </label>
-                        </td>
-                      ),
-                      action: (
-                        <button
-                          className="btn btn-danger"
-                          onClick={() => handleRemoveDocumentRow(index)}
-                          disabled={documentRows.length === 1}
-                        >
-                          Remove
-                        </button>
-                      ),
-                    }))}
-                    isAccordion={false}
-                  />
-                </div>
-              </div>
-              {/* <div className="row">
-                <div className="col-md-12">
-                  <div className="form-group">
-                    <label>Remark</label>
-                    <textarea
-                      className="form-control"
-                      rows={3}
-                      placeholder="Enter ..."
-                      defaultValue={""}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="row">
-                <div className="col-md-12">
-                  <div className="form-group">
-                    <label>Comments</label>
-                    <textarea
-                      className="form-control"
-                      rows={2}
-                      placeholder="Enter ..."
-                      defaultValue={""}
-                    />
-                  </div>
-                </div>
-              </div> */}
-              {/* <div className="d-flex justify-content-end align-items-center gap-3">
-                <p className="">Assigned To User</p>
-                <div className="dropdown">
+                 <div className="d-flex justify-content-between mt-3 me-2">
+                <h5 className=" ">Document Attachment</h5>
+                <div
+                  className="card-tools d-flex"
+                  data-bs-toggle="modal"
+                  data-bs-target="#attachModal"
+                  onClick={openattachModal}
+                >
                   <button
-                    className="btn purple-btn2 btn-secondary dropdown-toggle"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    fdprocessedid="d2d1ue"
+                    className="purple-btn2 rounded-3"
+                    data-bs-toggle="modal"
+                    data-bs-target="#attachModal"
                   >
-                    Shamshik
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={20}
+                      height={20}
+                      fill="currentColor"
+                      className="bi bi-plus"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                    </svg>
+                    <span>Attach</span>
                   </button>
-                  <ul className="dropdown-menu">
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Action
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Another action
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        Something else here
-                      </a>
-                    </li>
-                  </ul>
                 </div>
-              </div> */}
+              </div>
+              {/* Document Table (dynamic) */}
+              <div className="tbl-container mx-3 mt-3">
+                <table className="w-100">
+                  <thead>
+                    <tr>
+                      <th className="text-start">Sr. No.</th>
+                      <th className="text-start">Document Name</th>
+                      <th className="text-start">File Name</th>
+                      {/* <th className="text-start">File Type</th> */}
+                      <th className="text-start">Upload Date</th>
+                      <th className="text-start">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {documents.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="text-center">
+                          No documents attached
+                        </td>
+                      </tr>
+                    ) : (
+                      documents.map((doc, idx) => (
+                        <tr key={idx}>
+                          <td className="text-start">{idx + 1}</td>
+                          <td className="text-start">{doc.document_type}</td>
+                          <td className="text-start">
+                            {doc.attachments[0]?.filename || "-"}
+                          </td>
+                          {/* <td className="text-start">
+                            {doc.attachments[0]?.content_type || "-"}
+                          </td> */}
+                          <td className="text-start">
+                            {doc.uploadDate || "-"}
+                          </td>
+                          <td
+                            className="text-decoration-underline"
+                            style={{ cursor: "pointer" }}
+                            onClick={() => handleViewDocument(idx)}
+                          >
+                            View
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+                
+               
+              </div>
+              
               <div className="d-flex justify-content-end align-items-center gap-3 mt-2">
                 <p className="mb-0">Status</p>
                 <select
@@ -4093,21 +4014,7 @@ const BillBookingCreate = () => {
                   <td className="text-start" />
                   <td className="text-start" />
                   <td className="text-start" onClick={addRow}>
-                    {/* <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      className="bi bi-plus-circle"
-                      viewBox="0 0 16 16"
-                      style={{
-                        transform: showRows ? "rotate(45deg)" : "none",
-                        transition: "transform 0.3s ease",
-                      }}
-                    >
-                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                    </svg> */}
+                  
 
                     <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
                   </td>
@@ -4278,20 +4185,7 @@ const BillBookingCreate = () => {
                       onClick={() => deleteRow(row.id)}
                       style={{ cursor: "pointer", color: "black" }}
                     >
-                      {/* <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        className="bi bi-dash-circle"
-                        viewBox="0 0 16 16"
-                        style={{
-                          transition: "transform 0.3s ease",
-                        }}
-                      >
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                      </svg> */}
+                      
                       <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
                     </td>
                   </tr>
@@ -4322,21 +4216,7 @@ const BillBookingCreate = () => {
                   <td className="" />
                   <td className="text-start" />
                   <td onClick={addDeductionRow} className="text-start">
-                    {/* <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      className="bi bi-plus-circle"
-                      viewBox="0 0 16 16"
-                      style={{
-                        // transform: showDeductionRows ? "rotate(45deg)" : "none",
-                        transition: "transform 0.3s ease",
-                      }}
-                    >
-                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                    </svg> */}
+                   
 
                     <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
                   </td>
@@ -4440,20 +4320,7 @@ const BillBookingCreate = () => {
                       onClick={() => deleteDeductionRow(row.id)}
                       style={{ cursor: "pointer", color: "black" }}
                     >
-                      {/* <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        className="bi bi-dash-circle"
-                        viewBox="0 0 16 16"
-                        style={{
-                          transition: "transform 0.3s ease",
-                        }}
-                      >
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                      </svg> */}
+                    
 
                       <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
                     </td>
@@ -5158,6 +5025,256 @@ const BillBookingCreate = () => {
           </div>
         </Modal.Body>
       </Modal>
+        {/* Attach Modal (advanced, from Bill Entry Create) */}
+                    <Modal
+                      centered
+                      size="l"
+                      show={attachModal}
+                      onHide={closeattachModal}
+                      backdrop="true"
+                      keyboard={true}
+                      className="modal-centered-custom"
+                    >
+                      <Modal.Header closeButton>
+                        <h5>Attach Document</h5>
+                      </Modal.Header>
+                      <Modal.Body>
+                        <div className="row">
+                          <div className="col-md-12">
+                            <div className="form-group">
+                              <label>Name of the Document</label>
+                              {newDocument.document_type &&
+                              documents.find(
+                                (doc) =>
+                                  doc.isDefault &&
+                                  doc.document_type === newDocument.document_type
+                              ) ? (
+                                // For default document types - show as disabled input
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={newDocument.document_type}
+                                  disabled
+                                />
+                              ) : (
+                                // For new document types - allow input
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={newDocument.document_type}
+                                  onChange={(e) =>
+                                    setNewDocument((prev) => ({
+                                      ...prev,
+                                      document_type: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="Enter document name"
+                                />
+                              )}
+                            </div>
+                          </div>
+                          <div className="col-md-12 mt-2">
+                            <div className="form-group">
+                              <label>Upload File</label>
+                              <input
+                                type="file"
+                                className="form-control"
+                                onChange={handleFileUpload}
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                              />
+                            </div>
+                          </div>
+                          {/* Add this new section for file name editing */}
+                          {newDocument.attachments.length > 0 && (
+                            <div className="col-md-12 mt-2">
+                              <div className="form-group">
+                                <label>File Name</label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={newDocument.attachments[0].filename}
+                                  onChange={(e) => {
+                                    setNewDocument((prev) => ({
+                                      ...prev,
+                                      attachments: [
+                                        {
+                                          ...prev.attachments[0],
+                                          filename: e.target.value,
+                                        },
+                                      ],
+                                    }));
+                                  }}
+                                  placeholder="Enter file name"
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="row mt-2 justify-content-center">
+                          <div className="col-md-4">
+                            <button
+                              className="purple-btn2 w-100 mt-2"
+                              onClick={handleAttachDocument}
+                              disabled={
+                                !newDocument.document_type ||
+                                newDocument.attachments.length === 0
+                              }
+                            >
+                              Attach
+                            </button>
+                          </div>
+                          <div className="col-md-4">
+                            <button
+                              className="purple-btn1 w-100"
+                              onClick={closeattachModal}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      </Modal.Body>
+                    </Modal>
+                    {/* View Document Modal (dynamic) */}
+                    <Modal
+                      centered
+                      size="lg"
+                      show={viewDocumentModal}
+                      onHide={closeviewDocumentModal}
+                      backdrop="true"
+                      keyboard={true}
+                      className="modal-centered-custom"
+                    >
+                      <Modal.Header closeButton>
+                        <h5>Document Attachment</h5>
+                      </Modal.Header>
+                      <Modal.Body>
+                        <div>
+                          <div className="d-flex justify-content-between mt-3 me-2">
+                            <h5 className=" ">Latest Documents</h5>
+                            <div
+                              className="card-tools d-flex"
+                              data-bs-toggle="modal"
+                              data-bs-target="#attachModal"
+                            >
+                              <button
+                                className="purple-btn2 rounded-3"
+                                data-bs-toggle="modal"
+                                data-bs-target="#attachModal"
+                                onClick={openattachModal}
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width={20}
+                                  height={20}
+                                  fill="currentColor"
+                                  className="bi bi-plus"
+                                  viewBox="0 0 16 16"
+                                >
+                                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                </svg>
+                                <span>Attach</span>
+                              </button>
+                            </div>
+                          </div>
+                          <div className="tbl-container px-0">
+                            <table className="w-100">
+                              <thead>
+                                <tr>
+                                  <th>Sr.No.</th>
+                                  <th>Document Name</th>
+                                  <th>Attachment Name</th>
+                                  {/* <th>File Type</th> */}
+                                  <th>Upload Date</th>
+                                  {/* <th>Action</th> */}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {documents.length === 0 ? (
+                                  <tr>
+                                    <td colSpan={6} className="text-center">
+                                      No documents attached
+                                    </td>
+                                  </tr>
+                                ) : (
+                                  documents.map((doc, idx) => (
+                                    <tr key={idx}>
+                                      <td>{idx + 1}</td>
+                                      <td>{doc.document_type}</td>
+                                      <td>{doc.attachments[0]?.filename || "-"}</td>
+                                      {/* <td className="text-start">
+                                        {doc.attachments[0]?.content_type || "-"}
+                                      </td> */}
+                                      <td className="text-start">
+                                        {doc.uploadDate || "-"}
+                                      </td>
+                                      {/* <td>
+                                        <i
+                                          className="fa-regular fa-eye"
+                                          style={{ fontSize: 18, cursor: "pointer" }}
+                                          // You can add onClick to preview/download if needed
+                                        />
+                                      </td> */}
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                          <div className=" mt-3 me-2">
+                            <h5 className=" ">Document Attachment History</h5>
+                          </div>
+                          <div className="tbl-container px-0">
+                            <table className="w-100">
+                              <thead>
+                                <tr>
+                                  <th>Sr.No.</th>
+                                  <th>Document Name</th>
+                                  <th>Attachment Name</th>
+                                  {/* <th>File Type</th> */}
+                                  <th>Upload Date</th>
+                                  {/* <th>Action</th> */}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {documents.length === 0 ? (
+                                  <tr>
+                                    <td colSpan={6} className="text-center">
+                                      No documents attached
+                                    </td>
+                                  </tr>
+                                ) : (
+                                  documents.map((doc, idx) => (
+                                    <tr key={idx}>
+                                      <td>{idx + 1}</td>
+                                      <td>{doc.document_type}</td>
+                                      <td>{doc.attachments[0]?.filename || "-"}</td>
+                                      {/* <td>
+                                        {doc.attachments[0]?.content_type || "-"}
+                                      </td> */}
+                                      <td className="text-start">
+                                        {doc.uploadDate || "-"}
+                                      </td>
+                                      {/* <td>
+                                        <i
+                                          className="fa-regular fa-eye"
+                                          style={{ fontSize: 18, cursor: "pointer" }}
+                                          // You can add onClick to preview/download if needed
+                                        />
+                                      </td> */}
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                        <div className="row mt-2 justify-content-center">
+                          <div className="col-md-3">
+                            <button className="purple-btn1 w-100">Close</button>
+                          </div>
+                        </div>
+                      </Modal.Body>
+                    </Modal>
       <ToastContainer
         position="top-right"
         autoClose={3000}
