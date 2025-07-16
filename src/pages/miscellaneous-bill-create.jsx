@@ -2874,13 +2874,7 @@ const openAttachTwoModal = () => setattachTwoModal(true);
                                                      {doc.attachments[0]?.content_type || "-"}
                                                    </td> */}
                                <td className="text-start">{doc.uploadDate || "-"}</td>
-                               {/* <td>
-                                                     <i
-                                                       className="fa-regular fa-eye"
-                                                       style={{ fontSize: 18, cursor: "pointer" }}
-                                                       // You can add onClick to preview/download if needed
-                                                     />
-                                                   </td> */}
+                              
                              </tr>
                            ))
                          )}
