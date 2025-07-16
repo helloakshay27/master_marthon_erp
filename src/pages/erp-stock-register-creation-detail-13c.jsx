@@ -368,7 +368,8 @@ const ErpStockRegisterCreationDetail13C = () => {
                                         {selectedStoreDetails.stock_details.map((item, id) => (
                                           <tr key={id}>
                                             <td>{id + 1}</td>
-                                            <td>{new Date(item?.created_at).toLocaleDateString("en-GB")}</td>
+                                            {/* <td>{new Date(item?.created_at).toLocaleDateString("en-GB")}</td> */}
+                                            <td>{new Date(item?.created_at).toLocaleDateString("en-GB").replace(/\//g, "-")}</td>
                                             <td>{item?.mor}</td>
                                             <td>{item?.supplier || "-"}</td>
                                             <td>{item?.resource_number}</td>

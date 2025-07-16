@@ -772,6 +772,7 @@ const EditBOQNew = () => {
     // umo api
 
     const [unitOfMeasures, setUnitOfMeasures] = useState([]);
+    const [unitOfMeasures2, setUnitOfMeasures2] = useState([]);
     const [selectedUnit, setSelectedUnit] = useState(null);
     const [selectedUnitSubRow, setSelectedUnitSubRow] = useState([]);
     const [selectedUnit2, setSelectedUnit2] = useState([]);
@@ -810,14 +811,7 @@ const EditBOQNew = () => {
     //   setSelectedUnit2(selectedOption);  // Update selected unit state
     // };
 
-    const handleUnitChange2 = (index, selectedOption) => {
-        setSelectedUnit2((prevSelectedUnits) => {
-            const newSelectedUnits = [...prevSelectedUnits];
-            newSelectedUnits[index] = selectedOption; // Update UOM for the specific material
-            return newSelectedUnits;
-        });
-    };
-
+     
     const handleUnitChange3 = (index, selectedOption) => {
         setSelectedUnit3((prevSelectedUnits) => {
             const newSelectedUnits = [...prevSelectedUnits];
@@ -1147,6 +1141,46 @@ const EditBOQNew = () => {
             return newSelectedBrands;
         });
     };
+
+
+     useEffect(() => {
+        materials.forEach((material, index) => {
+          if (material.pms_inventory_id || material.id) {
+            axios
+              .get(
+                `${baseURL}unit_of_measures.json?q[material_uoms_material_id_eq]=${material.pms_inventory_id || material.id}&token=${token}`
+              )
+              .then((response) => {
+                // Mapping the response to the format required by react-select
+                // console.log("option  for unit related to material++:", response.data)
+                const options = response.data.map((unit) => ({
+                  value: unit.id,
+                  label: unit.name,
+                }));
+                setUnitOfMeasures2((prev) => {
+                const newOptions = [...prev];
+                newOptions[index] = options;
+                return newOptions;
+              });
+                // console.log("option  for unit related to material:", options)
+                // console.log(" material selected unit2 :", selectedUnit2)
+              })
+              .catch((error) => {
+                console.error("Error fetching unit of measures:", error);
+              });
+    
+          }
+        });
+      }, [materials, baseURL]);
+
+    const handleUnitChange2 = (index, selectedOption) => {
+        setSelectedUnit2((prevSelectedUnits) => {
+            const newSelectedUnits = [...prevSelectedUnits];
+            newSelectedUnits[index] = selectedOption; // Update UOM for the specific material
+            return newSelectedUnits;
+        });
+    };
+
 
     // //payoad creation here
 
@@ -3003,7 +3037,7 @@ const EditBOQNew = () => {
 
                                                                             <td style={{ width: "200px" }}>
                                                                                 <SingleSelector
-                                                                                    options={unitOfMeasures}
+                                                                                    options={unitOfMeasures2[index] || []}
                                                                                     onChange={(selectedOption) =>
                                                                                         handleUnitChange2(index, selectedOption)
                                                                                     }

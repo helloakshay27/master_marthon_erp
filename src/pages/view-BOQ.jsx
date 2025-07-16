@@ -44,11 +44,7 @@ const BOQList = () => {
 
 
 
-  const handleClick = () => {
-    // Navigate to '/about' when the button is clicked
-    navigate(`/create-BOQ?token=${token}`);
-  };
-
+  
   const handleModalShow = () => setShow(true);
 
 
@@ -939,6 +935,17 @@ const BOQList = () => {
     reader.readAsDataURL(file);
   };
 
+
+  const handleClick = () => {
+    // Navigate to '/about' when the button is clicked
+    const projectId = boqList?.project_id || "";
+      const siteId = boqList?.pms_site_id || "";
+  const wingId = boqList?.pms_wing_id || "";
+
+    navigate(`/create-BOQ?token=${token}&project_id=${projectId}&site_id=${siteId}&wing_id=${wingId}`);
+  };
+
+
   return (
     <>
 
@@ -1149,6 +1156,20 @@ const BOQList = () => {
 
                     {/* Reset Button */}
                     <button className="purple-btn2 me-2" onClick={handleClickCollapse}>Reset</button>
+
+                    <button className="purple-btn2 me-3" onClick={handleClick}>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="20"
+                                                height="20"
+                                                fill="white"
+                                                className="bi bi-plus"
+                                                viewBox="0 0 16 16"
+                                            >
+                                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                            </svg>
+                                            <span> Create BOQ</span>
+                                        </button>
                   </div>
                 </div>
               </div>

@@ -17,9 +17,15 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { baseURL } from "../confi/apiDomain";
+import { useLocation } from "react-router-dom";
 import Select from "react-select";
 
 const CreateBOQ = () => {
+  const location = useLocation();
+const queryParams = new URLSearchParams(location.search);
+const projectIdFromURL = queryParams.get("project_id");
+const siteIdFromURL = queryParams.get("site_id");
+const wingIdFromURL = queryParams.get("wing_id");
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
   const [showMaterialLabour, setShowMaterialLabour] = useState(false);
@@ -495,6 +501,59 @@ const CreateBOQ = () => {
     label: project.formatted_name,
   }));
 
+useEffect(() => {
+  if (projectIdFromURL && projects.length > 0) {
+    const projectId = parseInt(projectIdFromURL);
+    const siteId = parseInt(siteIdFromURL);
+    const wingId = parseInt(wingIdFromURL);
+
+    const project = projects.find((p) => p.id === projectId);
+    if (project) {
+      const projectOption = {
+        value: project.id,
+        label: project.name,
+      };
+      setSelectedProject(projectOption);
+
+      // set site options first!
+      const sites = project.pms_sites || [];
+      const siteOptionsList = sites.map((site) => ({
+        value: site.id,
+        label: site.name,
+      }));
+      setSiteOptions(siteOptionsList);
+
+      const site = sites.find((s) => s.id === siteId);
+      if (site) {
+        const siteOption = {
+          value: site.id,
+          label: site.name,
+        };
+        setSelectedSite(siteOption);
+
+        // wings depend on site
+        const wings = site.pms_wings || [];
+        const wingsOptionsList = wings.map((wing) => ({
+          value: wing.id,
+          label: wing.name,
+        }));
+        setWingsOptions(wingsOptionsList);
+
+        const wing = wings.find((w) => w.id === wingId);
+        if (wing) {
+          setSelectedWing({
+            value: wing.id,
+            label: wing.name,
+          });
+        }
+      }
+    }
+  }
+}, [projects]);
+
+
+
+
   // main category and sub level2
 
   const [workCategories, setWorkCategories] = useState([]); // To store work categories fetched from the API
@@ -519,7 +578,7 @@ const CreateBOQ = () => {
       ) // Replace with your API endpoint
       .then((response) => {
         setWorkCategories(response.data.work_categories); // Save the categories to state
-        console.log("work cat:", response.data.work_categories)
+        // console.log("work cat:", response.data.work_categories)
       })
       .catch((error) => {
         console.error("Error fetching work categories:", error);
@@ -634,6 +693,7 @@ const CreateBOQ = () => {
   // umo api
 
   const [unitOfMeasures, setUnitOfMeasures] = useState([]);
+  const [unitOfMeasures2, setUnitOfMeasures2] = useState([]);
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [selectedUnitSubRow, setSelectedUnitSubRow] = useState([]);
   const [selectedUnit2, setSelectedUnit2] = useState([]);
@@ -651,6 +711,7 @@ const CreateBOQ = () => {
           value: unit.id,
           label: unit.name,
         }));
+        // console.log("unit options without materials:",options)
         setUnitOfMeasures(options); // Save the formatted options to state
       })
       .catch((error) => {
@@ -658,6 +719,11 @@ const CreateBOQ = () => {
       });
   }, []);
 
+// console.log( "units without materails :",unitOfMeasures)
+ 
+
+
+  // console.log(" material selected unit2 :", selectedUnit2)
   // Handler for unit of measure selection
   const handleUnitChange = (selectedOption) => {
     setSelectedUnit(selectedOption); // Update selected unit state
@@ -667,14 +733,7 @@ const CreateBOQ = () => {
   //   setSelectedUnit2(selectedOption);  // Update selected unit state
   // };
 
-  const handleUnitChange2 = (index, selectedOption) => {
-    setSelectedUnit2((prevSelectedUnits) => {
-      const newSelectedUnits = [...prevSelectedUnits];
-      newSelectedUnits[index] = selectedOption; // Update UOM for the specific material
-      return newSelectedUnits;
-    });
-  };
-
+  
   const handleUnitChange3 = (index, selectedOption) => {
     setSelectedUnit3((prevSelectedUnits) => {
       const newSelectedUnits = [...prevSelectedUnits];
@@ -1029,6 +1088,52 @@ const CreateBOQ = () => {
       const newSelectedBrands = [...prevSelectedBrands];
       newSelectedBrands[index] = selectedOption; // Update brand for the specific asset
       return newSelectedBrands;
+    });
+  };
+
+
+   useEffect(() => {
+    materials.forEach((material, index) => {
+      if (material.id) {
+        axios
+          .get(
+            `${baseURL}unit_of_measures.json?q[material_uoms_material_id_eq]=${material.id}&token=${token}`
+          )
+          .then((response) => {
+            // Mapping the response to the format required by react-select
+            // console.log("option  for unit related to material++:", response.data)
+            const options = response.data.map((unit) => ({
+              value: unit.id,
+              label: unit.name,
+            }));
+            // setUnitOfMeasures2(options)
+            // setSelectedUnit2(options); // Save the formatted options to state
+            // setSelectedUnit2((prevBrands) => {
+            //   const newBrands = [...prevBrands];
+            //   newBrands[index] = options; // Update brands for this specific material
+            //   return newBrands;
+            // });
+            setUnitOfMeasures2((prev) => {
+            const newOptions = [...prev];
+            newOptions[index] = options;
+            return newOptions;
+          });
+            // console.log("option  for unit related to material:", options)
+            // console.log(" material selected unit2 :", selectedUnit2)
+          })
+          .catch((error) => {
+            console.error("Error fetching unit of measures:", error);
+          });
+
+      }
+    });
+  }, [materials, baseURL]);
+
+  const handleUnitChange2 = (index, selectedOption) => {
+    setSelectedUnit2((prevSelectedUnits) => {
+      const newSelectedUnits = [...prevSelectedUnits];
+      newSelectedUnits[index] = selectedOption; // Update UOM for the specific material
+      return newSelectedUnits;
     });
   };
 
@@ -1630,29 +1735,29 @@ const CreateBOQ = () => {
   const handleLevel5Change = (selectedOption) =>
     setSelectedSubCategoryLevel5(selectedOption);
 
-          const payloadData = {
-          boq_detail: {
-            project_id: selectedProject ? selectedProject.value : null,
-            pms_site_id: selectedSite ? selectedSite.value : null,
-            pms_wing_id: selectedWing ? selectedWing.value : null,
-            item_name: itemName,
-            description: description,
-            unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
-            quantity: boqQuantity,
-            note: note,
-            // Flattened category levels
-            level_one_id: selectedCategory?.value || "",
-            level_two_id: selectedSubCategory?.value || "",
-            level_three_id: selectedSubCategoryLevel3?.value || "",
-            level_four_id: selectedSubCategoryLevel4?.value || "",
-            level_five_id: selectedSubCategoryLevel5?.value || "",
-            // Directly include all predefined materials and assets
-            materials: predefinedMaterials || [],
-            assets: predefinedAssets || [],
+  const payloadData = {
+    boq_detail: {
+      project_id: selectedProject ? selectedProject.value : null,
+      pms_site_id: selectedSite ? selectedSite.value : null,
+      pms_wing_id: selectedWing ? selectedWing.value : null,
+      item_name: itemName,
+      description: description,
+      unit_of_measure_id: selectedUnit ? selectedUnit.value : null,
+      quantity: boqQuantity,
+      note: note,
+      // Flattened category levels
+      level_one_id: selectedCategory?.value || "",
+      level_two_id: selectedSubCategory?.value || "",
+      level_three_id: selectedSubCategoryLevel3?.value || "",
+      level_four_id: selectedSubCategoryLevel4?.value || "",
+      level_five_id: selectedSubCategoryLevel5?.value || "",
+      // Directly include all predefined materials and assets
+      materials: predefinedMaterials || [],
+      assets: predefinedAssets || [],
 
-          },
-        }; 
-        // console.log("payload for materil option :", payloadData)
+    },
+  };
+  // console.log("payload for materil option :", payloadData)
 
   const handleSubmitMaterialLabour = async () => {
     // Validate mandatory fields
@@ -2592,13 +2697,14 @@ const CreateBOQ = () => {
 
                                       <td style={{ width: "200px" }}>
                                         <SingleSelector
-                                          options={unitOfMeasures}
+                                          options={unitOfMeasures2[index] || []}
                                           onChange={(selectedOption) =>
                                             handleUnitChange2(index, selectedOption)
                                           }
                                           value={selectedUnit2[index]}
                                           placeholder={`Select UOM`}
                                         />
+                                        {console.log("***selected unit2:",unitOfMeasures2)}
                                       </td>
                                       <td style={{ width: "200px" }}>
                                         <input

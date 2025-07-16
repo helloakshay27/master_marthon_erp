@@ -87,6 +87,8 @@ const CreateRate = () => {
             setSelectedColors(null)
             setInventoryBrands([])
             setSelectedInventoryBrands(null)
+            setUnitOfMeasures([])
+            setSelectedUnit(null)
         }
 
         if (field === "materialSubType") {
@@ -477,22 +479,25 @@ const CreateRate = () => {
     const [selectedUnit, setSelectedUnit] = useState(null);
     // Fetching the unit of measures data on component mount
     useEffect(() => {
-        axios
-            .get(
-                `${baseURL}unit_of_measures.json?token=${token}`
-            )
-            .then((response) => {
-                // Mapping the response to the format required by react-select
-                const options = response.data.map((unit) => ({
-                    value: unit.id,
-                    label: unit.name,
-                }));
-                setUnitOfMeasures(options); // Save the formatted options to state
-            })
-            .catch((error) => {
-                console.error("Error fetching unit of measures:", error);
-            });
-    }, []);
+        if (selectedInventoryMaterialTypes2) {
+            axios
+                .get(
+                    `${baseURL}unit_of_measures.json?q[material_uoms_material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=${token}`
+                )
+                .then((response) => {
+                    // Mapping the response to the format required by react-select
+                    const options = response.data.map((unit) => ({
+                        value: unit.id,
+                        label: unit.name,
+                    }));
+                    setUnitOfMeasures(options); // Save the formatted options to state
+                })
+                .catch((error) => {
+                    console.error("Error fetching unit of measures:", error);
+                });
+
+        }
+    }, [selectedInventoryMaterialTypes2, baseURL]);
 
 
     // for generic specification
@@ -937,10 +942,10 @@ const CreateRate = () => {
                         {/* {tableData.map((row, idx) => (
   <pre key={idx}>{JSON.stringify(row, null, 2)}</pre>
 ))} */}
-                        <div className="d-flex justify-content-end mx-2">
+                        <div className="d-flex justify-content-end mx-2 mt-4 mb-2">
                             {/* <button className="purple-btn2">Bulk Upload</button> */}
                             <button
-                                className="purple-btn2"
+                                className="purple-btn2 me-2"
                                 data-bs-toggle="modal"
                                 data-bs-target="#addnewModal"
                                 // onClick={() => setShowModal(true)}

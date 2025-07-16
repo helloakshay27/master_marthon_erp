@@ -166,6 +166,8 @@ const RateRevision = () => {
             setSelectedColors(null)
             setInventoryBrands([])
             setSelectedInventoryBrands(null)
+            setUnitOfMeasures([])
+            setSelectedUnit(null)
         }
 
         if (field === "materialSubType") {
@@ -595,9 +597,10 @@ const RateRevision = () => {
     const [selectedUnit, setSelectedUnit] = useState(null);
     // Fetching the unit of measures data on component mount
     useEffect(() => {
+        if (selectedInventoryMaterialTypes2) {
         axios
             .get(
-                `${baseURL}unit_of_measures.json?token=${token}`
+                `${baseURL}unit_of_measures.json?q[material_uoms_material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=${token}`
             )
             .then((response) => {
                 // Mapping the response to the format required by react-select
@@ -610,7 +613,8 @@ const RateRevision = () => {
             .catch((error) => {
                 console.error("Error fetching unit of measures:", error);
             });
-    }, []);
+             }
+    }, [selectedInventoryMaterialTypes2, baseURL]);
 
 
     // for generic specification
@@ -1347,7 +1351,7 @@ const RateRevision = () => {
                 <Modal.Body>
                     <form>
                         <div className="row">
-                             <div className="col-md-3 d-flex align-items-center custom-radio">
+                            <div className="col-md-3 d-flex align-items-center custom-radio">
                                 <input
                                     type="radio"
                                     id="companyRadio"
@@ -1363,7 +1367,7 @@ const RateRevision = () => {
                                     Company
                                 </label>
                             </div>
-                             <div className="col-md-4 d-flex align-items-center custom-radio">
+                            <div className="col-md-4 d-flex align-items-center custom-radio">
                                 <input
                                     type="radio"
                                     className="me-2"
@@ -1407,8 +1411,8 @@ const RateRevision = () => {
                                     />
                                 </div>
                             </div>
-                           
-                           
+
+
                         </div>
                     </form>
                 </Modal.Body>

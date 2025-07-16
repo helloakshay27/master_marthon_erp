@@ -124,12 +124,12 @@ const ErpStockRegister13B = () => {
   const [selectedProject, setSelectedProject] = useState([]);
   const [selectedSubProject, setSelectedSubProject] = useState([]);
   const [selectedIds, setSelectedIds] = useState({
-    genericInfos: [],
-    materialSubTypes: [],
-    materialTypes: [],
-    unitOfMeasures: [],
-    morNumbers: [],
-    grnNumbers: [],
+    // genericInfos: [],
+    // materialSubTypes: [],
+    // materialTypes: [],
+    // unitOfMeasures: [],
+    // morNumbers: [],
+    // grnNumbers: [],
   });
 
   const [morOptions, setMorOptions] = useState([]);
@@ -418,24 +418,24 @@ const ErpStockRegister13B = () => {
     }
   };
 
-  useEffect(() => {
-    fetchData(
-      `${baseURL}pms/generic_infos.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-      setGenericInfos
-    );
-    fetchData(
-      `${baseURL}pms/inventory_sub_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-      setMaterialSubTypes
-    );
-    fetchData(
-      `${baseURL}pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-      setMaterialTypes
-    );
-    fetchData(
-      `${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-      setUnitOfMeasures
-    );
-  }, []);
+  // useEffect(() => {
+  //   fetchData(
+  //     `${baseURL}pms/generic_infos.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+  //     setGenericInfos
+  //   );
+  //   fetchData(
+  //     `${baseURL}pms/inventory_sub_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+  //     setMaterialSubTypes
+  //   );
+  //   fetchData(
+  //     `${baseURL}pms/inventory_types.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+  //     setMaterialTypes
+  //   );
+  //   fetchData(
+  //     `${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+  //     setUnitOfMeasures
+  //   );
+  // }, []);
 
   const formatOptions = (data) => {
     return data.map((item) => ({
@@ -601,6 +601,10 @@ const ErpStockRegister13B = () => {
       headerName: "Last Received On",
       width: 150,
       sortable: true,
+   renderCell: (params) => {
+    const dateStr = params.value;
+    return dateStr ? dateStr.replace(/\//g, "-") : "-";
+  },
     },
     {
       field: "total_received",
@@ -815,6 +819,31 @@ const ErpStockRegister13B = () => {
         });
     }
   }, [selectedInventoryMaterialTypes2, baseURL]); // Runs when materials or baseURL changes
+  // umo api
+
+  const [unitOfMeasures, setUnitOfMeasures] = useState([]);
+  const [selectedUnit, setSelectedUnit] = useState(null);
+  // Fetching the unit of measures data on component mount
+  useEffect(() => {
+    if (selectedInventoryMaterialTypes2) {
+      axios
+        .get(`${baseURL}unit_of_measures.json?q[material_uoms_material_id_eq]=${selectedInventoryMaterialTypes2.value}&token=${token}`)
+        .then((response) => {
+          // Mapping the response to the format required by react-select
+          const options = response.data.map((unit) => ({
+            value: unit.id,
+            label: unit.name,
+          }));
+          setUnitOfMeasures(options); // Save the formatted options to state
+        })
+        .catch((error) => {
+          console.error("Error fetching unit of measures:", error);
+        });
+    }
+  }, [selectedInventoryMaterialTypes2, baseURL]);
+
+
+
   const handleSelectorChange = (field, selectedOption) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -835,6 +864,8 @@ const ErpStockRegister13B = () => {
       setSelectedColors(null);
       setInventoryBrands([]);
       setSelectedInventoryBrands(null);
+      setUnitOfMeasures([])
+      setSelectedUnit(null)
     }
 
     if (field === "materialSubType") {
@@ -863,26 +894,6 @@ const ErpStockRegister13B = () => {
     }
   };
 
-  // umo api
-
-  const [unitOfMeasures, setUnitOfMeasures] = useState([]);
-  const [selectedUnit, setSelectedUnit] = useState(null);
-  // Fetching the unit of measures data on component mount
-  useEffect(() => {
-    axios
-      .get(`${baseURL}unit_of_measures.json?token=${token}`)
-      .then((response) => {
-        // Mapping the response to the format required by react-select
-        const options = response.data.map((unit) => ({
-          value: unit.id,
-          label: unit.name,
-        }));
-        setUnitOfMeasures(options); // Save the formatted options to state
-      })
-      .catch((error) => {
-        console.error("Error fetching unit of measures:", error);
-      });
-  }, []);
 
   // Add this function inside your component
   const handleFilterGo = async () => {
@@ -1179,11 +1190,11 @@ display:none !important;
                       value={
                         companies.find((c) => c.id === selectedCompany)
                           ? {
-                              value: selectedCompany,
-                              label: companies.find(
-                                (c) => c.id === selectedCompany
-                              ).company_name,
-                            }
+                            value: selectedCompany,
+                            label: companies.find(
+                              (c) => c.id === selectedCompany
+                            ).company_name,
+                          }
                           : null
                       }
                       placeholder="Select Company"
@@ -1203,7 +1214,7 @@ display:none !important;
                         null
                       }
                       placeholder="Select Project"
-                      // isDisabled={!selectedCompany}
+                    // isDisabled={!selectedCompany}
                     />
                   </div>
                 </div>
@@ -1223,7 +1234,7 @@ display:none !important;
                         ) || null
                       }
                       placeholder="Select Sub-project"
-                      // isDisabled={!selectedProject}
+                    // isDisabled={!selectedProject}
                     />
                   </div>
                 </div>
@@ -1237,7 +1248,7 @@ display:none !important;
                       onChange={setSelectedStore}
                       value={selectedStore}
                       placeholder="Select Store"
-                      // isDisabled={!selectedSubProject}
+                    // isDisabled={!selectedSubProject}
                     />
                     {console.log("store options:", storeOptions)}
                   </div>
@@ -1404,7 +1415,7 @@ display:none !important;
             </div>
 
             <div
-              className="tbl-container  px-1 mt-3"
+              className="tbl-container mt-3  px-3"
               style={{
                 width: "max-congent",
                 height: "300px !important",
@@ -1414,6 +1425,7 @@ display:none !important;
               {getTransformedRows().length > 0 ? (
                 <DataGrid
                   rows={getTransformedRows()}
+                  autoHeight={true}
                   columns={allColumns}
                   columnVisibilityModel={columnVisibility}
                   onColumnVisibilityModelChange={setColumnVisibility}
@@ -1456,7 +1468,7 @@ display:none !important;
               )}
             </div>
 
-            <div className="d-flex justify-content-between align-items-center px-1 mt-2  mb-3">
+            <div className="d-flex justify-content-between align-items-center px-3 mt-2  mb-3">
               <ul className="pagination justify-content-center d-flex">
                 <li
                   className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
@@ -1484,9 +1496,8 @@ display:none !important;
                 {Array.from({ length: totalPages }, (_, index) => (
                   <li
                     key={index + 1}
-                    className={`page-item ${
-                      currentPage === index + 1 ? "active" : ""
-                    }`}
+                    className={`page-item ${currentPage === index + 1 ? "active" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1498,9 +1509,8 @@ display:none !important;
                 ))}
 
                 <li
-                  className={`page-item ${
-                    currentPage === totalPages ? "disabled" : ""
-                  }`}
+                  className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                    }`}
                 >
                   <button
                     className="page-link"
@@ -1511,9 +1521,8 @@ display:none !important;
                   </button>
                 </li>
                 <li
-                  className={`page-item ${
-                    currentPage === totalPages ? "disabled" : ""
-                  }`}
+                  className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                    }`}
                 >
                   <button
                     className="page-link"
@@ -1683,10 +1692,10 @@ display:none !important;
 
             <div className="col-6 mt-2 mb-5">
               <label className="block text-sm font-medium">
-                Unit of Measures
+                UOM
               </label>
               <SingleSelector
-                options={unitOfMeasures}
+                options={unitOfMeasures || []}
                 value={unitOfMeasures.find(
                   (option) => option.value === formData.uom
                 )} // Bind value to state

@@ -160,6 +160,8 @@ const EditRate = () => {
             setSelectedColors(null)
             setInventoryBrands([])
             setSelectedInventoryBrands(null)
+            setUnitOfMeasures([])
+            setSelectedUnit(null)
         }
 
         if (field === "materialSubType") {
@@ -642,22 +644,25 @@ const EditRate = () => {
     const [selectedUnit, setSelectedUnit] = useState(null);
     // Fetching the unit of measures data on component mount
     useEffect(() => {
-        axios
-            .get(
-                `${baseURL}unit_of_measures.json?token=${token}`
-            )
-            .then((response) => {
-                // Mapping the response to the format required by react-select
-                const options = response.data.map((unit) => ({
-                    value: unit.id,
-                    label: unit.name,
-                }));
-                setUnitOfMeasures(options); // Save the formatted options to state
-            })
-            .catch((error) => {
-                console.error("Error fetching unit of measures:", error);
-            });
-    }, []);
+        if (selectedInventoryMaterialTypes2 || editingMaterialId) {
+            axios
+                .get(
+                    `${baseURL}unit_of_measures.json?q[material_uoms_material_id_eq]=${selectedInventoryMaterialTypes2.value || editingMaterialId}&token=${token}`
+                )
+                .then((response) => {
+                    // Mapping the response to the format required by react-select
+                    const options = response.data.map((unit) => ({
+                        value: unit.id,
+                        label: unit.name,
+                    }));
+                    setUnitOfMeasures(options); // Save the formatted options to state
+                })
+                .catch((error) => {
+                    console.error("Error fetching unit of measures:", error);
+                });
+
+        }
+    }, [selectedInventoryMaterialTypes2, baseURL]);
 
 
     // for generic specification
