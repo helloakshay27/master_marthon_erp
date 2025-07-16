@@ -133,18 +133,17 @@ const BillEntryDetails = () => {
     // handleStatusChange(selectedOption); // Handle status change
   };
 
-  // Find the index of the current status in the statusOptions array
-  const currentStatusIndex = statusOptions.findIndex(
-    (option) => option.value === status
-  );
-  // Map statusOptions to disable previous statuses
-  const statusOptionsWithDisabled = statusOptions.map((option, idx) => {
-    if (idx === 0) return option; // 'Select Status' always enabled
-    return {
-      ...option,
-      isDisabled: idx < currentStatusIndex,
-    };
-  });
+  // Remove the logic that disables previous statuses
+  // const currentStatusIndex = statusOptions.findIndex(
+  //   (option) => option.value === status
+  // );
+  // const statusOptionsWithDisabled = statusOptions.map((option, idx) => {
+  //   if (idx === 0) return option; // 'Select Status' always enabled
+  //   return {
+  //     ...option,
+  //     isDisabled: idx < currentStatusIndex,
+  //   };
+  // });
 
   const fetchBillDetails = async () => {
     try {
@@ -667,11 +666,9 @@ const BillEntryDetails = () => {
                       Status
                     </label>
                     <SingleSelector
-                      options={statusOptionsWithDisabled}
+                      options={statusOptions}
                       onChange={handleStatusChange}
-                      value={statusOptionsWithDisabled.find(
-                        (option) => option.value === status
-                      )}
+                      value={statusOptions.find((option) => option.value === status)}
                       placeholder="Select Status"
                       classNamePrefix="react-select"
                     />

@@ -408,16 +408,14 @@ const BillVerificationDetails = () => {
     fetchStatusOptions();
   }, [token]); // Keep token as dependency
 
-  // Find the index of the current status
-  const currentStatusIndex = statusOptions.findIndex(
-    (option) => option.value === status
-  );
-
-  // Map statusOptions to disable previous statuses
-  const statusOptionsWithDisabled = statusOptions.map((option, idx) => ({
-    ...option,
-    isDisabled: idx < currentStatusIndex && option.value !== "", // Don't disable the default "Select Status"
-  }));
+  // Remove the logic that disables previous statuses
+  // const currentStatusIndex = statusOptions.findIndex(
+  //   (option) => option.value === status
+  // );
+  // const statusOptionsWithDisabled = statusOptions.map((option, idx) => ({
+  //   ...option,
+  //   isDisabled: idx < currentStatusIndex && option.value !== "", // Don't disable the default "Select Status"
+  // }));
 
   return (
     <>
@@ -956,13 +954,10 @@ const BillVerificationDetails = () => {
                       Status
                     </label>
                     <SingleSelector
-                      options={statusOptionsWithDisabled}
+                      options={statusOptions}
                       onChange={handleStatusChange}
-                      value={statusOptionsWithDisabled.find(
-                        (option) => option.value === status
-                      )}
+                      value={statusOptions.find((option) => option.value === status)}
                       placeholder="Select Status"
-                      isOptionDisabled={(option) => option.isDisabled}
                       classNamePrefix="react-select"
                     />
                   </div>
