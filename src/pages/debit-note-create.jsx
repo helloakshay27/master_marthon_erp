@@ -856,13 +856,14 @@ const DebitNoteCreate = () => {
 
   // Add validation handler
   const validateAdvanceRecovery = (note, value) => {
-    const recovery = parseFloat(value) || 0;
+    // const recovery = parseFloat(value) || 0;
+    const recovery = (parseFloat(value) || 0) + (parseFloat(note.recovered_amount) || 0);
     const advanceAmount = parseFloat(note.advance_amount) || 0;
 
     if (recovery > advanceAmount) {
       // alert("Recovery amount cannot exceed advance amount");
       // return false;
-      toast.error("Recovery amount cannot exceed advance amount", {
+      toast.error("Recovery amount cannot exceed advance amount.", {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -882,6 +883,27 @@ const DebitNoteCreate = () => {
       }, 0)
       .toFixed(2);
   };
+
+  useEffect(() => {
+    // const totalRecovery = calculateTotalAdvanceRecovery();
+    // setCreditNoteAmount(Number(totalRecovery));
+
+    if (selectedAdvanceNotes.length > 0) {
+      const totalRecovery = calculateTotalAdvanceRecovery();
+      setCreditNoteAmount(Number(totalRecovery));
+    } else {
+      // Optionally set empty string or leave it unchanged
+      setCreditNoteAmount(""); // or skip this line if you want to keep the previous value
+    }
+  }, [selectedAdvanceNotes]); // run when selectedAdvanceNotes change
+
+  // console.log("total recovery:",calculateTotalAdvanceRecovery ())
+
+  const advance_note_adjustment = selectedAdvanceNotes?.map((note) => ({
+    id: note.id,
+    value: parseFloat(note.this_recovery) || 0,
+  }));
+  console.log("advance_note_adjustment:", advance_note_adjustment)
 
   const payload = {
 
@@ -922,6 +944,8 @@ const DebitNoteCreate = () => {
         content: row.upload?.content || "",
         content_type: row.upload?.content_type || "",
       })),
+
+      advance_note_adjustment,
     }
 
 
@@ -969,8 +993,12 @@ const DebitNoteCreate = () => {
           content: row.upload?.content || "",
           content_type: row.upload?.content_type || "",
         })),
+
+        advance_note_adjustment,
       }
     };
+
+    console.log("debit note create payload:",payload)
 
     try {
       const response = await axios.post(
@@ -979,7 +1007,7 @@ const DebitNoteCreate = () => {
       );
       console.log("Response:", response.data);
       setLoading2(false)
-      alert("debit Note submitted successfully!");
+      // alert("debit Note submitted successfully!");
       navigate(`/debit-note-list?token=${token}`); // Navigate to the list page
 
     } catch (error) {
@@ -1965,7 +1993,8 @@ const DebitNoteCreate = () => {
                                             {note.debit_note_for_advance || "-"}
                                           </td>
                                           <td className="text-start">
-                                            {note.advance_adjusted_till_date || "-"}
+                                            {/* {note.advance_adjusted_till_date || "-"} */}
+                                            {note.recovered_amount || "0"}
                                           </td>
                                           <td className="text-start">
                                             {note.advance_outstanding_till_certificate_date ||
@@ -2003,6 +2032,8 @@ const DebitNoteCreate = () => {
                                               max={note.advance_amount}
                                             />
                                           </td>
+                                          {/* {console.log("selected advance notes:",selectedAdvanceNotes)} */}
+                                          {/* {console.log("currentAdvanceDeduction:",formData.currentAdvanceDeduction)} */}
                                         </tr>
                                       ))
                                     ) : (
@@ -3079,7 +3110,8 @@ const DebitNoteCreate = () => {
                         {note.debit_note_for_advance || "-"}
                       </td>
                       <td className="text-start">
-                        {note.advance_adjusted_till_date || "-"}
+                        {/* {note.advance_adjusted_till_date || "-"} */}
+                        {note.recovered_amount || "0"}
                       </td>
                       <td className="text-start">
                         {note.advance_outstanding_till_certificate_date || "-"}
