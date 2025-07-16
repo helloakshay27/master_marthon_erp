@@ -252,19 +252,19 @@ const BillEntryDetails = () => {
 
   const handleUpdateBillEntry = async () => {
     // Validation: Bill Amount should not exceed PO Value (if PO Value is present)
-    const poValue = parseFloat(billDetails?.po_value) || 0;
-    const billAmount = parseFloat(editableBillAmount) || 0;
-    if (poValue > 0 && billAmount > poValue) {
-      toast.error("Bill amount cannot be greater than PO value", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-      return;
-    }
+    // const poValue = parseFloat(billDetails?.po_value) || 0;
+    // const billAmount = parseFloat(editableBillAmount) || 0;
+    // if (poValue > 0 && billAmount > poValue) {
+    //   toast.error("Bill amount cannot be greater than PO value", {
+    //     position: "top-right",
+    //     autoClose: 3000,
+    //     hideProgressBar: false,
+    //     closeOnClick: true,
+    //     pauseOnHover: true,
+    //     draggable: true,
+    //   });
+    //   return;
+    // }
     try {
       setLoading(true);
       // const payload = {
@@ -530,9 +530,23 @@ const BillEntryDetails = () => {
                             type="text"
                             placeholder="Default input"
                             value={editableBillAmount}
-                            onChange={(e) =>
-                              setEditableBillAmount(e.target.value)
-                            }
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              const poValue = parseFloat(billDetails?.po_value) || 0;
+                              const billAmount = parseFloat(value) || 0;
+                              if (poValue > 0 && billAmount > poValue) {
+                                toast.error("Bill amount cannot be greater than PO value", {
+                                  position: "top-right",
+                                  autoClose: 3000,
+                                  hideProgressBar: false,
+                                  closeOnClick: true,
+                                  pauseOnHover: true,
+                                  draggable: true,
+                                });
+                                return;
+                              }
+                              setEditableBillAmount(value);
+                            }}
                           />
                         </div>
                       </div>
