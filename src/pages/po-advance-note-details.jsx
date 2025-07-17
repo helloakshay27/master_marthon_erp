@@ -38,12 +38,13 @@ const POAdvanceNoteDetails = () => {
   const [remark, setRemark] = useState("");
   const [comment, setComment] = useState("");
   const [attachOneModal, setattachOneModal] = useState(false);
-    const [attachTwoModal, setattachTwoModal] = useState(false);
-    const [attachThreeModal, setattachThreeModal] = useState(false);
-const [attachModal, setattachModal] = useState(false);
-    const [viewDocumentModal, setviewDocumentModal] = useState(false);
+  const [attachTwoModal, setattachTwoModal] = useState(false);
+  const [attachThreeModal, setattachThreeModal] = useState(false);
+  const [attachModal, setattachModal] = useState(false);
+  const [viewDocumentModal, setviewDocumentModal] = useState(false);
+  const [creditNoteData, setCreditNoteData] = useState(null);
 
-     const openAttachTwoModal = () => setattachTwoModal(true);
+  const openAttachTwoModal = () => setattachTwoModal(true);
   const closeAttachTwoModal = () => setattachTwoModal(false);
 
   const openAttachThreeModal = () => setattachThreeModal(true);
@@ -54,7 +55,12 @@ const [attachModal, setattachModal] = useState(false);
   const openviewDocumentModal = () => setviewDocumentModal(true);
   const closeviewDocumentModal = () => setviewDocumentModal(false);
 
-
+  // Document attachment state and handlers for advanced modal
+  const [newDocument, setNewDocument] = useState({
+    document_type: "",
+    attachments: [],
+  });
+  const [documents, setDocuments] = useState([]); // If you want to keep a list
   // tax table functionality
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -128,6 +134,20 @@ const [attachModal, setattachModal] = useState(false);
           data.status?.charAt(0).toUpperCase() +
           data.status?.slice(1).toLowerCase() || ""
         );
+
+        const formattedDocuments = data.attachments.map((att) => ({
+          document_type: att.relation || "", // or a custom label if needed
+          attachments: [att],
+          uploadDate: new Date(att.created_at)
+            .toLocaleDateString("en-GB")
+            .replaceAll("/", "-"),
+
+          blob_id: att.blob_id || null,
+          filename: att.filename || "-",
+        }));
+        setDocuments(formattedDocuments); // ✅ Set to your documents array
+
+         setCreditNoteData(data);
       } catch (err) {
         console.error("Error fetching advance note:", err);
         setError("Failed to fetch data");
@@ -161,16 +181,39 @@ const [attachModal, setattachModal] = useState(false);
     }
   }, [advanceNote]);
 
-  const handleInputChange = (field, value) => {
-    setEditableAdvanceNote((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  // const handleInputChange = (field, value) => {
+  //   setEditableAdvanceNote((prev) => ({
+  //     ...prev,
+  //     [field]: value,
+  //   }));
 
-    if (field === "advance_amount") {
-      setCreditNoteAmount(Number(value) || 0); // Update creditNoteAmount from edited advance_amount
+  //   if (field === "advance_amount") {
+  //     setCreditNoteAmount(Number(value) || 0); // Update creditNoteAmount from edited advance_amount
+  //   }
+
+    
+  // };
+
+  const handleInputChange = (field, value) => {
+  setEditableAdvanceNote((prev) => {
+    const updated = { ...prev, [field]: value };
+
+    // When advance_percentage changes, calculate advance_amount
+    if (field === "advance_percentage") {
+      const poValue = parseFloat(advanceNote?.po_value) || 0;
+      const percentage = parseFloat(value) || 0;
+      updated.advance_amount = ((poValue * percentage) / 100).toFixed(2);
+      setCreditNoteAmount(Number(updated.advance_amount));
     }
-  };
+
+    return updated;
+  });
+
+  // Still update creditNoteAmount when advance_amount changes
+  // if (field === "advance_amount") {
+  //   setCreditNoteAmount(Number(value) || 0);
+  // }
+};
 
   const [rows, setRows] = useState([
     // {
@@ -553,7 +596,7 @@ const [attachModal, setattachModal] = useState(false);
     //   attachments,
     // };
 
-     const attachments = (documents || [])
+    const attachments = (documents || [])
       .map((doc) =>
         doc.attachments && doc.attachments[0]
           ? {
@@ -651,63 +694,128 @@ const [attachModal, setattachModal] = useState(false);
     { value: "TDS", label: "TDS" },
   ];
 
-    // Document attachment state and handlers for advanced modal
-     
-    
-   // Document attachment state and handlers for advanced modal
-      const [newDocument, setNewDocument] = useState({
-        document_type: "",
-        attachments: [],
-      });
-      const [documents, setDocuments] = useState([]); // If you want to keep a list
-    
-      // Handle file upload
-      const handleFileUpload = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setNewDocument((prev) => ({
-            ...prev,
-            attachments: [
-              {
-                filename: file.name,
-                content: reader.result.split(",")[1],
-                content_type: file.type,
-              },
-            ],
-          }));
-        };
-        reader.readAsDataURL(file);
-      };
-    
-      // Handle attach document
-      const handleAttachDocument = () => {
-        if (!newDocument.document_type || newDocument.attachments.length === 0)
-          return;
-        const now = new Date();
-        const uploadDate = `${now.getDate().toString().padStart(2, "0")}-${(
-          now.getMonth() + 1
-        )
-          .toString()
-          .padStart(2, "0")}-${now.getFullYear()}`;
-        setDocuments((prev) => [
-          ...prev,
+  // Document attachment state and handlers for advanced modal
+
+
+
+
+  // Handle file upload
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewDocument((prev) => ({
+        ...prev,
+        attachments: [
           {
-            ...newDocument,
-            uploadDate,
+            filename: file.name,
+            content: reader.result.split(",")[1],
+            content_type: file.type,
           },
-        ]);
-        setNewDocument({ document_type: "", attachments: [] });
-        closeattachModal();
-      };
-    
-      // For viewing a specific document
-      const [viewDocIndex, setViewDocIndex] = useState(null);
-      const handleViewDocument = (index) => {
-        setViewDocIndex(index);
-        openviewDocumentModal();
-      };
+        ],
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle attach document
+  const handleAttachDocument = () => {
+    if (!newDocument.document_type || newDocument.attachments.length === 0)
+      return;
+    const now = new Date();
+    const uploadDate = `${now.getDate().toString().padStart(2, "0")}-${(
+      now.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}-${now.getFullYear()}`;
+    setDocuments((prev) => [
+      ...prev,
+      {
+        ...newDocument,
+        uploadDate,
+      },
+    ]);
+    setNewDocument({ document_type: "", attachments: [] });
+    closeattachModal();
+  };
+
+  // For viewing a specific document
+  const [viewDocIndex, setViewDocIndex] = useState(null);
+  const handleViewDocument = (index) => {
+    setViewDocIndex(index);
+    openviewDocumentModal();
+  };
+
+   useEffect(() => {
+      // if (creditNoteData) {
+      //     setBillNumber(creditNoteData.bill_no || "");
+      //     setBillDate(creditNoteData.bill_date || "");
+      //     setCreditNoteAmount(creditNoteData.amount || "");
+      // }
+      if (creditNoteData && creditNoteData.taxes_and_charges) {
+        // Split addition and deduction rows
+        const additionRows = creditNoteData.taxes_and_charges
+          .filter((tax) => tax.addition)
+          .map((tax, idx) => ({
+            id: idx + 1,
+            type: tax.tax_name || "",
+            percentage: tax.percentage || "",
+            inclusive: tax.inclusive || false,
+            amount: tax.amount || "",
+            isEditable: !["Handling Charges", "Other charges", "Freight"].includes(tax.tax_name),
+            addition: true,
+            resource_id: tax.resource_id,
+            resource_type: tax.resource_type,
+          }));
+  
+        // Ensure first three rows are always Handling Charges, Other charges, Freight
+        const defaultRows = [
+          { type: "Handling Charges" },
+          { type: "Other charges" },
+          { type: "Freight" },
+        ];
+        const mergedRows = defaultRows.map((def, i) => {
+          const found = additionRows.find((r) => r.type === def.type);
+          return (
+            found || {
+              id: i + 1,
+              type: def.type,
+              percentage: "",
+              inclusive: false,
+              amount: "",
+              isEditable: false,
+              addition: true,
+              resource_id: null,
+              resource_type: "TaxCharge",
+            }
+          );
+        });
+  
+        // Add any extra addition rows (not the first three)
+        const extraRows = additionRows.filter(
+          (r) => !["Handling Charges", "Other charges", "Freight"].includes(r.type)
+        );
+        setRows([...mergedRows, ...extraRows]);
+  
+        // Deduction rows
+        const deductionRows = creditNoteData.taxes_and_charges
+          .filter((tax) => !tax.addition)
+          .map((tax, idx) => ({
+            id: idx + 1,
+            type: tax.tax_name || "",
+            percentage: tax.percentage || "",
+            inclusive: tax.inclusive || false,
+            amount: tax.amount || "",
+            addition: false,
+            resource_id: tax.resource_id,
+            resource_type: tax.resource_type,
+          }));
+        setDeductionRows(deductionRows);
+      }
+  
+  
+    }, [creditNoteData]);
 
   return (
     <>
@@ -955,8 +1063,8 @@ const [attachModal, setattachModal] = useState(false);
                                     <span className="text-dark">:</span>
                                   </span>
                                   {/* {advanceNote?.po_date ? formatDateDDMMYYYY(advanceNote.po_date) : ""} */}
-                                   {advanceNote?.po_date 
-                                    ? new Date(advanceNote?.po_date )
+                                  {advanceNote?.po_date
+                                    ? new Date(advanceNote?.po_date)
                                       .toLocaleDateString("en-GB") // gives 13/06/2025
                                       .replace(/\//g, "-")         // replace / with -
                                     : "-"}
@@ -1028,7 +1136,7 @@ const [attachModal, setattachModal] = useState(false);
                                 </label>
                               </div>
                             </div>
-                            {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                               <div className="col-6 ">
                                 <label>GSTN Number</label>
                               </div>
@@ -1040,8 +1148,8 @@ const [attachModal, setattachModal] = useState(false);
                                   {advanceNote?.gstn_number || ""}
                                 </label>
                               </div>
-                            </div> */}
-                            {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                            </div>
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                               <div className="col-6 ">
                                 <label>PAN Number</label>
                               </div>
@@ -1053,7 +1161,7 @@ const [attachModal, setattachModal] = useState(false);
                                   {advanceNote?.pan_no || ""}
                                 </label>
                               </div>
-                            </div> */}
+                            </div>
                             {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                               <div className="col-6 ">
                                 <label>Advance %</label>
@@ -1184,7 +1292,7 @@ const [attachModal, setattachModal] = useState(false);
                                     />
                                   </div>
                                 </div>
-                                <div className="col-md-4 mt-2">
+                                {/* <div className="col-md-4 mt-2">
                                   <div className="form-group mb-0">
                                     <label>GSTN Number</label>
                                     <input
@@ -1194,8 +1302,8 @@ const [attachModal, setattachModal] = useState(false);
                                       onChange={(e) => handleInputChange("gstn_number", e.target.value)}
                                     />
                                   </div>
-                                </div>
-                                <div className="col-md-4 mt-2">
+                                </div> */}
+                                {/* <div className="col-md-4 mt-2">
                                   <div className="form-group mb-0">
                                     <label>PAN Number</label>
 
@@ -1206,7 +1314,7 @@ const [attachModal, setattachModal] = useState(false);
                                       onChange={(e) => handleInputChange("pan_no", e.target.value)}
                                     />
                                   </div>
-                                </div>
+                                </div> */}
 
                                 <div className="col-md-4 mt-2">
                                   <div className="form-group mb-0">
@@ -1907,83 +2015,83 @@ const [attachModal, setattachModal] = useState(false);
                             </tbody>
                           </table>
                         </div>
-                       
 
 
-                         <div className="d-flex justify-content-between mt-4 ">
-                            <h5 className=" ">Document Attachment</h5>
-                            <div
-                              className="card-tools d-flex"
+
+                        <div className="d-flex justify-content-between mt-4 ">
+                          <h5 className=" ">Document Attachment</h5>
+                          <div
+                            className="card-tools d-flex"
+                            data-bs-toggle="modal"
+                            data-bs-target="#attachModal"
+                            onClick={openattachModal}
+                          >
+                            <button
+                              className="purple-btn2 rounded-3"
                               data-bs-toggle="modal"
                               data-bs-target="#attachModal"
-                              onClick={openattachModal}
                             >
-                              <button
-                                className="purple-btn2 rounded-3"
-                                data-bs-toggle="modal"
-                                data-bs-target="#attachModal"
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width={20}
+                                height={20}
+                                fill="currentColor"
+                                className="bi bi-plus"
+                                viewBox="0 0 16 16"
                               >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width={20}
-                                  height={20}
-                                  fill="currentColor"
-                                  className="bi bi-plus"
-                                  viewBox="0 0 16 16"
-                                >
-                                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                </svg>
-                                <span>Attach</span>
-                              </button>
-                            </div>
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                              </svg>
+                              <span>Attach</span>
+                            </button>
                           </div>
-                          {/* Document Table (dynamic) */}
-                          <div className="tbl-container mt-2 ">
-                            <table className="w-100">
-                              <thead>
+                        </div>
+                        {/* Document Table (dynamic) */}
+                        <div className="tbl-container mt-2 ">
+                          <table className="w-100">
+                            <thead>
+                              <tr>
+                                <th className="text-start">Sr. No.</th>
+                                <th className="text-start">Document Name</th>
+                                <th className="text-start">File Name</th>
+                                {/* <th className="text-start">File Type</th> */}
+                                <th className="text-start">Upload Date</th>
+                                <th className="text-start">Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {documents.length === 0 ? (
                                 <tr>
-                                  <th className="text-start">Sr. No.</th>
-                                  <th className="text-start">Document Name</th>
-                                  <th className="text-start">File Name</th>
-                                  {/* <th className="text-start">File Type</th> */}
-                                  <th className="text-start">Upload Date</th>
-                                  <th className="text-start">Action</th>
+                                  <td colSpan={6} className="text-center">
+                                    No documents attached
+                                  </td>
                                 </tr>
-                              </thead>
-                              <tbody>
-                                {documents.length === 0 ? (
-                                  <tr>
-                                    <td colSpan={6} className="text-center">
-                                      No documents attached
+                              ) : (
+                                documents.map((doc, idx) => (
+                                  <tr key={idx}>
+                                    <td className="text-start">{idx + 1}</td>
+                                    <td className="text-start">{doc.document_type}</td>
+                                    <td className="text-start">
+                                      {doc.attachments[0]?.filename || "-"}
                                     </td>
-                                  </tr>
-                                ) : (
-                                  documents.map((doc, idx) => (
-                                    <tr key={idx}>
-                                      <td className="text-start">{idx + 1}</td>
-                                      <td className="text-start">{doc.document_type}</td>
-                                      <td className="text-start">
-                                        {doc.attachments[0]?.filename || "-"}
-                                      </td>
-                                      {/* <td className="text-start">
+                                    {/* <td className="text-start">
                             {doc.attachments[0]?.content_type || "-"}
                           </td> */}
-                                      <td className="text-start">
-                                        {doc.uploadDate || "-"}
-                                      </td>
-                                      <td
-                                        className="text-decoration-underline"
-                                        style={{ cursor: "pointer" }}
-                                        onClick={() => handleViewDocument(idx)}
-                                      >
-                                        View
-                                      </td>
-                                    </tr>
-                                  ))
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
+                                    <td className="text-start">
+                                      {doc.uploadDate || "-"}
+                                    </td>
+                                    <td
+                                      className="text-start text-decoration-underline"
+                                      style={{ cursor: "pointer" }}
+                                      onClick={() => handleViewDocument(idx)}
+                                    >
+                                      View
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     </div>
                   </section>
@@ -2115,7 +2223,7 @@ const [attachModal, setattachModal] = useState(false);
                                       })}`
                                       : ""} */}
 
-                                      {new Date(log.created_at)
+                                    {new Date(log.created_at)
                                       .toLocaleDateString("en-GB", {
                                         day: "2-digit",
                                         month: "2-digit",
@@ -2178,256 +2286,266 @@ const [attachModal, setattachModal] = useState(false);
           </div>
         </div>
       </div>
-       <Modal
-                    centered
-                    size="l"
-                    show={attachModal}
-                    onHide={closeattachModal}
-                    backdrop="true"
-                    keyboard={true}
-                    className="modal-centered-custom"
+      <Modal
+        centered
+        size="l"
+        show={attachModal}
+        onHide={closeattachModal}
+        backdrop="true"
+        keyboard={true}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Attach Document</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row">
+            <div className="col-md-12">
+              <div className="form-group">
+                <label>Name of the Document</label>
+                {newDocument.document_type &&
+                  documents.find(
+                    (doc) =>
+                      doc.isDefault &&
+                      doc.document_type === newDocument.document_type
+                  ) ? (
+                  // For default document types - show as disabled input
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.document_type}
+                    disabled
+                  />
+                ) : (
+                  // For new document types - allow input
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.document_type}
+                    onChange={(e) =>
+                      setNewDocument((prev) => ({
+                        ...prev,
+                        document_type: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter document name"
+                  />
+                )}
+              </div>
+            </div>
+            <div className="col-md-12 mt-2">
+              <div className="form-group">
+                <label>Upload File</label>
+                <input
+                  type="file"
+                  className="form-control"
+                  onChange={handleFileUpload}
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                />
+              </div>
+            </div>
+            {/* Add this new section for file name editing */}
+            {newDocument.attachments.length > 0 && (
+              <div className="col-md-12 mt-2">
+                <div className="form-group">
+                  <label>File Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.attachments[0].filename}
+                    onChange={(e) => {
+                      setNewDocument((prev) => ({
+                        ...prev,
+                        attachments: [
+                          {
+                            ...prev.attachments[0],
+                            filename: e.target.value,
+                          },
+                        ],
+                      }));
+                    }}
+                    placeholder="Enter file name"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-4">
+              <button
+                className="purple-btn2 w-100 mt-2"
+                onClick={handleAttachDocument}
+                disabled={
+                  !newDocument.document_type ||
+                  newDocument.attachments.length === 0
+                }
+              >
+                Attach
+              </button>
+            </div>
+            <div className="col-md-4">
+              <button
+                className="purple-btn1 w-100"
+                onClick={closeattachModal}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+      {/* View Document Modal (dynamic) */}
+      <Modal
+        centered
+        size="lg"
+        show={viewDocumentModal}
+        onHide={closeviewDocumentModal}
+        backdrop="true"
+        keyboard={true}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Document Attachment</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div>
+            <div className="d-flex justify-content-between mt-3 me-2">
+              <h5 className=" ">Latest Documents</h5>
+              <div
+                className="card-tools d-flex"
+                data-bs-toggle="modal"
+                data-bs-target="#attachModal"
+              >
+                <button
+                  className="purple-btn2 rounded-3"
+                  data-bs-toggle="modal"
+                  data-bs-target="#attachModal"
+                  onClick={openattachModal}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width={20}
+                    height={20}
+                    fill="currentColor"
+                    className="bi bi-plus"
+                    viewBox="0 0 16 16"
                   >
-                    <Modal.Header closeButton>
-                      <h5>Attach Document</h5>
-                    </Modal.Header>
-                    <Modal.Body>
-                      <div className="row">
-                        <div className="col-md-12">
-                          <div className="form-group">
-                            <label>Name of the Document</label>
-                            {newDocument.document_type &&
-                              documents.find(
-                                (doc) =>
-                                  doc.isDefault &&
-                                  doc.document_type === newDocument.document_type
-                              ) ? (
-                              // For default document types - show as disabled input
-                              <input
-                                type="text"
-                                className="form-control"
-                                value={newDocument.document_type}
-                                disabled
-                              />
-                            ) : (
-                              // For new document types - allow input
-                              <input
-                                type="text"
-                                className="form-control"
-                                value={newDocument.document_type}
-                                onChange={(e) =>
-                                  setNewDocument((prev) => ({
-                                    ...prev,
-                                    document_type: e.target.value,
-                                  }))
-                                }
-                                placeholder="Enter document name"
-                              />
-                            )}
-                          </div>
-                        </div>
-                        <div className="col-md-12 mt-2">
-                          <div className="form-group">
-                            <label>Upload File</label>
-                            <input
-                              type="file"
-                              className="form-control"
-                              onChange={handleFileUpload}
-                              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                            />
-                          </div>
-                        </div>
-                        {/* Add this new section for file name editing */}
-                        {newDocument.attachments.length > 0 && (
-                          <div className="col-md-12 mt-2">
-                            <div className="form-group">
-                              <label>File Name</label>
-                              <input
-                                type="text"
-                                className="form-control"
-                                value={newDocument.attachments[0].filename}
-                                onChange={(e) => {
-                                  setNewDocument((prev) => ({
-                                    ...prev,
-                                    attachments: [
-                                      {
-                                        ...prev.attachments[0],
-                                        filename: e.target.value,
-                                      },
-                                    ],
-                                  }));
-                                }}
-                                placeholder="Enter file name"
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="row mt-2 justify-content-center">
-                        <div className="col-md-4">
-                          <button
-                            className="purple-btn2 w-100 mt-2"
-                            onClick={handleAttachDocument}
-                            disabled={
-                              !newDocument.document_type ||
-                              newDocument.attachments.length === 0
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                  </svg>
+                  <span>Attach</span>
+                </button>
+              </div>
+            </div>
+            <div className="tbl-container px-0">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr.No.</th>
+                    <th>Document Name</th>
+                    <th>Attachment Name</th>
+                    {/* <th>File Type</th> */}
+                    <th>Upload Date</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {documents.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center">
+                        No documents attached
+                      </td>
+                    </tr>
+                  ) : (
+                    documents.map((doc, idx) => (
+                      <tr key={idx}>
+                        <td>{idx + 1}</td>
+                        <td>{doc.document_type}</td>
+                        <td>{doc.attachments[0]?.filename || "-"}</td>
+                        {/* <td className="text-start">
+                                                          {doc.attachments[0]?.content_type || "-"}
+                                                        </td> */}
+                        <td className="text-start">
+                          {doc.uploadDate || "-"}
+                        </td>
+                        <td>
+                          {doc?.blob_id && (
+                          <a
+                            href={
+                              // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                              `${baseURL}advance_notes/${id}/download?token=${token}&blob_id=${doc.blob_id}`
+                              // attachment.url
                             }
+                            target="_blank"
+                            // rel="noopener noreferrer"
+                            download={doc.filename}
                           >
-                            Attach
-                          </button>
-                        </div>
-                        <div className="col-md-4">
-                          <button
-                            className="purple-btn1 w-100"
-                            onClick={closeattachModal}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    </Modal.Body>
-                  </Modal>
-                  {/* View Document Modal (dynamic) */}
-                  <Modal
-                    centered
-                    size="lg"
-                    show={viewDocumentModal}
-                    onHide={closeviewDocumentModal}
-                    backdrop="true"
-                    keyboard={true}
-                    className="modal-centered-custom"
-                  >
-                    <Modal.Header closeButton>
-                      <h5>Document Attachment</h5>
-                    </Modal.Header>
-                    <Modal.Body>
-                      <div>
-                        <div className="d-flex justify-content-between mt-3 me-2">
-                          <h5 className=" ">Latest Documents</h5>
-                          <div
-                            className="card-tools d-flex"
-                            data-bs-toggle="modal"
-                            data-bs-target="#attachModal"
-                          >
-                            <button
-                              className="purple-btn2 rounded-3"
-                              data-bs-toggle="modal"
-                              data-bs-target="#attachModal"
-                              onClick={openattachModal}
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width={20}
-                                height={20}
-                                fill="currentColor"
-                                className="bi bi-plus"
-                                viewBox="0 0 16 16"
-                              >
-                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                              </svg>
-                              <span>Attach</span>
-                            </button>
-                          </div>
-                        </div>
-                        <div className="tbl-container px-0">
-                          <table className="w-100">
-                            <thead>
-                              <tr>
-                                <th>Sr.No.</th>
-                                <th>Document Name</th>
-                                <th>Attachment Name</th>
-                                {/* <th>File Type</th> */}
-                                <th>Upload Date</th>
-                                {/* <th>Action</th> */}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {documents.length === 0 ? (
-                                <tr>
-                                  <td colSpan={6} className="text-center">
-                                    No documents attached
-                                  </td>
-                                </tr>
-                              ) : (
-                                documents.map((doc, idx) => (
-                                  <tr key={idx}>
-                                    <td>{idx + 1}</td>
-                                    <td>{doc.document_type}</td>
-                                    <td>{doc.attachments[0]?.filename || "-"}</td>
-                                    {/* <td className="text-start">
+                            <DownloadIcon />
+                          </a>
+                          )}
+                          {console.log("document data:",documents)}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className=" mt-3 me-2">
+              <h5 className=" ">Document Attachment History</h5>
+            </div>
+            <div className="tbl-container px-0">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr.No.</th>
+                    <th>Document Name</th>
+                    <th>Attachment Name</th>
+                    {/* <th>File Type</th> */}
+                    <th>Upload Date</th>
+                    {/* <th>Action</th> */}
+                  </tr>
+                </thead>
+                <tbody>
+                  {documents.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center">
+                        No documents attached
+                      </td>
+                    </tr>
+                  ) : (
+                    documents.map((doc, idx) => (
+                      <tr key={idx}>
+                        <td>{idx + 1}</td>
+                        <td>{doc.document_type}</td>
+                        <td>{doc.attachments[0]?.filename || "-"}</td>
+                        {/* <td>
                                                           {doc.attachments[0]?.content_type || "-"}
                                                         </td> */}
-                                    <td className="text-start">
-                                      {doc.uploadDate || "-"}
-                                    </td>
-                                    {/* <td>
+                        <td className="text-start">
+                          {doc.uploadDate || "-"}
+                        </td>
+                        {/* <td>
                                                           <i
                                                             className="fa-regular fa-eye"
                                                             style={{ fontSize: 18, cursor: "pointer" }}
                                                             // You can add onClick to preview/download if needed
                                                           />
                                                         </td> */}
-                                  </tr>
-                                ))
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-                        <div className=" mt-3 me-2">
-                          <h5 className=" ">Document Attachment History</h5>
-                        </div>
-                        <div className="tbl-container px-0">
-                          <table className="w-100">
-                            <thead>
-                              <tr>
-                                <th>Sr.No.</th>
-                                <th>Document Name</th>
-                                <th>Attachment Name</th>
-                                {/* <th>File Type</th> */}
-                                <th>Upload Date</th>
-                                {/* <th>Action</th> */}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {documents.length === 0 ? (
-                                <tr>
-                                  <td colSpan={6} className="text-center">
-                                    No documents attached
-                                  </td>
-                                </tr>
-                              ) : (
-                                documents.map((doc, idx) => (
-                                  <tr key={idx}>
-                                    <td>{idx + 1}</td>
-                                    <td>{doc.document_type}</td>
-                                    <td>{doc.attachments[0]?.filename || "-"}</td>
-                                    {/* <td>
-                                                          {doc.attachments[0]?.content_type || "-"}
-                                                        </td> */}
-                                    <td className="text-start">
-                                      {doc.uploadDate || "-"}
-                                    </td>
-                                    {/* <td>
-                                                          <i
-                                                            className="fa-regular fa-eye"
-                                                            style={{ fontSize: 18, cursor: "pointer" }}
-                                                            // You can add onClick to preview/download if needed
-                                                          />
-                                                        </td> */}
-                                  </tr>
-                                ))
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                      <div className="row mt-2 justify-content-center">
-                        <div className="col-md-3">
-                          <button className="purple-btn1 w-100" onClick={closeviewDocumentModal}>Close</button>
-                        </div>
-                      </div>
-                    </Modal.Body>
-      
-                  </Modal>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-3">
+              <button className="purple-btn1 w-100" onClick={closeviewDocumentModal}>Close</button>
+            </div>
+          </div>
+        </Modal.Body>
+
+      </Modal>
 
       <ToastContainer
         position="top-right"
