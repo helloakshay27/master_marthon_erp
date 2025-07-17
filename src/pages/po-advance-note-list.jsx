@@ -30,7 +30,7 @@ const PoAdvanceNoteList = () => {
 
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [totalEntries, setTotalEntries] = useState(0);
   const [creditNotes, setCreditNotes] = useState([]);
