@@ -2312,7 +2312,10 @@ const BillBookingCreate = () => {
                             {selectedPO?.po_number || "-"}
                           </td>
                           <td className="text-start">
-                            {selectedPO?.po_date || "-"}
+                            {/* {selectedPO?.po_date || "-"} */}
+                             {selectedPO?.po_date
+                              ? new Date(selectedPO?.po_date).toLocaleDateString("en-GB").split("/").join("-")
+                              : "-"}
                           </td>
                           <td className="text-start">
                             {selectedPO?.total_value || "-"}
@@ -3823,7 +3826,7 @@ const BillBookingCreate = () => {
                             {doc.uploadDate || "-"}
                           </td>
                           <td
-                            className="text-decoration-underline"
+                            className=" text-start text-decoration-underline"
                             style={{ cursor: "pointer" }}
                             onClick={() => handleViewDocument(idx)}
                           >
@@ -3860,7 +3863,7 @@ const BillBookingCreate = () => {
                 </select>
               </div>
 
-              <div className="row mt-2 justify-content-end">
+              <div className="row mt-2 justify-content-end mb-5">
                 <div className="col-md-2 mt-2">
                   <button
                     className="purple-btn2 w-100"
@@ -3874,10 +3877,10 @@ const BillBookingCreate = () => {
                   <button className="purple-btn1 w-100">Cancel</button>
                 </div>
               </div>
-              <h5 className=" mt-3">Audit Log</h5>
-              <div className="pb-4 mb-4">
+              {/* <h5 className=" mt-3">Audit Log</h5> */}
+              {/* <div className="pb-4 mb-4">
                 <Table columns={auditLogColumns} data={auditLogData} />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -4925,7 +4928,12 @@ const BillBookingCreate = () => {
                             {index + 1}
                           </td>
                           <td className="text-start">{po.po_number}</td>
-                          <td className="text-start">{po.po_date}</td>
+                          <td className="text-start">
+                            {/* {po.po_date} */}
+                             {po.po_date
+                              ? new Date(po.po_date).toLocaleDateString("en-GB").split("/").join("-")
+                              : "-"}
+                            </td>
                           <td className="text-start">{po.total_value}</td>
                           <td className="text-start">{po.po_type}</td>
                           <td className="text-start">

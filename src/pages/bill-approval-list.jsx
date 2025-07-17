@@ -791,6 +791,11 @@ const BillApprovalList = () => {
       field: "created_at",
       headerName: "Created On",
       width: 150,
+       renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
     },
     {
       field: "accepted_at",
@@ -813,12 +818,24 @@ const BillApprovalList = () => {
         ),
     },
 
-    { field: "bill_date", headerName: "Invoice Date", width: 150 },
+    { field: "bill_date", headerName: "Invoice Date", width: 150,
+       renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
+     },
     { field: "bill_amount", headerName: "Bill Amount", width: 150 },
     { field: "bill_type", headerName: "Bill Type", width: 150 },
     { field: "bill_copies", headerName: "Bill Copies", width: 150 },
     { field: "due", headerName: "Due", width: 150 },
-    { field: "due_date", headerName: "Due Date", width: 150 },
+    { field: "due_date", headerName: "Due Date", width: 150,
+       renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
+     },
     { field: "certificate_no", headerName: "Certificate No.", width: 150 },
     // { field: "advance_adjust_amount", headerName: "Advance Adjust Amount", width: 200 },
     { field: "payable_amount", headerName: "Payable Amount", width: 150 },

@@ -1195,7 +1195,9 @@ const DebitNoteCreate = () => {
                                   data-date-format="mm-dd-yyyy"
                                 >
                                   <input className="form-control" type="text"
-                                    value={selectedPO?.po_date || ""}
+                                    value={selectedPO?.po_date
+                                      ? new Date(selectedPO.po_date).toLocaleDateString("en-GB").replace(/\//g, "-")
+                                      : ""}
                                     disabled />
                                 </div>
                               </div>
@@ -1222,7 +1224,7 @@ const DebitNoteCreate = () => {
                                   data-date-format="mm-dd-yyyy"
                                 >
                                   <input className="form-control" type="text"
-                                    value={new Date().toLocaleDateString("en-GB")} // Format: DD/MM/YYYY
+                                    value={new Date().toLocaleDateString("en-GB").replace(/\//g, "-")} // Format: DD/MM/YYYY
                                     disabled // Makes the input field non-editable
                                   />
                                 </div>
@@ -2927,7 +2929,12 @@ const DebitNoteCreate = () => {
                             {index + 1}
                           </td>
                           <td className="text-start">{po.po_number}</td>
-                          <td className="text-start">{po.po_date}</td>
+                          <td className="text-start">
+                            {/* {po.po_date} */}
+                             {po.po_date
+                              ? new Date(po.po_date).toLocaleDateString("en-GB").split("/").join("-")
+                              : "-"}
+                          </td>
                           <td className="text-start">{po.total_value}</td>
                           <td className="text-start">{po.po_type}</td>
                           <td className="text-start">

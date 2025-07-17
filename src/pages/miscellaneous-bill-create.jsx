@@ -1238,9 +1238,10 @@ const openAttachTwoModal = () => setattachTwoModal(true);
                                     <input
                                       className="form-control"
                                       type="text"
-                                      value={new Date().toLocaleDateString(
-                                        "en-GB"
-                                      )} // Format: DD/MM/YYYY
+                                      // value={new Date().toLocaleDateString(
+                                      //   "en-GB"
+                                      // ).replace(/\//g, "-")} // Format: DD/MM/YYYY
+                                       value={new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}
                                       disabled // Makes the input field non-editable
                                     />
                                   </div>
@@ -1462,7 +1463,7 @@ const openAttachTwoModal = () => setattachTwoModal(true);
                                       type="text"
                                       value={new Date().toLocaleDateString(
                                         "en-GB"
-                                      )} // Format: DD/MM/YYYY
+                                      ).replace(/\//g, "-")} // Format: DD/MM/YYYY
                                       disabled // Makes the input field non-editable
                                     />
                                   </div>
@@ -2552,7 +2553,12 @@ const openAttachTwoModal = () => setattachTwoModal(true);
                             {index + 1}
                           </td>
                           <td className="text-start">{po.po_number}</td>
-                          <td className="text-start">{po.po_date}</td>
+                          <td className="text-start">
+                            {/* {po.po_date} */}
+                             {po.po_date
+                              ? new Date(po.po_date).toLocaleDateString("en-GB").split("/").join("-")
+                              : "-"}
+                            </td>
                           <td className="text-start">{po.total_value}</td>
                           <td className="text-start">{po.po_type}</td>
                           <td className="text-start">

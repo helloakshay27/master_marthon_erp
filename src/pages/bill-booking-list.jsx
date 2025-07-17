@@ -497,9 +497,8 @@ const BillBookingList = () => {
 
   //card filter
   const fetchFilteredData2 = (status) => {
-    const url = `${baseURL}bill_bookings?page=1&token=${token}${
-      status ? `&q[status_eq]=${status}` : ""
-    }`;
+    const url = `${baseURL}bill_bookings?page=1&token=${token}${status ? `&q[status_eq]=${status}` : ""
+      }`;
 
     axios
       .get(url)
@@ -666,6 +665,11 @@ const BillBookingList = () => {
       field: "created_at",
       headerName: "Created On",
       width: 150,
+      renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
     },
     {
       field: "accepted_at",
@@ -673,11 +677,23 @@ const BillBookingList = () => {
       width: 150,
     },
 
-    { field: "inventory_date", headerName: "Invoice Date", width: 150 },
+    { field: "inventory_date", headerName: "Invoice Date", width: 150,
+       renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
+     },
     { field: "total_amount", headerName: "Bill Amount", width: 150 },
     { field: "bill_copies", headerName: "Bill Copies", width: 150 },
     { field: "due", headerName: "Due", width: 150 },
-    { field: "payment_due_date", headerName: "Due Date", width: 150 },
+    { field: "payment_due_date", headerName: "Due Date", width: 150,
+       renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
+     },
     { field: "certificate_no", headerName: "Certificate No.", width: 150 },
     {
       field: "advance_adjust_amount",
@@ -783,9 +799,8 @@ display:none !important;
                   <div
                     // className="content-box tab-button active"
                     data-tab="total"
-                    className={`content-box tab-button ${
-                      activeTab === "total" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "total" ? "active" : ""
+                      }`}
                     onClick={() => {
                       if (activeTab !== "total") {
                         setActiveTab("total");
@@ -802,9 +817,8 @@ display:none !important;
                   <div
                     // className="content-box tab-button"
                     data-tab="draft"
-                    className={`content-box tab-button ${
-                      activeTab === "draft" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "draft" ? "active" : ""
+                      }`}
                     onClick={() => {
                       if (activeTab !== "draft") {
                         setActiveTab("draft");
@@ -820,9 +834,8 @@ display:none !important;
                   <div
                     // className="content-box tab-button"
                     data-tab="verified"
-                    className={`content-box tab-button ${
-                      activeTab === "verified" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "verified" ? "active" : ""
+                      }`}
                     onClick={() => {
                       setActiveTab("verified");
                       fetchFilteredData2("verified");
@@ -838,9 +851,8 @@ display:none !important;
                   <div
                     // className="content-box tab-button"
                     data-tab="submitted"
-                    className={`content-box tab-button ${
-                      activeTab === "submitted" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "submitted" ? "active" : ""
+                      }`}
                     onClick={() => {
                       setActiveTab("submitted");
                       fetchFilteredData2("submitted");
@@ -854,9 +866,8 @@ display:none !important;
                   <div
                     // className="content-box tab-button"
                     data-tab="approved"
-                    className={`content-box tab-button ${
-                      activeTab === "approved" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "approved" ? "active" : ""
+                      }`}
                     onClick={() => {
                       setActiveTab("approved");
                       fetchFilteredData2("approved");
@@ -870,9 +881,8 @@ display:none !important;
                   <div
                     // className="content-box tab-button"
                     data-tab="proceed"
-                    className={`content-box tab-button ${
-                      activeTab === "proceed" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "proceed" ? "active" : ""
+                      }`}
                     onClick={() => {
                       setActiveTab("proceed");
                       fetchFilteredData2("proceed");
@@ -1152,9 +1162,9 @@ display:none !important;
                     },
                     // Black for header (select all) checkbox, even when checked
                     "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root":
-                      {
-                        color: "#fff",
-                      },
+                    {
+                      color: "#fff",
+                    },
                     // Make checkboxes smaller
                     "& .MuiCheckbox-root .MuiSvgIcon-root": {
                       fontSize: "1.1rem", // adjust as needed (default is 1.5rem)
@@ -1166,9 +1176,8 @@ display:none !important;
               <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                 <ul className="pagination justify-content-center d-flex">
                   <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === 1 ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1179,9 +1188,8 @@ display:none !important;
                     </button>
                   </li>
                   <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === 1 ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1195,9 +1203,8 @@ display:none !important;
                   {Array.from({ length: totalPages }, (_, index) => (
                     <li
                       key={index + 1}
-                      className={`page-item ${
-                        currentPage === index + 1 ? "active" : ""
-                      }`}
+                      className={`page-item ${currentPage === index + 1 ? "active" : ""
+                        }`}
                     >
                       <button
                         className="page-link"
@@ -1209,9 +1216,8 @@ display:none !important;
                   ))}
 
                   <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1222,9 +1228,8 @@ display:none !important;
                     </button>
                   </li>
                   <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"

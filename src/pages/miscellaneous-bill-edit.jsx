@@ -660,10 +660,16 @@ const MiscellaneousBillEdit = () => {
                                                                     <span className="me-3">
                                                                         <span className="text-dark">:</span>
                                                                     </span>
-                                                                    {creditNoteData.created_at
+                                                                    {/* {creditNoteData.created_at
                                                                         ? new Date(
                                                                             creditNoteData.created_at
                                                                         ).toLocaleDateString()
+                                                                        : "-"} */}
+
+                                                                    {creditNoteData.created_at
+                                                                        ? new Date(creditNoteData.created_at)
+                                                                            .toLocaleDateString("en-GB") // gives 13/06/2025
+                                                                            .replace(/\//g, "-")         // replace / with -
                                                                         : "-"}
                                                                 </label>
                                                             </div>
@@ -800,7 +806,7 @@ const MiscellaneousBillEdit = () => {
                                                     <h5 className=" ">Tax Details</h5>
                                                 </div>
 
-                                               
+
 
                                                 <div className="tbl-container  mt-3 mb-5" style={{ maxHeight: "500px" }}>
                                                     <table className="w-100">
@@ -1468,9 +1474,9 @@ const MiscellaneousBillEdit = () => {
                                                             .map((log, index) => (
                                                                 <tr key={log.id}>
                                                                     <td className="text-start">{index + 1}</td>
-                                                                    <td className="text-start">{""}</td>
+                                                                    <td className="text-start">{""}{log.created_by_name}</td>
                                                                     <td className="text-start">
-                                                                        {log.created_at
+                                                                        {/* {log.created_at
                                                                             ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
                                                                                 day: "2-digit",
                                                                                 month: "2-digit",
@@ -1480,7 +1486,18 @@ const MiscellaneousBillEdit = () => {
                                                                                 minute: "2-digit",
                                                                                 hour12: true,
                                                                             })}`
-                                                                            : ""}
+                                                                            : ""} */}
+                                                                        {new Date(log.created_at)
+                                                                            .toLocaleDateString("en-GB", {
+                                                                                day: "2-digit",
+                                                                                month: "2-digit",
+                                                                                year: "numeric",
+                                                                            })
+                                                                            .replaceAll("/", "-")} , {new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                                                                hour: "2-digit",
+                                                                                minute: "2-digit",
+                                                                                hour12: true,
+                                                                            }).toUpperCase()}
                                                                     </td>
                                                                     <td className="text-start">
                                                                         {log.status

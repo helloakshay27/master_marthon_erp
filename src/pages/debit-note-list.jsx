@@ -584,15 +584,32 @@ const DebitNoteList = () => {
           "-"
         ),
     },
-    { field: "debit_note_date", headerName: "Date", width: 150 },
+    { field: "debit_note_date", headerName: "Date", width: 150 ,
+       renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
+    },
     { field: "reason", headerName: "Debit Note Reason", width: 150 },
     {
       field: "created_at",
       headerName: "Created On",
       width: 150,
+       renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
     },
     { field: "po_number", headerName: "PO No.", width: 150 },
-    { field: "po_date", headerName: "PO Date", width: 150 },
+    { field: "po_date", headerName: "PO Date", width: 150 ,
+       renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
+    },
     { field: "po_value", headerName: "PO Value", width: 150 },
     { field: "pms_supplier", headerName: "Supplier Name", width: 150 },
 

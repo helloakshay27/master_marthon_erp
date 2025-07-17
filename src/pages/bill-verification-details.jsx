@@ -1071,7 +1071,7 @@ const BillVerificationDetails = () => {
                                 {log.created_by_name}
                               </td>
                               <td className="text-start">
-                                {log.created_at
+                                {/* {log.created_at
                                   ? `${new Date(
                                       log.created_at
                                     ).toLocaleDateString("en-GB", {
@@ -1085,7 +1085,20 @@ const BillVerificationDetails = () => {
                                       minute: "2-digit",
                                       hour12: true,
                                     })}`
-                                  : ""}
+                                  : ""} */}
+
+
+                                  {new Date(log.created_at)
+                                  .toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  })
+                                  .replaceAll("/", "-")} , {new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  }).toUpperCase()}
                               </td>
                               <td className="text-start">
                                 {log.status

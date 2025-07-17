@@ -352,10 +352,16 @@ const MiscellaneousBillDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {creditNoteData.created_at
+                                  {/* {creditNoteData.created_at
                                     ? new Date(
                                       creditNoteData.created_at
                                     ).toLocaleDateString()
+                                    : "-"} */}
+
+                                    {creditNoteData.created_at
+                                    ? new Date(creditNoteData.created_at)
+                                      .toLocaleDateString("en-GB") // gives 13/06/2025
+                                      .replace(/\//g, "-")         // replace / with -
                                     : "-"}
                                 </label>
                               </div>
@@ -382,10 +388,15 @@ const MiscellaneousBillDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {creditNoteData.bill_date
+                                  {/* {creditNoteData.bill_date
                                     ? new Date(
                                       creditNoteData.bill_date
                                     ).toLocaleDateString()
+                                    : "-"} */}
+                                    {creditNoteData.bill_date
+                                    ? new Date(creditNoteData.bill_date)
+                                      .toLocaleDateString("en-GB") // gives 13/06/2025
+                                      .replace(/\//g, "-")         // replace / with -
                                     : "-"}
                                 </label>
                               </div>
@@ -700,9 +711,14 @@ const MiscellaneousBillDetails = () => {
                                         {attachment.content_type}
                                       </td>
                                       <td className="text-start">
-                                        {new Date(
+                                        {/* {new Date(
                                           attachment.created_at
-                                        ).toLocaleDateString()}
+                                        ).toLocaleDateString()} */}
+                                        {attachment.created_at
+                                          ? new Date(attachment.created_at)
+                                            .toLocaleDateString("en-GB") // gives 16/07/2025
+                                            .replace(/\//g, "-")         // replaces / with -
+                                          : ""}
                                       </td>
                                       <td className="text-decoration-underline cursor-pointer">
                                         {/* <a
@@ -849,7 +865,7 @@ const MiscellaneousBillDetails = () => {
                                   <td className="text-start">{index + 1}</td>
                                   <td className="text-start">{""}{log.created_by_name}</td>
                                   <td className="text-start">
-                                    {log.created_at
+                                    {/* {log.created_at
                                       ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
                                         day: "2-digit",
                                         month: "2-digit",
@@ -859,7 +875,18 @@ const MiscellaneousBillDetails = () => {
                                         minute: "2-digit",
                                         hour12: true,
                                       })}`
-                                      : ""}
+                                      : ""} */}
+                                      {new Date(log.created_at)
+                                      .toLocaleDateString("en-GB", {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric",
+                                      })
+                                      .replaceAll("/", "-")} , {new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: true,
+                                      }).toUpperCase()}
                                   </td>
                                   <td className="text-start">
                                     {log.status

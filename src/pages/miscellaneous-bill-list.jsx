@@ -562,9 +562,18 @@ const MiscellaneousBillList = () => {
       field: "created_at",
       headerName: "Created On",
       width: 150,
+       renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
     },
     // { field: "po_number", headerName: "Bill No.", width: 150 },
-    { field: "bill_date", headerName: "Invoice Date", width: 150 },
+    { field: "bill_date", headerName: "Invoice Date", width: 150, renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      }, },
     // { field: "po_value", headerName: "Bill Value", width: 150 },
     { field: "pms_supplier", headerName: "Supplier Name", width: 200 },
 

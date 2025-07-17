@@ -515,6 +515,11 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
       field: "created_at",
       headerName: "Created On",
       width: 150,
+       renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
       // valueFormatter: (params) => {
       //   if (!params?.value) return "-";
       //   try {
@@ -533,6 +538,11 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
       field: "po_date",
       headerName: "PO Date",
       width: 150,
+       renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
       // valueFormatter: (params) => {
       //   if (!params?.value) return "-";
       //   try {
@@ -581,6 +591,11 @@ mode_or_payee_name_or_expected_payment_date_or_status_in]=${encodeURIComponent(
       field: "expected_payment_date",
       headerName: "Due Date",
       width: 150,
+       renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
       // valueFormatter: (params) => {
       //   if (!params?.value) return "-";
       //   try {
@@ -1111,7 +1126,7 @@ display:none !important;
                   rows={getTransformedRows()}
                   columns={columns}
                   pageSize={itemsPerPage}
-                  autoHeight={false}
+                  autoHeight={true}
                   getRowId={(row) => {
                     return row.id;
                   }}

@@ -1384,7 +1384,12 @@ const BillEntryCreateVendorPage = () => {
                           {/* <td className="text-start">{index + 1}</td> */}
                           <td className="text-start">{po.serialNumber}</td>
                           <td className="text-start">{po.po_number}</td>
-                          <td className="text-start">{po.po_date}</td>
+                          <td className="text-start">
+                            {/* {po.po_date} */}
+                            {po.po_date
+                              ? new Date(po.po_date).toLocaleDateString("en-GB").split("/").join("-")
+                              : "-"}
+                            </td>
                           <td className="text-start">{po.total_value}</td>
                           <td className="text-start">{po.po_type}</td>
                           <td className="text-start">
