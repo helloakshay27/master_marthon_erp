@@ -290,9 +290,8 @@ const BillApproval = () => {
               >
                 <li className="nav-item" role="presentation">
                   <button
-                    className={`nav-link ${
-                      activeTab === "material" ? "active" : ""
-                    }`}
+                    className={`nav-link ${activeTab === "material" ? "active" : ""
+                      }`}
                     onClick={() => setActiveTab("material")}
                     type="button"
                     disabled={activeTab !== "material"}
@@ -302,9 +301,8 @@ const BillApproval = () => {
                 </li>
                 <li className="nav-item" role="presentation">
                   <button
-                    className={`nav-link ${
-                      activeTab === "service" ? "active" : ""
-                    }`}
+                    className={`nav-link ${activeTab === "service" ? "active" : ""
+                      }`}
                     onClick={() => setActiveTab("service")}
                     type="button"
                     disabled={activeTab !== "service"}
@@ -314,9 +312,8 @@ const BillApproval = () => {
                 </li>
                 <li className="nav-item" role="presentation">
                   <button
-                    className={`nav-link ${
-                      activeTab === "misc" ? "active" : ""
-                    }`}
+                    className={`nav-link ${activeTab === "misc" ? "active" : ""
+                      }`}
                     onClick={() => setActiveTab("misc")}
                     type="button"
                     disabled={activeTab !== "misc"}
@@ -419,7 +416,7 @@ const BillApproval = () => {
                             <span className="text-dark">:</span>
                           </span>
                           {billDetails?.bill_date
-                            ? formatDateDDMMYYYY(billDetails.bill_date)
+                            ? formatDateDDMMYYYY(billDetails.bill_date).replace(/\//g, "-")
                             : ""}
                         </label>
                       </div>
@@ -433,10 +430,14 @@ const BillApproval = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.created_at
+                          {/* {billDetails?.created_at
                             ? new Date(
-                                billDetails.created_at
-                              ).toLocaleDateString()
+                              billDetails.created_at
+                            ).toLocaleDateString().replace(/\//g, "-")
+                            : "-"} */}
+
+                            {billDetails?.created_at
+                            ? new Date(billDetails.created_at).toLocaleDateString("en-GB").replace(/\//g, "-")
                             : "-"}
                         </label>
                       </div>
@@ -476,7 +477,11 @@ const BillApproval = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {billDetails?.bill_date || "-"}
+                          {/* {billDetails?.bill_date || "-"} */}
+
+                          {billDetails?.bill_date
+                            ? new Date(billDetails.bill_date).toLocaleDateString("en-GB").replace(/\//g, "-")
+                            : "-"}
                         </label>
                       </div>
                     </div>
@@ -778,26 +783,38 @@ const BillApproval = () => {
                                 {log.created_by_name}
                               </td>
                               <td className="text-start">
-                                {log.created_at
+                                {/* {log.created_at
                                   ? `${new Date(
-                                      log.created_at
-                                    ).toLocaleDateString("en-GB", {
-                                      day: "2-digit",
-                                      month: "2-digit",
-                                      year: "numeric",
-                                    })}      ${new Date(
-                                      log.created_at
-                                    ).toLocaleTimeString("en-GB", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                      hour12: true,
-                                    })}`
-                                  : ""}
+                                    log.created_at
+                                  ).toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  })}      ${new Date(
+                                    log.created_at
+                                  ).toLocaleTimeString("en-GB", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  })}`
+                                  : ""} */}
+
+                                  {new Date(log.created_at)
+                                      .toLocaleDateString("en-GB", {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric",
+                                      })
+                                      .replaceAll("/", "-")} , {new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: true,
+                                      }).toUpperCase()}
                               </td>
                               <td className="text-start">
                                 {log.status
                                   ? log.status.charAt(0).toUpperCase() +
-                                    log.status.slice(1)
+                                  log.status.slice(1)
                                   : ""}
                               </td>
                               <td className="text-start">
@@ -878,11 +895,11 @@ const BillApproval = () => {
               <div className="form-group">
                 <label>Name of the Document</label>
                 {newDocument.document_type &&
-                documents.find(
-                  (doc) =>
-                    doc.isDefault &&
-                    doc.document_type === newDocument.document_type
-                ) ? (
+                  documents.find(
+                    (doc) =>
+                      doc.isDefault &&
+                      doc.document_type === newDocument.document_type
+                  ) ? (
                   // For default document types - show as disabled input
                   <input
                     type="text"
@@ -1241,26 +1258,26 @@ const BillApproval = () => {
                     <td className="text-start">
                       {log.created_at
                         ? `${new Date(log.created_at).toLocaleDateString(
-                            "en-GB",
-                            {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            }
-                          )} ${new Date(log.created_at).toLocaleTimeString(
-                            "en-GB",
-                            {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: true,
-                            }
-                          )}`
+                          "en-GB",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          }
+                        )} ${new Date(log.created_at).toLocaleTimeString(
+                          "en-GB",
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          }
+                        )}`
                         : ""}
                     </td>
                     <td className="text-start">
                       {log.status
                         ? log.status.charAt(0).toUpperCase() +
-                          log.status.slice(1)
+                        log.status.slice(1)
                         : ""}
                     </td>
                     <td className="text-start">{log.remarks || ""}</td>

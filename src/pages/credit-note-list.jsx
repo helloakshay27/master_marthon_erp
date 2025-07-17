@@ -466,9 +466,8 @@ const CreditNoteList = () => {
 
   //card filter
   const fetchFilteredData2 = (status) => {
-    const url = `${baseURL}credit_notes?page=1&token=${token}${
-      status ? `&q[status_eq]=${status}` : ""
-    }`;
+    const url = `${baseURL}credit_notes?page=1&token=${token}${status ? `&q[status_eq]=${status}` : ""
+      }`;
 
     axios
       .get(url)
@@ -617,15 +616,33 @@ const CreditNoteList = () => {
           "-"
         ),
     },
-    { field: "credit_note_date", headerName: "Date", width: 150 },
+    {
+      field: "credit_note_date", headerName: "Date", width: 150,
+      renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
+    },
     { field: "credit_note_type", headerName: "Credit Note Type", width: 150 },
     {
       field: "created_at",
       headerName: "Created On",
       width: 150,
+      renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
     },
     { field: "po_number", headerName: "PO No.", width: 150 },
-    { field: "po_date", headerName: "PO Date", width: 150 },
+    { field: "po_date", headerName: "PO Date", width: 150 ,
+            renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
+    },
     { field: "po_value", headerName: "PO Value", width: 150 },
     { field: "pms_supplier", headerName: "Supplier Name", width: 150 },
 
@@ -714,6 +731,26 @@ const CreditNoteList = () => {
 
   return (
     <>
+
+      <style type="text/css">
+        {`.tbl-container {
+
+height: auto !important;
+max-height: 100% !important;
+
+}
+.css-5n0k77:last-child{
+display:none !important;
+}
+.MuiDataGrid-cell, .MuiDataGrid-cell > div {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+        `}
+      </style>
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">Home &gt; Billing &gt; MOR &gt; Credit Note List</a>
@@ -723,9 +760,8 @@ const CreditNoteList = () => {
               <div className="row separteinto7 justify-content-center">
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${
-                      activeTab === "total" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "total" ? "active" : ""
+                      }`}
                     data-tab="total"
                     onClick={() => {
                       setActiveTab("total");
@@ -739,9 +775,8 @@ const CreditNoteList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${
-                      activeTab === "draft" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "draft" ? "active" : ""
+                      }`}
                     data-tab="draft"
                     onClick={() => {
                       setActiveTab("draft");
@@ -754,9 +789,8 @@ const CreditNoteList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${
-                      activeTab === "verified" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "verified" ? "active" : ""
+                      }`}
                     data-tab="draft"
                     onClick={() => {
                       setActiveTab("verified");
@@ -769,9 +803,8 @@ const CreditNoteList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${
-                      activeTab === "submited" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "submited" ? "active" : ""
+                      }`}
                     data-tab="pending-approval"
                     onClick={() => {
                       setActiveTab("submited");
@@ -784,9 +817,8 @@ const CreditNoteList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${
-                      activeTab === "approved" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "approved" ? "active" : ""
+                      }`}
                     data-tab="self-overdue"
                     onClick={() => {
                       setActiveTab("approved");
@@ -799,9 +831,8 @@ const CreditNoteList = () => {
                 </div>
                 <div className="col-md-2 text-center">
                   <div
-                    className={`content-box tab-button ${
-                      activeTab === "proceed" ? "active" : ""
-                    }`}
+                    className={`content-box tab-button ${activeTab === "proceed" ? "active" : ""
+                      }`}
                     data-tab="self-overdue"
                     onClick={() => {
                       setActiveTab("proceed");
@@ -1101,9 +1132,9 @@ const CreditNoteList = () => {
                     },
                     // Black for header (select all) checkbox, even when checked
                     "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root":
-                      {
-                        color: "#fff",
-                      },
+                    {
+                      color: "#fff",
+                    },
                     // Make checkboxes smaller
                     "& .MuiCheckbox-root .MuiSvgIcon-root": {
                       fontSize: "1.1rem", // adjust as needed (default is 1.5rem)
@@ -1137,9 +1168,8 @@ const CreditNoteList = () => {
               <div className="d-flex justify-content-between align-items-center px-3 mt-2">
                 <ul className="pagination justify-content-center d-flex">
                   <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === 1 ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1150,9 +1180,8 @@ const CreditNoteList = () => {
                     </button>
                   </li>
                   <li
-                    className={`page-item ${
-                      currentPage === 1 ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === 1 ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1166,9 +1195,8 @@ const CreditNoteList = () => {
                   {Array.from({ length: totalPages }, (_, index) => (
                     <li
                       key={index + 1}
-                      className={`page-item ${
-                        currentPage === index + 1 ? "active" : ""
-                      }`}
+                      className={`page-item ${currentPage === index + 1 ? "active" : ""
+                        }`}
                     >
                       <button
                         className="page-link"
@@ -1180,9 +1208,8 @@ const CreditNoteList = () => {
                   ))}
 
                   <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"
@@ -1193,9 +1220,8 @@ const CreditNoteList = () => {
                     </button>
                   </li>
                   <li
-                    className={`page-item ${
-                      currentPage === totalPages ? "disabled" : ""
-                    }`}
+                    className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                      }`}
                   >
                     <button
                       className="page-link"

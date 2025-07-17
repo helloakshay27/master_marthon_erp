@@ -701,7 +701,7 @@ const BillApprovalList = () => {
             <>
               {params.row.bill_type === "material" && (
                 <button
-                  className="purple-button2"
+                  className="purple-button2 ms-2"
                   // title="Go to Bill Booking"
                   style={{
                     border: "none",
@@ -791,6 +791,11 @@ const BillApprovalList = () => {
       field: "created_at",
       headerName: "Created On",
       width: 150,
+       renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
     },
     {
       field: "accepted_at",
@@ -813,12 +818,24 @@ const BillApprovalList = () => {
         ),
     },
 
-    { field: "bill_date", headerName: "Invoice Date", width: 150 },
+    { field: "bill_date", headerName: "Invoice Date", width: 150,
+       renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
+     },
     { field: "bill_amount", headerName: "Bill Amount", width: 150 },
     { field: "bill_type", headerName: "Bill Type", width: 150 },
     { field: "bill_copies", headerName: "Bill Copies", width: 150 },
     { field: "due", headerName: "Due", width: 150 },
-    { field: "due_date", headerName: "Due Date", width: 150 },
+    { field: "due_date", headerName: "Due Date", width: 150,
+       renderCell: (params) => {
+        const dateStr = params.value;
+        const formattedDate = dateStr ? dateStr.replace(/\//g, "-") : "";
+        return <span>{formattedDate}</span>;
+      },
+     },
     { field: "certificate_no", headerName: "Certificate No.", width: 150 },
     // { field: "advance_adjust_amount", headerName: "Advance Adjust Amount", width: 200 },
     { field: "payable_amount", headerName: "Payable Amount", width: 150 },
@@ -891,6 +908,25 @@ const BillApprovalList = () => {
 
   return (
     <>
+      <style type="text/css">
+        {`.tbl-container {
+
+height: auto !important;
+max-height: 100% !important;
+
+}
+.css-5n0k77:last-child{
+display:none !important;
+}
+.MuiDataGrid-cell, .MuiDataGrid-cell > div {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+        `}
+      </style>
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">Home &gt; Billing &gt; MOR &gt; Bill Approval List</a>

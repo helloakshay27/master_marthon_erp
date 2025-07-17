@@ -242,10 +242,10 @@ const creditnotecreate = () => {
       //   url += `&q[id_in]=${filters.selectedPOIds.join(",")}`;
       // }
 
-       if (filters?.poNumber && filters.poNumber !== "") {
+      if (filters?.poNumber && filters.poNumber !== "") {
         url += `&q[po_number_cont]=${filters.poNumber}`;
       }
-       if (filters?.poType && filters.poType !== "") {
+      if (filters?.poType && filters.poType !== "") {
         url += `&q[po_type_cont]=${filters.poType}`;
       }
 
@@ -732,6 +732,8 @@ const creditnotecreate = () => {
   const [creditNoteAmount, setCreditNoteAmount] = useState(null); // State to store the amount
 
   const payload = {
+
+
     credit_note: {
       company_id: selectedCompany?.value || "",
       site_id: selectedSite?.value || "",
@@ -796,11 +798,11 @@ const creditnotecreate = () => {
       .map((doc) =>
         doc.attachments && doc.attachments[0]
           ? {
-              filename: doc.attachments[0].filename || null,
-              content: doc.attachments[0].content || null,
-              content_type: doc.attachments[0].content_type || null,
-              document_name: doc.document_type || null,
-            }
+            filename: doc.attachments[0].filename || null,
+            content: doc.attachments[0].content || null,
+            content_type: doc.attachments[0].content_type || null,
+            document_name: doc.document_type || null,
+          }
           : null
       )
       .filter(Boolean);
@@ -1089,10 +1091,10 @@ const creditnotecreate = () => {
                                   className="input-group date"
                                   data-date-format="mm-dd-yyyy"
                                 >
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    value={selectedPO?.po_date || ""}
+                                  <input className="form-control" type="text"
+                                    value={selectedPO?.po_date
+                                      ? new Date(selectedPO.po_date).toLocaleDateString("en-GB").replace(/\//g, "-")
+                                      : ""}
                                     disabled
                                   />
                                 </div>
@@ -1120,12 +1122,8 @@ const creditnotecreate = () => {
                                   className="input-group date"
                                   data-date-format="mm-dd-yyyy"
                                 >
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    value={new Date().toLocaleDateString(
-                                      "en-GB"
-                                    )} // Format: DD/MM/YYYY
+                                  <input className="form-control" type="text"
+                                    value={new Date().toLocaleDateString("en-GB").replace(/\//g, "-")  } // Format: DD/MM/YYYY
                                     disabled // Makes the input field non-editable
                                   />
                                 </div>
@@ -2010,9 +2008,7 @@ const creditnotecreate = () => {
                                   documents.map((doc, idx) => (
                                     <tr key={idx}>
                                       <td className="text-start">{idx + 1}</td>
-                                      <td className="text-start">
-                                        {doc.document_type}
-                                      </td>
+                                      <td className="text-start">{doc.document_type}</td>
                                       <td className="text-start">
                                         {doc.attachments[0]?.filename || "-"}
                                       </td>
@@ -2848,7 +2844,12 @@ const creditnotecreate = () => {
                             {index + 1}
                           </td>
                           <td className="text-start">{po.po_number}</td>
-                          <td className="text-start">{po.po_date}</td>
+                          <td className="text-start">
+                            {/* {po.po_date} */}
+                            {po.po_date
+                              ? new Date(po.po_date).toLocaleDateString("en-GB").split("/").join("-")
+                              : "-"}
+                          </td>
                           <td className="text-start">{po.total_value}</td>
                           <td className="text-start">{po.po_type}</td>
                           <td className="text-start">
@@ -2979,11 +2980,11 @@ const creditnotecreate = () => {
               <div className="form-group">
                 <label>Name of the Document</label>
                 {newDocument.document_type &&
-                documents.find(
-                  (doc) =>
-                    doc.isDefault &&
-                    doc.document_type === newDocument.document_type
-                ) ? (
+                  documents.find(
+                    (doc) =>
+                      doc.isDefault &&
+                      doc.document_type === newDocument.document_type
+                  ) ? (
                   // For default document types - show as disabled input
                   <input
                     type="text"
@@ -3059,7 +3060,10 @@ const creditnotecreate = () => {
               </button>
             </div>
             <div className="col-md-4">
-              <button className="purple-btn1 w-100" onClick={closeattachModal}>
+              <button
+                className="purple-btn1 w-100"
+                onClick={closeattachModal}
+              >
                 Cancel
               </button>
             </div>
@@ -3136,7 +3140,9 @@ const creditnotecreate = () => {
                         {/* <td className="text-start">
                                               {doc.attachments[0]?.content_type || "-"}
                                             </td> */}
-                        <td className="text-start">{doc.uploadDate || "-"}</td>
+                        <td className="text-start">
+                          {doc.uploadDate || "-"}
+                        </td>
                         {/* <td>
                                               <i
                                                 className="fa-regular fa-eye"
@@ -3181,7 +3187,9 @@ const creditnotecreate = () => {
                         {/* <td>
                                               {doc.attachments[0]?.content_type || "-"}
                                             </td> */}
-                        <td className="text-start">{doc.uploadDate || "-"}</td>
+                        <td className="text-start">
+                          {doc.uploadDate || "-"}
+                        </td>
                         {/* <td>
                                               <i
                                                 className="fa-regular fa-eye"

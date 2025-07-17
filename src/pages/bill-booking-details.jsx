@@ -487,7 +487,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.inventory_date
+                          {/* {details?.inventory_date
                             ? new Date(
                               details.inventory_date
                             ).toLocaleDateString("en-GB", {
@@ -495,7 +495,19 @@ const BillBookingDetails = () => {
                               month: "2-digit",
                               year: "numeric",
                             })
-                            : "-"}
+                            : "-"} */}
+
+                          {
+                            details?.inventory_date
+                              ? new Date(details.inventory_date)
+                                .toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                })
+                                .replace(/\//g, "-")
+                              : "-"
+                          }
                         </label>
                       </div>
                     </div>
@@ -1065,7 +1077,7 @@ const BillBookingDetails = () => {
                               day: "2-digit",
                               month: "2-digit",
                               year: "numeric",
-                            })
+                            }).replace(/\//g, "-")
                             : "-"}
                         </label>
                       </div>
@@ -1187,7 +1199,7 @@ const BillBookingDetails = () => {
                             </td>
                             <td className="text-start">
                               {
-                                /* Waive off Till Date (add logic if available) */ 
+                                /* Waive off Till Date (add logic if available) */
                               }
 
                               {note.advance_note?.recovered_amount || "0"}
@@ -1292,10 +1304,10 @@ const BillBookingDetails = () => {
                             </td>
                             <td className="text-start">
                               {
-                                /* Credit Note Recovery Till Date (add logic if available) */ 
+                                /* Credit Note Recovery Till Date (add logic if available) */
                               }
 
-                               {note.debit_note?.recovered_amount || "0"}
+                              {note.debit_note?.recovered_amount || "0"}
                             </td>
                             {/* {console.log("recovery debit:",note.debit_note?.recovered_amount)} */}
                             <td className="text-start">
@@ -1353,10 +1365,16 @@ const BillBookingDetails = () => {
                             {attachment.content_type || ""}
                           </td>
                           <td className="text-start">
-                            {attachment.created_at
+                            {/* {attachment.created_at
                               ? new Date(
                                 attachment.created_at
                               ).toLocaleDateString()
+                              : ""} */}
+
+                            {attachment.created_at
+                              ? new Date(attachment.created_at)
+                                .toLocaleDateString("en-GB") // gives 16/07/2025
+                                .replace(/\//g, "-")         // replaces / with -
                               : ""}
                           </td>
                           <td className="text-start">
@@ -1498,9 +1516,11 @@ const BillBookingDetails = () => {
                         .map((log, index) => (
                           <tr key={log.id}>
                             <td className="text-start">{index + 1}</td>
-                            <td className="text-start">{""}</td>
+                            <td className="text-start">{""}
+                              {log.created_by_name}
+                            </td>
                             <td className="text-start">
-                              {log.created_at
+                              {/* {log.created_at
                                 ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
                                   day: "2-digit",
                                   month: "2-digit",
@@ -1510,7 +1530,18 @@ const BillBookingDetails = () => {
                                   minute: "2-digit",
                                   hour12: true,
                                 })}`
-                                : ""}
+                                : ""} */}
+                              {new Date(log.created_at)
+                                .toLocaleDateString("en-GB", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                })
+                                .replaceAll("/", "-")} , {new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                }).toUpperCase()}
                             </td>
                             <td className="text-start">
                               {log.status

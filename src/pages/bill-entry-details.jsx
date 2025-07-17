@@ -437,10 +437,16 @@ const BillEntryDetails = () => {
                         <label className="text">
                           <span className="me-3">:-</span>
                           {/* {billDetails?.due_date || "-"} */}
+                          {/* {billDetails?.due_date
+                            ? new Date(billDetails.due_date)
+                              .toISOString()
+                              .slice(0, 10)
+                            : "-"} */}
                           {billDetails?.due_date
                             ? new Date(billDetails.due_date)
-                                .toISOString()
-                                .slice(0, 10)
+                              .toLocaleDateString("en-GB")
+                              .split("/")
+                              .join("-")
                             : "-"}
                         </label>
                       </div>
@@ -773,26 +779,39 @@ const BillEntryDetails = () => {
                                 {log.created_by_name}
                               </td>
                               <td className="text-start">
-                                {log.created_at
+                                {/* {log.created_at
                                   ? `${new Date(
-                                      log.created_at
-                                    ).toLocaleDateString("en-GB", {
-                                      day: "2-digit",
-                                      month: "2-digit",
-                                      year: "numeric",
-                                    })}      ${new Date(
-                                      log.created_at
-                                    ).toLocaleTimeString("en-GB", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                      hour12: true,
-                                    })}`
-                                  : ""}
+                                    log.created_at
+                                  ).toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  })}      ${new Date(
+                                    log.created_at
+                                  ).toLocaleTimeString("en-GB", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  })}`
+                                  : ""} */}
+
+
+                                {new Date(log.created_at)
+                                  .toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  })
+                                  .replaceAll("/", "-")} , {new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  }).toUpperCase()}
                               </td>
                               <td className="text-start">
                                 {log.status
                                   ? log.status.charAt(0).toUpperCase() +
-                                    log.status.slice(1)
+                                  log.status.slice(1)
                                   : ""}
                               </td>
                               <td className="text-start">
@@ -1079,11 +1098,11 @@ const BillEntryDetails = () => {
               <div className="form-group">
                 <label>Name of the Document</label>
                 {newDocument.document_type &&
-                documents.find(
-                  (doc) =>
-                    doc.isDefault &&
-                    doc.document_type === newDocument.document_type
-                ) ? (
+                  documents.find(
+                    (doc) =>
+                      doc.isDefault &&
+                      doc.document_type === newDocument.document_type
+                  ) ? (
                   // For default document types - show as disabled input
                   <input
                     type="text"
@@ -1223,26 +1242,26 @@ const BillEntryDetails = () => {
                     <td className="text-start">
                       {log.created_at
                         ? `${new Date(log.created_at).toLocaleDateString(
-                            "en-GB",
-                            {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            }
-                          )} ${new Date(log.created_at).toLocaleTimeString(
-                            "en-GB",
-                            {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: true,
-                            }
-                          )}`
+                          "en-GB",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          }
+                        )} ${new Date(log.created_at).toLocaleTimeString(
+                          "en-GB",
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          }
+                        )}`
                         : ""}
                     </td>
                     <td className="text-start">
                       {log.status
                         ? log.status.charAt(0).toUpperCase() +
-                          log.status.slice(1)
+                        log.status.slice(1)
                         : ""}
                     </td>
                     <td className="text-start">{log.remarks || ""}</td>

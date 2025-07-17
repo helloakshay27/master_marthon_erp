@@ -1337,6 +1337,9 @@ export default function ResponseTab({ isCounterOffer }) {
     <option value="12%">12%</option>
     <option value="18%">18%</option>
     <option value="28%">28%</option>
+    <option value="2%">2%</option>
+    <option value="6%">6%</option>
+    <option value="9%">9%</option>
   </select>
 </td>
                           <td className="text-center">

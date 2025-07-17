@@ -151,68 +151,68 @@ const DebitNoteDetails = () => {
   // };
 
 
-   const addRow = () => {
-      const specialTypes = ["Handling Charges", "Other charges", "Freight"];
-      const existingTypes = rows.map((r) => r.type);
-  
-      const hasSpecial = specialTypes.some((type) => existingTypes.includes(type));
-      const hasSGST = existingTypes.includes("SGST");
-      const hasCGST = existingTypes.includes("CGST");
-      const hasIGST = existingTypes.includes("IGST");
-  
-      // 🔒 Lock condition: if any special type + (IGST or both SGST & CGST) are present
-      const isLockedCombo =
-        hasSpecial && (hasIGST || (hasSGST && hasCGST));
-  
-      if (isLockedCombo) {
-        toast.error(
-          "Cannot add more Tax rows ."
-        );
-        return; // ❌ Don't add row
-      }
-  
-      // Allow adding remaining special types if any
-      const allSpecialTypes = [
-        { type: "Handling Charges", resource_id: 2 },
-        { type: "Other charges", resource_id: 4 },
-        { type: "Freight", resource_id: 5 },
-      ];
-  
-      const nextSpecial = allSpecialTypes.find(
-        (st) => !existingTypes.includes(st.type)
+  const addRow = () => {
+    const specialTypes = ["Handling Charges", "Other charges", "Freight"];
+    const existingTypes = rows.map((r) => r.type);
+
+    const hasSpecial = specialTypes.some((type) => existingTypes.includes(type));
+    const hasSGST = existingTypes.includes("SGST");
+    const hasCGST = existingTypes.includes("CGST");
+    const hasIGST = existingTypes.includes("IGST");
+
+    // 🔒 Lock condition: if any special type + (IGST or both SGST & CGST) are present
+    const isLockedCombo =
+      hasSpecial && (hasIGST || (hasSGST && hasCGST));
+
+    if (isLockedCombo) {
+      toast.error(
+        "Cannot add more Tax rows ."
       );
-  
-      if (nextSpecial) {
-        setRows((prevRows) => [
-          ...prevRows,
-          {
-            id: prevRows.length + 1,
-            type: nextSpecial.type,
-            percentage: "",
-            inclusive: false,
-            amount: "",
-            isEditable: false,
-            addition: true,
-            resource_id: nextSpecial.resource_id,
-            resource_type: "TaxCharge",
-          },
-        ]);
-      } else {
-        // Add editable row for user-defined tax
-        setRows((prevRows) => [
-          ...prevRows,
-          {
-            id: prevRows.length + 1,
-            type: "",
-            percentage: "0",
-            inclusive: false,
-            amount: "",
-            isEditable: true,
-            addition: true,
-          },
-        ]);
-      }
-    };
+      return; // ❌ Don't add row
+    }
+
+    // Allow adding remaining special types if any
+    const allSpecialTypes = [
+      { type: "Handling Charges", resource_id: 2 },
+      { type: "Other charges", resource_id: 4 },
+      { type: "Freight", resource_id: 5 },
+    ];
+
+    const nextSpecial = allSpecialTypes.find(
+      (st) => !existingTypes.includes(st.type)
+    );
+
+    if (nextSpecial) {
+      setRows((prevRows) => [
+        ...prevRows,
+        {
+          id: prevRows.length + 1,
+          type: nextSpecial.type,
+          percentage: "",
+          inclusive: false,
+          amount: "",
+          isEditable: false,
+          addition: true,
+          resource_id: nextSpecial.resource_id,
+          resource_type: "TaxCharge",
+        },
+      ]);
+    } else {
+      // Add editable row for user-defined tax
+      setRows((prevRows) => [
+        ...prevRows,
+        {
+          id: prevRows.length + 1,
+          type: "",
+          percentage: "0",
+          inclusive: false,
+          amount: "",
+          isEditable: true,
+          addition: true,
+        },
+      ]);
+    }
+  };
 
   useEffect(() => {
     // if (creditNoteData) {
@@ -814,8 +814,14 @@ const DebitNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {debitNoteData?.debit_note_date
+                                  {/* {debitNoteData?.debit_note_date
                                     ? new Date(debitNoteData.debit_note_date).toLocaleDateString()
+                                    : "-"} */}
+
+                                  {debitNoteData?.debit_note_date
+                                    ? new Date(debitNoteData?.debit_note_date)
+                                      .toLocaleDateString("en-GB") // gives 13/06/2025
+                                      .replace(/\//g, "-")         // replace / with -
                                     : "-"}
                                 </label>
                               </div>
@@ -829,8 +835,14 @@ const DebitNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {debitNoteData?.created_at
+                                  {/* {debitNoteData?.created_at
                                     ? new Date(debitNoteData.created_at).toLocaleDateString()
+                                    : "-"} */}
+
+                                  {debitNoteData?.created_at
+                                    ? new Date(debitNoteData?.created_at)
+                                      .toLocaleDateString("en-GB") // gives 13/06/2025
+                                      .replace(/\//g, "-")         // replace / with -
                                     : "-"}
                                 </label>
                               </div>
@@ -857,7 +869,11 @@ const DebitNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-
+                                  {debitNoteData?.po_date
+                                    ? new Date(debitNoteData?.po_date)
+                                      .toLocaleDateString("en-GB") // gives 13/06/2025
+                                      .replace(/\//g, "-")         // replace / with -
+                                    : "-"}
                                 </label>
                               </div>
                             </div>
@@ -1635,7 +1651,7 @@ const DebitNoteDetails = () => {
                                   <td className="text-start">{index + 1}</td>
                                   <td className="text-start">{log.created_by_name || ""}</td>
                                   <td className="text-start">
-                                    {log.created_at
+                                    {/* {log.created_at
                                       ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
                                         day: "2-digit",
                                         month: "2-digit",
@@ -1645,7 +1661,19 @@ const DebitNoteDetails = () => {
                                         minute: "2-digit",
                                         hour12: true,
                                       })}`
-                                      : ""}
+                                      : ""} */}
+
+                                       {new Date(log.created_at)
+                                      .toLocaleDateString("en-GB", {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric",
+                                      })
+                                      .replaceAll("/", "-")} , {new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: true,
+                                      }).toUpperCase()}
                                   </td>
                                   <td className="text-start">
                                     {log.status

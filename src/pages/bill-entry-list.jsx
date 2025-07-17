@@ -612,7 +612,7 @@ display:none !important;
                         />
                       </div>
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-3">
                       <button
                         className="purple-btn2 m-0"
                         onClick={fetchFilteredData}

@@ -942,9 +942,8 @@ const BillEntryListSubPage = () => {
           >
             <li className="nav-item" role="presentation">
               <button
-                className={`nav-link ${
-                  activeTab === "material" ? "active" : ""
-                }`}
+                className={`nav-link ${activeTab === "material" ? "active" : ""
+                  }`}
                 onClick={() => handleTabClick("material")}
                 type="button"
               >
@@ -953,9 +952,8 @@ const BillEntryListSubPage = () => {
             </li>
             <li className="nav-item" role="presentation">
               <button
-                className={`nav-link ${
-                  activeTab === "service" ? "active" : ""
-                }`}
+                className={`nav-link ${activeTab === "service" ? "active" : ""
+                  }`}
                 onClick={() => handleTabClick("service")}
                 type="button"
               >
@@ -1156,11 +1154,11 @@ const BillEntryListSubPage = () => {
                           value={
                             selectedSupplier
                               ? {
-                                  label: selectedSupplier.organization_name,
-                                  value: selectedSupplier.id,
-                                  gstin: selectedSupplier.gstin,
-                                  pan_number: selectedSupplier.pan_number,
-                                }
+                                label: selectedSupplier.organization_name,
+                                value: selectedSupplier.id,
+                                gstin: selectedSupplier.gstin,
+                                pan_number: selectedSupplier.pan_number,
+                              }
                               : null
                           }
                           onChange={(option) => {
@@ -1226,7 +1224,7 @@ const BillEntryListSubPage = () => {
                       value={formData.bill_no}
                       onChange={handleInputChange}
                       placeholder=""
-                      // disabled
+                    // disabled
                     />
                   </div>
                 </div>
@@ -1682,11 +1680,11 @@ const BillEntryListSubPage = () => {
               <div className="form-group">
                 <label>Name of the Document</label>
                 {newDocument.document_type &&
-                documents.find(
-                  (doc) =>
-                    doc.isDefault &&
-                    doc.document_type === newDocument.document_type
-                ) ? (
+                  documents.find(
+                    (doc) =>
+                      doc.isDefault &&
+                      doc.document_type === newDocument.document_type
+                  ) ? (
                   // For default document types - show as disabled input
                   <input
                     type="text"
@@ -1875,7 +1873,7 @@ const BillEntryListSubPage = () => {
                   isMulti={true}
                 /> */}
 
-                 <input
+                <input
                   type="text"
                   className="form-control"
                   value={filterParams.poNumber}
@@ -1948,7 +1946,12 @@ const BillEntryListSubPage = () => {
                           </td> */}
                           <td className="text-start">{po.serialNumber}</td>
                           <td className="text-start">{po.po_number}</td>
-                          <td className="text-start">{po.po_date}</td>
+                          <td className="text-start">
+                            {/* {po.po_date} */}
+                            {po.po_date
+                              ? new Date(po.po_date).toLocaleDateString("en-GB").split("/").join("-")
+                              : "-"}
+                          </td>
                           <td className="text-start">{po.total_value}</td>
                           <td className="text-start">{po.po_type}</td>
                           <td className="text-start">
@@ -1971,9 +1974,8 @@ const BillEntryListSubPage = () => {
                   <nav>
                     <ul className="pagination">
                       <li
-                        className={`page-item ${
-                          pagination.current_page === 1 ? "disabled" : ""
-                        }`}
+                        className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -1984,9 +1986,8 @@ const BillEntryListSubPage = () => {
                         </button>
                       </li>
                       <li
-                        className={`page-item ${
-                          pagination.current_page === 1 ? "disabled" : ""
-                        }`}
+                        className={`page-item ${pagination.current_page === 1 ? "disabled" : ""
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -2001,9 +2002,8 @@ const BillEntryListSubPage = () => {
                       {getPageNumbers().map((page) => (
                         <li
                           key={page}
-                          className={`page-item ${
-                            page === pagination.current_page ? "active" : ""
-                          }`}
+                          className={`page-item ${page === pagination.current_page ? "active" : ""
+                            }`}
                         >
                           <button
                             className="page-link"
@@ -2014,11 +2014,10 @@ const BillEntryListSubPage = () => {
                         </li>
                       ))}
                       <li
-                        className={`page-item ${
-                          pagination.current_page === pagination.total_pages
+                        className={`page-item ${pagination.current_page === pagination.total_pages
                             ? "disabled"
                             : ""
-                        }`}
+                          }`}
                       >
                         <button
                           className="page-link"
@@ -2033,11 +2032,10 @@ const BillEntryListSubPage = () => {
                         </button>
                       </li>
                       <li
-                        className={`page-item ${
-                          pagination.current_page === pagination.total_pages
+                        className={`page-item ${pagination.current_page === pagination.total_pages
                             ? "disabled"
                             : ""
-                        }`}
+                          }`}
                       >
                         <button
                           className="page-link"
