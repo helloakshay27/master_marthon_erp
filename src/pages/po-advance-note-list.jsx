@@ -939,7 +939,7 @@ display:none !important;
                         </svg>
                       </button>
                     </div>
-                    {searchInput && (
+                    {/* {searchInput && (
                       <div className="input-group-append">
                         <button
                           type="button"
@@ -965,7 +965,7 @@ display:none !important;
                           </svg>
                         </button>
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </div>
                 <div className="col-md-5 d-flex justify-content-end align-items-center gap-5 mt-1">
