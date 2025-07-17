@@ -233,11 +233,15 @@ const BillEntryListSubPage = () => {
         url += `&q[supplier_id_eq]=${filters.supplierId}`;
       if (filters?.startDate) url += `&q[po_date_gteq]=${filters.startDate}`;
       if (filters?.endDate) url += `&q[po_date_lteq]=${filters.endDate}`;
-      if (filters?.selectedPOIds?.length > 0) {
-        url += `&q[id_in]=${filters.selectedPOIds.join(",")}`;
+      // if (filters?.selectedPOIds?.length > 0) {
+      //   url += `&q[po_number_cont]=${filters.selectedPOIds.join(",")}`;
+      // }
+      if (filters?.poNumber && filters.poNumber !== "") {
+        url += `&q[po_number_cont]=${filters.poNumber}`;
       }
+
       if (filters?.poType && filters.poType !== "") {
-        url += `&q[po_type_eq]=${filters.poType}`;
+        url += `&q[po_type_cont]=${filters.poType}`;
       }
 
       // Always add pagination parameters
@@ -1863,12 +1867,25 @@ const BillEntryListSubPage = () => {
             <div className="col-md-4">
               <div className="form-group">
                 <label>PO Number</label>
-                <MultiSelector
+                {/* <MultiSelector
                   options={poOptions}
                   value={selectedPONumbers}
                   onChange={(selected) => setSelectedPONumbers(selected)}
                   placeholder="Select PO Numbers"
                   isMulti={true}
+                /> */}
+
+                 <input
+                  type="text"
+                  className="form-control"
+                  value={filterParams.poNumber}
+                  onChange={(e) =>
+                    setFilterParams((prev) => ({
+                      ...prev,
+                      poNumber: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter PO Number"
                 />
               </div>
             </div>
