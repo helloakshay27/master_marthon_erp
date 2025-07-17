@@ -2550,7 +2550,7 @@ const openAttachTwoModal = () => setattachTwoModal(true);
                                     checked={selectedPOs.includes(po.id)}
                                     onChange={() => handleCheckboxChange(po.id)}
                                   /> */}
-                            {index + 1}
+                             {((pagination.current_page - 1) * pagination.per_page) + index + 1}
                           </td>
                           <td className="text-start">{po.po_number}</td>
                           <td className="text-start">
