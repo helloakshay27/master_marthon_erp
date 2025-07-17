@@ -751,6 +751,7 @@ export default function AllocationTab({ isCounterOffer }) {
 
                   return (
                     <>
+                    {console.log("materialData:-",materialData)}
                       <Accordion
                         key={ind}
                         title={materialData.material_name || "_"}
@@ -787,6 +788,7 @@ export default function AllocationTab({ isCounterOffer }) {
                           { label: "vendor name", key: "vendor_name" },
                           { label: "pms supplier id", key: "pms_supplier_id" },
                           { label: "material name", key: "material_name" },
+                          { label: "po exist", key: "po_exists" },
                           ...extraColumns
                             .filter((column) => /^[A-Z]/.test(column))
                             .map((column) => ({
@@ -803,7 +805,8 @@ export default function AllocationTab({ isCounterOffer }) {
                         tableData={materialData.bids_values?.map(
                           (material, bidIndex) => {
                             const extraData = material.extra_data || {};
-
+                            console.log();
+                            
                             return {
                               bestTotalAmount: material.total_amount || "_",
                               quantityAvailable:
@@ -824,6 +827,7 @@ export default function AllocationTab({ isCounterOffer }) {
                               vendor_name: material.vendor_name,
                               pms_supplier_id: material.pms_supplier_id,
                               material_name: material.material_name,
+                              po_exists: material.po_exists,
                               isChecked: material.isChecked || false,
                               ...material.extra_columns.reduce(
                                 (acc, column) => {

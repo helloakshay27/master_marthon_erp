@@ -126,7 +126,10 @@ export default function Accordion({
                   {title}
                 </span>
               </Tooltip>
+              {console.log("updatedTableData:-", tableData)
+              }
               <span style={{ display: "flex", flexWrap: "wrap" }}>
+
                 {amount?.map((amt, index) => (
                   <span
                     key={index}
@@ -142,9 +145,12 @@ export default function Accordion({
                       gap: "10px",
                     }}
                   >
+                    {console.log(updatedTableData[index], "amount")}
+                    
                     {isAllocation && (
                       <input
                         type="checkbox"
+                        disabled={updatedTableData[index]?.po_exists || false}
                         checked={updatedTableData[index]?.isChecked || false}
                         onChange={(e) => {
                           e.stopPropagation(); // Prevent the event from bubbling up to the button
@@ -189,7 +195,9 @@ export default function Accordion({
                             return updatedData; // Update the state with the new data
                           });
                         }}
-                        style={{ cursor: "pointer" }}
+                        style={{ 
+                          cursor: updatedTableData[index]?.po_exists ? "not-allowed" : "pointer" 
+                        }}
                       />
                     )}
                     {amt}
