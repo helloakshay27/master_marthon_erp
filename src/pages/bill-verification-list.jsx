@@ -701,7 +701,7 @@ const BillVerificationList = () => {
             <>
               {params.row.bill_type === "material" && (
                 <button
-                  className="purple-button2"
+                  className="purple-button2 ms-2"
                   // title="Go to Bill Booking"
                   style={{
                     border: "none",

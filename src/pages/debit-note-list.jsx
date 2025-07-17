@@ -686,6 +686,25 @@ const DebitNoteList = () => {
   console.log("selected bill id array :", selectedBoqDetails);
   return (
     <>
+      <style type="text/css">
+        {`.tbl-container {
+
+height: auto !important;
+max-height: 100% !important;
+
+}
+.css-5n0k77:last-child{
+display:none !important;
+}
+.MuiDataGrid-cell, .MuiDataGrid-cell > div {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+        `}
+      </style>
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">Home &gt; Billing &gt; MOR &gt; Credit Note List</a>
