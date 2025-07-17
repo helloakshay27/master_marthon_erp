@@ -1029,8 +1029,11 @@ display:none !important;
                     return row.id;
                   }}
                   loading={false}
+                   checkboxSelection={!!fromStatus} //
                   disableSelectionOnClick
-                  checkboxSelection // <-- enables checkboxes and select all
+                 localeText={{
+                    noRowsLabel: "No data available",
+                  }}
                   selectionModel={selectedBoqDetails}
                   //   onSelectionModelChange={(ids) => setSelectedBoqDetails(ids)}
                   onSelectionModelChange={(ids) => {

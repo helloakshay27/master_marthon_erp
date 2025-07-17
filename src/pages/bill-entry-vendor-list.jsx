@@ -58,12 +58,9 @@ const BillEntryVendorList = () => {
     bill_copies: true,
     due: true,
     due_date: true,
-    certificate_no: true,
-    payable_amount: true,
-    paid: true,
-    balance: true,
+   
     status: true,
-    overdue: true,
+   
     assign_to: true,
     tat: true,
   });
@@ -134,12 +131,9 @@ const BillEntryVendorList = () => {
     { field: "bill_copies", headerName: "Bill Copies", width: 150 },
     { field: "due", headerName: "Due", width: 150 },
     { field: "due_date", headerName: "Due Date", width: 200 },
-    { field: "certificate_no", headerName: "Certificate No.", width: 150 },
-    { field: "payable_amount", headerName: "Payable Amount", width: 150 },
-    { field: "paid", headerName: "Paid", width: 150 },
-    { field: "balance", headerName: "Balance", width: 150 },
+  
     { field: "status", headerName: "Status", width: 200 },
-    { field: "overdue", headerName: "Overdue", width: 150 },
+   
     { field: "assign_to", headerName: "Assign to", width: 150 },
     { field: "tat", headerName: "TAT", width: 150 },
   ];
@@ -566,22 +560,26 @@ const BillEntryVendorList = () => {
 
   return (
     <>
-      <style type="text/css">
-        {`
+        <style type="text/css">
+        {`.tbl-container {
 
-.tbl-container {
-
-height: 350px !important;
+height: auto !important;
+max-height: 100% !important;
 
 }
 .css-5n0k77:last-child{
 display:none !important;
 }
-
-
-
-`}
+.MuiDataGrid-cell, .MuiDataGrid-cell > div {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+        `}
       </style>
+    
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">Home &gt; Billing &gt; MOR &gt; Bill Entry List</a>
@@ -728,7 +726,7 @@ display:none !important;
                         />
                       </div>
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-3">
                       <button
                         className="purple-btn2 m-0"
                         onClick={fetchFilteredData}
@@ -768,24 +766,7 @@ display:none !important;
                                  >
                                     ✕ {/* Cross icon */}
                     {/* </button> */}
-                    {searchInput && (
-                      <button
-                        type="button"
-                        className="btn btn-md btn-default"
-                        // onClick={() => {
-                        //   setSearchTerm(""); // Clear the search term
-                        //   fetchData();
-                        //   // activeTab,
-                        //   // filters,
-                        //   // pagination.current_page,
-                        //   // "" // Fetch data without search
-                        // }}
-                        onClick={handleClearSearch}
-                      >
-                        ✕ {/* Cross icon */}
-                      </button>
-                    )}
-                    {/* )} */}
+                 
                     <button
                       type="submit"
                       className="btn btn-md btn-default"
@@ -811,7 +792,7 @@ display:none !important;
                   </div>
                 </div>
               </div>
-              <div className="col-md-5 d-flex justify-content-end align-items-center gap-5 mt-4">
+              <div className="col-md-6 d-flex justify-content-end align-items-center gap-4 mt-4">
                 <button
                   type="button"
                   className="btn btn-md"
@@ -848,6 +829,10 @@ display:none !important;
                 components={{
                   ColumnMenu: () => null,
                 }}
+                 localeText={{
+                    noRowsLabel: "No data available",
+                  }}
+
                 sx={{
                   "& .MuiDataGrid-columnHeaders": {
                     backgroundColor: "#f8f9fa",
