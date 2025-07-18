@@ -68,7 +68,7 @@ const EstimationList = () => {
 
     // Fetch company data on component mount
     useEffect(() => {
-        axios.get(`${baseURL}pms/company_setups.json?token=${token}`)
+        axios.get(`${baseURL}estimation_details.json?token=${token}`)
             .then(response => {
                 setCompanies(response.data.companies);
                 setData(response.data);  // Set the data from the API to state
@@ -174,7 +174,7 @@ const EstimationList = () => {
             // console.log("base64String:", base64String)
             try {
                 const response = await axios.post(
-                    `${baseURL}boq_details/import.json?token=${token}`,
+                    `${baseURL}estimation_details/import.json?token=${token}`,
                     { file: base64String },
                     { headers: { "Content-Type": "application/json" } }
                 );
@@ -218,7 +218,7 @@ const EstimationList = () => {
         reader.readAsDataURL(file);
     };
 
-
+console.log("data:",data)
     return (
         <>
 
@@ -357,7 +357,7 @@ const EstimationList = () => {
                                     <div className="col-md-6">
                                         <div className="d-flex justify-content-end align-items-center gap-3">
 
-                                            {/* <button className="purple-btn2 me-3" onClick={() => setShowModal(true)}>Bulk Upload</button> */}
+                                            {/* <button className="purple-btn2 me-2" onClick={() => setShowModal(true)}>Bulk Upload</button> */}
 
 
                                             {/* Create BOQ Button */}
@@ -448,106 +448,219 @@ const EstimationList = () => {
                                         </thead>
                                         <tbody>
 
-                                            {/* Map through the companies, projects, sites, and wings */}
-                                            {data?.companies?.map((company, companyIndex) => {
-                                                return company.projects.map((project, projectIndex) => {
-                                                    return project.pms_sites.map((site, siteIndex) => {
-                                                        // Check if there are wings for the site
-                                                        if (site.pms_wings.length > 0) {
-                                                            return site.pms_wings.map((wing, wingIndex) => (
-                                                                <tr key={`${companyIndex}-${projectIndex}-${siteIndex}-${wingIndex}`}>
-                                                                    {/* Render Sr. No. for Company only */}
-                                                                    {wingIndex === 0 && siteIndex === 0 && projectIndex === 0 ? (
-                                                                        <td className="text-start">{companyIndex + 1}</td>
-                                                                    ) : (
-                                                                        <td className="text-start"></td>
-                                                                    )}
+                                         
 
-                                                                    {/* Render Company Name only once per company */}
-                                                                    {wingIndex === 0 && siteIndex === 0 && projectIndex === 0 ? (
-                                                                        <td className="text-start">{company.company_name}</td>
-                                                                    ) : (
-                                                                        <td className="text-start"></td>
-                                                                    )}
 
-                                                                    {/* Render Project Name only once per project */}
-                                                                    {wingIndex === 0 && siteIndex === 0 ? (
-                                                                        <td className="text-start">
-                                                                            <a href={`/estimation-details-project/${project.id}?token=${token}`}>
-                                                                                <span style={{ color: "#8b0203", textDecoration: 'underline' }}>{project.name}</span>
-                                                                            </a>
-                                                                        </td>
-                                                                    ) : (
-                                                                        <td className="text-start"></td>
-                                                                    )}
-
-                                                                    {/* Render Sub-Project Name only once per site */}
-                                                                    {wingIndex === 0 ? (
-                                                                        <td className="text-start">
-                                                                            <a href={`/estimation-details-sub-project/${site.id}?token=${token}`}>
-                                                                                {/* {site.name} */}
-                                                                                <span style={{ color: "#8b0203", textDecoration: 'underline' }}>{site.name}</span>
-                                                                            </a>
-                                                                        </td>
-                                                                    ) : (
-                                                                        <td className="text-start"></td>
-                                                                    )}
-
-                                                                    {/* Render Wing Name */}
-                                                                    <td className="text-start">{wing.name}</td>
-
-                                                                    {/* Render Location (empty or can be added later) */}
+                                             {data?.companies?.map((company, companyIndex) =>
+                                            company.projects.map((project, projectIndex) =>
+                                                project.pms_sites.map((site, siteIndex) =>
+                                                    site.pms_wings.length > 0
+                                                        ? site.pms_wings.map((wing, wingIndex) => (
+                                                            <tr key={`${companyIndex}-${projectIndex}-${siteIndex}-${wingIndex}`}>
+                                                                {/* Sr.No. */}
+                                                                {wingIndex === 0 && siteIndex === 0 && projectIndex === 0 ? (
+                                                                    <td className="text-start">{companyIndex + 1}</td>
+                                                                ) : (
                                                                     <td className="text-start"></td>
-                                                                </tr>
-                                                            ));
-                                                        } else {
-                                                            // If there are no wings for a particular site
-                                                            return (
-                                                                <tr key={`${companyIndex}-${projectIndex}-${siteIndex}`}>
-                                                                    {/* Render Sr. No. for Company only */}
-                                                                    {siteIndex === 0 && projectIndex === 0 ? (
-                                                                        <td className="text-start">{companyIndex + 1}</td>
-                                                                    ) : (
-                                                                        <td className="text-start"></td>
-                                                                    )}
-
-                                                                    {/* Render Company Name only once per company */}
-                                                                    {siteIndex === 0 && projectIndex === 0 ? (
-                                                                        <td className="text-start">{company.company_name}</td>
-                                                                    ) : (
-                                                                        <td className="text-start"></td>
-                                                                    )}
-
-                                                                    {/* Render Project Name only once per project */}
-                                                                    {siteIndex === 0 ? (
-                                                                        <td className="text-start">
-                                                                            <a href={`/estimation-details-project/${project.id}?token=${token}`}>
-                                                                                {/* {project.name} */}
-                                                                                <span style={{ color: "#8b0203", textDecoration: 'underline' }}>{project.name}</span>
-                                                                            </a>
-                                                                        </td>
-                                                                    ) : (
-                                                                        <td className="text-start"></td>
-                                                                    )}
-
-                                                                    {/* Render Sub-Project Name */}
+                                                                )}
+                                                                {/* Company Name */}
+                                                                {wingIndex === 0 && siteIndex === 0 && projectIndex === 0 ? (
+                                                                    <td className="text-start">{company.company_name}</td>
+                                                                ) : (
+                                                                    <td className="text-start"></td>
+                                                                )}
+                                                                {/* Project Name */}
+                                                                {wingIndex === 0 && siteIndex === 0 ? (
                                                                     <td className="text-start">
-                                                                        <a href={`/estimation-details-sub-project/${site.id}?token=${token}`}>
-                                                                            <span style={{ color: "#8b0203", textDecoration: 'underline' }}>{site.name}</span>
-                                                                        </a>
+                                                                        {project.budget_id ? (
+                                                                            <a href={`/estimation-details-project/${project.budget_id}?token=${token}`}
+                                                                                title={project.status ? `Status: ${project.status}` : ""}
+                                                                                style={{
+                                                                                    cursor: project.status ? "pointer" : "default",
+                                                                                    // textDecoration: "underline",
+                                                                                    // color: "#8b0203",
+                                                                                    position: "relative"
+                                                                                }}
+                                                                            >
+                                                                                <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                                    {project.name}
+                                                                                    {/* {console.log("token inn:",token)} */}
+                                                                                </span>
+                                                                            </a>
+                                                                        ) : (
+                                                                            <span
+                                                                                title={project.status ? `Status: ${project.status}` : ""}
+                                                                                style={{
+                                                                                    cursor: project.status ? "pointer" : "default",
+                                                                                    // textDecoration: "underline",
+                                                                                    // color: "#8b0203",
+                                                                                    position: "relative"
+                                                                                }}
+                                                                            >{project.name}</span>
+                                                                        )}
+                                                                        {/* <a href={`/details-rate/${project.rate_id}`}>
+                                                                            <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                                {project.name}
+                                                                            </span>
+                                                                        </a> */}
                                                                     </td>
-
-                                                                    {/* Render Wing Name as empty (no wings for this site) */}
+                                                                ) : (
                                                                     <td className="text-start"></td>
+                                                                )}
+                                                                {/* Sub-Project Name */}
+                                                                {wingIndex === 0 ? (
+                                                                    <td className="text-start">
+                                                                        {site.budget_id ? (
+                                                                            <a href={`/estimation-details-sub-project/${site.budget_id}?token=${token}`}
+                                                                                title={site.status ? `Status: ${site.status}` : ""}
+                                                                                style={{
+                                                                                    cursor: site.status ? "pointer" : "default",
+                                                                                    // textDecoration: "underline",
+                                                                                    // color: "#8b0203",
+                                                                                    position: "relative"
+                                                                                }}
+                                                                            >
+                                                                                <span style={{ color: "#8b0203", textDecoration: "underline" }}
 
-                                                                    {/* Render Location (empty or can be added later) */}
+                                                                                >
+                                                                                    {site.name}
+                                                                                </span>
+                                                                            </a>
+                                                                        ) : (
+                                                                            <span
+                                                                                title={site.status ? `Status: ${site.status}` : ""}
+                                                                                style={{
+                                                                                    cursor: site.status ? "pointer" : "default",
+                                                                                    // textDecoration: "underline",
+                                                                                    // color: "#8b0203",
+                                                                                    position: "relative"
+                                                                                }}
+                                                                            >{site.name}</span>
+                                                                        )}
+
+                                                                    </td>
+                                                                ) : (
                                                                     <td className="text-start"></td>
-                                                                </tr>
-                                                            );
-                                                        }
-                                                    });
-                                                });
-                                            })}
+                                                                )}
+                                                                {/* Wing Name */}
+                                                                <td className="text-start">
+                                                                    {/* {wing.name} */}
+                                                                    {wing.budget_id ? (
+                                                                        // <a href={`/details-rate/${wing.budget_id}?token=${token}`}
+                                                                        //     title={wing.status ? `Status: ${wing.status}` : ""}
+                                                                        //     style={{
+                                                                        //         cursor: wing.status ? "pointer" : "default",
+                                                                        //         // textDecoration: "underline",
+                                                                        //         // color: "#8b0203",
+                                                                        //         position: "relative"
+                                                                        //     }}
+                                                                        // >
+                                                                            <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                                {wing.name}
+                                                                            </span>
+                                                                        // </a>
+                                                                    ) : (
+                                                                        <span
+                                                                            title={wing.status ? `Status: ${wing.status}` : ""}
+                                                                            style={{
+                                                                                cursor: wing.status ? "pointer" : "default",
+                                                                                // textDecoration: "underline",
+                                                                                // color: "#8b0203",
+                                                                                position: "relative"
+                                                                            }}
+                                                                        >{wing.name}</span>
+                                                                    )}
+                                                                </td>
+                                                                {/* Location */}
+                                                                {/* <td className="text-start"></td> */}
+                                                            </tr>
+                                                        ))
+                                                        : (
+                                                            <tr key={`${companyIndex}-${projectIndex}-${siteIndex}`}>
+                                                                {/* Sr.No. */}
+                                                                {siteIndex === 0 && projectIndex === 0 ? (
+                                                                    <td className="text-start">{companyIndex + 1}</td>
+                                                                ) : (
+                                                                    <td className="text-start"></td>
+                                                                )}
+                                                                {/* Company Name */}
+                                                                {siteIndex === 0 && projectIndex === 0 ? (
+                                                                    <td className="text-start">{company.company_name}</td>
+                                                                ) : (
+                                                                    <td className="text-start"></td>
+                                                                )}
+                                                                {/* Project Name */}
+                                                                {siteIndex === 0 ? (
+                                                                    <td className="text-start">
+                                                                        {project.budget_id ? (
+                                                                            <a href={`/estimation-details-project/${project.budget_id}?token=${token}`}
+                                                                                title={project.status ? `Status: ${project.status}` : ""}
+                                                                                style={{
+                                                                                    cursor: project.status ? "pointer" : "default",
+                                                                                    // textDecoration: "underline",
+                                                                                    // color: "#8b0203",
+                                                                                    position: "relative"
+                                                                                }}>
+                                                                                <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                                    {project.name}
+                                                                                </span>
+                                                                            </a>
+                                                                        ) : (
+                                                                            <span
+                                                                                title={project.status ? `Status: ${project.status}` : ""}
+                                                                                style={{
+                                                                                    cursor: project.status ? "pointer" : "default",
+                                                                                    // textDecoration: "underline",
+                                                                                    // color: "#8b0203",
+                                                                                    position: "relative"
+                                                                                }}
+                                                                            >{project.name}</span>
+                                                                        )}
+                                                                        {/* <a href={`/details-rate/${project.rate_id}`}>
+                                                                            <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                                {project.name}
+                                                                            </span>
+                                                                        </a> */}
+                                                                    </td>
+                                                                ) : (
+                                                                    <td className="text-start"></td>
+                                                                )}
+                                                                {/* Sub-Project Name */}
+                                                                <td className="text-start">
+                                                                    {site.budget_id ? (
+                                                                        <a href={`/estimation-details-sub-project/${site.budget_id}?token=${token}`}
+                                                                            title={site.status ? `Status: ${site.status}` : ""}
+                                                                            style={{
+                                                                                cursor: site.status ? "pointer" : "default",
+                                                                                // textDecoration: "underline",
+                                                                                // color: "#8b0203",
+                                                                                position: "relative"
+                                                                            }}>
+                                                                            <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                                {site.name}
+                                                                            </span>
+                                                                        </a>
+                                                                    ) : (
+                                                                        <span
+                                                                            title={site.status ? `Status: ${site.status}` : ""}
+                                                                            style={{
+                                                                                cursor: site.status ? "pointer" : "default",
+                                                                                // textDecoration: "underline",
+                                                                                // color: "#8b0203",
+                                                                                position: "relative"
+                                                                            }}>{site.name}</span>
+                                                                    )}
+
+                                                                </td>
+                                                                {/* Wing Name */}
+                                                                <td className="text-start"></td>
+                                                                {/* Location */}
+                                                                {/* <td className="text-start"></td> */}
+                                                            </tr>
+                                                        )
+                                                )
+                                            )
+                                        )}
 
                                         </tbody>
                                     </table>
@@ -585,7 +698,7 @@ const EstimationList = () => {
                         <div className="d-flex justify-content-between align-items-center">
                             {/* Left: Download sample format */}
                             <a
-                                href={`${baseURL}boq_details/download_boq_sample.json?token=${token}`}
+                                href={`${baseURL}estimation_details/download_budget_sample.json?token=${token}`}
                                 download
                                 className="d-flex align-items-center text-decoration-none"
                                 style={{ color: "#8b0203" }}
