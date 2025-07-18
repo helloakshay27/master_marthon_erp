@@ -23,25 +23,37 @@ const CreditNoteDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [status, setStatus] = useState(""); // Assuming boqDetails.status is initially available
-   const [attachOneModal, setattachOneModal] = useState(false);
-      const [attachTwoModal, setattachTwoModal] = useState(false);
-      const [attachThreeModal, setattachThreeModal] = useState(false);
-      const [attachModal, setattachModal] = useState(false);
-          const [viewDocumentModal, setviewDocumentModal] = useState(false);
-  
-          const closeAttachOneModal = () => setattachOneModal(false);
-  
-    const openAttachTwoModal = () => setattachTwoModal(true);
-    const closeAttachTwoModal = () => setattachTwoModal(false);
-  
-    const openAttachThreeModal = () => setattachThreeModal(true);
-    const closeAttachThreeModal = () => setattachThreeModal(false);
-  
-    const openattachModal = () => setattachModal(true);
-    const closeattachModal = () => setattachModal(false);
-    const openviewDocumentModal = () => setviewDocumentModal(true);
-    const closeviewDocumentModal = () => setviewDocumentModal(false);
-  
+  const [attachOneModal, setattachOneModal] = useState(false);
+  const [attachTwoModal, setattachTwoModal] = useState(false);
+  const [attachThreeModal, setattachThreeModal] = useState(false);
+  const [attachModal, setattachModal] = useState(false);
+  const [viewDocumentModal, setviewDocumentModal] = useState(false);
+
+  const closeAttachOneModal = () => setattachOneModal(false);
+
+  const openAttachTwoModal = () => setattachTwoModal(true);
+  const closeAttachTwoModal = () => setattachTwoModal(false);
+
+  const openAttachThreeModal = () => setattachThreeModal(true);
+  const closeAttachThreeModal = () => setattachThreeModal(false);
+
+  const openattachModal = () => setattachModal(true);
+  const closeattachModal = () => setattachModal(false);
+  const openviewDocumentModal = () => setviewDocumentModal(true);
+  const closeviewDocumentModal = () => setviewDocumentModal(false);
+  const [creditNoteAmount, setCreditNoteAmount] = useState(null);
+  // const [creditNoteData, setCreditNoteData] = useState(null);
+  const [editableDebitNote, setEditableDebitNote] = useState({
+    credit_note_amount: "",
+    credit_note_date: "",
+    remark: "",
+  });
+  const [newDocument, setNewDocument] = useState({
+    document_type: "",
+    attachments: [],
+  });
+  const [documents, setDocuments] = useState([]); // If you want to keep a list
+
 
   // Fetch credit note data
   const fetchCreditNoteData = async () => {
@@ -51,6 +63,18 @@ const CreditNoteDetails = () => {
       );
       setCreditNoteData(response.data);
       setStatus(response.data.status)
+      setCreditNoteAmount(response.data.credit_note_amount || 0)
+      const formattedDocuments = response.data.attachments.map((att) => ({
+        document_type: att.relation || "", // or a custom label if needed
+        attachments: [att],
+        uploadDate: new Date(att.created_at)
+          .toLocaleDateString("en-GB")
+          .replaceAll("/", "-"),
+
+        blob_id: att.blob_id || null,
+        filename: att.filename || "-",
+      }));
+      setDocuments(formattedDocuments);
       setLoading(false);
     } catch (err) {
       setError(err.message);
@@ -63,16 +87,64 @@ const CreditNoteDetails = () => {
     fetchCreditNoteData(id);
   }, [id]);
 
+  useEffect(() => {
+    if (creditNoteData) {
+      setEditableDebitNote({
+        credit_note_amount: creditNoteData.credit_note_amount || "",
+        credit_note_date: creditNoteData.credit_note_date || "",
+        remark: creditNoteData.remark || "",
+      });
+    }
+  }, [creditNoteData]);
+
+
+
+  const handleDebitNoteChange = (field, value) => {
+    setEditableDebitNote((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+
+    if (field === "credit_note_amount") {
+      setCreditNoteAmount(Number(value) || 0);
+    }
+  };
+
   // tax table functionality
   const [rows, setRows] = useState([
-    {
-      id: 1,
-      type: "TDS 1",
-      charges: "100",
-      inclusive: false,
-      amount: 50.0,
-    },
   ]);
+
+  const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
+  const [taxPercentages, setTaxPercentages] = useState([]);
+   // Fetch tax types from API
+    useEffect(() => {
+      const fetchTaxTypes = async () => {
+        try {
+          const response = await axios.get(
+            `${baseURL}rfq/events/taxes_dropdown?token=${token}`
+          );
+          setTaxTypes(response.data.taxes); // Assuming the API returns an array of tax types
+        } catch (error) {
+          console.error("Error fetching tax types:", error);
+        }
+      };
+  
+      fetchTaxTypes();
+    }, []);
+  
+    useEffect(() => {
+      const fetchTaxPercentages = async () => {
+        try {
+          const response = await fetch(`${baseURL}rfq/events/tax_percentage?token=${token}`);
+          const data = await response.json();
+          setTaxPercentages(data);
+        } catch (error) {
+          console.error("Error fetching tax percentages:", error);
+        }
+      };
+  
+      fetchTaxPercentages();
+    }, []);
 
   // Toggle visibility of rows
   const toggleRows = () => {
@@ -80,14 +152,14 @@ const CreditNoteDetails = () => {
   };
 
   // Delete a specific row
-  const deleteRow = (id) => {
-    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-  };
+  // const deleteRow = (id) => {
+  //   setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+  // };
 
   // Calculate Sub Total (Addition)
-  const calculateSubTotal = () => {
-    return rows.reduce((total, row) => total + row.amount, 0).toFixed(2);
-  };
+  // const calculateSubTotal = () => {
+  //   return rows.reduce((total, row) => total + row.amount, 0).toFixed(2);
+  // };
 
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
@@ -107,6 +179,175 @@ const CreditNoteDetails = () => {
   };
 
 
+  const addRow = () => {
+    const specialTypes = ["Handling Charges", "Other charges", "Freight"];
+    const existingTypes = rows.map((r) => r.type);
+
+    const hasSpecial = specialTypes.some((type) => existingTypes.includes(type));
+    const hasSGST = existingTypes.includes("SGST");
+    const hasCGST = existingTypes.includes("CGST");
+    const hasIGST = existingTypes.includes("IGST");
+
+    // 🔒 Lock condition: if any special type + (IGST or both SGST & CGST) are present
+    const isLockedCombo =
+      hasSpecial && (hasIGST || (hasSGST && hasCGST));
+
+    if (isLockedCombo) {
+      toast.error(
+        "Cannot add more Tax rows ."
+      );
+      return; // ❌ Don't add row
+    }
+
+    // Allow adding remaining special types if any
+    const allSpecialTypes = [
+      { type: "Handling Charges", resource_id: 2 },
+      { type: "Other charges", resource_id: 4 },
+      { type: "Freight", resource_id: 5 },
+    ];
+
+    const nextSpecial = allSpecialTypes.find(
+      (st) => !existingTypes.includes(st.type)
+    );
+
+    if (nextSpecial) {
+      setRows((prevRows) => [
+        ...prevRows,
+        {
+          id: prevRows.length + 1,
+          type: nextSpecial.type,
+          percentage: "",
+          inclusive: false,
+          amount: "",
+          isEditable: false,
+          addition: true,
+          resource_id: nextSpecial.resource_id,
+          resource_type: "TaxCharge",
+        },
+      ]);
+    } else {
+      // Add editable row for user-defined tax
+      setRows((prevRows) => [
+        ...prevRows,
+        {
+          id: prevRows.length + 1,
+          type: "",
+          percentage: "0",
+          inclusive: false,
+          amount: "",
+          isEditable: true,
+          addition: true,
+        },
+      ]);
+    }
+  };
+
+
+  const calculateSubTotal = () => {
+    return rows
+      .filter((row) => !row.inclusive)
+      .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
+  };
+  // Delete a row
+  const deleteRow = (id) => {
+    // setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+    setRows((prevRows) =>
+      prevRows.filter((row, index) => {
+        // Prevent deletion of the first three rows
+        if (index < 3) {
+          return true;
+        }
+        return row.id !== id;
+      })
+    );
+  };
+
+  // deduction
+  const [deductionRows, setDeductionRows] = useState([
+    // { id: 1, type: "", charges: "", inclusive: false, amount: 0.0 },
+  ]);
+  const [deductionTypes, setDeductionTypes] = useState([]); // State to store tax types
+
+  // Fetch tax types from API
+  useEffect(() => {
+    const fetchTaxTypes = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
+        );
+        setDeductionTypes(response.data.taxes); // Assuming the API returns an array of tax types
+      } catch (error) {
+        console.error("Error fetching tax types:", error);
+      }
+    };
+
+    fetchTaxTypes();
+  }, []);
+
+  const addDeductionRow = () => {
+    if (deductionRows.length === 0) {
+      setDeductionRows([
+        { id: 1, type: "", percentage: "", inclusive: false, amount: "", addition: false, },
+      ]);
+    }
+  };
+  // Function to calculate the subtotal of deduction rows
+  const calculateDeductionSubTotal = () => {
+    return deductionRows
+      .filter((row) => !row.inclusive)
+      .reduce((total, row) => total + (parseFloat(row.amount) || 0), 0).toFixed(2);
+  };
+  // Function to calculate the payable amount
+  const calculatePayableAmount = () => {
+    const grossAmount = parseFloat(calculateSubTotal()) + (parseFloat(creditNoteAmount) || 0);
+    const deductionSubTotal = parseFloat(calculateDeductionSubTotal()) || 0;
+    return (grossAmount - deductionSubTotal).toFixed(2);
+  };
+
+  const deleteDeductionRow = (id) => {
+    setDeductionRows((prevRows) => prevRows.filter((row) => row.id !== id));
+  };
+
+
+  useEffect(() => {
+    if (creditNoteData && creditNoteData.taxes_and_charges?.length > 0) {
+      // Split addition and deduction rows
+      const additionRows = creditNoteData.taxes_and_charges
+        .filter((tax) => tax.addition)
+        .map((tax, idx) => ({
+          id: idx + 1,
+          type: tax.tax_name || "",
+          percentage: tax.percentage || "",
+          inclusive: tax.inclusive || false,
+          amount: tax.amount || "",
+          isEditable: !["Handling Charges", "Other charges", "Freight"].includes(tax.tax_name),
+          addition: true,
+          resource_id: tax.resource_id || null,
+          resource_type: tax.resource_type || "TaxCharge",
+        }));
+
+      setRows(additionRows);
+
+      const deductionRows = creditNoteData.taxes_and_charges
+        .filter((tax) => !tax.addition)
+        .map((tax, idx) => ({
+          id: idx + 1,
+          type: tax.tax_name || "",
+          percentage: tax.percentage || "",
+          inclusive: tax.inclusive || false,
+          amount: tax.amount || "",
+          addition: false,
+          resource_id: tax.resource_id || null,
+          resource_type: tax.resource_type || "TaxCharge",
+        }));
+
+      setDeductionRows(deductionRows);
+    } else {
+      // Reset everything if no tax data
+      setRows([]);
+      setDeductionRows([]);
+    }
+  }, [creditNoteData]);
   const statusOptions = [
     {
       label: "Select Status",
@@ -153,33 +394,126 @@ const CreditNoteDetails = () => {
     setComment(e.target.value);
   };
 
+  const taxes_and_charges = [
+    ...rows.map(row => ({
+      inclusive: row.inclusive,
+      amount: parseFloat(row.amount) || 0,
+      remarks: row.type,
+      addition: true,
+      percentage: parseFloat(row.percentage) || 0,
+      resource_id: row.resource_id,
+      resource_type: row.resource_type,
+    })),
+    ...deductionRows.map(row => ({
+      inclusive: row.inclusive,
+      amount: parseFloat(row.amount) || 0,
+      remarks: row.type,
+      addition: false,
+      percentage: parseFloat(row.percentage) || 0,
+      resource_id: row.resource_id,
+      resource_type: row.resource_type,
+    }))
+  ];
+
+  const attachments2 = (documents || [])
+    .map((doc) => {
+      const attachment = doc.attachments?.[0];
+
+      if (!attachment) return null;
+
+      // If blob_id is present, skip this attachment
+      if (attachment.blob_id) {
+        return null;
+      }
+
+      // Include content info if no blob_id
+      return {
+        filename: attachment.filename || null,
+        content: attachment.content || null,
+        content_type: attachment.content_type || null,
+        document_name: doc.document_type || null,
+      };
+    })
+    .filter(Boolean);
+
   const payload = {
-    status_log: {
-      status: status,
-      remarks: remark,
-      comments: comment,
-    },
-  };
-
-  console.log("detail status change", payload);
-
-  const handleSubmit = async () => {
-    
-    // Prepare the payload for the API
-    const payload = {
+    credit_note: {
+      credit_note_amount: editableDebitNote.credit_note_amount || null,
+      credit_note_date: editableDebitNote.credit_note_date || null,
+      remark: editableDebitNote.remark || null,
+      taxes_and_charges,
+      attachments: attachments2.length > 0 ? attachments2 : null,
       status_log: {
         status: status,
         remarks: remark,
         comments: comment,
       },
+    }
+  };
+
+  console.log("detail  edit credit note change**", payload);
+
+  const handleSubmit = async () => {
+
+    const { credit_note_amount, credit_note_date } = editableDebitNote;
+
+    if (!credit_note_amount || isNaN(credit_note_amount) || Number(credit_note_amount) <= 0) {
+      toast.error("Please enter Credit Note Amount.");
+      return;
+    }
+
+    if (!credit_note_date) {
+      toast.error("Please select Credit Note Date.");
+      return;
+    }
+
+
+    const attachments = (documents || [])
+      .map((doc) => {
+        const attachment = doc.attachments?.[0];
+
+        if (!attachment) return null;
+
+        // If blob_id is present, skip this attachment
+        if (attachment.blob_id) {
+          return null;
+        }
+
+        // Include content info if no blob_id
+        return {
+          filename: attachment.filename || null,
+          content: attachment.content || null,
+          content_type: attachment.content_type || null,
+          document_name: doc.document_type || null,
+        };
+      })
+      .filter(Boolean);
+
+    // Prepare the payload for the API
+    const payload = {
+      credit_note: {
+        credit_note_amount: editableDebitNote.credit_note_amount
+          ? Number(editableDebitNote.credit_note_amount)
+          : null,
+        // editableDebitNote.credit_note_amount || null,
+        credit_note_date: editableDebitNote.credit_note_date || null,
+        remark: editableDebitNote.remark || null,
+        taxes_and_charges,
+        attachments: attachments.length > 0 ? attachments : null,
+        status_log: {
+          status: status,
+          remarks: remark,
+          comments: comment,
+        },
+      }
     };
 
-    console.log("detail status change", payload);
+    console.log("credit after submit payload", payload);
     setLoading(true);
 
     try {
-      const response = await axios.patch(
-        `${baseURL}credit_notes/${id}/update_status.json?token=${token}`,
+      const response = await axios.put(
+        `${baseURL}credit_notes/${id}?token=${token}`,
         payload, // The request body containing status and remarks
         {
           headers: {
@@ -195,10 +529,11 @@ const CreditNoteDetails = () => {
         setComment("")
         // alert('Status updated successfully');
         // Handle success (e.g., update the UI, reset fields, etc.)
-        toast.success("Status updated successfully!");
+        toast.success("Credit Note updated successfully!");
+        navigate(`/credit-note-list?token=${token}`)
       } else {
         console.log("Error updating status:", response.data);
-        toast.error("Failed to update status.");
+        toast.error("Failed to update Credit Note.");
         // Handle error (e.g., show an error message)
       }
     } catch (error) {
@@ -209,59 +544,55 @@ const CreditNoteDetails = () => {
     }
   };
 
-   const [newDocument, setNewDocument] = useState({
-          document_type: "",
-          attachments: [],
-        });
-        const [documents, setDocuments] = useState([]); // If you want to keep a list
-      
-        // Handle file upload
-        const handleFileUpload = (e) => {
-          const file = e.target.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            setNewDocument((prev) => ({
-              ...prev,
-              attachments: [
-                {
-                  filename: file.name,
-                  content: reader.result.split(",")[1],
-                  content_type: file.type,
-                },
-              ],
-            }));
-          };
-          reader.readAsDataURL(file);
-        };
-      
-        // Handle attach document
-        const handleAttachDocument = () => {
-          if (!newDocument.document_type || newDocument.attachments.length === 0)
-            return;
-          const now = new Date();
-          const uploadDate = `${now.getDate().toString().padStart(2, "0")}-${(
-            now.getMonth() + 1
-          )
-            .toString()
-            .padStart(2, "0")}-${now.getFullYear()}`;
-          setDocuments((prev) => [
-            ...prev,
-            {
-              ...newDocument,
-              uploadDate,
-            },
-          ]);
-          setNewDocument({ document_type: "", attachments: [] });
-          closeattachModal();
-        };
-      
-        // For viewing a specific document
-        const [viewDocIndex, setViewDocIndex] = useState(null);
-        const handleViewDocument = (index) => {
-          setViewDocIndex(index);
-          openviewDocumentModal();
-        };
+
+
+  // Handle file upload
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewDocument((prev) => ({
+        ...prev,
+        attachments: [
+          {
+            filename: file.name,
+            content: reader.result.split(",")[1],
+            content_type: file.type,
+          },
+        ],
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle attach document
+  const handleAttachDocument = () => {
+    if (!newDocument.document_type || newDocument.attachments.length === 0)
+      return;
+    const now = new Date();
+    const uploadDate = `${now.getDate().toString().padStart(2, "0")}-${(
+      now.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}-${now.getFullYear()}`;
+    setDocuments((prev) => [
+      ...prev,
+      {
+        ...newDocument,
+        uploadDate,
+      },
+    ]);
+    setNewDocument({ document_type: "", attachments: [] });
+    closeattachModal();
+  };
+
+  // For viewing a specific document
+  const [viewDocIndex, setViewDocIndex] = useState(null);
+  const handleViewDocument = (index) => {
+    setViewDocIndex(index);
+    openviewDocumentModal();
+  };
 
 
   // if (loading) return <div>Loading...</div>;
@@ -409,7 +740,7 @@ const CreditNoteDetails = () => {
                                 </label>
                               </div>
                             </div>
-                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                            {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                               <div className="col-6">
                                 <label>Credit Note Date</label>
                               </div>
@@ -418,12 +749,7 @@ const CreditNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {/* {creditNoteData.credit_note_date
-                                    ? new Date(
-                                      creditNoteData.credit_note_date
-                                    ).toLocaleDateString()
-                                    : "-"} */}
-
+                                 
                                   {creditNoteData.credit_note_date
                                     ? new Date(creditNoteData.credit_note_date)
                                       .toLocaleDateString("en-GB") // gives 13/06/2025
@@ -431,7 +757,7 @@ const CreditNoteDetails = () => {
                                     : "-"}
                                 </label>
                               </div>
-                            </div>
+                            </div> */}
                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                               <div className="col-6">
                                 <label>Created On</label>
@@ -542,7 +868,7 @@ const CreditNoteDetails = () => {
                                 </label>
                               </div>
                             </div>
-                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                            {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                               <div className="col-6">
                                 <label>Credit Note Amount</label>
                               </div>
@@ -554,7 +880,7 @@ const CreditNoteDetails = () => {
                                   {creditNoteData.credit_note_amount || "-"}
                                 </label>
                               </div>
-                            </div>
+                            </div> */}
                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                               <div className="col-6">
                                 <label>Status</label>
@@ -568,7 +894,7 @@ const CreditNoteDetails = () => {
                                 </label>
                               </div>
                             </div>
-                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                            {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
                               <div className="col-6">
                                 <label>Remark</label>
                               </div>
@@ -580,16 +906,67 @@ const CreditNoteDetails = () => {
                                   {creditNoteData.remark || "-"}
                                 </label>
                               </div>
+                            </div> */}
+                          </div>
+                        </div>
+                        <div className="row mt-4">
+                          <div className="col-md-12 mt-2">
+                            <div className="card p-3">
+                              <div className="row mb-3">
+                                <div className="col-md-4 mt-2">
+                                  <div className="form-group mb-0">
+                                    <label>Credit Note Amount <span>*</span></label>
+
+
+                                    <input
+                                      type="number"
+                                      className="form-control"
+                                      value={editableDebitNote.credit_note_amount}
+                                      onChange={(e) => handleDebitNoteChange("credit_note_amount", e.target.value)}
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="col-md-4 mt-2">
+                                  <div className="form-group mb-0">
+                                    <label>Credit Note Date <span>*</span></label>
+
+                                    <input
+                                      type="date"
+                                      className="form-control"
+                                      value={editableDebitNote.credit_note_date}
+                                      onChange={(e) => handleDebitNoteChange("credit_note_date", e.target.value)}
+                                    />
+                                  </div>
+                                </div>
+                                <div className="col-md-4 mt-2">
+                                  <div className="form-group mb-0">
+                                    <label>Remark</label>
+
+                                    <textarea
+                                      className="form-control"
+                                      rows={2}
+                                      value={editableDebitNote.remark}
+                                      onChange={(e) => handleDebitNoteChange("remark", e.target.value)}
+                                    />
+                                  </div>
+                                </div>
+
+
+
+
+
+                              </div>
                             </div>
                           </div>
                         </div>
+
+
                         <div className="d-flex justify-content-between mt-3 me-2">
                           <h5 className=" ">Tax Details</h5>
                         </div>
 
-
-
-                        <div className="tbl-container mt-3">
+                        <div className="tbl-container  mt-3 mb-5" style={{ maxHeight: "500px" }}>
                           <table className="w-100">
                             <thead>
                               <tr>
@@ -601,206 +978,635 @@ const CreditNoteDetails = () => {
                               </tr>
                             </thead>
                             <tbody>
-                              {/* Static Rows */}
+                              {/* Static Rows for Addition Tax */}
                               <tr>
                                 <th className="text-start">Total Base Cost</th>
                                 <td className="text-start" />
                                 <td className="text-start" />
-                                <td className="text-start">{creditNoteData.credit_note_amount}</td>
+                                <td className="text-start"> {creditNoteAmount || ""}</td>
+                                {/* {console.log("credit note amount:",creditNoteAmount)} */}
                                 <td />
                               </tr>
-
-                              {/* Addition Tax & Charges */}
                               <tr>
                                 <th className="text-start">Addition Tax & Charges</th>
                                 <td className="text-start" />
                                 <td className="text-start" />
                                 <td className="text-start" />
-                                <td />
+                                <td className="text-start" onClick={addRow}>
+                                  {/* <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        width="16"
+                                                                        height="16"
+                                                                        fill="currentColor"
+                                                                        className="bi bi-plus-circle"
+                                                                        viewBox="0 0 16 16"
+                                                                        style={{
+                                                                            transform: showRows ? "rotate(45deg)" : "none",
+                                                                            transition: "transform 0.3s ease",
+                                                                        }}
+                                                                    >
+                                                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                                                    </svg> */}
+                                  <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
+                                </td>
                               </tr>
-                              {creditNoteData.taxes_and_charges
-                                .filter((tax) => tax.addition) // Filter for addition: true
-                                .map((tax) => (
-                                  <tr key={tax.id}>
-                                    <td className="text-start">{tax.tax_name}</td>
-                                    <td className="text-start">{tax.percentage}%</td>
-                                    <td className="text-start">
-                                      {/* {tax.inclusive ? "Inclusive" : "Exclusive"} */}
-                                      <input
-                                        type="checkbox"
-                                        checked={tax.inclusive} // Set checkbox checked based on `inclusive`
-                                        disabled={tax.inclusive} // Disable checkbox if `inclusive` is true
-                                      />
-                                    </td>
-                                    <td className="text-start">{tax.amount}</td>
-                                    <td />
-                                  </tr>
-                                ))}
+                              {/* Dynamic Rows for Addition Tax */}
 
-                              {/* Sub Total A */}
+
+
+                              {rows?.map((row, index) => (
+                                <tr key={row.id}>
+                                  <td className="text-start">
+                                    <SingleSelector
+                                      options={taxTypes?.map((type) => ({
+                                        value: type.name,
+                                        label: type.name,
+                                        id: type.id,
+                                        tax: type.type,
+                                        isDisabled:
+                                          ["Handling Charges", "Other charges", "Freight"].includes(type.name) ||
+                                          (type.name === "IGST" &&
+                                            rows.some((r) => ["SGST", "CGST"].includes(r.type) && r.id !== row.id)) ||
+                                          (["SGST", "CGST"].includes(type.name) &&
+                                            rows.some((r) => r.type === "IGST" && r.id !== row.id)),
+                                      }))}
+                                      value={{ value: row.type, label: row.type }}
+                                      // onChange={(selectedOption) => {
+                                      //   console.log("Selected Option:", selectedOption); // Log the selected option
+                                      //   setRows((prevRows) =>
+                                      //     prevRows.map((r) =>
+                                      //       r.id === row.id
+                                      //         ? {
+                                      //           ...r,
+                                      //           type: selectedOption?.value || "", // Handle null or undefined
+                                      //           resource_id: selectedOption?.id || null, // Handle null or undefined
+                                      //           resource_type: selectedOption?.tax || "", // Handle null or undefined
+                                      //         }
+                                      //         : r
+                                      //     )
+                                      //   );
+                                      //   console.log("Updated Rows:", rows); // Log the updated rows
+                                      // }}
+
+
+                                      onChange={(selectedOption) => {
+                                        setRows((prevRows) => {
+                                          let updatedRows = prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? {
+                                                ...r,
+                                                type: selectedOption?.value || "",
+                                                resource_id: selectedOption?.id || null,
+                                                resource_type: selectedOption?.tax || "",
+                                              }
+                                              : r
+                                          );
+
+                                          // Auto-add CGST if SGST is selected
+                                          if (selectedOption?.value === "SGST" && !prevRows.some(r => r.type === "CGST")) {
+                                            updatedRows = [
+                                              ...updatedRows,
+                                              {
+                                                id: updatedRows.length + 1,
+                                                type: "CGST",
+                                                percentage: row.percentage,
+                                                inclusive: row.inclusive,
+                                                amount: row.amount,
+                                                isEditable: true,
+                                                addition: true,
+                                                resource_id: taxTypes.find(t => t.name === "CGST")?.id || null,
+                                                resource_type: taxTypes.find(t => t.name === "CGST")?.type || "",
+                                              },
+                                            ];
+                                          }
+
+                                          // Auto-add SGST if CGST is selected
+                                          if (selectedOption?.value === "CGST" && !prevRows.some(r => r.type === "SGST")) {
+                                            updatedRows = [
+                                              ...updatedRows,
+                                              {
+                                                id: updatedRows.length + 1,
+                                                type: "SGST",
+                                                percentage: row.percentage,
+                                                inclusive: row.inclusive,
+                                                amount: row.amount,
+                                                isEditable: true,
+                                                addition: true,
+                                                resource_id: taxTypes.find(t => t.name === "SGST")?.id || null,
+                                                resource_type: taxTypes.find(t => t.name === "SGST")?.type || "",
+                                              },
+                                            ];
+                                          }
+
+                                          return updatedRows;
+                                        });
+                                      }}
+                                      placeholder="Select Type"
+                                      isDisabled={!row.isEditable}
+                                    />
+                                  </td>
+                                  <td className="text-start">
+                                    {row.isEditable ? (
+
+                                      // <SingleSelector
+                                      //   className="form-control"
+                                      //   options={[
+                                      //     { value: "", label: "Select Tax" },
+                                      //     { value: "5%", label: "5%" },
+                                      //     { value: "12%", label: "12%" },
+                                      //     { value: "18%", label: "18%" },
+                                      //     { value: "28%", label: "28%" },
+                                      //   ]}
+                                      //   value={
+                                      //     [
+                                      //       { value: "", label: "Select Tax" },
+                                      //       { value: "5%", label: "5%" },
+                                      //       { value: "12%", label: "12%" },
+                                      //       { value: "18%", label: "18%" },
+                                      //       { value: "28%", label: "28%" },
+                                      //     ].find(opt => opt.value === (
+                                      //       row.percentage && row.percentage.toString().includes("%")
+                                      //         ? row.percentage
+                                      //         : row.percentage
+                                      //           ? `${row.percentage}%`
+                                      //           : ""
+                                      //     )) || { value: "", label: "Select Tax" }
+                                      //   }
+                                      //   onChange={selected => {
+                                      //     const value = selected?.value?.replace("%", "");
+                                      //     const percentage = parseFloat(value) || 0;
+                                      //     const amount = ((creditNoteAmount || 0) * percentage) / 100;
+                                      //     setRows(prevRows =>
+                                      //       prevRows.map(r =>
+                                      //         r.id === row.id
+                                      //           ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
+                                      //           : r
+                                      //       )
+                                      //     );
+                                      //   }}
+                                      //   placeholder="Select Tax"
+                                      // />
+
+                                      <SingleSelector
+                                        className="form-control"
+                                        options={
+                                          Array.isArray(
+                                            taxPercentages.find((t) => t.tax_name === row.type)?.percentage
+                                          )
+                                            ? taxPercentages
+                                              .find((t) => t.tax_name === row.type)
+                                              .percentage.map((percent) => ({
+                                                value: `${percent}%`,
+                                                label: `${percent}%`,
+                                              }))
+                                            : []
+                                        }
+                                        value={
+                                          row.percentage !== undefined && row.percentage !== null
+                                            ? {
+                                              value: `${parseFloat(row.percentage)}%`,
+                                              label: `${parseFloat(row.percentage)}%`,
+                                            }
+                                            : { value: "", label: "Select Tax" }
+                                        }
+                                        onChange={(selected) => {
+                                          const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
+                                          const amount = ((creditNoteAmount || 0) * percentage) / 100;
+
+                                          setRows((prevRows) =>
+                                            prevRows.map((r) =>
+                                              r.id === row.id
+                                                ? {
+                                                  ...r,
+                                                  percentage: selected?.value,
+                                                  amount: amount.toFixed(2),
+                                                }
+                                                : r
+                                            )
+                                          );
+                                        }}
+                                        placeholder="Select Tax"
+                                        isDisabled={!row.isEditable}
+                                      />
+
+                                    ) : (
+                                      <input
+                                        type="text"
+                                        className="form-control"
+                                        value={
+                                          row.percentage && row.percentage.toString().includes("%")
+                                            ? row.percentage
+                                            : row.percentage
+                                              ? `${row.percentage}%`
+                                              : ""
+                                        }
+                                        disabled
+                                      />
+                                    )}
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="checkbox"
+                                      checked={row.inclusive}
+                                      onChange={(e) =>
+                                        setRows((prevRows) =>
+                                          prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? { ...r, inclusive: e.target.checked }
+                                              : r
+                                          )
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="number"
+                                      className="form-control"
+                                      value={row.amount}
+                                      // Editable for first three taxes, otherwise disabled if percentage is selected
+                                      disabled={index > 2 && row.percentage !== ""}
+                                      onChange={(e) =>
+                                        setRows((prevRows) =>
+                                          prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? { ...r, amount: parseFloat(e.target.value) || 0 }
+                                              : r
+                                          )
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td
+                                    className="text-start"
+                                    onClick={() => deleteRow(row.id)}
+                                    style={{ cursor: "pointer", color: "black" }}
+                                  >
+                                    {index > 2 && (
+                                      // <svg
+                                      //     xmlns="http://www.w3.org/2000/svg"
+                                      //     width="16"
+                                      //     height="16"
+                                      //     fill="currentColor"
+                                      //     className="bi bi-dash-circle"
+                                      //     viewBox="0 0 16 16"
+                                      //     style={{
+                                      //         transition: "transform 0.3s ease",
+                                      //     }}
+                                      // >
+                                      //     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                      //     <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
+                                      // </svg>
+                                      <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
+                                    )}
+
+
+                                  </td>
+                                </tr>
+                              ))}
+
                               <tr>
                                 <th className="text-start">Sub Total A (Addition)</th>
                                 <td className="text-start" />
                                 <td className="" />
-                                <td className="text-start">
-                                  {creditNoteData.taxes_and_charges
-                                    .filter((tax) => tax.addition)
-                                    .reduce((total, tax) => total + parseFloat(tax.amount), 0)
-                                    .toFixed(2)}
-                                </td>
+                                <td className="text-start">{calculateSubTotal()}</td>
                                 <td />
                               </tr>
-
-                              {/* Gross Amount */}
                               <tr>
                                 <th className="text-start">Gross Amount</th>
                                 <td className="text-start" />
                                 <td className="" />
-                                <td className="text-start">
-                                  {(
-                                    creditNoteData.taxes_and_charges
-                                      .filter((tax) => tax.addition)
-                                      .reduce((total, tax) => total + parseFloat(tax.amount), 0) +
-                                    parseFloat(creditNoteData.credit_note_amount || 0)
-                                  ).toFixed(2)}
-                                </td>
+                                <td className="text-start">  {(parseFloat(calculateSubTotal()) + (parseFloat(creditNoteAmount) || 0)).toFixed(2)}</td>
                                 <td />
                               </tr>
-
-                              {/* Deduction Tax */}
+                              {/* Deduction Tax Section */}
                               <tr>
                                 <th className="text-start">Deduction Tax</th>
                                 <td className="text-start" />
+                                <td className="" />
                                 <td className="text-start" />
-                                <td className="text-start" />
-                                <td />
+                                <td className="text-start" onClick={addDeductionRow}>
+                                  {/* <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        width="16"
+                                                                        height="16"
+                                                                        fill="currentColor"
+                                                                        className="bi bi-plus-circle"
+                                                                        viewBox="0 0 16 16"
+                                                                        style={{
+                                                                            // transform: showDeductionRows ? "rotate(45deg)" : "none",
+                                                                            transition: "transform 0.3s ease",
+                                                                        }}
+                                                                    >
+                                                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                                                    </svg> */}
+                                  <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
+                                </td>
                               </tr>
-                              {creditNoteData.taxes_and_charges
-                                .filter((tax) => !tax.addition) // Filter for addition: false
-                                .map((tax) => (
-                                  <tr key={tax.id}>
-                                    <td className="text-start">{tax.tax_name}</td>
-                                    <td className="text-start">{tax.percentage}%</td>
-                                    <td className="text-start">
-                                      {/* {tax.inclusive ? "Inclusive" : "Exclusive"} */}
-                                      <input
-                                        type="checkbox"
-                                        checked={tax.inclusive} // Set checkbox checked based on `inclusive`
-                                        disabled={tax.inclusive} // Disable checkbox if `inclusive` is true
-                                      />
-                                    </td>
-                                    <td className="text-start">{tax.amount}</td>
-                                    <td />
-                                  </tr>
-                                ))}
+                              {/* Dynamic Rows for Deduction Tax */}
 
-                              {/* Sub Total B */}
+
+
+                              {deductionRows.map((row) => (
+                                <tr key={row.id}>
+                                  <td className="text-start">
+                                    <SingleSelector
+                                      options={deductionTypes.map((type) => ({
+                                        value: type.name,
+                                        label: type.name,
+                                        id: type.id,
+                                        tax: type.type,
+                                      }))}
+                                      value={{ value: row.type, label: row.type }}
+                                      onChange={(selectedOption) =>
+                                        setDeductionRows((prevRows) =>
+                                          prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? {
+                                                ...r,
+                                                type: selectedOption?.value || "",
+                                                resource_id: selectedOption?.id || null,
+                                                resource_type: selectedOption?.tax || "",
+                                              }
+                                              : r
+                                          )
+                                        )
+                                      }
+                                      placeholder="Select Type"
+                                    />
+                                  </td>
+                                  <td className="text-start">
+                                    {/* <select
+                                      className="form-control form-select"
+                                      value={
+                                        row.percentage && row.percentage.toString().includes("%")
+                                          ? row.percentage
+                                          : row.percentage
+                                            ? `${row.percentage}%`
+                                            : ""
+                                      }
+                                      onChange={(e) => {
+                                       
+                                        const value = e.target.value.replace("%", "");
+                                        const percentage = parseFloat(value) || 0;
+                                        const amount = ((creditNoteAmount || 0) * percentage) / 100;
+
+                                        setDeductionRows((prevRows) =>
+                                          prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? { ...r, percentage: e.target.value, amount: amount.toFixed(2) }
+                                              : r
+                                          )
+                                        );
+                                      }}
+                                    >
+                                      <option value="">Select Tax</option>
+                                      <option value="1%">1%</option>
+                                      <option value="2%">2%</option>
+                                      <option value="10%">10%</option>
+                                    
+                                    </select> */}
+
+
+                                    {/* <SingleSelector
+                                      className="form-control"
+                                      options={[
+                                        { value: "", label: "Select Tax" },
+                                        // { value: "1%", label: "1%" },
+                                        // { value: "2%", label: "2%" },
+                                        // { value: "10%", label: "10%" },
+                                        { value: "5%", label: "5%" },
+                                        { value: "12%", label: "12%" },
+                                        { value: "18%", label: "18%" },
+                                        { value: "28%", label: "28%" },
+
+                                      ]}
+                                      value={
+                                        [
+                                          { value: "", label: "Select Tax" },
+                                          // { value: "1%", label: "1%" },
+                                          // { value: "2%", label: "2%" },
+                                          // { value: "10%", label: "10%" },
+                                          { value: "5%", label: "5%" },
+                                          { value: "12%", label: "12%" },
+                                          { value: "18%", label: "18%" },
+                                          { value: "28%", label: "28%" },
+
+                                        ].find(opt => opt.value === (
+                                          row.percentage && row.percentage.toString().includes("%")
+                                            ? row.percentage
+                                            : row.percentage
+                                              ? `${row.percentage}%`
+                                              : ""
+                                        )) || { value: "", label: "Select Tax" }
+                                      }
+                                      onChange={selected => {
+                                        const value = selected?.value?.replace("%", "");
+                                        const percentage = parseFloat(value) || 0;
+                                        const amount = ((creditNoteAmount || 0) * percentage) / 100;
+                                        setDeductionRows(prevRows =>
+                                          prevRows.map(r =>
+                                            r.id === row.id
+                                              ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
+                                              : r
+                                          )
+                                        );
+                                      }}
+                                      placeholder="Select Tax"
+                                    /> */}
+
+                                    <SingleSelector
+                                      className="form-control"
+                                      options={
+                                        taxPercentages.find((t) => t.tax_name === row.type)?.percentage.map((p) => ({
+                                          value: `${p}%`,
+                                          label: `${p}%`,
+                                        })) || []
+                                      }
+                                      value={
+                                        (() => {
+                                          const percent = row.percentage?.toString().includes("%")
+                                            ? row.percentage
+                                            : `${row.percentage}%`;
+
+                                          const options = taxPercentages.find((t) => t.tax_name === row.type)?.percentage || [];
+                                          return options.includes(parseFloat(percent))
+                                            ? { value: percent, label: percent }
+                                            : { value: "", label: "Select Tax" };
+                                        })()
+                                      }
+                                      onChange={(selected) => {
+                                        const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
+                                        const amount = ((creditNoteAmount || 0) * percentage) / 100;
+
+                                        setDeductionRows((prevRows) =>
+                                          prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? {
+                                                ...r,
+                                                percentage: percentage,
+                                                amount: amount.toFixed(2),
+                                              }
+                                              : r
+                                          )
+                                        );
+                                      }}
+                                      placeholder="Select Tax %"
+                                    // isDisabled={!row.isEditable}
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="checkbox"
+                                      checked={row.inclusive}
+                                      onChange={(e) =>
+                                        setDeductionRows((prevRows) =>
+                                          prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? { ...r, inclusive: e.target.checked }
+                                              : r
+                                          )
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="number"
+                                      className="form-control"
+                                      value={row.amount}
+                                      disabled
+                                      onChange={(e) =>
+                                        setDeductionRows((prevRows) =>
+                                          prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? { ...r, amount: parseFloat(e.target.value) || 0 }
+                                              : r
+                                          )
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td
+                                    className="text-start"
+                                    onClick={() => deleteDeductionRow(row.id)}
+                                    style={{ cursor: "pointer", color: "black" }}
+                                  >
+                                    {/* <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            width="16"
+                                                                            height="16"
+                                                                            fill="currentColor"
+                                                                            className="bi bi-dash-circle"
+                                                                            viewBox="0 0 16 16"
+                                                                            style={{
+                                                                                transition: "transform 0.3s ease",
+                                                                            }}
+                                                                        >
+                                                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                                            <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
+                                                                        </svg> */}
+                                    <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
+                                  </td>
+                                </tr>
+                              ))}
+                              {/* Static Rows */}
                               <tr>
                                 <th className="text-start">Sub Total B (Deductions)</th>
                                 <td className="text-start" />
                                 <td className="" />
-                                <td className="text-start">
-                                  {creditNoteData.taxes_and_charges
-                                    .filter((tax) => !tax.addition)
-                                    .reduce((total, tax) => total + parseFloat(tax.amount), 0)
-                                    .toFixed(2)}
-                                </td>
+                                <td className="text-start">{calculateDeductionSubTotal()}</td>
                                 <td />
                               </tr>
-
-                              {/* Gross Amount */}
                               <tr>
                                 <th className="text-start">Payable Amount</th>
                                 <td className="text-start" />
                                 <td className="" />
-                                <td className="text-start">
-                                  {(
-                                    creditNoteData.taxes_and_charges.reduce(
-                                      (total, tax) =>
-                                        total + (tax.addition ? parseFloat(tax.amount) : -parseFloat(tax.amount)),
-                                      0
-                                    ) + creditNoteData.credit_note_amount
-                                  ).toFixed(2)}
-                                </td>
+                                <td className="text-start">{calculatePayableAmount()}</td>
                                 <td />
                               </tr>
+
+
                             </tbody>
                           </table>
                         </div>
-                     <div className="d-flex justify-content-between mt-4 ">
-                            <h5 className=" ">Document Attachment</h5>
-                            <div
-                              className="card-tools d-flex"
+
+                        <div className="d-flex justify-content-between mt-4 ">
+                          <h5 className=" ">Document Attachment</h5>
+                          <div
+                            className="card-tools d-flex"
+                            data-bs-toggle="modal"
+                            data-bs-target="#attachModal"
+                            onClick={openattachModal}
+                          >
+                            <button
+                              className="purple-btn2 rounded-3"
                               data-bs-toggle="modal"
                               data-bs-target="#attachModal"
-                              onClick={openattachModal}
                             >
-                              <button
-                                className="purple-btn2 rounded-3"
-                                data-bs-toggle="modal"
-                                data-bs-target="#attachModal"
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width={20}
+                                height={20}
+                                fill="currentColor"
+                                className="bi bi-plus"
+                                viewBox="0 0 16 16"
                               >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width={20}
-                                  height={20}
-                                  fill="currentColor"
-                                  className="bi bi-plus"
-                                  viewBox="0 0 16 16"
-                                >
-                                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                </svg>
-                                <span>Attach</span>
-                              </button>
-                            </div>
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                              </svg>
+                              <span>Attach</span>
+                            </button>
                           </div>
-                          {/* Document Table (dynamic) */}
-                          <div className="tbl-container mt-2 ">
-                            <table className="w-100">
-                              <thead>
+                        </div>
+                        {/* Document Table (dynamic) */}
+                        <div className="tbl-container mt-2 ">
+                          <table className="w-100">
+                            <thead>
+                              <tr>
+                                <th className="text-start">Sr. No.</th>
+                                <th className="text-start">Document Name</th>
+                                <th className="text-start">File Name</th>
+                                {/* <th className="text-start">File Type</th> */}
+                                <th className="text-start">Upload Date</th>
+                                <th className="text-start">Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {documents.length === 0 ? (
                                 <tr>
-                                  <th className="text-start">Sr. No.</th>
-                                  <th className="text-start">Document Name</th>
-                                  <th className="text-start">File Name</th>
-                                  {/* <th className="text-start">File Type</th> */}
-                                  <th className="text-start">Upload Date</th>
-                                  <th className="text-start">Action</th>
+                                  <td colSpan={6} className="text-center">
+                                    No documents attached
+                                  </td>
                                 </tr>
-                              </thead>
-                              <tbody>
-                                {documents.length === 0 ? (
-                                  <tr>
-                                    <td colSpan={6} className="text-center">
-                                      No documents attached
+                              ) : (
+                                documents.map((doc, idx) => (
+                                  <tr key={idx}>
+                                    <td className="text-start">{idx + 1}</td>
+                                    <td className="text-start">{doc.document_type}</td>
+                                    <td className="text-start">
+                                      {doc.attachments[0]?.filename || "-"}
                                     </td>
-                                  </tr>
-                                ) : (
-                                  documents.map((doc, idx) => (
-                                    <tr key={idx}>
-                                      <td className="text-start">{idx + 1}</td>
-                                      <td className="text-start">{doc.document_type}</td>
-                                      <td className="text-start">
-                                        {doc.attachments[0]?.filename || "-"}
-                                      </td>
-                                      {/* <td className="text-start">
+                                    {/* <td className="text-start">
                             {doc.attachments[0]?.content_type || "-"}
                           </td> */}
-                                      <td className="text-start">
-                                        {doc.uploadDate || "-"}
-                                      </td>
-                                      <td
-                                        className="text-decoration-underline"
-                                        style={{ cursor: "pointer" }}
-                                        onClick={() => handleViewDocument(idx)}
-                                      >
-                                        View
-                                      </td>
-                                    </tr>
-                                  ))
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
+                                    <td className="text-start">
+                                      {doc.uploadDate || "-"}
+                                    </td>
+                                    <td
+                                      className="text-decoration-underline"
+                                      style={{ cursor: "pointer" }}
+                                      onClick={() => handleViewDocument(idx)}
+                                    >
+                                      View
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     </div>
                   </section>
@@ -1075,251 +1881,264 @@ const CreditNoteDetails = () => {
           </div>
         </Modal.Body>
       </Modal>
-        <Modal
-                          centered
-                          size="l"
-                          show={attachModal}
-                          onHide={closeattachModal}
-                          backdrop="true"
-                          keyboard={true}
-                          className="modal-centered-custom"
-                        >
-                          <Modal.Header closeButton>
-                            <h5>Attach Document</h5>
-                          </Modal.Header>
-                          <Modal.Body>
-                            <div className="row">
-                              <div className="col-md-12">
-                                <div className="form-group">
-                                  <label>Name of the Document</label>
-                                  {newDocument.document_type &&
-                                    documents.find(
-                                      (doc) =>
-                                        doc.isDefault &&
-                                        doc.document_type === newDocument.document_type
-                                    ) ? (
-                                    // For default document types - show as disabled input
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      value={newDocument.document_type}
-                                      disabled
-                                    />
-                                  ) : (
-                                    // For new document types - allow input
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      value={newDocument.document_type}
-                                      onChange={(e) =>
-                                        setNewDocument((prev) => ({
-                                          ...prev,
-                                          document_type: e.target.value,
-                                        }))
-                                      }
-                                      placeholder="Enter document name"
-                                    />
-                                  )}
-                                </div>
-                              </div>
-                              <div className="col-md-12 mt-2">
-                                <div className="form-group">
-                                  <label>Upload File</label>
-                                  <input
-                                    type="file"
-                                    className="form-control"
-                                    onChange={handleFileUpload}
-                                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                                  />
-                                </div>
-                              </div>
-                              {/* Add this new section for file name editing */}
-                              {newDocument.attachments.length > 0 && (
-                                <div className="col-md-12 mt-2">
-                                  <div className="form-group">
-                                    <label>File Name</label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      value={newDocument.attachments[0].filename}
-                                      onChange={(e) => {
-                                        setNewDocument((prev) => ({
-                                          ...prev,
-                                          attachments: [
-                                            {
-                                              ...prev.attachments[0],
-                                              filename: e.target.value,
-                                            },
-                                          ],
-                                        }));
-                                      }}
-                                      placeholder="Enter file name"
-                                    />
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                            <div className="row mt-2 justify-content-center">
-                              <div className="col-md-4">
-                                <button
-                                  className="purple-btn2 w-100 mt-2"
-                                  onClick={handleAttachDocument}
-                                  disabled={
-                                    !newDocument.document_type ||
-                                    newDocument.attachments.length === 0
-                                  }
-                                >
-                                  Attach
-                                </button>
-                              </div>
-                              <div className="col-md-4">
-                                <button
-                                  className="purple-btn1 w-100"
-                                  onClick={closeattachModal}
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          </Modal.Body>
-                        </Modal>
-                        {/* View Document Modal (dynamic) */}
-                        <Modal
-                          centered
-                          size="lg"
-                          show={viewDocumentModal}
-                          onHide={closeviewDocumentModal}
-                          backdrop="true"
-                          keyboard={true}
-                          className="modal-centered-custom"
-                        >
-                          <Modal.Header closeButton>
-                            <h5>Document Attachment</h5>
-                          </Modal.Header>
-                          <Modal.Body>
-                            <div>
-                              <div className="d-flex justify-content-between mt-3 me-2">
-                                <h5 className=" ">Latest Documents</h5>
-                                <div
-                                  className="card-tools d-flex"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#attachModal"
-                                >
-                                  <button
-                                    className="purple-btn2 rounded-3"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#attachModal"
-                                    onClick={openattachModal}
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width={20}
-                                      height={20}
-                                      fill="currentColor"
-                                      className="bi bi-plus"
-                                      viewBox="0 0 16 16"
-                                    >
-                                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                    </svg>
-                                    <span>Attach</span>
-                                  </button>
-                                </div>
-                              </div>
-                              <div className="tbl-container px-0">
-                                <table className="w-100">
-                                  <thead>
-                                    <tr>
-                                      <th>Sr.No.</th>
-                                      <th>Document Name</th>
-                                      <th>Attachment Name</th>
-                                      {/* <th>File Type</th> */}
-                                      <th>Upload Date</th>
-                                      {/* <th>Action</th> */}
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {documents.length === 0 ? (
-                                      <tr>
-                                        <td colSpan={6} className="text-center">
-                                          No documents attached
-                                        </td>
-                                      </tr>
-                                    ) : (
-                                      documents.map((doc, idx) => (
-                                        <tr key={idx}>
-                                          <td>{idx + 1}</td>
-                                          <td>{doc.document_type}</td>
-                                          <td>{doc.attachments[0]?.filename || "-"}</td>
-                                          {/* <td className="text-start">
+      <Modal
+        centered
+        size="l"
+        show={attachModal}
+        onHide={closeattachModal}
+        backdrop="true"
+        keyboard={true}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Attach Document</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row">
+            <div className="col-md-12">
+              <div className="form-group">
+                <label>Name of the Document</label>
+                {newDocument.document_type &&
+                  documents.find(
+                    (doc) =>
+                      doc.isDefault &&
+                      doc.document_type === newDocument.document_type
+                  ) ? (
+                  // For default document types - show as disabled input
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.document_type}
+                    disabled
+                  />
+                ) : (
+                  // For new document types - allow input
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.document_type}
+                    onChange={(e) =>
+                      setNewDocument((prev) => ({
+                        ...prev,
+                        document_type: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter document name"
+                  />
+                )}
+              </div>
+            </div>
+            <div className="col-md-12 mt-2">
+              <div className="form-group">
+                <label>Upload File</label>
+                <input
+                  type="file"
+                  className="form-control"
+                  onChange={handleFileUpload}
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                />
+              </div>
+            </div>
+            {/* Add this new section for file name editing */}
+            {newDocument.attachments.length > 0 && (
+              <div className="col-md-12 mt-2">
+                <div className="form-group">
+                  <label>File Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newDocument.attachments[0].filename}
+                    onChange={(e) => {
+                      setNewDocument((prev) => ({
+                        ...prev,
+                        attachments: [
+                          {
+                            ...prev.attachments[0],
+                            filename: e.target.value,
+                          },
+                        ],
+                      }));
+                    }}
+                    placeholder="Enter file name"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-4">
+              <button
+                className="purple-btn2 w-100 mt-2"
+                onClick={handleAttachDocument}
+                disabled={
+                  !newDocument.document_type ||
+                  newDocument.attachments.length === 0
+                }
+              >
+                Attach
+              </button>
+            </div>
+            <div className="col-md-4">
+              <button
+                className="purple-btn1 w-100"
+                onClick={closeattachModal}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+      {/* View Document Modal (dynamic) */}
+      <Modal
+        centered
+        size="lg"
+        show={viewDocumentModal}
+        onHide={closeviewDocumentModal}
+        backdrop="true"
+        keyboard={true}
+        className="modal-centered-custom"
+      >
+        <Modal.Header closeButton>
+          <h5>Document Attachment</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div>
+            <div className="d-flex justify-content-between mt-3 me-2">
+              <h5 className=" ">Latest Documents</h5>
+              <div
+                className="card-tools d-flex"
+                data-bs-toggle="modal"
+                data-bs-target="#attachModal"
+              >
+                <button
+                  className="purple-btn2 rounded-3"
+                  data-bs-toggle="modal"
+                  data-bs-target="#attachModal"
+                  onClick={openattachModal}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width={20}
+                    height={20}
+                    fill="currentColor"
+                    className="bi bi-plus"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                  </svg>
+                  <span>Attach</span>
+                </button>
+              </div>
+            </div>
+            <div className="tbl-container px-0">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr.No.</th>
+                    <th>Document Name</th>
+                    <th>Attachment Name</th>
+                    {/* <th>File Type</th> */}
+                    <th>Upload Date</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {documents.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center">
+                        No documents attached
+                      </td>
+                    </tr>
+                  ) : (
+                    documents.map((doc, idx) => (
+                      <tr key={idx}>
+                        <td className="text-start">{idx + 1}</td>
+                        <td className="text-start">{doc.document_type}</td>
+                        <td className="text-start">{doc.attachments[0]?.filename || "-"}</td>
+                        {/* <td className="text-start">
                                                                 {doc.attachments[0]?.content_type || "-"}
                                                               </td> */}
-                                          <td className="text-start">
-                                            {doc.uploadDate || "-"}
-                                          </td>
-                                          {/* <td>
-                                                                <i
-                                                                  className="fa-regular fa-eye"
-                                                                  style={{ fontSize: 18, cursor: "pointer" }}
-                                                                  // You can add onClick to preview/download if needed
-                                                                />
-                                                              </td> */}
-                                        </tr>
-                                      ))
-                                    )}
-                                  </tbody>
-                                </table>
-                              </div>
-                              <div className=" mt-3 me-2">
-                                <h5 className=" ">Document Attachment History</h5>
-                              </div>
-                              <div className="tbl-container px-0">
-                                <table className="w-100">
-                                  <thead>
-                                    <tr>
-                                      <th>Sr.No.</th>
-                                      <th>Document Name</th>
-                                      <th>Attachment Name</th>
-                                      {/* <th>File Type</th> */}
-                                      <th>Upload Date</th>
-                                      {/* <th>Action</th> */}
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {documents.length === 0 ? (
-                                      <tr>
-                                        <td colSpan={6} className="text-center">
-                                          No documents attached
-                                        </td>
-                                      </tr>
-                                    ) : (
-                                      documents.map((doc, idx) => (
-                                        <tr key={idx}>
-                                          <td>{idx + 1}</td>
-                                          <td>{doc.document_type}</td>
-                                          <td>{doc.attachments[0]?.filename || "-"}</td>
-                                          {/* <td>
+                        <td className="text-start">
+                          {doc.uploadDate || "-"}
+                        </td>
+                        <td className="text-start">
+
+                          {doc?.blob_id && (
+                            <a
+                              href={
+                                // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                                `${baseURL}credit_notes/${id}/download?token=${token}&blob_id=${doc.blob_id}`
+                                // attachment.url
+                              }
+                              target="_blank"
+                              // rel="noopener noreferrer"
+                              download={doc.filename}
+                            >
+                              <DownloadIcon />
+                            </a>
+                          )}
+
+                        </td>
+
+
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className=" mt-3 me-2">
+              <h5 className=" ">Document Attachment History</h5>
+            </div>
+            <div className="tbl-container px-0">
+              <table className="w-100">
+                <thead>
+                  <tr>
+                    <th>Sr.No.</th>
+                    <th>Document Name</th>
+                    <th>Attachment Name</th>
+                    {/* <th>File Type</th> */}
+                    <th>Upload Date</th>
+                    {/* <th>Action</th> */}
+                  </tr>
+                </thead>
+                <tbody>
+                  {documents.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center">
+                        No documents attached
+                      </td>
+                    </tr>
+                  ) : (
+                    documents.map((doc, idx) => (
+                      <tr key={idx}>
+                        <td>{idx + 1}</td>
+                        <td>{doc.document_type}</td>
+                        <td>{doc.attachments[0]?.filename || "-"}</td>
+                        {/* <td>
                                                                 {doc.attachments[0]?.content_type || "-"}
                                                               </td> */}
-                                          <td className="text-start">
-                                            {doc.uploadDate || "-"}
-                                          </td>
-                                         
-                                        </tr>
-                                      ))
-                                    )}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                            <div className="row mt-2 justify-content-center">
-                              <div className="col-md-3">
-                                <button className="purple-btn1 w-100"
-                                onClick={closeviewDocumentModal}>Close</button>
-                              </div>
-                            </div>
-                          </Modal.Body>
-            
-                        </Modal>
+                        <td className="text-start">
+                          {doc.uploadDate || "-"}
+                        </td>
+
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="row mt-2 justify-content-center">
+            <div className="col-md-3">
+              <button className="purple-btn1 w-100"
+                onClick={closeviewDocumentModal}>Close</button>
+            </div>
+          </div>
+        </Modal.Body>
+
+      </Modal>
 
       <ToastContainer
         position="top-right"

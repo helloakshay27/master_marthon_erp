@@ -199,32 +199,81 @@ const BillBookingDetails = () => {
     fetchTaxDetailsData();
   }, [selectedGRNs]);
 
-  const statusOptions = [
-    {
-      label: "Select Status",
-      value: "",
-    },
-    {
-      label: "Draft",
-      value: "draft",
-    },
-    {
-      label: "Verified",
-      value: "verified",
-    },
-    {
-      label: "Submitted",
-      value: "submitted",
-    },
-    {
-      label: "Proceed",
-      value: "proceed",
-    },
-    {
-      label: "Approved",
-      value: "approved",
-    },
-  ];
+  // const statusOptions = [
+  //   {
+  //     label: "Select Status",
+  //     value: "",
+  //   },
+  //   {
+  //     label: "Draft",
+  //     value: "draft",
+  //   },
+  //   {
+  //     label: "Verified",
+  //     value: "verified",
+  //   },
+  //   {
+  //     label: "Submitted",
+  //     value: "submitted",
+  //   },
+  //   {
+  //     label: "Proceed",
+  //     value: "proceed",
+  //   },
+  //   {
+  //     label: "Approved",
+  //     value: "approved",
+  //   },
+  // ];
+
+   const [statusOptions, setStatusOptions] = useState([
+      {
+        label: "Select Status",
+        value: "",
+        // isDisabled: true
+      },
+    ]);
+    useEffect(() => {
+      const fetchStatusOptions = async () => {
+        try {
+          const response = await axios.get(
+            `${baseURL}statuses_list?model=BillBooking&token=${token}`
+          );
+  
+          // Ensure we're handling the response data safely
+          const statusData = Array.isArray(response.data) ? response.data : [];
+  
+          // Map the API response to the format needed for SingleSelector
+          const options = statusData.map((status) => ({
+            value: status.value, // Use the value directly from API
+            label: status.name, // Use the name directly from API
+            isDisabled: status.access === "readonly", // Disable if access is readonly
+          }));
+  
+          // Add the default "Select Status" option at the beginning
+          setStatusOptions([
+            {
+              label: "Select Status",
+              value: "",
+              isDisabled: true
+            },
+            ...options,
+          ]);
+        } catch (error) {
+          console.error("Error fetching status options:", error);
+          setStatusOptions([
+            {
+              label: "Select Status",
+              value: "",
+              // isDisabled: true
+            },
+          ]);
+        }
+      };
+  
+      fetchStatusOptions();
+    }, [token]); // Keep token as dependency
+    console.log("status comming from api:",statusOptions)
 
   const [remark, setRemark] = useState("");
   const [comment, setComment] = useState("");

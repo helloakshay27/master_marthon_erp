@@ -368,6 +368,7 @@ const BillVerificationDetails = () => {
     {
       label: "Select Status",
       value: "",
+      // isDisabled: true
     },
   ]);
   useEffect(() => {
@@ -384,6 +385,7 @@ const BillVerificationDetails = () => {
         const options = statusData.map((status) => ({
           value: status.value, // Use the value directly from API
           label: status.name, // Use the name directly from API
+          isDisabled: status.access === "readonly", // Disable if access is readonly
         }));
 
         // Add the default "Select Status" option at the beginning
@@ -391,6 +393,7 @@ const BillVerificationDetails = () => {
           {
             label: "Select Status",
             value: "",
+            isDisabled: true
           },
           ...options,
         ]);
@@ -400,6 +403,7 @@ const BillVerificationDetails = () => {
           {
             label: "Select Status",
             value: "",
+            // isDisabled: true
           },
         ]);
       }
@@ -407,6 +411,7 @@ const BillVerificationDetails = () => {
 
     fetchStatusOptions();
   }, [token]); // Keep token as dependency
+  console.log("status comming from api:",statusOptions)
 
   // Remove the logic that disables previous statuses
   // const currentStatusIndex = statusOptions.findIndex(
@@ -1399,7 +1404,8 @@ const BillVerificationDetails = () => {
                     <th>Sr.No.</th>
                     <th>Document Name</th>
                     <th>Attachment Name</th>
-                    <th>Upload Date</th>
+                    {/* <th>Upload Date</th> */}
+                    <th style={{width:"120px"}}>Upload Date</th>
                     <th>Uploaded By</th>
                     <th>Document Preview</th>
                   </tr>
@@ -1412,9 +1418,15 @@ const BillVerificationDetails = () => {
                         {selectedDocument.document_type}
                       </td>
                       <td className="text-start">{attachment.filename}</td>
-                      <td className="text-start">
-                        {new Date().toLocaleDateString()}
-                      </td>
+                      <td>{
+                        (() => {
+                          const date = new Date();
+                          const day = date.getDate().toString().padStart(2, "0");
+                          const month = (date.getMonth() + 1).toString().padStart(2, "0");
+                          const year = date.getFullYear();
+                          return `${day}-${month}-${year}`;
+                        })()
+                      }</td>
                       <td className="text-start" style={{ width: "150px" }}>
                         {attachment.created_by}
                       </td>
@@ -1453,7 +1465,7 @@ const BillVerificationDetails = () => {
                     <th>Sr.No.</th>
                     <th>Document Name</th>
                     <th>Attachment Name</th>
-                    <th>Upload Date</th>
+                    <th style={{width:"120px"}}>Upload Date</th>
                     <th>Uploaded By</th>
                     <th>Document Preview</th>
                   </tr>
@@ -1466,9 +1478,15 @@ const BillVerificationDetails = () => {
                         {selectedDocument.document_type}
                       </td>
                       <td className="text-start">{attachment.filename}</td>
-                      <td className="text-start">
-                        {new Date().toLocaleDateString()}
-                      </td>
+                      <td>{
+                        (() => {
+                          const date = new Date();
+                          const day = date.getDate().toString().padStart(2, "0");
+                          const month = (date.getMonth() + 1).toString().padStart(2, "0");
+                          const year = date.getFullYear();
+                          return `${day}-${month}-${year}`;
+                        })()
+                      }</td>
                       <td className="text-start" style={{ width: "150px" }}>
                         {attachment.created_by}
                       </td>
