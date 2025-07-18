@@ -1503,7 +1503,15 @@ const BillEntryListSubPage = () => {
                       <td>{index + 1}</td>
                       <td>{selectedDocument.document_type}</td>
                       <td>{attachment.filename}</td>
-                      <td>{new Date().toLocaleDateString()}</td>
+                      <td>{
+                        (() => {
+                          const date = new Date();
+                          const day = date.getDate().toString().padStart(2, "0");
+                          const month = (date.getMonth() + 1).toString().padStart(2, "0");
+                          const year = date.getFullYear();
+                          return `${day}-${month}-${year}`;
+                        })()
+                      }</td>
                       {/* <td>vendor user</td> */}
                       {/* <td>
                         <button
@@ -1544,7 +1552,16 @@ const BillEntryListSubPage = () => {
                       <td>{index + 1}</td>
                       <td>{selectedDocument.document_type}</td>
                       <td>{attachment.filename}</td>
-                      <td>{new Date().toLocaleDateString()}</td>
+                      {/* <td>{new Date().toLocaleDateString()}</td> */}
+                      <td>{
+                        (() => {
+                          const date = new Date();
+                          const day = date.getDate().toString().padStart(2, "0");
+                          const month = (date.getMonth() + 1).toString().padStart(2, "0");
+                          const year = date.getFullYear();
+                          return `${day}-${month}-${year}`;
+                        })()
+                      }</td>
                       {/* <td>vendor user</td> */}
                       {/* <td>
                         <button
