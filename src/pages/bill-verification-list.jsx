@@ -356,25 +356,69 @@ const BillVerificationList = () => {
 
   //  bulk action
   //bulkaction options
-  const options = [
-    {
-      label: "Select Status",
-      value: "",
-    },
+  // const options = [
+  //   {
+  //     label: "Select Status",
+  //     value: "",
+  //   },
 
-    {
-      label: "Open",
-      value: "open",
-    },
-    {
-      label: "Verified",
-      value: "verified",
-    },
-    // {
-    //   label: "All",
-    //   value: "all",
-    // },
-  ];
+  //   {
+  //     label: "Open",
+  //     value: "open",
+  //   },
+  //   {
+  //     label: "Verified",
+  //     value: "verified",
+  //   },
+  //   // {
+  //   //   label: "All",
+  //   //   value: "all",
+  //   // },
+  // ];
+
+   const [statusOptions, setStatusOptions] = useState([
+      {
+        label: "Select Status",
+        value: "",
+      },
+    ]);
+    useEffect(() => {
+      const fetchStatusOptions = async () => {
+        try {
+          const response = await axios.get(
+            `${baseURL}statuses_list?model=BillEntry&token=${token}`
+          );
+  
+          // Ensure we're handling the response data safely
+          const statusData = Array.isArray(response.data) ? response.data : [];
+  
+          // Map the API response to the format needed for SingleSelector
+          const options = statusData.map((status) => ({
+            value: status.value, // Use the value directly from API
+            label: status.name, // Use the name directly from API
+          }));
+  
+          // Add the default "Select Status" option at the beginning
+          setStatusOptions([
+            {
+              label: "Select Status",
+              value: "",
+            },
+            ...options,
+          ]);
+        } catch (error) {
+          console.error("Error fetching status options:", error);
+          setStatusOptions([
+            {
+              label: "Select Status",
+              value: "",
+            },
+          ]);
+        }
+      };
+  
+      fetchStatusOptions();
+    }, [token]); 
 
   const [fromStatus, setFromStatus] = useState("");
   const [toStatus, setToStatus] = useState("");
@@ -1116,9 +1160,9 @@ display:none !important;
                       <div className="form-group">
                         <label>From Status</label>
                         <SingleSelector
-                          options={options}
+                          options={statusOptions}
                           // value={options.value}
-                          value={options.find(
+                          value={statusOptions.find(
                             (option) => option.value === fromStatus
                           )}
                           onChange={handleStatusChange}
@@ -1129,10 +1173,10 @@ display:none !important;
                       <div className="form-group mt-3">
                         <label>To Status</label>
                         <SingleSelector
-                          options={options}
+                          options={statusOptions}
                           // value={options.value}
                           onChange={handleToStatusChange}
-                          value={options.find(
+                          value={statusOptions.find(
                             (option) => option.value === toStatus
                           )}
                           placeholder={`Select Status`} // Dynamic placeholder

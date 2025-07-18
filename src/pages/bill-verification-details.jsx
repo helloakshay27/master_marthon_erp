@@ -368,6 +368,7 @@ const BillVerificationDetails = () => {
     {
       label: "Select Status",
       value: "",
+      // isDisabled: true
     },
   ]);
   useEffect(() => {
@@ -384,6 +385,7 @@ const BillVerificationDetails = () => {
         const options = statusData.map((status) => ({
           value: status.value, // Use the value directly from API
           label: status.name, // Use the name directly from API
+          isDisabled: status.access === "readonly", // Disable if access is readonly
         }));
 
         // Add the default "Select Status" option at the beginning
@@ -391,6 +393,7 @@ const BillVerificationDetails = () => {
           {
             label: "Select Status",
             value: "",
+            isDisabled: true
           },
           ...options,
         ]);
@@ -400,6 +403,7 @@ const BillVerificationDetails = () => {
           {
             label: "Select Status",
             value: "",
+            // isDisabled: true
           },
         ]);
       }
@@ -407,6 +411,7 @@ const BillVerificationDetails = () => {
 
     fetchStatusOptions();
   }, [token]); // Keep token as dependency
+  console.log("status comming from api:",statusOptions)
 
   // Remove the logic that disables previous statuses
   // const currentStatusIndex = statusOptions.findIndex(
