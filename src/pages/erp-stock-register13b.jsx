@@ -275,12 +275,91 @@ const ErpStockRegister13B = () => {
     fetchData2(currentPage);
   }, [currentPage]);
 
-  const handleResets = () => {
-    setSelectedCompany([]);
-    setSelectedProject([]);
-    setSelectedSubProject([]);
-    setSelectedStore(null);
-  };
+  // const handleResets = () => {
+  //   setSelectedCompany([]);
+  //   setSelectedProject([]);
+  //   setSelectedSubProject([]);
+  //   setSelectedStore(null);
+
+  //   setTimeout(() => {
+  //     fetchData2();
+  //   }, 0); // or 100ms if needed
+  // };
+
+  const handleResets = async () => {
+  setSelectedCompany([]);
+  setSelectedProject([]);
+  setSelectedSubProject([]);
+  setSelectedStore(null);
+
+  // Call API directly without any filters
+  try {
+    setLoading(true);
+
+    const params = new URLSearchParams({
+      token: "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+      page: 1,
+      per_page: 10,
+    });
+
+    const response = await axios.get(
+      `${baseURL}stock_details.json?${params.toString()}`
+    );
+
+    const result = response.data;
+
+    const transformedData = result?.mor_inventories?.map((item, index) => {
+      const materialUrl =
+        item.id && token
+          ? `/stock_register_detail/${item.id}/?token=${token}`
+          : "#";
+      const firstStore = item.stores?.[0] || null;
+
+      return {
+        id: item.id ?? `row-${index + 1}`,
+        store_id: firstStore?.store_id ?? null,
+        srNo: index + 1,
+        material: item.category || "-",
+        materialUrl,
+        material_name: item.material_name || "-",
+        lastReceived: item.last_received_on || "-",
+        total_received: item.total_received ?? "-",
+        total_issued: item.total_issued ?? "-",
+        deadstockQty: item.deadstock_qty ?? "-",
+        stock_as_on: item.stock_as_on ?? "-",
+        stockStatus: item.stock_details?.[0]?.status || "-",
+        theftMissing: item.missing_qty ?? "-",
+        uom_name: item.uom || "-",
+        mor: item.stock_details?.map((stock) => stock.mor).join(", ") || "-",
+        grn_number:
+          item.stock_details?.map((stock) => stock.grn_number).join(", ") || "-",
+        stock_details:
+          item?.stock_details?.map((stock) => ({
+            stockId: stock.id,
+            createdAt: stock.created_at || "-",
+            mor: stock.mor || "-",
+            resourceNumber: stock.resource_number || "-",
+            receivedQty: stock.received_qty ?? "-",
+            issuedQty: stock.issued_qty ?? "-",
+            returnedQty: stock.returned_qty ?? "-",
+            balancedQty: stock.balanced_qty ?? "-",
+          })) || [],
+        damage_qty: item.damage_qty ?? "-",
+      };
+    });
+
+    setData(transformedData);
+    setFilteredData(transformedData);
+    setTotalPages(result?.pagination?.total_pages);
+    setTotalEntries(result?.pagination?.total_count);
+  } catch (error) {
+    console.error("Error fetching unfiltered stock details:", error);
+    toast.error("Failed to fetch data");
+  } finally {
+    setLoading(false);
+  }
+};
+
   const handlePageChange = (pageNumber) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
@@ -493,16 +572,16 @@ const ErpStockRegister13B = () => {
       const params = new URLSearchParams({
         token: "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
         search: "",
-        // "q[stock_details_mor_inventory_material_order_request_company_id_eq]": selectedCompany,
-        // "q[stock_details_mor_inventory_material_order_request_project_id_eq]": selectedProject || "",
-        // "q[stock_details_mor_inventory_material_order_request_pms_site_id_eq]": selectedSubProject || "",
+        "q[stock_details_mor_inventory_material_order_request_company_id_eq]": selectedCompany,
+        "q[stock_details_mor_inventory_material_order_request_project_id_eq]": selectedProject || "",
+        "q[stock_details_mor_inventory_material_order_request_pms_site_id_eq]": selectedSubProject || "",
         "q[store_id_eq]": selectedStore?.value || "",
-        "q[generic_info_id]": selectedIds.genericInfos.join(","),
-        "q[material_type_id]": selectedIds.materialTypes.join(","),
-        "q[material_sub_type_id]": selectedIds.materialSubTypes.join(","),
-        "q[uom_id]": selectedIds.unitOfMeasures.join(","),
-        "q[mor_number]": selectedIds.morNumbers.join(","),
-        "q[grn_number]": selectedIds.grnNumbers.join(","),
+        "q[generic_info_id]": "",
+        "q[material_type_id]": "",
+        "q[material_sub_type_id]": "",
+        "q[uom_id]": "",
+        "q[mor_number]": "",
+        "q[grn_number]": "",
         page: 1,
         per_page: 10,
       });
@@ -511,11 +590,86 @@ const ErpStockRegister13B = () => {
         `https://marathon.lockated.com/stock_details.json?${params.toString()}`
       );
 
+      const result = response.data;
+      console.log("result ---", result);
+      const transformedData = result?.mor_inventories?.map((item, index) => {
+        const materialUrl =
+          item.id && token
+            ? `/stock_register_detail/${item.id}/?token=${token}`
+            : "#";
+        const firstStore =
+          item.stores && item.stores.length > 0 ? item.stores[0] : null;
+
+        return {
+          id: item.id ?? `row-${index + 1}`,
+          store_id: firstStore ? firstStore.store_id : null,
+          srNo: (currentPage - 1) * pageSize + index + 1,
+          material: item.category || "-",
+          materialUrl: materialUrl,
+          material_name: item.material_name || "-",
+          lastReceived: item.last_received_on || "-",
+          total_received:
+            item.total_received !== null && item.total_received !== undefined
+              ? item.total_received
+              : "-",
+          total_issued:
+            item.total_issued !== null && item.total_issued !== undefined
+              ? item.total_issued
+              : "-",
+          deadstockQty:
+            item.deadstock_qty !== null && item.deadstock_qty !== undefined
+              ? item.deadstock_qty
+              : "-",
+          stock_as_on:
+            item.stock_as_on !== null && item.stock_as_on !== undefined
+              ? item.stock_as_on
+              : "-",
+          stockStatus: item.stock_details?.[0]?.status || "-",
+          theftMissing:
+            item.missing_qty !== undefined && item.missing_qty !== null
+              ? item.missing_qty
+              : "-",
+          uom_name: item.uom || "-",
+          mor: item.stock_details?.map((stock) => stock.mor).join(", ") || "-",
+          grn_number:
+            item.stock_details?.map((stock) => stock.grn_number).join(", ") ||
+            "-",
+          stock_details:
+            item?.stock_details?.map((stock) => ({
+              stockId: stock.id,
+              createdAt: stock.created_at || "-",
+              mor: stock.mor || "-",
+              resourceNumber: stock.resource_number || "-",
+              receivedQty:
+                stock.received_qty !== null && stock.receivedQty !== undefined
+                  ? stock.receivedQty
+                  : "-",
+              issuedQty:
+                stock.issued_qty !== null && stock.issued_qty !== undefined
+                  ? stock.issued_qty
+                  : "-",
+              returnedQty:
+                stock.returned_qty !== null && stock.returned_qty !== undefined
+                  ? stock.returned_qty
+                  : "-",
+              balancedQty:
+                stock.balanced_qty !== null && stock.balanced_qty !== undefined
+                  ? stock.balanced_qty
+                  : "-",
+            })) || [],
+          damage_qty:
+            item.damage_qty !== null && item.damage_qty !== undefined
+              ? item.damage_qty
+              : "-",
+        };
+      });
+      setData(transformedData);
       // Handle response data
-      console.log("Fetched stock data:", response.data);
+      console.log("Fetched stock data**************:", response.data);
       setTotalPages(response.data?.pagination.total_pages); // Set total pages
       setTotalEntries(response.data?.pagination.total_count);
-      setFilteredData(response.data); // or any appropriate state you have
+      setFilteredData(transformedData); // or any appropriate state you have
+      //  setData(response.data)
     } catch (error) {
       console.error("Error fetching stock details:", error);
       toast.error("Failed to fetch data");
@@ -601,10 +755,10 @@ const ErpStockRegister13B = () => {
       headerName: "Last Received On",
       width: 150,
       sortable: true,
-   renderCell: (params) => {
-    const dateStr = params.value;
-    return dateStr ? dateStr.replace(/\//g, "-") : "-";
-  },
+      renderCell: (params) => {
+        const dateStr = params.value;
+        return dateStr ? dateStr.replace(/\//g, "-") : "-";
+      },
     },
     {
       field: "total_received",

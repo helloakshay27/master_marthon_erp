@@ -30,7 +30,7 @@ const PoAdvanceNoteList = () => {
 
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [totalEntries, setTotalEntries] = useState(0);
   const [creditNotes, setCreditNotes] = useState([]);
@@ -921,7 +921,7 @@ display:none !important;
               </CollapsibleCard>
 
               <div className="row mt-2">
-                <div className="col-md-5 ms-3">
+                <div className="col-md-6 ms-3">
                   <div className="input-group">
                     <input
                       type="search"
@@ -983,7 +983,7 @@ display:none !important;
                     )} */}
                   </div>
                 </div>
-                <div className="col-md-5 d-flex justify-content-end align-items-center gap-5 mt-1">
+                <div className="col-md-5 d-flex justify-content-end align-items-center gap-7 mt-1">
                   <button
                     type="button"
                     className="btn btn-md"
@@ -1132,7 +1132,11 @@ display:none !important;
                   }}
                   loading={loading}
                   disableSelectionOnClick
-                  checkboxSelection
+                
+                      checkboxSelection={!!fromStatus} //
+                   localeText={{
+                    noRowsLabel: "No data available",
+                  }}
                   selectionModel={selectedIds}
                   onSelectionModelChange={(ids) => {
                     setSelectedIds(ids.map(String));

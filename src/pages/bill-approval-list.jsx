@@ -650,13 +650,13 @@ const BillApprovalList = () => {
     bill_copies: true,
     due: true,
     due_date: true,
-    certificate_no: true,
-    // advance_adjust_amount: true,
-    payable_amount: true,
-    paid: true,
-    balance: true,
+    // certificate_no: true,
+    // // advance_adjust_amount: true,
+    // payable_amount: true,
+    // paid: true,
+    // balance: true,
     status: true,
-    overdue: true,
+    // overdue: true,
     assign_to: true,
     tat: true,
   });
@@ -836,13 +836,13 @@ const BillApprovalList = () => {
         return <span>{formattedDate}</span>;
       },
      },
-    { field: "certificate_no", headerName: "Certificate No.", width: 150 },
-    // { field: "advance_adjust_amount", headerName: "Advance Adjust Amount", width: 200 },
-    { field: "payable_amount", headerName: "Payable Amount", width: 150 },
-    { field: "paid", headerName: "Paid", width: 150 },
-    { field: "balance", headerName: "Balance", width: 150 },
+    // { field: "certificate_no", headerName: "Certificate No.", width: 150 },
+    // // { field: "advance_adjust_amount", headerName: "Advance Adjust Amount", width: 200 },
+    // { field: "payable_amount", headerName: "Payable Amount", width: 150 },
+    // { field: "paid", headerName: "Paid", width: 150 },
+    // { field: "balance", headerName: "Balance", width: 150 },
     { field: "status", headerName: "Status", width: 180 },
-    { field: "overdue", headerName: "Overdue", width: 150 },
+    // { field: "overdue", headerName: "Overdue", width: 150 },
     { field: "assign_to", headerName: "Assign to", width: 150 },
     { field: "tat", headerName: "TAT", width: 150 },
   ];
@@ -1178,7 +1178,7 @@ display:none !important;
 
               <div className="d-flex justify-content-between align-items-center me-2 mt-4">
                 {/* Search Input */}
-                <div className="col-md-4">
+                <div className="col-md-6">
                   <form>
                     <div className="input-group ms-3">
                       <input
@@ -1286,7 +1286,10 @@ display:none !important;
                   }}
                   loading={false}
                   disableSelectionOnClick
-                  checkboxSelection // <-- enables checkboxes and select all
+                   checkboxSelection={!!fromStatus} 
+                    localeText={{
+                    noRowsLabel: "No data available",
+                  }}
                   selectionModel={selectedBoqDetails}
                   //   onSelectionModelChange={(ids) => setSelectedBoqDetails(ids)}
                   onSelectionModelChange={(ids) => {

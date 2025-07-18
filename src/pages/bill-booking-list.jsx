@@ -602,10 +602,10 @@ const BillBookingList = () => {
 
     inventory_date: true,
     total_amount: true,
-    bill_copies: true,
+    // bill_copies: true,
     due: true,
     payment_due_date: true,
-    certificate_no: true,
+    // certificate_no: true,
     advance_adjust_amount: true,
     payable_amount: true,
     paid: true,
@@ -685,7 +685,7 @@ const BillBookingList = () => {
       },
      },
     { field: "total_amount", headerName: "Bill Amount", width: 150 },
-    { field: "bill_copies", headerName: "Bill Copies", width: 150 },
+   
     { field: "due", headerName: "Due", width: 150 },
     { field: "payment_due_date", headerName: "Due Date", width: 150,
        renderCell: (params) => {
@@ -694,7 +694,7 @@ const BillBookingList = () => {
         return <span>{formattedDate}</span>;
       },
      },
-    { field: "certificate_no", headerName: "Certificate No.", width: 150 },
+
     {
       field: "advance_adjust_amount",
       headerName: "Advance Adjust Amount",
@@ -1014,7 +1014,7 @@ display:none !important;
               </CollapsibleCard>
               <div className="d-flex justify-content-between align-items-center me-2 mt-4">
                 {/* Search Input */}
-                <div className="col-md-4">
+                <div className="col-md-6">
                   <form>
                     <div className="input-group ms-3">
                       <input
@@ -1127,7 +1127,8 @@ display:none !important;
                   }}
                   loading={false}
                   disableSelectionOnClick
-                  checkboxSelection // <-- enables checkboxes and select all
+                  // checkboxSelection // <-- enables checkboxes and select all
+                   checkboxSelection={!!fromStatus} //
                   selectionModel={selectedBoqDetails}
                   //   onSelectionModelChange={(ids) => setSelectedBoqDetails(ids)}
                   onSelectionModelChange={(ids) => {
@@ -1140,6 +1141,9 @@ display:none !important;
                   }}
                   components={{
                     ColumnMenu: () => null,
+                  }}
+                    localeText={{
+                    noRowsLabel: "No data available",
                   }}
                   sx={{
                     "& .MuiDataGrid-columnHeaders": {

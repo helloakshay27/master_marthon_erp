@@ -60,12 +60,12 @@ const BillEntryList = () => {
     bill_copies: true,
     due: true,
     due_date: true,
-    certificate_no: true,
-    payable_amount: true,
-    paid: true,
-    balance: true,
+    // certificate_no: true,
+    // payable_amount: true,
+    // paid: true,
+    // balance: true,
     status: true,
-    overdue: true,
+    // overdue: true,
     assign_to: true,
     tat: true,
   });
@@ -151,12 +151,12 @@ const BillEntryList = () => {
     { field: "bill_copies", headerName: "Bill Copies", width: 150 },
     { field: "due", headerName: "Due", width: 150 },
     { field: "due_date", headerName: "Due Date", width: 200 },
-    { field: "certificate_no", headerName: "Certificate No.", width: 150 },
-    { field: "payable_amount", headerName: "Payable Amount", width: 150 },
-    { field: "paid", headerName: "Paid", width: 150 },
-    { field: "balance", headerName: "Balance", width: 150 },
+    // { field: "certificate_no", headerName: "Certificate No.", width: 150 },
+    // { field: "payable_amount", headerName: "Payable Amount", width: 150 },
+    // { field: "paid", headerName: "Paid", width: 150 },
+    // { field: "balance", headerName: "Balance", width: 150 },
     { field: "status", headerName: "Status", width: 200 },
-    { field: "overdue", headerName: "Overdue", width: 150 },
+    // { field: "overdue", headerName: "Overdue", width: 150 },
     { field: "assign_to", headerName: "Assign to", width: 150 },
     { field: "tat", headerName: "TAT", width: 150 },
   ];
@@ -717,6 +717,9 @@ display:none !important;
                 components={{
                   ColumnMenu: () => null,
                 }}
+                 localeText={{
+                    noRowsLabel: "No data available",
+                  }}
                 sx={{
                   "& .MuiDataGrid-columnHeaders": {
                     backgroundColor: "#f8f9fa",

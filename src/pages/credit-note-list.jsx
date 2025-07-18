@@ -978,7 +978,7 @@ display:none !important;
 
               <div className="d-flex justify-content-between align-items-center me-2 mt-4">
                 {/* Search Input */}
-                <div className="col-md-4">
+                <div className="col-md-6">
                   <form>
                     <div className="input-group ms-3">
                       <input
@@ -1097,7 +1097,11 @@ display:none !important;
                   }}
                   loading={false}
                   disableSelectionOnClick
-                  checkboxSelection // <-- enables checkboxes and select all
+                  // checkboxSelection // <-- enables checkboxes and select all
+                   checkboxSelection={!!fromStatus} //
+                   localeText={{
+                    noRowsLabel: "No data available",
+                  }}
                   selectionModel={selectedBoqDetails}
                   //   onSelectionModelChange={(ids) => setSelectedBoqDetails(ids)}
                   onSelectionModelChange={(ids) => {
