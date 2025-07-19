@@ -7,44 +7,47 @@ const DownloadPdfButton = ({ apiUrl, buttonLabel = "Download File" }) => {
   const handleDownload = async () => {
     setLoading(true);
     try {
-      // Get the signed URL and filename from the API
-      const response = await axios.get(apiUrl);
-      const data = response.data;
-      console.log("data:-", data);
+      // Get the file directly from the API
+      const response = await axios.get(apiUrl, {
+        responseType: "blob",
+      });
+      
+      console.log("Response headers:", response.headers);
+      console.log("Response data type:", typeof response.data);
 
-      if (data.signed_url) {
-        // Fetch the file as a blob from the signed URL
-        const fileResponse = await axios.get(data.signed_url, {
-          responseType: "blob",
-        });
-
-        // Try to get filename from Content-Disposition header, fallback to default
-        let filename = "downloaded_file";
-        const disposition = fileResponse.headers["content-disposition"];
-        if (disposition) {
-          // Handle both filename= and filename*= cases
-          const match = disposition.match(/filename\*?=(?:UTF-8'')?([^;]+)/i);
-          if (match && match[1]) {
-            filename = decodeURIComponent(match[1].replace(/['"]/g, "").trim());
-          }
-        } else if (data.filename) {
-          filename = data.filename;
+      // Try to get filename from Content-Disposition header, fallback to default
+      let filename = "downloaded_file";
+      const disposition = response.headers["content-disposition"];
+      if (disposition) {
+        // Handle both filename= and filename*= cases
+        const match = disposition.match(/filename\*?=(?:UTF-8'')?([^;]+)/i);
+        if (match && match[1]) {
+          filename = decodeURIComponent(match[1].replace(/['"]/g, "").trim());
         }
-
-        // Create a blob URL and trigger download
-        const blob = new Blob([fileResponse.data], { type: fileResponse.data.type || undefined });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", filename);
-        document.body.appendChild(link);
-        link.click();
-        link.parentNode.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      } else {
-        alert("Download link not found.");
       }
+
+      // Get content type from headers
+      const contentType = response.headers["content-type"] || "application/octet-stream";
+      
+      // Add appropriate file extension if not present
+      if (!filename.includes('.')) {
+        if (contentType.includes('png')) filename += '.png';
+        else if (contentType.includes('pdf')) filename += '.pdf';
+        else if (contentType.includes('jpeg') || contentType.includes('jpg')) filename += '.jpg';
+      }
+
+      // Create a blob URL and trigger download
+      const blob = new Blob([response.data], { type: contentType });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (err) {
+      console.error("Download error:", err);
       alert("Failed to download file.");
     }
     setLoading(false);

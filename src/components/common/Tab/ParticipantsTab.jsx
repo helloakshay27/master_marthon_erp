@@ -144,8 +144,8 @@ export default function ParticipantsTab({ id }) {
       setIsInvite(false); // Stop loader
       return;
     }
-const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
     try {
       const response = await fetch(
         `${baseURL}rfq/events/${id}/invite_vendor?token=${token}&name=${inviteForm.name}&mobile=${inviteForm.mobile}&email=${inviteForm.email}&add_vendor=true&organization_name=${inviteForm?.organization}&company_id=${inviteForm.company}`,
@@ -168,6 +168,16 @@ const urlParams = new URLSearchParams(location.search);
 
         setVendorData((prev) => [...prev, formattedVendor]);
         setFilteredData((prev) => [...prev, formattedVendor]);
+
+        // Refresh participants data immediately
+        const participantsResponse = await fetch(
+          `${baseURL}rfq/events/${id}/event_vendors?token=${token}&page=${currentParticipantPage}`
+        );
+        if (participantsResponse.ok) {
+          const participantsData = await participantsResponse.json();
+          setParticipants(participantsData || []);
+          setTotalParticipantPages(participantsData?.pagination?.total_pages || 1);
+        }
 
         toast.success("Vendor invited successfully!", {
           autoClose: 1000,
@@ -373,8 +383,8 @@ const urlParams = new URLSearchParams(location.search);
     setIsSaving(true);
     setIsVendorLoading(true); // Start loader
     const selectedVendorIds = selectedRows.map((vendor) => vendor.id);
-const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
     const url = `${baseURL}rfq/events/${id}/add_vendors?token=${token}&pms_supplier_ids=[${selectedVendorIds.join(
       ","
     )}]`;
@@ -401,6 +411,17 @@ const urlParams = new URLSearchParams(location.search);
 
         setSelectedRows([]);
         setResetSelectedRows(true);
+        
+        // Refresh participants data immediately
+        const participantsResponse = await fetch(
+          `${baseURL}rfq/events/${id}/event_vendors?token=${token}&page=${currentParticipantPage}`
+        );
+        if (participantsResponse.ok) {
+          const participantsData = await participantsResponse.json();
+          setParticipants(participantsData || []);
+          setTotalParticipantPages(participantsData?.pagination?.total_pages || 1);
+        }
+        
         toast.success("Vendors added successfully!", {
           autoClose: 1000,
         });
@@ -583,7 +604,7 @@ const urlParams = new URLSearchParams(location.search);
               </div>
             </>
           ) : (
-            <div className="tbl-container">
+            <div className="tbl-container" style={{ height: '600px', overflowY: 'auto' }}>
               <table className="w-100">
                 <thead>
                   <tr>

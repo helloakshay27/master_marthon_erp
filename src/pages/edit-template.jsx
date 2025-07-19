@@ -167,7 +167,7 @@ export default function EditTemplate() {
     isRequired: false,
     isReadOnly: false,
     fieldOwner: "",
-    fieldType: "string",
+    fieldType: "",
   });
 
   const [showEditModal, setShowEditModal] = useState(false);
@@ -176,7 +176,7 @@ export default function EditTemplate() {
     isRequired: false,
     isReadOnly: false,
     fieldOwner: "",
-    fieldType: "string",
+    fieldType: "",
   });
 
   const [showShortTableEditModal, setShowShortTableEditModal] = useState(false);
@@ -229,7 +229,7 @@ export default function EditTemplate() {
             isRequired: field.is_required,
             isReadOnly: field.is_read_only,
             fieldOwner: field.field_owner,
-            fieldType: "string",
+            fieldType: "",
           })),
         ];
 
@@ -258,6 +258,14 @@ export default function EditTemplate() {
   }, [id]);
 
   const handleAddColumn = () => {
+    // Reset the newColumn state to clear previous data
+    setNewColumn({
+      fieldName: "",
+      isRequired: false,
+      isReadOnly: false,
+      fieldOwner: "",
+      fieldType: "",
+    });
     setShowModal(true);
   };
 
@@ -267,6 +275,26 @@ export default function EditTemplate() {
       ...columns,
       { label: newColumn.fieldName, key: newColumnKey, ...newColumn },
     ]);
+    setShowModal(false);
+    // Reset the newColumn state after closing the modal
+    setNewColumn({
+      fieldName: "",
+      isRequired: false,
+      isReadOnly: false,
+      fieldOwner: "",
+      fieldType: "",
+    });
+  };
+
+  const handleModalClose = () => {
+    // Reset the newColumn state when modal is closed
+    setNewColumn({
+      fieldName: "",
+      isRequired: false,
+      isReadOnly: false,
+      fieldOwner: "",
+      fieldType: "",
+    });
     setShowModal(false);
   };
 
@@ -437,11 +465,11 @@ export default function EditTemplate() {
               </a>
             </li>
             <li className="breadcrumb-item active" aria-current="page">
-              Create Template
+              Edit Template
             </li>
           </ol>
         </nav>
-        <h5 className="mt-3 ms-3">Create Template</h5>
+        <h5 className="mt-3 ms-3">Edit Template</h5>
         <div style={{ width: "15%" }}></div>
       </div>
       <div className="pt-3">
@@ -484,6 +512,7 @@ export default function EditTemplate() {
               </button>
             </div>
             <Table
+              scrollable={true}
               columns={columns}
               data={[
                 columns.reduce((acc, col) => {
@@ -548,12 +577,12 @@ export default function EditTemplate() {
             </div>
             <DynamicModalBox
               show={showModal}
-              onHide={() => setShowModal(false)}
+              onHide={handleModalClose}
               title="Add New Column"
               footerButtons={[
                 {
                   label: "Cancel",
-                  onClick: () => setShowModal(false),
+                  onClick: handleModalClose,
                 },
                 {
                   label: "Add Column",
@@ -602,7 +631,8 @@ export default function EditTemplate() {
                     { value: "Admin", label: "Admin" },
                     { value: "User", label: "User" },
                   ]}
-                  defaultValue=""
+                  defaultValue={newColumn.fieldOwner}
+                  key={`fieldOwner-${showModal}`}
                   onChange={(value) =>
                     setNewColumn({ ...newColumn, fieldOwner: value })
                   }
@@ -615,7 +645,8 @@ export default function EditTemplate() {
                     { value: "string", label: "String" },
                     { value: "integer", label: "Integer" },
                   ]}
-                  defaultValue="string"
+                  defaultValue={newColumn.fieldType}
+                  key={`fieldType-${showModal}`}
                   onChange={(value) =>
                     setNewColumn({ ...newColumn, fieldType: value })
                   }

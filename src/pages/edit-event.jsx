@@ -30,6 +30,8 @@ export default function EditEvent() {
   const [inviteModal, setInviteModal] = useState(false);
   const [publishEventModal, setPublishEventModal] = useState(false);
   const [eventScheduleModal, setEventScheduleModal] = useState(false);
+    const [eventScheduleText, setEventScheduleText] = useState("");
+    const [eventScheduleInputText, setEventScheduleInputText] = useState("");
   const [vendorModal, setVendorModal] = useState(false);
   const [eventType, setEventType] = useState("");
   const [awardType, setAwardType] = useState("");
@@ -109,6 +111,7 @@ export default function EditEvent() {
     { user: "", date: "", status: "", remark: "" },
   ]);
   const [statusLogData, setStatusLogData] = useState([]);
+  const [editableStatusLogData, setEditableStatusLogData] = useState([]);
   const [specificationData, setSpecificationData] = useState([]);
 
   const location = useLocation();
@@ -134,6 +137,14 @@ export default function EditEvent() {
   const handleCityChange = (selectedOption) => {
     setSelectedCity(selectedOption);
     fetchData(1, searchTerm, selectedOption);
+  };
+
+  const handleStatusLogChange = (index, field, value) => {
+    setEditableStatusLogData(prev => 
+      prev.map((item, idx) => 
+        idx === index ? { ...item, [field]: value } : item
+      )
+    );
   };
 
   const navigate = useNavigate();
@@ -200,10 +211,11 @@ export default function EditEvent() {
     const endDateTime = formatDateTime(adjustTimeZone(data.end_time_duration));
 
     const scheduleText = `${startDateTime} to ${endDateTime}`;
+    console.log("startDateTime",startDateTime, endDateTime);
+    
     setEventScheduleText(scheduleText);
   };
 
-  const [eventScheduleText, setEventScheduleText] = useState("");
 
   const handleVendorTypeModalShow = () => {
     setVendorModal(true);
@@ -468,6 +480,7 @@ export default function EditEvent() {
       setEnd_time(eventDetails?.event_schedule?.end_time);
       setEvaluation_time(eventDetails?.event_schedule?.evaluation_time);
       setStatusLogData(eventDetails?.status_logs);
+      setEditableStatusLogData(eventDetails?.status_logs || []);
       setDocumentRows(eventDetails?.attachments || []);
       setGroupedData(eventDetails?.grouped_event_materials);
 
@@ -519,8 +532,10 @@ export default function EditEvent() {
 
   const [documentRowsInitialized, setDocumentRowsInitialized] = useState(false);
 
+  console.log("event",eventDetails?.start_time, eventDetails?.end_time, eventDetails?.event_schedule?.start_time, eventDetails?.event_schedule?.end_time);
+  
   useEffect(() => {
-    if (eventDetails && !documentRowsInitialized) {
+    if (eventDetails?.start_time && !documentRowsInitialized) {
       seteventName(eventDetails?.event_title);
       setSelectedTemplate(
         eventDetails?.applied_event_template?.event_template_id
@@ -528,11 +543,18 @@ export default function EditEvent() {
       setEventStatus(eventDetails?.status);
       setEventTypeText(eventDetails?.event_type_detail?.event_type);
       setEventDescription(eventDetails?.event_description);
+      console.log("eventSchedule", eventDetails);
+      
       setEventScheduleText(
-        `${new Date(eventDetails?.start_time).toLocaleString()} ~ ${new Date(
-          eventDetails?.end_time
-        ).toLocaleString()}`
-      );
+    `${new Date(eventDetails?.start_time).toLocaleString()} ~ ${new Date(
+      eventDetails?.end_time
+    ).toLocaleString()}`
+  );
+    // Fix: Update console.log to use the correct properties
+    console.log("eventScheduleText:-",eventScheduleText, `${new Date(eventDetails?.event_schedule?.start_time).toLocaleString()} ~ ${new Date(
+        eventDetails?.event_schedule?.end_time
+      ).toLocaleString()}`);
+      
       setStart_time(eventDetails?.event_schedule?.start_time);
       setEnd_time(eventDetails?.event_schedule?.end_time);
       setEvaluation_time(eventDetails?.event_schedule?.evaluation_time);
@@ -1013,14 +1035,13 @@ export default function EditEvent() {
           pms_supplier_id: vendor.pms_supplier_id,
           id: vendor.id,
         })),
-        status_logs_attributes: [
-          {
-            status: "pending",
-            created_by_id: 2,
-            remarks: "Initial status",
-            comments: "No comments",
-          },
-        ],
+        status_logs_attributes: editableStatusLogData.map((log) => ({
+          id: log.id || null,
+          status: log.status || "pending",
+          created_by_id: log.created_by_id || 2,
+          remarks: log.remark || log.remarks || "",
+          comments: log.comment || log.comments || "",
+        })),
         resource_term_conditions_attributes: textareas.map((textarea) => {
   // Only include id if it's a string and length < 10 (likely a real DB id)
   // or if it's a number and less than 1e9 (to avoid Date.now() values)
@@ -1130,11 +1151,38 @@ export default function EditEvent() {
     const query = e.target.value;
     setSearchTerm(query);
 
-    if (query) {
-      fetchSuggestions(query);
-    } else {
+    if (query.trim() === "") {
+      // Reset to show all data when search is empty
+      setFilteredTableData(tableData);
       setSuggestions([]);
       setIsSuggestionsVisible(false);
+    } else {
+      // Filter table data based on search query across all columns
+      const filtered = tableData.filter((vendor) => {
+        const searchFields = [
+          vendor.name,
+          vendor.email,
+          vendor.organisation,
+          vendor.phone,
+          vendor.city,
+          vendor.tags,
+          vendor.id?.toString()
+        ];
+        
+        return searchFields.some(field => 
+          field && field.toString().toLowerCase().includes(query.toLowerCase())
+        );
+      });
+      
+      setFilteredTableData(filtered);
+      
+      // Still fetch suggestions for the dropdown
+      if (query) {
+        fetchSuggestions(query);
+      } else {
+        setSuggestions([]);
+        setIsSuggestionsVisible(false);
+      }
     }
   };
 
@@ -1152,17 +1200,18 @@ export default function EditEvent() {
 
   const handleResetSearch = async () => {
     if (!searchTerm || searchTerm.trim() === "") {
-      fetchData();
+      setFilteredTableData(tableData);
     } else {
       setSearchTerm("");
+      setFilteredTableData(tableData);
     }
   };
 
   useEffect(() => {
     if (!searchTerm || searchTerm.trim() === "") {
-      handleResetSearch();
+      setFilteredTableData(tableData);
     }
-  }, [searchTerm]);
+  }, [searchTerm, tableData]);
 
   const fetchSuggestions = async (query) => {
     try {
@@ -1573,10 +1622,10 @@ export default function EditEvent() {
                       { label: "Expired", value: "expired" },
                       { label: "Closed", value: "closed" },
                       { label: "Pending", value: "pending" },
-                      // { label: "Draft", value: "draft" },
+                      { label: "Draft", value: "draft" },
                     ]}
                     onChange={handleStatusChange}
-                    defaultValue={eventStatus}
+                    defaultValue={eventStatus || "draft"}
                   />
                 </div>
               </div>
@@ -1819,7 +1868,7 @@ export default function EditEvent() {
               <button
                 className="btn btn-danger"
                 onClick={() => handleRemoveTextarea(textarea.id)}
-                disabled={idx === 0}
+                disabled={textareas.length === 1}
               >
                 Remove
               </button>
@@ -1846,14 +1895,30 @@ export default function EditEvent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {statusLogData?.map((item, idx) => {
+                      {editableStatusLogData?.map((item, idx) => {
                         if (item.id === null) {
                           return null;
                         }
                         return (
                           <tr key={idx}>
-                            <td>{item.comment || "-"}</td>
-                            <td>{item.remark || "-"}</td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={item.comment || item.comments || ""}
+                                onChange={(e) => handleStatusLogChange(idx, 'comment', e.target.value)}
+                                placeholder="Enter comment"
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={item.remark || item.remarks || ""}
+                                onChange={(e) => handleStatusLogChange(idx, 'remark', e.target.value)}
+                                placeholder="Enter remark"
+                              />
+                            </td>
                             <td>{item.status || "-"}</td>
                             <td>{item.created_by_name || "-"}</td>
                             <td>{new Date(item.created_at).toLocaleString() || "-"}</td>
@@ -1866,9 +1931,9 @@ export default function EditEvent() {
               )}
 
               <div className="row mt-2 justify-content-end align-items-center mt-4">
-                <div className="col-md-2">
+                {/* <div className="col-md-2">
                   <button className="purple-btn2 w-100">Preview</button>
-                </div>
+                </div> */}
                 <div className="col-md-2">
                   {loading && (
                     <div className="loader-container">
@@ -1900,7 +1965,7 @@ export default function EditEvent() {
                     className="purple-btn1 w-100"
                     onClick={() => {
                       navigate(
-                        `/event-list?token=${token}/event-list`
+                        `/event-list?token=${token}`
                       );
                     }}
                   >
@@ -2169,6 +2234,7 @@ export default function EditEvent() {
                         cellClass="text-start"
                         currentPage={currentPage}
                         pageSize={pageSize}
+                        style={{width:"100%"}}
                       />
                     ) : (
                       <p>No vendors found</p>
@@ -2230,6 +2296,7 @@ export default function EditEvent() {
                       </li>
 
                       <li
+                       
                         className={`page-item ${currentPage === totalPages ? "disabled" : ""
                           }`}
                       >

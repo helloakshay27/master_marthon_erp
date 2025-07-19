@@ -906,7 +906,8 @@ const pageSize = 10; // Change as needed
             {}
           );
           const bidMaterial = item.bid_materials?.[0];
-          
+            console.log("item",item);
+            
           // Map the row data
           const rowData = {
             pmsBrand: item.pms_brand_name || "-",
@@ -5013,7 +5014,6 @@ const urlParams = new URLSearchParams(location.search);
 
                     {/* <div className="card-body"> */}
                       <div style={tableContainerStyle}>
-                      {console.log("data:-",data)}
                         <Table
                           columns={[
                             { label: "Sr No", key: "srNo" },
@@ -5034,8 +5034,8 @@ const urlParams = new URLSearchParams(location.search);
                               key: "quantityAvail",
                             },
                             { label: "Price *", key: "price" },
-                            { label: "Realised Price *", key: "realisedPrice" },
                             { label: "Discount %*", key: "discount" },
+                            { label: "Realised Price *", key: "realisedPrice" },
                             {
                               label: "Realised Discount",
                               key: "realisedDiscount",
@@ -6303,7 +6303,7 @@ const urlParams = new URLSearchParams(location.search);
                       </ol>
                     </div>
 
-                    <div className=" d-flex justify-content-end">
+                    <div className=" d-flex justify-content-center">
                       {loading && (
                         <div className="loader-container">
                           <div className="lds-ring">
@@ -6371,7 +6371,8 @@ const urlParams = new URLSearchParams(location.search);
                             submitted
                               ? "not-allowed"
                               : "pointer",
-                          padding: "10px 20px",
+                          padding: "10px 40px",
+                          marginTop:'10px',
                           borderRadius: "5px",
                         }}
                       >
