@@ -956,12 +956,14 @@ const DebitNoteCreate = () => {
               fileType: contentType,
               fileName: file.name,
               isExisting: false,
+              document_file_name: att.document_file_name || file.name,
               uploadDate: getLocalDateTime(),
               attachments: [
                 {
                   filename: file.name,
                   content: base64Content,
                   content_type: contentType,
+                  document_file_name: att.document_file_name || file.name,
                 },
               ],
             }
@@ -998,7 +1000,8 @@ const attachmentsPayload = attachments
   .flatMap((att) => att.attachments || []);
 
     console.log("attachments:", attachmentsPayload)
-    // attachment like mor end******
+    // attachment like mor end****
+    console.log("debit note reason:",debitNoteReason)
 
   const payload = {
 
@@ -1010,6 +1013,7 @@ const attachmentsPayload = attachments
       debit_note_no: "DN-001",
       debit_note_date: creditNoteDate || "",
       debit_note_amount: creditNoteAmount || 0,
+      reason: debitNoteReason ||"",
       remark: remark2 || "",
       status: "draft",
       attachments: attachmentsPayload || [],
@@ -1050,18 +1054,7 @@ const attachmentsPayload = attachments
 
   const handleSubmit = async () => {
     setLoading2(true)
-    const attachments = (documents || [])
-      .map((doc) =>
-        doc.attachments && doc.attachments[0]
-          ? {
-            filename: doc.attachments[0].filename || null,
-            content: doc.attachments[0].content || null,
-            content_type: doc.attachments[0].content_type || null,
-            document_name: doc.document_type || null,
-          }
-          : null
-      )
-      .filter(Boolean);
+   
     const payload = {
       debit_note: {
         company_id: selectedCompany?.value || "",
@@ -1069,6 +1062,7 @@ const attachmentsPayload = attachments
         project_id: selectedProject?.value || "",
         purchase_order_id: selectedPO?.id || "",
         debit_note_no: "DN-001",
+        reason: debitNoteReason ||"",
         debit_note_date: creditNoteDate || "",
         debit_note_amount: creditNoteAmount || 0,
         remark: remark2 || "",
@@ -1384,9 +1378,9 @@ const attachmentsPayload = attachments
                                 <label>Debit Note Reason</label>
                                 <SingleSelector
                                   options={[
-                                    { value: "advance_note", label: "Advance Note" },
-                                    { value: "miscellaneous", label: "Miscellaneous" },
-                                    { value: "others", label: "Others" },
+                                    { value: "Advance Note", label: "Advance Note" },
+                                    { value: "Miscellaneous", label: "Miscellaneous" },
+                                    { value: "Others", label: "Others" },
                                   ]}
                                   value={debitNoteReason ? {
                                     value: debitNoteReason,
@@ -2266,10 +2260,10 @@ const attachmentsPayload = attachments
                               <thead>
                                 <tr>
                                   <th className="main2-th">File Type</th>
-                                  <th className="main2-th">File Name </th>
+                                  <th className="main2-th" >File Name </th>
                                   <th className="main2-th">Upload At</th>
                                   <th className="main2-th">Upload File</th>
-                                  <th className="main2-th" style={{ width: 130, textAlign: "center" }}>
+                                  <th className="main2-th" style={{ width: "100px" }}>
                                     Action
                                   </th>
                                 </tr>
