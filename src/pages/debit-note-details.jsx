@@ -563,12 +563,14 @@ const DebitNoteDetails = () => {
               fileType: contentType,
               fileName: file.name,
               isExisting: false,
+              document_file_name: att.document_file_name || file.name,
               uploadDate: getLocalDateTime(),
               attachments: [
                 {
                   filename: file.name,
                   content: base64Content,
                   content_type: contentType,
+                  document_file_name: att.document_file_name || file.name,
                 },
               ],
             }
@@ -612,7 +614,7 @@ const DebitNoteDetails = () => {
       debit_note_amount: editableDebitNote.debit_note_amount || null,
       debit_note_date: editableDebitNote.debit_note_date || null,
       remark: editableDebitNote.remark || null,
-      attachments: attachments2.length > 0 ? attachments2 : null,
+      attachments: attachmentsPayload|| [],
       status_log: {
         status: status,
         remarks: remark,
@@ -746,7 +748,7 @@ const DebitNoteDetails = () => {
         remark: editableDebitNote.remark || null,
         taxes_and_charges,
         // attachments,
-        attachments: attachments.length > 0 ? attachments : null,
+        attachments: attachmentsPayload|| [],
         status_log: {
           status: status,
           remarks: remark,
