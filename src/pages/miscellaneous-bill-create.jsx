@@ -924,12 +924,14 @@ const openAttachTwoModal = () => setattachTwoModal(true);
                 fileType: contentType,
                 fileName: file.name,
                 isExisting: false,
+                 document_file_name: att.document_file_name || file.name,
                 uploadDate: getLocalDateTime(),
                 attachments: [
                   {
                     filename: file.name,
                     content: base64Content,
                     content_type: contentType,
+                     document_file_name: att.document_file_name || file.name,
                   },
                 ],
               }
