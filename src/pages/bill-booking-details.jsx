@@ -1405,7 +1405,7 @@ const BillBookingDetails = () => {
                         <tr key={attachment.id}>
                           <td className="text-start">{index + 1}</td>
                           <td className="text-start">
-                            {attachment.relation || ""}
+                            {attachment.document_name|| ""}
                           </td>
                           <td className="text-start">
                             {attachment.filename || ""}

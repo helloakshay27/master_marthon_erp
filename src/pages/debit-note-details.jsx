@@ -57,6 +57,18 @@ const DebitNoteDetails = () => {
   });
   const [documents, setDocuments] = useState([]); // If you want to keep a list
 
+  const [attachments, setAttachments] = useState([
+    // {
+    //   id: 1,
+    //   fileType: "image/png",
+    //   fileName: "otp (5).png",
+    //   uploadDate: "2025-07-18T19:01:00",
+    //   fileUrl: "https://blob-store-files.s3.ap-south-1.amazonaws.com/qe6dptv1sieyo4rd12hlwcv54p9n",
+    //   file: null, // Actual File object for new uploads
+    //   isExisting: true, // mark if file already uploaded
+    // },
+  ]);
+
   // Fetch credit note data
   const fetchCreditNoteData = async () => {
     try {
@@ -67,17 +79,23 @@ const DebitNoteDetails = () => {
       setStatus(response.data.status)
       setCreditNoteAmount(response.data.debit_note_amount || 0)
       setCreditNoteData(response.data);
-      const formattedDocuments = response.data.attachments.map((att) => ({
-        document_type: att.relation || "", // or a custom label if needed
-        attachments: [att],
-        uploadDate: new Date(att.created_at)
-          .toLocaleDateString("en-GB")
-          .replaceAll("/", "-"),
 
-        blob_id: att.blob_id || null,
-        filename: att.filename || "-",
-      }));
-      setDocuments(formattedDocuments); // ✅ Set to your documents array
+
+      const formattedDocuments = response.data.attachments.map((att) => {
+        const originalDate = new Date(att.created_at);
+        const localDate = new Date(originalDate.getTime() - originalDate.getTimezoneOffset() * 60000);
+        const uploadDate = localDate.toISOString().slice(0, 19); // include seconds (YYYY-MM-DDTHH:MM:SS)
+
+        return {
+          fileType: att.content_type || "",
+          uploadDate,
+          blob_id: att.blob_id || null,
+          fileName: att.filename || "-",
+          file:att.document_file_name,
+          isExisting: true,
+        };
+      });
+      setAttachments(formattedDocuments); // ✅ Set to your documents array
       setLoading(false);
     } catch (err) {
       setError(err.message);
@@ -492,14 +510,111 @@ const DebitNoteDetails = () => {
       };
     })
     .filter(Boolean);
+  console.log("attachment:", attachments2)
 
+
+  // attachment like mor******
+
+
+  const getLocalDateTime = () => {
+    const now = new Date();
+    const offset = now.getTimezoneOffset(); // in minutes
+    const localDate = new Date(now.getTime() - offset * 60000);
+    return localDate.toISOString().slice(0, 19); // "YYYY-MM-DDTHH:MM"
+
+  };
+
+  const handleAddRow = () => {
+    setAttachments((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        fileType: "",
+        fileName: "",
+        uploadDate: getLocalDateTime(),
+        fileUrl: "",
+        file: null,
+        isExisting: false,
+      },
+    ]);
+  };
+
+  const handleRemove = (id) => {
+    setAttachments((prev) => prev.filter((att) => att.id !== id));
+  };
+
+  const handleFileChange = (e, id) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const contentType = file.type;
+
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      const base64Content = reader.result.split(",")[1]; // Remove data:<type>;base64, prefix
+
+      setAttachments((prev) =>
+        prev.map((att) =>
+          att.id === id
+            ? {
+              ...att,
+              file,
+              fileType: contentType,
+              fileName: file.name,
+              isExisting: false,
+              document_file_name: att.document_file_name || file.name,
+              uploadDate: getLocalDateTime(),
+              attachments: [
+                {
+                  filename: file.name,
+                  content: base64Content,
+                  content_type: contentType,
+                  document_file_name: att.document_file_name || file.name,
+                },
+              ],
+            }
+            : att
+        )
+      );
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileNameChange = (id, newFileName) => {
+    setAttachments((prev) =>
+      prev.map((att) =>
+        att.id === id
+          ? {
+            ...att,
+            fileName: newFileName,
+            attachments: att.attachments?.length
+              ? [
+                {
+                  ...att.attachments[0],
+                  filename: newFileName,
+                },
+              ]
+              : [],
+          }
+          : att
+      )
+    );
+  };
+
+  const attachmentsPayload = attachments
+    .flatMap((att) => att.attachments || []);
+
+  console.log("attachments:", attachmentsPayload)
+  // attachment like mor end******
 
   const payload = {
     debit_note: {
       debit_note_amount: editableDebitNote.debit_note_amount || null,
       debit_note_date: editableDebitNote.debit_note_date || null,
       remark: editableDebitNote.remark || null,
-      attachments: attachments2.length > 0 ? attachments2 : null,
+      attachments: attachmentsPayload|| [],
       status_log: {
         status: status,
         remarks: remark,
@@ -518,17 +633,17 @@ const DebitNoteDetails = () => {
 
   const handleSubmit = async () => {
 
-     const { debit_note_amount, debit_note_date } = editableDebitNote;
+    const { debit_note_amount, debit_note_date } = editableDebitNote;
 
-  if (!debit_note_amount || isNaN(debit_note_amount) || Number(debit_note_amount) <= 0) {
-    toast.error("Please enter Debit Note Amount.");
-    return;
-  }
+    if (!debit_note_amount || isNaN(debit_note_amount) || Number(debit_note_amount) <= 0) {
+      toast.error("Please enter Debit Note Amount.");
+      return;
+    }
 
-  if (!debit_note_date) {
-    toast.error("Please select Debit Note Date.");
-    return;
-  }
+    if (!debit_note_date) {
+      toast.error("Please select Debit Note Date.");
+      return;
+    }
     // const attachments = (documents || [])
     //   .map((doc) =>
     //     doc.attachments && doc.attachments[0]
@@ -633,7 +748,7 @@ const DebitNoteDetails = () => {
         remark: editableDebitNote.remark || null,
         taxes_and_charges,
         // attachments,
-        attachments: attachments.length > 0 ? attachments : null,
+        attachments: attachmentsPayload|| [],
         status_log: {
           status: status,
           remarks: remark,
@@ -847,35 +962,35 @@ const DebitNoteDetails = () => {
   //   }
   // };
 
-  const handleFileChange = (index, file) => {
-    if (!file) return;
+  // const handleFileChange = (index, file) => {
+  //   if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result.split(",")[1];
+  //   const reader = new FileReader();
+  //   reader.onloadend = () => {
+  //     const base64String = reader.result.split(",")[1];
 
-      setDocumentRows(prevRows => {
-        const updatedRows = [...prevRows];
-        updatedRows[index] = {
-          ...updatedRows[index],
-          upload: {
-            filename: file.name,
-            content: base64String,
-            content_type: file.type,
-          }
-        };
-        return updatedRows;
-      });
-    };
+  //     setDocumentRows(prevRows => {
+  //       const updatedRows = [...prevRows];
+  //       updatedRows[index] = {
+  //         ...updatedRows[index],
+  //         upload: {
+  //           filename: file.name,
+  //           content: base64String,
+  //           content_type: file.type,
+  //         }
+  //       };
+  //       return updatedRows;
+  //     });
+  //   };
 
-    reader.readAsDataURL(file);
+  //   reader.readAsDataURL(file);
 
-    // Reset the input field to allow re-selecting the same file
-    const inputElement = document.getElementById(`file-input-${index}`);
-    if (inputElement) {
-      inputElement.value = "";
-    }
-  };
+  //   // Reset the input field to allow re-selecting the same file
+  //   const inputElement = document.getElementById(`file-input-${index}`);
+  //   if (inputElement) {
+  //     inputElement.value = "";
+  //   }
+  // };
   // tax table functionality
   // Function to handle tab change
   const handleTabChange = (tabId) => {
@@ -1093,14 +1208,14 @@ const DebitNoteDetails = () => {
                                     ? new Date(debitNoteData.debit_note_date).toLocaleDateString()
                                     : "-"} */}
 
-                                  {/* {debitNoteData?.debit_note_date
+                            {/* {debitNoteData?.debit_note_date
                                     ? new Date(debitNoteData?.debit_note_date)
                                       .toLocaleDateString("en-GB") // gives 13/06/2025
                                       .replace(/\//g, "-")         // replace / with -
                                     : "-"}
                                 </label>
                               </div>
-                            </div> */} 
+                            </div> */}
                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                               <div className="col-6 ">
                                 <label>Created On</label>
@@ -1161,7 +1276,7 @@ const DebitNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-
+                                  {debitNoteData?.po_value || "-"}
                                 </label>
                               </div>
                             </div>
@@ -1187,7 +1302,7 @@ const DebitNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-
+                                  {debitNoteData?.gstin || "-"}
                                 </label>
                               </div>
                             </div>
@@ -1200,25 +1315,25 @@ const DebitNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-
+                                  {debitNoteData?.pan_no || "-"}
                                 </label>
                               </div>
                             </div>
-                            {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                            <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                               <div className="col-6 ">
-                                <label>Debit Note Amount</label>
+                                <label>Debit Note Reason</label>
                               </div>
                               <div className="col-6">
                                 <label className="text">
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {debitNoteData?.debit_note_amount
-                                    ? ` ${debitNoteData.debit_note_amount}`
+                                  {debitNoteData?.reason
+                                    ?`${debitNoteData.reason}`
                                     : "-"}
                                 </label>
                               </div>
-                            </div> */}
+                            </div>
                             {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                               <div className="col-6 ">
                                 <label>Remark</label>
@@ -1858,7 +1973,7 @@ const DebitNoteDetails = () => {
                         </div>
 
 
-                        <div className="d-flex justify-content-between mt-4 ">
+                        {/* <div className="d-flex justify-content-between mt-4 ">
                           <h5 className=" ">Document Attachment</h5>
                           <div
                             className="card-tools d-flex"
@@ -1884,9 +1999,9 @@ const DebitNoteDetails = () => {
                               <span>Attach</span>
                             </button>
                           </div>
-                        </div>
+                        </div> */}
                         {/* Document Table (dynamic) */}
-                        <div className="tbl-container mt-2 ">
+                        {/* <div className="tbl-container mt-2 ">
                           <table className="w-100">
                             <thead>
                               <tr>
@@ -1894,7 +2009,7 @@ const DebitNoteDetails = () => {
                                 <th className="text-start">Document Name</th>
                                 <th className="text-start">File Name</th>
                                 {/* <th className="text-start">File Type</th> */}
-                                <th className="text-start">Upload Date</th>
+                        {/* <th className="text-start">Upload Date</th>
                                 <th className="text-start">Action</th>
                               </tr>
                             </thead>
@@ -1912,15 +2027,15 @@ const DebitNoteDetails = () => {
                                     <td className="text-start">{doc.document_type}</td>
                                     <td className="text-start">
                                       {doc.attachments[0]?.filename || "-"}
-                                    </td>
-                                    {/* <td className="text-start">
+                                    </td> */}
+                        {/* <td className="text-start">
                             {doc.attachments[0]?.content_type || "-"}
                           </td> */}
-                                    <td className="text-start">
+                        {/* <td className="text-start">
                                       {doc.uploadDate || "-"}
                                     </td>
                                     <td
-                                      className=" text-start text-decoration-underline"
+                                      className=" text-start text-decoration-underline boq-id-link"
                                       style={{ cursor: "pointer" }}
                                       onClick={() => handleViewDocument(idx)}
                                     >
@@ -1931,7 +2046,141 @@ const DebitNoteDetails = () => {
                               )}
                             </tbody>
                           </table>
+                        </div> */}
+
+
+                        {/* document like mor start */}
+                        <div className="d-flex justify-content-between mt-5 ">
+                          <h5 className=" ">Document Attachment</h5>
+                          <div
+                            className="card-tools d-flex"
+                            data-bs-toggle="modal"
+                            data-bs-target="#attachModal"
+                            // onClick={openattachModal}
+                            onClick={handleAddRow}
+                          >
+                            <button
+                              className="purple-btn2 mb-2 "
+                              data-bs-toggle="modal"
+                              data-bs-target="#attachModal"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width={20}
+                                height={20}
+                                fill="currentColor"
+                                className="bi bi-plus"
+                                viewBox="0 0 16 16"
+                              >
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                              </svg>
+                              <span>Add Attachments</span>
+                            </button>
+                          </div>
                         </div>
+
+                        <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
+                          <table className="w-100">
+                            <thead>
+                              <tr>
+                                <th className="main2-th">File Type</th>
+                                <th className="main2-th" >File Name </th>
+                                <th className="main2-th">Upload At</th>
+                                <th className="main2-th">Upload File</th>
+                                <th className="main2-th">
+                                  Action
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {attachments.map((att, index) => (
+                                <tr key={att.id}>
+                                  <td>
+                                    <input
+                                      className="form-control document_content_type"
+                                      readOnly
+                                      disabled
+                                      value={att.fileType}
+                                      placeholder="File Type"
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      className="form-control file_name"
+                                      required
+                                      value={att.fileName}
+                                      onChange={(e) => handleFileNameChange(att.id, e.target.value)}
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      className="form-control created_at"
+                                      readOnly
+                                      disabled
+                                      type="datetime-local"
+                                      step="1"
+                                      value={att.uploadDate || ""}
+                                    />
+                                  </td>
+                                  <td>
+                                    {!att.isExisting && (
+                                      <input
+                                        type="file"
+                                        className="form-control"
+                                        required
+                                        onChange={(e) => handleFileChange(e, att.id)}
+                                      />
+                                    )}
+                                  </td>
+                                  <td className="document">
+                                    <div style={{ display: "flex", alignItems: "center" }}>
+                                      <div className="attachment-placeholder">
+                                        {att.isExisting && (
+                                          <div className="file-box">
+                                            {console.log("att bolb id", att.blob_id)}
+                                            <div className="">
+                                              <a 
+                                              // href={`${baseURL}debit_notes/${id}/download?token=${token}&blob_id=${att.blob_id} rel="noopener noreferrer"`}
+                                               href={
+                                                // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                                                `${baseURL}debit_notes/${id}/download?token=${token}&blob_id=${att.blob_id}`
+                                                // attachment.url
+                                              }
+                                              target="_blank"
+                                              // rel="noopener noreferrer"
+                                              download={att.file}
+                                              >
+                                                <DownloadIcon />
+                                              </a>
+                                             
+                                            </div>
+                                            <div className="file-name">
+                                              {/* <a href={`${baseURL}debit_notes/${id}/download?token=${token}&blob_id=${att.blob_id}`} download>
+                                                  <span className="material-symbols-outlined">file_download</span>
+                                                </a> */}
+                                              <span>{att.fileName}</span>
+                                            </div>
+
+                                          </div>
+                                        )}
+                                      </div>
+                                      <button
+                                        type="button"
+                                        className="btn btn-sm btn-link text-danger"
+                                        onClick={() => handleRemove(att.id)}
+                                      >
+                                        <span className="material-symbols-outlined">cancel</span>
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+
+
+                        </div>
+                        {/* document like mor end*/}
 
                       </div>
                     </div>
@@ -2337,16 +2586,16 @@ const DebitNoteDetails = () => {
                   ) : (
                     documents.map((doc, idx) => (
                       <tr key={idx}>
-                        <td>{idx + 1}</td>
-                        <td>{doc.document_type}</td>
-                        <td>{doc.attachments[0]?.filename || "-"}</td>
+                        <td className="text-start">{idx + 1}</td>
+                        <td className="text-start">{doc.document_type}</td>
+                        <td className="text-start">{doc.attachments[0]?.filename || "-"}</td>
                         {/* <td className="text-start">
                                                           {doc.attachments[0]?.content_type || "-"}
                                                         </td> */}
                         <td className="text-start">
                           {doc.uploadDate || "-"}
                         </td>
-                        <td>
+                        <td className="text-start">
 
                           {doc?.blob_id && (
                             <a
@@ -2396,9 +2645,9 @@ const DebitNoteDetails = () => {
                   ) : (
                     documents.map((doc, idx) => (
                       <tr key={idx}>
-                        <td>{idx + 1}</td>
-                        <td>{doc.document_type}</td>
-                        <td>{doc.attachments[0]?.filename || "-"}</td>
+                        <td className="text-start">{idx + 1}</td>
+                        <td className="text-start">{doc.document_type}</td>
+                        <td className="text-start">{doc.attachments[0]?.filename || "-"}</td>
                         {/* <td>
                                                           {doc.attachments[0]?.content_type || "-"}
                                                         </td> */}

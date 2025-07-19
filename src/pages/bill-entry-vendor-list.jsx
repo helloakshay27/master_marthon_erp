@@ -115,7 +115,7 @@ const BillEntryVendorList = () => {
     },
     {
       field: "bill_no",
-      headerName: "Bill No.",
+      headerName: "Invoice No.",
       width: 150,
       renderCell: (params) =>
         params.value && params.row.id ? (
@@ -126,8 +126,8 @@ const BillEntryVendorList = () => {
           "-"
         ),
     },
-    { field: "bill_date", headerName: "Bill Date", width: 200 },
-    { field: "bill_amount", headerName: "Bill Amount", width: 150 },
+    { field: "bill_date", headerName: "Invoice Date", width: 200 },
+    { field: "bill_amount", headerName: "Invoice Amount", width: 150 },
     { field: "bill_copies", headerName: "Bill Copies", width: 150 },
     { field: "due", headerName: "Due", width: 150 },
     { field: "due_date", headerName: "Due Date", width: 200 },
@@ -626,7 +626,7 @@ display:none !important;
                       handleTabChange("requested for revision count")
                     }
                   >
-                    <h4 className="content-box-title fw-semibold">
+                    <h4 className="content-box-title fw-semibold" title="Request For Resubmission">
                       Request For Resubmission
                     </h4>
                     <p className="content-box-sub">
@@ -810,7 +810,7 @@ display:none !important;
             </div>
 
             <div
-              className="tbl-container px-1 mt-3"
+              className="tbl-container px-3 mt-3"
               style={{
                 width: "100%",
                 height: "400px",
@@ -822,7 +822,7 @@ display:none !important;
                 rows={getTransformedRows()}
                 columns={columns}
                 pageSize={pageSize}
-                autoHeight={false}
+                autoHeight={true}
                 getRowId={(row) => row.id}
                 loading={loading}
                 disableSelectionOnClick
@@ -863,9 +863,81 @@ display:none !important;
                   // },
                 }}
               />
+
+              {/* Custom Pagination Bar */}
+            <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+              <ul className="pagination justify-content-center d-flex">
+                <li
+                  className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handlePageChange(null, 1)}
+                    disabled={currentPage === 1}
+                  >
+                    First
+                  </button>
+                </li>
+                <li
+                  className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handlePageChange(null, currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    Prev
+                  </button>
+                </li>
+                {Array.from({ length: totalPages }, (_, index) => (
+                  <li
+                    key={index + 1}
+                    className={`page-item ${
+                      currentPage === index + 1 ? "active" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(null, index + 1)}
+                    >
+                      {index + 1}
+                    </button>
+                  </li>
+                ))}
+                <li
+                  className={`page-item ${
+                    currentPage === totalPages ? "disabled" : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handlePageChange(null, currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </li>
+                <li
+                  className={`page-item ${
+                    currentPage === totalPages ? "disabled" : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handlePageChange(null, totalPages)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Last
+                  </button>
+                </li>
+              </ul>
+              <div>
+                Showing {startEntry} to {endEntry} of {totalEntries} entries
+              </div>
+            </div>
             </div>
 
-            <Stack
+            {/* <Stack
               direction="row"
               alignItems="center"
               justifyContent="space-between"
@@ -887,7 +959,7 @@ display:none !important;
               <Typography variant="body2">
                 Showing {startEntry} to {endEntry} of {totalEntries} entries
               </Typography>
-            </Stack>
+            </Stack> */}
           </div>
         </div>
       </div>

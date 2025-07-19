@@ -61,6 +61,7 @@ const POAdvanceNoteDetails = () => {
     attachments: [],
   });
   const [documents, setDocuments] = useState([]); // If you want to keep a list
+  const [attachments, setAttachments] = useState([]);
   // tax table functionality
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -134,20 +135,23 @@ const POAdvanceNoteDetails = () => {
           data.status?.charAt(0).toUpperCase() +
           data.status?.slice(1).toLowerCase() || ""
         );
+        const formattedDocuments = response.data.attachments.map((att) => {
+          const originalDate = new Date(att.created_at);
+          const localDate = new Date(originalDate.getTime() - originalDate.getTimezoneOffset() * 60000);
+          const uploadDate = localDate.toISOString().slice(0, 19); // include seconds (YYYY-MM-DDTHH:MM:SS)
 
-        const formattedDocuments = data.attachments.map((att) => ({
-          document_type: att.relation || "", // or a custom label if needed
-          attachments: [att],
-          uploadDate: new Date(att.created_at)
-            .toLocaleDateString("en-GB")
-            .replaceAll("/", "-"),
+          return {
+            fileType: att.content_type || "",
+            uploadDate,
+            blob_id: att.blob_id || null,
+            fileName: att.filename || "-",
+            file: att.document_file_name,
+            isExisting: true,
+          };
+        });
+        setAttachments(formattedDocuments); // ✅ Set to your documents array
 
-          blob_id: att.blob_id || null,
-          filename: att.filename || "-",
-        }));
-        setDocuments(formattedDocuments); // ✅ Set to your documents array
-
-         setCreditNoteData(data);
+        setCreditNoteData(data);
       } catch (err) {
         console.error("Error fetching advance note:", err);
         setError("Failed to fetch data");
@@ -191,29 +195,29 @@ const POAdvanceNoteDetails = () => {
   //     setCreditNoteAmount(Number(value) || 0); // Update creditNoteAmount from edited advance_amount
   //   }
 
-    
+
   // };
 
   const handleInputChange = (field, value) => {
-  setEditableAdvanceNote((prev) => {
-    const updated = { ...prev, [field]: value };
+    setEditableAdvanceNote((prev) => {
+      const updated = { ...prev, [field]: value };
 
-    // When advance_percentage changes, calculate advance_amount
-    if (field === "advance_percentage") {
-      const poValue = parseFloat(advanceNote?.po_value) || 0;
-      const percentage = parseFloat(value) || 0;
-      updated.advance_amount = ((poValue * percentage) / 100).toFixed(2);
-      setCreditNoteAmount(Number(updated.advance_amount));
-    }
+      // When advance_percentage changes, calculate advance_amount
+      if (field === "advance_percentage") {
+        const poValue = parseFloat(advanceNote?.po_value) || 0;
+        const percentage = parseFloat(value) || 0;
+        updated.advance_amount = ((poValue * percentage) / 100).toFixed(2);
+        setCreditNoteAmount(Number(updated.advance_amount));
+      }
 
-    return updated;
-  });
+      return updated;
+    });
 
-  // Still update creditNoteAmount when advance_amount changes
-  // if (field === "advance_amount") {
-  //   setCreditNoteAmount(Number(value) || 0);
-  // }
-};
+    // Still update creditNoteAmount when advance_amount changes
+    // if (field === "advance_amount") {
+    //   setCreditNoteAmount(Number(value) || 0);
+    // }
+  };
 
   const [rows, setRows] = useState([
     // {
@@ -529,6 +533,102 @@ const POAdvanceNoteDetails = () => {
     setComment(e.target.value);
   };
 
+  // attachment like mor******
+
+
+  const getLocalDateTime = () => {
+    const now = new Date();
+    const offset = now.getTimezoneOffset(); // in minutes
+    const localDate = new Date(now.getTime() - offset * 60000);
+    return localDate.toISOString().slice(0, 19); // "YYYY-MM-DDTHH:MM"
+
+  };
+
+  const handleAddRow = () => {
+    setAttachments((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        fileType: "",
+        fileName: "",
+        uploadDate: getLocalDateTime(),
+        fileUrl: "",
+        file: null,
+        isExisting: false,
+      },
+    ]);
+  };
+
+  const handleRemove = (id) => {
+    setAttachments((prev) => prev.filter((att) => att.id !== id));
+  };
+
+  const handleFileChange = (e, id) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const contentType = file.type;
+
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      const base64Content = reader.result.split(",")[1]; // Remove data:<type>;base64, prefix
+
+      setAttachments((prev) =>
+        prev.map((att) =>
+          att.id === id
+            ? {
+              ...att,
+              file,
+              fileType: contentType,
+              fileName: file.name,
+              isExisting: false,
+              document_file_name: att.document_file_name || file.name,
+              uploadDate: getLocalDateTime(),
+              attachments: [
+                {
+                  filename: file.name,
+                  content: base64Content,
+                  content_type: contentType,
+                  document_file_name: att.document_file_name || file.name,
+                },
+              ],
+            }
+            : att
+        )
+      );
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileNameChange = (id, newFileName) => {
+    setAttachments((prev) =>
+      prev.map((att) =>
+        att.id === id
+          ? {
+            ...att,
+            fileName: newFileName,
+            attachments: att.attachments?.length
+              ? [
+                {
+                  ...att.attachments[0],
+                  filename: newFileName,
+                },
+              ]
+              : [],
+          }
+          : att
+      )
+    );
+  };
+
+  const attachmentsPayload = attachments
+    .flatMap((att) => att.attachments || []);
+
+  console.log("attachments:", attachmentsPayload)
+  // attachment like mor end******
+
   const payload = {
 
     advance_note: {
@@ -557,6 +657,7 @@ const POAdvanceNoteDetails = () => {
         })),
       ],
       //  attachments: attachments.length > 0 ? attachments : null,
+      attachments: attachmentsPayload || [],
       status_log: {
         status: status,
         remarks: remark,
@@ -609,26 +710,26 @@ const POAdvanceNoteDetails = () => {
     //   )
     //   .filter(Boolean);
 
-      const attachments = (documents || [])
-      .map((doc) => {
-        const attachment = doc.attachments?.[0];
+    // const attachments = (documents || [])
+    //   .map((doc) => {
+    //     const attachment = doc.attachments?.[0];
 
-        if (!attachment) return null;
+    //     if (!attachment) return null;
 
-        // If blob_id is present, skip this attachment
-        if (attachment.blob_id) {
-          return null;
-        }
+    //     // If blob_id is present, skip this attachment
+    //     if (attachment.blob_id) {
+    //       return null;
+    //     }
 
-        // Include content info if no blob_id
-        return {
-          filename: attachment.filename || null,
-          content: attachment.content || null,
-          content_type: attachment.content_type || null,
-          document_name: doc.document_type || null,
-        };
-      })
-      .filter(Boolean);
+    //     // Include content info if no blob_id
+    //     return {
+    //       filename: attachment.filename || null,
+    //       content: attachment.content || null,
+    //       content_type: attachment.content_type || null,
+    //       document_name: doc.document_type || null,
+    //     };
+    //   })
+    //   .filter(Boolean);
 
     const payload = {
 
@@ -657,7 +758,7 @@ const POAdvanceNoteDetails = () => {
             resource_type: row.resource_type || ""
           })),
         ],
-        attachments,
+        attachments: attachmentsPayload || [],
         status_log: {
           status: status,
           remarks: remark,
@@ -789,7 +890,7 @@ const POAdvanceNoteDetails = () => {
   //           resource_id: tax.resource_id,
   //           resource_type: tax.resource_type,
   //         }));
-  
+
   //       // Ensure first three rows are always Handling Charges, Other charges, Freight
   //       const defaultRows = [
   //         { type: "Handling Charges" },
@@ -812,13 +913,13 @@ const POAdvanceNoteDetails = () => {
   //           }
   //         );
   //       });
-  
+
   //       // Add any extra addition rows (not the first three)
   //       const extraRows = additionRows.filter(
   //         (r) => !["Handling Charges", "Other charges", "Freight"].includes(r.type)
   //       );
   //       setRows([...mergedRows, ...extraRows]);
-  
+
   //       // Deduction rows
   //       const deductionRows = creditNoteData.taxes_and_charges
   //         .filter((tax) => !tax.addition)
@@ -834,50 +935,50 @@ const POAdvanceNoteDetails = () => {
   //         }));
   //       setDeductionRows(deductionRows);
   //     }
-  
-  
+
+
   //   }, [creditNoteData]);
 
 
-    useEffect(() => {
-        if (creditNoteData && creditNoteData.taxes_and_charges?.length > 0) {
-          // Split addition and deduction rows
-          const additionRows = creditNoteData.taxes_and_charges
-            .filter((tax) => tax.addition)
-            .map((tax, idx) => ({
-              id: idx + 1,
-              type: tax.tax_name || "",
-              percentage: tax.percentage || "",
-              inclusive: tax.inclusive || false,
-              amount: tax.amount || "",
-              isEditable: !["Handling Charges", "Other charges", "Freight"].includes(tax.tax_name),
-              addition: true,
-              resource_id: tax.resource_id || null,
-              resource_type: tax.resource_type || "TaxCharge",
-            }));
-    
-          setRows(additionRows);
-    
-          const deductionRows = creditNoteData.taxes_and_charges
-            .filter((tax) => !tax.addition)
-            .map((tax, idx) => ({
-              id: idx + 1,
-              type: tax.tax_name || "",
-              percentage: tax.percentage || "",
-              inclusive: tax.inclusive || false,
-              amount: tax.amount || "",
-              addition: false,
-              resource_id: tax.resource_id || null,
-              resource_type: tax.resource_type || "TaxCharge",
-            }));
-    
-          setDeductionRows(deductionRows);
-        } else {
-          // Reset everything if no tax data
-          setRows([]);
-          setDeductionRows([]);
-        }
-      }, [creditNoteData]);
+  useEffect(() => {
+    if (creditNoteData && creditNoteData.taxes_and_charges?.length > 0) {
+      // Split addition and deduction rows
+      const additionRows = creditNoteData.taxes_and_charges
+        .filter((tax) => tax.addition)
+        .map((tax, idx) => ({
+          id: idx + 1,
+          type: tax.tax_name || "",
+          percentage: tax.percentage || "",
+          inclusive: tax.inclusive || false,
+          amount: tax.amount || "",
+          isEditable: !["Handling Charges", "Other charges", "Freight"].includes(tax.tax_name),
+          addition: true,
+          resource_id: tax.resource_id || null,
+          resource_type: tax.resource_type || "TaxCharge",
+        }));
+
+      setRows(additionRows);
+
+      const deductionRows = creditNoteData.taxes_and_charges
+        .filter((tax) => !tax.addition)
+        .map((tax, idx) => ({
+          id: idx + 1,
+          type: tax.tax_name || "",
+          percentage: tax.percentage || "",
+          inclusive: tax.inclusive || false,
+          amount: tax.amount || "",
+          addition: false,
+          resource_id: tax.resource_id || null,
+          resource_type: tax.resource_type || "TaxCharge",
+        }));
+
+      setDeductionRows(deductionRows);
+    } else {
+      // Reset everything if no tax data
+      setRows([]);
+      setDeductionRows([]);
+    }
+  }, [creditNoteData]);
 
   return (
     <>
@@ -1490,32 +1591,32 @@ const POAdvanceNoteDetails = () => {
                         </div>
 
                         <div className="tbl-container  mt-3 mb-5" style={{ maxHeight: "500px" }}>
-                                                  <table className="w-100">
-                                                    <thead>
-                                                      <tr>
-                                                        <th className="text-start">Tax / Charge Type</th>
-                                                        <th className="text-start">Tax / Charges per UOM (INR)</th>
-                                                        <th className="text-start">Inclusive / Exclusive</th>
-                                                        <th className="text-start">Amount</th>
-                                                        <th className="text-start">Action</th>
-                                                      </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                      {/* Static Rows for Addition Tax */}
-                                                      <tr>
-                                                        <th className="text-start">Total Base Cost</th>
-                                                        <td className="text-start" />
-                                                        <td className="text-start" />
-                                                        <td className="text-start"> {creditNoteAmount || ""}</td>
-                                                        <td />
-                                                      </tr>
-                                                      <tr>
-                                                        <th className="text-start">Addition Tax & Charges</th>
-                                                        <td className="text-start" />
-                                                        <td className="text-start" />
-                                                        <td className="text-start" />
-                                                        <td className="text-start" onClick={addRow}>
-                                                          {/* <svg
+                          <table className="w-100">
+                            <thead>
+                              <tr>
+                                <th className="text-start">Tax / Charge Type</th>
+                                <th className="text-start">Tax / Charges per UOM (INR)</th>
+                                <th className="text-start">Inclusive / Exclusive</th>
+                                <th className="text-start">Amount</th>
+                                <th className="text-start">Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {/* Static Rows for Addition Tax */}
+                              <tr>
+                                <th className="text-start">Total Base Cost</th>
+                                <td className="text-start" />
+                                <td className="text-start" />
+                                <td className="text-start"> {creditNoteAmount || ""}</td>
+                                <td />
+                              </tr>
+                              <tr>
+                                <th className="text-start">Addition Tax & Charges</th>
+                                <td className="text-start" />
+                                <td className="text-start" />
+                                <td className="text-start" />
+                                <td className="text-start" onClick={addRow}>
+                                  {/* <svg
                                                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                                                 width="16"
                                                                                                 height="16"
@@ -1530,286 +1631,286 @@ const POAdvanceNoteDetails = () => {
                                                                                                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                                                                                                 <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
                                                                                             </svg> */}
-                                                          <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
-                                                        </td>
-                                                      </tr>
-                                                      {/* Dynamic Rows for Addition Tax */}
-                        
-                        
-                        
-                                                      {rows?.map((row, index) => (
-                                                        <tr key={row.id}>
-                                                          <td className="text-start">
-                                                            <SingleSelector
-                                                              options={taxTypes?.map((type) => ({
-                                                                value: type.name,
-                                                                label: type.name,
-                                                                id: type.id,
-                                                                tax: type.type,
-                                                                isDisabled:
-                                                                  ["Handling Charges", "Other charges", "Freight"].includes(type.name) ||
-                                                                  (type.name === "IGST" &&
-                                                                    rows.some((r) => ["SGST", "CGST"].includes(r.type) && r.id !== row.id)) ||
-                                                                  (["SGST", "CGST"].includes(type.name) &&
-                                                                    rows.some((r) => r.type === "IGST" && r.id !== row.id)),
-                                                              }))}
-                                                              value={{ value: row.type, label: row.type }}
-                                                              // onChange={(selectedOption) => {
-                                                              //   console.log("Selected Option:", selectedOption); // Log the selected option
-                                                              //   setRows((prevRows) =>
-                                                              //     prevRows.map((r) =>
-                                                              //       r.id === row.id
-                                                              //         ? {
-                                                              //           ...r,
-                                                              //           type: selectedOption?.value || "", // Handle null or undefined
-                                                              //           resource_id: selectedOption?.id || null, // Handle null or undefined
-                                                              //           resource_type: selectedOption?.tax || "", // Handle null or undefined
-                                                              //         }
-                                                              //         : r
-                                                              //     )
-                                                              //   );
-                                                              //   console.log("Updated Rows:", rows); // Log the updated rows
-                                                              // }}
-                        
-                        
-                                                              onChange={(selectedOption) => {
-                                                                setRows((prevRows) => {
-                                                                  let updatedRows = prevRows.map((r) =>
-                                                                    r.id === row.id
-                                                                      ? {
-                                                                        ...r,
-                                                                        type: selectedOption?.value || "",
-                                                                        resource_id: selectedOption?.id || null,
-                                                                        resource_type: selectedOption?.tax || "",
-                                                                      }
-                                                                      : r
-                                                                  );
-                        
-                                                                  // Auto-add CGST if SGST is selected
-                                                                  if (selectedOption?.value === "SGST" && !prevRows.some(r => r.type === "CGST")) {
-                                                                    updatedRows = [
-                                                                      ...updatedRows,
-                                                                      {
-                                                                        id: updatedRows.length + 1,
-                                                                        type: "CGST",
-                                                                        percentage: row.percentage,
-                                                                        inclusive: row.inclusive,
-                                                                        amount: row.amount,
-                                                                        isEditable: true,
-                                                                        addition: true,
-                                                                        resource_id: taxTypes.find(t => t.name === "CGST")?.id || null,
-                                                                        resource_type: taxTypes.find(t => t.name === "CGST")?.type || "",
-                                                                      },
-                                                                    ];
-                                                                  }
-                        
-                                                                  // Auto-add SGST if CGST is selected
-                                                                  if (selectedOption?.value === "CGST" && !prevRows.some(r => r.type === "SGST")) {
-                                                                    updatedRows = [
-                                                                      ...updatedRows,
-                                                                      {
-                                                                        id: updatedRows.length + 1,
-                                                                        type: "SGST",
-                                                                        percentage: row.percentage,
-                                                                        inclusive: row.inclusive,
-                                                                        amount: row.amount,
-                                                                        isEditable: true,
-                                                                        addition: true,
-                                                                        resource_id: taxTypes.find(t => t.name === "SGST")?.id || null,
-                                                                        resource_type: taxTypes.find(t => t.name === "SGST")?.type || "",
-                                                                      },
-                                                                    ];
-                                                                  }
-                        
-                                                                  return updatedRows;
-                                                                });
-                                                              }}
-                                                              placeholder="Select Type"
-                                                              isDisabled={!row.isEditable}
-                                                            />
-                                                          </td>
-                                                          <td className="text-start">
-                                                            {row.isEditable ? (
-                        
-                                                              // <SingleSelector
-                                                              //   className="form-control"
-                                                              //   options={[
-                                                              //     { value: "", label: "Select Tax" },
-                                                              //     { value: "5%", label: "5%" },
-                                                              //     { value: "12%", label: "12%" },
-                                                              //     { value: "18%", label: "18%" },
-                                                              //     { value: "28%", label: "28%" },
-                                                              //   ]}
-                                                              //   value={
-                                                              //     [
-                                                              //       { value: "", label: "Select Tax" },
-                                                              //       { value: "5%", label: "5%" },
-                                                              //       { value: "12%", label: "12%" },
-                                                              //       { value: "18%", label: "18%" },
-                                                              //       { value: "28%", label: "28%" },
-                                                              //     ].find(opt => opt.value === (
-                                                              //       row.percentage && row.percentage.toString().includes("%")
-                                                              //         ? row.percentage
-                                                              //         : row.percentage
-                                                              //           ? `${row.percentage}%`
-                                                              //           : ""
-                                                              //     )) || { value: "", label: "Select Tax" }
-                                                              //   }
-                                                              //   onChange={selected => {
-                                                              //     const value = selected?.value?.replace("%", "");
-                                                              //     const percentage = parseFloat(value) || 0;
-                                                              //     const amount = ((creditNoteAmount || 0) * percentage) / 100;
-                                                              //     setRows(prevRows =>
-                                                              //       prevRows.map(r =>
-                                                              //         r.id === row.id
-                                                              //           ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
-                                                              //           : r
-                                                              //       )
-                                                              //     );
-                                                              //   }}
-                                                              //   placeholder="Select Tax"
-                                                              // />
-                        
-                                                              <SingleSelector
-                                                                className="form-control"
-                                                                options={
-                                                                  Array.isArray(
-                                                                    taxPercentages.find((t) => t.tax_name === row.type)?.percentage
-                                                                  )
-                                                                    ? taxPercentages
-                                                                      .find((t) => t.tax_name === row.type)
-                                                                      .percentage.map((percent) => ({
-                                                                        value: `${percent}%`,
-                                                                        label: `${percent}%`,
-                                                                      }))
-                                                                    : []
-                                                                }
-                                                                value={
-                                                                  row.percentage !== undefined && row.percentage !== null
-                                                                    ? {
-                                                                      value: `${parseFloat(row.percentage)}%`,
-                                                                      label: `${parseFloat(row.percentage)}%`,
-                                                                    }
-                                                                    : { value: "", label: "Select Tax" }
-                                                                }
-                                                                onChange={(selected) => {
-                                                                  const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
-                                                                  const amount = ((creditNoteAmount || 0) * percentage) / 100;
-                        
-                                                                  setRows((prevRows) =>
-                                                                    prevRows.map((r) =>
-                                                                      r.id === row.id
-                                                                        ? {
-                                                                          ...r,
-                                                                          percentage: selected?.value,
-                                                                          amount: amount.toFixed(2),
-                                                                        }
-                                                                        : r
-                                                                    )
-                                                                  );
-                                                                }}
-                                                                placeholder="Select Tax"
-                                                                isDisabled={!row.isEditable}
-                                                              />
-                        
-                                                            ) : (
-                                                              <input
-                                                                type="text"
-                                                                className="form-control"
-                                                                value={
-                                                                  row.percentage && row.percentage.toString().includes("%")
-                                                                    ? row.percentage
-                                                                    : row.percentage
-                                                                      ? `${row.percentage}%`
-                                                                      : ""
-                                                                }
-                                                                disabled
-                                                              />
-                                                            )}
-                                                          </td>
-                                                          <td>
-                                                            <input
-                                                              type="checkbox"
-                                                              checked={row.inclusive}
-                                                              onChange={(e) =>
-                                                                setRows((prevRows) =>
-                                                                  prevRows.map((r) =>
-                                                                    r.id === row.id
-                                                                      ? { ...r, inclusive: e.target.checked }
-                                                                      : r
-                                                                  )
-                                                                )
-                                                              }
-                                                            />
-                                                          </td>
-                                                          <td>
-                                                            <input
-                                                              type="number"
-                                                              className="form-control"
-                                                              value={row.amount}
-                                                              // Editable for first three taxes, otherwise disabled if percentage is selected
-                                                              disabled={index > 2 && row.percentage !== ""}
-                                                              onChange={(e) =>
-                                                                setRows((prevRows) =>
-                                                                  prevRows.map((r) =>
-                                                                    r.id === row.id
-                                                                      ? { ...r, amount: parseFloat(e.target.value) || 0 }
-                                                                      : r
-                                                                  )
-                                                                )
-                                                              }
-                                                            />
-                                                          </td>
-                                                          <td
-                                                            className="text-start"
-                                                            onClick={() => deleteRow(row.id)}
-                                                            style={{ cursor: "pointer", color: "black" }}
-                                                          >
-                                                            {index > 2 && (
-                                                              // <svg
-                                                              //     xmlns="http://www.w3.org/2000/svg"
-                                                              //     width="16"
-                                                              //     height="16"
-                                                              //     fill="currentColor"
-                                                              //     className="bi bi-dash-circle"
-                                                              //     viewBox="0 0 16 16"
-                                                              //     style={{
-                                                              //         transition: "transform 0.3s ease",
-                                                              //     }}
-                                                              // >
-                                                              //     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                                              //     <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
-                                                              // </svg>
-                                                              <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
-                                                            )}
-                        
-                        
-                                                          </td>
-                                                        </tr>
-                                                      ))}
-                        
-                                                      <tr>
-                                                        <th className="text-start">Sub Total A (Addition)</th>
-                                                        <td className="text-start" />
-                                                        <td className="" />
-                                                        <td className="text-start">{calculateSubTotal()}</td>
-                                                        <td />
-                                                      </tr>
-                                                      <tr>
-                                                        <th className="text-start">Gross Amount</th>
-                                                        <td className="text-start" />
-                                                        <td className="" />
-                                                        <td className="text-start">  {(parseFloat(calculateSubTotal()) + (parseFloat(creditNoteAmount) || 0)).toFixed(2)}</td>
-                                                        <td />
-                                                      </tr>
-                                                      {/* Deduction Tax Section */}
-                                                      <tr>
-                                                        <th className="text-start">Deduction Tax</th>
-                                                        <td className="text-start" />
-                                                        <td className="" />
-                                                        <td className="text-start" />
-                                                        <td className="text-start" onClick={addDeductionRow}>
-                                                          {/* <svg
+                                  <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
+                                </td>
+                              </tr>
+                              {/* Dynamic Rows for Addition Tax */}
+
+
+
+                              {rows?.map((row, index) => (
+                                <tr key={row.id}>
+                                  <td className="text-start">
+                                    <SingleSelector
+                                      options={taxTypes?.map((type) => ({
+                                        value: type.name,
+                                        label: type.name,
+                                        id: type.id,
+                                        tax: type.type,
+                                        isDisabled:
+                                          ["Handling Charges", "Other charges", "Freight"].includes(type.name) ||
+                                          (type.name === "IGST" &&
+                                            rows.some((r) => ["SGST", "CGST"].includes(r.type) && r.id !== row.id)) ||
+                                          (["SGST", "CGST"].includes(type.name) &&
+                                            rows.some((r) => r.type === "IGST" && r.id !== row.id)),
+                                      }))}
+                                      value={{ value: row.type, label: row.type }}
+                                      // onChange={(selectedOption) => {
+                                      //   console.log("Selected Option:", selectedOption); // Log the selected option
+                                      //   setRows((prevRows) =>
+                                      //     prevRows.map((r) =>
+                                      //       r.id === row.id
+                                      //         ? {
+                                      //           ...r,
+                                      //           type: selectedOption?.value || "", // Handle null or undefined
+                                      //           resource_id: selectedOption?.id || null, // Handle null or undefined
+                                      //           resource_type: selectedOption?.tax || "", // Handle null or undefined
+                                      //         }
+                                      //         : r
+                                      //     )
+                                      //   );
+                                      //   console.log("Updated Rows:", rows); // Log the updated rows
+                                      // }}
+
+
+                                      onChange={(selectedOption) => {
+                                        setRows((prevRows) => {
+                                          let updatedRows = prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? {
+                                                ...r,
+                                                type: selectedOption?.value || "",
+                                                resource_id: selectedOption?.id || null,
+                                                resource_type: selectedOption?.tax || "",
+                                              }
+                                              : r
+                                          );
+
+                                          // Auto-add CGST if SGST is selected
+                                          if (selectedOption?.value === "SGST" && !prevRows.some(r => r.type === "CGST")) {
+                                            updatedRows = [
+                                              ...updatedRows,
+                                              {
+                                                id: updatedRows.length + 1,
+                                                type: "CGST",
+                                                percentage: row.percentage,
+                                                inclusive: row.inclusive,
+                                                amount: row.amount,
+                                                isEditable: true,
+                                                addition: true,
+                                                resource_id: taxTypes.find(t => t.name === "CGST")?.id || null,
+                                                resource_type: taxTypes.find(t => t.name === "CGST")?.type || "",
+                                              },
+                                            ];
+                                          }
+
+                                          // Auto-add SGST if CGST is selected
+                                          if (selectedOption?.value === "CGST" && !prevRows.some(r => r.type === "SGST")) {
+                                            updatedRows = [
+                                              ...updatedRows,
+                                              {
+                                                id: updatedRows.length + 1,
+                                                type: "SGST",
+                                                percentage: row.percentage,
+                                                inclusive: row.inclusive,
+                                                amount: row.amount,
+                                                isEditable: true,
+                                                addition: true,
+                                                resource_id: taxTypes.find(t => t.name === "SGST")?.id || null,
+                                                resource_type: taxTypes.find(t => t.name === "SGST")?.type || "",
+                                              },
+                                            ];
+                                          }
+
+                                          return updatedRows;
+                                        });
+                                      }}
+                                      placeholder="Select Type"
+                                      isDisabled={!row.isEditable}
+                                    />
+                                  </td>
+                                  <td className="text-start">
+                                    {row.isEditable ? (
+
+                                      // <SingleSelector
+                                      //   className="form-control"
+                                      //   options={[
+                                      //     { value: "", label: "Select Tax" },
+                                      //     { value: "5%", label: "5%" },
+                                      //     { value: "12%", label: "12%" },
+                                      //     { value: "18%", label: "18%" },
+                                      //     { value: "28%", label: "28%" },
+                                      //   ]}
+                                      //   value={
+                                      //     [
+                                      //       { value: "", label: "Select Tax" },
+                                      //       { value: "5%", label: "5%" },
+                                      //       { value: "12%", label: "12%" },
+                                      //       { value: "18%", label: "18%" },
+                                      //       { value: "28%", label: "28%" },
+                                      //     ].find(opt => opt.value === (
+                                      //       row.percentage && row.percentage.toString().includes("%")
+                                      //         ? row.percentage
+                                      //         : row.percentage
+                                      //           ? `${row.percentage}%`
+                                      //           : ""
+                                      //     )) || { value: "", label: "Select Tax" }
+                                      //   }
+                                      //   onChange={selected => {
+                                      //     const value = selected?.value?.replace("%", "");
+                                      //     const percentage = parseFloat(value) || 0;
+                                      //     const amount = ((creditNoteAmount || 0) * percentage) / 100;
+                                      //     setRows(prevRows =>
+                                      //       prevRows.map(r =>
+                                      //         r.id === row.id
+                                      //           ? { ...r, percentage: selected?.value, amount: amount.toFixed(2) }
+                                      //           : r
+                                      //       )
+                                      //     );
+                                      //   }}
+                                      //   placeholder="Select Tax"
+                                      // />
+
+                                      <SingleSelector
+                                        className="form-control"
+                                        options={
+                                          Array.isArray(
+                                            taxPercentages.find((t) => t.tax_name === row.type)?.percentage
+                                          )
+                                            ? taxPercentages
+                                              .find((t) => t.tax_name === row.type)
+                                              .percentage.map((percent) => ({
+                                                value: `${percent}%`,
+                                                label: `${percent}%`,
+                                              }))
+                                            : []
+                                        }
+                                        value={
+                                          row.percentage !== undefined && row.percentage !== null
+                                            ? {
+                                              value: `${parseFloat(row.percentage)}%`,
+                                              label: `${parseFloat(row.percentage)}%`,
+                                            }
+                                            : { value: "", label: "Select Tax" }
+                                        }
+                                        onChange={(selected) => {
+                                          const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
+                                          const amount = ((creditNoteAmount || 0) * percentage) / 100;
+
+                                          setRows((prevRows) =>
+                                            prevRows.map((r) =>
+                                              r.id === row.id
+                                                ? {
+                                                  ...r,
+                                                  percentage: selected?.value,
+                                                  amount: amount.toFixed(2),
+                                                }
+                                                : r
+                                            )
+                                          );
+                                        }}
+                                        placeholder="Select Tax"
+                                        isDisabled={!row.isEditable}
+                                      />
+
+                                    ) : (
+                                      <input
+                                        type="text"
+                                        className="form-control"
+                                        value={
+                                          row.percentage && row.percentage.toString().includes("%")
+                                            ? row.percentage
+                                            : row.percentage
+                                              ? `${row.percentage}%`
+                                              : ""
+                                        }
+                                        disabled
+                                      />
+                                    )}
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="checkbox"
+                                      checked={row.inclusive}
+                                      onChange={(e) =>
+                                        setRows((prevRows) =>
+                                          prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? { ...r, inclusive: e.target.checked }
+                                              : r
+                                          )
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="number"
+                                      className="form-control"
+                                      value={row.amount}
+                                      // Editable for first three taxes, otherwise disabled if percentage is selected
+                                      disabled={index > 2 && row.percentage !== ""}
+                                      onChange={(e) =>
+                                        setRows((prevRows) =>
+                                          prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? { ...r, amount: parseFloat(e.target.value) || 0 }
+                                              : r
+                                          )
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td
+                                    className="text-start"
+                                    onClick={() => deleteRow(row.id)}
+                                    style={{ cursor: "pointer", color: "black" }}
+                                  >
+                                    {index > 2 && (
+                                      // <svg
+                                      //     xmlns="http://www.w3.org/2000/svg"
+                                      //     width="16"
+                                      //     height="16"
+                                      //     fill="currentColor"
+                                      //     className="bi bi-dash-circle"
+                                      //     viewBox="0 0 16 16"
+                                      //     style={{
+                                      //         transition: "transform 0.3s ease",
+                                      //     }}
+                                      // >
+                                      //     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                      //     <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
+                                      // </svg>
+                                      <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
+                                    )}
+
+
+                                  </td>
+                                </tr>
+                              ))}
+
+                              <tr>
+                                <th className="text-start">Sub Total A (Addition)</th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start">{calculateSubTotal()}</td>
+                                <td />
+                              </tr>
+                              <tr>
+                                <th className="text-start">Gross Amount</th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start">  {(parseFloat(calculateSubTotal()) + (parseFloat(creditNoteAmount) || 0)).toFixed(2)}</td>
+                                <td />
+                              </tr>
+                              {/* Deduction Tax Section */}
+                              <tr>
+                                <th className="text-start">Deduction Tax</th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start" />
+                                <td className="text-start" onClick={addDeductionRow}>
+                                  {/* <svg
                                                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                                                 width="16"
                                                                                                 height="16"
@@ -1824,43 +1925,43 @@ const POAdvanceNoteDetails = () => {
                                                                                                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                                                                                                 <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
                                                                                             </svg> */}
-                                                          <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
-                                                        </td>
-                                                      </tr>
-                                                      {/* Dynamic Rows for Deduction Tax */}
-                        
-                        
-                        
-                                                      {deductionRows.map((row) => (
-                                                        <tr key={row.id}>
-                                                          <td className="text-start">
-                                                            <SingleSelector
-                                                              options={deductionTypes.map((type) => ({
-                                                                value: type.name,
-                                                                label: type.name,
-                                                                id: type.id,
-                                                                tax: type.type,
-                                                              }))}
-                                                              value={{ value: row.type, label: row.type }}
-                                                              onChange={(selectedOption) =>
-                                                                setDeductionRows((prevRows) =>
-                                                                  prevRows.map((r) =>
-                                                                    r.id === row.id
-                                                                      ? {
-                                                                        ...r,
-                                                                        type: selectedOption?.value || "",
-                                                                        resource_id: selectedOption?.id || null,
-                                                                        resource_type: selectedOption?.tax || "",
-                                                                      }
-                                                                      : r
-                                                                  )
-                                                                )
-                                                              }
-                                                              placeholder="Select Type"
-                                                            />
-                                                          </td>
-                                                          <td className="text-start">
-                                                            {/* <select
+                                  <button class="btn btn-outline-danger btn-sm"><span>+</span></button>
+                                </td>
+                              </tr>
+                              {/* Dynamic Rows for Deduction Tax */}
+
+
+
+                              {deductionRows.map((row) => (
+                                <tr key={row.id}>
+                                  <td className="text-start">
+                                    <SingleSelector
+                                      options={deductionTypes.map((type) => ({
+                                        value: type.name,
+                                        label: type.name,
+                                        id: type.id,
+                                        tax: type.type,
+                                      }))}
+                                      value={{ value: row.type, label: row.type }}
+                                      onChange={(selectedOption) =>
+                                        setDeductionRows((prevRows) =>
+                                          prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? {
+                                                ...r,
+                                                type: selectedOption?.value || "",
+                                                resource_id: selectedOption?.id || null,
+                                                resource_type: selectedOption?.tax || "",
+                                              }
+                                              : r
+                                          )
+                                        )
+                                      }
+                                      placeholder="Select Type"
+                                    />
+                                  </td>
+                                  <td className="text-start">
+                                    {/* <select
                                                               className="form-control form-select"
                                                               value={
                                                                 row.percentage && row.percentage.toString().includes("%")
@@ -1890,9 +1991,9 @@ const POAdvanceNoteDetails = () => {
                                                               <option value="10%">10%</option>
                                                             
                                                             </select> */}
-                        
-                        
-                                                            {/* <SingleSelector
+
+
+                                    {/* <SingleSelector
                                                               className="form-control"
                                                               options={[
                                                                 { value: "", label: "Select Tax" },
@@ -1938,85 +2039,85 @@ const POAdvanceNoteDetails = () => {
                                                               }}
                                                               placeholder="Select Tax"
                                                             /> */}
-                        
-                                                            <SingleSelector
-                                                              className="form-control"
-                                                              options={
-                                                                taxPercentages.find((t) => t.tax_name === row.type)?.percentage.map((p) => ({
-                                                                  value: `${p}%`,
-                                                                  label: `${p}%`,
-                                                                })) || []
-                                                              }
-                                                              value={
-                                                                (() => {
-                                                                  const percent = row.percentage?.toString().includes("%")
-                                                                    ? row.percentage
-                                                                    : `${row.percentage}%`;
-                        
-                                                                  const options = taxPercentages.find((t) => t.tax_name === row.type)?.percentage || [];
-                                                                  return options.includes(parseFloat(percent))
-                                                                    ? { value: percent, label: percent }
-                                                                    : { value: "", label: "Select Tax" };
-                                                                })()
-                                                              }
-                                                              onChange={(selected) => {
-                                                                const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
-                                                                const amount = ((creditNoteAmount || 0) * percentage) / 100;
-                        
-                                                                setDeductionRows((prevRows) =>
-                                                                  prevRows.map((r) =>
-                                                                    r.id === row.id
-                                                                      ? {
-                                                                        ...r,
-                                                                        percentage: percentage,
-                                                                        amount: amount.toFixed(2),
-                                                                      }
-                                                                      : r
-                                                                  )
-                                                                );
-                                                              }}
-                                                              placeholder="Select Tax %"
-                                                            // isDisabled={!row.isEditable}
-                                                            />
-                                                          </td>
-                                                          <td>
-                                                            <input
-                                                              type="checkbox"
-                                                              checked={row.inclusive}
-                                                              onChange={(e) =>
-                                                                setDeductionRows((prevRows) =>
-                                                                  prevRows.map((r) =>
-                                                                    r.id === row.id
-                                                                      ? { ...r, inclusive: e.target.checked }
-                                                                      : r
-                                                                  )
-                                                                )
-                                                              }
-                                                            />
-                                                          </td>
-                                                          <td>
-                                                            <input
-                                                              type="number"
-                                                              className="form-control"
-                                                              value={row.amount}
-                                                              disabled
-                                                              onChange={(e) =>
-                                                                setDeductionRows((prevRows) =>
-                                                                  prevRows.map((r) =>
-                                                                    r.id === row.id
-                                                                      ? { ...r, amount: parseFloat(e.target.value) || 0 }
-                                                                      : r
-                                                                  )
-                                                                )
-                                                              }
-                                                            />
-                                                          </td>
-                                                          <td
-                                                            className="text-start"
-                                                            onClick={() => deleteDeductionRow(row.id)}
-                                                            style={{ cursor: "pointer", color: "black" }}
-                                                          >
-                                                            {/* <svg
+
+                                    <SingleSelector
+                                      className="form-control"
+                                      options={
+                                        taxPercentages.find((t) => t.tax_name === row.type)?.percentage.map((p) => ({
+                                          value: `${p}%`,
+                                          label: `${p}%`,
+                                        })) || []
+                                      }
+                                      value={
+                                        (() => {
+                                          const percent = row.percentage?.toString().includes("%")
+                                            ? row.percentage
+                                            : `${row.percentage}%`;
+
+                                          const options = taxPercentages.find((t) => t.tax_name === row.type)?.percentage || [];
+                                          return options.includes(parseFloat(percent))
+                                            ? { value: percent, label: percent }
+                                            : { value: "", label: "Select Tax" };
+                                        })()
+                                      }
+                                      onChange={(selected) => {
+                                        const percentage = parseFloat(selected?.value?.replace("%", "")) || 0;
+                                        const amount = ((creditNoteAmount || 0) * percentage) / 100;
+
+                                        setDeductionRows((prevRows) =>
+                                          prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? {
+                                                ...r,
+                                                percentage: percentage,
+                                                amount: amount.toFixed(2),
+                                              }
+                                              : r
+                                          )
+                                        );
+                                      }}
+                                      placeholder="Select Tax %"
+                                    // isDisabled={!row.isEditable}
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="checkbox"
+                                      checked={row.inclusive}
+                                      onChange={(e) =>
+                                        setDeductionRows((prevRows) =>
+                                          prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? { ...r, inclusive: e.target.checked }
+                                              : r
+                                          )
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="number"
+                                      className="form-control"
+                                      value={row.amount}
+                                      disabled
+                                      onChange={(e) =>
+                                        setDeductionRows((prevRows) =>
+                                          prevRows.map((r) =>
+                                            r.id === row.id
+                                              ? { ...r, amount: parseFloat(e.target.value) || 0 }
+                                              : r
+                                          )
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td
+                                    className="text-start"
+                                    onClick={() => deleteDeductionRow(row.id)}
+                                    style={{ cursor: "pointer", color: "black" }}
+                                  >
+                                    {/* <svg
                                                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                                                     width="16"
                                                                                                     height="16"
@@ -2030,34 +2131,34 @@ const POAdvanceNoteDetails = () => {
                                                                                                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                                                                                                     <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8"></path>
                                                                                                 </svg> */}
-                                                            <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
-                                                          </td>
-                                                        </tr>
-                                                      ))}
-                                                      {/* Static Rows */}
-                                                      <tr>
-                                                        <th className="text-start">Sub Total B (Deductions)</th>
-                                                        <td className="text-start" />
-                                                        <td className="" />
-                                                        <td className="text-start">{calculateDeductionSubTotal()}</td>
-                                                        <td />
-                                                      </tr>
-                                                      <tr>
-                                                        <th className="text-start">Payable Amount</th>
-                                                        <td className="text-start" />
-                                                        <td className="" />
-                                                        <td className="text-start">{calculatePayableAmount()}</td>
-                                                        <td />
-                                                      </tr>
-                        
-                        
-                                                    </tbody>
-                                                  </table>
-                                                </div>
+                                    <button class="btn btn-outline-danger btn-sm"><span>×</span></button>
+                                  </td>
+                                </tr>
+                              ))}
+                              {/* Static Rows */}
+                              <tr>
+                                <th className="text-start">Sub Total B (Deductions)</th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start">{calculateDeductionSubTotal()}</td>
+                                <td />
+                              </tr>
+                              <tr>
+                                <th className="text-start">Payable Amount</th>
+                                <td className="text-start" />
+                                <td className="" />
+                                <td className="text-start">{calculatePayableAmount()}</td>
+                                <td />
+                              </tr>
+
+
+                            </tbody>
+                          </table>
+                        </div>
 
 
 
-                        <div className="d-flex justify-content-between mt-4 ">
+                        {/* <div className="d-flex justify-content-between mt-4 ">
                           <h5 className=" ">Document Attachment</h5>
                           <div
                             className="card-tools d-flex"
@@ -2083,16 +2184,16 @@ const POAdvanceNoteDetails = () => {
                               <span>Attach</span>
                             </button>
                           </div>
-                        </div>
+                        </div> */}
                         {/* Document Table (dynamic) */}
-                        <div className="tbl-container mt-2 ">
+                        {/* <div className="tbl-container mt-2 ">
                           <table className="w-100">
                             <thead>
                               <tr>
                                 <th className="text-start">Sr. No.</th>
                                 <th className="text-start">Document Name</th>
                                 <th className="text-start">File Name</th>
-                                {/* <th className="text-start">File Type</th> */}
+                                <th className="text-start">File Type</th>
                                 <th className="text-start">Upload Date</th>
                                 <th className="text-start">Action</th>
                               </tr>
@@ -2112,9 +2213,9 @@ const POAdvanceNoteDetails = () => {
                                     <td className="text-start">
                                       {doc.attachments[0]?.filename || "-"}
                                     </td>
-                                    {/* <td className="text-start">
-                            {doc.attachments[0]?.content_type || "-"}
-                          </td> */}
+                                    <td className="text-start">
+                                      {doc.attachments[0]?.content_type || "-"}
+                                    </td>
                                     <td className="text-start">
                                       {doc.uploadDate || "-"}
                                     </td>
@@ -2130,12 +2231,145 @@ const POAdvanceNoteDetails = () => {
                               )}
                             </tbody>
                           </table>
+                        </div> */}
+
+                        {/* document like mor start */}
+                        <div className="d-flex justify-content-between mt-5 ">
+                          <h5 className=" ">Document Attachment</h5>
+                          <div
+                            className="card-tools d-flex"
+                            data-bs-toggle="modal"
+                            data-bs-target="#attachModal"
+                            // onClick={openattachModal}
+                            onClick={handleAddRow}
+                          >
+                            <button
+                              className="purple-btn2 mb-2 "
+                              data-bs-toggle="modal"
+                              data-bs-target="#attachModal"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width={20}
+                                height={20}
+                                fill="currentColor"
+                                className="bi bi-plus"
+                                viewBox="0 0 16 16"
+                              >
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                              </svg>
+                              <span>Add Attachments</span>
+                            </button>
+                          </div>
                         </div>
+
+                        <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
+                          <table className="w-100">
+                            <thead>
+                              <tr>
+                                <th className="main2-th">File Type</th>
+                                <th className="main2-th" >File Name </th>
+                                <th className="main2-th">Upload At</th>
+                                <th className="main2-th">Upload File</th>
+                                <th className="main2-th">
+                                  Action
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {attachments.map((att, index) => (
+                                <tr key={att.id}>
+                                  <td>
+                                    <input
+                                      className="form-control document_content_type"
+                                      readOnly
+                                      disabled
+                                      value={att.fileType}
+                                      placeholder="File Type"
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      className="form-control file_name"
+                                      required
+                                      value={att.fileName}
+                                      onChange={(e) => handleFileNameChange(att.id, e.target.value)}
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      className="form-control created_at"
+                                      readOnly
+                                      disabled
+                                      type="datetime-local"
+                                      step="1"
+                                      value={att.uploadDate || ""}
+                                    />
+                                  </td>
+                                  <td>
+                                    {!att.isExisting && (
+                                      <input
+                                        type="file"
+                                        className="form-control"
+                                        required
+                                        onChange={(e) => handleFileChange(e, att.id)}
+                                      />
+                                    )}
+                                  </td>
+                                  <td className="document">
+                                    <div style={{ display: "flex", alignItems: "center" }}>
+                                      <div className="attachment-placeholder">
+                                        {att.isExisting && (
+                                          <div className="file-box">
+                                            {console.log("att bolb id", att.blob_id)}
+                                            <div className="">
+                                              <a
+                                                // href={`${baseURL}debit_notes/${id}/download?token=${token}&blob_id=${att.blob_id} rel="noopener noreferrer"`}
+                                                href={
+                                                  // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                                                  `${baseURL}debit_notes/${id}/download?token=${token}&blob_id=${att.blob_id}`
+                                                  // attachment.url
+                                                }
+                                                target="_blank"
+                                                // rel="noopener noreferrer"
+                                                download={att.file}
+                                              >
+                                                <DownloadIcon />
+                                              </a>
+
+                                            </div>
+                                            <div className="file-name">
+                                              {/* <a href={`${baseURL}debit_notes/${id}/download?token=${token}&blob_id=${att.blob_id}`} download>
+                                                                                                  <span className="material-symbols-outlined">file_download</span>
+                                                                                                </a> */}
+                                              <span>{att.fileName}</span>
+                                            </div>
+
+                                          </div>
+                                        )}
+                                      </div>
+                                      <button
+                                        type="button"
+                                        className="btn btn-sm btn-link text-danger"
+                                        onClick={() => handleRemove(att.id)}
+                                      >
+                                        <span className="material-symbols-outlined">cancel</span>
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+
+
+                        </div>
+                        {/* document like mor end*/}
                       </div>
                     </div>
                   </section>
                 </div>
-                <div className="row w-100">
+                <div className="row w-100 mx-1">
                   <div className="col-md-12">
                     <div className="form-group">
                       <label>Remark</label>
@@ -2150,7 +2384,7 @@ const POAdvanceNoteDetails = () => {
                     </div>
                   </div>
                 </div>
-                <div className="row w-100">
+                <div className="row w-100 mx-1 mt-3">
                   <div className="col-md-12">
                     <div className="form-group">
                       <label>Comments</label>
@@ -2508,20 +2742,20 @@ const POAdvanceNoteDetails = () => {
                         </td>
                         <td>
                           {doc?.blob_id && (
-                          <a
-                            href={
-                              // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
-                              `${baseURL}advance_notes/${id}/download?token=${token}&blob_id=${doc.blob_id}`
-                              // attachment.url
-                            }
-                            target="_blank"
-                            // rel="noopener noreferrer"
-                            download={doc.filename}
-                          >
-                            <DownloadIcon />
-                          </a>
+                            <a
+                              href={
+                                // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                                `${baseURL}advance_notes/${id}/download?token=${token}&blob_id=${doc.blob_id}`
+                                // attachment.url
+                              }
+                              target="_blank"
+                              // rel="noopener noreferrer"
+                              download={doc.filename}
+                            >
+                              <DownloadIcon />
+                            </a>
                           )}
-                          {console.log("document data:",documents)}
+                          {console.log("document data:", documents)}
                         </td>
                       </tr>
                     ))

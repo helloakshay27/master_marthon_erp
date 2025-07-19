@@ -94,6 +94,9 @@ export default function CreateRFQForm({
   const [morMaterialData, setMorMaterialData] = useState([]); // State for MOR material data
   const [isMorChecked, setIsMorChecked] = useState(false); // State for checkbox
 
+  const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
+
   const handleToggleSection = (sectionIndex) => {
     setOpenSectionIndexes((prev) => ({
       ...prev,
@@ -168,7 +171,7 @@ export default function CreateRFQForm({
   const handleTemplateChange = async (event) => {
     setSelectedTemplate(event);
     updateSelectedTemplate(event); // Update the parent component's state
-
+    
     try {
       const response = await axios.get(
         `${baseURL}rfq/event_templates/${event}?token=${token}`
@@ -177,7 +180,8 @@ export default function CreateRFQForm({
         const templateData = response.data;
         const updatedAdditionalFields =
           templateData.bid_material_template_fields || [];
-        updateAdditionalFields(updatedAdditionalFields);
+          updateAdditionalFields(updatedAdditionalFields);
+
         updateBidTemplateFields(
           mapBidTemplateFields(templateData.bid_template_fields || [])
         );

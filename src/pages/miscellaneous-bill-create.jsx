@@ -426,30 +426,30 @@ const openAttachTwoModal = () => setattachTwoModal(true);
     }
   };
 
-  const handleFileChange = (index, file) => {
-    if (!file) return; // Ensure a file is selected
+  // const handleFileChange = (index, file) => {
+  //   if (!file) return; // Ensure a file is selected
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result.split(",")[1];
+  //   const reader = new FileReader();
+  //   reader.onloadend = () => {
+  //     const base64String = reader.result.split(",")[1];
 
-      documentRowsRef.current[index].upload = {
-        filename: file.name,
-        content: base64String,
-        content_type: file.type,
-      };
+  //     documentRowsRef.current[index].upload = {
+  //       filename: file.name,
+  //       content: base64String,
+  //       content_type: file.type,
+  //     };
 
-      setDocumentRows([...documentRowsRef.current]);
-    };
+  //     setDocumentRows([...documentRowsRef.current]);
+  //   };
 
-    reader.readAsDataURL(file);
+  //   reader.readAsDataURL(file);
 
-    // Reset the input field to allow re-selecting the same file
-    const inputElement = document.getElementById(`file-input-${index}`);
-    if (inputElement) {
-      inputElement.value = ""; // Clear input value
-    }
-  };
+  //   // Reset the input field to allow re-selecting the same file
+  //   const inputElement = document.getElementById(`file-input-${index}`);
+  //   if (inputElement) {
+  //     inputElement.value = ""; // Clear input value
+  //   }
+  // };
 
   const [rows, setRows] = useState([
     // {
@@ -872,7 +872,103 @@ const openAttachTwoModal = () => setattachTwoModal(true);
     openviewDocumentModal();
   };
 
-
+// attachment like mor******
+     const [attachments, setAttachments] = useState([
+     
+    ]);
+  
+    const getLocalDateTime = () => {
+      const now = new Date();
+      const offset = now.getTimezoneOffset(); // in minutes
+      const localDate = new Date(now.getTime() - offset * 60000);
+      return localDate.toISOString().slice(0, 19); // "YYYY-MM-DDTHH:MM"
+  
+    };
+  
+    const handleAddRow = () => {
+      setAttachments((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          fileType: "",
+          fileName: "",
+          uploadDate: getLocalDateTime(),
+          fileUrl: "",
+          file: null,
+          isExisting: false,
+        },
+      ]);
+    };
+  
+    const handleRemove = (id) => {
+      setAttachments((prev) => prev.filter((att) => att.id !== id));
+    };
+  
+    const handleFileChange = (e, id) => {
+      const file = e.target.files[0];
+      if (!file) return;
+  
+      const contentType = file.type;
+  
+      const reader = new FileReader();
+  
+      reader.onloadend = () => {
+        const base64Content = reader.result.split(",")[1]; // Remove data:<type>;base64, prefix
+  
+        setAttachments((prev) =>
+          prev.map((att) =>
+            att.id === id
+              ? {
+                ...att,
+                file,
+                fileType: contentType,
+                fileName: file.name,
+                isExisting: false,
+                 document_file_name: att.document_file_name || file.name,
+                uploadDate: getLocalDateTime(),
+                attachments: [
+                  {
+                    filename: file.name,
+                    content: base64Content,
+                    content_type: contentType,
+                     document_file_name: att.document_file_name || file.name,
+                  },
+                ],
+              }
+              : att
+          )
+        );
+      };
+  
+      reader.readAsDataURL(file);
+    };
+  
+    const handleFileNameChange = (id, newFileName) => {
+      setAttachments((prev) =>
+        prev.map((att) =>
+          att.id === id
+            ? {
+              ...att,
+              fileName: newFileName,
+              attachments: att.attachments?.length
+                ? [
+                  {
+                    ...att.attachments[0],
+                    filename: newFileName,
+                  },
+                ]
+                : [],
+            }
+            : att
+        )
+      );
+    };
+  
+  const attachmentsPayload = attachments
+    .flatMap((att) => att.attachments || []);
+  
+      console.log("attachments:", attachmentsPayload)
+     
 
 
 
@@ -984,7 +1080,8 @@ const openAttachTwoModal = () => setattachTwoModal(true);
         //   content: row.upload?.content || "",
         //   content_type: row.upload?.content_type || "",
         // })),
-         attachments: attachments.length > 0 ? attachments : null,
+        //  attachments: attachments.length > 0 ? attachments : null,
+         attachments:attachmentsPayload|| [],
       },
     };
 
@@ -2161,7 +2258,7 @@ const openAttachTwoModal = () => setattachTwoModal(true);
                             </table>
                           </div>
                           
-                             <div className="d-flex justify-content-between mt-3 me-2">
+                             {/* <div className="d-flex justify-content-between mt-3 me-2">
                             <h5 className=" ">Document Attachment</h5>
                             <div
                               className="card-tools d-flex"
@@ -2187,9 +2284,9 @@ const openAttachTwoModal = () => setattachTwoModal(true);
                                 <span>Attach</span>
                               </button>
                             </div>
-                          </div>
+                          </div> */}
                           {/* Document Table (dynamic) */}
-                          <div className="tbl-container mx-3 mt-3">
+                          {/* <div className="tbl-container mx-3 mt-3">
                             <table className="w-100">
                               <thead>
                                 <tr>
@@ -2197,7 +2294,7 @@ const openAttachTwoModal = () => setattachTwoModal(true);
                                   <th className="text-start">Document Name</th>
                                   <th className="text-start">File Name</th>
                                   {/* <th className="text-start">File Type</th> */}
-                                  <th className="text-start">Upload Date</th>
+                                  {/* <th className="text-start">Upload Date</th>
                                   <th className="text-start">Action</th>
                                 </tr>
                               </thead>
@@ -2218,9 +2315,7 @@ const openAttachTwoModal = () => setattachTwoModal(true);
                                       <td className="text-start">
                                         {doc.attachments[0]?.filename || "-"}
                                       </td>
-                                      {/* <td className="text-start">
-                            {doc.attachments[0]?.content_type || "-"}
-                          </td> */}
+                                    
                                       <td className="text-start">
                                         {doc.uploadDate || "-"}
                                       </td>
@@ -2236,8 +2331,131 @@ const openAttachTwoModal = () => setattachTwoModal(true);
                                 )}
                               </tbody>
                             </table>
-                          </div>
+                          </div> */}
                           
+ <div className="d-flex justify-content-between mt-5 ">
+                            <h5 className=" ">Document Attachment</h5>
+                            <div
+                              className="card-tools d-flex"
+                              data-bs-toggle="modal"
+                              data-bs-target="#attachModal"
+                              // onClick={openattachModal}
+                              onClick={handleAddRow}
+                            >
+                              <button
+                                className="purple-btn2 mb-2 "
+                                data-bs-toggle="modal"
+                                data-bs-target="#attachModal"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width={20}
+                                  height={20}
+                                  fill="currentColor"
+                                  className="bi bi-plus"
+                                  viewBox="0 0 16 16"
+                                >
+                                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                </svg>
+                                <span>Add Attachments</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
+                            <table className="w-100">
+                              <thead>
+                                <tr>
+                                  <th className="main2-th">File Type</th>
+                                  <th className="main2-th">File Name </th>
+                                  <th className="main2-th">Upload At</th>
+                                  <th className="main2-th">Upload File</th>
+                                  <th className="main2-th" style={{ width: 100 }}>
+                                    Action
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {attachments.map((att, index) => (
+                                  <tr key={att.id}>
+                                    <td>
+                                      <input
+                                        className="form-control document_content_type"
+                                        readOnly
+                                        disabled
+                                        value={att.fileType}
+                                        placeholder="File Type"
+                                      />
+                                    </td>
+                                    <td>
+                                      <input
+                                        className="form-control file_name"
+                                        required
+                                        value={att.fileName}
+                                        onChange={(e) => handleFileNameChange(att.id, e.target.value)}
+                                      />
+                                    </td>
+                                    <td>
+                                      <input
+                                        className="form-control created_at"
+                                        readOnly
+                                        disabled
+                                        type="datetime-local"
+                                        step="1"
+                                        value={att.uploadDate || ""}
+                                      />
+                                    </td>
+                                    <td>
+                                      {!att.isExisting && (
+                                        <input
+                                          type="file"
+                                          className="form-control"
+                                          required
+                                          onChange={(e) => handleFileChange(e, att.id)}
+                                        />
+                                      )}
+                                    </td>
+                                    <td className="document">
+                                      <div style={{ display: "flex", alignItems: "center" }}>
+                                        <div className="attachment-placeholder">
+                                          {att.isExisting && (
+                                            <div className="file-box">
+                                              <div className="image">
+                                                <a href={att.fileUrl} target="_blank" rel="noreferrer">
+                                                  <img
+                                                    alt="preview"
+                                                    className="img-responsive"
+                                                    height={50}
+                                                    width={50}
+                                                    src={att.fileUrl}
+                                                  />
+                                                </a>
+                                              </div>
+                                              <div className="file-name">
+                                                <a href={att.fileUrl} download>
+                                                  <span className="material-symbols-outlined">file_download</span>
+                                                </a>
+                                                <span>{att.fileName}</span>
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                        <button
+                                          type="button"
+                                          className="btn btn-sm btn-link text-danger"
+                                          onClick={() => handleRemove(att.id)}
+                                        >
+                                          <span className="material-symbols-outlined">cancel</span>
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+
+
+                          </div>
 
 
 

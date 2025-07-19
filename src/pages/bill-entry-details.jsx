@@ -530,7 +530,7 @@ const BillEntryDetails = () => {
                       </div>
                       <div className="col-md-4">
                         <div className="form-group mb-0">
-                          <label>Bill Amount</label>
+                          <label>Invoice Amount</label>
                           <input
                             className="form-control"
                             type="text"
@@ -649,7 +649,7 @@ const BillEntryDetails = () => {
                   </tbody>
                 </table>
               </div>
-              <div className="row">
+              {/* <div className="row">
                 <div className="col-md-12">
                   <div className="form-group">
                     <label>Remark</label>
@@ -663,8 +663,8 @@ const BillEntryDetails = () => {
                     />
                   </div>
                 </div>
-              </div>
-              <div className="row mt-3">
+              </div> */}
+              {/* <div className="row mt-3">
                 <div className="col-md-12">
                   <div className="form-group">
                     <label>Comments</label>
@@ -678,7 +678,7 @@ const BillEntryDetails = () => {
                     />
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className="row mt-4 justify-content-end align-items-center mx-2">
                 <div className="col-md-3">
                   <div className="form-group d-flex gap-3 align-items-center mx-3">
@@ -689,6 +689,7 @@ const BillEntryDetails = () => {
                       options={statusOptions}
                       onChange={handleStatusChange}
                       value={statusOptions.find((option) => option.value === status)}
+                      isDisabled={true} 
                       placeholder="Select Status"
                       classNamePrefix="react-select"
                     />
@@ -733,8 +734,8 @@ const BillEntryDetails = () => {
                           <th>Created By</th>
                           <th>Created At</th>
                           <th>Status</th>
-                          <th>Remark</th>
-                          <th>Comment</th>
+                          {/* <th>Remark</th> */}
+                          {/* <th>Comment</th> */}
                         </tr>
                       </thead>
                       <tbody>
@@ -814,12 +815,12 @@ const BillEntryDetails = () => {
                                   log.status.slice(1)
                                   : ""}
                               </td>
-                              <td className="text-start">
+                              {/* <td className="text-start">
                                 {log.remarks || ""}
                               </td>
                               <td className="text-start">
                                 {log.comments || ""}
-                              </td>
+                              </td> */}
                             </tr>
                           ))}
                       </tbody>
