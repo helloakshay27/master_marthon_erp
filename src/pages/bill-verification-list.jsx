@@ -774,7 +774,7 @@ const BillVerificationList = () => {
               )}
               {params.row.bill_type === "miscellaneous" && (
                 <button
-                  className="purple-button2"
+                  className="purple-button2 ms-2"
                   // title="Go to Misc Bill Booking"
                   style={{
                     border: "none",
