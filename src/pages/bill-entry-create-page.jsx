@@ -1232,7 +1232,7 @@ const BillEntryListSubPage = () => {
                 <div className="col-md-3  mt-2">
                   <div className="form-group">
                     <label>
-                      Bill Amount <span>*</span>
+                      Invoice Amount <span>*</span>
                     </label>
                     <input
                       className="form-control"

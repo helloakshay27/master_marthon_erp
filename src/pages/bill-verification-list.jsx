@@ -1064,7 +1064,7 @@ display:none !important;
                       fetchFilteredData2("recieved_for_verification");
                     }}
                   >
-                    <h4 className="content-box-title fw-semibold">
+                    <h4 className="content-box-title fw-semibold" title="Received for Verification">
                       Received for Verification
                     </h4>
                     <p className="content-box-sub">

@@ -19392,6 +19392,15 @@ table.custom-table {
   border: 1px solid #bce8f1;
 }
 
+/* css for boxes in billing */
+.content-box-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%; /* Ensures it doesn't exceed the container */
+  display: inline-block;
+  vertical-align: middle;
+}
 
 
 
