@@ -68,7 +68,7 @@ const DebitNoteDetails = () => {
       setCreditNoteAmount(response.data.debit_note_amount || 0)
       setCreditNoteData(response.data);
       const formattedDocuments = response.data.attachments.map((att) => ({
-        document_type: att.relation || "", // or a custom label if needed
+        document_type: att.document_name || "", // or a custom label if needed
         attachments: [att],
         uploadDate: new Date(att.created_at)
           .toLocaleDateString("en-GB")
@@ -492,7 +492,7 @@ const DebitNoteDetails = () => {
       };
     })
     .filter(Boolean);
-
+console.log("attachment:",attachments2)
 
   const payload = {
     debit_note: {
@@ -518,17 +518,17 @@ const DebitNoteDetails = () => {
 
   const handleSubmit = async () => {
 
-     const { debit_note_amount, debit_note_date } = editableDebitNote;
+    const { debit_note_amount, debit_note_date } = editableDebitNote;
 
-  if (!debit_note_amount || isNaN(debit_note_amount) || Number(debit_note_amount) <= 0) {
-    toast.error("Please enter Debit Note Amount.");
-    return;
-  }
+    if (!debit_note_amount || isNaN(debit_note_amount) || Number(debit_note_amount) <= 0) {
+      toast.error("Please enter Debit Note Amount.");
+      return;
+    }
 
-  if (!debit_note_date) {
-    toast.error("Please select Debit Note Date.");
-    return;
-  }
+    if (!debit_note_date) {
+      toast.error("Please select Debit Note Date.");
+      return;
+    }
     // const attachments = (documents || [])
     //   .map((doc) =>
     //     doc.attachments && doc.attachments[0]
@@ -1093,14 +1093,14 @@ const DebitNoteDetails = () => {
                                     ? new Date(debitNoteData.debit_note_date).toLocaleDateString()
                                     : "-"} */}
 
-                                  {/* {debitNoteData?.debit_note_date
+                            {/* {debitNoteData?.debit_note_date
                                     ? new Date(debitNoteData?.debit_note_date)
                                       .toLocaleDateString("en-GB") // gives 13/06/2025
                                       .replace(/\//g, "-")         // replace / with -
                                     : "-"}
                                 </label>
                               </div>
-                            </div> */} 
+                            </div> */}
                             <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
                               <div className="col-6 ">
                                 <label>Created On</label>
@@ -1161,7 +1161,7 @@ const DebitNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-
+                                  {debitNoteData?.po_value || "-"}
                                 </label>
                               </div>
                             </div>
@@ -1187,7 +1187,7 @@ const DebitNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-
+                                  {debitNoteData?.gstin || "-"}
                                 </label>
                               </div>
                             </div>
@@ -1200,7 +1200,7 @@ const DebitNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-
+                                  {debitNoteData?.pan_no || "-"}
                                 </label>
                               </div>
                             </div>
@@ -1920,7 +1920,7 @@ const DebitNoteDetails = () => {
                                       {doc.uploadDate || "-"}
                                     </td>
                                     <td
-                                      className=" text-start text-decoration-underline"
+                                      className=" text-start text-decoration-underline boq-id-link"
                                       style={{ cursor: "pointer" }}
                                       onClick={() => handleViewDocument(idx)}
                                     >
@@ -2337,16 +2337,16 @@ const DebitNoteDetails = () => {
                   ) : (
                     documents.map((doc, idx) => (
                       <tr key={idx}>
-                        <td>{idx + 1}</td>
-                        <td>{doc.document_type}</td>
-                        <td>{doc.attachments[0]?.filename || "-"}</td>
+                        <td className="text-start">{idx + 1}</td>
+                        <td className="text-start">{doc.document_type}</td>
+                        <td className="text-start">{doc.attachments[0]?.filename || "-"}</td>
                         {/* <td className="text-start">
                                                           {doc.attachments[0]?.content_type || "-"}
                                                         </td> */}
                         <td className="text-start">
                           {doc.uploadDate || "-"}
                         </td>
-                        <td>
+                        <td className="text-start">
 
                           {doc?.blob_id && (
                             <a
@@ -2396,9 +2396,9 @@ const DebitNoteDetails = () => {
                   ) : (
                     documents.map((doc, idx) => (
                       <tr key={idx}>
-                        <td>{idx + 1}</td>
-                        <td>{doc.document_type}</td>
-                        <td>{doc.attachments[0]?.filename || "-"}</td>
+                        <td className="text-start">{idx + 1}</td>
+                        <td className="text-start">{doc.document_type}</td>
+                        <td className="text-start">{doc.attachments[0]?.filename || "-"}</td>
                         {/* <td>
                                                           {doc.attachments[0]?.content_type || "-"}
                                                         </td> */}

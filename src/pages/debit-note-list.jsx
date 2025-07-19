@@ -591,7 +591,7 @@ const DebitNoteList = () => {
         return <span>{formattedDate}</span>;
       },
     },
-    { field: "reason", headerName: "Debit Note Reason", width: 150 },
+    { field: "reason", headerName: "Debit Note Reason", width: 150,renderCell: (params) => params.row.reason ? params.row.reason : "-" },
     {
       field: "created_at",
       headerName: "Created On",
