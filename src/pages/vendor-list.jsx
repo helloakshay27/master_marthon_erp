@@ -240,6 +240,10 @@ export default function VendorListPage() {
         ...(filters.event_no_cont && {
           "q[event_no_cont]": filters.event_no_cont,
         }),
+        // Add search query parameter for global search
+        ...(searchQuery.trim() && {
+          "q[event_title_or_event_no_or_status_or_created_at_or_event_schedule_start_time_or_event_schedule_end_time_cont]": searchQuery.trim(),
+        }),
       };
 
       let eventsUrl;
@@ -327,7 +331,7 @@ export default function VendorListPage() {
 
   useEffect(() => {
     fetchEvents();
-  }, [activeTab, vendorId]);
+  }, [activeTab, vendorId, searchQuery]); // Add searchQuery as dependency
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.total_pages) {
@@ -482,9 +486,9 @@ export default function VendorListPage() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setIsSuggestionsVisible(false);
-    // Trigger search logic with `searchQuery`
+    // Trigger search with current searchQuery
     console.log("Search submitted for:", searchQuery);
-    fetchSuggestions(searchQuery);
+    fetchEvents(1); // Reset to page 1 when searching
   };
 
   const handleResetSearch = async () => {
@@ -738,17 +742,22 @@ export default function VendorListPage() {
     }, []);
   
     // Calculate column widths evenly
-    const fixedColumns = React.useMemo(() => {
-      const visibleCols = columns.filter((col) => !col.hide && col.field);
-      const colCount = visibleCols.length || 1;
-      const equalWidth = containerWidth / colCount;
+   const fixedColumns = React.useMemo(() => {
+  const visibleCols = columns.filter((col) => !col.hide && col.field);
+  const srNoColumn = visibleCols.find((col) => col.field === "srNo");
+  const otherColumns = visibleCols.filter((col) => col.field !== "srNo");
   
-      return visibleCols.map((col) => ({
-        ...col,
-        width: equalWidth,
-        flex: undefined, // disable flex to prevent it from overriding width
-      }));
-    }, [columns, containerWidth]);
+  const srNoWidth = 60; // Fixed width for srNo column
+  const remainingWidth = containerWidth - srNoWidth;
+  const otherColCount = otherColumns.length || 1;
+  const equalWidth = remainingWidth / otherColCount;
+
+  return visibleCols.map((col) => ({
+    ...col,
+    width: col.field === "srNo" ? srNoWidth : equalWidth,
+    flex: undefined, // disable flex to prevent it from overriding width
+  }));
+}, [columns, containerWidth]);
 
   return (
     <>
@@ -1018,7 +1027,7 @@ export default function VendorListPage() {
                               }}
                             />
                           </div>
-
+                              {console.log("filrte",filters)}
                           {/* Event Number */}
                           <div className="col-md-2">
                             <label htmlFor="event-no-select">

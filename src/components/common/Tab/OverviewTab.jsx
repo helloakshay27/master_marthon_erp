@@ -81,6 +81,9 @@ export default function OverviewTab({
     setAuditLog(!auditLog);
   };
 
+  const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
+
   useEffect(() => {
     const fetchSections = async () => {
       const urlParams = new URLSearchParams(location.search);
@@ -1134,7 +1137,7 @@ export default function OverviewTab({
                                     </g>
                                   </svg>
                                 </a> */}
-                                <DownloadPdfButton apiUrl={`${baseURL}/rfq/events/${eventId}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`} />
+                                <DownloadPdfButton apiUrl={`${baseURL}/rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`} />
                               </td>
                             </tr>
                           );

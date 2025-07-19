@@ -208,6 +208,14 @@ export default function CreateTemplate() {
   }, []);
 
   const handleAddColumn = () => {
+    // Reset the newColumn state to clear previous data
+    setNewColumn({
+      fieldName: "",
+      isRequired: false,
+      isReadOnly: false,
+      fieldOwner: "",
+      fieldType: "string",
+    });
     setShowModal(true);
   };
 
@@ -217,6 +225,26 @@ export default function CreateTemplate() {
       ...columns,
       { label: newColumn.fieldName, key: newColumnKey, ...newColumn },
     ]);
+    setShowModal(false);
+    // Reset the newColumn state after closing the modal
+    setNewColumn({
+      fieldName: "",
+      isRequired: false,
+      isReadOnly: false,
+      fieldOwner: "",
+      fieldType: "",
+    });
+  };
+
+  const handleModalClose = () => {
+    // Reset the newColumn state when modal is closed
+    setNewColumn({
+      fieldName: "",
+      isRequired: false,
+      isReadOnly: false,
+      fieldOwner: "",
+      fieldType: "",
+    });
     setShowModal(false);
   };
 
@@ -567,12 +595,12 @@ export default function CreateTemplate() {
             </div>
             <DynamicModalBox
               show={showModal}
-              onHide={() => setShowModal(false)}
+              onHide={handleModalClose}
               title="Add New Column"
               footerButtons={[
                 {
                   label: "Cancel",
-                  onClick: () => setShowModal(false),
+                  onClick: handleModalClose,
                 },
                 {
                   label: "Add Column",
@@ -621,7 +649,8 @@ export default function CreateTemplate() {
                     { value: "Admin", label: "Admin" },
                     { value: "User", label: "User" },
                   ]}
-                  defaultValue=""
+                  defaultValue={newColumn.fieldOwner}
+                  key={`fieldOwner-${showModal}`}
                   onChange={(value) =>
                     setNewColumn({ ...newColumn, fieldOwner: value })
                   }
@@ -634,7 +663,8 @@ export default function CreateTemplate() {
                     { value: "string", label: "String" },
                     { value: "integer", label: "Integer" },
                   ]}
-                  defaultValue="string"
+                  defaultValue={newColumn.fieldType}
+                  key={`fieldType-${showModal}`}
                   onChange={(value) =>
                     setNewColumn({ ...newColumn, fieldType: value })
                   }

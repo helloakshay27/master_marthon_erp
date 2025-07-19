@@ -17,7 +17,7 @@ import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import SelectBox from "../../base/Select/SelectBox";
 import { set } from "lodash";
 import { toast, ToastContainer } from "react-toastify"; // Ensure toast is imported
-import Table from "../../base/Table/Table"
+import Table from "../../base/Table/Table";
 
 export default function ResponseTab({ isCounterOffer }) {
   const [isVendor, setIsVendor] = useState(false);
@@ -65,7 +65,7 @@ export default function ResponseTab({ isCounterOffer }) {
 
   const fetchParticipants = async (page = 1) => {
     const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+    const token = urlParams.get("token");
     try {
       const response = await fetch(
         `${baseURL}rfq/events/${eventId}/event_vendors?token=${token}&page=${page}`
@@ -194,13 +194,11 @@ export default function ResponseTab({ isCounterOffer }) {
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+    const token = urlParams.get("token");
     // if (!activityLogAccordion) return;
     setActivityLogsLoading(true);
     axios
-      .get(
-        `${baseURL}rfq/events/${eventId}/activity_logs?token=${token}`
-      )
+      .get(`${baseURL}rfq/events/${eventId}/activity_logs?token=${token}`)
       .then((res) => {
         setActivityLogs(res.data.activity_logs || []);
       })
@@ -462,7 +460,7 @@ export default function ResponseTab({ isCounterOffer }) {
   const acceptOffer = async (bidId, revisedBidId, status) => {
     setIsLoadingOffer(true); // Show loader
     const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+    const token = urlParams.get("token");
     try {
       const response = await axios.put(
         `${baseURL}rfq/events/${eventId}/bids/${revisedBidId}/revised_bids/${bidId}/update_status?token=${token}`,
@@ -502,7 +500,7 @@ export default function ResponseTab({ isCounterOffer }) {
   const handleSendReminder = async (vendorIds, isSelectAll = false) => {
     setLoading(true); // Show loader
     const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+    const token = urlParams.get("token");
     try {
       const url = isSelectAll
         ? `${baseURL}rfq/events/${eventId}/event_vendors/vendor_reminder?page=1&token=${token}&select_all=true`
@@ -747,8 +745,10 @@ export default function ResponseTab({ isCounterOffer }) {
                                           vendor.bids[0].bid_materials[0]
                                             .bid_id;
                                         setBidId(bidId);
-                                        const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
+                                        const urlParams = new URLSearchParams(
+                                          location.search
+                                        );
+                                        const token = urlParams.get("token");
                                         try {
                                           setLoading(true);
                                           setError(null);
@@ -760,11 +760,14 @@ export default function ResponseTab({ isCounterOffer }) {
                                           const fetchedData = response.data;
                                           setBidCounterData(fetchedData);
 
-                                          navigate(`/counter-offer/${bidId}?token=${token}`, {
-                                            state: {
-                                              bidCounterData: fetchedData,
-                                            },
-                                          });
+                                          navigate(
+                                            `/counter-offer/${bidId}?token=${token}`,
+                                            {
+                                              state: {
+                                                bidCounterData: fetchedData,
+                                              },
+                                            }
+                                          );
                                         } catch (err) {
                                           setError(err.message);
                                         } finally {
@@ -881,7 +884,7 @@ export default function ResponseTab({ isCounterOffer }) {
                             key: "quantityAvailable",
                           },
                           { label: "Price", key: "price" },
-                          { label: "Discount", key: "discount" },
+                          { label: "Discount ", key: "discount" },
                           {
                             label: "Realised Discount",
                             key: "realisedDiscount",
@@ -914,7 +917,7 @@ export default function ResponseTab({ isCounterOffer }) {
                               quantityAvailable:
                                 material.quantity_available || "_",
                               price: material.price || "_",
-                              discount: material.discount || "_",
+                              discount: material.discount ? `${material.discount} %` : "_",
                               realisedDiscount:
                                 material.realised_discount || "_",
                               gst: material.gst || "_",
@@ -1095,24 +1098,21 @@ export default function ResponseTab({ isCounterOffer }) {
                   No Bid Details found
                 </h4>
               )}
-
-               
             </div>
           )}
           {activityLogs.length > 0 && eventVendors.length > 0 && (
-
-          <Table
-                    columns={[
-                      { label: "Activity Name", key: "activity_name" },
-                      { label: "Activity Type", key: "activity_type" },
-                      { label: "Created By", key: "created_by_name" },
-                      { label: "Created Date", key: "created_at" },
-                    ]}
-                    data={activityLogs.map((log, idx) => ({
-                      ...log,
-                      created_at: new Date(log.created_at).toLocaleString(),
-                    }))}
-                  />
+            <Table
+              columns={[
+                { label: "Activity Name", key: "activity_name" },
+                { label: "Activity Type", key: "activity_type" },
+                { label: "Created By", key: "created_by_name" },
+                { label: "Created Date", key: "created_at" },
+              ]}
+              data={activityLogs.map((log, idx) => ({
+                ...log,
+                created_at: new Date(log.created_at).toLocaleString(),
+              }))}
+            />
           )}
         </FullScreen>
       )}
@@ -1308,40 +1308,44 @@ export default function ResponseTab({ isCounterOffer }) {
                               isDisableFirstOption={true}
                               disabled={true}
                             />
-                          </td>{
-                          console.log("item",item)}
-                          
+                          </td>
+                          {console.log("item", item)}
+
                           <td>
-  <select
-    className="form-select"
-    defaultValue={
-      item?.tax_percentage 
-        ? (item.tax_percentage.includes('%') ? item.tax_percentage : `${item.tax_percentage}%`)
-        : item?.taxChargePerUom 
-        ? (item.taxChargePerUom.includes('%') ? item.taxChargePerUom : `${item.taxChargePerUom}%`)
-        : ""
-    }
-    onChange={(e) =>
-      handleTaxChargeChange(
-        selectedMaterialIndex,
-        item.id,
-        "taxChargePerUom",
-        e.target.value,
-        "addition"
-      )
-    }
-    disabled={true}
-  >
-    <option value="">Select Tax</option>
-    <option value="5%">5%</option>
-    <option value="12%">12%</option>
-    <option value="18%">18%</option>
-    <option value="28%">28%</option>
-    <option value="2%">2%</option>
-    <option value="6%">6%</option>
-    <option value="9%">9%</option>
-  </select>
-</td>
+                            <select
+                              className="form-select"
+                              defaultValue={
+                                item?.tax_percentage
+                                  ? item.tax_percentage.includes("%")
+                                    ? item.tax_percentage
+                                    : `${item.tax_percentage}%`
+                                  : item?.taxChargePerUom
+                                  ? item.taxChargePerUom.includes("%")
+                                    ? item.taxChargePerUom
+                                    : `${item.taxChargePerUom}%`
+                                  : ""
+                              }
+                              onChange={(e) =>
+                                handleTaxChargeChange(
+                                  selectedMaterialIndex,
+                                  item.id,
+                                  "taxChargePerUom",
+                                  e.target.value,
+                                  "addition"
+                                )
+                              }
+                              disabled={true}
+                            >
+                              <option value="">Select Tax</option>
+                              <option value="5%">5%</option>
+                              <option value="12%">12%</option>
+                              <option value="18%">18%</option>
+                              <option value="28%">28%</option>
+                              <option value="2%">2%</option>
+                              <option value="6%">6%</option>
+                              <option value="9%">9%</option>
+                            </select>
+                          </td>
                           <td className="text-center">
                             <input
                               type="checkbox"
@@ -1601,90 +1605,92 @@ export default function ResponseTab({ isCounterOffer }) {
       </DynamicModalBox>
 
       <DynamicModalBox
-  show={showCounterOfferPopup}
-  onHide={() => setShowCounterOfferPopup(false)} // Close popup
-  size="lg"
-  title="Revise Offer Details"
-  footerButtons={[
-    {
-      label: "Decline",
-      onClick: () => {
-        const pendingBid = materialData?.bids_values?.find(
-          (bid) => bid.status === "pending"
-        );
-        if (pendingBid && pendingBid.id) {
-          console.log("pendingBid:---", pendingBid);
+        show={showCounterOfferPopup}
+        onHide={() => setShowCounterOfferPopup(false)} // Close popup
+        size="lg"
+        title="Revise Offer Details"
+        footerButtons={[
+          {
+            label: "Decline",
+            onClick: () => {
+              const pendingBid = materialData?.bids_values?.find(
+                (bid) => bid.status === "pending"
+              );
+              if (pendingBid && pendingBid.id) {
+                console.log("pendingBid:---", pendingBid);
 
-          acceptOffer(
-            pendingBid.id,
-            pendingBid.original_bid_id,
-            "rejected"
-          );
-        }
-      },
-      props: { className: "purple-btn1" },
-    },
-    {
-      label: "Accept Offer",
-      onClick: () => {
-        const pendingBid = materialData?.bids_values?.find(
-          (bid) => bid.status === "pending"
-        );
-        {
-          console.log("pendingBid:---", pendingBid);
-        }
+                acceptOffer(
+                  pendingBid.id,
+                  pendingBid.original_bid_id,
+                  "rejected"
+                );
+              }
+            },
+            props: { className: "purple-btn1" },
+          },
+          {
+            label: "Accept Offer",
+            onClick: () => {
+              const pendingBid = materialData?.bids_values?.find(
+                (bid) => bid.status === "pending"
+              );
+              {
+                console.log("pendingBid:---", pendingBid);
+              }
 
-        if (pendingBid && pendingBid.id) {
-          acceptOffer(
-            pendingBid.id,
-            pendingBid.original_bid_id,
-            "accepted"
-          );
-        } else {
-          toast.error("No pending bid found to accept.");
-        }
-      },
-      props: { className: "purple-btn2" },
-    },
-  ]}
-  centered={true}
->
-  {isLoadingOffer ? (
-    <div className="loader-container">
-      <div className="lds-ring">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-      </div>
-      <p>Loading...</p>
-    </div>
-  ) : (
-    <div
-      className="d-flex align-items-center p-3 rounded-3"
-      style={{
-        background: "linear-gradient(90deg, #fff3cd 0%, #ffeeba 100%)",
-        border: "2px solid #ffc107",
-        color: "#856404",
-        boxShadow: "0 2px 8px rgba(255,193,7,0.15)",
-      }}
-    >
-      <i
-        className="bi bi-exclamation-triangle-fill me-3"
-        style={{ fontSize: 32, color: "#856404" }}
-      />
-      <div>
-        <p style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: 4 }}>
-          {`Revise Offer for ${materialData?.material_name} of ${materialData?.vendor_name}`}
-        </p>
-        <p style={{ marginBottom: 0 }}>
-          A Revise is pending on your bid. You cannot make any further
-          changes to your bid until you resolve the revise offer.
-        </p>
-      </div>
-    </div>
-  )}
-</DynamicModalBox>
+              if (pendingBid && pendingBid.id) {
+                acceptOffer(
+                  pendingBid.id,
+                  pendingBid.original_bid_id,
+                  "accepted"
+                );
+              } else {
+                toast.error("No pending bid found to accept.");
+              }
+            },
+            props: { className: "purple-btn2" },
+          },
+        ]}
+        centered={true}
+      >
+        {isLoadingOffer ? (
+          <div className="loader-container">
+            <div className="lds-ring">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+            <p>Loading...</p>
+          </div>
+        ) : (
+          <div
+            className="d-flex align-items-center p-3 rounded-3"
+            style={{
+              background: "linear-gradient(90deg, #fff3cd 0%, #ffeeba 100%)",
+              border: "2px solid #ffc107",
+              color: "#856404",
+              boxShadow: "0 2px 8px rgba(255,193,7,0.15)",
+            }}
+          >
+            <i
+              className="bi bi-exclamation-triangle-fill me-3"
+              style={{ fontSize: 32, color: "#856404" }}
+            />
+            <div>
+              <p
+                style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: 4 }}
+              >
+                {`Revise Offer for ${materialData?.material_name} of ${materialData?.vendor_name}`}
+              </p>
+              <p style={{ marginBottom: 0 }}>
+                A Revise is pending on your bid. You cannot make any further
+                changes to your bid until you resolve the revise offer.
+              </p>
+            </div>
+          </div>
+        )}
+      </DynamicModalBox>
 
       <DynamicModalBox
         show={showChargesTaxModal}

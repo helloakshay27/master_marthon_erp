@@ -43,14 +43,14 @@ const InfoTooltip = ({ content, anchorEl }) => {
 export default function Table({
   isLowSpace = false,
   columns,
-  data = [], // Ensure data is always an array
+  data = [], 
   isAccordion = false,
   onActionClick = null,
   serializedData = [],
   showCheckbox = false,
   actionIcon = null,
   isSelectCheckboxes = null,
-  customRender = {}, // Added customRender prop
+  customRender = {}, 
   isHorizontal = false,
   onRowSelect,
   handleCheckboxChange = (index, newSelectAll) => {}, // Provide a default function
@@ -63,6 +63,7 @@ export default function Table({
   enableHoverEffect = false, // Add new prop
   isMinWidth = false, // Add new prop
   isWidth = false,
+  scrollable = false, // Add scrollable prop
   accordionRender = null,
   ...rest
 }) {
@@ -399,7 +400,16 @@ export default function Table({
 
   return (
     <div className="px-0 mt-3 max-h-none" {...rest}>
-      <div style={isMinWidth ? { width: "100%", overflowX: "auto" } : {}}>
+      <div 
+        style={{
+          ...(isMinWidth ? { width: "100%", overflowX: "auto" } : {}),
+          ...(scrollable ? { 
+            maxHeight: "400px", 
+            overflowY: "auto",
+            overflowX: "auto"
+          } : {})
+        }}
+      >
         <table
           className="w-100 tbl-container"
           style={isMinWidth ? { minWidth: "1200px", tableLayout: "auto" } : {}}

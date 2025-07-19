@@ -16,6 +16,9 @@ const EventScheduleModal = ({
   // Convert deliveryDate to the desired format
   const formattedDeliveryDate = deliveryDate.split("T")[0];
 
+  console.log("existingData", existingData);
+  
+
   const [isLater, setIsLater] = useState(false);
   const [isFixedEndTime, setIsFixedEndTime] = useState(false);
   const [isCustomEndTimeSelected, setIsCustomEndTimeSelected] = useState(false);
@@ -154,6 +157,34 @@ const EventScheduleModal = ({
   };
 
   const handleSaveScheduleFun = () => {
+    // Validation for start time
+    if (isLater) {
+      if (!laterDate || !laterTime) {
+        toast.error("Please select both date and time for scheduled start.");
+        return;
+      }
+    }
+
+    // Validation for end time
+    if (!endDate || !endTime) {
+      toast.error("Please select both end date and end time.");
+      return;
+    }
+
+    // Validation for evaluation time
+    if (isCustomEvaluationDuration) {
+      if (!evaluationDurationVal || evaluationDurationVal === "Mins" || !customEvaluationDuration || customEvaluationDuration === "Mins") {
+        toast.error("Please enter a valid evaluation duration.");
+        return;
+      }
+      // Check if evaluation duration value is a valid number
+      const durationValue = parseInt(evaluationDurationVal);
+      if (isNaN(durationValue) || durationValue <= 0) {
+        toast.error("Please enter a valid positive number for evaluation duration.");
+        return;
+      }
+    }
+
     const currentTime = new Date();
     const startTime = isLater
       ? `${laterDate}T${laterTime}:00Z`
@@ -223,28 +254,34 @@ const EventScheduleModal = ({
             />
           </div>
           {isLater && (
-            <div className="row mt-3">
-              <div className="col-md-4">
-                <input
-                  type="date"
-                  className="form-control"
-                  value={laterDate}
-                  min={new Date().toISOString().split("T")[0]} // Restrict to today or future dates
-                  onChange={(e) => setLaterDate(e.target.value)}
-                />
+            <div className="mt-3">
+              <div className="row">
+                <div className="col-md-6">
+                  <label className="form-label">Date</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={laterDate}
+                    min={new Date().toISOString().split("T")[0]} // Restrict to today or future dates
+                    onChange={(e) => setLaterDate(e.target.value)}
+                  />
+                </div>
               </div>
-              <div className="col-md-4">
-                <input
-                  type="time"
-                  className="form-control"
-                  value={laterTime}
-                  min={
-                    laterDate === new Date().toISOString().split("T")[0]
-                      ? new Date().toTimeString().split(" ")[0].substring(0, 5) // Restrict to current or future time if today
-                      : undefined
-                  }
-                  onChange={(e) => setLaterTime(e.target.value)}
-                />
+              <div className="row mt-2">
+                <div className="col-md-6">
+                  <label className="form-label">Time</label>
+                  <input
+                    type="time"
+                    className="form-control"
+                    value={laterTime}
+                    min={
+                      laterDate === new Date().toISOString().split("T")[0]
+                        ? new Date().toTimeString().split(" ")[0].substring(0, 5) // Restrict to current or future time if today
+                        : undefined
+                    }
+                    onChange={(e) => setLaterTime(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
           )}
