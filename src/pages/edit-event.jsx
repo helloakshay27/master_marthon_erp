@@ -331,6 +331,7 @@ export default function EditEvent() {
   const [tableData, setTableData] = useState([]); // State to hold dynamic data
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1); // Default total pages
+  const [totalCount, setTotalCount] = useState(0); // Add this new state
   const pageSize = 100; // Number of items per page
   const pageRange = 6; // Number of pages to display in the pagination
 
@@ -365,6 +366,7 @@ export default function EditEvent() {
     try {
       let formattedData = [];
       let totalPages = 1;
+      let totalCount = 0; // Add this variable
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
       // Wait for the inventoryTypeId to settle (with a timeout)
@@ -383,6 +385,7 @@ export default function EditEvent() {
               ? data.data.vendors
               : [];
 
+
           formattedData = vendors.map((vendor) => ({
             id: vendor.id,
             name: vendor.full_name || vendor.organization_name || "-",
@@ -398,6 +401,10 @@ export default function EditEvent() {
             data?.pagination?.total_pages ||
             data?.data?.pagination?.total_pages ||
             1;
+          totalCount = 
+            data?.pagination?.total_count ||
+            data?.data?.pagination?.total_count ||
+            0; // Get total count from API
 
           setTableData(formattedData);
           setSelectedVendors((prev) => {
@@ -418,6 +425,7 @@ export default function EditEvent() {
           });
           setCurrentPage(page);
           setTotalPages(totalPages);
+          setTotalCount(totalCount); // Set the total count
         } else {
           const response = await fetch(
             `${baseURL}rfq/events/vendor_list?token=${token}&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
@@ -436,6 +444,7 @@ export default function EditEvent() {
           }));
 
           totalPages = data?.pagination?.total_pages || 1;
+          totalCount = data?.pagination?.total_count || 0; // Get total count from API
           const filteredData = formattedData.filter(
             (vendor) =>
               !selectedVendors.some(
@@ -446,6 +455,7 @@ export default function EditEvent() {
           setTableData(filteredData);
           setCurrentPage(page);
           setTotalPages(totalPages);
+          setTotalCount(totalCount); // Set the total count
         }
       }, 2000); // Delay API call by 2 seconds
     } catch (error) {
@@ -921,10 +931,10 @@ export default function EditEvent() {
     // Build attachments ONLY from current documentRows (UI state)
     const eventData = {
       event: {
-        event_title: eventName,
-        created_on: createdOn,
-        status: eventStatus,
-        event_description: eventDescription,
+        event_title: eventName || eventDetails?.event_title || "",
+        created_on: createdOn || eventDetails?.created_on || "",
+        status: eventStatus || eventDetails?.status || "",
+        event_description: eventDescription || eventDetails?.event_description || "",
         event_schedule_attributes: {
           start_time:
             toISTISOString(scheduleData.start_time) ||
@@ -943,25 +953,40 @@ export default function EditEvent() {
             "",
         },
         event_type_detail_attributes: {
-          event_type: eventType || eventDetails?.event_type_detail?.event_type,
-          award_scheme:
-            awardType || eventDetails?.event_type_detail?.award_scheme,
-          event_configuration: selectedStrategy,
+          event_type: eventType || eventDetails?.event_type_detail?.event_type || "",
+          award_scheme: awardType || eventDetails?.event_type_detail?.award_scheme || "",
+          event_configuration: selectedStrategy || eventDetails?.event_type_detail?.event_configuration || "",
           time_extension_type:
-            dynamicExtensionConfigurations.time_extension_type,
+            dynamicExtensionConfigurations.time_extension_type ||
+            eventDetails?.event_type_detail?.time_extension_type ||
+            "",
           triggered_time_extension_on_last:
-            dynamicExtensionConfigurations.triggered_time_extension_on_last,
-          extend_event_time_by: Number(
-            dynamicExtensionConfigurations.extend_event_time_by
-          ),
-          enable_english_auction: true,
-          extension_time_min: 5,
-          extend_time_min: 10,
+            dynamicExtensionConfigurations.triggered_time_extension_on_last ||
+            eventDetails?.event_type_detail?.triggered_time_extension_on_last ||
+            "",
+          extend_event_time_by:
+            Number(dynamicExtensionConfigurations.extend_event_time_by) ||
+            eventDetails?.event_type_detail?.extend_event_time_by ||
+            0,
+          enable_english_auction:
+            typeof eventDetails?.event_type_detail?.enable_english_auction === "boolean"
+              ? eventDetails?.event_type_detail?.enable_english_auction
+              : true,
+          extension_time_min: eventDetails?.event_type_detail?.extension_time_min || 5,
+          extend_time_min: eventDetails?.event_type_detail?.extend_time_min || 10,
           time_extension_change:
-            dynamicExtensionConfigurations.time_extension_on_change_in,
-          delivery_date: dynamicExtensionConfigurations.delivery_date,
+            dynamicExtensionConfigurations.time_extension_on_change_in ||
+            eventDetails?.event_type_detail?.time_extension_change ||
+            "",
+          delivery_date:
+            dynamicExtensionConfigurations.delivery_date ||
+            eventDetails?.event_type_detail?.delivery_date ||
+            "",
         },
-        event_materials_attributes: materialFormData.map((material) => {
+        event_materials_attributes: (materialFormData.length > 0
+          ? materialFormData
+          : eventDetails?.event_materials || []
+        ).map((material) => {
           const dynamicFields = Object.keys(material).reduce((acc, key) => {
             if (
               ![
@@ -981,7 +1006,7 @@ export default function EditEvent() {
                 "pms_brand_id",
                 "generic_info_id",
                 "pms_colour_id",
-                "attachments", // Exclude attachments from dynamic fields
+                "attachments",
               ].includes(key)
             ) {
               acc[key] = material[key] || null;
@@ -1006,12 +1031,15 @@ export default function EditEvent() {
             pms_brand_id: material.pms_brand_id || null,
             pms_colour_id: material.pms_colour_id || null,
             generic_info_id: material.generic_info_id || null,
-            attachments: material.attachments || [], // Include attachments
+            attachments: material.attachments || [],
             _destroy: material._destroy || false,
             ...dynamicFields,
           };
         }),
-        event_vendors_attributes: selectedVendors.map((vendor) => ({
+        event_vendors_attributes: (selectedVendors.length > 0
+          ? selectedVendors
+          : eventDetails?.event_vendors || []
+        ).map((vendor) => ({
           status: 1,
           pms_supplier_id: vendor.pms_supplier_id,
           id: vendor.id,
@@ -1045,17 +1073,22 @@ export default function EditEvent() {
 }),
         attachments,
         applied_event_template: {
-          event_template_id: selectedTemplate,
-          applied_bid_template_fields_attributes: bidTemplateFields.map(
-            (field) => ({
-              field_name: field.field_name,
-              is_required: field.is_required,
-              is_read_only: field.is_read_only,
-              field_owner: field.field_owner,
-              extra_fields: field.extra_fields || null,
-            })
-          ),
-          applied_bid_material_template_fields_attributes: additionalFields
+          event_template_id:
+            selectedTemplate || eventDetails?.applied_event_template?.event_template_id,
+          applied_bid_template_fields_attributes: (bidTemplateFields.length > 0
+            ? bidTemplateFields
+            : eventDetails?.applied_event_template?.applied_bid_template_fields || []
+          ).map((field) => ({
+            field_name: field.field_name,
+            is_required: field.is_required,
+            is_read_only: field.is_read_only,
+            field_owner: field.field_owner,
+            extra_fields: field.extra_fields || null,
+          })),
+          applied_bid_material_template_fields_attributes: (additionalFields.length > 0
+            ? additionalFields
+            : eventDetails?.applied_event_template?.applied_bid_material_template_fields || []
+          )
             .filter((field) => field.field_name !== "Sr no.")
             .map((field) => ({
               field_name: field.field_name,
@@ -1068,6 +1101,8 @@ export default function EditEvent() {
         },
       },
     };
+
+    console.log("eventData:--", JSON.stringify(eventData, null, 2));
 
     try {
       const urlParams = new URLSearchParams(location.search);
@@ -2209,6 +2244,7 @@ export default function EditEvent() {
                         currentPage={currentPage}
                         pageSize={pageSize}
                         style={{width:"100%"}}
+                        scrollable={true}
                       />
                     ) : (
                       <p>No vendors found</p>
@@ -2287,17 +2323,14 @@ export default function EditEvent() {
                     <div>
                       <p>
                         Showing{" "}
-                        {filteredTableData.length > 0
-                          ? currentPage * pageSize - (pageSize - 1)
+                        {totalCount > 0
+                          ? (currentPage - 1) * pageSize + 1
                           : 0}{" "}
                         to{" "}
-                        {filteredTableData.length > 0
-                          ? Math.min(
-                            currentPage * pageSize,
-                            filteredTableData.length
-                          )
+                        {totalCount > 0
+                          ? (currentPage - 1) * pageSize + filteredTableData.length
                           : 0}{" "}
-                        of {filteredTableData.length} entries
+                        of {totalCount} entries
                       </p>
                     </div>
                   </div>
@@ -2484,7 +2517,8 @@ export default function EditEvent() {
               ]}
               trafficType={isTrafficSelected}
               handleTrafficChange={handleTrafficChange}
-            />
+
+/>
             <EventScheduleModal
               deliveryDate={dynamicExtensionConfigurations.delivery_date}
               show={eventScheduleModal}
