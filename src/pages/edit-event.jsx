@@ -331,6 +331,7 @@ export default function EditEvent() {
   const [tableData, setTableData] = useState([]); // State to hold dynamic data
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1); // Default total pages
+  const [totalCount, setTotalCount] = useState(0); // Add this new state
   const pageSize = 100; // Number of items per page
   const pageRange = 6; // Number of pages to display in the pagination
 
@@ -365,6 +366,7 @@ export default function EditEvent() {
     try {
       let formattedData = [];
       let totalPages = 1;
+      let totalCount = 0; // Add this variable
       const urlParams = new URLSearchParams(location.search);
       const token = urlParams.get("token");
       // Wait for the inventoryTypeId to settle (with a timeout)
@@ -399,6 +401,10 @@ export default function EditEvent() {
             data?.pagination?.total_pages ||
             data?.data?.pagination?.total_pages ||
             1;
+          totalCount = 
+            data?.pagination?.total_count ||
+            data?.data?.pagination?.total_count ||
+            0; // Get total count from API
 
           setTableData(formattedData);
           setSelectedVendors((prev) => {
@@ -419,6 +425,7 @@ export default function EditEvent() {
           });
           setCurrentPage(page);
           setTotalPages(totalPages);
+          setTotalCount(totalCount); // Set the total count
         } else {
           const response = await fetch(
             `${baseURL}rfq/events/vendor_list?token=${token}&page=${page}&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=${searchTerm}`
@@ -437,6 +444,7 @@ export default function EditEvent() {
           }));
 
           totalPages = data?.pagination?.total_pages || 1;
+          totalCount = data?.pagination?.total_count || 0; // Get total count from API
           const filteredData = formattedData.filter(
             (vendor) =>
               !selectedVendors.some(
@@ -447,6 +455,7 @@ export default function EditEvent() {
           setTableData(filteredData);
           setCurrentPage(page);
           setTotalPages(totalPages);
+          setTotalCount(totalCount); // Set the total count
         }
       }, 2000); // Delay API call by 2 seconds
     } catch (error) {
@@ -2235,6 +2244,7 @@ export default function EditEvent() {
                         currentPage={currentPage}
                         pageSize={pageSize}
                         style={{width:"100%"}}
+                        scrollable={true}
                       />
                     ) : (
                       <p>No vendors found</p>
@@ -2313,17 +2323,14 @@ export default function EditEvent() {
                     <div>
                       <p>
                         Showing{" "}
-                        {filteredTableData.length > 0
-                          ? currentPage * pageSize - (pageSize - 1)
+                        {totalCount > 0
+                          ? (currentPage - 1) * pageSize + 1
                           : 0}{" "}
                         to{" "}
-                        {filteredTableData.length > 0
-                          ? Math.min(
-                            currentPage * pageSize,
-                            filteredTableData.length
-                          )
+                        {totalCount > 0
+                          ? (currentPage - 1) * pageSize + filteredTableData.length
                           : 0}{" "}
-                        of {filteredTableData.length} entries
+                        of {totalCount} entries
                       </p>
                     </div>
                   </div>
@@ -2510,7 +2517,8 @@ export default function EditEvent() {
               ]}
               trafficType={isTrafficSelected}
               handleTrafficChange={handleTrafficChange}
-            />
+
+/>
             <EventScheduleModal
               deliveryDate={dynamicExtensionConfigurations.delivery_date}
               show={eventScheduleModal}

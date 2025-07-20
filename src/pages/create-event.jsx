@@ -17,7 +17,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 export default function CreateEvent() {
   const fileInputRef = useRef(null);
-  const myRef = useRef(null); // Ensure this is defined at the top
+  const myRef = useRef(null); 
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredTableData, setFilteredTableData] = useState([]);
   const [eventTypeModal, setEventTypeModal] = useState(false);
@@ -1561,6 +1561,7 @@ export default function CreateEvent() {
                         cellClass="text-start"
                         currentPage={currentPage}
                         pageSize={pageSize}
+                        scrollable={true}
                       />
                     ) : (
                       <p>No vendors found</p>
