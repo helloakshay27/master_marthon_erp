@@ -802,7 +802,8 @@ display:none !important;
                 </button>
                 <button
                   className="purple-btn2"
-                  onClick={() => navigate("/bill-entry-list-sub-page")}
+                  onClick={() => navigate("/bill-entry-vendor-create")}
+
                 >
                   <span> + Add</span>
                 </button>

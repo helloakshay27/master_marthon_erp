@@ -67,7 +67,7 @@ const EstimationDetailsSubProject = () => {
 
   const { id } = useParams();
   const [subProjectDetails, setSubProjectDetails] = useState(null);
-  console.log("sub detail:", subProjectDetails);
+  // console.log("sub detail:", subProjectDetails);
 
   // const [subProjectDetails, setSubProjectDetails] = useState(
   //     {
@@ -259,6 +259,128 @@ const EstimationDetailsSubProject = () => {
   //         ]
   //     }
   // );
+
+// const [subProjectDetails, setSubProjectDetails] = useState({
+//   rera_area: "",
+//   construction_area: "",
+//   saleble_area: "",
+//   project_budget: "",
+//   material_labour_budget: "",
+//   material_total: "",
+//   labour_total: "",
+//   categories: [
+//     {
+//       id: 1,
+//       name: "STRUCTURE WORK",
+//       budget: "",
+//       material_type_details: [],
+//       sub_categories_2: [
+//         {
+//           id: 10,
+//           name: "Substructure",
+//           budget: "",
+//           material_type_details: [
+//             { id: 201, name: "Concrete (Substructure)", budget: 1000 },
+//           ],
+//           sub_categories_3: [
+//             {
+//               id: 20,
+//               name: "Foundation",
+//               budget: "",
+//               material_type_details: [
+//                 { id: 202, name: "Cement (Foundation)", budget: 1200 },
+//               ],
+//               sub_categories_4: [
+//                 {
+//                   id: 30,
+//                   name: "Footings",
+//                   budget: "",
+//                   material_type_details: [
+//                     { id: 203, name: "Steel (Footings)", budget: 1400 },
+//                   ],
+//                   sub_categories_5: [
+//                     {
+//                       id: 40,
+//                       name: "Excavation",
+//                       budget: "",
+//                       material_type_details: [
+//                         { id: 204, name: "JCB", budget: 800 },
+//                       ],
+//                     },
+//                     {
+//                       id: 41,
+//                       name: "PCC",
+//                       budget: "",
+//                       material_type_details: [
+//                         { id: 205, name: "Aggregate", budget: 600 },
+//                       ],
+//                     },
+//                   ],
+//                 },
+//               ],
+//             },
+//           ],
+//         },
+//       ],
+//     },
+//     {
+//       id: 2,
+//       name: "FINISHING WORK",
+//       budget: "",
+//       material_type_details: [],
+//       sub_categories_2: [
+//         {
+//           id: 11,
+//           name: "Internal Finishing",
+//           budget: "",
+//           material_type_details: [
+//             { id: 301, name: "Primer", budget: 500 },
+//           ],
+//           sub_categories_3: [
+//             {
+//               id: 21,
+//               name: "Plastering",
+//               budget: "",
+//               material_type_details: [
+//                 { id: 302, name: "POP", budget: 700 },
+//               ],
+//               sub_categories_4: [
+//                 {
+//                   id: 32,
+//                   name: "Wall Plaster",
+//                   budget: "",
+//                   material_type_details: [
+//                     { id: 303, name: "White Cement", budget: 400 },
+//                   ],
+//                   sub_categories_5: [
+//                     {
+//                       id: 43,
+//                       name: "Cement Plaster",
+//                       budget: "",
+//                       material_type_details: [
+//                         { id: 304, name: "Fine Sand", budget: 300 },
+//                       ],
+//                     },
+//                     {
+//                       id: 44,
+//                       name: "Gypsum Finish",
+//                       budget: "",
+//                       material_type_details: [
+//                         { id: 305, name: "Gypsum", budget: 450 },
+//                       ],
+//                     },
+//                   ],
+//                 },
+//               ],
+//             },
+//           ],
+//         },
+//       ],
+//     },
+//   ],
+// });
+
+  
   console.log("id sub:", id);
 
   useEffect(() => {
@@ -386,6 +508,10 @@ const EstimationDetailsSubProject = () => {
     setOpenSubCategory5Id(openSubCategory5Id === id ? null : id);
   };
 
+//   const totalSubCategory3Budget = subCategory.sub_categories_3?.reduce((acc, sub3) => {
+//   const budget = parseFloat(sub3.budget);
+//   return acc + (isNaN(budget) ? 0 : budget);
+// }, 0);
   const [loading, setLoading] = useState(true); // State for loading indicator
   const [error, setError] = useState(null); // State for handling errors
   // Loading, error, and data display logic
@@ -851,7 +977,60 @@ const EstimationDetailsSubProject = () => {
                               <td></td>
                               <td></td>
                               <td>{category.name}</td>
-                              <td>{parseFloat(category.budget).toFixed(2)}</td>
+                              <td>
+                                {/* {parseFloat(category.budget).toFixed(2)} */}
+                                {
+  (
+    // Level 1 material_type_details
+    (category.material_type_details?.reduce((sum, item) => {
+      const budget = parseFloat(item.budget);
+      return sum + (isNaN(budget) ? 0 : budget);
+    }, 0) || 0) +
+
+    // Level 2s
+    (category.sub_categories_2?.reduce((lvl2Sum, sub2) => {
+      // Level 2 material_type_details
+      const lvl2Materials = sub2.material_type_details?.reduce((sum, item) => {
+        const budget = parseFloat(item.budget);
+        return sum + (isNaN(budget) ? 0 : budget);
+      }, 0) || 0;
+
+      // Level 3s inside Level 2
+      const lvl3AndBelow = sub2.sub_categories_3?.reduce((lvl3Sum, sub3) => {
+        // Level 3 material_type_details
+        const lvl3Materials = sub3.material_type_details?.reduce((sum, item) => {
+          const budget = parseFloat(item.budget);
+          return sum + (isNaN(budget) ? 0 : budget);
+        }, 0) || 0;
+
+        // Level 4s inside Level 3
+        const lvl4And5 = sub3.sub_categories_4?.reduce((lvl4Sum, sub4) => {
+          const lvl4Materials = sub4.material_type_details?.reduce((sum, item) => {
+            const budget = parseFloat(item.budget);
+            return sum + (isNaN(budget) ? 0 : budget);
+          }, 0) || 0;
+
+          const lvl5Materials = sub4.sub_categories_5?.reduce((lvl5Sum, sub5) => {
+            return (
+              lvl5Sum +
+              (sub5.material_type_details?.reduce((sum, item) => {
+                const budget = parseFloat(item.budget);
+                return sum + (isNaN(budget) ? 0 : budget);
+              }, 0) || 0)
+            );
+          }, 0) || 0;
+
+          return lvl4Sum + lvl4Materials + lvl5Materials;
+        }, 0) || 0;
+
+        return lvl3Sum + lvl3Materials + lvl4And5;
+      }, 0) || 0;
+
+      return lvl2Sum + lvl2Materials + lvl3AndBelow;
+    }, 0) || 0)
+  ).toFixed(2)
+}
+                                </td>
                               <td>{category.order_draft_value}</td>
                               <td>{category.order_submitted_value}</td>
                               <td>{category.order_approved_value}</td>
@@ -969,9 +1148,49 @@ const EstimationDetailsSubProject = () => {
                                     <td>{subCategory.name}</td>
                                     <td>
                                       {/* {parseFloat(subCategory.budget).toFixed(2)} */}
-                                      {subCategory.budget != null && subCategory.budget !== ""
-                                        ? parseFloat(subCategory.budget).toFixed(2)
-                                        : "0.00"}
+                                     
+
+                                        {
+  (
+    // Level 2 material_type_details
+    (subCategory.material_type_details?.reduce((sum, item) => {
+      const budget = parseFloat(item.budget);
+      return sum + (isNaN(budget) ? 0 : budget);
+    }, 0) || 0) +
+
+    // Level 3s (and nested levels)
+    (subCategory.sub_categories_3?.reduce((lvl3Sum, sub3) => {
+      // Level 3 material_type_details
+      const lvl3Materials = sub3.material_type_details?.reduce((sum, item) => {
+        const budget = parseFloat(item.budget);
+        return sum + (isNaN(budget) ? 0 : budget);
+      }, 0) || 0;
+
+      // Level 4 + Level 5 inside Level 3
+      const lvl4And5 = sub3.sub_categories_4?.reduce((lvl4Sum, sub4) => {
+        const lvl4Materials = sub4.material_type_details?.reduce((sum, item) => {
+          const budget = parseFloat(item.budget);
+          return sum + (isNaN(budget) ? 0 : budget);
+        }, 0) || 0;
+
+        const lvl5Materials = sub4.sub_categories_5?.reduce((lvl5Sum, sub5) => {
+          return (
+            lvl5Sum +
+            (sub5.material_type_details?.reduce((sum, item) => {
+              const budget = parseFloat(item.budget);
+              return sum + (isNaN(budget) ? 0 : budget);
+            }, 0) || 0)
+          );
+        }, 0) || 0;
+
+        return lvl4Sum + lvl4Materials + lvl5Materials;
+      }, 0) || 0;
+
+      return lvl3Sum + lvl3Materials + lvl4And5;
+    }, 0) || 0)
+  ).toFixed(2)
+}
+
                                     </td>
                                     <td>{subCategory.order_draft_value}</td>
                                     <td>{subCategory.order_submitted_value}</td>
@@ -1055,7 +1274,7 @@ const EstimationDetailsSubProject = () => {
                                             <td>-</td>
                                             <td>-</td>
                                             <td>-</td>
-                                            <td>-</td>
+                                            {/* <td>-</td> */}
                                           </tr>
                                         </React.Fragment>
                                       )
@@ -1164,10 +1383,47 @@ const EstimationDetailsSubProject = () => {
                                             <td></td>
                                             <td>{subCategory3.name}</td>
                                             <td>
-                                              {/* {parseFloat(subCategory3.budget).toFixed(2)} */}
-                                              {subCategory3.budget != null && subCategory3.budget !== ""
-                                                ? parseFloat(subCategory3.budget).toFixed(2)
-                                                : "0.00"}
+                                             
+
+{/* {(
+    subCategory3.material_type_details?.reduce((sum, item) => {
+      const budget = parseFloat(item.budget);
+      return sum + (isNaN(budget) ? 0 : budget);
+    }, 0) || 0
+  ).toFixed(2)} */}
+
+
+  {
+  (
+    // Level 3 material_type_details
+    (subCategory3.material_type_details?.reduce((sum, item) => {
+      const budget = parseFloat(item.budget);
+      return sum + (isNaN(budget) ? 0 : budget);
+    }, 0) || 0) +
+
+    // Level 4 + Level 5 material_type_details
+    (subCategory3.sub_categories_4?.reduce((lvl4Sum, sub4) => {
+      // Level 4 material_type_details
+      const lvl4Materials = sub4.material_type_details?.reduce((sum, item) => {
+        const budget = parseFloat(item.budget);
+        return sum + (isNaN(budget) ? 0 : budget);
+      }, 0) || 0;
+
+      // Level 5 material_type_details
+      const lvl5Materials = sub4.sub_categories_5?.reduce((lvl5Sum, sub5) => {
+        return (
+          lvl5Sum +
+          (sub5.material_type_details?.reduce((sum, item) => {
+            const budget = parseFloat(item.budget);
+            return sum + (isNaN(budget) ? 0 : budget);
+          }, 0) || 0)
+        );
+      }, 0) || 0;
+
+      return lvl4Sum + lvl4Materials + lvl5Materials;
+    }, 0) || 0)
+  ).toFixed(2)
+}
 
                                             </td>
                                             <td>
@@ -1204,8 +1460,8 @@ const EstimationDetailsSubProject = () => {
                                             <td>-</td>
                                             <td>-</td>
                                             <td>-</td>
-                                            <td>-</td>
-                                            <td>-</td>
+                                            {/* <td>-</td> */}
+                                            {/* <td>-</td> */}
                                           </tr>
 
                                           {/* Render BOQ Details for Sub-Category 3 */}
@@ -1272,8 +1528,8 @@ const EstimationDetailsSubProject = () => {
                                                     <td>-</td>
                                                     <td>-</td>
                                                     <td>-</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
+                                                    {/* <td>-</td> */}
+                                                    {/* <td>-</td> */}
                                                   </tr>
                                                 </React.Fragment>
                                               )
@@ -1381,9 +1637,34 @@ const EstimationDetailsSubProject = () => {
                                                     <td>{subCategory4.name}</td>
                                                     <td>
                                                       {/* {parseFloat(subCategory4.budget).toFixed(2)} */}
-                                                      {subCategory4.budget != null && subCategory4.budget !== ""
+                                                      {/* {subCategory4.budget != null && subCategory4.budget !== ""
                                                         ? parseFloat(subCategory4.budget).toFixed(2)
-                                                        : "0.00"}
+                                                        : "0.00"} */}
+
+                                                        {/* {(
+    subCategory4.material_type_details?.reduce((sum, item) => {
+      const budget = parseFloat(item.budget);
+      return sum + (isNaN(budget) ? 0 : budget);
+    }, 0) || 0
+  ).toFixed(2)} */}
+
+  {
+  (
+    // Sum of Level 4 materials
+    (subCategory4.material_type_details?.reduce((sum, item) => {
+      const budget = parseFloat(item.budget);
+      return sum + (isNaN(budget) ? 0 : budget);
+    }, 0) || 0) +
+    // Sum of all Level 5 materials under this Level 4
+    (subCategory4.sub_categories_5?.reduce((sum, sub5) => {
+      const sub5Total = sub5.material_type_details?.reduce((subSum, item) => {
+        const budget = parseFloat(item.budget);
+        return subSum + (isNaN(budget) ? 0 : budget);
+      }, 0) || 0;
+      return sum + sub5Total;
+    }, 0) || 0)
+  ).toFixed(2)
+}
                                                     </td>
                                                     <td>
                                                       {
@@ -1421,8 +1702,8 @@ const EstimationDetailsSubProject = () => {
                                                     <td>-</td>
                                                     <td>-</td>
                                                     <td>-</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
+                                                    {/* <td>-</td> */}
+                                                    {/* <td>-</td> */}
                                                   </tr>
 
                                                   {/* Render BOQ Details for Sub-Category 4 */}
@@ -1495,8 +1776,8 @@ const EstimationDetailsSubProject = () => {
                                                             <td>-</td>
                                                             <td>-</td>
                                                             <td>-</td>
-                                                            <td>-</td>
-                                                            <td>-</td>
+                                                            {/* <td>-</td> */}
+                                                            {/* <td>-</td> */}
                                                           </tr>
                                                         </React.Fragment>
                                                       )
@@ -1611,13 +1892,13 @@ const EstimationDetailsSubProject = () => {
                                                               }
                                                             </td>
                                                             <td>
-                                                              {
-                                                                parseFloat(subCategory5.budget).toFixed(2)
-                                                              }
-
-                                                              {subCategory5.budget != null && subCategory5.budget !== ""
-                                                                ? parseFloat(subCategory5.budget).toFixed(2)
-                                                                : "0.00"}
+                                                             
+                                                                {(
+    subCategory5.material_type_details?.reduce((sum, item) => {
+      const budget = parseFloat(item.budget);
+      return sum + (isNaN(budget) ? 0 : budget);
+    }, 0) || 0
+  ).toFixed(2)}
 
                                                             </td>
                                                             <td>
