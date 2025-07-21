@@ -860,14 +860,14 @@ const EstimationDetailsProject = () => {
                               <td>{category.balance_bugdet}</td>
                               <td>
                                 {category.balance_per % 1 !== 0 &&
-                                category.balance_per !== undefined
+                                  category.balance_per !== undefined
                                   ? category.balance_per.toFixed(2)
                                   : category.balance_per}
                               </td>
                               <td>{category.overdue_budget}</td>
                               <td>
                                 {category.overdue_per % 1 !== 0 &&
-                                category.overdue_per !== undefined
+                                  category.overdue_per !== undefined
                                   ? category.overdue_per.toFixed(2)
                                   : category.overdue_per}
                               </td>
@@ -904,7 +904,7 @@ const EstimationDetailsProject = () => {
                                         aria-label="Toggle sub-category 2 visibility"
                                       >
                                         {openSubCategory2Id ===
-                                        subCategory.id ? (
+                                          subCategory.id ? (
                                           <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             width="24"
@@ -977,7 +977,12 @@ const EstimationDetailsProject = () => {
                                     <td></td>
                                     <td></td>
                                     <td>{subCategory.name}</td>
-                                    <td>{parseFloat(subCategory.budget).toFixed(2)}</td>
+                                    <td>
+                                      {/* {parseFloat(subCategory.budget).toFixed(2)} */}
+                                      {subCategory.budget != null && subCategory.budget !== ""
+                                        ? parseFloat(subCategory.budget).toFixed(2)
+                                        : "0.00"}
+                                    </td>
                                     <td>{subCategory.order_draft_value}</td>
                                     <td>{subCategory.order_submitted_value}</td>
                                     <td>{subCategory.order_approved_value}</td>
@@ -986,14 +991,14 @@ const EstimationDetailsProject = () => {
                                     <td>{subCategory.balance_bugdet}</td>
                                     <td>
                                       {subCategory.balance_per % 1 !== 0 &&
-                                      subCategory.balance_per !== undefined
+                                        subCategory.balance_per !== undefined
                                         ? subCategory.balance_per.toFixed(2)
                                         : subCategory.balance_per}
                                     </td>
                                     <td>{subCategory.overdue_budget}</td>
                                     <td>
                                       {subCategory.overdue_per % 1 !== 0 &&
-                                      subCategory.balance_per !== undefined
+                                        subCategory.balance_per !== undefined
                                         ? subCategory.overdue_per.toFixed(2)
                                         : subCategory.overdue_per}
                                     </td>
@@ -1055,19 +1060,19 @@ const EstimationDetailsProject = () => {
                                             <td>
                                               {boqDetail2.balance_per % 1 !==
                                                 0 &&
-                                              boqDetail2.balance_per !==
+                                                boqDetail2.balance_per !==
                                                 undefined
                                                 ? boqDetail2.balance_per.toFixed(
-                                                    2
-                                                  )
+                                                  2
+                                                )
                                                 : boqDetail2.balance_per}
                                             </td>
                                             <td>{boqDetail2.overdue_budget}</td>
                                             <td>
                                               {boqDetail2.overdue_per % 1 !== 0
                                                 ? boqDetail2.overdue_per.toFixed(
-                                                    2
-                                                  )
+                                                  2
+                                                )
                                                 : boqDetail2.overdue_per}
                                             </td>
                                             <td>-</td>
@@ -1118,7 +1123,7 @@ const EstimationDetailsProject = () => {
                                                 aria-label="Toggle sub-category 3 visibility"
                                               >
                                                 {openSubCategory3Id ===
-                                                subCategory3.id ? (
+                                                  subCategory3.id ? (
                                                   <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     width="24"
@@ -1191,9 +1196,12 @@ const EstimationDetailsProject = () => {
                                             <td></td>
                                             <td>{subCategory3.name}</td>
                                             <td>
-                                              {parseFloat(
+                                              {/* {parseFloat(
                                                 parseFloat(subCategory3.budget).toFixed(2)
-                                              ).toFixed(2)}
+                                              ).toFixed(2)} */}
+                                              {subCategory3.budget != null && subCategory3.budget !== ""
+                                                ? parseFloat(subCategory3.budget).toFixed(2)
+                                                : "0.00"}
                                             </td>
                                             <td>
                                               {subCategory3.order_draft_value}
@@ -1217,10 +1225,10 @@ const EstimationDetailsProject = () => {
                                             </td>
                                             <td>
                                               {subCategory3.balance_per % 1 !==
-                                              0 && subCategory3.balance_per !== undefined
+                                                0 && subCategory3.balance_per !== undefined
                                                 ? subCategory3.balance_per.toFixed(
-                                                    2
-                                                  )
+                                                  2
+                                                )
                                                 : subCategory3.balance_per}
                                             </td>
                                             <td>
@@ -1228,10 +1236,10 @@ const EstimationDetailsProject = () => {
                                             </td>
                                             <td>
                                               {subCategory3.overdue_per % 1 !==
-                                              0 && subCategory3.overdue_per !== undefined
+                                                0 && subCategory3.overdue_per !== undefined
                                                 ? subCategory3.overdue_per.toFixed(
-                                                    2
-                                                  )
+                                                  2
+                                                )
                                                 : subCategory3.overdue_per}
                                             </td>
                                             <td>-</td>
@@ -1308,10 +1316,10 @@ const EstimationDetailsProject = () => {
                                                     <td>
                                                       {boqDetail2.balance_per %
                                                         1 !==
-                                                      0 && boqDetail2.balance_per !== undefined
+                                                        0 && boqDetail2.balance_per !== undefined
                                                         ? boqDetail2.balance_per.toFixed(
-                                                            2
-                                                          )
+                                                          2
+                                                        )
                                                         : boqDetail2.balance_per}
                                                     </td>
                                                     <td>
@@ -1322,10 +1330,10 @@ const EstimationDetailsProject = () => {
                                                     <td>
                                                       {boqDetail2.overdue_per %
                                                         1 !==
-                                                      0 && boqDetail2.balance_per !== undefined
+                                                        0 && boqDetail2.balance_per !== undefined
                                                         ? boqDetail2.overdue_per.toFixed(
-                                                            2
-                                                          )
+                                                          2
+                                                        )
                                                         : boqDetail2.overdue_per}
                                                     </td>
                                                     <td>-</td>
@@ -1374,7 +1382,7 @@ const EstimationDetailsProject = () => {
                                                         aria-label="Toggle sub-category 3 visibility"
                                                       >
                                                         {openSubCategory4Id ===
-                                                        subCategory4.id ? (
+                                                          subCategory4.id ? (
                                                           <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             width="24"
@@ -1449,7 +1457,10 @@ const EstimationDetailsProject = () => {
                                                     <td></td>
                                                     <td>{subCategory4.name}</td>
                                                     <td>
-                                                      {parseFloat(subCategory4.budget).toFixed(2)}
+                                                      {/* {parseFloat(subCategory4.budget).toFixed(2)} */}
+                                                      {subCategory4.budget != null && subCategory4.budget !== ""
+                                                        ? parseFloat(subCategory4.budget).toFixed(2)
+                                                        : "0.00"}
                                                     </td>
                                                     <td>
                                                       {
@@ -1476,10 +1487,10 @@ const EstimationDetailsProject = () => {
                                                     <td>
                                                       {subCategory4.balance_per %
                                                         1 !==
-                                                      0 && subCategory4.balance_per !== undefined
+                                                        0 && subCategory4.balance_per !== undefined
                                                         ? subCategory4.balance_per.toFixed(
-                                                            2
-                                                          )
+                                                          2
+                                                        )
                                                         : subCategory4.balance_per}
                                                     </td>
                                                     <td>
@@ -1490,10 +1501,10 @@ const EstimationDetailsProject = () => {
                                                     <td>
                                                       {subCategory4.overdue_per %
                                                         1 !==
-                                                      0 && subCategory4.overdue_per !== undefined
+                                                        0 && subCategory4.overdue_per !== undefined
                                                         ? subCategory4.overdue_per.toFixed(
-                                                            2
-                                                          )
+                                                          2
+                                                        )
                                                         : subCategory4.overdue_per}
                                                     </td>
                                                     <td>-</td>
@@ -1572,11 +1583,11 @@ const EstimationDetailsProject = () => {
                                                               {boqDetail2.balance_per %
                                                                 1 !==
                                                                 0 &&
-                                                              boqDetail2.balance_per !==
+                                                                boqDetail2.balance_per !==
                                                                 undefined
                                                                 ? boqDetail2.balance_per.toFixed(
-                                                                    2
-                                                                  )
+                                                                  2
+                                                                )
                                                                 : boqDetail2.balance_per}
                                                             </td>
                                                             <td>
@@ -1587,10 +1598,10 @@ const EstimationDetailsProject = () => {
                                                             <td>
                                                               {boqDetail2.overdue_per %
                                                                 1 !==
-                                                              0 && boqDetail2.balance_per !== undefined
+                                                                0 && boqDetail2.balance_per !== undefined
                                                                 ? boqDetail2.overdue_per.toFixed(
-                                                                    2
-                                                                  )
+                                                                  2
+                                                                )
                                                                 : boqDetail2.overdue_per}
                                                             </td>
                                                             <td>-</td>
@@ -1620,7 +1631,7 @@ const EstimationDetailsProject = () => {
                                                     subCategory4.sub_categories_5 &&
                                                     subCategory4
                                                       .sub_categories_5.length >
-                                                      0 &&
+                                                    0 &&
                                                     subCategory4.sub_categories_5.map(
                                                       (subCategory5) => (
                                                         <React.Fragment
@@ -1644,7 +1655,7 @@ const EstimationDetailsProject = () => {
                                                                 aria-label="Toggle sub-category 3 visibility"
                                                               >
                                                                 {openSubCategory5Id ===
-                                                                subCategory5.id ? (
+                                                                  subCategory5.id ? (
                                                                   <svg
                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                     width="24"
@@ -1713,8 +1724,7 @@ const EstimationDetailsProject = () => {
                                                             </td>
                                                             <td></td>
                                                             <td>
-                                                              Sub-Category Level
-                                                              5
+                                                              Sub-Category Level 5
                                                             </td>
                                                             <td></td>
                                                             <td></td>
@@ -1724,9 +1734,13 @@ const EstimationDetailsProject = () => {
                                                               }
                                                             </td>
                                                             <td>
-                                                              {
+                                                              {/* {
                                                                 parseFloat(subCategory5.budget).toFixed(2)
-                                                              }
+                                                              } */}
+
+                                                               {subCategory5.budget != null && subCategory5.budget !== ""
+                                                                ? parseFloat(subCategory5.budget).toFixed(2)
+                                                                : "0.00"}
                                                             </td>
                                                             <td>
                                                               {
@@ -1753,10 +1767,10 @@ const EstimationDetailsProject = () => {
                                                             <td>
                                                               {subCategory5.balance_per %
                                                                 1 !==
-                                                              0 && subCategory5.balance_per !== undefined
+                                                                0 && subCategory5.balance_per !== undefined
                                                                 ? subCategory5.balance_per.toFixed(
-                                                                    2
-                                                                  )
+                                                                  2
+                                                                )
                                                                 : subCategory5.balance_per}
                                                             </td>
                                                             <td>
@@ -1767,10 +1781,10 @@ const EstimationDetailsProject = () => {
                                                             <td>
                                                               {subCategory5.overdue_per %
                                                                 1 !==
-                                                              0 && subCategory5.balance_per !== undefined
+                                                                0 && subCategory5.balance_per !== undefined
                                                                 ? subCategory5.overdue_per.toFixed(
-                                                                    2
-                                                                  )
+                                                                  2
+                                                                )
                                                                 : subCategory5.overdue_per}
                                                             </td>
                                                             <td>-</td>
@@ -1855,11 +1869,11 @@ const EstimationDetailsProject = () => {
                                                                       {boqDetail2.balance_per %
                                                                         1 !==
                                                                         0 &&
-                                                                      boqDetail2.balance_per !==
+                                                                        boqDetail2.balance_per !==
                                                                         undefined
                                                                         ? boqDetail2.balance_per.toFixed(
-                                                                            2
-                                                                          )
+                                                                          2
+                                                                        )
                                                                         : boqDetail2.balance_per}
                                                                     </td>
                                                                     <td>
@@ -1870,10 +1884,10 @@ const EstimationDetailsProject = () => {
                                                                     <td>
                                                                       {boqDetail2.overdue_per %
                                                                         1 !==
-                                                                      0 && boqDetail2.balance_per !== undefined
+                                                                        0 && boqDetail2.balance_per !== undefined
                                                                         ? boqDetail2.overdue_per.toFixed(
-                                                                            2
-                                                                          )
+                                                                          2
+                                                                        )
                                                                         : boqDetail2.overdue_per}
                                                                     </td>
                                                                     <td>-</td>

@@ -20,6 +20,7 @@ import SingleSelector from "../components/base/Select/SingleSelector"; // Adjust
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import { Modal, Button } from "react-bootstrap";
+import { toast, ToastContainer } from "react-toastify";
 
 
 const EstimationList = () => {
@@ -218,7 +219,7 @@ const EstimationList = () => {
         reader.readAsDataURL(file);
     };
 
-console.log("data:",data)
+    console.log("data:", data)
     return (
         <>
 
@@ -299,7 +300,7 @@ console.log("data:",data)
                                 </div>
 
                             </div>
-                           
+
                         </CollapsibleCard>
 
                         <div className="d-flex mt-3 align-items-end px-3">
@@ -357,7 +358,7 @@ console.log("data:",data)
                                     <div className="col-md-6">
                                         <div className="d-flex justify-content-end align-items-center gap-3">
 
-                                            {/* <button className="purple-btn2 me-2" onClick={() => setShowModal(true)}>Bulk Upload</button> */}
+                                            <button className="purple-btn2 me-2" onClick={() => setShowModal(true)}>Bulk Upload</button>
 
 
                                             {/* Create BOQ Button */}
@@ -448,67 +449,184 @@ console.log("data:",data)
                                         </thead>
                                         <tbody>
 
-                                         
 
 
-                                             {data?.companies?.map((company, companyIndex) =>
-                                            company.projects.map((project, projectIndex) =>
-                                                project.pms_sites.map((site, siteIndex) =>
-                                                    site.pms_wings.length > 0
-                                                        ? site.pms_wings.map((wing, wingIndex) => (
-                                                            <tr key={`${companyIndex}-${projectIndex}-${siteIndex}-${wingIndex}`}>
-                                                                {/* Sr.No. */}
-                                                                {wingIndex === 0 && siteIndex === 0 && projectIndex === 0 ? (
-                                                                    <td className="text-start">{companyIndex + 1}</td>
-                                                                ) : (
-                                                                    <td className="text-start"></td>
-                                                                )}
-                                                                {/* Company Name */}
-                                                                {wingIndex === 0 && siteIndex === 0 && projectIndex === 0 ? (
-                                                                    <td className="text-start">{company.company_name}</td>
-                                                                ) : (
-                                                                    <td className="text-start"></td>
-                                                                )}
-                                                                {/* Project Name */}
-                                                                {wingIndex === 0 && siteIndex === 0 ? (
-                                                                    <td className="text-start">
-                                                                        {project.budget_id ? (
-                                                                            <a href={`/estimation-details-project/${project.budget_id}?token=${token}`}
-                                                                                title={project.status ? `Status: ${project.status}` : ""}
-                                                                                style={{
-                                                                                    cursor: project.status ? "pointer" : "default",
-                                                                                    // textDecoration: "underline",
-                                                                                    // color: "#8b0203",
-                                                                                    position: "relative"
-                                                                                }}
-                                                                            >
-                                                                                <span style={{ color: "#8b0203", textDecoration: "underline" }}>
-                                                                                    {project.name}
-                                                                                    {/* {console.log("token inn:",token)} */}
-                                                                                </span>
-                                                                            </a>
-                                                                        ) : (
-                                                                            <span
-                                                                                title={project.status ? `Status: ${project.status}` : ""}
-                                                                                style={{
-                                                                                    cursor: project.status ? "pointer" : "default",
-                                                                                    // textDecoration: "underline",
-                                                                                    // color: "#8b0203",
-                                                                                    position: "relative"
-                                                                                }}
-                                                                            >{project.name}</span>
-                                                                        )}
-                                                                        {/* <a href={`/details-rate/${project.rate_id}`}>
+
+                                            {data?.companies?.map((company, companyIndex) =>
+                                                company.projects.map((project, projectIndex) =>
+                                                    project.pms_sites.map((site, siteIndex) =>
+                                                        site.pms_wings.length > 0
+                                                            ? site.pms_wings.map((wing, wingIndex) => (
+                                                                <tr key={`${companyIndex}-${projectIndex}-${siteIndex}-${wingIndex}`}>
+                                                                    {/* Sr.No. */}
+                                                                    {wingIndex === 0 && siteIndex === 0 && projectIndex === 0 ? (
+                                                                        <td className="text-start">{companyIndex + 1}</td>
+                                                                    ) : (
+                                                                        <td className="text-start"></td>
+                                                                    )}
+                                                                    {/* Company Name */}
+                                                                    {wingIndex === 0 && siteIndex === 0 && projectIndex === 0 ? (
+                                                                        <td className="text-start">{company.company_name}</td>
+                                                                    ) : (
+                                                                        <td className="text-start"></td>
+                                                                    )}
+                                                                    {/* Project Name */}
+                                                                    {wingIndex === 0 && siteIndex === 0 ? (
+                                                                        <td className="text-start">
+                                                                            {project.budget_id ? (
+                                                                                <a href={`/estimation-details-project/${project.budget_id}?token=${token}`}
+                                                                                    title={project.status ? `Status: ${project.status}` : ""}
+                                                                                    style={{
+                                                                                        cursor: project.status ? "pointer" : "default",
+                                                                                        // textDecoration: "underline",
+                                                                                        // color: "#8b0203",
+                                                                                        position: "relative"
+                                                                                    }}
+                                                                                >
+                                                                                    <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                                        {project.name}
+                                                                                        {/* {console.log("token inn:",token)} */}
+                                                                                    </span>
+                                                                                </a>
+                                                                            ) : (
+                                                                                <span
+                                                                                    title={project.status ? `Status: ${project.status}` : ""}
+                                                                                    style={{
+                                                                                        cursor: project.status ? "pointer" : "default",
+                                                                                        // textDecoration: "underline",
+                                                                                        // color: "#8b0203",
+                                                                                        position: "relative"
+                                                                                    }}
+                                                                                >{project.name}</span>
+                                                                            )}
+                                                                            {/* <a href={`/details-rate/${project.rate_id}`}>
                                                                             <span style={{ color: "#8b0203", textDecoration: "underline" }}>
                                                                                 {project.name}
                                                                             </span>
                                                                         </a> */}
+                                                                        </td>
+                                                                    ) : (
+                                                                        <td className="text-start"></td>
+                                                                    )}
+                                                                    {/* Sub-Project Name */}
+                                                                    {wingIndex === 0 ? (
+                                                                        <td className="text-start">
+                                                                            {site.budget_id ? (
+                                                                                <a href={`/estimation-details-sub-project/${site.budget_id}?token=${token}`}
+                                                                                    title={site.status ? `Status: ${site.status}` : ""}
+                                                                                    style={{
+                                                                                        cursor: site.status ? "pointer" : "default",
+                                                                                        // textDecoration: "underline",
+                                                                                        // color: "#8b0203",
+                                                                                        position: "relative"
+                                                                                    }}
+                                                                                >
+                                                                                    <span style={{ color: "#8b0203", textDecoration: "underline" }}
+
+                                                                                    >
+                                                                                        {site.name}
+                                                                                    </span>
+                                                                                </a>
+                                                                            ) : (
+                                                                                <span
+                                                                                    title={site.status ? `Status: ${site.status}` : ""}
+                                                                                    style={{
+                                                                                        cursor: site.status ? "pointer" : "default",
+                                                                                        // textDecoration: "underline",
+                                                                                        // color: "#8b0203",
+                                                                                        position: "relative"
+                                                                                    }}
+                                                                                >{site.name}</span>
+                                                                            )}
+
+                                                                        </td>
+                                                                    ) : (
+                                                                        <td className="text-start"></td>
+                                                                    )}
+                                                                    {/* Wing Name */}
+                                                                    <td className="text-start">
+                                                                        {/* {wing.name} */}
+                                                                        {wing.budget_id ? (
+                                                                            // <a href={`/details-rate/${wing.budget_id}?token=${token}`}
+                                                                            //     title={wing.status ? `Status: ${wing.status}` : ""}
+                                                                            //     style={{
+                                                                            //         cursor: wing.status ? "pointer" : "default",
+                                                                            //         // textDecoration: "underline",
+                                                                            //         // color: "#8b0203",
+                                                                            //         position: "relative"
+                                                                            //     }}
+                                                                            // >
+                                                                            <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                                {wing.name}
+                                                                            </span>
+                                                                            // </a>
+                                                                        ) : (
+                                                                            <span
+                                                                                title={wing.status ? `Status: ${wing.status}` : ""}
+                                                                                style={{
+                                                                                    cursor: wing.status ? "pointer" : "default",
+                                                                                    // textDecoration: "underline",
+                                                                                    // color: "#8b0203",
+                                                                                    position: "relative"
+                                                                                }}
+                                                                            >{wing.name}</span>
+                                                                        )}
                                                                     </td>
-                                                                ) : (
-                                                                    <td className="text-start"></td>
-                                                                )}
-                                                                {/* Sub-Project Name */}
-                                                                {wingIndex === 0 ? (
+                                                                    {/* Location */}
+                                                                    {/* <td className="text-start"></td> */}
+                                                                </tr>
+                                                            ))
+                                                            : (
+                                                                <tr key={`${companyIndex}-${projectIndex}-${siteIndex}`}>
+                                                                    {/* Sr.No. */}
+                                                                    {siteIndex === 0 && projectIndex === 0 ? (
+                                                                        <td className="text-start">{companyIndex + 1}</td>
+                                                                    ) : (
+                                                                        <td className="text-start"></td>
+                                                                    )}
+                                                                    {/* Company Name */}
+                                                                    {siteIndex === 0 && projectIndex === 0 ? (
+                                                                        <td className="text-start">{company.company_name}</td>
+                                                                    ) : (
+                                                                        <td className="text-start"></td>
+                                                                    )}
+                                                                    {/* Project Name */}
+                                                                    {siteIndex === 0 ? (
+                                                                        <td className="text-start">
+                                                                            {project.budget_id ? (
+                                                                                <a href={`/estimation-details-project/${project.budget_id}?token=${token}`}
+                                                                                    title={project.status ? `Status: ${project.status}` : ""}
+                                                                                    style={{
+                                                                                        cursor: project.status ? "pointer" : "default",
+                                                                                        // textDecoration: "underline",
+                                                                                        // color: "#8b0203",
+                                                                                        position: "relative"
+                                                                                    }}>
+                                                                                    <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                                        {project.name}
+                                                                                    </span>
+                                                                                </a>
+                                                                            ) : (
+                                                                                <span
+                                                                                    title={project.status ? `Status: ${project.status}` : ""}
+                                                                                    style={{
+                                                                                        cursor: project.status ? "pointer" : "default",
+                                                                                        // textDecoration: "underline",
+                                                                                        // color: "#8b0203",
+                                                                                        position: "relative"
+                                                                                    }}
+                                                                                >{project.name}</span>
+                                                                            )}
+                                                                            {/* <a href={`/details-rate/${project.rate_id}`}>
+                                                                            <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                                {project.name}
+                                                                            </span>
+                                                                        </a> */}
+                                                                        </td>
+                                                                    ) : (
+                                                                        <td className="text-start"></td>
+                                                                    )}
+                                                                    {/* Sub-Project Name */}
                                                                     <td className="text-start">
                                                                         {site.budget_id ? (
                                                                             <a href={`/estimation-details-sub-project/${site.budget_id}?token=${token}`}
@@ -518,11 +636,8 @@ console.log("data:",data)
                                                                                     // textDecoration: "underline",
                                                                                     // color: "#8b0203",
                                                                                     position: "relative"
-                                                                                }}
-                                                                            >
-                                                                                <span style={{ color: "#8b0203", textDecoration: "underline" }}
-
-                                                                                >
+                                                                                }}>
+                                                                                <span style={{ color: "#8b0203", textDecoration: "underline" }}>
                                                                                     {site.name}
                                                                                 </span>
                                                                             </a>
@@ -534,140 +649,26 @@ console.log("data:",data)
                                                                                     // textDecoration: "underline",
                                                                                     // color: "#8b0203",
                                                                                     position: "relative"
-                                                                                }}
-                                                                            >{site.name}</span>
+                                                                                }}>{site.name}</span>
                                                                         )}
 
                                                                     </td>
-                                                                ) : (
+                                                                    {/* Wing Name */}
                                                                     <td className="text-start"></td>
-                                                                )}
-                                                                {/* Wing Name */}
-                                                                <td className="text-start">
-                                                                    {/* {wing.name} */}
-                                                                    {wing.budget_id ? (
-                                                                        // <a href={`/details-rate/${wing.budget_id}?token=${token}`}
-                                                                        //     title={wing.status ? `Status: ${wing.status}` : ""}
-                                                                        //     style={{
-                                                                        //         cursor: wing.status ? "pointer" : "default",
-                                                                        //         // textDecoration: "underline",
-                                                                        //         // color: "#8b0203",
-                                                                        //         position: "relative"
-                                                                        //     }}
-                                                                        // >
-                                                                            <span style={{ color: "#8b0203", textDecoration: "underline" }}>
-                                                                                {wing.name}
-                                                                            </span>
-                                                                        // </a>
-                                                                    ) : (
-                                                                        <span
-                                                                            title={wing.status ? `Status: ${wing.status}` : ""}
-                                                                            style={{
-                                                                                cursor: wing.status ? "pointer" : "default",
-                                                                                // textDecoration: "underline",
-                                                                                // color: "#8b0203",
-                                                                                position: "relative"
-                                                                            }}
-                                                                        >{wing.name}</span>
-                                                                    )}
-                                                                </td>
-                                                                {/* Location */}
-                                                                {/* <td className="text-start"></td> */}
-                                                            </tr>
-                                                        ))
-                                                        : (
-                                                            <tr key={`${companyIndex}-${projectIndex}-${siteIndex}`}>
-                                                                {/* Sr.No. */}
-                                                                {siteIndex === 0 && projectIndex === 0 ? (
-                                                                    <td className="text-start">{companyIndex + 1}</td>
-                                                                ) : (
-                                                                    <td className="text-start"></td>
-                                                                )}
-                                                                {/* Company Name */}
-                                                                {siteIndex === 0 && projectIndex === 0 ? (
-                                                                    <td className="text-start">{company.company_name}</td>
-                                                                ) : (
-                                                                    <td className="text-start"></td>
-                                                                )}
-                                                                {/* Project Name */}
-                                                                {siteIndex === 0 ? (
-                                                                    <td className="text-start">
-                                                                        {project.budget_id ? (
-                                                                            <a href={`/estimation-details-project/${project.budget_id}?token=${token}`}
-                                                                                title={project.status ? `Status: ${project.status}` : ""}
-                                                                                style={{
-                                                                                    cursor: project.status ? "pointer" : "default",
-                                                                                    // textDecoration: "underline",
-                                                                                    // color: "#8b0203",
-                                                                                    position: "relative"
-                                                                                }}>
-                                                                                <span style={{ color: "#8b0203", textDecoration: "underline" }}>
-                                                                                    {project.name}
-                                                                                </span>
-                                                                            </a>
-                                                                        ) : (
-                                                                            <span
-                                                                                title={project.status ? `Status: ${project.status}` : ""}
-                                                                                style={{
-                                                                                    cursor: project.status ? "pointer" : "default",
-                                                                                    // textDecoration: "underline",
-                                                                                    // color: "#8b0203",
-                                                                                    position: "relative"
-                                                                                }}
-                                                                            >{project.name}</span>
-                                                                        )}
-                                                                        {/* <a href={`/details-rate/${project.rate_id}`}>
-                                                                            <span style={{ color: "#8b0203", textDecoration: "underline" }}>
-                                                                                {project.name}
-                                                                            </span>
-                                                                        </a> */}
-                                                                    </td>
-                                                                ) : (
-                                                                    <td className="text-start"></td>
-                                                                )}
-                                                                {/* Sub-Project Name */}
-                                                                <td className="text-start">
-                                                                    {site.budget_id ? (
-                                                                        <a href={`/estimation-details-sub-project/${site.budget_id}?token=${token}`}
-                                                                            title={site.status ? `Status: ${site.status}` : ""}
-                                                                            style={{
-                                                                                cursor: site.status ? "pointer" : "default",
-                                                                                // textDecoration: "underline",
-                                                                                // color: "#8b0203",
-                                                                                position: "relative"
-                                                                            }}>
-                                                                            <span style={{ color: "#8b0203", textDecoration: "underline" }}>
-                                                                                {site.name}
-                                                                            </span>
-                                                                        </a>
-                                                                    ) : (
-                                                                        <span
-                                                                            title={site.status ? `Status: ${site.status}` : ""}
-                                                                            style={{
-                                                                                cursor: site.status ? "pointer" : "default",
-                                                                                // textDecoration: "underline",
-                                                                                // color: "#8b0203",
-                                                                                position: "relative"
-                                                                            }}>{site.name}</span>
-                                                                    )}
-
-                                                                </td>
-                                                                {/* Wing Name */}
-                                                                <td className="text-start"></td>
-                                                                {/* Location */}
-                                                                {/* <td className="text-start"></td> */}
-                                                            </tr>
-                                                        )
+                                                                    {/* Location */}
+                                                                    {/* <td className="text-start"></td> */}
+                                                                </tr>
+                                                            )
+                                                    )
                                                 )
-                                            )
-                                        )}
+                                            )}
 
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
                         </div>
-                       
+
                     </div>
                 </div>
             </div>
@@ -789,6 +790,20 @@ console.log("data:",data)
                     </button>
                 </Modal.Footer>
             </Modal>
+
+
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
         </>
     );
 };

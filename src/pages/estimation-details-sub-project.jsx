@@ -648,11 +648,11 @@ const EstimationDetailsSubProject = () => {
               {/* <ExpandableTable /> */}
 
               <div className="mx-3">
-                <div className="tbl-container mt-1"  style={{
-                      // width: "max-content",
-                      maxHeight: "500px",
-                      // height: "auto",
-                    }}>
+                <div className="tbl-container mt-1" style={{
+                  // width: "max-content",
+                  maxHeight: "500px",
+                  // height: "auto",
+                }}>
                   <table
                     className=""
                     style={{
@@ -894,7 +894,7 @@ const EstimationDetailsSubProject = () => {
                                         aria-label="Toggle sub-category 2 visibility"
                                       >
                                         {openSubCategory2Id ===
-                                        subCategory.id ? (
+                                          subCategory.id ? (
                                           <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             width="24"
@@ -967,7 +967,12 @@ const EstimationDetailsSubProject = () => {
                                     <td></td>
                                     <td></td>
                                     <td>{subCategory.name}</td>
-                                    <td>{parseFloat(subCategory.budget).toFixed(2)}</td>
+                                    <td>
+                                      {/* {parseFloat(subCategory.budget).toFixed(2)} */}
+                                      {subCategory.budget != null && subCategory.budget !== ""
+                                        ? parseFloat(subCategory.budget).toFixed(2)
+                                        : "0.00"}
+                                    </td>
                                     <td>{subCategory.order_draft_value}</td>
                                     <td>{subCategory.order_submitted_value}</td>
                                     <td>{subCategory.order_approved_value}</td>
@@ -1034,7 +1039,7 @@ const EstimationDetailsSubProject = () => {
                                             <td>{parseFloat(boqDetail2.balance_bugdet).toFixed(2)}</td>
                                             <td>{boqDetail2.balance_per % 1 !== 0 && boqDetail2.balance_per !== undefined ? boqDetail2.balance_per.toFixed(2) : boqDetail2.balance_per}</td>
                                             <td>{boqDetail2.overdue_budget}</td>
-                                            <td>{boqDetail2.overdue_per% 1 !== 0 && boqDetail2.overdue_per !== undefined ? boqDetail2.overdue_per.toFixed(2) : boqDetail2.overdue_per}</td>
+                                            <td>{boqDetail2.overdue_per % 1 !== 0 && boqDetail2.overdue_per !== undefined ? boqDetail2.overdue_per.toFixed(2) : boqDetail2.overdue_per}</td>
                                             <td>-</td>
                                             <td>-</td>
                                             <td>-</td>
@@ -1086,7 +1091,7 @@ const EstimationDetailsSubProject = () => {
                                                 aria-label="Toggle sub-category 3 visibility"
                                               >
                                                 {openSubCategory3Id ===
-                                                subCategory3.id ? (
+                                                  subCategory3.id ? (
                                                   <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     width="24"
@@ -1158,7 +1163,13 @@ const EstimationDetailsSubProject = () => {
                                             <td></td>
                                             <td></td>
                                             <td>{subCategory3.name}</td>
-                                            <td>{parseFloat(subCategory3.budget).toFixed(2)}</td>
+                                            <td>
+                                              {/* {parseFloat(subCategory3.budget).toFixed(2)} */}
+                                              {subCategory3.budget != null && subCategory3.budget !== ""
+                                                ? parseFloat(subCategory3.budget).toFixed(2)
+                                                : "0.00"}
+
+                                            </td>
                                             <td>
                                               {subCategory3.order_draft_value}
                                             </td>
@@ -1245,7 +1256,7 @@ const EstimationDetailsSubProject = () => {
                                                     <td>{parseFloat(boqDetail2.balance_bugdet).toFixed(2)}</td>
                                                     <td>{boqDetail2.balance_per % 1 !== 0 && boqDetail2.balance_per !== undefined ? boqDetail2.balance_per.toFixed(2) : boqDetail2.balance_per}</td>
                                                     <td>{boqDetail2.overdue_budget}</td>
-                                                    <td>{boqDetail2.overdue_per% 1 !== 0 && boqDetail2.overdue_per !== undefined ? boqDetail2.overdue_per.toFixed(2) : boqDetail2.overdue_per}</td>
+                                                    <td>{boqDetail2.overdue_per % 1 !== 0 && boqDetail2.overdue_per !== undefined ? boqDetail2.overdue_per.toFixed(2) : boqDetail2.overdue_per}</td>
                                                     <td>-</td>
                                                     <td>-</td>
                                                     <td>-</td>
@@ -1294,7 +1305,7 @@ const EstimationDetailsSubProject = () => {
                                                         aria-label="Toggle sub-category 3 visibility"
                                                       >
                                                         {openSubCategory4Id ===
-                                                        subCategory4.id ? (
+                                                          subCategory4.id ? (
                                                           <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             width="24"
@@ -1369,7 +1380,10 @@ const EstimationDetailsSubProject = () => {
                                                     <td></td>
                                                     <td>{subCategory4.name}</td>
                                                     <td>
-                                                      {parseFloat(subCategory4.budget).toFixed(2)}
+                                                      {/* {parseFloat(subCategory4.budget).toFixed(2)} */}
+                                                      {subCategory4.budget != null && subCategory4.budget !== ""
+                                                        ? parseFloat(subCategory4.budget).toFixed(2)
+                                                        : "0.00"}
                                                     </td>
                                                     <td>
                                                       {
@@ -1465,7 +1479,7 @@ const EstimationDetailsSubProject = () => {
                                                             <td>{parseFloat(boqDetail2.balance_bugdet).toFixed(2)}</td>
                                                             <td>{boqDetail2.balance_per % 1 !== 0 && boqDetail2.balance_per !== undefined ? boqDetail2.balance_per.toFixed(2) : boqDetail2.balance_per}</td>
                                                             <td>{boqDetail2.overdue_budget}</td>
-                                                            <td>{boqDetail2.overdue_per% 1 !== 0 && boqDetail2.overdue_per !== undefined ? boqDetail2.overdue_per.toFixed(2) : boqDetail2.overdue_per}</td>
+                                                            <td>{boqDetail2.overdue_per % 1 !== 0 && boqDetail2.overdue_per !== undefined ? boqDetail2.overdue_per.toFixed(2) : boqDetail2.overdue_per}</td>
                                                             <td>-</td>
                                                             <td>-</td>
                                                             <td>-</td>
@@ -1494,7 +1508,7 @@ const EstimationDetailsSubProject = () => {
                                                     subCategory4.sub_categories_5 &&
                                                     subCategory4
                                                       .sub_categories_5.length >
-                                                      0 &&
+                                                    0 &&
                                                     subCategory4.sub_categories_5.map(
                                                       (subCategory5) => (
                                                         <React.Fragment
@@ -1518,7 +1532,7 @@ const EstimationDetailsSubProject = () => {
                                                                 aria-label="Toggle sub-category 3 visibility"
                                                               >
                                                                 {openSubCategory5Id ===
-                                                                subCategory5.id ? (
+                                                                  subCategory5.id ? (
                                                                   <svg
                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                     width="24"
@@ -1587,8 +1601,7 @@ const EstimationDetailsSubProject = () => {
                                                             </td>
                                                             <td></td>
                                                             <td>
-                                                              Sub-Category Level
-                                                              5
+                                                              Sub-Category Level 5
                                                             </td>
                                                             <td></td>
                                                             <td></td>
@@ -1601,6 +1614,11 @@ const EstimationDetailsSubProject = () => {
                                                               {
                                                                 parseFloat(subCategory5.budget).toFixed(2)
                                                               }
+
+                                                              {subCategory5.budget != null && subCategory5.budget !== ""
+                                                                ? parseFloat(subCategory5.budget).toFixed(2)
+                                                                : "0.00"}
+
                                                             </td>
                                                             <td>
                                                               {
@@ -1701,7 +1719,7 @@ const EstimationDetailsSubProject = () => {
                                                                     <td>{boqDetail2.balance_bugdet % 1 !== 0 && boqDetail2.balance_bugdet !== undefined ? boqDetail2.balance_bugdet.toFixed(2) : boqDetail2.balance_bugdet}</td>
                                                                     <td>{boqDetail2.balance_per % 1 !== 0 && boqDetail2.balance_per !== undefined ? boqDetail2.balance_per.toFixed(2) : boqDetail2.balance_per}</td>
                                                                     <td>{boqDetail2.overdue_budget}</td>
-                                                                    <td>{boqDetail2.overdue_per% 1 !== 0 && boqDetail2.overdue_per !== undefined ? boqDetail2.overdue_per.toFixed(2) : boqDetail2.overdue_per}</td>
+                                                                    <td>{boqDetail2.overdue_per % 1 !== 0 && boqDetail2.overdue_per !== undefined ? boqDetail2.overdue_per.toFixed(2) : boqDetail2.overdue_per}</td>
                                                                     <td>-</td>
                                                                     <td>-</td>
                                                                     <td>-</td>
