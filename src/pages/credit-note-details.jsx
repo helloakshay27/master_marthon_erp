@@ -73,6 +73,7 @@ const CreditNoteDetails = () => {
         const uploadDate = localDate.toISOString().slice(0, 19); // include seconds (YYYY-MM-DDTHH:MM:SS)
 
         return {
+          id: att.id ,
           fileType: att.content_type || "",
           uploadDate,
           blob_id: att.blob_id || null,

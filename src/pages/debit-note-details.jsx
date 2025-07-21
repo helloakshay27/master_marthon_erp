@@ -87,12 +87,14 @@ const DebitNoteDetails = () => {
         const uploadDate = localDate.toISOString().slice(0, 19); // include seconds (YYYY-MM-DDTHH:MM:SS)
 
         return {
+          id: att.id , // ensure unique ID
           fileType: att.content_type || "",
           uploadDate,
           blob_id: att.blob_id || null,
           fileName: att.filename || "-",
           file:att.document_file_name,
           isExisting: true,
+          
         };
       });
       setAttachments(formattedDocuments); // ✅ Set to your documents array
@@ -2054,15 +2056,15 @@ const DebitNoteDetails = () => {
                           <h5 className=" ">Document Attachment</h5>
                           <div
                             className="card-tools d-flex"
-                            data-bs-toggle="modal"
-                            data-bs-target="#attachModal"
+                            // data-bs-toggle="modal"
+                            // data-bs-target="#attachModal"
                             // onClick={openattachModal}
                             onClick={handleAddRow}
                           >
                             <button
                               className="purple-btn2 mb-2 "
-                              data-bs-toggle="modal"
-                              data-bs-target="#attachModal"
+                              // data-bs-toggle="modal"
+                              // data-bs-target="#attachModal"
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
