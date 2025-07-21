@@ -152,7 +152,8 @@ const EventScheduleModal = ({
     } else {
       setIsCustomEvaluationDuration(false);
       setIsCustomEvaluationSelected(false);
-      setCustomEvaluationDuration("30 mins");
+      setEvaluationDurationVal("0");
+      setCustomEvaluationDuration("Not Applicable");
     }
   };
 
@@ -170,10 +171,12 @@ const EventScheduleModal = ({
       toast.error("Please select both end date and end time.");
       return;
     }
+    console.log(evaluationDurationVal, customEvaluationDuration);
+    
 
-    // Validation for evaluation time
+    // Validation for evaluation time - only validate when Duration is selected
     if (isCustomEvaluationDuration) {
-      if (!evaluationDurationVal || evaluationDurationVal === "Mins" || !customEvaluationDuration || customEvaluationDuration === "Mins") {
+      if (!evaluationDurationVal || evaluationDurationVal.trim() === "" || !customEvaluationDuration ) {
         toast.error("Please enter a valid evaluation duration.");
         return;
       }
@@ -199,10 +202,11 @@ const EventScheduleModal = ({
         ? `${endDate}T${endTime}:00Z`
         : ""; // Ensure it uses the latest updated values
 
-    const evaluationTimeFormatted =
-      evaluationDurationVal && customEvaluationDuration
-        ? `${evaluationDurationVal} ${customEvaluationDuration}`
-        : "Mins Mins"; // Use the latest evaluation duration values
+    const evaluationTimeFormatted = isCustomEvaluationDuration
+      ? (evaluationDurationVal && customEvaluationDuration
+          ? `${evaluationDurationVal} ${customEvaluationDuration}`
+          : "Mins Mins")
+      : "Not Applicable";
 
     const data = {
       start_time: startTime,
