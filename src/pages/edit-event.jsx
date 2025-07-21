@@ -885,16 +885,63 @@ export default function EditEvent() {
 
   const [eventData1, setEventData1] = useState(eventData2);
 
+  // const toISTISOString = (dateTime) => {
+  //   if (!dateTime) return "";
+  //   const date = new Date(dateTime);
+  //   if (isNaN(date.getTime())) {
+  //     console.warn("Invalid dateTime passed to toISTISOString:", dateTime);
+  //     return "";
+  //   }
+  //   date.setMinutes(date.getMinutes());
+  //   return date.toISOString().replace('Z', '+05:30');
+  // };
+
   const toISTISOString = (dateTime) => {
-    if (!dateTime) return "";
-    const date = new Date(dateTime);
-    if (isNaN(date.getTime())) {
-      console.warn("Invalid dateTime passed to toISTISOString:", dateTime);
-      return "";
-    }
-    date.setMinutes(date.getMinutes());
-    return date.toISOString().replace('Z', '+05:30');
-  };
+  // If dateTime is already in correct ISO string format with +05:30, just return it
+  if (!dateTime) return "";
+  if (typeof dateTime === "string" && dateTime.includes("+05:30")) {
+    return dateTime;
+  }
+  return "";
+};
+
+  const toISTStartTimeString = (dateTime) => {
+  if (!dateTime) return "";
+
+  // If it's already in the correct format with +05:30, return as-is
+  if (typeof dateTime === "string" && dateTime.includes("+05:30")) {
+    return dateTime;
+  }
+
+  // If it's a string in ISO format but with a different offset or UTC (Z)
+  if (typeof dateTime === "string") {
+    // Remove any timezone info and force +05:30
+    const cleaned = dateTime.replace(/([+-]\d{2}:\d{2}|Z)$/, "");
+    return `${cleaned}+05:30`;
+  }
+
+  // If it's a Date object (avoid using Date, but in case someone passes one)
+  if (dateTime instanceof Date && !isNaN(dateTime)) {
+    const pad = (n) => String(n).padStart(2, "0");
+
+    // Get IST time manually
+    const utc = dateTime.getTime() + (5.5 * 60 * 60 * 1000); // Add 5.5 hours
+    const istDate = new Date(utc);
+
+    const year = istDate.getUTCFullYear();
+    const month = pad(istDate.getUTCMonth() + 1);
+    const day = pad(istDate.getUTCDate());
+    const hours = pad(istDate.getUTCHours());
+    const minutes = pad(istDate.getUTCMinutes());
+    const seconds = pad(istDate.getUTCSeconds());
+    const milliseconds = String(istDate.getUTCMilliseconds()).padStart(3, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}+05:30`;
+  }
+
+  return "";
+};
+
 
   const handleSubmit = async (event) => {
     setLoading(true);
@@ -937,7 +984,7 @@ export default function EditEvent() {
         event_description: eventDescription || eventDetails?.event_description || "",
         event_schedule_attributes: {
           start_time:
-            toISTISOString(scheduleData.start_time) ||
+            toISTStartTimeString(scheduleData.start_time) ||
             (start_time) ||
             (eventDetails?.event_schedule?.start_time) ||
             "",
