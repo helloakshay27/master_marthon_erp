@@ -225,69 +225,73 @@ const Events = () => {
               id="all"
               role="tabpanel"
               tabIndex={0}
+              style={{ overflow: "hidden" }} // Add this to prevent extra space
             >
               {allEventsData.length > 0 ? (
-                allEventsData.map((event, index) => (
-                  <div
-                    className="eventList-main"
-                    key={index}
-                    onClick={() => navigate(`/event/${event.event_no}`)}
-                  >
-                    <div className="d-flex flex-row-reverse">
-                      <div className="eventList-child1 d-flex align-items-center gap-2 py-3">
-                        {event.endsIn ? (
-                          <div className="d-flex align-items-center gap-2">
-                            <ClockIcon />
-                            <p className="mb-0 eventList-p1">Ends In</p>
-                          </div>
-                        ) : (
-                          <div className="d-flex align-items-center gap-2">
-                            <i className="bi bi-hourglass-split"></i>
-                            <p className="mb-0 eventList-p1">Bid Approves In</p>
-                          </div>
-                        )}
-                        <span>{event.timeRemaining}</span>
+                <div className="events-container"> {/* Wrap in container */}
+                  {allEventsData.map((event, index) => (
+                    <div
+                      className="eventList-main"
+                      key={index}
+                      onClick={() => navigate(`/event/${event.event_no}`)}
+                      style={{ marginRight: 0, width: "100%" }} // Ensure no extra margin
+                    >
+                      <div className="d-flex flex-row-reverse">
+                        <div className="eventList-child1 d-flex align-items-center gap-2 py-3">
+                          {event.endsIn ? (
+                            <div className="d-flex align-items-center gap-2">
+                              <ClockIcon />
+                              <p className="mb-0 eventList-p1">Ends In</p>
+                            </div>
+                          ) : (
+                            <div className="d-flex align-items-center gap-2">
+                              <i className="bi bi-hourglass-split"></i>
+                              <p className="mb-0 eventList-p1">Bid Approves In</p>
+                            </div>
+                          )}
+                          <span>{event.timeRemaining}</span>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="eventList-child2">
-                      <div className="d-flex justify-content-between  p-3 w-100 position-relative">
-                        <div>
-                          <h6 style={{ color: "#6c757d", fontSize: "0.75rem" }}>
-                            {event.created_by}
-                          </h6>
-                          <p className="mb-0 eventList-p2">
-                            {event.event_title}
-                          </p>
-                          <p className="mb-0 eventList-p2">{event.event_no}</p>
-                          {/* <p className="mb-0 eventList-p2">
+                      <div className="eventList-child2">
+                        <div className="d-flex justify-content-between  p-3 w-100 position-relative">
+                          <div>
+                            <h6 style={{ color: "#6c757d", fontSize: "0.75rem" }}>
+                              {event.created_by}
+                            </h6>
+                            <p className="mb-0 eventList-p2">
+                              {event.event_title}
+                            </p>
+                            <p className="mb-0 eventList-p2">{event.event_no}</p>
+                            {/* <p className="mb-0 eventList-p2">
                             {event.delivary_location}
                           </p> */}
 
-                          <div className="d-flex align-items-center mt-3">
-                            <p className="mb-0 eventList-p3 me-2">
-                              {event.event_type_detail.event_type}
-                            </p>
-                            <p className="mb-0 eventList-p1">
-                              {event.productsCount}
-                            </p>
-                          </div>
-                        </div>
-                        {event.delivary_location && (
-                          <div className="w-25">
-                            <div className="d-flex align-items-start gap-2">
-                              <i className="bi bi-truck"></i>
-                              <p>Delivery at</p>
+                            <div className="d-flex align-items-center mt-3">
+                              <p className="mb-0 eventList-p3 me-2">
+                                {event.event_type_detail.event_type}
+                              </p>
+                              <p className="mb-0 eventList-p1">
+                                {event.productsCount}
+                              </p>
                             </div>
-                            <p className="mb-0 eventList-p2">
-                              {event.delivary_location}
-                            </p>
                           </div>
-                        )}
+                          {event.delivary_location && (
+                            <div className="w-25">
+                              <div className="d-flex align-items-start gap-2">
+                                <i className="bi bi-truck"></i>
+                                <p>Delivery at</p>
+                              </div>
+                              <p className="mb-0 eventList-p2">
+                                {event.delivary_location}
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               ) : (
                 <p>No events available.</p>
               )}
