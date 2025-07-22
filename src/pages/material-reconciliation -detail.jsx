@@ -422,7 +422,7 @@ const MaterialReconciliationDetail = () => {
                         <th>Sr.No.</th>
                         <th>Material</th>
                         <th>Stock As on</th>
-                        <th>Rate (Weighted Average)(INR)</th>
+                        {/* <th>Rate (Weighted Average)(INR)</th> */}
                         <th>Deadstock Qty</th>
                         <th>Theft / Missing Qty</th>
                         <th> Damage Qty</th>
@@ -603,7 +603,7 @@ const MaterialReconciliationDetail = () => {
                             <td>{index + 1}</td>
                             <td>{item.material}</td>
                             <td>{item.stock_as_on}</td>
-                            <td>{item.rate}</td>
+                            {/* <td>{item.rate}</td> */}
                             <td>{item.deadstock_qty}</td>
                             <td>{item.theft_or_missing_qty}</td>
                             <td>{item.damage_qty}</td>

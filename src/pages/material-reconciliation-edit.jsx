@@ -1512,7 +1512,7 @@ const MaterialReconciliationEdit = () => {
                       <th style={{ minWidth: "150px" }}>Material</th>
                       <th>UOM</th>
                       <th style={{ minWidth: "80px" }}>Stock As on</th>
-                      <th>Rate (Weighted Average)(INR)</th>
+                      {/* <th>Rate (Weighted Average)(INR)</th> */}
                       <th style={{ minWidth: "120px" }}>Deadstock Qty</th>
                       <th style={{ minWidth: "120px" }}>Theft / Missing Qty</th>
                       <th style={{ minWidth: "120px" }}>Damage Qty</th>
@@ -1535,7 +1535,7 @@ const MaterialReconciliationEdit = () => {
                           <td>{item.material}</td>
                           <td>{item.uom}</td>
                           <td>{item.stock_as_on}</td>
-                          <td>{item.rate}</td>
+                          {/* <td>{item.rate}</td> */}
                           <td>
                             <input
                               className="form-control"
@@ -2184,7 +2184,7 @@ const MaterialReconciliationEdit = () => {
         size="xl"
       >
         <Modal.Header closeButton>
-          <Modal.Title>Batch Deatails</Modal.Title>
+          <Modal.Title>Batch Details</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="tbl-container">
