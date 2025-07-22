@@ -1000,7 +1000,7 @@ const POAdvanceNoteDetails = () => {
                   aria-labelledby="pills-home-tab"
                 >
                   <section className="mor p-2 pt-2">
-                    <div className="mor-tabs mt-4 ">
+                    {/* <div className="mor-tabs mt-4 ">
                       <ul
                         className="nav nav-pills mb-3 justify-content-center"
                         id="pills-tab"
@@ -1092,8 +1092,8 @@ const POAdvanceNoteDetails = () => {
                           </button>
                         </li>
                       </ul>
-                    </div>
-                    <div className="row justify-content-center my-4">
+                    </div> */}
+                    {/* <div className="row justify-content-center my-4">
                       <div className="col-md-10 ">
                         <div className="progress-steps">
                           <div className="top">
@@ -1122,16 +1122,16 @@ const POAdvanceNoteDetails = () => {
                           </div>
                           <div className="buttons d-m">
                             {/* Prev Button */}
-                            <button
+                            {/* <button
                               className={`btn btn-prev ${currentStep === 1 ? "disabled" : ""
                                 }`}
                               onClick={handlePrev}
                               disabled={currentStep === 1}
                             >
                               Prev
-                            </button>
+                            </button> */}
                             {/* Next Button */}
-                            <button
+                            {/* <button
                               className={`btn btn-next ${currentStep === totalSteps ? "disabled" : ""
                                 }`}
                               onClick={handleNext}
@@ -1142,7 +1142,7 @@ const POAdvanceNoteDetails = () => {
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </div> */} 
 
                     {/* form-select EXAMPLE */}
                     <div
@@ -1161,7 +1161,7 @@ const POAdvanceNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {advanceNote?.company_name || ""}
+                                  {advanceNote?.company_name || "-"}
                                 </label>
                               </div>
                             </div>
@@ -1174,7 +1174,7 @@ const POAdvanceNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {advanceNote?.project_name || ""}
+                                  {advanceNote?.project_name || "-"}
                                 </label>
                               </div>
                             </div>
@@ -1187,7 +1187,7 @@ const POAdvanceNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {advanceNote?.advance_number || ""}
+                                  {advanceNote?.advance_number || "-"}
                                 </label>
                               </div>
                             </div>
@@ -1213,7 +1213,7 @@ const POAdvanceNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {advanceNote?.po_number || ""}
+                                  {advanceNote?.po_number || "-"}
                                 </label>
                               </div>
                             </div>
@@ -1244,7 +1244,7 @@ const POAdvanceNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {advanceNote?.po_value || ""}
+                                  {advanceNote?.po_value || "-"}
                                 </label>
                               </div>
                             </div>
@@ -1296,7 +1296,7 @@ const POAdvanceNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {advanceNote?.supplier_name || ""}
+                                  {advanceNote?.supplier_name || "-"}
                                 </label>
                               </div>
                             </div>
@@ -1309,7 +1309,7 @@ const POAdvanceNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {advanceNote?.gstn_number || ""}
+                                  {advanceNote?.gstn_number || "-"}
                                 </label>
                               </div>
                             </div>
@@ -1322,7 +1322,7 @@ const POAdvanceNoteDetails = () => {
                                   <span className="me-3">
                                     <span className="text-dark">:</span>
                                   </span>
-                                  {advanceNote?.pan_no || ""}
+                                  {advanceNote?.pan_no || "-"}
                                 </label>
                               </div>
                             </div>
@@ -1497,6 +1497,7 @@ const POAdvanceNoteDetails = () => {
                                     <label>Advance Amount</label>
 
                                     <input
+                                      disabled
                                       type="number"
                                       className="form-control"
                                       value={editableAdvanceNote.advance_amount || ""}
@@ -1510,9 +1511,11 @@ const POAdvanceNoteDetails = () => {
                                     <label>Net Payable</label>
 
                                     <input
+                                     disabled
                                       type="number"
                                       className="form-control"
-                                      value={editableAdvanceNote.net_payable || ""}
+                                       value={calculatePayableAmount() || ""}
+                                      // value={editableAdvanceNote.net_payable || ""}
                                       onChange={(e) => handleInputChange("net_payable", e.target.value)}
                                     />
                                   </div>

@@ -1290,7 +1290,7 @@ const MaterialReconciliationCreate = () => {
                       <th style={{ minWidth: "150px" }}>Material</th>
                       <th>UOM</th>
                       <th style={{ minWidth: "80px" }}>Stock As on</th>
-                      <th>Rate (Weighted Average)(INR)</th>
+                      {/* <th>Rate (Weighted Average)(INR)</th> */}
                       {/* <th>Deadstock Qty</th>
                       <th>Theft / Missing Qty</th>
                       <th>Wastage Qty</th>
@@ -1315,7 +1315,7 @@ const MaterialReconciliationCreate = () => {
                         <td>{inventory.material}</td>
                         <td>{inventory.uom}</td>
                         <td>{inventory.stock_as_on || 0}</td>
-                        <td>{inventory.rate_weighted_average}</td>
+                        {/* <td>{inventory.rate_weighted_average}</td> */}
                         <td>
                           <input
                             type="number"
@@ -2022,7 +2022,7 @@ const MaterialReconciliationCreate = () => {
         size="xl"
       >
         <Modal.Header closeButton>
-          <Modal.Title>Batch Deatails</Modal.Title>
+          <Modal.Title>Batch Details</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="tbl-container">
