@@ -1298,7 +1298,7 @@ export default function CreateEvent() {
                           <button
                             className="btn btn-danger"
                             onClick={() => handleRemoveTextarea(textarea.id)}
-                            disabled={idx === 0}
+                            // disabled={idx === 0}
                           >
                             Remove
                           </button>
