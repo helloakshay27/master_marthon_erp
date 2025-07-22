@@ -13,6 +13,7 @@ function DynamicModalBox({
   keyboard = true,
   footerButtons = [],
   modalType = null,
+  footerSticky = false,
 }) {
   const customClass = size === "xxl" ? "modal-xxl" : "";
 
@@ -27,7 +28,7 @@ function DynamicModalBox({
       keyboard={keyboard}
       className={`${
         modalType ? "setting-modal" : "modal-centered-custom"
-      } ${customClass}`}
+      } ${customClass} ${!footerSticky ? "modal-footer-below-content" : ""}`}
     >
       <Modal.Header>
         <div className="container-fluid p-0 d-flex justify-content-between align-items-center">
@@ -43,9 +44,14 @@ function DynamicModalBox({
           />
         </div>
       </Modal.Header>
-      <Modal.Body className="position-relative">{children}</Modal.Body>
+      <Modal.Body 
+        className={!footerSticky ? "modal-body-min-height" : "position-relative"}
+        style={!footerSticky ? { flex: 'none', height: 'auto' } : {}}
+      >
+        {children}
+      </Modal.Body>
       {footerButtons.length > 0 && (
-        <Modal.Footer className="modal-footer justify-content-center">
+        <Modal.Footer className={`modal-footer ${footerSticky ? "justify-content-center" : "justify-content-center position-relative"}`}>
           {footerButtons.map((btn, index) => (
             <button
               key={index}

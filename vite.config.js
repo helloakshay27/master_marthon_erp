@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true, // Exposes server to the network (0.0.0.0)
-    port: 3000, // Use a non-privileged port
-    strictPort: true, // Fail if port 3000 is not available
+    port: 3000, // Changed from 3000 to 3001
+    strictPort: true, // Fail if port 3001 is not available
     proxy: {
       '/api': {
         target: 'https://marathon.lockated.com',
