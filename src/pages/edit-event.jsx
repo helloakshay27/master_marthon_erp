@@ -885,61 +885,82 @@ export default function EditEvent() {
 
   const [eventData1, setEventData1] = useState(eventData2);
 
-  // const toISTISOString = (dateTime) => {
-  //   if (!dateTime) return "";
-  //   const date = new Date(dateTime);
-  //   if (isNaN(date.getTime())) {
-  //     console.warn("Invalid dateTime passed to toISTISOString:", dateTime);
-  //     return "";
-  //   }
-  //   date.setMinutes(date.getMinutes());
-  //   return date.toISOString().replace('Z', '+05:30');
-  // };
-
-  const toISTISOString = (dateTime) => {
-  // If dateTime is already in correct ISO string format with +05:30, just return it
+  // Replace the existing toISTISOString function with proper conversion
+const toISTISOString = (dateTime) => {
   if (!dateTime) return "";
+  
+  // If dateTime is already in correct ISO string format with +05:30, just return it
   if (typeof dateTime === "string" && dateTime.includes("+05:30")) {
     return dateTime;
   }
-  return "";
+  
+  // If it's a Date object or timestamp, convert it to IST
+  const date = new Date(dateTime);
+  if (isNaN(date.getTime())) return "";
+  
+  // Manually format to IST without using 'Z'
+  const pad = (n) => String(n).padStart(2, "0");
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+  const milliseconds = String(date.getMilliseconds()).padStart(3, "0");
+  
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}+05:30`;
 };
 
-  const toISTStartTimeString = (dateTime) => {
+// Add a dedicated function for end time conversion
+const toISTEndTimeString = (dateTime) => {
   if (!dateTime) return "";
-
-  // If it's already in the correct format with +05:30, return as-is
+  
+  // If dateTime is already in correct ISO string format with +05:30, just return it
   if (typeof dateTime === "string" && dateTime.includes("+05:30")) {
     return dateTime;
   }
+  
+  // If it's a Date object or timestamp, convert it to IST
+  const date = new Date(dateTime);
+  if (isNaN(date.getTime())) return "";
+  
+  // Manually format to IST without using 'Z'
+  const pad = (n) => String(n).padStart(2, "0");
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+  const milliseconds = String(date.getMilliseconds()).padStart(3, "0");
+  
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}+05:30`;
+};
 
-  // If it's a string in ISO format but with a different offset or UTC (Z)
-  if (typeof dateTime === "string") {
-    // Remove any timezone info and force +05:30
-    const cleaned = dateTime.replace(/([+-]\d{2}:\d{2}|Z)$/, "");
-    return `${cleaned}+05:30`;
+// Add the missing toISTStartTimeString function
+const toISTStartTimeString = (dateTime) => {
+  if (!dateTime) return "";
+  
+  // If dateTime is already in correct ISO string format with +05:30, just return it
+  if (typeof dateTime === "string" && dateTime.includes("+05:30")) {
+    return dateTime;
   }
-
-  // If it's a Date object (avoid using Date, but in case someone passes one)
-  if (dateTime instanceof Date && !isNaN(dateTime)) {
-    const pad = (n) => String(n).padStart(2, "0");
-
-    // Get IST time manually
-    const utc = dateTime.getTime() + (5.5 * 60 * 60 * 1000); // Add 5.5 hours
-    const istDate = new Date(utc);
-
-    const year = istDate.getUTCFullYear();
-    const month = pad(istDate.getUTCMonth() + 1);
-    const day = pad(istDate.getUTCDate());
-    const hours = pad(istDate.getUTCHours());
-    const minutes = pad(istDate.getUTCMinutes());
-    const seconds = pad(istDate.getUTCSeconds());
-    const milliseconds = String(istDate.getUTCMilliseconds()).padStart(3, "0");
-
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}+05:30`;
-  }
-
-  return "";
+  
+  // If it's a Date object or timestamp, convert it to IST
+  const date = new Date(dateTime);
+  if (isNaN(date.getTime())) return "";
+  
+  // Manually format to IST without using 'Z'
+  const pad = (n) => String(n).padStart(2, "0");
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+  const milliseconds = String(date.getMilliseconds()).padStart(3, "0");
+  
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}+05:30`;
 };
 
 
@@ -985,12 +1006,12 @@ export default function EditEvent() {
         event_schedule_attributes: {
           start_time:
             toISTStartTimeString(scheduleData.start_time) ||
-            (start_time) ||
+            toISTISOString(start_time) ||
             (eventDetails?.event_schedule?.start_time) ||
             "",
           end_time:
-            toISTISOString(scheduleData.end_time_duration) ||
-            (end_time) ||
+            toISTEndTimeString(scheduleData.end_time_duration) ||
+            toISTISOString(end_time) ||
             (eventDetails?.event_schedule?.end_time) ||
             "",
           evaluation_time:
@@ -2136,7 +2157,7 @@ export default function EditEvent() {
                                   const response = await fetch(
                                     `${baseURL}rfq/events/vendor_list?token=${token}&page=1&q[first_name_or_last_name_or_email_or_mobile_or_nature_of_business_name_cont]=&q[supplier_product_and_services_resource_id_in]=${JSON.stringify(
                                       selectedValues
-                                    )}`
+                                                                       )}`
                                   );
 
                                   const data = await response.json();

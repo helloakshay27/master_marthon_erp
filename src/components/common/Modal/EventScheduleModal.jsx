@@ -41,12 +41,27 @@ const EventScheduleModal = ({
 
   useEffect(() => {
     if (existingData) {
-      const startTime = new Date(existingData.start_time);
-      setLaterDate(startTime.toISOString().split("T")[0]);
-      setLaterTime(startTime.toTimeString().split(" ")[0].substring(0, 5));
-      const endTime = new Date(existingData.end_time);
-      setEndDate(endTime.toISOString().split("T")[0]);
-      setEndTime(endTime.toTimeString().split(" ")[0].substring(0, 5));
+      // Handle existing data without timezone conversion issues
+      if (existingData.start_time) {
+        // Parse the ISO string and extract date/time parts directly
+        const startTimeStr = existingData.start_time;
+        if (startTimeStr.includes("T")) {
+          const [datePart, timePart] = startTimeStr.split("T");
+          setLaterDate(datePart);
+          setLaterTime(timePart.substring(0, 5)); // Get HH:MM part
+          setIsLater(true); // Set to later since we have existing data
+        }
+      }
+      
+      if (existingData.end_time) {
+        // Parse the ISO string and extract date/time parts directly
+        const endTimeStr = existingData.end_time;
+        if (endTimeStr.includes("T")) {
+          const [datePart, timePart] = endTimeStr.split("T");
+          setEndDate(datePart);
+          setEndTime(timePart.substring(0, 5)); // Get HH:MM part
+        }
+      }
 
       if (typeof existingData.evaluation_time === "string") {
         const [evaluationValue, evaluationUnit] =
@@ -71,6 +86,7 @@ const EventScheduleModal = ({
 
   useEffect(() => {
     if (endDate && endTime) {
+      // Create date without timezone conversion
       const endDateTime = new Date(`${endDate}T${endTime}`);
       setFormattedEndTime(format(endDateTime, "dd MMM yyyy 'at' hh:mm a"));
     }
@@ -188,19 +204,31 @@ const EventScheduleModal = ({
       }
     }
 
-    const currentTime = new Date();
-    const startTime = isLater
-      ? `${laterDate}T${laterTime}:00Z`
-      : `${new Date().toISOString().split("T")[0]}T${new Date()
-          .toTimeString()
-          .split(" ")[0]
-          .substring(0, 5)}:00Z`; // Use the latest current time if not scheduled for later
+    // Properly format start time with IST timezone without 'Z'
+    let startTime;
+    if (isLater) {
+      // Use the selected date and time directly without timezone conversion
+      startTime = `${laterDate}T${laterTime}:00.000+05:30`;
+    } else {
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      const year = now.getFullYear();
+      const month = pad(now.getMonth() + 1);
+      const day = pad(now.getDate());
+      const hours = pad(now.getHours());
+      const minutes = pad(now.getMinutes());
+      const seconds = pad(now.getSeconds());
+      const milliseconds = String(now.getMilliseconds()).padStart(3, "0");
+      startTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}+05:30`;
+    }
+    
     console.log("startTime", startTime);
 
+    // Use the selected date and time directly without timezone conversion
     const endTimeFormatted =
       endDate && endTime
-        ? `${endDate}T${endTime}:00Z`
-        : ""; // Ensure it uses the latest updated values
+        ? `${endDate}T${endTime}:00.000+05:30`
+        : "";
 
     const evaluationTimeFormatted = isCustomEvaluationDuration
       ? (evaluationDurationVal && customEvaluationDuration
@@ -380,7 +408,7 @@ const EventScheduleModal = ({
           <button className="purple-btn1" onClick={onHide}>
             Back
           </button>
-          <button className="purple-btn2" onClick={handleSaveScheduleFun}>
+          <button className="purple-btn2 my-2" onClick={handleSaveScheduleFun}>
             Save
           </button>
         </div>
