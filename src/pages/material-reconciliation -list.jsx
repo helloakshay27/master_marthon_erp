@@ -37,6 +37,10 @@ const MaterialReconciliationList = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [selectedSite, setSelectedSite] = useState(null);
   const [siteOptions, setSiteOptions] = useState([]);
+
+  const [selectedWing, setSelectedWing] = useState(null);
+
+  const [wingsOptions, setWingsOptions] = useState([]);
   const [reconciliationData, setReconciliationData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -67,6 +71,7 @@ const MaterialReconciliationList = () => {
     uom: "",
   });
   const [isFiltered, setIsFiltered] = useState(false);
+  const [isBulkActionMode, setIsBulkActionMode] = useState(false);
 
   const handleModalShow = () => setShow(true);
   const handleClose = () => setShow(false);
@@ -100,6 +105,7 @@ const MaterialReconciliationList = () => {
   // Handle status change for 'From Status'
   const handleStatusChange = (selectedOption) => {
     setFromStatus(selectedOption.value);
+    setIsBulkActionMode(!!selectedOption.value);
     setCurrentPage(1);
     // Call fetchData with the selected status, resetting to page 1
     fetchData(1, {
@@ -179,6 +185,10 @@ const MaterialReconciliationList = () => {
     setSelectedCompany(selectedOption); // Set selected company
     setSelectedProject(null); // Reset project selection
     setSelectedSite(null); // Reset site selection
+       setProjects([]); // Reset projects
+       
+    setSiteOptions([]); // Reset site options
+    setWingsOptions([]); // Reset wings options
 
     if (selectedOption) {
       // Find the selected company from the list
@@ -201,6 +211,8 @@ const MaterialReconciliationList = () => {
   const handleProjectChange = (selectedOption) => {
     setSelectedProject(selectedOption);
     setSelectedSite(null); // Reset site selection
+    setSiteOptions([]); // Reset site options
+    setWingsOptions([]); // Reset wings options
 
     if (selectedOption) {
       // Find the selected project from the list of projects of the selected company
@@ -225,8 +237,40 @@ const MaterialReconciliationList = () => {
   //   console.log("selected sub prj...",siteOptions)
 
   // Handle site selection
+  // const handleSiteChange = (selectedOption) => {
+  //   setSelectedSite(selectedOption);
+  // };
+
   const handleSiteChange = (selectedOption) => {
     setSelectedSite(selectedOption);
+    setSelectedWing(null); // Reset wing selection
+    setWingsOptions([]); // Reset wings options
+
+    if (selectedOption) {
+      // Find the selected project and site data
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedCompany.value
+      );
+      const selectedProjectData = selectedCompanyData.projects.find(
+        (project) => project.id === selectedProject.value
+      );
+      const selectedSiteData = selectedProjectData?.pms_sites.find(
+        (site) => site.id === selectedOption.value
+      );
+
+      // Set wings options based on selected site
+      setWingsOptions(
+        selectedSiteData?.pms_wings.map((wing) => ({
+          value: wing.id,
+          label: wing.name,
+        })) || []
+      );
+    }
+  };
+
+  // Handle wing selection
+  const handleWingChange = (selectedOption) => {
+    setSelectedWing(selectedOption);
   };
 
   // Map companies to options for the dropdown
@@ -244,6 +288,7 @@ const MaterialReconciliationList = () => {
       companyId: selectedCompany?.value,
       projectId: selectedProject?.value,
       siteId: selectedSite?.value,
+      wingId: selectedWing?.value,
       status: fromStatus,
     },
     search = searchTerm
@@ -261,6 +306,9 @@ const MaterialReconciliationList = () => {
     }
     if (filters.siteId) {
       url += `&q[sub_project_id_eq]=${filters.siteId}`;
+    }
+     if (filters.wingId) {
+      url += `&q[pms_wings_id_eq]]=${filters.wingId}`;
     }
     if (filters.status) {
       url += `&q[status_eq]=${filters.status}`;
@@ -564,6 +612,7 @@ const MaterialReconciliationList = () => {
   const handleTabClick = (status) => {
     setActiveStatusTab(status);
     setFromStatus(status);
+    setIsBulkActionMode(false);
     setCurrentPage(1);
     fetchData(1, {
       companyId: selectedCompany?.value,
@@ -1175,7 +1224,7 @@ display:none !important;
             <div className="card mt-3 pb-4">
               <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
                 <div className="row">
-                  <div className="col-md-3">
+                  <div className="col-md-4">
                     <div className="form-group">
                       <label>Company</label>
 
@@ -1192,7 +1241,7 @@ display:none !important;
                       )} */}
                     </div>
                   </div>
-                  <div className="col-md-3">
+                  <div className="col-md-4">
                     <div className="form-group">
                       <label>Project</label>
 
@@ -1209,7 +1258,7 @@ display:none !important;
                       )} */}
                     </div>
                   </div>
-                  <div className="col-md-3">
+                  <div className="col-md-4">
                     <div className="form-group">
                       <label>
                         Sub-Project
@@ -1229,17 +1278,31 @@ display:none !important;
                       )} */}
                     </div>
                   </div>
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Wing</label>
+                      <SingleSelector
+                        options={wingsOptions}
+                        value={selectedWing}
+                        onChange={handleWingChange}
+                        placeholder={`Select Wing`} // Dynamic placeholder
+                      />
+                    </div>
+                  </div>
 
-                  <div className="col-md-3 mt-4">
+                  <div className="col-md-4 mt-4">
                     <button
-                      className="purple-btn2 "
+                      className="purple-btn2 mt-3"
                       onClick={validateAndFetchFilteredData}
                     >
                       Go
                     </button>
 
                     {/* <div className="col-md-1 mt-4 d-flex justify-content-center"> */}
-                    <button className="purple-btn2 ms-3" onClick={handleReset}>
+                    <button
+                      className="purple-btn2 ms-3 mt-3"
+                      onClick={handleReset}
+                    >
                       Reset
                     </button>
                   </div>
@@ -1406,7 +1469,7 @@ display:none !important;
                   autoHeight={false}
                   getRowId={(row) => row.id}
                   loading={loading}
-                  checkboxSelection={!!fromStatus} //
+                  checkboxSelection={isBulkActionMode}
                   selectionModel={selectedIds}
                   onSelectionModelChange={(ids) => {
                     setSelectedIds(ids.map(String));

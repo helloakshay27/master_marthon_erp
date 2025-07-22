@@ -2019,7 +2019,7 @@ console.log("attachments:", attachmentsPayload)
                             <div className="form-group">
                               <label>
                                 From Store{" "}
-                                <span style={{ color: "red" }}>*</span>
+                                <span >*</span>
                               </label>
                               <SingleSelector
                                 options={stores}
@@ -2103,7 +2103,7 @@ console.log("attachments:", attachmentsPayload)
                           </div>
                           <div className="col-md-3 mt-2">
                             <div className="form-group">
-                              <label>PO/WO No *</label>
+                              <label>PO/WO No  <span> *</span></label>
                               <SingleSelector
                                 options={poOptions}
                                 onChange={(selected) => {
@@ -2306,7 +2306,8 @@ console.log("attachments:", attachmentsPayload)
                   <div className="form-group">
                     <label>
                       Expected Return Date{" "}
-                      {formData.gate_pass_type === "return_to_vendor" && "*"}
+                      {/* {formData.gate_pass_type === "return_to_vendor"} */}
+                       {formData.is_returnable === "returnable" && <span > *</span>}
                     </label>
                     <input
                       type="date"
