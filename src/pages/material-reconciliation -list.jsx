@@ -1230,9 +1230,9 @@ display:none !important;
                     </div>
                   </div>
 
-                  <div className="col-md-2 mt-4">
+                  <div className="col-md-3 mt-4">
                     <button
-                      className="purple-btn2 m-0 "
+                      className="purple-btn2 "
                       onClick={validateAndFetchFilteredData}
                     >
                       Go
