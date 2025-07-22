@@ -1945,7 +1945,7 @@ const toISTStartTimeString = (dateTime) => {
               <button
                 className="btn btn-danger"
                 onClick={() => handleRemoveTextarea(textarea.id)}
-                disabled={textareas.length === 1}
+                // disabled={textareas.length === 1}
               >
                 Remove
               </button>
