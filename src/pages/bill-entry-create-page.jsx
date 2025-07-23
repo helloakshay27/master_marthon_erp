@@ -1241,6 +1241,12 @@ const BillEntryListSubPage = () => {
                       value={formData.bill_amount}
                       onChange={handleBillAmountChange}
                       placeholder=""
+                      onKeyDown={(e) => {
+                        if (e.key === "-" || e.key === "e") {
+                          e.preventDefault(); // block minus sign and 'e' (for scientific notation)
+                        }
+                      }}
+                      min="0" // prevents negative values from being typed
                     />
                   </div>
                 </div>
@@ -2032,8 +2038,8 @@ const BillEntryListSubPage = () => {
                       ))}
                       <li
                         className={`page-item ${pagination.current_page === pagination.total_pages
-                            ? "disabled"
-                            : ""
+                          ? "disabled"
+                          : ""
                           }`}
                       >
                         <button
@@ -2050,8 +2056,8 @@ const BillEntryListSubPage = () => {
                       </li>
                       <li
                         className={`page-item ${pagination.current_page === pagination.total_pages
-                            ? "disabled"
-                            : ""
+                          ? "disabled"
+                          : ""
                           }`}
                       >
                         <button

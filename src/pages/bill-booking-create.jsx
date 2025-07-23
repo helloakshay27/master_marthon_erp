@@ -771,6 +771,7 @@ const BillBookingCreate = () => {
     currentAdvanceDeduction: "",
     status: "",
     roundOffAmount: "",
+    certified_till_date: ""
   });
 
   const [billEntryOptions, setBillEntryOptions] = useState([]);
@@ -943,6 +944,8 @@ const BillBookingCreate = () => {
             `${baseURL}/bill_entries/${selectedBillEntry.value}?token=${token}`
           );
           const data = response.data;
+          console.log("response:", response.data.
+            certified_till_date)
 
           setFormData((prev) => ({
             ...prev,
@@ -956,7 +959,7 @@ const BillBookingCreate = () => {
             totalAmount: data.bill_amount || "", // <-- Add this line
             invoiceNumber: data.bill_no || "", // Auto-populate from bill_no
             paymentDueDate: formatDateForInput(data.due_date) || "",
-
+            certified_till_date: data.certified_till_date || 0,
             // data.due_date || "", // Add this line to get due date
           }));
 
@@ -998,8 +1001,13 @@ const BillBookingCreate = () => {
               pan: data.pan_no,
               due_date: data.purchase_order?.due_date, // Add this line
               grn_materials: [],
+              certified_till_date: data.purchase_order?.certified_till_date
             });
             setSelectedGRNs([]);
+            // setFormData((prev) => ({
+            //   ...prev,
+            //   certified_till_date: data.purchase_order?.certified_till_date || 0,
+            // }));
           }
         } catch (error) {
           console.error("Error fetching bill entry or PO GRN details:", error);
@@ -1008,6 +1016,9 @@ const BillBookingCreate = () => {
       fetchBillEntryDetails();
     }
   }, [selectedBillEntry]);
+
+  console.log("po selected:", selectedPO)
+   console.log("po selected formdata:", formData)
 
   useEffect(() => {
     if (!selectedBillEntry) {
@@ -1454,11 +1465,34 @@ const BillBookingCreate = () => {
     const invoiceAmount = parseFloat(formData.invoiceAmount) || 0;
     const payableAmount = parseFloat(calculateAmountPayable()) || 0;
     const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
+    // const certifiedTillDate = parseFloat(formData.certified_till_date) || 0;
+
+    let certifiedTillDate = 0
+    if (selectedPO?.certified_till_date) {
+      certifiedTillDate = parseFloat(selectedPO?.certified_till_date) || 0;
+    } else {
+      certifiedTillDate = parseFloat(formData?.certified_till_date) || 0;
+    }
+
+    console.log("handle submit c till date:", certifiedTillDate)
 
     if (invoiceAmount < payableAmount) {
       // alert("Invoice Amount should not be less than Payable Amount.");
       // return;
       toast.error("Invoice Amount should not be less than Payable Amount.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
+    }
+
+
+    if (payableAmount > totalAmount + certifiedTillDate) {
+      toast.error("Amount Payable should not be greater than PO Amount", {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -2121,7 +2155,7 @@ const BillBookingCreate = () => {
     return !isNaN(num) && num >= 0;
   };
 
-  console.log("selected po:", selectedPO)
+  // console.log("selected po:", selectedPO)
   // Document attachment state and handlers for advanced modal
   const [newDocument, setNewDocument] = useState({
     document_type: "",
@@ -3166,8 +3200,8 @@ const BillBookingCreate = () => {
                         value={calculateAmountPayable()}
                         // readOnly
                         placeholder="Enter other addition amount"
-                        // amount payable should be total amount - retention amount
-                        // disabled
+                      // amount payable should be total amount - retention amount
+                      // disabled
                       />
                     </div>
                   </div>
@@ -3384,7 +3418,7 @@ const BillBookingCreate = () => {
                               }
                             }}
                             placeholder="Enter retention percentage"
-                            disabled
+                            // disabled
                             min="0"
                             max="100"
                           />
@@ -3425,7 +3459,7 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div> */}
-
+ {!withoutBillEntry && withBillEntry && (
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Total Certified Till Date</label>
@@ -3434,9 +3468,28 @@ const BillBookingCreate = () => {
                         type="number"
                         placeholder=""
                         fdprocessedid="qv9ju9"
+                        value={formData.certified_till_date}
+                        disabled
                       />
                     </div>
                   </div>
+ )}
+
+  {withoutBillEntry && !withBillEntry && (
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Total Certified Till Date</label>
+                      <input
+                        className="form-control"
+                        type="number"
+                        placeholder=""
+                        fdprocessedid="qv9ju9"
+                        value={selectedPO?.certified_till_date}
+                        disabled
+                      />
+                    </div>
+                  </div>
+ )}
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Remark</label>

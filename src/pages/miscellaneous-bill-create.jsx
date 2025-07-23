@@ -26,8 +26,8 @@ const MiscellaneousBillCreate = () => {
   const [selectedPO, setSelectedPO] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loading2, setLoading2] = useState(false);
-  const [withBillEntry, setWithBillEntry] = useState(false);
-  const [withoutBillEntry, setWithoutBillEntry] = useState(true);
+  const [withBillEntry, setWithBillEntry] = useState(true);
+  const [withoutBillEntry, setWithoutBillEntry] = useState(false);
    const [attachOneModal, setattachOneModal] = useState(false);
     const [attachTwoModal, setattachTwoModal] = useState(false);
     const [attachThreeModal, setattachThreeModal] = useState(false);

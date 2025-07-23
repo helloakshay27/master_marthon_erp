@@ -588,8 +588,10 @@ const BillBookingList = () => {
   //   column sort and setting
   const [columnVisibility, setColumnVisibility] = useState({
     srNo: true,
-    bill_id: true,
+   
     invoice_number: true,
+
+     bill_id: true,
     mode_of_submission: true,
     company_name: true,
     project_name: true,
@@ -622,7 +624,22 @@ const BillBookingList = () => {
       headerName: "Sr. No.",
       width: 100,
     },
+  
     {
+      field: "invoice_number",
+      headerName: "Invoice No.",
+      width: 150,
+      renderCell: (params) =>
+        params.value && params.row.id ? (
+          <Link to={`/bill-booking-details/${params.row.id}?token=${token}`}>
+            <span className="boq-id-link">{params.value}</span>
+          </Link>
+        ) : (
+          "-"
+        ),
+    },
+
+      {
       field: "bill_id",
       headerName: "Bill ID",
       width: 150,
@@ -631,19 +648,6 @@ const BillBookingList = () => {
           <Link
             to={`/bill-entry-details/${params.row.bill_entry_id}?token=${token}`}
           >
-            <span className="boq-id-link">{params.value}</span>
-          </Link>
-        ) : (
-          "-"
-        ),
-    },
-    {
-      field: "invoice_number",
-      headerName: "Invoice No.",
-      width: 150,
-      renderCell: (params) =>
-        params.value && params.row.id ? (
-          <Link to={`/bill-booking-details/${params.row.id}?token=${token}`}>
             <span className="boq-id-link">{params.value}</span>
           </Link>
         ) : (

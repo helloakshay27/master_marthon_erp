@@ -786,11 +786,17 @@ const BillEntryCreateVendorPage = () => {
                       <label>Bill Amount</label>
                       <input
                         className="form-control"
-                        type="text"
+                        type="number"
                         name="bill_amount"
                         value={formData.bill_amount}
                         onChange={handleInputChange}
                         placeholder=""
+                        onKeyDown={(e) => {
+                        if (e.key === "-" || e.key === "e") {
+                          e.preventDefault(); // block minus sign and 'e' (for scientific notation)
+                        }
+                      }}
+                      min="0" // prevents negative values from being typed
                       />
                     </div>
                   </div>
