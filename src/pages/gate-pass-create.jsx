@@ -2188,7 +2188,11 @@ const GatePassCreate = () => {
                                       : row.available_qty ?? undefined
                                   }
                                   onChange={(e) => {
-                                    const val = e.target.value;
+                                    let val = e.target.value;
+                                    // Prevent negative values
+                                    if (Number(val) < 0) {
+                                      val = "";
+                                    }
                                     if (
                                       row.available_qty === "not_found" &&
                                       Number(val) > 0
@@ -2352,7 +2356,11 @@ const GatePassCreate = () => {
                                   value={item.gate_pass_qty}
                                   min={0}
                                   onChange={(e) => {
-                                    const value = e.target.value;
+                                    let value = e.target.value;
+                                    // Prevent negative values
+                                    if (Number(value) < 0) {
+                                      value = "";
+                                    }
                                     if (
                                       item.stock_as_on !== undefined &&
                                       value !== "" &&
@@ -2960,7 +2968,20 @@ const GatePassCreate = () => {
             <table className="w-100">
               <thead>
                 <tr>
-                  <th></th>
+                  <th>
+                    <input
+                      type="checkbox"
+                      checked={poMaterials.length > 0 && selectedMaterialIndexes.length === poMaterials.length}
+                      indeterminate={selectedMaterialIndexes.length > 0 && selectedMaterialIndexes.length < poMaterials.length ? "true" : undefined}
+                      onChange={e => {
+                        if (e.target.checked) {
+                          setSelectedMaterialIndexes(poMaterials.map((_, idx) => idx));
+                        } else {
+                          setSelectedMaterialIndexes([]);
+                        }
+                      }}
+                    />
+                  </th>
                   <th>Sr.No.</th>
                   <th>Material / Asset Type</th>
                   <th>Material / Asset Sub-Type</th>
@@ -2980,9 +3001,9 @@ const GatePassCreate = () => {
                         type="checkbox"
                         checked={selectedMaterialIndexes.includes(idx)}
                         onChange={() => {
-                          setSelectedMaterialIndexes((prev) =>
+                          setSelectedMaterialIndexes(prev =>
                             prev.includes(idx)
-                              ? prev.filter((i) => i !== idx)
+                              ? prev.filter(i => i !== idx)
                               : [...prev, idx]
                           );
                         }}
@@ -3253,14 +3274,17 @@ const GatePassCreate = () => {
                           value={batchIssueQty[batch.id] || ""}
                           onChange={(e) => {
                             let value = e.target.value;
+                            // Prevent negative values
+                            if (Number(value) < 0) {
+                              value = "";
+                            }
                             // Only allow up to max
                             const max = (() => {
                               const prevTotal = batchList
                                 .slice(0, idx)
                                 .reduce(
                                   (sum, b) =>
-                                    sum +
-                                    (parseFloat(batchIssueQty[b.id]) || 0),
+                                    sum + (parseFloat(batchIssueQty[b.id]) || 0),
                                   0
                                 );
                               const remaining = batchMaxQty - prevTotal;
@@ -3287,8 +3311,7 @@ const GatePassCreate = () => {
                                 .slice(0, j)
                                 .reduce(
                                   (sum, b) =>
-                                    sum +
-                                    (parseFloat(batchIssueQty[b.id]) || 0),
+                                    sum + (parseFloat(batchIssueQty[b.id]) || 0),
                                   0
                                 );
                               const prevMax = Math.min(

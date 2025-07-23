@@ -381,7 +381,7 @@ const GatePassDetails = () => {
                         <th>Generic Info</th>
                         <th>Brand</th>
                         <th>Colour</th>
-                        <th>Unit</th>
+                        <th>UOM</th>
                         <th>Gate Pass Qty</th>
                       </tr>
                     </thead>
