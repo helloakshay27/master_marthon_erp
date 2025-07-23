@@ -169,7 +169,7 @@ export default function CreateEvent() {
     setScheduleData(data);
     handleEventScheduleModalClose();
 
-    const timeZone = "Asia/Kolkata"; // Replace with your desired timezone
+    const timeZone = "Asia/Kolkata";
 
     const formatDateTime = (dateTime) => {
       const date = new Date(dateTime);
@@ -184,15 +184,9 @@ export default function CreateEvent() {
       }).format(date);
     };
 
-    const adjustTimeZone = (dateTime) => {
-      const date = new Date(dateTime);
-      date.setHours(date.getHours() - 5);
-      date.setMinutes(date.getMinutes() - 30);
-      return date;
-    };
-
-    const startDateTime = formatDateTime(adjustTimeZone(data.start_time));
-    const endDateTime = formatDateTime(adjustTimeZone(data.end_time_duration));
+    // Since data is already in UTC format, format it directly for display
+    const startDateTime = formatDateTime(data.start_time);
+    const endDateTime = formatDateTime(data.end_time_duration);
 
     const scheduleText = `${startDateTime} to ${endDateTime}`;
     setEventScheduleText(scheduleText);
@@ -508,16 +502,23 @@ export default function CreateEvent() {
 
   // console.log("materialFormData:--------",materialFormData);
 
-  // Utility to get ISO string with +05:30 offset for IST
-  const toISTISOString = (dateTime) => {
+  // Utility to get ISO string in UTC format with Z
+  const toUTCISOString = (dateTime) => {
     if (!dateTime) return "";
+    
+    // If dateTime is already in correct ISO format, return as is
+    if (typeof dateTime === "string" && dateTime.endsWith("Z")) {
+      return dateTime;
+    }
+    
     const date = new Date(dateTime);
     if (isNaN(date.getTime())) {
-      console.warn("Invalid dateTime passed to toISTISOString:", dateTime);
+      console.warn("Invalid dateTime passed to toUTCISOString:", dateTime);
       return "";
     }
-    date.setMinutes(date.getMinutes());
-    return date.toISOString().replace('Z', '+05:30');
+    
+    // Return ISO string in UTC format with Z
+    return date.toISOString();
   };
 
   const handleSubmit = async (event) => {
@@ -551,8 +552,8 @@ export default function CreateEvent() {
         status: eventStatus,
         event_description: eventDescription,
         event_schedule_attributes: {
-          start_time: toISTISOString(scheduleData.start_time),
-          end_time: toISTISOString(scheduleData.end_time_duration),
+          start_time: toUTCISOString(scheduleData.start_time),
+          end_time: toUTCISOString(scheduleData.end_time_duration),
           evaluation_time: scheduleData.evaluation_time,
         },
         event_type_detail_attributes: {

@@ -41,25 +41,37 @@ const EventScheduleModal = ({
 
   useEffect(() => {
     if (existingData) {
-      // Handle existing data without timezone conversion issues
+      // Handle existing data - parse UTC datetime directly
       if (existingData.start_time) {
-        // Parse the ISO string and extract date/time parts directly
-        const startTimeStr = existingData.start_time;
-        if (startTimeStr.includes("T")) {
-          const [datePart, timePart] = startTimeStr.split("T");
-          setLaterDate(datePart);
-          setLaterTime(timePart.substring(0, 5)); // Get HH:MM part
+        // Parse the ISO string directly without timezone conversion
+        const startDate = new Date(existingData.start_time);
+        if (!isNaN(startDate.getTime())) {
+          // Format as local date/time inputs (this will show the UTC time as local)
+          const year = startDate.getUTCFullYear();
+          const month = String(startDate.getUTCMonth() + 1).padStart(2, '0');
+          const day = String(startDate.getUTCDate()).padStart(2, '0');
+          const hours = String(startDate.getUTCHours()).padStart(2, '0');
+          const minutes = String(startDate.getUTCMinutes()).padStart(2, '0');
+          
+          setLaterDate(`${year}-${month}-${day}`);
+          setLaterTime(`${hours}:${minutes}`);
           setIsLater(true); // Set to later since we have existing data
         }
       }
       
       if (existingData.end_time) {
-        // Parse the ISO string and extract date/time parts directly
-        const endTimeStr = existingData.end_time;
-        if (endTimeStr.includes("T")) {
-          const [datePart, timePart] = endTimeStr.split("T");
-          setEndDate(datePart);
-          setEndTime(timePart.substring(0, 5)); // Get HH:MM part
+        // Parse the ISO string directly without timezone conversion
+        const endDateObj = new Date(existingData.end_time);
+        if (!isNaN(endDateObj.getTime())) {
+          // Format as local date/time inputs (this will show the UTC time as local)
+          const year = endDateObj.getUTCFullYear();
+          const month = String(endDateObj.getUTCMonth() + 1).padStart(2, '0');
+          const day = String(endDateObj.getUTCDate()).padStart(2, '0');
+          const hours = String(endDateObj.getUTCHours()).padStart(2, '0');
+          const minutes = String(endDateObj.getUTCMinutes()).padStart(2, '0');
+          
+          setEndDate(`${year}-${month}-${day}`);
+          setEndTime(`${hours}:${minutes}`);
         }
       }
 
@@ -204,30 +216,23 @@ const EventScheduleModal = ({
       }
     }
 
-    // Properly format start time with IST timezone without 'Z'
+    // Properly format start time in UTC format with Z
     let startTime;
     if (isLater) {
-      // Use the selected date and time directly without timezone conversion
-      startTime = `${laterDate}T${laterTime}:00.000+05:30`;
+      // Create a date object from the selected date and time, then convert to UTC
+      const startDate = new Date(`${laterDate}T${laterTime}:00`);
+      startTime = startDate.toISOString();
     } else {
       const now = new Date();
-      const pad = (n) => String(n).padStart(2, "0");
-      const year = now.getFullYear();
-      const month = pad(now.getMonth() + 1);
-      const day = pad(now.getDate());
-      const hours = pad(now.getHours());
-      const minutes = pad(now.getMinutes());
-      const seconds = pad(now.getSeconds());
-      const milliseconds = String(now.getMilliseconds()).padStart(3, "0");
-      startTime = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}+05:30`;
+      startTime = now.toISOString();
     }
     
     console.log("startTime", startTime);
 
-    // Use the selected date and time directly without timezone conversion
+    // Create end time in UTC format with Z
     const endTimeFormatted =
       endDate && endTime
-        ? `${endDate}T${endTime}:00.000+05:30`
+        ? new Date(`${endDate}T${endTime}:00`).toISOString()
         : "";
 
     const evaluationTimeFormatted = isCustomEvaluationDuration
