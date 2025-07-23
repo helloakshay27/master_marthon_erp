@@ -198,20 +198,12 @@ export default function EditEvent() {
       }).format(date);
     };
 
-    const adjustTimeZone = (dateTime) => {
-      const date = new Date(dateTime);
-      const utcDate = new Date(
-        date.toLocaleString("en-US", { timeZone: "UTC" })
-      );
-      const localDate = new Date(utcDate.toLocaleString("en-US", { timeZone }));
-      return localDate;
-    };
-
-    const startDateTime = formatDateTime(adjustTimeZone(data.start_time));
-    const endDateTime = formatDateTime(adjustTimeZone(data.end_time_duration));
+    // Since data is already in UTC format, format it directly for display
+    const startDateTime = formatDateTime(data.start_time);
+    const endDateTime = formatDateTime(data.end_time_duration);
 
     const scheduleText = `${startDateTime} to ${endDateTime}`;
-    console.log("startDateTime",startDateTime, endDateTime);
+    console.log("startDateTime", startDateTime, endDateTime);
     
     setEventScheduleText(scheduleText);
   };
@@ -554,13 +546,28 @@ export default function EditEvent() {
       setEventDescription(eventDetails?.event_description);
       console.log("eventSchedule", eventDetails);
       
-      setEventScheduleText(
-    `${new Date(eventDetails?.start_time).toLocaleString()} ~ ${new Date(
-      eventDetails?.end_time
-    ).toLocaleString()}`
-  );
-    // Fix: Update console.log to use the correct properties
-    console.log("eventScheduleText:-",eventScheduleText, `${new Date(eventDetails?.event_schedule?.start_time).toLocaleString()} ~ ${new Date(
+      // Format the schedule text with proper timezone handling
+      if (eventDetails?.event_schedule?.start_time && eventDetails?.event_schedule?.end_time) {
+        const formatDateTime = (dateTime) => {
+          const date = new Date(dateTime);
+          return new Intl.DateTimeFormat("en-GB", {
+            timeZone: "Asia/Kolkata",
+            day: "2-digit",
+            month: "2-digit",
+            year: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }).format(date);
+        };
+        
+        const startDateTime = formatDateTime(eventDetails.event_schedule.start_time);
+        const endDateTime = formatDateTime(eventDetails.event_schedule.end_time);
+        setEventScheduleText(`${startDateTime} to ${endDateTime}`);
+      }
+      
+      // Fix: Update console.log to use the correct properties
+      console.log("eventScheduleText:-", eventScheduleText, `${new Date(eventDetails?.event_schedule?.start_time).toLocaleString()} ~ ${new Date(
         eventDetails?.event_schedule?.end_time
       ).toLocaleString()}`);
       
@@ -885,82 +892,55 @@ export default function EditEvent() {
 
   const [eventData1, setEventData1] = useState(eventData2);
 
-  // Replace the existing toISTISOString function with proper conversion
-const toISTISOString = (dateTime) => {
+  // Convert datetime to UTC ISO string format with Z
+const toUTCISOString = (dateTime) => {
   if (!dateTime) return "";
   
-  // If dateTime is already in correct ISO string format with +05:30, just return it
-  if (typeof dateTime === "string" && dateTime.includes("+05:30")) {
+  // If dateTime is already in correct ISO string format with Z, just return it
+  if (typeof dateTime === "string" && dateTime.endsWith("Z")) {
     return dateTime;
   }
   
-  // If it's a Date object or timestamp, convert it to IST
+  // If it's a Date object or timestamp, convert it to UTC
   const date = new Date(dateTime);
   if (isNaN(date.getTime())) return "";
   
-  // Manually format to IST without using 'Z'
-  const pad = (n) => String(n).padStart(2, "0");
-  const year = date.getFullYear();
-  const month = pad(date.getMonth() + 1);
-  const day = pad(date.getDate());
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
-  const seconds = pad(date.getSeconds());
-  const milliseconds = String(date.getMilliseconds()).padStart(3, "0");
-  
-  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}+05:30`;
+  // Return ISO string in UTC format with Z
+  return date.toISOString();
 };
 
-// Add a dedicated function for end time conversion
-const toISTEndTimeString = (dateTime) => {
+// Convert datetime to UTC ISO string format with Z for end time
+const toUTCEndTimeString = (dateTime) => {
   if (!dateTime) return "";
   
-  // If dateTime is already in correct ISO string format with +05:30, just return it
-  if (typeof dateTime === "string" && dateTime.includes("+05:30")) {
+  // If dateTime is already in correct ISO string format with Z, just return it
+  if (typeof dateTime === "string" && dateTime.endsWith("Z")) {
     return dateTime;
   }
   
-  // If it's a Date object or timestamp, convert it to IST
+  // If it's a Date object or timestamp, convert it to UTC
   const date = new Date(dateTime);
   if (isNaN(date.getTime())) return "";
   
-  // Manually format to IST without using 'Z'
-  const pad = (n) => String(n).padStart(2, "0");
-  const year = date.getFullYear();
-  const month = pad(date.getMonth() + 1);
-  const day = pad(date.getDate());
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
-  const seconds = pad(date.getSeconds());
-  const milliseconds = String(date.getMilliseconds()).padStart(3, "0");
-  
-  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}+05:30`;
+  // Return ISO string in UTC format with Z
+  return date.toISOString();
 };
 
-// Add the missing toISTStartTimeString function
-const toISTStartTimeString = (dateTime) => {
+// Convert datetime to UTC ISO string format with Z for start time
+const toUTCStartTimeString = (dateTime) => {
   if (!dateTime) return "";
   
-  // If dateTime is already in correct ISO string format with +05:30, just return it
-  if (typeof dateTime === "string" && dateTime.includes("+05:30")) {
+  // If dateTime is already in correct ISO string format with Z, just return it
+  if (typeof dateTime === "string" && dateTime.endsWith("Z")) {
     return dateTime;
   }
   
-  // If it's a Date object or timestamp, convert it to IST
+  // If it's a Date object or timestamp, convert it to UTC
   const date = new Date(dateTime);
   if (isNaN(date.getTime())) return "";
   
-  // Manually format to IST without using 'Z'
-  const pad = (n) => String(n).padStart(2, "0");
-  const year = date.getFullYear();
-  const month = pad(date.getMonth() + 1);
-  const day = pad(date.getDate());
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
-  const seconds = pad(date.getSeconds());
-  const milliseconds = String(date.getMilliseconds()).padStart(3, "0");
-  
-  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}+05:30`;
+  // Return ISO string in UTC format with Z
+  return date.toISOString();
 };
 
 
@@ -1005,13 +985,13 @@ const toISTStartTimeString = (dateTime) => {
         event_description: eventDescription || eventDetails?.event_description || "",
         event_schedule_attributes: {
           start_time:
-            toISTStartTimeString(scheduleData.start_time) ||
-            toISTISOString(start_time) ||
+            toUTCStartTimeString(scheduleData.start_time) ||
+            toUTCISOString(start_time) ||
             (eventDetails?.event_schedule?.start_time) ||
             "",
           end_time:
-            toISTEndTimeString(scheduleData.end_time_duration) ||
-            toISTISOString(end_time) ||
+            toUTCEndTimeString(scheduleData.end_time_duration) ||
+            toUTCISOString(end_time) ||
             (eventDetails?.event_schedule?.end_time) ||
             "",
           evaluation_time:
