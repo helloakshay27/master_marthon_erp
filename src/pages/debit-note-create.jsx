@@ -1001,7 +1001,7 @@ const attachmentsPayload = attachments
 
     console.log("attachments:", attachmentsPayload)
     // attachment like mor end****
-    console.log("debit note reason:",debitNoteReason)
+    // console.log("debit note reason:",debitNoteReason)
 
   const payload = {
 
@@ -1397,6 +1397,7 @@ const attachmentsPayload = attachments
                                   placeholder="Select Debit Note Reason"
                                   className="form-control"
                                 />
+                                {console.log("debit note reason",debitNoteReason)}
                               </div>
                             </div>
                             <div className="col-md-4 mt-2">
@@ -2021,7 +2022,7 @@ const attachmentsPayload = attachments
                             </table>
                           </div>
                           {/* advance note  */}
-                          {debitNoteReason === "advance_note" && (
+                          {debitNoteReason === "Advance Note" && (
                             <>
                               <div className="d-flex justify-content-between mt-5 me-1">
                                 <h5 className=" ">Advance Adjustment</h5>

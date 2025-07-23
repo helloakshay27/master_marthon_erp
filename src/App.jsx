@@ -113,6 +113,8 @@ import RateRevision from "./pages/rate-revision";
 import BillApproval from "./pages/bill-approval";
 import BillApprovalList from "./pages/bill-approval-list";
 import InitialBOQList from "./pages/initial-boq-list";
+import RopoMappingCreate from "./pages/ropo-mapping-create";
+import RopoMappingList from "./pages/ropo-mapping-list";
 
 function App() {
   return (
@@ -120,6 +122,14 @@ function App() {
       <div>
         <Routes>
           <Route path="/" element={<Members />} />
+          <Route
+            path="/ropo-mapping-create"
+            element={<RopoMappingCreate />}
+          />
+           <Route
+            path="/ropo-mapping-list"
+            element={<RopoMappingList />}
+          />
           <Route
             path="/stock_register_detail/:id"
             element={<ErpStockRegisterCreationDetail13C />}

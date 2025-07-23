@@ -1041,7 +1041,8 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.retention_per || "-"}
+                          {details?.retention_per || "0"} 
+                          {/* % */}
                         </label>
                       </div>
                     </div>
@@ -1140,7 +1141,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {"-"}
+                          {details?.certified_till_date || "-"}
                         </label>
                       </div>
                     </div>
