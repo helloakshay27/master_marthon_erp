@@ -1,240 +1,4 @@
-// import Header from "../components/Header";
-// import Sidebar from "../components/Sidebar";
-// import Footer from "../components/Footer";
-// import { Link } from "react-router-dom";
-// import React from "react";
 
-// function Members() {
-
-//   return (
-//     <>
-//       <Header />
-//       <div className="main-content">
-//         <Sidebar />
-//         <div className="website-content overflow-auto">
-//           <div className="module-data-section container-fluid">
-//             <ul>
-//               {/* <li>
-//                 <Link to="good_receive_notes/:id">grn_detail</Link>
-//               </li>
-//               <li>
-//                 <Link to="/TreeDataWithStaticRows">TreeDataWithStaticRows</Link>
-//               </li>
-//               <li>
-//                 <Link to="/create-rfq">create_rfq</Link>
-//               </li>
-//               <li>
-//                 <Link to="/erp-rfq-auction-events-4f">erp_rfq_auction_events_4f</Link>
-//               </li>
-//               <li>
-//                 <Link to="/erp-rfq-auction-events-4h">erp_rfq_auction_events_4h</Link>
-//               </li>
-//               <li>
-//                 <Link to="/erp-rfq-detail-price-trends4h">erp_rfq_detail_price_trends4h</Link>
-//               </li>
-//               <li>
-//                 <Link to="/stock_register_detail/47">stock_register detail</Link>
-//               </li> */}
-//               {/* <li>
-//                 <Link to="/erp-stock-register-creation13c">erp_stock_register_creation13c</Link>
-//               </li> */}
-//               {/* <li>
-//                 <Link to="/stock_register_list?token=4ad0c1cd2506a717ae19ed050c28d7f078b0210991571e47"> stock register list</Link>
-//               </li> */}
-//               {/* <li>
-//                 <Link to="/approvals-list">approvals_list</Link>
-//               </li> */}
-
-//             </ul>
-
-//             <h3>BOQ Pages & Estimation Pages </h3>
-//             <ul>
-//               <li>
-//                 <Link to="/create-BOQ">Create BOQ</Link>
-//               </li>
-//               {/* <li>
-//                 <Link to="/boq-list">BOQ-List</Link>
-//               </li> */}
-//               <li>
-//                 <Link to="/view-BOQ">BOQ List</Link>
-//               </li>
-//               <li>
-//                 <Link to="/boq-approval-list">BOQ Approval List</Link>
-//               </li>
-//               <li>
-//                 <Link to="/boq-details-page-master">BOQ Details Page Master</Link>
-//               </li>
-//               {/* <li>
-//                 <Link to="/boq-approval-details">BOQ Approval Details</Link>
-//               </li> */}
-
-//               <li>
-//                 <Link to="/boq-edit">BOQ Edit</Link>
-//               </li>
-
-//               <li>
-//                 <Link to="/create-rate">Create Rate</Link>
-//               </li>
-//               <li>
-//                 <Link to="/view-rate">View Rate</Link>
-//               </li>
-
-//               <li>
-//                 <Link to="/estimation-creation">Estimation creation</Link>
-//               </li>
-//               <li>
-//                 <Link to="/estimation-list">Estimation List Page</Link>
-//               </li>
-//               <li>
-//                 <Link to="/estimation-details-project">Estimation details project</Link>
-//               </li>
-//               <li>
-//                 <Link to="/estimation-details-sub-project">Estimation details sub project</Link>
-//               </li>
-//               <li>
-//                 <Link to="/estimation-details-wings">Estimation details wings</Link>
-//               </li>
-
-//               <li>
-//                 <Link to="/estimation-comparision">Estimation comparision</Link>
-//               </li>
-//               <li>
-//                 <Link to="/estimation-approvol-list">Estimation approval list</Link>
-//               </li>
-//               <li>
-//                 <Link to="/estimation-approval-details">Estimation approval details</Link>
-//               </li>
-
-//             </ul>
-
-//             <h1>RFQ Module</h1>
-//             <ul>
-//               <li>
-//                 <Link to="/create-event">create_event</Link>
-//               </li>
-//               <li>
-//                 <Link to="/event-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">event_list</Link>
-//               </li>
-//               <li>
-//                 <Link to="/erp-rfq-detail-price-trends4h">
-//                   event_details_price
-//                 </Link>
-//               </li>
-//               <li>
-//                 <Link to="/contract-invitation">
-//                   contract_invitation
-//                 </Link>
-//               </li>
-//               <li>
-//                 <Link to="/section-tab">
-//                   section_tab
-//                 </Link>
-//               </li>
-//               <li>
-//                 <Link to="/vendor-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">vendor_list</Link>
-//               </li>
-
-//               <li>
-//                 <Link to="/work-list">work list</Link>
-//               </li>
-
-//               <li>
-//                 <Link to="/material-list">Material List</Link>
-//               </li>
-
-//               <li>
-//                 <Link to="/service-list">Service List</Link>
-//               </li>
-
-//               <li>
-//                 <Link to="/Po">Po lists</Link>
-//               </li>
-//               <li>
-//                 <Link to="/Wo">Wo list</Link>
-//               </li>
-//             </ul>
-// {/*
-//             <h1>Billing & Accounts</h1>
-//             <ul>
-//               <li>
-//                 <Link to="/bill-booking-details">Bill Booking Details </Link>
-//               </li>
-//               <li>
-//                 <Link to="/bill-entry-details" >Bill Entry Details</Link>
-//               </li>
-//               <li>
-//                 <Link to="/bill-booking-list" >Bill Booking List</Link>
-//               </li>
-//               <li>
-//                 <Link to="/bill-entry-list" >Bill Entry List</Link>
-//               </li>
-//               <li>
-//                 <Link to="/bill-entry-list-sub-page" >Bill Entry List Sub Page</Link>
-//               </li>
-//               <li>
-//                 <Link to="/bill-booking-create" >Bill Booking Create</Link>
-//               </li>
-//               <li>
-//                 <Link to="/bill-payment-create" >Bill Payment Create</Link>
-//               </li>
-//               <li>
-//                 <Link to="/bill-payment-details" >Bill Payment Details</Link>
-//               </li>
-//               <li>
-//                 <Link to="/bill-payment-list" >Bill payment List</Link>
-//               </li>
-//               <li>
-//                 <Link to="/bill-verification-create" >Bill Verification Create</Link>
-//               </li>
-//               <li>
-//                 <Link to="/bill-verification-details" >Bill Verification details</Link>
-//               </li>
-//               <li>
-//                 <Link to="bill-verification-list" >Bill Verification List</Link>
-//               </li>
-//               <li>
-//                 <Link to="/credit-note-create" >Credit Note Create</Link>
-//               </li>
-//               <li>
-//                 <Link to="/credit-note-details" >Credit Note Details</Link>
-//               </li>
-//               <li>
-//                 <Link to="/credit-note-list" >Credit Note List</Link>
-//               </li>
-//               <li>
-//                 <Link to="/debit-note-create" >Debit Note Create</Link>
-//               </li>
-//               <li>
-//                 <Link to="/debit-note-details" >Debit Note Details</Link>
-//               </li>
-//               <li>
-//                 <Link to="/debit-note-list" >Debit Note List</Link>
-//               </li>
-//               <li>
-//                 <Link to="/po-advance-note-details" >PO Advance Note Details</Link>
-//               </li>
-
-//               <li>
-//                 <Link to="/po-advance-note-payment" >Po Advance Note Payment</Link>
-//               </li>
-
-//               <li>
-//                 <Link to="/po-advance-note-list" >Po Advance Note List</Link>
-//               </li>
-
-//               <li>
-//                 <Link to="" ></Link>
-//               </li>
-//             </ul> */}
-//           </div>
-//           <Footer />
-//         </div>
-//       </div>
-//     </>
-//   );
-// }
-
-// export default Members;
 
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
@@ -254,6 +18,21 @@ function Members() {
             style={{ marginBottom: "200px" }}
           >
             <div className="m-3">
+
+               <h1>ROPO</h1>
+              <ul>
+                <li>
+                  <Link to="/ropo-mapping-list/?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"> ROPO Mapping List</Link>
+                </li>
+                <li>
+                  <Link to="/ropo-mapping-create"> ROPO Mapping Create</Link>
+                </li>
+                {/* <li>
+                  <Link to="/gate-pass-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    Gate pass List
+                  </Link>
+                </li> */}
+              </ul>
               <h1>Rule engine</h1>
               <ul>
                 <li>
