@@ -738,6 +738,25 @@ const BillBookingCreate = () => {
     }
   }, []);
 
+
+  // tax charges table start
+
+  const [charges, setCharges] = useState([]);
+
+
+  const handleChange = (index, field, value) => {
+    const updated = [...charges];
+    updated[index][field] = value;
+    setCharges(updated);
+  };
+
+  const handleRemove2 = (index) => {
+    const updated = [...charges];
+    updated.splice(index, 1);
+    setCharges(updated);
+  };
+  // tax charges table end
+
   // Update the handleSubmit payload section
 
   const [formData, setFormData] = useState({
@@ -971,6 +990,9 @@ const BillBookingCreate = () => {
           setDisplayProjectId(data.project_id || null);
           setDisplaySiteId(data.site_id || null);
 
+          setCharges(data.charges_with_taxes|| [])
+          console.log("changes i bill entry:",data.charges_with_taxes)
+
           // Fetch PO GRN details using purchase_order.id
           if (data.purchase_order?.id) {
             const grnResponse = await axios.get(
@@ -1001,9 +1023,18 @@ const BillBookingCreate = () => {
               pan: data.pan_no,
               due_date: data.purchase_order?.due_date, // Add this line
               grn_materials: [],
-              certified_till_date: data.purchase_order?.certified_till_date
+              certified_till_date: data.purchase_order?.certified_till_date,
+              charges:data.purchase_order?.charges_with_taxes || []
             });
+
+            console.log("purchase_order response", data.purchase_order);
+console.log("charges_with_taxes", data.purchase_order?.charges_with_taxes);
             setSelectedGRNs([]);
+
+            // ✅ Fixed this line:
+setCharges(data.purchase_order?.charges_with_taxes || []);
+            // setCharges(data.purchase_order?.charges_with_taxes || []);
+           
             // setFormData((prev) => ({
             //   ...prev,
             //   certified_till_date: data.purchase_order?.certified_till_date || 0,
@@ -1018,7 +1049,8 @@ const BillBookingCreate = () => {
   }, [selectedBillEntry]);
 
   console.log("po selected:", selectedPO)
-   console.log("po selected formdata:", formData)
+  //  console.log("po selected formdata:", formData)
+    console.log("po selected charges:", charges)
 
   useEffect(() => {
     if (!selectedBillEntry) {
@@ -1393,10 +1425,17 @@ const BillBookingCreate = () => {
   const attachmentsPayload = attachments
     .flatMap((att) => att.attachments || []);
 
-  console.log("attachments:", attachmentsPayload)
+  // console.log("attachments:", attachmentsPayload)
 
 
-  console.log("status chnage:", formData.status)
+  // console.log("status chnage:", formData.status)
+
+  const chargesPayload = charges.map(charge => ({
+  id: charge.id,
+  payable_amount: parseFloat(charge.payable_amount) || 0,
+}));
+console.log("charges:",chargesPayload)
+
   const handleSubmit = async () => {
 
 
@@ -2031,26 +2070,73 @@ const BillBookingCreate = () => {
       0
     );
 
-  const calculateAmountPayable = () => {
-    const totalAmount = parseFloat(calculateTotalAmount()) || 0;
-    const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
-    const otherDed = parseFloat(otherDeductions) || 0;
-    const otherAdd = parseFloat(otherAdditions) || 0;
-    // const creditAdjustment = parseFloat(calculateCreditNoteAdjustment()) || 0;
-    const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
-    const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0; // Add this line
+  // const calculateAmountPayable = () => {
+  //   const totalAmount = parseFloat(calculateTotalAmount()) || 0;
+  //   const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
+  //   const otherDed = parseFloat(otherDeductions) || 0;
+  //   const otherAdd = parseFloat(otherAdditions) || 0;
+  //   // const creditAdjustment = parseFloat(calculateCreditNoteAdjustment()) || 0;
+  //   const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
+  //   const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0; // Add this line
 
-    return (
-      totalAmount -
-      retentionAmount -
-      otherDed +
-      otherAdd +
-      // creditAdjustment -
-      debitAdjustment -
-      advanceAdjustment
-    ) // Subtract advance adjustment
-      .toFixed(2);
-  };
+  //   return (
+  //     totalAmount -
+  //     retentionAmount -
+  //     otherDed +
+  //     otherAdd +
+  //     // creditAdjustment -
+  //     debitAdjustment -
+  //     advanceAdjustment
+  //   ) // Subtract advance adjustment
+  //     .toFixed(2);
+  // };
+
+//   const calculateAmountPayable = () => {
+//   const totalPayableCharges = charges.reduce((sum, row) => {
+//     const val = parseFloat(row.payable_amount);
+//     return sum + (isNaN(val) ? 0 : val);
+//   }, 0);
+
+//   const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
+//   const otherDed = parseFloat(otherDeductions) || 0;
+//   const otherAdd = parseFloat(otherAdditions) || 0;
+//   const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
+//   const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0;
+
+//   return (
+//     totalPayableCharges -
+//     retentionAmount -
+//     otherDed +
+//     otherAdd -
+//     debitAdjustment -
+//     advanceAdjustment
+//   ).toFixed(2);
+// };
+
+const calculateAmountPayable = () => {
+  const baseAmount = parseFloat(calculateTotalAmount()) || 0;
+
+  const totalPayableCharges = charges.reduce((sum, row) => {
+    const val = parseFloat(row.payable_amount);
+    return sum + (isNaN(val) ? 0 : val);
+  }, 0);
+
+  const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
+  const otherDed = parseFloat(otherDeductions) || 0;
+  const otherAdd = parseFloat(otherAdditions) || 0;
+  const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
+  const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0;
+
+  return (
+    baseAmount +
+    totalPayableCharges -
+    retentionAmount -
+    otherDed +
+    otherAdd -
+    debitAdjustment -
+    advanceAdjustment
+  ).toFixed(2);
+};
 
   // ...existing code...
 
@@ -2743,6 +2829,69 @@ const BillBookingCreate = () => {
                     </tbody>
                   </table>
                 </div>
+                -----------------------------------------
+
+                 <div className="d-flex justify-content-between mt-3 me-2">
+                  <h5 className=" ">Charges With Taxes</h5>
+               </div>
+            
+<div className="tbl-container m-0">
+      <table className="w-100">
+        <thead>
+          <tr>
+            <th className="main2-th">Charge Name</th>
+            <th className="main2-th">Amount</th>
+            <th className="main2-th">Realised Amount</th>
+            {/* <th className="main2-th">Taxes</th> */}
+            <th className="main2-th">Payable Amount</th>
+            <th className="main2-th">Amount Paid Till Date</th>
+            <th className="main2-th" style={{ width: "130px", textAlign: "center" }}>Action</th>
+          </tr>
+        </thead>
+
+        <tbody className="charges_with_taxes">
+  {charges.map((row, index) => (
+    <tr key={row.id || index} className="nested-fields">
+      {/* Charge Name */}
+      <td className="text-start">{row.charge_name || "-"}</td>
+
+      {/* Amount */}
+      <td className="text-start">{row.amount ?? "-"}</td>
+
+      {/* Realised Amount */}
+      <td className="text-start">{row.realised_amount ?? "-"}</td>
+
+      {/* Payable Amount (editable input) */}
+      <td className="text-start">
+        <input
+          type="number"
+          className="form-control"
+          value={row.payable_amount}
+          onChange={(e) => handleChange(index, "payable_amount", e.target.value)}
+        />
+      </td>
+
+      {/* Amount Paid Till Date */}
+      <td className="text-start">{row.paid_amount ?? "-"}</td>
+
+      {/* Action */}
+      <td style={{ textAlign: "center" }}>
+        <button
+          type="button"
+          className="btn btn-link text-danger"
+          onClick={() => handleRemove2(index)}
+        >
+          <span className="material-symbols-outlined">cancel</span>
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
+      </table>
+    </div>
+
+                ---------------------------------------------------------------------
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Advance Notes</h5>
                 </div>

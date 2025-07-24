@@ -1702,14 +1702,14 @@ display:none !important;
             ))}
         </Modal.Body>
 
-        <Modal.Footer>
+        {/* <Modal.Footer>
           <button className="purple-btn2" onClick={handleShowAll}>
             Show All
           </button>
           <button className="purple-btn1" onClick={handleHideAll}>
             Hide All
           </button>
-        </Modal.Footer>
+        </Modal.Footer> */}
       </Modal>
 
       <Modal
