@@ -1,6 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 const RopoMappingCreate = () => {
+  const [collapsedRows, setCollapsedRows] = useState({});
+
+  const handleCollapseToggle = (rowKey) => {
+    setCollapsedRows((prev) => ({
+      ...prev,
+      [rowKey]: !prev[rowKey],
+    }));
+  };
+
   return (
     <div>
       <>
@@ -10,8 +19,8 @@ const RopoMappingCreate = () => {
     {/* top navigation above */}
     <div className="main-content">
      
-      <div className="website-content overflow-auto">
-        <div className="module-data-section container-fluid">
+      <div className="website-content container-fluid ">
+        <div className="module-data-section ">
           <a href="">
             Home &gt; Store &gt; Store Operations &gt; ROPO Mapping{" "}
           </a>
@@ -120,16 +129,16 @@ const RopoMappingCreate = () => {
                               </tr>
                             </thead>
                             <tbody>
+                              {/* MOR row */}
                               <tr>
                                 <td>
                                   <input type="checkbox" />
                                 </td>
                                 <td>
                                   <i
-                                    className="fa-solid fa-arrow-turn-down me-2 collapse-icon"
-                                    id="collapseRow1-icon"
-                                    data-toggle="collapse"
-                                    data-target=".collapseRow1"
+                                    className={`fa-solid collapse-icon me-2 ${collapsedRows['row1'] ? 'fa-arrow-turn-down' : 'fa-arrow-turn-up'}`}
+                                    onClick={() => handleCollapseToggle('row1')}
+                                    style={{ cursor: 'pointer' }}
                                   />{" "}
                                   MOR
                                 </td>
@@ -141,32 +150,38 @@ const RopoMappingCreate = () => {
                                 <td />
                                 <td />
                               </tr>
-                              <tr className="collapse collapseRow1 material-type">
-                                <td>
-                                  <input type="checkbox" />
-                                </td>
-                                <td className="ps-4">Material</td>
-                                <td />
-                                <td>24.160 MT</td>
-                                <td>MT</td>
-                                <td>24.160</td>
-                                <td>2100.0000</td>
-                                <td>50736.000</td>
-                                <td>50.787</td>
-                              </tr>
-                              <tr className="collapse collapseRow1">
-                                <td>
-                                  <input type="checkbox" />
-                                </td>
-                                <td className="ps-5">PO</td>
-                                <td />
-                                <td>24.160 MT</td>
-                                <td>MT</td>
-                                <td>24.160</td>
-                                <td>2100.0000</td>
-                                <td>50736.000</td>
-                                <td>50.787</td>
-                              </tr>
+                              {/* Material row */}
+                              {collapsedRows['row1'] && (
+                                <tr className="material-type">
+                                  <td>
+                                    <input type="checkbox" />
+                                  </td>
+                                  <td className="ps-4">Material</td>
+                                  <td />
+                                  <td>24.160 MT</td>
+                                  <td>MT</td>
+                                  <td>24.160</td>
+                                  <td>2100.0000</td>
+                                  <td>50736.000</td>
+                                  <td>50.787</td>
+                                </tr>
+                              )}
+                              {/* PO row */}
+                              {collapsedRows['row1'] && (
+                                <tr>
+                                  <td>
+                                    <input type="checkbox" />
+                                  </td>
+                                  <td className="ps-5">PO</td>
+                                  <td />
+                                  <td>24.160 MT</td>
+                                  <td>MT</td>
+                                  <td>24.160</td>
+                                  <td>2100.0000</td>
+                                  <td>50736.000</td>
+                                  <td>50.787</td>
+                                </tr>
+                              )}
                             </tbody>
                           </table>
                         </div>
@@ -179,7 +194,7 @@ const RopoMappingCreate = () => {
                             Add MOR
                           </button>
                           <button
-                            className="purple-btn2"
+                            className="purple-btn2 ms-2"
                             data-bs-toggle="modal"
                             data-bs-target="#add-pos"
                           >
@@ -328,7 +343,7 @@ const RopoMappingCreate = () => {
           />
         </div>
         <div className="modal-body">
-          <h5 className="fw-bold mb-0 ms-3">Project Nexzone - Phase II</h5>
+          {/* <h5 className="fw-bold mb-0 ms-3">Project Nexzone - Phase II</h5> */}
           <div className="card-body" style={{ height: 500, overflowY: "auto" }}>
             <div className=" p-3">
               <div className="row">
@@ -338,8 +353,8 @@ const RopoMappingCreate = () => {
                     <select
                       className="form-control form-select"
                       style={{ width: "100%" }}
-                    >
-                      <option selected="selected">[Select One]</option>
+                    > 
+                 
                       <option>Alaska</option>
                       <option>California</option>
                       <option>Delaware</option>
@@ -356,7 +371,7 @@ const RopoMappingCreate = () => {
                       className="form-control form-select"
                       style={{ width: "100%" }}
                     >
-                      <option selected="selected">[Select One]</option>
+                     
                       <option>Alaska</option>
                       <option>California</option>
                       <option>Delaware</option>
@@ -373,7 +388,6 @@ const RopoMappingCreate = () => {
                       className="form-control form-select"
                       style={{ width: "100%" }}
                     >
-                      <option selected="selected">[Select One]</option>
                       <option>Alaska</option>
                       <option>California</option>
                       <option>Delaware</option>
@@ -415,7 +429,7 @@ const RopoMappingCreate = () => {
                       className="form-control form-select"
                       style={{ width: "100%" }}
                     >
-                      <option selected="selected">[Select One]</option>
+                     
                       <option>Alaska</option>
                       <option>California</option>
                       <option>Delaware</option>
@@ -432,7 +446,7 @@ const RopoMappingCreate = () => {
                       className="form-control form-select"
                       style={{ width: "100%" }}
                     >
-                      <option selected="selected">[Select One]</option>
+                      
                       <option>Alaska</option>
                       <option>California</option>
                       <option>Delaware</option>
@@ -449,7 +463,7 @@ const RopoMappingCreate = () => {
                       className="form-control form-select"
                       style={{ width: "100%" }}
                     >
-                      <option selected="selected">[Select One]</option>
+                      
                       <option>Alaska</option>
                       <option>California</option>
                       <option>Delaware</option>
@@ -462,16 +476,16 @@ const RopoMappingCreate = () => {
               </div>
             </div>
             <div className="mt-1 justify-content-center d-flex">
-              <button className="purple-btn2" fdprocessedid="e5fvu5">
+              <button className="purple-btn1" >
                 Search
               </button>
-              <button className="purple-btn2" fdprocessedid="80m63s">
+              <button className="purple-btn1" >
                 show All
               </button>
-              <button className="purple-btn1" fdprocessedid="80m63s">
+              <button className="purple-btn1" >
                 Reset
               </button>
-              <button className="purple-btn1" fdprocessedid="80m63s">
+              <button className="purple-btn1" >
                 Close
               </button>
             </div>
@@ -542,7 +556,7 @@ const RopoMappingCreate = () => {
             aria-label="Close"
           />
         </div>
-        <div className="modal-body" style={{ height: 500, overflowY: "auto" }}>
+        <div className="modal-body" style={{ height: 400, overflowY: "auto" }}>
           <h5 className="fw-bold mb-0 ms-3">Company:</h5>
           <div className=" p-3 mt-3">
             <div className="row ">
@@ -582,7 +596,6 @@ const RopoMappingCreate = () => {
                     className="form-control form-select"
                     style={{ width: "100%" }}
                   >
-                    <option selected="selected">[Select One]</option>
                     <option>Alaska</option>
                     <option>California</option>
                     <option>Delaware</option>
@@ -599,7 +612,7 @@ const RopoMappingCreate = () => {
                     className="form-control form-select"
                     style={{ width: "100%" }}
                   >
-                    <option selected="selected">[Select One]</option>
+                   
                     <option>Alaska</option>
                     <option>California</option>
                     <option>Delaware</option>
@@ -616,7 +629,7 @@ const RopoMappingCreate = () => {
                     className="form-control form-select"
                     style={{ width: "100%" }}
                   >
-                    <option selected="selected">[Select One]</option>
+                   
                     <option>Alaska</option>
                     <option>California</option>
                     <option>Delaware</option>
@@ -669,8 +682,8 @@ const RopoMappingCreate = () => {
                   <select
                     className="form-control form-select"
                     style={{ width: "100%" }}
-                  >
-                    <option selected="selected">[Select One]</option>
+                  >  
+                 
                     <option>Alaska</option>
                     <option>California</option>
                     <option>Delaware</option>
@@ -687,7 +700,7 @@ const RopoMappingCreate = () => {
                     className="form-control form-select"
                     style={{ width: "100%" }}
                   >
-                    <option selected="selected">[Select One]</option>
+                   
                     <option>Alaska</option>
                     <option>California</option>
                     <option>Delaware</option>
@@ -704,7 +717,7 @@ const RopoMappingCreate = () => {
                     className="form-control form-select"
                     style={{ width: "100%" }}
                   >
-                    <option selected="selected">[Select One]</option>
+                    
                     <option>Alaska</option>
                     <option>California</option>
                     <option>Delaware</option>
@@ -717,16 +730,16 @@ const RopoMappingCreate = () => {
             </div>
           </div>
           <div className="mt-1 justify-content-center d-flex">
-            <button className="purple-btn2" fdprocessedid="e5fvu5">
+            <button className="purple-btn1">
               Search
             </button>
-            <button className="purple-btn2" fdprocessedid="80m63s">
+            <button className="purple-btn1 ms-2">
               show All
             </button>
-            <button className="purple-btn1" fdprocessedid="80m63s">
+            <button className="purple-btn1 ms-2">
               Reset
             </button>
-            <button className="purple-btn1" fdprocessedid="80m63s">
+            <button className="purple-btn1 ms-2">
               Close
             </button>
           </div>
