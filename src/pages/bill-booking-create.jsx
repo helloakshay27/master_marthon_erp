@@ -1055,9 +1055,9 @@ const BillBookingCreate = () => {
   }
 }, [selectedPO]);
 
-  console.log("po selected:", selectedPO)
+  // console.log("po selected:", selectedPO)
   //  console.log("po selected formdata:", formData)
-    console.log("po selected charges:", charges)
+    // console.log("po selected charges:", charges)
 
   useEffect(() => {
     if (!selectedBillEntry) {
@@ -1441,12 +1441,10 @@ const BillBookingCreate = () => {
   id: charge.id,
   payable_amount: parseFloat(charge.payable_amount) || 0,
 }));
-console.log("charges:",chargesPayload)
+console.log("charges Payload here:",chargesPayload)
+
 
   const handleSubmit = async () => {
-
-
-
 
     if (
       // !selectedCompany ||
@@ -1633,13 +1631,14 @@ console.log("charges:",chargesPayload)
           // })),
           //  attachments: attachments.length > 0 ? attachments : null,
           attachments: attachmentsPayload || [],
+          charges_with_taxes:chargesPayload || [],
           debit_note_adjustment,
           credit_note_adjustment,
           advance_note_adjustment,
         },
       };
 
-      console.log("Payload for API:", payload);
+      console.log("Payload for API after submit:", payload);
 
       const response = await axios.post(
         `${baseURL}bill_bookings?token=${token}`,
@@ -5025,7 +5024,7 @@ const calculateAmountPayable = () => {
           <div className="row mt-2 justify-content-center">
             <div className="col-md-3">
               <button
-                className="purple-btn2 w-100"
+                className="purple-btn2 w-100 mt-2"
                 onClick={closeDebitNoteModal}
                 disabled={selectedDebitNotes.length === 0}
               >

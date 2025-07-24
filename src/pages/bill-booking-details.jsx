@@ -226,54 +226,54 @@ const BillBookingDetails = () => {
   //   },
   // ];
 
-   const [statusOptions, setStatusOptions] = useState([
-      {
-        label: "Select Status",
-        value: "",
-        // isDisabled: true
-      },
-    ]);
-    useEffect(() => {
-      const fetchStatusOptions = async () => {
-        try {
-          const response = await axios.get(
-            `${baseURL}statuses_list?model=BillBooking&token=${token}`
-          );
-  
-          // Ensure we're handling the response data safely
-          const statusData = Array.isArray(response.data) ? response.data : [];
-  
-          // Map the API response to the format needed for SingleSelector
-          const options = statusData.map((status) => ({
-            value: status.value, // Use the value directly from API
-            label: status.name, // Use the name directly from API
-            isDisabled: status.access === "readonly", // Disable if access is readonly
-          }));
-  
-          // Add the default "Select Status" option at the beginning
-          setStatusOptions([
-            {
-              label: "Select Status",
-              value: "",
-              isDisabled: true
-            },
-            ...options,
-          ]);
-        } catch (error) {
-          console.error("Error fetching status options:", error);
-          setStatusOptions([
-            {
-              label: "Select Status",
-              value: "",
-              // isDisabled: true
-            },
-          ]);
-        }
-      };
-  
-      fetchStatusOptions();
-    }, [token]); // Keep token as dependency
-    console.log("status comming from api:",statusOptions)
+  const [statusOptions, setStatusOptions] = useState([
+    {
+      label: "Select Status",
+      value: "",
+      // isDisabled: true
+    },
+  ]);
+  useEffect(() => {
+    const fetchStatusOptions = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}statuses_list?model=BillBooking&token=${token}`
+        );
+
+        // Ensure we're handling the response data safely
+        const statusData = Array.isArray(response.data) ? response.data : [];
+
+        // Map the API response to the format needed for SingleSelector
+        const options = statusData.map((status) => ({
+          value: status.value, // Use the value directly from API
+          label: status.name, // Use the name directly from API
+          isDisabled: status.access === "readonly", // Disable if access is readonly
+        }));
+
+        // Add the default "Select Status" option at the beginning
+        setStatusOptions([
+          {
+            label: "Select Status",
+            value: "",
+            isDisabled: true
+          },
+          ...options,
+        ]);
+      } catch (error) {
+        console.error("Error fetching status options:", error);
+        setStatusOptions([
+          {
+            label: "Select Status",
+            value: "",
+            // isDisabled: true
+          },
+        ]);
+      }
+    };
+
+    fetchStatusOptions();
+  }, [token]); // Keep token as dependency
+  console.log("status comming from api:", statusOptions)
 
   const [remark, setRemark] = useState("");
   const [comment, setComment] = useState("");
@@ -1041,7 +1041,7 @@ const BillBookingDetails = () => {
                           <span className="me-3">
                             <span className="text-dark">:</span>
                           </span>
-                          {details?.retention_per || "0"} 
+                          {details?.retention_per || "0"}
                           {/* % */}
                         </label>
                       </div>
@@ -1427,18 +1427,18 @@ const BillBookingDetails = () => {
                                 .replace(/\//g, "-")         // replaces / with -
                               : ""} */}
 
-                              {attachment.created_at
-  ? new Date(attachment.created_at).toLocaleString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    }).replace(",", "") // remove comma
-     .replace(/\//g, "-") // change date separator to "-"
-     .replace(/(\d{2}-\d{2}-\d{4})/, "$1 ,") // insert comma after date
-  : ""}
+                            {attachment.created_at
+                              ? new Date(attachment.created_at).toLocaleString("en-GB", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: true,
+                              }).replace(",", "") // remove comma
+                                .replace(/\//g, "-") // change date separator to "-"
+                                .replace(/(\d{2}-\d{2}-\d{4})/, "$1 ,") // insert comma after date
+                              : ""}
                           </td>
                           <td className="text-start">
                             {/* <button

@@ -358,7 +358,7 @@ const MiscellaneousBillDetails = () => {
                                     ).toLocaleDateString()
                                     : "-"} */}
 
-                                    {creditNoteData.created_at
+                                  {creditNoteData.created_at
                                     ? new Date(creditNoteData.created_at)
                                       .toLocaleDateString("en-GB") // gives 13/06/2025
                                       .replace(/\//g, "-")         // replace / with -
@@ -393,7 +393,7 @@ const MiscellaneousBillDetails = () => {
                                       creditNoteData.bill_date
                                     ).toLocaleDateString()
                                     : "-"} */}
-                                    {creditNoteData.bill_date
+                                  {creditNoteData.bill_date
                                     ? new Date(creditNoteData.bill_date)
                                       .toLocaleDateString("en-GB") // gives 13/06/2025
                                       .replace(/\//g, "-")         // replace / with -
@@ -685,10 +685,10 @@ const MiscellaneousBillDetails = () => {
                             <thead>
                               <tr>
                                 <th className="text-start">Sr. No.</th>
-                                <th className="text-start">Document Name</th>
+                                {/* <th className="text-start">Document Name</th> */}
                                 <th className="text-start">File Name</th>
                                 <th className="text-start">File Type</th>
-                                <th className="text-start">Upload Date</th>
+                                <th className="text-start">Uploaded At</th>
                                 <th className="text-start">Action</th>
                               </tr>
                             </thead>
@@ -701,9 +701,9 @@ const MiscellaneousBillDetails = () => {
                                       <td className="text-start">
                                         {index + 1}
                                       </td>
-                                      <td className="text-start">
+                                      {/* <td className="text-start">
                                         {attachment.relation}
-                                      </td>
+                                      </td> */}
                                       <td className="text-start">
                                         {attachment.filename}
                                       </td>
@@ -714,13 +714,26 @@ const MiscellaneousBillDetails = () => {
                                         {/* {new Date(
                                           attachment.created_at
                                         ).toLocaleDateString()} */}
-                                        {attachment.created_at
+                                        {/* {attachment.created_at
                                           ? new Date(attachment.created_at)
                                             .toLocaleDateString("en-GB") // gives 16/07/2025
                                             .replace(/\//g, "-")         // replaces / with -
+                                          : ""} */}
+
+                                        {attachment.created_at
+                                          ? new Date(attachment.created_at).toLocaleString("en-GB", {
+                                            day: "2-digit",
+                                            month: "2-digit",
+                                            year: "numeric",
+                                            hour: "numeric",
+                                            minute: "2-digit",
+                                            hour12: true,
+                                          }).replace(",", "") // remove comma
+                                            .replace(/\//g, "-") // change date separator to "-"
+                                            .replace(/(\d{2}-\d{2}-\d{4})/, "$1 ,") // insert comma after date
                                           : ""}
                                       </td>
-                                      <td className="text-decoration-underline cursor-pointer">
+                                      <td className="text-decoration-underline cursor-pointer text-start">
                                         {/* <a
                                           href={`https://marathon.lockated.com/attachments/${attachment.id}`}
                                           target="_blank"
@@ -876,7 +889,7 @@ const MiscellaneousBillDetails = () => {
                                         hour12: true,
                                       })}`
                                       : ""} */}
-                                      {new Date(log.created_at)
+                                    {new Date(log.created_at)
                                       .toLocaleDateString("en-GB", {
                                         day: "2-digit",
                                         month: "2-digit",
