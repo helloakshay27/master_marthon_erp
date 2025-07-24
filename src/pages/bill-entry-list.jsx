@@ -698,7 +698,7 @@ display:none !important;
             </div>
 
             <div
-              className=" mx-1 mt-3"
+              className=" mx-3 mt-3"
               style={{
                 // width: "100%",
                 // height: "400px",
@@ -710,7 +710,7 @@ display:none !important;
                 rows={getTransformedRows()}
                 columns={columns}
                 pageSize={pageSize}
-                autoHeight={false}
+                autoHeight={true}
                 getRowId={(row) => row.id}
                 loading={loading}
                 disableSelectionOnClick

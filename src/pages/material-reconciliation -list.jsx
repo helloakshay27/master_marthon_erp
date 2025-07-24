@@ -1363,7 +1363,7 @@ display:none !important;
 
               <div className="d-flex justify-content-between align-items-center me-2 mt-4">
                 {/* Search Input */}
-                <div className="col-md-4">
+                <div className="col-md-6">
                   <form onSubmit={handleSearch}>
                     <div className="input-group ms-3">
                       <input
@@ -1433,7 +1433,7 @@ display:none !important;
 
                     {/* Create Material Reconciliation Button */}
                     <button
-                      className="purple-btn2"
+                      className="purple-btn2 me-2"
                       onClick={() =>
                         navigate(
                           `/material-reconciliation-create?token=${token}`
@@ -1457,7 +1457,7 @@ display:none !important;
               </div>
 
               <div
-                className="mx-1 mt-3"
+                className="px-3 mt-3 "
                 style={{
                   overflowY: "auto",
                 }}
@@ -1466,7 +1466,7 @@ display:none !important;
                   rows={getTransformedRows()}
                   columns={columns}
                   pageSize={itemsPerPage}
-                  autoHeight={false}
+                  autoHeight={true}
                   getRowId={(row) => row.id}
                   loading={loading}
                   checkboxSelection={isBulkActionMode}
