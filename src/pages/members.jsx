@@ -21,6 +21,9 @@ function Members() {
 
                <h1>ROPO</h1>
               <ul>
+                <li>
+                  <Link to="/po-create"> PO  Create</Link>
+                </li>
                  <li>
                   <Link to="/po-list/?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"> PO  List</Link>
                 </li>
