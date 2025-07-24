@@ -669,7 +669,7 @@ const MaterialReconciliationDetail = () => {
                 <button
                   type="button"
                   className="purple-btn1 w-100"
-                  onClick={() => navigate("/material-reconciliation")}
+                  onClick={() => navigate(`/material-reconciliation-list?token=${token}`)}
                 >
                   Cancel
                 </button>

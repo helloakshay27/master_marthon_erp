@@ -1394,10 +1394,10 @@ const BillBookingDetails = () => {
                     <thead>
                       <tr>
                         <th className="text-start">Sr. No.</th>
-                        <th className="text-start">Document Name</th>
+                        {/* <th className="text-start">Document Name</th> */}
                         <th className="text-start">File Name</th>
                         <th className="text-start">File Type</th>
-                        <th className="text-start">Upload Date</th>
+                        <th className="text-start">Uploaded At</th>
                         <th className="text-start">Action</th>
                       </tr>
                     </thead>
@@ -1405,9 +1405,9 @@ const BillBookingDetails = () => {
                       {details?.attachments?.map((attachment, index) => (
                         <tr key={attachment.id}>
                           <td className="text-start">{index + 1}</td>
-                          <td className="text-start">
+                          {/* <td className="text-start">
                             {attachment.document_name|| ""}
-                          </td>
+                          </td> */}
                           <td className="text-start">
                             {attachment.filename || ""}
                           </td>
@@ -1421,11 +1421,24 @@ const BillBookingDetails = () => {
                               ).toLocaleDateString()
                               : ""} */}
 
-                            {attachment.created_at
+                            {/* {attachment.created_at
                               ? new Date(attachment.created_at)
                                 .toLocaleDateString("en-GB") // gives 16/07/2025
                                 .replace(/\//g, "-")         // replaces / with -
-                              : ""}
+                              : ""} */}
+
+                              {attachment.created_at
+  ? new Date(attachment.created_at).toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).replace(",", "") // remove comma
+     .replace(/\//g, "-") // change date separator to "-"
+     .replace(/(\d{2}-\d{2}-\d{4})/, "$1 ,") // insert comma after date
+  : ""}
                           </td>
                           <td className="text-start">
                             {/* <button
