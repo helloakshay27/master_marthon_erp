@@ -3,8 +3,14 @@ import React from 'react'
 const RopoMappingCreate = () => {
   return (
     <div>
-
-         <div className="website-content overflow-auto">
+      <>
+ 
+  <main className="h-100 w-100">
+    
+    {/* top navigation above */}
+    <div className="main-content">
+     
+      <div className="website-content overflow-auto">
         <div className="module-data-section container-fluid">
           <a href="">
             Home &gt; Store &gt; Store Operations &gt; ROPO Mapping{" "}
@@ -292,14 +298,15 @@ const RopoMappingCreate = () => {
             </div>
           </div>
         </div>
-        
+       
       </div>
-      
     </div>
-    
-  )
-}
- {/* rate & taxes select modal start */}
+  </main>
+  {/* Navigation Top */}
+  {/* sidebar start below */}
+  {/* webpage container end */}
+  {/* Modal */}
+  {/* rate & taxes select modal start */}
   <div
     className="modal fade"
     id="add-mors"
@@ -773,5 +780,13 @@ const RopoMappingCreate = () => {
       </div>
     </div>
   </div>
+  {/* rate & taxes select modal end */}
+  {/* Modal end */}
+</>
 
-export default RopoMappingCreate
+    </div>
+  )
+}
+
+
+export default RopoMappingCreate;
