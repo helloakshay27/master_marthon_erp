@@ -10,6 +10,10 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { baseURL } from "../../../confi/apiDomain";
 import { se } from "date-fns/locale";
+import { Modal, Button } from 'react-bootstrap';
+import SingleSelector from "../../base/Select/SingleSelector";
+import axios from 'axios';
+
 
 export default function ParticipantsTab({ id }) {
   const [isSelectCheckboxes, setIsSelectCheckboxes] = useState(false);
@@ -49,16 +53,18 @@ export default function ParticipantsTab({ id }) {
     { value: "MIVAN MA", label: "MIVAN MA" },
     { value: "MIVAN MATERIAL", label: "MIVAN MATERIAL" },
   ]; // Example tag options
+  const urlParams = new URLSearchParams(location.search);
+      const token = urlParams.get("token");
 
-  const [inviteForm, setInviteForm] = useState({
-    name: "",
-    email: "",
-    mobile: "",
-    gstNumber: "",
-    panNumber: "",
-    company: "",
-    organization: "",
-  });
+  // const [inviteForm, setInviteForm] = useState({
+  //   name: "",
+  //   email: "",
+  //   mobile: "",
+  //   gstNumber: "",
+  //   panNumber: "",
+  //   company: "",
+  //   organization: "",
+  // });
   const [formErrors, setFormErrors] = useState({});
 
   const validateForm = () => {
@@ -524,6 +530,239 @@ export default function ParticipantsTab({ id }) {
     fetchData(1, searchTerm, selectedOption);
   };
 
+  ;
+
+  const [inviteVendorData, setInviteVendorData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    mobile: '',
+    gstinApplicable: '',
+    gstNumber: '',
+    vendorType: '',
+    organizationType: '',
+    natureOfBusiness: '',
+    panNumber: '',
+    department: '',
+  });
+  const [organizationTypeOptions, setOrganizationTypeOptions] = useState([]);
+  const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [vendorTypeOptions, setVendorTypeOptions] = useState([]);
+  const [natureOfBusinessOptions, setNatureOfBusinessOptions] = useState([]);
+
+  useEffect(() => {
+    // Fetch organization type list from API
+    fetch(`${baseURL}rfq/events/type_of_organizations_list?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.type_of_organizations)) {
+          setOrganizationTypeOptions(
+            data.type_of_organizations.map((org) => ({
+              value: org.value,
+              label: org.name,
+            }))
+          );
+        }
+      });
+    // Fetch department list from API
+    fetch(`${baseURL}rfq/events/department_list?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.list)) {
+          setDepartmentOptions(
+            data.list.map((dept) => ({
+              value: dept.value,
+              label: dept.name,
+            }))
+          );
+        }
+      });
+    // Fetch vendor type list from API
+    fetch(`${baseURL}rfq/events/supplier_type_list?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.supplier_type)) {
+          setVendorTypeOptions(
+            data.supplier_type.map((type) => ({
+              value: type.value,
+              label: type.name,
+            }))
+          );
+        }
+      });
+    // Fetch nature of business list from API
+    fetch(`${baseURL}rfq/events/nature_of_business_list?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.list)) {
+          setNatureOfBusinessOptions(
+            data.list.map((item) => ({
+              value: item.value,
+              label: item.name,
+            }))
+          );
+        }
+      });
+  }, []);
+
+  const handleInviteVendorChange = (e) => {
+    const { name, value } = e.target;
+    setInviteVendorData((prev) => ({ ...prev, [name]: value }));
+  };
+  const handleOrganizationTypeChange = (selectedOption) => {
+    setInviteVendorData((prev) => ({ ...prev, organizationType: selectedOption ? selectedOption.value : '' }));
+  };
+  const handleDepartmentChange = (selectedOption) => {
+    setInviteVendorData((prev) => ({ ...prev, department: selectedOption ? selectedOption.value : '' }));
+  };
+  const handleVendorTypeChange = (selectedOption) => {
+    setInviteVendorData((prev) => ({ ...prev, vendorType: selectedOption ? selectedOption.value : '' }));
+  };
+  const handleNatureOfBusinessChange = (selectedOption) => {
+    setInviteVendorData((prev) => ({ ...prev, natureOfBusiness: selectedOption ? selectedOption.value : '' }));
+  };
+
+  const [isInviteLoading, setIsInviteLoading] = useState(false);
+
+  const handleInviteVendor = async (event) => {
+    event.preventDefault();
+    setIsInviteLoading(true);
+    // Validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const mobileRegex = /^[6-9]\d{9}$/;
+    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+
+    if (!inviteVendorData.firstName) {
+      toast.error('First Name is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.lastName) {
+      toast.error('Last Name is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.email || !emailRegex.test(inviteVendorData.email)) {
+      toast.error('Valid Email is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.mobile || !mobileRegex.test(inviteVendorData.mobile)) {
+      toast.error('Valid Mobile Number is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (inviteVendorData.gstinApplicable === 'yes' && (!inviteVendorData.gstNumber || !gstRegex.test(inviteVendorData.gstNumber))) {
+      toast.error('Valid GSTIN is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.panNumber || !panRegex.test(inviteVendorData.panNumber)) {
+      toast.error('Valid PAN Number is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.vendorType) {
+      toast.error('Vendor Type is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.organizationType) {
+      toast.error('Organization Type is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.natureOfBusiness) {
+      toast.error('Nature of Business is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.department) {
+      toast.error('Department is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    const payload = {
+      supplier_type_id: inviteVendorData.vendorType,
+      department_id: inviteVendorData.department,
+      nature_of_business_id: inviteVendorData.natureOfBusiness,
+      type_of_organization_id: inviteVendorData.organizationType,
+      first_name: inviteVendorData.firstName,
+      last_name: inviteVendorData.lastName,
+      gstin_applicable: inviteVendorData.gstinApplicable,
+      gstin: inviteVendorData.gstNumber,
+      name: inviteVendorData.lastName, // as per user instruction
+      email: inviteVendorData.email,
+      mobile: inviteVendorData.mobile,
+      pan_number: inviteVendorData.panNumber,
+    };
+    try {
+      const response = await axios.post(
+        `${baseURL}rfq/events/${id}/invite_vendor?token=${token}&add_vendor=true`,
+        payload,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      if (response.status === 200 || response.status === 201) {
+        toast.success('Vendor invited successfully!');
+        // Add the new vendor to the selectedVendors table
+        const newVendor = response.data;
+        if (newVendor) {
+          setSelectedVendors((prev) => [
+            ...prev,
+            {
+              id: null,
+              pms_supplier_id: newVendor?.id,
+              name: newVendor?.full_name || `${inviteVendorData.firstName} ${inviteVendorData.lastName}`,
+              phone: newVendor?.mobile || inviteVendorData.mobile,
+              organisation: newVendor?.organization_name || '',
+              email: newVendor?.email || inviteVendorData.email,
+            },
+          ]);
+          // Add to vendorData and filteredData for main table
+          const formattedVendor = {
+            key: newVendor.id,
+            serialNumber: vendorData.length + 1,
+            name: newVendor.full_name || `${inviteVendorData.firstName} ${inviteVendorData.lastName}`,
+            phone: newVendor.mobile || inviteVendorData.mobile,
+            email: newVendor.email || inviteVendorData.email,
+            organisation: newVendor.organization_name || '',
+          };
+          setVendorData((prev) => [formattedVendor, ...prev]);
+          setFilteredData((prev) => [formattedVendor, ...prev]);
+          // Reset the form fields
+          setInviteVendorData({
+            firstName: '',
+            lastName: '',
+            email: '',
+            mobile: '',
+            gstinApplicable: '',
+            gstNumber: '',
+            vendorType: '',
+            organizationType: '',
+            natureOfBusiness: '',
+            panNumber: '',
+            department: '',
+          });
+        }
+        // Optionally reset form here
+        handleInviteModalClose();
+      } else {
+        toast.error('Failed to invite vendor: ' + (response.data?.message || 'Unknown error'));
+      }
+    } catch (err) {
+      toast.error('Failed to invite vendor: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setIsInviteLoading(false);
+    }
+  };
+
+  // const
+
   return (
     <>
       <div
@@ -612,7 +851,7 @@ export default function ParticipantsTab({ id }) {
                     <th>Name</th>
                     <th>Mob No.</th>
                     <th>Email</th>
-                    <th>Organisation</th>
+                    {/* <th>Organisation</th> */}
                   </tr>
                 </thead>
                 <tbody>
@@ -627,9 +866,9 @@ export default function ParticipantsTab({ id }) {
                       <td style={{ textAlign: "left" }}>{vendor.name}</td>
                       <td style={{ textAlign: "left" }}>{vendor.phone}</td>
                       <td style={{ textAlign: "left" }}>{vendor.email}</td>
-                      <td style={{ textAlign: "left" }}>
+                      {/* <td style={{ textAlign: "left" }}>
                         {vendor.organisation || "-"}
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>
@@ -976,7 +1215,7 @@ export default function ParticipantsTab({ id }) {
           }
         />
 
-        <DynamicModalBox
+        {/* <DynamicModalBox
           show={inviteModal}
           onHide={handleInviteModalClose}
           modalType={true}
@@ -1114,7 +1353,99 @@ export default function ParticipantsTab({ id }) {
               </form>
             </>
           }
-        />
+        /> */}
+         <Modal show={inviteModal} onHide={handleInviteModalClose} size="lg" centered>
+              <Modal.Header closeButton>
+                <Modal.Title>Invite New Vendor</Modal.Title>
+              </Modal.Header>
+              <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto', overflowX: 'hidden' }}>
+                <form className="p-2" onSubmit={handleInviteVendor}>
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">First Name <span style={{ color: 'red' }}>*</span></label>
+                        <input className="form-control" type="text" name="firstName" placeholder="Enter First Name" value={inviteVendorData.firstName} onChange={handleInviteVendorChange} required />
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Last Name <span style={{ color: 'red' }}>*</span></label>
+                        <input className="form-control" type="text" name="lastName" placeholder="Enter Last Name" value={inviteVendorData.lastName} onChange={handleInviteVendorChange} required />
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Email <span style={{ color: 'red' }}>*</span></label>
+                        <input className="form-control" type="email" name="email" placeholder="Enter Email Address" value={inviteVendorData.email} onChange={handleInviteVendorChange} required />
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Phone Number <span style={{ color: 'red' }}>*</span></label>
+                        <input className="form-control" type="text" name="mobile" inputMode="numeric" pattern="[0-9]*" maxLength={10} onKeyDown={(e) => { const invalidChars = ['e', 'E', '+', '-', '.', ',']; if (invalidChars.includes(e.key) || (isNaN(Number(e.key)) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Tab')) { e.preventDefault(); } }} placeholder="Enter Phone Number" value={inviteVendorData.mobile} onChange={handleInviteVendorChange} required />
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">GSTIN Applicable <span style={{ color: 'red' }}>*</span></label>
+                        <select className="form-control" name="gstinApplicable" value={inviteVendorData.gstinApplicable} onChange={handleInviteVendorChange} required>
+                          <option value="">Select</option>
+                          <option value="yes">Yes</option>
+                          <option value="no">No</option>
+                        </select>
+                      </div>
+                    </div>
+                    {inviteVendorData.gstinApplicable === 'yes' && (
+                      <div className="col-md-6">
+                        <div className="form-group mb-3">
+                          <label className="po-fontBold">GSTIN <span style={{ color: 'red' }}>*</span></label>
+                          <input className="form-control" type="text" name="gstNumber" placeholder="Enter GSTIN" value={inviteVendorData.gstNumber} onChange={handleInviteVendorChange} required />
+                        </div>
+                      </div>
+                    )}
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Vendor Type</label>
+                        <SingleSelector options={vendorTypeOptions} value={vendorTypeOptions.find(opt => opt.value === inviteVendorData.vendorType) || null} onChange={handleVendorTypeChange} placeholder="Select Vendor Type" />
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Organization Type</label>
+                        <SingleSelector options={organizationTypeOptions} value={organizationTypeOptions.find(opt => opt.value === inviteVendorData.organizationType) || null} onChange={handleOrganizationTypeChange} placeholder="Select Organization Type" />
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Nature of Business</label>
+                        <SingleSelector options={natureOfBusinessOptions} value={natureOfBusinessOptions.find(opt => opt.value === inviteVendorData.natureOfBusiness) || null} onChange={handleNatureOfBusinessChange} placeholder="Select Nature Of Business" />
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">PAN No. <span style={{ color: 'red' }}>*</span></label>
+                        <input className="form-control" type="text" name="panNumber" placeholder="Enter PAN Number" value={inviteVendorData.panNumber} onChange={handleInviteVendorChange} required />
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Department <span style={{ color: 'red' }}>*</span></label>
+                        <SingleSelector options={departmentOptions} value={departmentOptions.find(opt => opt.value === inviteVendorData.department) || null} onChange={handleDepartmentChange} placeholder="Select Department" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="d-flex justify-content-center mt-2 gap-2">
+                    <button className="purple-btn2" onClick={handleInviteModalClose} type="button" disabled={isInviteLoading}>Close</button>
+                    <button className="purple-btn2" type="submit" disabled={isInviteLoading}>
+                      {isInviteLoading ? (
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      ) : null}
+                      Save Changes
+                    </button>
+                  </div>
+                </form>
+              </Modal.Body>
+            </Modal>
       </div>
 
       <ToastContainer />

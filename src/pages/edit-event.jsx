@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Modal, Button } from 'react-bootstrap';
 
 import {
   CreateRFQForm,
@@ -20,6 +21,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { baseURL } from "../confi/apiDomain";
 import { set } from "lodash";
 import { specificationColumns } from "../constant/data";
+import SingleSelector from '../components/base/Select/SingleSelector';
+import axios from 'axios';
 
 export default function EditEvent() {
   const { id } = useParams(); // Get the id from the URL
@@ -1405,113 +1408,212 @@ const toUTCStartTimeString = (dateTime) => {
   };
 
   const [inviteVendorData, setInviteVendorData] = useState({
-    name: "",
-    email: "",
-    mobile: "",
-    gstNumber: "",
-    panNumber: "",
-    company: "",
-    organization: "",
+    firstName: '',
+    lastName: '',
+    email: '',
+    mobile: '',
+    gstinApplicable: '',
+    gstNumber: '',
+    vendorType: '',
+    organizationType: '',
+    natureOfBusiness: '',
+    panNumber: '',
+    department: '',
   });
-
-  const [companyList, setCompanyList] = useState([]);
+  const [organizationTypeOptions, setOrganizationTypeOptions] = useState([]);
+  const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [vendorTypeOptions, setVendorTypeOptions] = useState([]);
+  const [natureOfBusinessOptions, setNatureOfBusinessOptions] = useState([]);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
-    fetch(
-      `${baseURL}/rfq/events/company_list?token=${token}`
-    )
-      .then((response) => response.json())
-      .then((data) =>
-        setCompanyList(
-          data.list.map((item) => ({ label: item.name, value: item.value }))
-        )
-      )
-      .catch((error) => console.error("Error fetching company list:", error));
-  }, []);
-
-  const handleInviteVendor = async (event) => {
-    event.preventDefault(); // Prevent page reload
-
-    const errors = validateInviteVendorForm();
-    if (Object.keys(errors).length > 0) return;
-
-    setIsInvite(true); // ✅ Start loader
-    const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
-    try {
-      const response = await fetch(
-        `${baseURL}rfq/events/3/invite_vendor?token=${token}&add_vendor=true&organization_name=${inviteVendorData?.organization}&company_id=${inviteVendorData?.company}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: inviteVendorData.name,
-            email: inviteVendorData.email,
-            mobile: inviteVendorData.mobile,
-            gst_number: inviteVendorData.gstNumber,
-            pan_number: inviteVendorData.panNumber,
-          }),
+    // Fetch organization type list from API
+    fetch(`${baseURL}rfq/events/type_of_organizations_list?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.type_of_organizations)) {
+          setOrganizationTypeOptions(
+            data.type_of_organizations.map((org) => ({
+              value: org.value,
+              label: org.name,
+            }))
+          );
         }
-      );
-
-      if (response.ok) {
-        const newVendor = await response.json();
-        toast.success("Vendor invited successfully!");
-
-        const vendorData = {
-          id: null,
-          pms_supplier_id: newVendor?.id,
-          name: newVendor?.full_name,
-          phone: newVendor?.mobile,
-          organisation: newVendor?.organization_name,
-        };
-
-        setSelectedVendors((prev) => [...prev, vendorData]);
-        setFilteredTableData((prev) => [...prev, vendorData]);
-
-        setInviteVendorData({
-          name: "",
-          email: "",
-          mobile: "",
-          gstNumber: "",
-          panNumber: "",
-          company: "",
-        });
-
-        handleInviteModalClose();
-      } else {
-        const errorData = await response.json();
-        console.error("Error inviting vendor:", errorData);
-        toast.error("Failed to invite vendor.");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("An error occurred while inviting the vendor.");
-    } finally {
-      setIsInvite(false); // ✅ Stop loader
-    }
-  };
+      });
+    // Fetch department list from API
+    fetch(`${baseURL}rfq/events/department_list?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.list)) {
+          setDepartmentOptions(
+            data.list.map((dept) => ({
+              value: dept.value,
+              label: dept.name,
+            }))
+          );
+        }
+      });
+    // Fetch vendor type list from API
+    fetch(`${baseURL}rfq/events/supplier_type_list?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.supplier_type)) {
+          setVendorTypeOptions(
+            data.supplier_type.map((type) => ({
+              value: type.value,
+              label: type.name,
+            }))
+          );
+        }
+      });
+    // Fetch nature of business list from API
+    fetch(`${baseURL}rfq/events/nature_of_business_list?token=${token}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.list)) {
+          setNatureOfBusinessOptions(
+            data.list.map((item) => ({
+              value: item.value,
+              label: item.name,
+            }))
+          );
+        }
+      });
+  }, []);
 
   const handleInviteVendorChange = (e) => {
     const { name, value } = e.target;
-    const sanitizedValue =
-      name === "gstNumber" || name === "panNumber"
-        ? value.replace(/[^a-zA-Z0-9]/g, "") // Remove special characters
-        : value;
-
-    const capitalizedValue =
-      name === "gstNumber" || name === "panNumber"
-        ? sanitizedValue.toUpperCase() // Convert to uppercase
-        : sanitizedValue;
-    setInviteVendorData((prevData) => ({
-      ...prevData,
-      [name]: capitalizedValue,
-    }));
+    setInviteVendorData((prev) => ({ ...prev, [name]: value }));
   };
+  const handleOrganizationTypeChange = (selectedOption) => {
+    setInviteVendorData((prev) => ({ ...prev, organizationType: selectedOption ? selectedOption.value : '' }));
+  };
+  const handleDepartmentChange = (selectedOption) => {
+    setInviteVendorData((prev) => ({ ...prev, department: selectedOption ? selectedOption.value : '' }));
+  };
+  const handleVendorTypeChange = (selectedOption) => {
+    setInviteVendorData((prev) => ({ ...prev, vendorType: selectedOption ? selectedOption.value : '' }));
+  };
+  const handleNatureOfBusinessChange = (selectedOption) => {
+    setInviteVendorData((prev) => ({ ...prev, natureOfBusiness: selectedOption ? selectedOption.value : '' }));
+  };
+
+  const [isInviteLoading, setIsInviteLoading] = useState(false);
+
+  const handleInviteVendor = async (event) => {
+    event.preventDefault();
+    setIsInviteLoading(true);
+    // Validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const mobileRegex = /^[6-9]\d{9}$/;
+    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$/;
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+
+    if (!inviteVendorData.firstName) {
+      toast.error('First Name is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.lastName) {
+      toast.error('Last Name is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.email || !emailRegex.test(inviteVendorData.email)) {
+      toast.error('Valid Email is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.mobile || !mobileRegex.test(inviteVendorData.mobile)) {
+      toast.error('Valid Mobile Number is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (inviteVendorData.gstinApplicable === 'yes' && (!inviteVendorData.gstNumber || !gstRegex.test(inviteVendorData.gstNumber))) {
+      toast.error('Valid GSTIN is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.panNumber || !panRegex.test(inviteVendorData.panNumber)) {
+      toast.error('Valid PAN Number is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.vendorType) {
+      toast.error('Vendor Type is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.organizationType) {
+      toast.error('Organization Type is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.natureOfBusiness) {
+      toast.error('Nature of Business is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    if (!inviteVendorData.department) {
+      toast.error('Department is required');
+      setIsInviteLoading(false);
+      return;
+    }
+    const payload = {
+      supplier_type_id: inviteVendorData.vendorType,
+      department_id: inviteVendorData.department,
+      nature_of_business_id: inviteVendorData.natureOfBusiness,
+      type_of_organization_id: inviteVendorData.organizationType,
+      first_name: inviteVendorData.firstName,
+      last_name: inviteVendorData.lastName,
+      gstin_applicable: inviteVendorData.gstinApplicable,
+      gstin: inviteVendorData.gstNumber,
+      name: inviteVendorData.lastName, // as per user instruction
+      email: inviteVendorData.email,
+      mobile: inviteVendorData.mobile,
+      pan_number: inviteVendorData.panNumber,
+    };
+    try {
+      const response = await axios.post(
+        `${baseURL}rfq/events/3/invite_vendor?token=${token}&add_vendor=true`,
+        payload,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      if (response.status === 200 || response.status === 201) {
+        toast.success('Vendor invited successfully!');
+        // Add the new vendor to the selectedVendors table
+        const newVendor = response.data;
+        if (newVendor) {
+          setSelectedVendors((prev) => [
+            ...prev,
+            {
+              id: null,
+              pms_supplier_id: newVendor?.id,
+              name: newVendor?.full_name || `${inviteVendorData.firstName} ${inviteVendorData.lastName}`,
+              phone: newVendor?.mobile || inviteVendorData.mobile,
+              organisation: newVendor?.organization_name || '',
+              email: newVendor?.email || inviteVendorData.email,
+            },
+          ]);
+        }
+        // Optionally reset form here
+        handleInviteModalClose();
+      } else {
+        toast.error('Failed to invite vendor: ' + (response.data?.message || 'Unknown error'));
+      }
+    } catch (err) {
+      toast.error('Failed to invite vendor: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setIsInviteLoading(false);
+    }
+  };
+
+  // const handleInviteModalClose = () => {
+  //   setInviteModal(false);
+  // };
 
   useEffect(() => {
     if (eventDetails?.event_vendors?.length > 0) {
@@ -1730,8 +1832,8 @@ const toUTCStartTimeString = (dateTime) => {
                     <thead>
                       <tr>
                         <th style={{ width: "100px" }}>Sr No.</th>
-                        <th>Vendor Name</th>
-                        <th>Organization</th>
+                        <th>Vendor Organization Name</th>
+                        {/* <th>Organization</th> */}
                         <th>Mob No.</th>
                         <th>Status</th>
                         <th>Action</th>
@@ -1765,7 +1867,7 @@ const toUTCStartTimeString = (dateTime) => {
                           <tr key={vendor.id}>
                             <td style={{ width: "100px" }}>{index + 1}</td>
                             <td>{vendor.name}</td>
-                            <td>{vendor.organisation}</td>
+                            {/* <td>{vendor.organisation}</td> */}
                             <td>{vendor.phone}</td>
                             <td>Invited</td>
                             <td>
@@ -2385,149 +2487,98 @@ const toUTCStartTimeString = (dateTime) => {
                 </>
               }
             />
-            <DynamicModalBox
-              show={inviteModal}
-              onHide={handleInviteModalClose}
-              modalType={true}
-              title="Invite New Vendor"
-              // footerButtons={[
-              //   {
-              //     label: "Close",
-              //     onClick: handleInviteModalClose,
-              //     props: {
-
-              //       className: "purple-btn1",
-              //     },
-              //   },
-              //   {
-              //     label: "Save Changes",
-              //     onClick: handleInviteVendor,
-              //     props: {
-              //       className: "purple-btn2",
-              //     },
-              //   },
-              // ]}
-              children={
-                <>
-                  <form className="p-2">
-                    <div className="form-group mb-3">
-                      <label className="po-fontBold">POC - Full Name <span style={{ color: "red" }}>*</span></label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        name="name"
-                        placeholder="Enter POC Name"
-                        value={inviteVendorData.name}
-                        onChange={handleInviteVendorChange}
-                      />
+            <Modal show={inviteModal} onHide={handleInviteModalClose} size="lg" centered>
+              <Modal.Header closeButton>
+                <Modal.Title>Invite New Vendor</Modal.Title>
+              </Modal.Header>
+              <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto', overflowX: 'hidden' }}>
+                <form className="p-2" onSubmit={handleInviteVendor}>
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">First Name <span style={{ color: 'red' }}>*</span></label>
+                        <input className="form-control" type="text" name="firstName" placeholder="Enter First Name" value={inviteVendorData.firstName} onChange={handleInviteVendorChange} required />
+                      </div>
                     </div>
-                    <div className="form-group mb-3">
-                      <label className="po-fontBold">Email <span style={{ color: "red" }}>*</span></label>
-                      <input
-                        className="form-control"
-                        type="email"
-                        name="email"
-                        placeholder="Enter Email Address"
-                        value={inviteVendorData.email}
-                        onChange={handleInviteVendorChange}
-                      />
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Last Name <span style={{ color: 'red' }}>*</span></label>
+                        <input className="form-control" type="text" name="lastName" placeholder="Enter Last Name" value={inviteVendorData.lastName} onChange={handleInviteVendorChange} required />
+                      </div>
                     </div>
-                    <div className="form-group mb-3">
-                      <label className="po-fontBold">Phone Number <span style={{ color: "red" }}>*</span></label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        name="mobile"
-                        inputMode="numeric" // mobile-friendly numeric keyboard
-                        pattern="[0-9]*" // restricts to digits only
-                        onKeyDown={(e) => {
-                          // Allow only numbers
-                          const invalidChars = ["e", "E", "+", "-", ".", ","];
-
-                          if (
-                            invalidChars.includes(e.key) ||
-                            (isNaN(Number(e.key)) &&
-                              e.key !== "Backspace" &&
-                              e.key !== "Delete" &&
-                              e.key !== "ArrowLeft" &&
-                              e.key !== "ArrowRight" &&
-                              e.key !== "Tab")
-                          ) {
-                            e.preventDefault();
-                          }
-                        }}
-                        placeholder="Enter Phone Number"
-                        value={inviteVendorData.mobile}
-                        onChange={handleInviteVendorChange}
-                      />
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Email <span style={{ color: 'red' }}>*</span></label>
+                        <input className="form-control" type="email" name="email" placeholder="Enter Email Address" value={inviteVendorData.email} onChange={handleInviteVendorChange} required />
+                      </div>
                     </div>
-                    <div className="form-group mb-3">
-                      <label className="po-fontBold">GST Number</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        name="gstNumber"
-                        placeholder="Enter GST Number"
-                        value={ inviteVendorData.gstNumber || ""}
-                        onChange={handleInviteVendorChange}
-                      />
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Phone Number <span style={{ color: 'red' }}>*</span></label>
+                        <input className="form-control" type="text" name="mobile" inputMode="numeric" pattern="[0-9]*" maxLength={10} onKeyDown={(e) => { const invalidChars = ['e', 'E', '+', '-', '.', ',']; if (invalidChars.includes(e.key) || (isNaN(Number(e.key)) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Tab')) { e.preventDefault(); } }} placeholder="Enter Phone Number" value={inviteVendorData.mobile} onChange={handleInviteVendorChange} required />
+                      </div>
                     </div>
-                    <div className="form-group mb-3">
-                      <label className="po-fontBold">PAN Number</label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        name="panNumber"
-                        placeholder="Enter PAN Number"
-                        value={inviteVendorData.panNumber || ""}
-                        onChange={handleInviteVendorChange}
-                      />
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">GSTIN Applicable <span style={{ color: 'red' }}>*</span></label>
+                        <select className="form-control" name="gstinApplicable" value={inviteVendorData.gstinApplicable} onChange={handleInviteVendorChange} required>
+                          <option value="">Select</option>
+                          <option value="yes">Yes</option>
+                          <option value="no">No</option>
+                        </select>
+                      </div>
                     </div>
-                    <div className="form-group mb-3">
-                      <label className="po-fontBold">Company <span style={{ color: "red" }}>*</span></label>
-                      <SelectBox
-                        options={companyList}
-                        value={companyList.find(
-                          (option) => option.value === inviteVendorData.company
-                        )} // Ensure the selected value is displayed
-                        onChange={(selectedOption) => {
-                          const updatedCompany = selectedOption || null; // Get the numeric value or null
-                          setInviteVendorData((prev) => ({
-                            ...prev,
-                            company: updatedCompany, // Update the company field
-                          }));
-                        }}
-                      />
-                                       </div>
-                    <div className="form-group mb-3">
-                      <label className="po-fontBold">Organization <span style={{ color: "red" }}>*</span></label>
-                      <input
-                        className="form-control"
-                        type="text"
-                        name="organization"
-                        placeholder="Enter Organization Name"
-                        value={inviteVendorData.organization || ""}
-                        onChange={handleInviteVendorChange}
-                      />
+                    {inviteVendorData.gstinApplicable === 'yes' && (
+                      <div className="col-md-6">
+                        <div className="form-group mb-3">
+                          <label className="po-fontBold">GSTIN <span style={{ color: 'red' }}>*</span></label>
+                          <input className="form-control" type="text" name="gstNumber" placeholder="Enter GSTIN" value={inviteVendorData.gstNumber} onChange={handleInviteVendorChange} required />
+                        </div>
+                      </div>
+                    )}
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Vendor Type</label>
+                        <SingleSelector options={vendorTypeOptions} value={vendorTypeOptions.find(opt => opt.value === inviteVendorData.vendorType) || null} onChange={handleVendorTypeChange} placeholder="Select Vendor Type" />
+                      </div>
                     </div>
-                    <div className="d-flex justify-content-center mt-2">
-                      <button
-                        className="purple-btn1"
-                        onClick={handleInviteModalClose}
-                      >
-                        Close
-                      </button>
-                      <button
-                        className="purple-btn2"
-                        onClick={handleInviteVendor}
-                      >
-                        Save Changes
-                      </button>
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Organization Type</label>
+                        <SingleSelector options={organizationTypeOptions} value={organizationTypeOptions.find(opt => opt.value === inviteVendorData.organizationType) || null} onChange={handleOrganizationTypeChange} placeholder="Select Organization Type" />
+                      </div>
                     </div>
-                  </form>
-                </>
-              }
-            />
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Nature of Business</label>
+                        <SingleSelector options={natureOfBusinessOptions} value={natureOfBusinessOptions.find(opt => opt.value === inviteVendorData.natureOfBusiness) || null} onChange={handleNatureOfBusinessChange} placeholder="Select Nature Of Business" />
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">PAN No. <span style={{ color: 'red' }}>*</span></label>
+                        <input className="form-control" type="text" name="panNumber" placeholder="Enter PAN Number" value={inviteVendorData.panNumber} onChange={handleInviteVendorChange} required />
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="form-group mb-3">
+                        <label className="po-fontBold">Department <span style={{ color: 'red' }}>*</span></label>
+                        <SingleSelector options={departmentOptions} value={departmentOptions.find(opt => opt.value === inviteVendorData.department) || null} onChange={handleDepartmentChange} placeholder="Select Department" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="d-flex justify-content-center mt-2 gap-2">
+                    <button className="purple-btn2" onClick={handleInviteModalClose} type="button" disabled={isInviteLoading}>Close</button>
+                    <button className="purple-btn2" type="submit" disabled={isInviteLoading}>
+                      {isInviteLoading ? (
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      ) : null}
+                      Save Changes
+                    </button>
+                  </div>
+                </form>
+              </Modal.Body>
+            </Modal>
             <EventTypeModal
               existingData={eventDetails?.event_type_detail}
               show={eventTypeModal}

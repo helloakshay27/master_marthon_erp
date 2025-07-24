@@ -118,6 +118,7 @@ import RopoMappingList from "./pages/ropo-mapping-list";
 import PoList from "./pages/po-list";
 import PoDetails from "./pages/po-details";
 import PoCreate from "./pages/po-create";
+import InviteVendor from "./pages/invite-vendor";
 
 function App() {
   return (
@@ -125,6 +126,10 @@ function App() {
       <div>
         <Routes>
           <Route path="/" element={<Members />} />
+           <Route
+            path="/invite-vendor"
+            element={<InviteVendor />}
+          />
           <Route
             path="/ropo-mapping-create"
             element={<RopoMappingCreate />}

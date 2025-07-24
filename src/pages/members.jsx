@@ -397,6 +397,11 @@ function Members() {
               <h1>RFQ Module</h1>
               <ul>
                 <li>
+                  <Link to="/invite-vendor?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    Invite Vendor
+                  </Link>
+                </li>
+                <li>
                   <Link to="/create-event?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
                     create_event
                   </Link>
