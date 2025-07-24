@@ -1027,12 +1027,12 @@ const BillBookingCreate = () => {
               charges:data.purchase_order?.charges_with_taxes || []
             });
 
-            console.log("purchase_order response", data.purchase_order);
-console.log("charges_with_taxes", data.purchase_order?.charges_with_taxes);
+//             console.log("purchase_order response", data.purchase_order);
+// console.log("charges_with_taxes", data.purchase_order?.charges_with_taxes);
             setSelectedGRNs([]);
 
             // ✅ Fixed this line:
-setCharges(data.purchase_order?.charges_with_taxes || []);
+// setCharges(data.purchase_order?.charges_with_taxes || []);
             // setCharges(data.purchase_order?.charges_with_taxes || []);
            
             // setFormData((prev) => ({
@@ -1047,6 +1047,13 @@ setCharges(data.purchase_order?.charges_with_taxes || []);
       fetchBillEntryDetails();
     }
   }, [selectedBillEntry]);
+
+  useEffect(() => {
+  if (selectedPO?.charges_with_taxes?.length > 0) {
+    setCharges(selectedPO.charges_with_taxes);
+    console.log("✅ Charges set from selectedPO:", selectedPO.charges_with_taxes);
+  }
+}, [selectedPO]);
 
   console.log("po selected:", selectedPO)
   //  console.log("po selected formdata:", formData)
@@ -2829,13 +2836,13 @@ const calculateAmountPayable = () => {
                     </tbody>
                   </table>
                 </div>
-                -----------------------------------------
+                {/* ----------------------------------------- */}
 
                  <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Charges With Taxes</h5>
                </div>
             
-<div className="tbl-container m-0">
+<div className="tbl-container m-0 ms-3">
       <table className="w-100">
         <thead>
           <tr>
@@ -2845,7 +2852,7 @@ const calculateAmountPayable = () => {
             {/* <th className="main2-th">Taxes</th> */}
             <th className="main2-th">Payable Amount</th>
             <th className="main2-th">Amount Paid Till Date</th>
-            <th className="main2-th" style={{ width: "130px", textAlign: "center" }}>Action</th>
+            {/* <th className="main2-th" style={{ width: "130px", textAlign: "center" }}>Action</th> */}
           </tr>
         </thead>
 
@@ -2875,7 +2882,7 @@ const calculateAmountPayable = () => {
       <td className="text-start">{row.paid_amount ?? "-"}</td>
 
       {/* Action */}
-      <td style={{ textAlign: "center" }}>
+      {/* <td style={{ textAlign: "center" }}>
         <button
           type="button"
           className="btn btn-link text-danger"
@@ -2883,7 +2890,7 @@ const calculateAmountPayable = () => {
         >
           <span className="material-symbols-outlined">cancel</span>
         </button>
-      </td>
+      </td> */}
     </tr>
   ))}
 </tbody>
@@ -2891,7 +2898,7 @@ const calculateAmountPayable = () => {
       </table>
     </div>
 
-                ---------------------------------------------------------------------
+                {/* --------------------------------------------------------------------- */}
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Advance Notes</h5>
                 </div>
