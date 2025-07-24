@@ -271,14 +271,15 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
                 />
               </div>
             </div>
-            <div className="row  justify-content-center">
-              <div className="col-md-1 mt-2">
-                <button type="submit" className="purple-btn2 update_mor" onClick={handleGoButtonClick}>
+
+            <div className="row  justify-content-center  mt-4">
+              <div className="col-md-2 mt-2 ">
+                <button type="submit" className="purple-btn2 w-100 submit_mor" onClick={handleGoButtonClick}>
                   Go
                 </button>
               </div>
-              <div className="col-md-1">
-                <button type="button" className="purple-btn1" onClick={handleReset}>
+              <div className="col-md-2">
+                <button type="button" className="purple-btn1 w-100" onClick={handleReset}>
                   Reset
                 </button>
               </div>
@@ -287,7 +288,7 @@ const MaterialModal = ({ show, handleClose, handleAdd }) => {
         </form>
 
         <h5 className="mt-3 text-center">Material List</h5>
-        <div className="tbl-container me-2 mt-3">
+        <div className="tbl-container  mt-3">
           <table className="w-100">
             <thead>
               <tr>

@@ -1334,6 +1334,7 @@ console.log("attachments:", attachmentsPayload)
                 file: att.document_file_name || att.filename,
                 isExisting: true,
                 blob_id: att.blob_id,
+                doc_path: att.doc_path|| "",
               };
             });
             setAttachments(formattedAttachments);
@@ -3042,12 +3043,16 @@ console.log("attachments:", attachmentsPayload)
                                     >
                                       <DownloadIcon />
                                     </a> */}
-                                      <a
+                                      {/* <a
                                 href={`${baseURL}gate_passes/${id}/download_attachment?token=${token}&blob_id=${att.blob_id}`}
                                 download={att.file_name}
                               >
                                 <DownloadIcon />
-                              </a>
+                              </a> */}
+                              <a href={att.doc_path} download target="_blank" rel="noopener noreferrer">
+  <DownloadIcon />
+</a>
+{console.log("Attachment path:", att.doc_path)}
                                   </div>
                                   <div className="file-name">
                                     <span>{att.fileName}</span>

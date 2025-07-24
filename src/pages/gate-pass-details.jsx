@@ -427,10 +427,10 @@ const GatePassDetails = () => {
                     <thead>
                       <tr>
                         <th className="text-start">Sr. No.</th>
-                        <th className="text-start">Document Name</th>
+                        {/* <th className="text-start">Document Name</th> */}
                         <th className="text-start">File Name</th>
-                        {/* <th className="text-start">File Type</th> */}
-                        <th className="text-start">Upload Date</th>
+                        <th className="text-start">File Type</th>
+                        <th className="text-start">Uploaded At </th>
                         <th className="text-start">Action</th>
                       </tr>
                     </thead>
@@ -439,19 +439,31 @@ const GatePassDetails = () => {
                         details.attachments.map((att, index) => (
                           <tr key={index}>
                             <td className="text-start">{index + 1}</td>
-                            <td className="text-start">
+                            {/* <td className="text-start">
                               {att.document_name || "Attachment"}
-                            </td>
+                            </td> */}
                             <td className="text-start">
                               {att.file_name || "N/A"}
                             </td>
-                            {/* <td className="text-start">
-                              {att.document_content_type || "N/A"}
-                            </td> */}
                             <td className="text-start">
-                              {att.created_at
+                              {att.document_content_type || "N/A"}
+                            </td>
+                            <td className="text-start">
+                              {/* {att.created_at
                                 ? new Date(att.created_at).toLocaleDateString()
-                                : "N/A"}
+                                : "N/A"} */}
+                                 {att.created_at
+                              ? new Date(att.created_at).toLocaleString("en-GB", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: true,
+                              }).replace(",", "") // remove comma
+                                .replace(/\//g, "-") // change date separator to "-"
+                                .replace(/(\d{2}-\d{2}-\d{4})/, "$1 ,") // insert comma after date
+                              : ""}
                             </td>
                             {/* <td className="text-start">
                               <a
@@ -463,12 +475,15 @@ const GatePassDetails = () => {
                               </a>
                             </td> */}
                             <td className="text-start">
-                              <a
+                              {/* <a
                                 href={`${baseURL}gate_passes/${id}/download_attachment?token=${token}&blob_id=${att.blob_id}`}
                                 download={att.file_name}
                               >
                                 <DownloadIcon />
-                              </a>
+                              </a> */}
+                              <a href={att.doc_path} download target="_blank" rel="noopener noreferrer">
+  <DownloadIcon />
+</a>
                             </td>
                           </tr>
                         ))

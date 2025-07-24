@@ -1214,7 +1214,7 @@ display:none !important;
                   </div>
                 </div>
               </div>
-              <div className="col-md-5 d-flex justify-content-end align-items-center gap-2 mt-4">
+              <div className="col-md-6 d-flex justify-content-end align-items-center  mt-4">
                 <button
                   type="button"
                   className="btn btn-md"
@@ -1238,7 +1238,7 @@ display:none !important;
               </div>
             </div>
             <div
-              className="tbl-container  px-1 mt-3"
+              className="tbl-container  px-3 mt-3"
               style={{
                 width: "max-congent",
                 height: "300px !important",

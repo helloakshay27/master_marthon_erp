@@ -380,7 +380,7 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
 
             <div className="col-md-6 mt-3">
               <div className="form-group">
-                <label className="po-fontBold">Asset Type*</label>
+                <label className="po-fontBold">Asset Type <span>*</span></label>
                 <MultiSelector
                   options={inventoryTypes}  // Provide the fetched options to the select component
                   onChange={handleInventoryChange}  // Update the selected inventory type
@@ -413,14 +413,14 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
                 />
               </div>
             </div>
-            <div className="row  justify-content-center ">
-              <div className="col-md-1 mt-2">
-                <button type="submit" className="purple-btn2 update_mor" onClick={handleGoButtonClick}>
+            <div className="row  justify-content-center mt-4 w-100">
+              <div className="col-md-2 mt-2">
+                <button type="submit" className="purple-btn2 w-100 update_mor" onClick={handleGoButtonClick}>
                   Go
                 </button>
               </div>
-              <div className="col-md-1">
-                <button type="button" className="purple-btn1" onClick={handleReset}>
+              <div className="col-md-2">
+                <button type="button" className="purple-btn1 w-100" onClick={handleReset}>
                   Reset
                 </button>
               </div>
@@ -429,7 +429,7 @@ const AssetModal = ({ showAssets, handleCloseAssets, handleAdd }) => {
         </form>
 
         <h5 className="mt-3 text-center">Asset List</h5>
-        <div className="tbl-container me-2 mt-3">
+        <div className="tbl-container  mt-3">
           <table className="w-100">
             <thead>
               <tr>
