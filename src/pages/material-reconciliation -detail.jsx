@@ -52,6 +52,13 @@ const MaterialReconciliationDetail = () => {
     return stock - deadstock - theft - damage + adjustment;
   };
 
+  const formatNumber = (val) => {
+    if (val === null || val === undefined || val === "") return "0.00";
+    const num = Number(val);
+    if (isNaN(num)) return "0.00";
+    return num.toFixed(2);
+  };
+
   useEffect(() => {
     // setLoading(true);
     axios
@@ -602,15 +609,15 @@ const MaterialReconciliationDetail = () => {
                           <tr key={item.id}>
                             <td>{index + 1}</td>
                             <td>{item.material}</td>
-                            <td>{item.stock_as_on}</td>
-                            {/* <td>{item.rate}</td> */}
-                            <td>{item.deadstock_qty}</td>
-                            <td>{item.theft_or_missing_qty}</td>
-                            <td>{item.damage_qty}</td>
-                            <td>{item.adjustment_qty}</td>
-                            <td>{item.adjustment_rate}</td>
-                            <td>{item.adjustment_value}</td>
-                            <td>{item.net_quantity}</td>
+                            <td>{formatNumber(item.stock_as_on)}</td>
+                            {/* <td>{formatNumber(item.rate)}</td> */}
+                            <td>{formatNumber(item.deadstock_qty)}</td>
+                            <td>{formatNumber(item.theft_or_missing_qty)}</td>
+                            <td>{formatNumber(item.damage_qty)}</td>
+                            <td>{formatNumber(item.adjustment_qty)}</td>
+                            <td>{formatNumber(item.adjustment_rate)}</td>
+                            <td>{formatNumber(item.adjustment_value)}</td>
+                            <td>{formatNumber(item.net_quantity)}</td>
                             <td>{item.remarks}</td>
                             <td>{item.reason?.name || item.reason || "-"}</td>
                             {/* <td>-</td> */}
