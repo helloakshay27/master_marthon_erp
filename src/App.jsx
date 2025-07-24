@@ -117,6 +117,7 @@ import RopoMappingCreate from "./pages/ropo-mapping-create";
 import RopoMappingList from "./pages/ropo-mapping-list";
 import PoList from "./pages/po-list";
 import PoDetails from "./pages/po-details";
+import PoCreate from "./pages/po-create";
 
 function App() {
   return (
@@ -139,6 +140,10 @@ function App() {
             <Route
             path="/po-details/:id"
             element={<PoDetails />}
+          />
+           <Route
+            path="/po-create"
+            element={<PoCreate />}
           />
           <Route
             path="/stock_register_detail/:id"
