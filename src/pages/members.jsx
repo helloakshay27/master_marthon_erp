@@ -21,6 +21,12 @@ function Members() {
 
                <h1>ROPO</h1>
               <ul>
+                 <li>
+                  <Link to="/po-list/?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"> PO  List</Link>
+                </li>
+                 <li>
+                  <Link to="/po-details/:id"> PO Details</Link>
+                </li>
                 <li>
                   <Link to="/ropo-mapping-list/?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"> ROPO Mapping List</Link>
                 </li>

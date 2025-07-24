@@ -115,6 +115,8 @@ import BillApprovalList from "./pages/bill-approval-list";
 import InitialBOQList from "./pages/initial-boq-list";
 import RopoMappingCreate from "./pages/ropo-mapping-create";
 import RopoMappingList from "./pages/ropo-mapping-list";
+import PoList from "./pages/po-list";
+import PoDetails from "./pages/po-details";
 
 function App() {
   return (
@@ -129,6 +131,14 @@ function App() {
            <Route
             path="/ropo-mapping-list"
             element={<RopoMappingList />}
+          />
+            <Route
+            path="/po-list"
+            element={<PoList />}
+          />
+            <Route
+            path="/po-details/:id"
+            element={<PoDetails />}
           />
           <Route
             path="/stock_register_detail/:id"
