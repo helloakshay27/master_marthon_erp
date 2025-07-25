@@ -44,7 +44,7 @@ const BOQList = () => {
 
 
 
-  
+
   const handleModalShow = () => setShow(true);
 
 
@@ -423,17 +423,10 @@ const BOQList = () => {
   const [fromStatus, setFromStatus] = useState("");
   const [toStatus, setToStatus] = useState("");
   const [remark, setRemark] = useState("");
+  const [toStatusOptions, setToStatusOptions] = useState([]);
   // const [boqList, setBoqList] = useState([]);
   // const [loading, setLoading] = useState(false);
 
-  // Prepare data to send
-  const data = {
-    boq_detail_ids: selectedBoqDetails,
-    from_status: fromStatus,
-    to_status: toStatus,
-    comments: remark,
-  };
-  console.log("data for bulk action", data)
 
   // Handle input changes
   const handleStatusChange = (selectedOption) => {
@@ -469,12 +462,20 @@ const BOQList = () => {
 
     // Prepare data to send
     const data = {
-      boq_detail_ids: selectedBoqDetails,
+      // boq_detail_ids: selectedBoqDetails.join(","),
+      // from_status: fromStatus,
+      // to_status: toStatus,
+      // comments: remark,
+
+
+      boq_detail_ids: selectedBoqDetails.join(","),
       from_status: fromStatus,
+      from_level: fromStatus,
       to_status: toStatus,
-      comments: remark,
+      remarks: remark,
+      selected_all: selectedAll,
     };
-    console.log("data for bulk action", data)
+    console.log("data for bulk action on  submit***", data)
 
     // Send data to API using axios
     axios
@@ -501,10 +502,22 @@ const BOQList = () => {
       setLoading(true); // Show loading state while fetching
       axios
         .get(
-          `${baseURL}boq_details/${id}/boq_info.json?q[status_eq]=${fromStatus}&token=${token}`
+          `${baseURL}boq_details/${id}/boq_info.json?token=${token}&bulk_update=true&from_status=${fromStatus}&q[status_eq]=${fromStatus}`
         )
         .then((response) => {
           setBoqList(response.data); // Set the fetched data to state
+          console.log("responce.data for bulk update:", response?.data)
+
+          if (Array.isArray(response?.data.to_status_options)) {
+            const mappedOptions = [
+              // { label: "Select Status", value: "" },
+              ...response.data.to_status_options.map((status) => ({
+                label: status,
+                value: status,
+              })),
+            ];
+            setToStatusOptions(mappedOptions);
+          }
         })
         .catch((error) => {
           console.error("Error fetching data:", error);
@@ -514,6 +527,7 @@ const BOQList = () => {
         });
     }
   }, [fromStatus]);  // This will run every time 'fromStatus' changes
+
 
 
 
@@ -532,6 +546,80 @@ const BOQList = () => {
       }
     });
   };
+
+  const handleSelectAll = (boqDetails) => {
+    const allIds = boqDetails.map((item) => item.id);
+
+    const areAllSelected = allIds.every((id) => selectedBoqDetails.includes(id));
+
+    setSelectedBoqDetails((prevSelected) => {
+      if (areAllSelected) {
+        // Deselect all
+        return prevSelected.filter((id) => !allIds.includes(id));
+      } else {
+        // Select all (merge and remove duplicates)
+        const merged = new Set([...prevSelected, ...allIds]);
+        return Array.from(merged);
+      }
+    });
+  };
+
+
+  const getAllBoqDetailIds = (categories) => {
+    let allIds = [];
+
+    categories.forEach((cat) => {
+      // From main category level
+      if (Array.isArray(cat.boq_details)) {
+        allIds.push(...cat.boq_details.map((boq) => boq.id));
+      }
+
+      // From sub-categories
+      if (Array.isArray(cat.sub_categories_2)) {
+        cat.sub_categories_2.forEach((subCat) => {
+          if (Array.isArray(subCat.boq_details)) {
+            allIds.push(...subCat.boq_details.map((boq) => boq.id));
+          }
+        });
+      }
+    });
+
+    return allIds;
+  };
+
+  const handleGlobalSelectAll = (categories) => {
+    const allIds = getAllBoqDetailIds(categories);
+
+    const areAllSelected = allIds.every((id) => selectedBoqDetails.includes(id));
+
+    setSelectedBoqDetails((prevSelected) => {
+      if (areAllSelected) {
+        // Unselect all
+        return prevSelected.filter((id) => !allIds.includes(id));
+      } else {
+        // Merge without duplicates
+        const merged = new Set([...prevSelected, ...allIds]);
+        return Array.from(merged);
+      }
+    });
+  };
+
+  const allVisibleBoqIds = getAllBoqDetailIds(boqList?.categories || []);
+  const selectedAll = allVisibleBoqIds.length > 0 &&
+    allVisibleBoqIds.every((id) => selectedBoqDetails.includes(id));
+
+
+  // Prepare data to send
+  const data = {
+    boq_detail_ids: selectedBoqDetails.join(","),
+    from_status: fromStatus,
+    from_level: fromStatus,
+    to_status: toStatus,
+    remarks: remark,
+    selected_all: selectedAll,
+
+  };
+  console.log("data for bulk action", data)
 
   // console.log("selected boq id array :", selectedBoqDetails)
 
@@ -556,6 +644,35 @@ const BOQList = () => {
     },
   ];
 
+  const [statusOptions, setStatusOptions] = useState([]);
+  useEffect(() => {
+    const fetchStatusOptions = async () => {
+      try {
+        const response = await fetch(
+          `${baseURL}pms/admin/invoice_approvals/from_status_options.json?resource_type=BoqDetail&token=${token}`
+        );
+
+        const data = await response.json();
+
+        if (data.options && Array.isArray(data.options)) {
+          const mappedOptions = [
+            // { label: "Select Status", value: "" }, // default
+            ...data.options.map((status) => ({
+              label: status,
+              value: status,
+            })),
+          ];
+
+          setStatusOptions(mappedOptions);
+        }
+      } catch (error) {
+        console.error("Failed to fetch status options:", error);
+      }
+    };
+
+    fetchStatusOptions();
+  }, []);
+
   //unit
   const [unitOfMeasures, setUnitOfMeasures] = useState([]);
   const [selectedUnit, setSelectedUnit] = useState(null);
@@ -567,7 +684,7 @@ const BOQList = () => {
       )
       .then((response) => {
         // Mapping the response to the format required by react-select
-        const options = response.data.map((unit) => ({
+        const options = response?.data.map((unit) => ({
           value: unit.id,
           label: unit.name,
         }));
@@ -939,8 +1056,8 @@ const BOQList = () => {
   const handleClick = () => {
     // Navigate to '/about' when the button is clicked
     const projectId = boqList?.project_id || "";
-      const siteId = boqList?.pms_site_id || "";
-  const wingId = boqList?.pms_wing_id || "";
+    const siteId = boqList?.pms_site_id || "";
+    const wingId = boqList?.pms_wing_id || "";
 
     navigate(`/create-BOQ?token=${token}&project_id=${projectId}&site_id=${siteId}&wing_id=${wingId}`);
   };
@@ -1059,8 +1176,10 @@ const BOQList = () => {
 
                         <SingleSelector
                           // options={options}
-                          options={options.filter(option => option.value === "draft" || option.value === "")}
-                          value={options.find(option => option.value === fromStatus)}
+                          options={statusOptions}
+
+                          // options={options.filter(option => option.value === "draft" || option.value === "")}
+                          value={statusOptions.find(option => option.value === fromStatus)}
                           onChange={handleStatusChange}
 
                           placeholder={`Select Status`} // Dynamic placeholder
@@ -1073,13 +1192,15 @@ const BOQList = () => {
 
                         <SingleSelector
                           // options={options}
-                          options={options.filter(option => option.value === "submitted" || option.value === "")}
+                          options={toStatusOptions}
+                          // options={options.filter(option => option.value === "submitted" || option.value === "")}
                           onChange={handleToStatusChange}
-                          value={options.find(option => option.value === toStatus)}
+                          value={toStatusOptions.find(option => option.value === toStatus)}
 
                           placeholder={`Select Status`} // Dynamic placeholder
                           classNamePrefix="react-select"
                         />
+                        {console.log("to status:", toStatus)}
                       </div>
                     </div>
                     <div className="col-md-4">
@@ -1158,18 +1279,18 @@ const BOQList = () => {
                     <button className="purple-btn2 me-2" onClick={handleClickCollapse}>Reset</button>
 
                     <button className="purple-btn2 me-3" onClick={handleClick}>
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="20"
-                                                height="20"
-                                                fill="white"
-                                                className="bi bi-plus"
-                                                viewBox="0 0 16 16"
-                                            >
-                                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                            </svg>
-                                            <span> Create BOQ</span>
-                                        </button>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        fill="white"
+                        className="bi bi-plus"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                      </svg>
+                      <span> Create BOQ</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1181,7 +1302,19 @@ const BOQList = () => {
                     <thead>
                       <tr>
                         <th>Sr.No.</th>
-                        <th className="text-start"> <input className="ms-1 me-1 mb-1" type="checkbox" /></th>
+                        <th className="text-start">
+                          {/* <input className="ms-1 me-1 mb-1" type="checkbox" /> */}
+
+
+                          <input
+                            type="checkbox"
+                            checked={
+                              getAllBoqDetailIds(boqList.categories).every((id) => selectedBoqDetails.includes(id)) &&
+                              getAllBoqDetailIds(boqList.categories).length > 0
+                            }
+                            onChange={() => handleGlobalSelectAll(boqList.categories)}
+                          />
+                        </th>
                         {/* <th className="text-start">Expand</th> */}
                         <th className="text-start">Category</th>
                         <th className="text-start">BOQ ID</th>
@@ -3256,7 +3389,7 @@ const BOQList = () => {
             <div className="row mt-3 align-items-end">
               <div className="col-md-12">
                 <div className="form-group">
-                  
+
                   <label>Material</label>
                   <SingleSelector
                     options={inventoryMaterialTypes}
