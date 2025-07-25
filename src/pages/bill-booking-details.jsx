@@ -748,6 +748,70 @@ const BillBookingDetails = () => {
                     </tbody>
                   </table>
                 </div>
+
+                  {/* ----------------------------------------- */}
+
+                <div className="d-flex justify-content-between mt-3 me-2">
+                  <h5 className=" ">Charges With Taxes</h5>
+                </div>
+
+                <div className="tbl-container mx-1 ">
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th className="main2-th">Charge Name</th>
+                        <th className="main2-th">Amount</th>
+                        <th className="main2-th">Realised Amount</th>
+                        {/* <th className="main2-th">Taxes</th> */}
+                        {/* <th className="main2-th">Payable Amount</th> */}
+                        <th className="main2-th">Amount Paid Till Date</th>
+                        {/* <th className="main2-th" style={{ width: "130px", textAlign: "center" }}>Action</th> */}
+                      </tr>
+                    </thead>
+
+                    <tbody className="charges_with_taxes">
+                      {details?.bill_charges_with_taxes.map((row, index) => (
+                        <tr key={row.id || index} className="nested-fields">
+                          {/* Charge Name */}
+                          <td className="text-start">{row.charges_with_tax.charge_name || "-"}</td>
+
+                          {/* Amount */}
+                          <td className="text-start">{row.charges_with_tax.amount ?? "-"}</td>
+
+                          {/* Realised Amount */}
+                          <td className="text-start">{row.charges_with_tax.realised_amount ?? "-"}</td>
+
+                          {/* Payable Amount (editable input) */}
+                          {/* <td className="text-start">
+                            <input
+                              type="number"
+                              className="form-control"
+                              value={row.payable_amount}
+                              onChange={(e) => handleChange(index, "payable_amount", e.target.value)}
+                            />
+                          </td> */}
+
+                          {/* Amount Paid Till Date */}
+                          <td className="text-start">{row.paid_amount ?? "-"}</td>
+
+                          {/* Action */}
+                          {/* <td style={{ textAlign: "center" }}>
+        <button
+          type="button"
+          className="btn btn-link text-danger"
+          onClick={() => handleRemove2(index)}
+        >
+          <span className="material-symbols-outlined">cancel</span>
+        </button>
+      </td> */}
+                        </tr>
+                      ))}
+                    </tbody>
+
+                  </table>
+                </div>
+
+                {/* --------------------------------------------------------------------- */}
                 {/* <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Pending Advances (&gt; 60 days)</h5>
                 </div> */}

@@ -990,8 +990,8 @@ const BillBookingCreate = () => {
           setDisplayProjectId(data.project_id || null);
           setDisplaySiteId(data.site_id || null);
 
-          setCharges(data.charges_with_taxes|| [])
-          console.log("changes i bill entry:",data.charges_with_taxes)
+          setCharges(data.charges_with_taxes || [])
+          console.log("changes i bill entry:", data.charges_with_taxes)
 
           // Fetch PO GRN details using purchase_order.id
           if (data.purchase_order?.id) {
@@ -1013,8 +1013,10 @@ const BillBookingCreate = () => {
             // Reset selected GRNs instead of auto-selecting them
             setSelectedGRNs([]);
           } else {
+
             setSelectedPO({
               id: data.purchase_order?.id,
+              // pms_supplier_id:data.purchase_order?.supplier_id,
               po_number: data.purchase_order?.po_number,
               po_date: data.purchase_order?.po_date,
               total_value: data.purchase_order?.total_value,
@@ -1024,17 +1026,17 @@ const BillBookingCreate = () => {
               due_date: data.purchase_order?.due_date, // Add this line
               grn_materials: [],
               certified_till_date: data.purchase_order?.certified_till_date,
-              charges:data.purchase_order?.charges_with_taxes || []
+              charges: data.purchase_order?.charges_with_taxes || []
             });
 
-//             console.log("purchase_order response", data.purchase_order);
-// console.log("charges_with_taxes", data.purchase_order?.charges_with_taxes);
+            //             console.log("purchase_order response", data.purchase_order);
+            // console.log("charges_with_taxes", data.purchase_order?.charges_with_taxes);
             setSelectedGRNs([]);
 
             // ✅ Fixed this line:
-// setCharges(data.purchase_order?.charges_with_taxes || []);
             // setCharges(data.purchase_order?.charges_with_taxes || []);
-           
+            // setCharges(data.purchase_order?.charges_with_taxes || []);
+
             // setFormData((prev) => ({
             //   ...prev,
             //   certified_till_date: data.purchase_order?.certified_till_date || 0,
@@ -1049,15 +1051,15 @@ const BillBookingCreate = () => {
   }, [selectedBillEntry]);
 
   useEffect(() => {
-  if (selectedPO?.charges_with_taxes?.length > 0) {
-    setCharges(selectedPO.charges_with_taxes);
-    console.log("✅ Charges set from selectedPO:", selectedPO.charges_with_taxes);
-  }
-}, [selectedPO]);
+    if (selectedPO?.charges_with_taxes?.length > 0) {
+      setCharges(selectedPO.charges_with_taxes);
+      console.log("✅ Charges set from selectedPO:", selectedPO.charges_with_taxes);
+    }
+  }, [selectedPO]);
 
   // console.log("po selected:", selectedPO)
   //  console.log("po selected formdata:", formData)
-    // console.log("po selected charges:", charges)
+  // console.log("po selected charges:", charges)
 
   useEffect(() => {
     if (!selectedBillEntry) {
@@ -1438,12 +1440,16 @@ const BillBookingCreate = () => {
   // console.log("status chnage:", formData.status)
 
   const chargesPayload = charges.map(charge => ({
-  id: charge.id,
-  payable_amount: parseFloat(charge.payable_amount) || 0,
-}));
-console.log("charges Payload here:",chargesPayload)
+    id: charge.id,
+    payable_amount: parseFloat(charge.payable_amount) || 0,
+  }));
+  console.log("charges Payload here:", chargesPayload)
+  console.log("selected po:", selectedPO)
 
-
+  console.log("supplier id*********", selectedPO?.supplier_id)
+  console.log("company id*********", selectedPO?.company_id)
+  console.log("project id*********", selectedPO?.project_id)
+  console.log("site id*********", selectedPO?.site_id)
   const handleSubmit = async () => {
 
     if (
@@ -1583,10 +1589,10 @@ console.log("charges Payload here:",chargesPayload)
           // company_id: selectedCompany?.value || null,
           // site_id: selectedSite?.value || null,
           // project_id: selectedProject?.value || null,
-          company_id: displayCompanyId,
-          site_id: displaySiteId,
-          project_id: displayProjectId,
-          pms_supplier_id: formData.pms_supplier_id || null,
+          company_id: displayCompanyId || selectedPO?.company_id,
+          site_id: displaySiteId || selectedPO?.site_id,
+          project_id: displayProjectId || selectedPO?.project_id,
+          pms_supplier_id: formData.pms_supplier_id || selectedPO?.supplier_id || null,
           bill_entry_id: selectedBillEntry?.value, // Add this line
           invoice_number: formData.invoiceNumber,
           einvoice: selectedEInvoice?.value === "yes",
@@ -1631,7 +1637,7 @@ console.log("charges Payload here:",chargesPayload)
           // })),
           //  attachments: attachments.length > 0 ? attachments : null,
           attachments: attachmentsPayload || [],
-          charges_with_taxes:chargesPayload || [],
+          charges_with_taxes: chargesPayload || [],
           debit_note_adjustment,
           credit_note_adjustment,
           advance_note_adjustment,
@@ -2097,52 +2103,52 @@ console.log("charges Payload here:",chargesPayload)
   //     .toFixed(2);
   // };
 
-//   const calculateAmountPayable = () => {
-//   const totalPayableCharges = charges.reduce((sum, row) => {
-//     const val = parseFloat(row.payable_amount);
-//     return sum + (isNaN(val) ? 0 : val);
-//   }, 0);
+  //   const calculateAmountPayable = () => {
+  //   const totalPayableCharges = charges.reduce((sum, row) => {
+  //     const val = parseFloat(row.payable_amount);
+  //     return sum + (isNaN(val) ? 0 : val);
+  //   }, 0);
 
-//   const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
-//   const otherDed = parseFloat(otherDeductions) || 0;
-//   const otherAdd = parseFloat(otherAdditions) || 0;
-//   const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
-//   const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0;
+  //   const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
+  //   const otherDed = parseFloat(otherDeductions) || 0;
+  //   const otherAdd = parseFloat(otherAdditions) || 0;
+  //   const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
+  //   const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0;
 
-//   return (
-//     totalPayableCharges -
-//     retentionAmount -
-//     otherDed +
-//     otherAdd -
-//     debitAdjustment -
-//     advanceAdjustment
-//   ).toFixed(2);
-// };
+  //   return (
+  //     totalPayableCharges -
+  //     retentionAmount -
+  //     otherDed +
+  //     otherAdd -
+  //     debitAdjustment -
+  //     advanceAdjustment
+  //   ).toFixed(2);
+  // };
 
-const calculateAmountPayable = () => {
-  const baseAmount = parseFloat(calculateTotalAmount()) || 0;
+  const calculateAmountPayable = () => {
+    const baseAmount = parseFloat(calculateTotalAmount()) || 0;
 
-  const totalPayableCharges = charges.reduce((sum, row) => {
-    const val = parseFloat(row.payable_amount);
-    return sum + (isNaN(val) ? 0 : val);
-  }, 0);
+    const totalPayableCharges = charges.reduce((sum, row) => {
+      const val = parseFloat(row.payable_amount);
+      return sum + (isNaN(val) ? 0 : val);
+    }, 0);
 
-  const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
-  const otherDed = parseFloat(otherDeductions) || 0;
-  const otherAdd = parseFloat(otherAdditions) || 0;
-  const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
-  const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0;
+    const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
+    const otherDed = parseFloat(otherDeductions) || 0;
+    const otherAdd = parseFloat(otherAdditions) || 0;
+    const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
+    const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0;
 
-  return (
-    baseAmount +
-    totalPayableCharges -
-    retentionAmount -
-    otherDed +
-    otherAdd -
-    debitAdjustment -
-    advanceAdjustment
-  ).toFixed(2);
-};
+    return (
+      baseAmount +
+      totalPayableCharges -
+      retentionAmount -
+      otherDed +
+      otherAdd -
+      debitAdjustment -
+      advanceAdjustment
+    ).toFixed(2);
+  };
 
   // ...existing code...
 
@@ -2678,7 +2684,7 @@ const calculateAmountPayable = () => {
                       <input
                         className="form-control"
                         type="text"
-                        value={formData.gstin}
+                        value={formData.gstin || selectedPO?.gstin}
                         disabled
                         readOnly
                       />
@@ -2693,7 +2699,7 @@ const calculateAmountPayable = () => {
                       <input
                         className="form-control"
                         type="text"
-                        value={formData.pan}
+                        value={formData.pan || selectedPO?.pan}
                         disabled
                         readOnly
                       />
@@ -2727,7 +2733,7 @@ const calculateAmountPayable = () => {
                     </div>
                   </div>
                 </div>
-                <div className="d-flex justify-content-between mt-3 me-2">
+                <div className="d-flex justify-content-between mt-4 ">
                   <h5 className=" ">GRN Details</h5>
                   <div
                     className="card-tools d-flex"
@@ -2755,7 +2761,7 @@ const calculateAmountPayable = () => {
                     </button>
                   </div>
                 </div>
-                <div className="tbl-container mx-3 mt-3">
+                <div className="tbl-container  mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -2837,51 +2843,51 @@ const calculateAmountPayable = () => {
                 </div>
                 {/* ----------------------------------------- */}
 
-                 <div className="d-flex justify-content-between mt-3 me-2">
+                <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Charges With Taxes</h5>
-               </div>
-            
-<div className="tbl-container m-0 ms-3">
-      <table className="w-100">
-        <thead>
-          <tr>
-            <th className="main2-th">Charge Name</th>
-            <th className="main2-th">Amount</th>
-            <th className="main2-th">Realised Amount</th>
-            {/* <th className="main2-th">Taxes</th> */}
-            <th className="main2-th">Payable Amount</th>
-            <th className="main2-th">Amount Paid Till Date</th>
-            {/* <th className="main2-th" style={{ width: "130px", textAlign: "center" }}>Action</th> */}
-          </tr>
-        </thead>
+                </div>
 
-        <tbody className="charges_with_taxes">
-  {charges.map((row, index) => (
-    <tr key={row.id || index} className="nested-fields">
-      {/* Charge Name */}
-      <td className="text-start">{row.charge_name || "-"}</td>
+                <div className="tbl-container mt-2 ">
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th className="main2-th">Charge Name</th>
+                        <th className="main2-th">Amount</th>
+                        <th className="main2-th">Realised Amount</th>
+                        {/* <th className="main2-th">Taxes</th> */}
+                        <th className="main2-th">Payable Amount</th>
+                        <th className="main2-th">Amount Paid Till Date</th>
+                        {/* <th className="main2-th" style={{ width: "130px", textAlign: "center" }}>Action</th> */}
+                      </tr>
+                    </thead>
 
-      {/* Amount */}
-      <td className="text-start">{row.amount ?? "-"}</td>
+                    <tbody className="charges_with_taxes">
+                      {charges.map((row, index) => (
+                        <tr key={row.id || index} className="nested-fields">
+                          {/* Charge Name */}
+                          <td className="text-start">{row.charge_name || "-"}</td>
 
-      {/* Realised Amount */}
-      <td className="text-start">{row.realised_amount ?? "-"}</td>
+                          {/* Amount */}
+                          <td className="text-start">{row.amount ?? "-"}</td>
 
-      {/* Payable Amount (editable input) */}
-      <td className="text-start">
-        <input
-          type="number"
-          className="form-control"
-          value={row.payable_amount}
-          onChange={(e) => handleChange(index, "payable_amount", e.target.value)}
-        />
-      </td>
+                          {/* Realised Amount */}
+                          <td className="text-start">{row.realised_amount ?? "-"}</td>
 
-      {/* Amount Paid Till Date */}
-      <td className="text-start">{row.paid_amount ?? "-"}</td>
+                          {/* Payable Amount (editable input) */}
+                          <td className="text-start">
+                            <input
+                              type="number"
+                              className="form-control"
+                              value={row.payable_amount}
+                              onChange={(e) => handleChange(index, "payable_amount", e.target.value)}
+                            />
+                          </td>
 
-      {/* Action */}
-      {/* <td style={{ textAlign: "center" }}>
+                          {/* Amount Paid Till Date */}
+                          <td className="text-start">{row.paid_amount ?? "-"}</td>
+
+                          {/* Action */}
+                          {/* <td style={{ textAlign: "center" }}>
         <button
           type="button"
           className="btn btn-link text-danger"
@@ -2890,18 +2896,18 @@ const calculateAmountPayable = () => {
           <span className="material-symbols-outlined">cancel</span>
         </button>
       </td> */}
-    </tr>
-  ))}
-</tbody>
+                        </tr>
+                      ))}
+                    </tbody>
 
-      </table>
-    </div>
+                  </table>
+                </div>
 
                 {/* --------------------------------------------------------------------- */}
-                <div className="d-flex justify-content-between mt-3 me-2">
+                <div className="d-flex justify-content-between mt-4 me-2">
                   <h5 className=" ">Advance Notes</h5>
                 </div>
-                <div className="tbl-container mx-3 mt-3">
+                <div className="tbl-container  mt-2">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -2981,10 +2987,10 @@ const calculateAmountPayable = () => {
                   </table>
 
                 </div>
-                <div className="d-flex justify-content-between mt-3 me-2">
+                <div className="d-flex justify-content-between mt-4 me-2">
                   <h5 className=" ">Debit Note</h5>
                 </div>
-                <div className="tbl-container mx-3 mt-3">
+                <div className="tbl-container mt-2">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -3058,10 +3064,10 @@ const calculateAmountPayable = () => {
                     </tbody>
                   </table>
                 </div>
-                <div className="d-flex justify-content-between mt-3 me-2">
+                <div className="d-flex justify-content-between mt-4 me-2">
                   <h5 className=" ">Tax Deduction:</h5>
                 </div>
-                <div className="tbl-container mx-3 mt-3">
+                <div className="tbl-container  mt-2">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -3098,10 +3104,10 @@ const calculateAmountPayable = () => {
                     </tbody>
                   </table>
                 </div>
-                <div className="d-flex justify-content-between mt-3 me-2">
+                <div className="d-flex justify-content-between mt-4 me-2">
                   <h5 className=" ">Tax Details:</h5>
                 </div>
-                <div className="tbl-container mx-3 mt-3">
+                <div className="tbl-container mt-2">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -3614,37 +3620,37 @@ const calculateAmountPayable = () => {
                       />
                     </div>
                   </div> */}
- {!withoutBillEntry && withBillEntry && (
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Total Certified Till Date</label>
-                      <input
-                        className="form-control"
-                        type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                        value={formData.certified_till_date}
-                        disabled
-                      />
+                  {!withoutBillEntry && withBillEntry && (
+                    <div className="col-md-4 mt-2">
+                      <div className="form-group">
+                        <label>Total Certified Till Date</label>
+                        <input
+                          className="form-control"
+                          type="number"
+                          placeholder=""
+                          fdprocessedid="qv9ju9"
+                          value={formData.certified_till_date}
+                          disabled
+                        />
+                      </div>
                     </div>
-                  </div>
- )}
+                  )}
 
-  {withoutBillEntry && !withBillEntry && (
-                  <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Total Certified Till Date</label>
-                      <input
-                        className="form-control"
-                        type="number"
-                        placeholder=""
-                        fdprocessedid="qv9ju9"
-                        value={selectedPO?.certified_till_date}
-                        disabled
-                      />
+                  {withoutBillEntry && !withBillEntry && (
+                    <div className="col-md-4 mt-2">
+                      <div className="form-group">
+                        <label>Total Certified Till Date</label>
+                        <input
+                          className="form-control"
+                          type="number"
+                          placeholder=""
+                          fdprocessedid="qv9ju9"
+                          value={selectedPO?.certified_till_date}
+                          disabled
+                        />
+                      </div>
                     </div>
-                  </div>
- )}
+                  )}
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Remark</label>
@@ -3697,7 +3703,7 @@ const calculateAmountPayable = () => {
                     </div>
                   </div> */}
                 {/* </div> */}
-                <div className="d-flex justify-content-between mt-4 me-2">
+                <div className="d-flex justify-content-between mt-4 ">
                   <h5 className=" ">Advance Adjustment</h5>
                   <button
                     className="purple-btn2"
@@ -3716,7 +3722,7 @@ const calculateAmountPayable = () => {
                     <span>Select Advance Note</span>
                   </button>
                 </div>
-                <div className="tbl-container mx-3 mt-3">
+                <div className="tbl-container  mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -3818,7 +3824,7 @@ const calculateAmountPayable = () => {
                   </table>
                 </div>
 
-                <div className="d-flex justify-content-between mt-3 me-2">
+                <div className="d-flex justify-content-between mt-4 ">
                   <h5 className=" ">Debit Note</h5>
                   <button className="purple-btn2" onClick={openDebitNoteModal}>
                     <svg
@@ -3834,7 +3840,7 @@ const calculateAmountPayable = () => {
                     <span>Select Debit Note</span>
                   </button>
                 </div>
-                <div className="tbl-container mx-3 mt-3">
+                <div className="tbl-container  mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
