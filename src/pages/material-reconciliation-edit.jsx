@@ -1313,6 +1313,60 @@ const MaterialReconciliationEdit = () => {
     setSelectAll(false);
   }, [pagination.current_page]);
 
+  // Add a helper to compute the total required for the selected inventory
+  const getBatchRequiredQty = () => {
+    const inv = formData.material_reconciliation_items_attributes.find(
+      (item) => item.material_inventory_id === selectedInventoryId
+    );
+    if (!inv) return 0;
+    return (
+      (parseFloat(inv.deadstock_qty) || 0) +
+      (parseFloat(inv.theft_or_missing_qty) || 0) +
+      (parseFloat(inv.damage_qty) || 0)
+    );
+  };
+
+  const handleBatchIssueQtyChange = (batchId, value) => {
+    let newValue = parseFloat(value) || 0;
+    if (newValue < 0) newValue = 0;
+    // Find the batch to get available qty
+    const batch = batchList.find((b) => b.id === batchId);
+    const availableQty = parseFloat(batch?.current_stock_qty) || 0;
+    // 1. Cannot enter more than available qty for this batch
+    if (newValue > availableQty) {
+      toast.error(
+        `Issue QTY cannot exceed available qty (${availableQty}) for this batch.`
+      );
+      return;
+    }
+    // 2. Calculate total issue qty if this value is set
+    const newBatchIssueQty = { ...batchIssueQty, [batchId]: newValue };
+    const total = Object.entries(newBatchIssueQty).reduce(
+      (sum, [id, qty]) => sum + (parseFloat(qty) || 0),
+      0
+    );
+    const requiredQty = getBatchRequiredQty();
+    // 3. Cannot exceed max allowed (deadstock+theft+damage)
+    if (total > requiredQty) {
+      toast.error(`Total Issue QTY cannot exceed ${requiredQty}`);
+      return;
+    }
+    // 4. For this batch, cannot enter more than remaining required
+    // (requiredQty - sum of all other batches)
+    const otherTotal = Object.entries(newBatchIssueQty)
+      .filter(([id]) => id !== String(batchId))
+      .reduce((sum, [id, qty]) => sum + (parseFloat(qty) || 0), 0);
+    const maxForThisBatch = Math.min(availableQty, requiredQty - otherTotal);
+    if (newValue > maxForThisBatch) {
+      toast.error(
+        `You can only enter up to ${maxForThisBatch} in this batch to fulfill the required total.`
+      );
+      return;
+    }
+    setBatchQtyError("");
+    setBatchIssueQty(newBatchIssueQty);
+  };
+
   const handleBatchModalSubmit = () => {
     // Prepare batch data
     const batchData = Object.entries(batchIssueQty)
@@ -1321,7 +1375,15 @@ const MaterialReconciliationEdit = () => {
         grn_batch_id: Number(batchId),
         grn_batch_qty: Number(qty),
       }));
-
+    // Enforce that the sum matches the required total
+    const totalIssued = batchData.reduce((sum, b) => sum + b.grn_batch_qty, 0);
+    const requiredQty = getBatchRequiredQty();
+    if (totalIssued !== requiredQty) {
+      toast.error(
+        `Total issued quantity (${totalIssued}) must exactly match required (${requiredQty}).`
+      );
+      return;
+    }
     // Update the relevant inventory in formData
     setFormData((prev) => ({
       ...prev,
@@ -1332,45 +1394,8 @@ const MaterialReconciliationEdit = () => {
             : item
         ),
     }));
-
     setShowBatchModal(false);
   };
-
-  // ...existing code...
-
-  const handleBatchIssueQtyChange = (batchId, value) => {
-    const newValue = parseFloat(value) || 0;
-
-    // Find the batch to get available qty
-    const batch = batchList.find((b) => b.id === batchId);
-    const availableQty = parseFloat(batch?.current_stock_qty) || 0;
-
-    // 1. Cannot enter more than available qty for this batch
-    if (newValue > availableQty) {
-      toast.error(
-        `Issue QTY cannot exceed available qty (${availableQty}) for this batch.`
-      );
-      return;
-    }
-
-    // 2. Calculate total issue qty if this value is set
-    const newBatchIssueQty = { ...batchIssueQty, [batchId]: newValue };
-    const total = Object.entries(newBatchIssueQty).reduce(
-      (sum, [id, qty]) => sum + (parseFloat(qty) || 0),
-      0
-    );
-
-    // 3. Cannot exceed max allowed (deadstock+theft+damage)
-    if (total > batchMaxQty) {
-      toast.error(`Total Issue QTY cannot exceed ${batchMaxQty}`);
-      return;
-    }
-
-    setBatchQtyError("");
-    setBatchIssueQty(newBatchIssueQty);
-  };
-
-  // ...existing code...
 
   useEffect(() => {
     console.log("Batch Modal:", {
@@ -1547,13 +1572,11 @@ const MaterialReconciliationEdit = () => {
                                   ? ""
                                   : item.deadstock_qty
                               }
-                              onChange={(e) =>
-                                handleInputChange(
-                                  index,
-                                  "deadstock_qty",
-                                  e.target.value
-                                )
-                              }
+                              onChange={(e) => {
+                                let value = e.target.value;
+                                if (Number(value) < 0) value = '';
+                                handleInputChange(index, 'deadstock_qty', value);
+                              }}
                               min="0"
                             />
                           </td>
@@ -1568,13 +1591,11 @@ const MaterialReconciliationEdit = () => {
                                   ? ""
                                   : item.theft_or_missing_qty
                               }
-                              onChange={(e) =>
-                                handleInputChange(
-                                  index,
-                                  "theft_or_missing_qty",
-                                  e.target.value
-                                )
-                              }
+                              onChange={(e) => {
+                                let value = e.target.value;
+                                if (Number(value) < 0) value = '';
+                                handleInputChange(index, 'theft_or_missing_qty', value);
+                              }}
                               min="0"
                             />
                           </td>
@@ -1589,13 +1610,11 @@ const MaterialReconciliationEdit = () => {
                                   ? ""
                                   : item.damage_qty
                               }
-                              onChange={(e) =>
-                                handleInputChange(
-                                  index,
-                                  "damage_qty",
-                                  e.target.value
-                                )
-                              }
+                              onChange={(e) => {
+                                let value = e.target.value;
+                                if (Number(value) < 0) value = '';
+                                handleInputChange(index, 'damage_qty', value);
+                              }}
                               min="0"
                             />
                           </td>
@@ -1627,13 +1646,11 @@ const MaterialReconciliationEdit = () => {
                                   ? ""
                                   : item.adjustment_qty
                               }
-                              onChange={(e) =>
-                                handleInputChange(
-                                  index,
-                                  "adjustment_qty",
-                                  e.target.value
-                                )
-                              }
+                              onChange={(e) => {
+                                let value = e.target.value;
+                                if (Number(value) < 0) value = '';
+                                handleInputChange(index, 'adjustment_qty', value);
+                              }}
                             />
                           </td>
                           <td>

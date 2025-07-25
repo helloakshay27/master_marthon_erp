@@ -1085,34 +1085,22 @@ const MaterialReconciliationCreate = () => {
     }
   }, [showBatchModal, selectedInventoryId, selectedStore]);
 
-  // const handleBatchIssueQtyChange = (batchId, value) => {
-  //   // Parse value as number, default to 0 if empty
-  //   const newValue = parseFloat(value) || 0;
-  //   // Calculate new total
-  //   const newBatchIssueQty = { ...batchIssueQty, [batchId]: newValue };
-  //   const total = Object.values(newBatchIssueQty).reduce(
-  //     (sum, v) => sum + (parseFloat(v) || 0),
-  //     0
-  //   );
-
-  //   if (total > batchMaxQty) {
-  //     alert(`Total Issue QTY cannot exceed ${batchMaxQty}`);
-  //     // Optionally: do not update state, or set the value to the max allowed
-  //     return;
-  //   } else {
-  //     setBatchQtyError("");
-  //     setBatchIssueQty(newBatchIssueQty);
-  //   }
-  // };
-  // ...existing code...
+  // Add a helper to compute the total required for the selected inventory
+  const getBatchRequiredQty = () => {
+    const inv = acceptedInventories.find((inv) => inv.id === selectedInventoryId);
+    if (!inv) return 0;
+    return (
+      (parseFloat(inv.deadstock_qty) || 0) +
+      (parseFloat(inv.theft_or_missing_qty) || 0) +
+      (parseFloat(inv.damage_qty) || 0)
+    );
+  };
 
   const handleBatchIssueQtyChange = (batchId, value) => {
-    const newValue = parseFloat(value) || 0;
-
+    let newValue = parseFloat(value) || 0;
     // Find the batch to get available qty
     const batch = batchList.find((b) => b.id === batchId);
     const availableQty = parseFloat(batch?.current_stock_qty) || 0;
-
     // 1. Cannot enter more than available qty for this batch
     if (newValue > availableQty) {
       toast.error(
@@ -1120,25 +1108,33 @@ const MaterialReconciliationCreate = () => {
       );
       return;
     }
-
     // 2. Calculate total issue qty if this value is set
     const newBatchIssueQty = { ...batchIssueQty, [batchId]: newValue };
     const total = Object.entries(newBatchIssueQty).reduce(
       (sum, [id, qty]) => sum + (parseFloat(qty) || 0),
       0
     );
-
+    const requiredQty = getBatchRequiredQty();
     // 3. Cannot exceed max allowed (deadstock+theft+damage)
-    if (total > batchMaxQty) {
-      toast.error(`Total Issue QTY cannot exceed ${batchMaxQty}`);
+    if (total > requiredQty) {
+      toast.error(`Total Issue QTY cannot exceed ${requiredQty}`);
       return;
     }
-
+    // 4. For this batch, cannot enter more than remaining required
+    // (requiredQty - sum of all other batches)
+    const otherTotal = Object.entries(newBatchIssueQty)
+      .filter(([id]) => id !== String(batchId))
+      .reduce((sum, [id, qty]) => sum + (parseFloat(qty) || 0), 0);
+    const maxForThisBatch = Math.min(availableQty, requiredQty - otherTotal);
+    if (newValue > maxForThisBatch) {
+      toast.error(
+        `You can only enter up to ${maxForThisBatch} in this batch to fulfill the required total.`
+      );
+      return;
+    }
     setBatchQtyError("");
     setBatchIssueQty(newBatchIssueQty);
   };
-
-  // ...existing code...
 
   const handleBatchModalSubmit = () => {
     // Prepare batch data
@@ -1148,7 +1144,15 @@ const MaterialReconciliationCreate = () => {
         grn_batch_id: batchId,
         grn_batch_qty: Number(qty),
       }));
-
+    // Enforce that the sum matches the required total
+    const totalIssued = batchData.reduce((sum, b) => sum + b.grn_batch_qty, 0);
+    const requiredQty = getBatchRequiredQty();
+    if (totalIssued !== requiredQty) {
+      toast.error(
+        `Total issued quantity (${totalIssued}) must exactly match required (${requiredQty}).`
+      );
+      return;
+    }
     // Update the relevant inventory in acceptedInventories
     setAcceptedInventories((prev) =>
       prev.map((inv) =>
@@ -1321,13 +1325,17 @@ const MaterialReconciliationCreate = () => {
                             type="number"
                             className="form-control"
                             value={inventory.deadstock_qty || ""}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              let value = e.target.value;
+                              if (Number(value) < 0) {
+                                value = '';
+                              }
                               handleItemInputChange(
                                 inventory.id,
                                 "deadstock_qty",
-                                e.target.value
-                              )
-                            }
+                                value
+                              );
+                            }}
                             placeholder="Enter Deadstock Qty"
                             min="0"
                           />
@@ -1337,13 +1345,17 @@ const MaterialReconciliationCreate = () => {
                             type="number"
                             className="form-control"
                             value={inventory.theft_or_missing_qty || ""}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              let value = e.target.value;
+                              if (Number(value) < 0) {
+                                value = '';
+                              }
                               handleItemInputChange(
                                 inventory.id,
                                 "theft_or_missing_qty",
-                                e.target.value
-                              )
-                            }
+                                value
+                              );
+                            }}
                             placeholder="Enter Theft/Missing Qty"
                             min="0"
                           />
@@ -1353,13 +1365,17 @@ const MaterialReconciliationCreate = () => {
                             type="number"
                             className="form-control"
                             value={inventory.damage_qty || ""}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              let value = e.target.value;
+                              if (Number(value) < 0) {
+                                value = '';
+                              }
                               handleItemInputChange(
                                 inventory.id,
                                 "damage_qty",
-                                e.target.value
-                              )
-                            }
+                                value
+                              );
+                            }}
                             placeholder="Enter Wastage Qty"
                             min="0"
                           />
@@ -1395,13 +1411,17 @@ const MaterialReconciliationCreate = () => {
                             type="number"
                             className="form-control"
                             value={inventory.adjustment_qty || ""}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              let value = e.target.value;
+                              if (Number(value) < 0) {
+                                value = '';
+                              }
                               handleItemInputChange(
                                 inventory.id,
                                 "adjustment_qty",
-                                e.target.value
-                              )
-                            }
+                                value
+                              );
+                            }}
                             placeholder="Enter Adjustment Qty"
                             style={{ display: "inline-block", width: "70%" }}
                           />
@@ -2107,6 +2127,9 @@ const MaterialReconciliationCreate = () => {
                           value={batchIssueQty[batch.id] || ""}
                           onChange={(e) => {
                             let value = e.target.value;
+                            if (Number(value) < 0) {
+                              value = '';
+                            }
                             // Only allow up to max
                             const max = (() => {
                               const prevTotal = batchList
