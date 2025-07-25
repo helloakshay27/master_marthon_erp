@@ -2076,32 +2076,48 @@ const BillBookingCreate = () => {
 
   // Add these helper functions above your return statement
 
-  const calculateTotalAmount = () =>
-    selectedGRNs.reduce(
-      (acc, grn) => acc + (parseFloat(grn.all_inc_tax) || 0),
-      0
-    );
+  // const calculateTotalAmount = () =>
+  //   selectedGRNs.reduce(
+  //     (acc, grn) => acc + (parseFloat(grn.all_inc_tax) || 0),
+  //     0
+      
+  //   );
 
-  // const calculateAmountPayable = () => {
-  //   const totalAmount = parseFloat(calculateTotalAmount()) || 0;
-  //   const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
-  //   const otherDed = parseFloat(otherDeductions) || 0;
-  //   const otherAdd = parseFloat(otherAdditions) || 0;
-  //   // const creditAdjustment = parseFloat(calculateCreditNoteAdjustment()) || 0;
-  //   const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
-  //   const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0; // Add this line
+    const calculateTotalAmount = () => {
+  const grnTotal = selectedGRNs.reduce(
+    (acc, grn) => acc + (parseFloat(grn.all_inc_tax) || 0),
+    0
+  );
 
-  //   return (
-  //     totalAmount -
-  //     retentionAmount -
-  //     otherDed +
-  //     otherAdd +
-  //     // creditAdjustment -
-  //     debitAdjustment -
-  //     advanceAdjustment
-  //   ) // Subtract advance adjustment
-  //     .toFixed(2);
-  // };
+  const totalPayableCharges = charges.reduce((sum, row) => {
+    const val = parseFloat(row.payable_amount);
+    return sum + (isNaN(val) ? 0 : val);
+  }, 0);
+  
+   const total = grnTotal + totalPayableCharges;
+   return total.toFixed(2);
+};
+
+  const calculateAmountPayable = () => {
+    const totalAmount = parseFloat(calculateTotalAmount()) || 0;
+    const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
+    const otherDed = parseFloat(otherDeductions) || 0;
+    const otherAdd = parseFloat(otherAdditions) || 0;
+    // const creditAdjustment = parseFloat(calculateCreditNoteAdjustment()) || 0;
+    const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
+    const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0; // Add this line
+
+    return (
+      totalAmount -
+      retentionAmount -
+      otherDed +
+      otherAdd +
+      // creditAdjustment -
+      debitAdjustment -
+      advanceAdjustment
+    ) // Subtract advance adjustment
+      .toFixed(2);
+  };
 
   //   const calculateAmountPayable = () => {
   //   const totalPayableCharges = charges.reduce((sum, row) => {
@@ -2125,30 +2141,30 @@ const BillBookingCreate = () => {
   //   ).toFixed(2);
   // };
 
-  const calculateAmountPayable = () => {
-    const baseAmount = parseFloat(calculateTotalAmount()) || 0;
+  // const calculateAmountPayable = () => {
+  //   const baseAmount = parseFloat(calculateTotalAmount()) || 0;
 
-    const totalPayableCharges = charges.reduce((sum, row) => {
-      const val = parseFloat(row.payable_amount);
-      return sum + (isNaN(val) ? 0 : val);
-    }, 0);
+  //   const totalPayableCharges = charges.reduce((sum, row) => {
+  //     const val = parseFloat(row.payable_amount);
+  //     return sum + (isNaN(val) ? 0 : val);
+  //   }, 0);
 
-    const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
-    const otherDed = parseFloat(otherDeductions) || 0;
-    const otherAdd = parseFloat(otherAdditions) || 0;
-    const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
-    const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0;
+  //   const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
+  //   const otherDed = parseFloat(otherDeductions) || 0;
+  //   const otherAdd = parseFloat(otherAdditions) || 0;
+  //   const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
+  //   const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0;
 
-    return (
-      baseAmount +
-      totalPayableCharges -
-      retentionAmount -
-      otherDed +
-      otherAdd -
-      debitAdjustment -
-      advanceAdjustment
-    ).toFixed(2);
-  };
+  //   return (
+  //     baseAmount +
+  //     totalPayableCharges -
+  //     retentionAmount -
+  //     otherDed +
+  //     otherAdd +
+  //     debitAdjustment -
+  //     advanceAdjustment
+  //   ).toFixed(2);
+  // };
 
   // ...existing code...
 
@@ -2241,6 +2257,7 @@ const BillBookingCreate = () => {
       }, 0)
       .toFixed(2);
   };
+  console.log("debit adjusted:",  calculateDebitNoteAdjustment())
 
   // Update the validatePositiveNumber function
 
