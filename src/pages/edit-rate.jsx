@@ -1506,15 +1506,15 @@ const EditRate = () => {
                                     type="radio"
                                     className="me-2"
                                     id="organisationRadio"
-                                    value="organisation"
-                                    checked={dateType === "organisation"}
-                                    onChange={() => setDateType("organisation")}
+                                    value="organization"
+                                    checked={dateType === "organization"}
+                                    onChange={() => setDateType("organization")}
                                 />
                                 <label
                                     htmlFor="organisationRadio"
                                     className="mb-0"
                                 >
-                                    Organisation
+                                    Organization
                                 </label>
                             </div>
                             <div className="col-md-6 mt-3">
