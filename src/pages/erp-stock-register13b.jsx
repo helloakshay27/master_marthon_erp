@@ -681,21 +681,31 @@ const ErpStockRegister13B = () => {
   // Update columnVisibility to the correct fields and remove duplicate/conflicting declarations
   const [columnVisibility, setColumnVisibility] = useState({
     srNo: true,
+     material_name: true,
     material: true,
-    material_name: true,
+     uom_name: true,
+   
     // material_type: true,
     // materialSubType: true,
     // materialDescription: true,
     // specification: true,
     lastReceived: true,
+    lastIssue:true,
     total_received: true,
     total_issued: true,
-    stock_as_on: true,
+    total_return: true,
+   
     // status: true,
     deadstockQty: true,
     theftMissing: true,
-    uom_name: true,
+   
     damage_qty: true,
+     
+     adjusted_qty:true,
+     mto:true,
+     material_sale:true,
+     stock_as_on: true,
+
     // Star: true,
     // mor: true, // Added Mor Number column
     // grn_number: true, //
@@ -703,13 +713,7 @@ const ErpStockRegister13B = () => {
 
   const allColumns = [
     { field: "srNo", headerName: "Sr.No.", width: 80, sortable: true },
-    {
-      field: "material",
-      headerName: "Material Category",
-      width: 150,
-      sortable: true,
-    },
-    {
+      {
       field: "material_name",
       headerName: "Material Name",
       width: 450,
@@ -726,6 +730,14 @@ const ErpStockRegister13B = () => {
           "-"
         ),
     },
+     { field: "uom_name", headerName: "UOM", width: 100, sortable: true },
+    {
+      field: "material",
+      headerName: "Material Category",
+      width: 150,
+      sortable: true,
+    },
+  
     // {
     //   field: "material_type",
     //   headerName: "Material Type",
@@ -760,6 +772,16 @@ const ErpStockRegister13B = () => {
         return dateStr ? dateStr.replace(/\//g, "-") : "-";
       },
     },
+     {
+      field: "lastIssue",
+      headerName: "Last Issue Date",
+      width: 150,
+      sortable: true,
+      // renderCell: (params) => {
+      //   const dateStr = params.value;
+      //   return dateStr ? dateStr.replace(/\//g, "-") : "-";
+      // },
+    },
     {
       field: "total_received",
       headerName: "Total Received",
@@ -772,12 +794,13 @@ const ErpStockRegister13B = () => {
       width: 120,
       sortable: true,
     },
-    {
-      field: "stock_as_on",
-      headerName: "Stock As On",
+        {
+      field: "total_return",
+      headerName: "Total Return",
       width: 120,
       sortable: true,
     },
+    
     // {
     //   field: "status",
     //   headerName: "Stock Status",
@@ -803,7 +826,32 @@ const ErpStockRegister13B = () => {
       width: 140,
       sortable: true,
     },
-    { field: "uom_name", headerName: "UOM", width: 100, sortable: true },
+     {
+      field: "adjusted_qty",
+      headerName: "Adjusted Qty",
+      width: 140,
+      sortable: true,
+    },
+    {
+      field: "mto",
+      headerName: "MTO",
+      width: 140,
+      sortable: true,
+    },
+    {
+      field: "material_sale",
+      headerName: "Material Sale",
+      width: 140,
+      sortable: true,
+    },
+
+    {
+      field: "stock_as_on",
+      headerName: "Stock As On",
+      width: 120,
+      sortable: true,
+    },
+   
     // { field: "Star", headerName: "Star", width: 80, sortable: false },
     // { field: "mor", headerName: "MOR Number", width: 120, sortable: true },
     // {

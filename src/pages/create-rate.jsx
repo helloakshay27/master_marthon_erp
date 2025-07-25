@@ -1349,16 +1349,16 @@ const CreateRate = () => {
                                     className="me-2"
                                     name="dateType"
                                     id="organisationRadio"
-                                    value="organisation"
-                                    checked={dateType === "organisation"}
-                                    onChange={() => setDateType("organisation")}
+                                    value="organization"
+                                    checked={dateType === "organization "}
+                                    onChange={() => setDateType("organization ")}
                                     style={{ color: "#8b0203" }}
                                 />
                                 <label
                                     htmlFor="organisationRadio"
                                     className="mb-0"
                                 >
-                                    Organisation
+                                    Organization 
                                 </label>
                             </div>
                             {console.log("date type:", dateType)}
