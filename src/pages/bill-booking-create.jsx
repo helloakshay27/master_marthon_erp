@@ -15,8 +15,10 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const BillBookingCreate = () => {
+  const lastErrorType = useRef(null);
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
+
 
   const [actionDetails, setactionDetails] = useState(false);
 
@@ -744,11 +746,30 @@ const BillBookingCreate = () => {
   const [charges, setCharges] = useState([]);
 
 
+  // const handleChange = (index, field, value) => {
+  //   const updated = [...charges];
+  //   updated[index][field] = value;
+  //   setCharges(updated);
+  // };
+
   const handleChange = (index, field, value) => {
-    const updated = [...charges];
-    updated[index][field] = value;
-    setCharges(updated);
-  };
+  const updated = [...charges];
+
+  if (field === "payable_amount") {
+    const payableAmount = parseFloat(value) || 0;
+    const paidTillDate = parseFloat(updated[index].paid_amount) || 0;
+    const realisedAmount = parseFloat(updated[index].realised_amount) || 0;
+
+    if (payableAmount + paidTillDate > realisedAmount) {
+      toast.error("Payable Amount + Amount Paid Till Date cannot exceed Realised Amount");
+      return; // don't update state
+    }
+  }
+
+  updated[index][field] = value;
+  setCharges(updated);
+};
+
 
   const handleRemove2 = (index) => {
     const updated = [...charges];
@@ -1168,6 +1189,7 @@ const BillBookingCreate = () => {
                   onChange={handleSelectAllGRNs}
                 />
               </th>
+              <th>GRN No.</th>
               <th>Material Name</th>
               <th>Material GRN Amount</th>
               <th>Certified Till Date</th>
@@ -1186,8 +1208,12 @@ const BillBookingCreate = () => {
                     type="checkbox"
                     checked={selectedGRNs.some((g) => g.id === grn.id)}
                     onChange={() => handleGRNCheckboxSelect(grn)}
+                  // disabled={
+                  //   parseFloat(grn.certified_till_date || 0) >= parseFloat(grn.all_inc_tax || 0)
+                  // }
                   />
                 </td>
+                <td>{grn.grn_number}</td>
                 <td>{grn.material_name}</td>
                 <td>{grn.material_grn_amount}</td>
                 <td>{grn.certified_till_date || "-"}</td>
@@ -2080,44 +2106,120 @@ const BillBookingCreate = () => {
   //   selectedGRNs.reduce(
   //     (acc, grn) => acc + (parseFloat(grn.all_inc_tax) || 0),
   //     0
-      
+
   //   );
 
-    const calculateTotalAmount = () => {
-  const grnTotal = selectedGRNs.reduce(
-    (acc, grn) => acc + (parseFloat(grn.all_inc_tax) || 0),
-    0
-  );
+  const calculateTotalAmount = () => {
+    const grnTotal = selectedGRNs.reduce(
+      (acc, grn) => acc + (parseFloat(grn.all_inc_tax) || 0),
+      0
+    );
 
-  const totalPayableCharges = charges.reduce((sum, row) => {
-    const val = parseFloat(row.payable_amount);
-    return sum + (isNaN(val) ? 0 : val);
-  }, 0);
-  
-   const total = grnTotal + totalPayableCharges;
-   return total.toFixed(2);
-};
+    const totalPayableCharges = charges.reduce((sum, row) => {
+      const val = parseFloat(row.payable_amount);
+      return sum + (isNaN(val) ? 0 : val);
+    }, 0);
+
+    const total = grnTotal + totalPayableCharges;
+    return total.toFixed(2);
+  };
+
+  // const calculateAmountPayable = () => {
+  //   const totalAmount = parseFloat(calculateTotalAmount()) || 0;
+  //   const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
+  //   const otherDed = parseFloat(otherDeductions) || 0;
+  //   const otherAdd = parseFloat(otherAdditions) || 0;
+  //   // const creditAdjustment = parseFloat(calculateCreditNoteAdjustment()) || 0;
+  //   const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
+  //   const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0; // Add this line
+
+  //   return (
+  //     totalAmount -
+  //     retentionAmount -
+  //     otherDed +
+  //     otherAdd +
+  //     // creditAdjustment -
+  //     debitAdjustment -
+  //     advanceAdjustment
+  //   ) // Subtract advance adjustment
+  //     .toFixed(2);
+  // };
+
 
   const calculateAmountPayable = () => {
     const totalAmount = parseFloat(calculateTotalAmount()) || 0;
     const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
     const otherDed = parseFloat(otherDeductions) || 0;
     const otherAdd = parseFloat(otherAdditions) || 0;
-    // const creditAdjustment = parseFloat(calculateCreditNoteAdjustment()) || 0;
-    const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
-    const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0; // Add this line
 
-    return (
+    const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
+    const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0;
+
+    const totalAdjustments = (-debitAdjustment) + advanceAdjustment;
+
+    // if (debitAdjustment > totalAmount) {
+    //   toast.error("Debit note adjustment exceeds the total amount.");
+    //   return null;
+    // }
+
+    // if (advanceAdjustment > totalAmount) {
+    //   toast.error("Advance recovery exceeds the total amount.");
+    //   return null;
+    // }
+
+    // if (totalAdjustments > totalAmount) {
+    //   toast.error("Combined debit note and advance recovery exceed the total amount.");
+    //   return null;
+    // }
+
+    //   if (debitAdjustment > totalAmount) {
+    //   toast.error("Debit note adjustment exceeds the total amount.");
+    //   return null;
+    // } else if (advanceAdjustment > totalAmount) {
+    //   toast.error("Advance recovery exceeds the total amount.");
+    //   return null;
+    // } else if (totalAdjustments > totalAmount) {
+    //   toast.error("Combined debit note and advance recovery exceed the total amount.");
+    //   return null;
+    // }
+
+
+    // Only show a toast once per unique error
+    if ((-debitAdjustment) > totalAmount) {
+      if (lastErrorType.current !== "debit") {
+        toast.error("Debit note adjustment exceeds the total amount.");
+        lastErrorType.current = "debit";
+      }
+      return null;
+    } else if (advanceAdjustment > totalAmount) {
+      if (lastErrorType.current !== "advance") {
+        toast.error("Advance recovery exceeds the total amount.");
+        lastErrorType.current = "advance";
+      }
+      return null;
+    } else if (totalAdjustments > totalAmount) {
+      if (lastErrorType.current !== "combined") {
+        toast.error("Combined debit note and advance recovery exceed the total amount.");
+        lastErrorType.current = "combined";
+      }
+      return null;
+    } else {
+      // Reset last error type if everything is okay
+      lastErrorType.current = null;
+    }
+
+    const amountPayable = (
       totalAmount -
       retentionAmount -
       otherDed +
       otherAdd +
-      // creditAdjustment -
       debitAdjustment -
       advanceAdjustment
-    ) // Subtract advance adjustment
-      .toFixed(2);
+    ).toFixed(2);
+
+    return amountPayable;
   };
+
 
   //   const calculateAmountPayable = () => {
   //   const totalPayableCharges = charges.reduce((sum, row) => {
@@ -2257,7 +2359,7 @@ const BillBookingCreate = () => {
       }, 0)
       .toFixed(2);
   };
-  console.log("debit adjusted:",  calculateDebitNoteAdjustment())
+  console.log("debit adjusted:", calculateDebitNoteAdjustment())
 
   // Update the validatePositiveNumber function
 
@@ -2783,6 +2885,7 @@ const BillBookingCreate = () => {
                     <thead>
                       <tr>
                         <th className="text-start">Sr. No.</th>
+                        <th className="text-start">GRN No.</th>
                         <th className="text-start">Material Name</th>
                         <th className="text-start">Material GRN Amount</th>
                         <th className="text-start">Certified Till Date</th>
@@ -2797,6 +2900,7 @@ const BillBookingCreate = () => {
                       {selectedGRNs.map((grn, index) => (
                         <tr key={grn.id}>
                           <td className="text-start">{index + 1}</td>
+                          <td className="text-start">{grn.grn_number}</td>
                           <td className="text-start">{grn.material_name}</td>
                           <td className="text-start">{grn.all_inc_tax}</td>
                           <td className="text-start">
@@ -2897,6 +3001,18 @@ const BillBookingCreate = () => {
                               className="form-control"
                               value={row.payable_amount}
                               onChange={(e) => handleChange(index, "payable_amount", e.target.value)}
+                              // onChange={(e) => {
+                              //   const value = parseFloat(e.target.value) || 0;
+                              //   const realised = parseFloat(row.realised_amount) || 0;
+                              //   const paidTillDate = parseFloat(row.paid_amount) || 0;
+
+                              //   if (value + paidTillDate > realised) {
+                              //     toast.error("Payable amount + Amount Paid Till Date cannot exceed Realised Amount");
+                              //     return;
+                              //   }
+
+                              //   handleChange(index, "payable_amount", value);
+                              // }}
                             />
                           </td>
 
@@ -4964,7 +5080,7 @@ const BillBookingCreate = () => {
               <thead>
                 <tr>
                   <th>
-                    <input
+                    {/* <input
                       type="checkbox"
                       checked={
                         debitNotes.length > 0 &&
@@ -4977,7 +5093,34 @@ const BillBookingCreate = () => {
                           setSelectedDebitNotes([]);
                         }
                       }}
+                    /> */}
+
+
+                    <input
+                      type="checkbox"
+                      checked={
+                        debitNotes.length > 0 &&
+                        selectedDebitNotes.length ===
+                        debitNotes.filter(
+                          (note) =>
+                            parseFloat(note.debit_note_amount || 0) !==
+                            parseFloat(note.recovered_amount || 0)
+                        ).length
+                      }
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          const selectableNotes = debitNotes.filter(
+                            (note) =>
+                              parseFloat(note.debit_note_amount || 0) !==
+                              parseFloat(note.recovered_amount || 0)
+                          );
+                          setSelectedDebitNotes(selectableNotes);
+                        } else {
+                          setSelectedDebitNotes([]);
+                        }
+                      }}
                     />
+
                   </th>
                   <th className="text-start">Debit Note No.</th>
                   <th className="text-start">PO Display No.</th>
@@ -5006,6 +5149,10 @@ const BillBookingCreate = () => {
                             (n) => n.id === note.id
                           )}
                           onChange={() => handleDebitNoteSelect(note)}
+                          disabled={
+                            parseFloat(note.debit_note_amount || 0) ===
+                            parseFloat(note.recovered_amount || 0)
+                          }
                         />
                       </td>
                       <td className="text-start">
@@ -5082,7 +5229,7 @@ const BillBookingCreate = () => {
               <thead>
                 <tr>
                   <th>
-                    <input
+                    {/* <input
                       type="checkbox"
                       checked={
                         pendingAdvances.length > 0 &&
@@ -5095,7 +5242,32 @@ const BillBookingCreate = () => {
                           setSelectedAdvanceNotes([]);
                         }
                       }}
+                    /> */}
+                    <input
+                      type="checkbox"
+                      checked={
+                        pendingAdvances.length > 0 &&
+                        selectedAdvanceNotes.length ===
+                        pendingAdvances.filter(
+                          (note) =>
+                            parseFloat(note.advance_amount || 0) !==
+                            parseFloat(note.recovered_amount || 0)
+                        ).length
+                      }
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          const eligibleNotes = pendingAdvances.filter(
+                            (note) =>
+                              parseFloat(note.advance_amount || 0) !==
+                              parseFloat(note.recovered_amount || 0)
+                          );
+                          setSelectedAdvanceNotes(eligibleNotes);
+                        } else {
+                          setSelectedAdvanceNotes([]);
+                        }
+                      }}
                     />
+
                   </th>
                   <th className="text-start">ID</th>
                   <th className="text-start">PO Display No.</th>
@@ -5128,6 +5300,9 @@ const BillBookingCreate = () => {
                             (n) => n.id === note.id
                           )}
                           onChange={() => handleAdvanceNoteSelect(note)}
+                          disabled={
+                            parseFloat(note.advance_amount || 0) === parseFloat(note.recovered_amount || 0)
+                          }
                         />
                       </td>
                       <td className="text-start">{note.id || "-"}</td>

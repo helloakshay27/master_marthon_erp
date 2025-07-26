@@ -18,6 +18,12 @@ function Members() {
             style={{ marginBottom: "200px" }}
           >
             <div className="m-3">
+               <h1>Labour master</h1>
+              <ul>
+                <li>
+                  <Link to="/labour-master"> Labour Master</Link>
+                </li>
+                </ul>
 
                <h1>ROPO</h1>
               <ul>
