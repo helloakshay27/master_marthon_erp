@@ -119,6 +119,7 @@ import PoList from "./pages/po-list";
 import PoDetails from "./pages/po-details";
 import PoCreate from "./pages/po-create";
 import InviteVendor from "./pages/invite-vendor";
+import LabourMaster from "./pages/labour_master";
 
 function App() {
   return (
@@ -571,6 +572,11 @@ function App() {
           <Route
             path="/vendor-approval-edit/:id"
             element={<VendorApprovalEdit />}
+          />
+
+           <Route
+            path="/labour-master"
+            element={<LabourMaster />}
           />
         </Routes>
       </div>
