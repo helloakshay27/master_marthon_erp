@@ -200,6 +200,11 @@ const ErpStockRegister13B = () => {
           materialUrl: materialUrl,
           material_name: item.material_name || "-",
           lastReceived: item.last_received_on || "-",
+           last_issued_on:item.last_issued_on|| "-",
+            mto_qty:item.mto_qty|| "-",
+             material_sale:item.material_sale|| "-",
+             gate_pass_qty:item.gate_pass_qty || "-",
+             total_returned:item.total_returned || "-",
           total_received:
             item.total_received !== null && item.total_received !== undefined
               ? item.total_received
@@ -253,6 +258,9 @@ const ErpStockRegister13B = () => {
           damage_qty:
             item.damage_qty !== null && item.damage_qty !== undefined
               ? item.damage_qty
+              : "-",
+                adjustment_qty: item.adjustment_qty !== null && item.adjustment_qty !== undefined
+              ? item.adjustment_qty
               : "-",
         };
       });
@@ -323,6 +331,11 @@ const ErpStockRegister13B = () => {
         materialUrl,
         material_name: item.material_name || "-",
         lastReceived: item.last_received_on || "-",
+         last_issued_on:item.last_issued_on|| "-",
+          mto_qty:item.mto_qty|| "-",
+           material_sale:item.material_sale|| "-",
+           gate_pass_qty:item.gate_pass_qty || "-",
+           total_returned:item.total_returned || "-",
         total_received: item.total_received ?? "-",
         total_issued: item.total_issued ?? "-",
         deadstockQty: item.deadstock_qty ?? "-",
@@ -345,6 +358,9 @@ const ErpStockRegister13B = () => {
             balancedQty: stock.balanced_qty ?? "-",
           })) || [],
         damage_qty: item.damage_qty ?? "-",
+          adjustment_qty: item.adjustment_qty !== null && item.adjustment_qty !== undefined
+              ? item.adjustment_qty
+              : "-",
       };
     });
 
@@ -608,6 +624,11 @@ const ErpStockRegister13B = () => {
           materialUrl: materialUrl,
           material_name: item.material_name || "-",
           lastReceived: item.last_received_on || "-",
+           last_issued_on:item.last_issued_on|| "-",
+            mto_qty:item.mto_qty|| "-",
+             material_sale:item.material_sale|| "-",
+             gate_pass_qty:item.gate_pass_qty || "-",
+             total_returned:item.total_returned || "-",
           total_received:
             item.total_received !== null && item.total_received !== undefined
               ? item.total_received
@@ -661,6 +682,9 @@ const ErpStockRegister13B = () => {
             item.damage_qty !== null && item.damage_qty !== undefined
               ? item.damage_qty
               : "-",
+                adjustment_qty: item.adjustment_qty !== null && item.adjustment_qty !== undefined
+              ? item.adjustment_qty
+              : "-",
         };
       });
       setData(transformedData);
@@ -690,10 +714,10 @@ const ErpStockRegister13B = () => {
     // materialDescription: true,
     // specification: true,
     lastReceived: true,
-    lastIssue:true,
+    last_issued_on:true,
     total_received: true,
     total_issued: true,
-    total_return: true,
+    total_returned: true,
    
     // status: true,
     deadstockQty: true,
@@ -701,8 +725,9 @@ const ErpStockRegister13B = () => {
    
     damage_qty: true,
      
-     adjusted_qty:true,
-     mto:true,
+     adjustment_qty:true,
+     gate_pass_qty:true,
+     mto_qty:true,
      material_sale:true,
      stock_as_on: true,
 
@@ -773,14 +798,14 @@ const ErpStockRegister13B = () => {
       },
     },
      {
-      field: "lastIssue",
+      field: "last_issued_on",
       headerName: "Last Issue Date",
       width: 150,
       sortable: true,
-      // renderCell: (params) => {
-      //   const dateStr = params.value;
-      //   return dateStr ? dateStr.replace(/\//g, "-") : "-";
-      // },
+      renderCell: (params) => {
+        const dateStr = params.value;
+        return dateStr ? dateStr.replace(/\//g, "-") : "-";
+      },
     },
     {
       field: "total_received",
@@ -795,7 +820,7 @@ const ErpStockRegister13B = () => {
       sortable: true,
     },
         {
-      field: "total_return",
+      field: "total_returned",
       headerName: "Total Return",
       width: 120,
       sortable: true,
@@ -827,13 +852,19 @@ const ErpStockRegister13B = () => {
       sortable: true,
     },
      {
-      field: "adjusted_qty",
+      field: "adjustment_qty",
       headerName: "Adjusted Qty",
       width: 140,
       sortable: true,
     },
     {
-      field: "mto",
+      field: "gate_pass_qty",
+      headerName: "Gate pass Qty",
+      width: 140,
+      sortable: true,
+    },
+    {
+      field: "mto_qty",
       headerName: "MTO",
       width: 140,
       sortable: true,
@@ -1139,6 +1170,11 @@ const ErpStockRegister13B = () => {
           materialUrl: materialUrl,
           material_name: item.material_name || "-",
           lastReceived: item.last_received_on || "-",
+          last_issued_on:item.last_issued_on|| "-",
+          mto_qty:item.mto_qty|| "-",
+          material_sale:item.material_sale|| "-",
+          gate_pass_qty:item.gate_pass_qty || "-",
+          total_returned:item.total_returned || "-",
           total_received:
             item.total_received !== null && item.total_received !== undefined
               ? item.total_received
@@ -1191,6 +1227,10 @@ const ErpStockRegister13B = () => {
           damage_qty:
             item.damage_qty !== null && item.damage_qty !== undefined
               ? item.damage_qty
+              : "-",
+
+              adjustment_qty: item.adjustment_qty !== null && item.adjustment_qty !== undefined
+              ? item.adjustment_qty
               : "-",
         };
       });

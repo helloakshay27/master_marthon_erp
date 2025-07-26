@@ -291,7 +291,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           <div className="col-6">
                             <label className="text">
                               <span className="me-3">:</span>
-                              {data?.deadstock_qty || "-"}
+                              {data?.deadstock_qty || "0"}
                             </label>
                           </div>
                         </div>
@@ -339,7 +339,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                               tabIndex={0}
                             >
                               <div className="tbl-container me-2 mt-3" style={{ maxHeight: "500px" }}>
-                                <table className="w-100">
+                                <table className="">
                                   <thead>
                                     <tr>
                                       <th>Sr. No.</th>
@@ -352,6 +352,11 @@ const ErpStockRegisterCreationDetail13C = () => {
                                       <th>Received Qty</th>
                                       <th>Issued Qty</th>
                                       <th>Return Qty</th>
+                                      <th>Deadstock Qty</th>
+                                      <th>Theft/Missing Qty</th>
+                                      <th>Damage Qty</th>
+                                       <th> Adjusted Qty</th>
+                                       <th>Gate pass Qty</th>
                                       <th>Current Stock</th>
                                       {/* <th>Remark</th> */}
                                     </tr>
@@ -359,7 +364,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                   <tbody>
                                     {(!selectedStoreDetails || !selectedStoreDetails.stock_details || selectedStoreDetails.stock_details.length === 0) ? (
                                       <tr>
-                                        <td colSpan={11} className="text-center text-muted">
+                                        <td colSpan={15} className="text-center text-muted">
                                           Please select a store to view material details.
                                         </td>
                                       </tr>
@@ -367,18 +372,23 @@ const ErpStockRegisterCreationDetail13C = () => {
                                       <>
                                         {selectedStoreDetails.stock_details.map((item, id) => (
                                           <tr key={id}>
-                                            <td>{id + 1}</td>
+                                            <td className="text-start">{id + 1}</td>
                                             {/* <td>{new Date(item?.created_at).toLocaleDateString("en-GB")}</td> */}
-                                            <td>{new Date(item?.created_at).toLocaleDateString("en-GB").replace(/\//g, "-")}</td>
-                                            <td>{item?.mor}</td>
-                                            <td>{item?.supplier || "-"}</td>
-                                            <td>{item?.resource_number}</td>
-                                            <td>{item?.status}</td>
-                                            <td>{item?.uom || "-"}</td>
-                                            <td>{item?.received_qty || "-"}</td>
-                                            <td>{item?.issued_qty || "-"}</td>
-                                            <td>{item?.returned_qty || "-"}</td>
-                                            <td></td>
+                                            <td className="text-start">{new Date(item?.created_at).toLocaleDateString("en-GB").replace(/\//g, "-")}</td>
+                                            <td className="text-start">{item?.mor}</td>
+                                            <td className="text-start">{item?.supplier || "-"}</td>
+                                            <td className="text-start">{item?.resource_number}</td>
+                                            <td className="text-start">{item?.status}</td>
+                                            <td className="text-start">{item?.uom || "-"}</td>
+                                            <td className="text-start">{item?.received_qty || "-"}</td>
+                                            <td className="text-start">{item?.issued_qty || "-"}</td>
+                                            <td className="text-start">{item?.returned_qty || "-"}</td>
+                                            <td className="text-start">{item?.deadstock_qty || "-"}</td>
+                                            <td className="text-start">{item?.missing_qty || "-"}</td>
+                                            <td className="text-start">{item?.damage_qty || "-"}</td>
+                                            <td className="text-start">{item?.adjustment_qty || "-"}</td>
+                                            <td className="text-start">{item?.gate_pass__qty || "-"}</td>
+                                            <td className="text-start"></td>
                                           </tr>
                                         ))}
                                         {/* {data?.stores.map((item, id) => (
@@ -402,7 +412,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                           .map((item, id) => (
                                             <tr key={`balance-${id}`}>
                                               <td></td>
-                                              <td><strong>Balanced Qty</strong></td>
+                                              <td className="text-start"><strong>Balanced Qty</strong></td>
                                               <td></td>
                                               <td></td>
                                               <td></td>
@@ -411,7 +421,12 @@ const ErpStockRegisterCreationDetail13C = () => {
                                               <td></td>
                                               <td></td>
                                               <td></td>
-                                              <td><strong>{item?.balanced_qty}</strong></td>
+                                              <td></td>
+                                              <td></td>
+                                              <td></td>
+                                              <td></td>
+                                              <td></td>
+                                              <td className="text-center"><strong>{item?.balanced_qty}</strong></td>
                                             </tr>
                                           ))}
                                       </>
