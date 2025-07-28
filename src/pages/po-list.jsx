@@ -6,7 +6,16 @@ import axios from "axios";
 import { baseURL } from "../confi/apiDomain"; // adjust path if needed
 import SingleSelector from "../components/base/Select/SingleSelector";
 
+import {
+  DownloadIcon,
+  FilterIcon,
+  StarIcon,
+  SettingIcon,
+  MultiSelector,
+} from "../components";
 const PoList = () => {
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
   // Quick Filter states
   const [companies, setCompanies] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -18,6 +27,61 @@ const PoList = () => {
   // Table data states
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [meta, setMeta] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [totalEntries, setTotalEntries] = useState(0);
+  const [summaryCards, setSummaryCards] = useState({
+    total: 0,
+    approved: 0,
+    rejected: 0,
+    terminated: 0,
+    total_amount: 0
+  });
+
+  // Add state to store current filters
+  const [currentFilters, setCurrentFilters] = useState({
+    companyId: "",
+    projectId: "",
+    siteId: "",
+  });
+
+  // Advanced filter states
+  const [filterShow, setFilterShow] = useState(false);
+  const [poNumberOptions, setPoNumberOptions] = useState([]);
+  const [selectedPoNumber, setSelectedPoNumber] = useState(null);
+  const [poTypeOptions, setPoTypeOptions] = useState([]);
+  const [selectedPoType, setSelectedPoType] = useState(null);
+  const [materialTypeOptions, setMaterialTypeOptions] = useState([]);
+  const [selectedMaterialType, setSelectedMaterialType] = useState(null);
+  const [statusOptions, setStatusOptions] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  const [advanceApplicableOptions, setAdvanceApplicableOptions] = useState([]);
+  const [selectedAdvanceApplicable, setSelectedAdvanceApplicable] = useState(null);
+  const [supplierOptions, setSupplierOptions] = useState([]);
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const [consumptionCategoryOptions, setConsumptionCategoryOptions] = useState([]);
+  const [selectedConsumptionCategory, setSelectedConsumptionCategory] = useState(null);
+  const [requisitionDepartmentOptions, setRequisitionDepartmentOptions] = useState([]);
+  const [selectedRequisitionDepartment, setSelectedRequisitionDepartment] = useState(null);
+  const [createdByOptions, setCreatedByOptions] = useState([]);
+  const [selectedCreatedBy, setSelectedCreatedBy] = useState(null);
+  const [poDateFrom, setPoDateFrom] = useState("");
+  const [poDateTo, setPoDateTo] = useState("");
+  const [poBaseValueOptions, setPoBaseValueOptions] = useState([]);
+  const [selectedPoBaseValue, setSelectedPoBaseValue] = useState(null);
+  const [poGrossValueOptions, setPoGrossValueOptions] = useState([]);
+  const [selectedPoGrossValue, setSelectedPoGrossValue] = useState(null);
+  const [eventNoOptions, setEventNoOptions] = useState([]);
+  const [selectedEventNo, setSelectedEventNo] = useState(null);
+  const [morNoOptions, setMorNoOptions] = useState([]);
+  const [selectedMorNo, setSelectedMorNo] = useState(null);
+  const [advanceAmountOptions, setAdvanceAmountOptions] = useState([]);
+  const [selectedAdvanceAmount, setSelectedAdvanceAmount] = useState(null);
+  const [statusFilter, setStatusFilter] = useState(null);
 
   // Settings modal
   const [settingShow, setSettingShow] = useState(false);
@@ -55,10 +119,19 @@ const PoList = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [bulkActionCollapsed, setBulkActionCollapsed] = useState(true);
 
+  
+  const [searchInput, setSearchInput] = useState("");
+
+  // Handle search button click
+  const handleSearch = () => {
+    setSearchKeyword(searchInput);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
   // Table columns
   const allColumns = [
     { field: "srNo", headerName: "Sr.no", width: 80 },
-    { field: "star", headerName: "Star", width: 60, renderCell: () => "★" },
+   
     { field: "poNo", headerName: "PO No.", width: 140, sortable: true },
     { field: "poDate", headerName: "PO Date", width: 140, sortable: true },
     { field: "poType", headerName: "PO Type", width: 120 },
@@ -95,6 +168,277 @@ const PoList = () => {
       .then((response) => setCompanies(response.data.companies))
       .catch((error) => console.error("Error fetching companies:", error));
   }, []);
+
+  // Main data fetching useEffect
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Build base URL
+        let url = `${baseURL}purchase_orders.json?q[po_type_eq]=ropo&page=${currentPage}&per_page=${pageSize}&token=${token}`;
+
+        // Add filters
+        if (currentFilters.companyId) {
+          url += `&q[company_id_eq]=${currentFilters.companyId}`;
+        }
+        if (currentFilters.projectId) {
+          url += `&q[po_mor_inventories_mor_inventory_material_order_request_project_id]=${currentFilters.projectId}`;
+        }
+        if (currentFilters.siteId) {
+          url += `&q[po_mor_inventories_mor_inventory_material_order_request_pms_site_id ]=${currentFilters.siteId}`;
+        }
+
+        // Add search
+        if (searchKeyword) {
+          url += `&search=${searchKeyword}`;
+        }
+
+        // Add status filter
+        if (statusFilter !== null) {
+          if (statusFilter === 'pending') {
+            // Filter for pending status (total - approved - rejected - terminated)
+            // This will be handled by the API response filtering
+          } else {
+            url += `&q[list_status_in][]=${statusFilter}`;
+          }
+        }
+
+        const response = await axios.get(url);
+        
+        // Debug: Log the response structure
+        console.log('API Response:', response.data);
+        
+        // Get the purchase_orders array from the response
+        const responseData = response.data.purchase_orders || [];
+        
+        // Transform the data to match table columns
+        const data = responseData.map((entry, index) => ({
+          id: entry.id,
+          srNo: (currentPage - 1) * pageSize + index + 1,
+          // star: entry.starred ? "★" : "",
+          poNo: entry.po_number || "-",
+          poDate: formatDate(entry.po_date),
+          poType: entry.po_type || "-",
+          consumptionCategory: entry.consumption_category?.join(", ") || "-",
+          company: entry.company_name || "-",
+          project: entry.project_names?.join(", ") || "-",
+          subProject: entry.sub_project_names?.join(", ") || "-",
+          materialType: entry.material_types?.join(", ") || "-",
+          createdBy: entry.created_by || "-",
+          morNo: entry.mor_numbers?.join(", ") || "-",
+          eventNos: entry.event_nos?.join(", ") || "-",
+          advanceApplicable: entry.advance_applicable ? "Yes" : "No",
+          advanceAmount: entry.advance_amount ? `${entry.advance_amount}` : "-",
+          advancePaymentDate: "-", // Not available in API response
+          supplier: entry.supplier_name || "-",
+          requestionToDepartment: entry.department_names?.join(", ") || "-",
+          rfqNo: "-", // Not available in API response
+          poBaseValue: entry.po_base_value ? `${entry.po_base_value}` : "-",
+          poGrossValue: entry.po_gross_value ? `${entry.po_gross_value}` : "-",
+          poAmount: entry.po_amount ? `${entry.po_amount}` : "-",
+          status: entry.status || "-",
+          dueDate: "-", // Not available in API response
+          overdue: "-", // Not available in API response
+          stage: "-", // Not available in API response
+          dueFrom: entry.due_from?.name || "-",
+        }));
+
+        setRows(data);
+        
+        // Set pagination info if available
+        setMeta(response.data.pagination || {});
+        setTotalPages(response.data.pagination?.total_pages || 1);
+        setTotalEntries(response.data.pagination?.total_count || data.length);
+        
+        // Set summary cards data
+        setSummaryCards(response.data.summary_cards || {
+          total: 0,
+          approved: 0,
+          rejected: 0,
+          terminated: 0,
+          total_amount: 0
+        });
+        
+        // Debug: Log the transformed data
+        console.log('Transformed data:', data);
+        
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError("Failed to fetch data");
+        setRows([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [currentPage, pageSize, searchKeyword, currentFilters, statusFilter]);
+
+  // Fetch filter options
+  useEffect(() => {
+    if (!token) return;
+
+    // Fetch PO Numbers
+    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+      .then((response) => {
+        const poNumbers = [...new Set((response.data.purchase_orders || []).map(item => item.po_number))];
+        const options = poNumbers.map((poNumber) => ({
+          value: poNumber,
+          label: poNumber,
+        }));
+        setPoNumberOptions(options);
+      })
+      .catch(() => setPoNumberOptions([]));
+
+    // Fetch PO Types
+    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+      .then((response) => {
+        const poTypes = [...new Set((response.data.purchase_orders || []).map(item => item.po_type))];
+        const options = poTypes.map((poType) => ({
+          value: poType,
+          label: poType,
+        }));
+        setPoTypeOptions(options);
+      })
+      .catch(() => setPoTypeOptions([]));
+
+    // Fetch Material Types
+    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+      .then((response) => {
+        const materialTypes = [...new Set((response.data.purchase_orders || []).flatMap(item => item.material_types || []))];
+        const options = materialTypes.map((materialType) => ({
+          value: materialType,
+          label: materialType,
+        }));
+        setMaterialTypeOptions(options);
+      })
+      .catch(() => setMaterialTypeOptions([]));
+
+    // Fetch Status Options
+    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+      .then((response) => {
+        const statuses = [...new Set((response.data.purchase_orders || []).map(item => item.status))];
+        const options = statuses.map((status) => ({
+          value: status,
+          label: status,
+        }));
+        setStatusOptions(options);
+      })
+      .catch(() => setStatusOptions([]));
+
+    // Fetch Advance Applicable Options
+    setAdvanceApplicableOptions([
+      { value: true, label: "Yes" },
+      { value: false, label: "No" }
+    ]);
+
+    // Fetch Suppliers
+    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+      .then((response) => {
+        const suppliers = [...new Set((response.data.purchase_orders || []).map(item => item.supplier_name))];
+        const options = suppliers.map((supplier) => ({
+          value: supplier,
+          label: supplier,
+        }));
+        setSupplierOptions(options);
+      })
+      .catch(() => setSupplierOptions([]));
+
+    // Fetch Consumption Categories
+    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+      .then((response) => {
+        const categories = [...new Set((response.data.purchase_orders || []).flatMap(item => item.consumption_category || []))];
+        const options = categories.map((category) => ({
+          value: category,
+          label: category,
+        }));
+        setConsumptionCategoryOptions(options);
+      })
+      .catch(() => setConsumptionCategoryOptions([]));
+
+    // Fetch Requisition Departments
+    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+      .then((response) => {
+        const departments = [...new Set((response.data.purchase_orders || []).flatMap(item => item.department_names || []))];
+        const options = departments.map((department) => ({
+          value: department,
+          label: department,
+        }));
+        setRequisitionDepartmentOptions(options);
+      })
+      .catch(() => setRequisitionDepartmentOptions([]));
+
+    // Fetch Created By Users
+    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+      .then((response) => {
+        const users = [...new Set((response.data.purchase_orders || []).map(item => item.created_by).filter(Boolean))];
+        const options = users.map((user) => ({
+          value: user,
+          label: user,
+        }));
+        setCreatedByOptions(options);
+      })
+      .catch(() => setCreatedByOptions([]));
+
+    // Fetch PO Base Value Options
+    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+      .then((response) => {
+        const baseValues = [...new Set((response.data.purchase_orders || []).map(item => item.po_base_value))];
+        const options = baseValues.map((value) => ({
+          value: value,
+          label: `₹${value}`,
+        }));
+        setPoBaseValueOptions(options);
+      })
+      .catch(() => setPoBaseValueOptions([]));
+
+    // Fetch PO Gross Value Options
+    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+      .then((response) => {
+        const grossValues = [...new Set((response.data.purchase_orders || []).map(item => item.po_gross_value))];
+        const options = grossValues.map((value) => ({
+          value: value,
+          label: `₹${value}`,
+        }));
+        setPoGrossValueOptions(options);
+      })
+      .catch(() => setPoGrossValueOptions([]));
+
+    // Fetch Event Numbers
+    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+      .then((response) => {
+        const eventNos = [...new Set((response.data.purchase_orders || []).flatMap(item => item.event_nos || []))];
+        const options = eventNos.map((eventNo) => ({
+          value: eventNo,
+          label: eventNo,
+        }));
+        setEventNoOptions(options);
+      })
+      .catch(() => setEventNoOptions([]));
+
+    // Fetch MOR Numbers
+    axios.get(`${baseURL}material_order_requests/filter_mor_numbers.json?token=${token}`)
+      .then((response) => {
+        const options = (response.data || []).map((morNo) => ({
+          value: morNo,
+          label: morNo,
+        }));
+        setMorNoOptions(options);
+      })
+      .catch(() => setMorNoOptions([]));
+
+    // Fetch Advance Amounts
+    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+      .then((response) => {
+        const advanceAmounts = [...new Set((response.data.purchase_orders || []).map(item => item.advance_amount))];
+        const options = advanceAmounts.map((amount) => ({
+          value: amount,
+          label: `₹${amount}`,
+        }));
+        setAdvanceAmountOptions(options);
+      })
+      .catch(() => setAdvanceAmountOptions([]));
+
+  }, [token]);
 
   // Handle company selection
   const handleCompanyChange = (selectedOption) => {
@@ -143,25 +487,33 @@ const PoList = () => {
     setSelectedSite(null);
     setProjects([]);
     setSiteOptions([]);
+    setSearchKeyword("");
+    setStatusFilter(null);
+    setCurrentFilters({
+      companyId: "",
+      projectId: "",
+      siteId: "",
+    });
+
+    // Reset to first page
+    setCurrentPage(1);
   };
 
-  // Fetch ROPO mapping data (replace with your real API)
+  // Fetch ROPO mapping data
   const fetchRopoData = () => {
-    setLoading(true);
-    // Example: Replace with your real API and params
-    axios
-      .get(`${baseURL}your-ropo-api-endpoint`, {
-        params: {
-          company_id: selectedCompany,
-          project_id: selectedProject,
-          site_id: selectedSite,
-        },
-      })
-      .then((res) => {
-        setRows(res.data.data); // Adjust as per your API response
-      })
-      .catch(() => setRows([]))
-      .finally(() => setLoading(false));
+    const companyId = selectedCompany?.value || "";
+    const projectId = selectedProject?.value || "";
+    const siteId = selectedSite?.value || "";
+
+    // Store current filters
+    setCurrentFilters({
+      companyId,
+      projectId,
+      siteId,
+    });
+
+    // Reset to first page when applying new filters
+    setCurrentPage(1);
   };
 
   // Settings modal handlers
@@ -182,51 +534,326 @@ const PoList = () => {
   };
   const handleResetColumns = () => handleShowAll();
 
+  // Filter modal handlers
+  const handleFilterModalShow = () => setFilterShow(true);
+  const handleFilterClose = () => setFilterShow(false);
+
+  // Advanced filter handlers
+  const handlePoNumberChange = (selectedOption) => {
+    setSelectedPoNumber(selectedOption);
+  };
+
+  const handlePoTypeChange = (selectedOption) => {
+    setSelectedPoType(selectedOption);
+  };
+
+  const handleMaterialTypeChange = (selectedOption) => {
+    setSelectedMaterialType(selectedOption);
+  };
+
+  const handleStatusChange = (selectedOption) => {
+    setSelectedStatus(selectedOption);
+  };
+
+  const handleAdvanceApplicableChange = (selectedOption) => {
+    setSelectedAdvanceApplicable(selectedOption);
+  };
+
+  const handleSupplierChange = (selectedOption) => {
+    setSelectedSupplier(selectedOption);
+  };
+
+  const handleConsumptionCategoryChange = (selectedOption) => {
+    setSelectedConsumptionCategory(selectedOption);
+  };
+
+  const handleRequisitionDepartmentChange = (selectedOption) => {
+    setSelectedRequisitionDepartment(selectedOption);
+  };
+
+  const handleCreatedByChange = (selectedOption) => {
+    setSelectedCreatedBy(selectedOption);
+  };
+
+  const handlePoDateFromChange = (e) => {
+    setPoDateFrom(e.target.value);
+  };
+
+  const handlePoDateToChange = (e) => {
+    setPoDateTo(e.target.value);
+  };
+
+  const handlePoBaseValueChange = (selectedOption) => {
+    setSelectedPoBaseValue(selectedOption);
+  };
+
+  const handlePoGrossValueChange = (selectedOption) => {
+    setSelectedPoGrossValue(selectedOption);
+  };
+
+  const handleEventNoChange = (selectedOption) => {
+    setSelectedEventNo(selectedOption);
+  };
+
+  const handleMorNoChange = (selectedOption) => {
+    setSelectedMorNo(selectedOption);
+  };
+
+  const handleAdvanceAmountChange = (selectedOption) => {
+    setSelectedAdvanceAmount(selectedOption);
+  };
+
+  // Filter apply and reset functions
+  const handleFilterApply = () => {
+    // Build filter parameters
+    const filterParams = {};
+
+    // PO Date filters
+    if (poDateFrom) {
+      filterParams['q[po_date_gteq]'] = poDateFrom;
+    }
+    if (poDateTo) {
+      filterParams['q[po_date_lteq]'] = poDateTo;
+    }
+
+    // PO Number filter
+    if (selectedPoNumber) {
+      filterParams['q[po_number_in][]'] = selectedPoNumber.value;
+    }
+
+    // PO Type filter
+    if (selectedPoType) {
+      filterParams['q[po_type_in][]'] = selectedPoType.value;
+    }
+
+    // Event No. filter
+    if (selectedEventNo) {
+      filterParams['q[event_nos][]'] = selectedEventNo.value;
+    }
+
+    // MOR No. filter
+    if (selectedMorNo) {
+      filterParams['q[po_mor_inventories_mor_inventory_material_order_request_mor_number_in][]'] = selectedMorNo.value;
+    }
+
+    // Advance Amount filter
+    if (selectedAdvanceAmount) {
+      filterParams['q[supplier_advance_amount_in][]'] = selectedAdvanceAmount.value;
+    }
+
+    // Company filter
+    if (selectedCompany) {
+      filterParams['q[company_id_in][]'] = selectedCompany.value;
+    }
+
+    // Project filter
+    if (selectedProject) {
+      filterParams['q[po_mor_inventories_mor_inventory_material_order_request_project_id_in][]'] = selectedProject.value;
+    }
+
+    // Sub Project filter
+    if (selectedSite) {
+      filterParams['q[po_mor_inventories_mor_inventory_material_order_request_pms_site_id_in][]'] = selectedSite.value;
+    }
+
+    // Material Type filter
+    if (selectedMaterialType) {
+      filterParams['q[po_mor_inventories_material_inventory_material_sub_type_material_type_id_in][]'] = selectedMaterialType.value;
+    }
+
+    // Status filter
+    if (selectedStatus) {
+      filterParams['q[list_status_in][]'] = selectedStatus.value;
+    }
+
+    // Advance Applicable filter
+    if (selectedAdvanceApplicable) {
+      filterParams['q[with_advance]'] = selectedAdvanceApplicable.value;
+    }
+
+    // Supplier filter
+    if (selectedSupplier) {
+      filterParams['q[supplier_id_in][]'] = selectedSupplier.value;
+    }
+
+    // Consumption Category filter
+    if (selectedConsumptionCategory) {
+      filterParams['q[po_mor_inventories_mor_inventory_material_order_request_consumption_id_in][]'] = selectedConsumptionCategory.value;
+    }
+
+    // Requisition Department filter
+    if (selectedRequisitionDepartment) {
+      filterParams['q[request_to_department_id_in][]'] = selectedRequisitionDepartment.value;
+    }
+
+    // PO Base Value filter
+    if (selectedPoBaseValue) {
+      filterParams['q[po_base_value_in][]'] = selectedPoBaseValue.value;
+    }
+
+    // PO Gross Value filter
+    if (selectedPoGrossValue) {
+      filterParams['q[total_value_in][]'] = selectedPoGrossValue.value;
+    }
+
+    // Created By filter
+    if (selectedCreatedBy) {
+      filterParams['q[created_by_id_in][]'] = selectedCreatedBy.value;
+    }
+
+    // Update current filters with new filter params
+    setCurrentFilters(prev => ({
+      ...prev,
+      ...filterParams
+    }));
+
+    setCurrentPage(1);
+    setFilterShow(false);
+  };
+
+  const handleFilterReset = () => {
+    setSelectedPoNumber(null);
+    setSelectedPoType(null);
+    setSelectedMaterialType(null);
+    setSelectedStatus(null);
+    setSelectedAdvanceApplicable(null);
+    setSelectedSupplier(null);
+    setSelectedConsumptionCategory(null);
+    setSelectedRequisitionDepartment(null);
+    setSelectedCreatedBy(null);
+    setPoDateFrom("");
+    setPoDateTo("");
+    setSelectedPoBaseValue(null);
+    setSelectedPoGrossValue(null);
+    setSelectedEventNo(null);
+    setSelectedMorNo(null);
+    setSelectedAdvanceAmount(null);
+    setCurrentPage(1);
+  };
+
+  // Date formatting function
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "-";
+
+      // Get day, month, and year (last two digits)
+      const day = date.getDate().toString().padStart(2, "0");
+      const month = (date.getMonth() + 1).toString().padStart(2, "0");
+      const year = date.getFullYear().toString().slice(); // Only last two digits
+
+      // Return in DD-MM-YY format
+      return `${day}-${month}-${year}`;
+    } catch (e) {
+      return "-";
+    }
+  };
+
   return (
     <>
+     <style type="text/css">
+        {`.tbl-container {
+
+height: auto !important;
+max-height: 100% !important;
+
+}
+.css-5n0k77:last-child{
+display:none !important;
+}
+.MuiDataGrid-cell, .MuiDataGrid-cell > div {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+        `}
+      </style>
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
           <a href="">
-            Home &gt; Store &gt; Store Operations &gt; ROPO Mapping List
+            Home &gt; Store &gt; Store Operations &gt; ROPO List
           </a>
-          <h5 className="mt-4">ROPO Mapping List</h5>
+          <h5 className="mt-4">ROPO  List</h5>
           <div className="material-boxes mt-3">
             <div className="container-fluid">
               <div className="row justify-content-center">
-                <div className="col-md-2 text-center" style={{ opacity: 1 }}>
+                <div className="col-md-2 text-center">
+                  <div
+                    className={`content-box tab-button ${
+                      statusFilter === null ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setStatusFilter(null);
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <h4 className="content-box-title fw-semibold">PO List</h4>
+                    <p className="content-box-sub">{summaryCards.total}</p>
+                  </div>
+                </div>
+                <div className="col-md-2 text-center">
+                  <div
+                    className={`content-box tab-button ${
+                      statusFilter === "pending" ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setStatusFilter("pending");
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <h4 className="content-box-title fw-semibold">Pending</h4>
+                    <p className="content-box-sub">{summaryCards.total - summaryCards.approved - summaryCards.rejected - summaryCards.terminated}</p>
+                  </div>
+                </div>
+                <div className="col-md-2 text-center">
+                  <div
+                    className={`content-box tab-button ${
+                      statusFilter === "approved" ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setStatusFilter("approved");
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <h4 className="content-box-title fw-semibold">Approved</h4>
+                    <p className="content-box-sub">{summaryCards.approved}</p>
+                  </div>
+                </div>
+                <div className="col-md-2 text-center">
+                  <div
+                    className={`content-box tab-button ${
+                      statusFilter === "rejected" ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setStatusFilter("rejected");
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <h4 className="content-box-title fw-semibold">Rejected</h4>
+                    <p className="content-box-sub">{summaryCards.rejected}</p>
+                  </div>
+                </div>
+                <div className="col-md-2 text-center">
+                  <div
+                    className={`content-box tab-button ${
+                      statusFilter === "terminated" ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setStatusFilter("terminated");
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <h4 className="content-box-title fw-semibold">Terminated</h4>
+                    <p className="content-box-sub">{summaryCards.terminated}</p>
+                  </div>
+                </div>
+                <div className="col-md-2 text-center">
                   <div className="content-box">
-                    <h4 className="content-box-title">PO List</h4>
-                    <p className="content-box-sub">50</p>
-                  </div>
-                </div>
-                <div className="col-md-2" style={{ opacity: 1 }}>
-                  <div className="content-box text-center">
-                    <h4 className="content-box-title">Pending</h4>
-                    <p className="content-box-sub">35</p>
-                  </div>
-                </div>
-                <div className="col-md-2" style={{ opacity: 1 }}>
-                  <div className="content-box text-center">
-                    <h4 className="content-box-title">Approved</h4>
-                    <p className="content-box-sub">15</p>
-                  </div>
-                </div>
-                 <div className="col-md-2" style={{ opacity: 1 }}>
-                  <div className="content-box text-center">
-                    <h4 className="content-box-title">Rejected</h4>
-                    <p className="content-box-sub">15</p>
-                  </div>
-                </div>
-                 <div className="col-md-2" style={{ opacity: 1 }}>
-                  <div className="content-box text-center">
-                    <h4 className="content-box-title">Terminated</h4>
-                    <p className="content-box-sub">15</p>
-                  </div>
-                </div>
-                 <div className="col-md-2" style={{ opacity: 1 }}>
-                  <div className="content-box text-center">
-                    <h4 className="content-box-title">Amount value</h4>
-                    <p className="content-box-sub">15</p>
+                    <h4 className="content-box-title fw-semibold">Amount value</h4>
+                    <p className="content-box-sub">₹{summaryCards.total_amount}</p>
                   </div>
                 </div>
               </div>
@@ -265,52 +892,52 @@ const PoList = () => {
               </div>
 
               {!isCollapsed && (
-                <div className="card-body pt-0 mt-0">
+              <div className="card-body pt-0 mt-0">
                   <div className="row my-2 align-items-end">
                     <div className="col-md-3">
-                      <div className="form-group">
-                        <label>Company</label>
+                    <div className="form-group">
+                      <label>Company</label>
                         <SingleSelector
                           options={companies.map((c) => ({
                             value: c.id,
                             label: c.company_name,
                           }))}
-                          onChange={handleCompanyChange}
+                        onChange={handleCompanyChange}
                           value={selectedCompany}
                           placeholder="Select Company"
                         />
-                      </div>
                     </div>
+                  </div>
                     <div className="col-md-3">
-                      <div className="form-group">
-                        <label>Project</label>
+                    <div className="form-group">
+                      <label>Project</label>
                         <SingleSelector
                           options={projects.map((p) => ({
                             value: p.id,
                             label: p.name,
                           }))}
-                          onChange={handleProjectChange}
+                        onChange={handleProjectChange}
                           value={selectedProject}
                           placeholder="Select Project"
                           isDisabled={!selectedCompany}
                         />
-                      </div>
                     </div>
+                  </div>
                     <div className="col-md-3">
-                      <div className="form-group">
+                    <div className="form-group">
                         <label>Sub-project</label>
                         <SingleSelector
                           options={siteOptions.map((s) => ({
                             value: s.id,
                             label: s.name,
                           }))}
-                          onChange={handleSiteChange}
+                        onChange={handleSiteChange}
                           value={selectedSite}
                           placeholder="Select Sub-project"
                           isDisabled={!selectedProject}
                         />
-                      </div>
                     </div>
+                  </div>
                     <div className="col-md-3">
                       <button className="purple-btn2 m-0" onClick={fetchRopoData}>
                         Go
@@ -318,14 +945,14 @@ const PoList = () => {
                       <button className="purple-btn2 ms-2" onClick={handleReset}>
                         Reset
                       </button>
-                    </div>
                   </div>
                 </div>
+              </div>
               )}
             </div>
 
             {/* DataGrid Table with Settings */}
-          <div className="card mx-3 collapsed-card">
+          <div className="card mx-3">
               <div className="card-header3">
                 <h3 className="card-title">Bulk Action</h3>
                 <div className="card-tools">
@@ -340,18 +967,23 @@ const PoList = () => {
                       viewBox="0 0 32 32"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      style={{ transform: bulkActionCollapsed ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }}
                     >
                       <circle cx={16} cy={16} r={16} fill="#8B0203" />
                       <path
-                        d="M16 24L9.0718 12L22.9282 12L16 24Z"
+                        d={
+                          bulkActionCollapsed
+                            ? "M16 24L9.0718 12L22.9282 12L16 24Z"
+                            : "M16 8L22.9282 20L9.0718 20L16 8Z"
+                        }
                         fill="white"
                       />
                     </svg>
                   </button>
                 </div>
               </div>
-              <div className={`card-body mt-0 pt-0 ${bulkActionCollapsed ? 'd-none' : ''}`}>
+
+              {!bulkActionCollapsed && (
+                <div className="card-body mt-0 pt-0">
                 <div className="row align-items-center">
                   <div className="col-md-4">
                     <div className="form-group">
@@ -401,108 +1033,73 @@ const PoList = () => {
                   </div>
                 </div>
               </div>
+              )}
             </div>
             <div className="d-flex mt-3 align-items-end px-3">
               <div className="col-md-6">
-                <form>
-                  <div className="input-group">
-                    <input
-                      type="search"
-                      id="searchInput"
-                      className="form-control tbl-search"
-                      placeholder="Type your keywords here"
-                    />
-                    <div className="input-group-append">
-                      <button type="button" className="btn btn-md btn-default">
-                        <svg
-                          width={16}
-                          height={16}
-                          viewBox="0 0 16 16"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
-                            fill="#8B0203"
-                          />
-                          <path
-                            d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
-                            fill="#8B0203"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-              <div className="col-md-6">
-                <div className="row justify-content-end">
-                  <div className="col-md-5">
-                    <div className="row justify-content-end px-3">
-                      <div className="col-md-3">
-                        <button
-                          className="btn btn-md"
-                          data-bs-toggle="modal"
-                          data-bs-target="#sidebarModal"
-                        >
-                          <svg
-                            width={28}
-                            height={28}
-                            viewBox="0 0 32 32"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              clipRule="evenodd"
-                              d="M6.66604 5.64722C6.39997 5.64722 6.15555 5.7938 6.03024 6.02851C5.90494 6.26322 5.91914 6.54788 6.06718 6.76895L13.7378 18.2238V29.0346C13.7378 29.2945 13.8778 29.5343 14.1041 29.6622C14.3305 29.79 14.6081 29.786 14.8307 29.6518L17.9136 27.7927C18.13 27.6622 18.2622 27.4281 18.2622 27.1755V18.225L25.9316 6.76888C26.0796 6.5478 26.0938 6.26316 25.9685 6.02847C25.8432 5.79378 25.5987 5.64722 25.3327 5.64722H6.66604ZM15.0574 17.6037L8.01605 7.08866H23.9829L16.9426 17.6051C16.8631 17.7237 16.8207 17.8633 16.8207 18.006V26.7685L15.1792 27.7584V18.0048C15.1792 17.862 15.1368 17.7224 15.0574 17.6037Z"
-                              fill="#8B0203"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                     
-                    
-                      <div className="col-md-3">
-                        <button
-                          type="submit"
-                          className="btn btn-md"
-                          data-bs-toggle="modal"
-                          data-bs-target="#settings"
-                        >
-                          <svg
-                            width={22}
-                            height={24}
-                            viewBox="0 0 22 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              clipRule="evenodd"
-                              d="M10.9985 7.45532C8.64565 7.45532 6.73828 9.36269 6.73828 11.7155C6.73828 14.0684 8.64565 15.9757 10.9985 15.9757C13.3514 15.9757 15.2587 14.0684 15.2587 11.7155C15.2587 9.36269 13.3514 7.45532 10.9985 7.45532ZM8.86838 11.7155C8.86838 10.5391 9.82208 9.58544 10.9985 9.58544C12.1749 9.58544 13.1286 10.5391 13.1286 11.7155C13.1286 12.892 12.1749 13.8457 10.9985 13.8457C9.82208 13.8457 8.86838 12.892 8.86838 11.7155Z"
-                              fill="#8B0203"
-                            />
-                            <path
-                              fillRule="evenodd"
-                              clipRule="evenodd"
-                              d="M14.3416 2.97635C13.8887 -0.992103 8.10872 -0.992127 7.65577 2.97635L7.56116 3.80528C7.46818 4.61997 6.60664 5.12268 5.84081 4.79072L5.07295 4.45788C1.43655 2.88166 -1.52087 7.83752 1.73283 10.2351L2.40609 10.7312C3.07122 11.2213 3.07122 12.2099 2.40609 12.7L1.73283 13.1961C-1.52085 15.5936 1.43653 20.5496 5.07295 18.9733L5.84081 18.6405C6.60664 18.3085 7.46818 18.8113 7.56116 19.6259L7.65577 20.4549C8.10872 24.4233 13.8887 24.4233 14.3416 20.4549L14.4362 19.6259C14.5292 18.8113 15.3908 18.3085 16.1565 18.6405L16.9244 18.9733C20.5609 20.5495 23.5183 15.5936 20.2645 13.1961L19.5913 12.7C18.9262 12.2099 18.9262 11.2213 19.5913 10.7312L20.2645 10.2351C23.5183 7.83753 20.5609 2.88164 16.9244 4.45788L16.1566 4.79072C15.3908 5.12268 14.5292 4.61997 14.4362 3.8053L14.3416 2.97635ZM9.77214 3.2179C9.93768 1.76752 12.0597 1.7675 12.2252 3.2179L12.3198 4.04684C12.5762 6.29253 14.9347 7.64199 17.0037 6.74512L17.7716 6.41228C19.1548 5.81273 20.1484 7.67469 19.001 8.52023L18.3278 9.01632C16.5072 10.3578 16.5072 13.0734 18.3278 14.4149L19.001 14.911C20.1484 15.7566 19.1548 17.6185 17.7716 17.019L17.0037 16.686C14.9347 15.7891 12.5762 17.1386 12.3198 19.3843L12.2252 20.2133C12.0597 21.6636 9.93768 21.6638 9.77214 20.2133L9.67753 19.3843C9.42121 17.1386 7.06273 15.7891 4.99366 16.686L4.22578 17.019C2.84258 17.6185 1.84896 15.7566 2.99644 14.911L3.66969 14.4149C5.49017 13.0734 5.49015 10.3578 3.66969 9.01632L2.99642 8.52021C1.84898 7.67471 2.84256 5.81271 4.2258 6.4123L4.99366 6.74512C7.06273 7.64199 9.42121 6.29253 9.67753 4.04684L9.77214 3.2179Z"
-                              fill="#8B0203"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-md-4">
-                    <button type="button" className="purple-btn2">
-                      
-                        Create MOR
-                     
+                <div className="input-group">
+                  <input
+                    type="search"
+                    className="form-control tbl-search"
+                    placeholder="Type your keywords here"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSearch();
+                      }
+                    }}
+                  />
+                  <div className="input-group-append">
+                    <button 
+                      type="button" 
+                      className="btn btn-md btn-default"
+                      // onClick={() => setCurrentPage(1)}
+                      onClick={handleSearch}
+                    >
+                      <svg
+                        width={16}
+                        height={16}
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
+                          fill="#8B0203"
+                        />
+                        <path
+                          d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
+                          fill="#8B0203"
+                        />
+                      </svg>
                     </button>
                   </div>
                 </div>
               </div>
+              <div className="col-md-6 d-flex justify-content-end align-items-center gap-2  mt-4">
+                             <button
+                               type="button"
+                               className="btn btn-md"
+                               onClick={handleFilterModalShow}
+                             >
+                               <FilterIcon />
+                             </button>
+                             <button
+                               type="button"
+                               className="btn btn-md me-4"
+                               onClick={handleSettingModalShow}
+                             >
+                               <SettingIcon />
+                             </button>
+                             <button
+                               className="purple-btn2"
+                               onClick={() => navigate(`/gate-pass-create?token=${token}`)}
+                             >
+                               <span> + Add</span>
+                             </button>
+                           </div>
             </div>
             <div className="mx-1 mt-3" style={{ overflowY: "auto" }}>
               <DataGrid
@@ -510,7 +1107,7 @@ const PoList = () => {
                 columns={columns}
                 pageSize={10}
                 autoHeight={false}
-                getRowId={(row) => row.id || row.ropoNo} // adjust as per your data
+                getRowId={(row) => row.id}
                 loading={loading}
                 disableSelectionOnClick
                 components={{
@@ -538,51 +1135,243 @@ const PoList = () => {
               />
             </div>
 
+            {/* Bootstrap-style Pagination Bar */}
+            <div className="d-flex justify-content-between align-items-center px-3 py-2">
+              <nav aria-label="Page navigation example">
+                <ul className="pagination mb-0">
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                    >
+                      First
+                    </button>
+                  </li>
+                  <li
+                    className={`page-item ${
+                      currentPage === 1 ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      Prev
+                    </button>
+                  </li>
+                  {/* Page numbers */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(
+                      (page) =>
+                        page === 1 ||
+                        page === totalPages ||
+                        (page >= currentPage - 1 && page <= currentPage + 1)
+                    )
+                    .map((page, idx, arr) => {
+                      // Add ellipsis if needed
+                      if (idx > 0 && page - arr[idx - 1] > 1) {
+                        return [
+                          <li
+                            key={`ellipsis-${page}`}
+                            className="page-item disabled"
+                          >
+                            <span className="page-link">...</span>
+                          </li>,
+                          <li
+                            key={page}
+                            className={`page-item ${
+                              currentPage === page ? "active" : ""
+                            }`}
+                          >
+                            <button
+                              className="page-link"
+                              onClick={() => setCurrentPage(page)}
+                            >
+                              {page}
+                            </button>
+                          </li>,
+                        ];
+                      }
+                      return (
+                        <li
+                          key={page}
+                          className={`page-item ${
+                            currentPage === page ? "active" : ""
+                          }`}
+                        >
+                          <button
+                            className="page-link"
+                            onClick={() => setCurrentPage(page)}
+                          >
+                            {page}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  <li
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </button>
+                  </li>
+                  <li
+                    className={`page-item ${
+                      currentPage === totalPages ? "disabled" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Last
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+              <div className="ms-3">
+                <span>
+                  Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalEntries)} of {totalEntries} entries
+                </span>
+              </div>
+            </div>
+
             {/* Settings Modal */}
-            <Modal show={settingShow} onHide={handleSettingClose} dialogClassName="modal-right" className="setting-modal" backdrop={true}>
-              <Modal.Header>
-                <div className="container-fluid p-0">
-                  <div className="border-0 d-flex justify-content-between align-items-center">
-                    <div className="d-flex align-items-center">
-                      <button type="button" className="btn" aria-label="Close" onClick={handleSettingClose}>
-                        <svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M8 2L2 8L8 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </button>
-                    </div>
-                    <Button style={{ textDecoration: "underline" }} variant="alert" onClick={handleResetColumns}>
-                      Reset
-                    </Button>
-                  </div>
-                </div>
-              </Modal.Header>
-              <Modal.Body style={{ height: "400px", overflowY: "auto" }}>
-                {allColumns.map((column) => (
-                  <div className="row justify-content-between align-items-center mt-2" key={column.field}>
-                    <div className="col-md-6">
-                      <label>{column.headerName}</label>
-                    </div>
-                    <div className="col-md-4">
-                      <div className="form-check form-switch mt-1">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          checked={columnVisibility[column.field]}
-                          onChange={() => handleToggleColumn(column.field)}
-                          role="switch"
-                          id={`flexSwitchCheckDefault-${column.field}`}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </Modal.Body>
-              <Modal.Footer>
-                <button className="purple-btn2" onClick={handleShowAll}>Show All</button>
-                <button className="purple-btn1" onClick={handleHideAll}>Hide All</button>
-              </Modal.Footer>
-            </Modal>
+         
+            {/* Settings Modal */}
+                 <Modal
+                   show={settingShow}
+                   onHide={handleSettingClose}
+                   dialogClassName="modal-right"
+                   className="setting-modal"
+                   backdrop={true}
+                 >
+                   <Modal.Header>
+                     <div className="container-fluid p-0">
+                       <div className="border-0 d-flex justify-content-between align-items-center">
+                         <div className="d-flex align-items-center">
+                           <button
+                             type="button"
+                             className="btn"
+                             aria-label="Close"
+                             onClick={handleSettingClose}
+                           >
+                             <svg
+                               width="10"
+                               height="16"
+                               viewBox="0 0 10 16"
+                               fill="none"
+                               xmlns="http://www.w3.org/2000/svg"
+                             >
+                               <path
+                                 d="M8 2L2 8L8 14"
+                                 stroke="currentColor"
+                                 strokeWidth="2"
+                                 strokeLinecap="round"
+                                 strokeLinejoin="round"
+                               />
+                             </svg>
+                           </button>
+                         </div>
+                         <Button
+                           style={{ textDecoration: "underline" }}
+                           variant="alert"
+                           onClick={handleResetColumns}
+                         >
+                           Reset
+                         </Button>
+                       </div>
+                     </div>
+                   </Modal.Header>
            
+                   <Modal.Body style={{ height: "400px", overflowY: "auto" }}>
+                     {allColumns
+                       .filter(
+                         (column) => column.field !== "srNo" && column.field !== "Star"
+                       )
+                       .map((column) => (
+                         <div
+                           className="row justify-content-between align-items-center mt-2"
+                           key={column.field}
+                         >
+                           <div className="col-md-6">
+                             <button type="submit" className="btn btn-md">
+                               <svg
+                                 xmlns="http://www.w3.org/2000/svg"
+                                 width={22}
+                                 height={22}
+                                 viewBox="0 0 48 48"
+                                 fill="none"
+                               >
+                                 <path
+                                   fillRule="evenodd"
+                                   clipRule="evenodd"
+                                   d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
+                                   fill="black"
+                                 />
+                               </svg>
+                             </button>
+                             {/* <button type="submit" className="btn btn-md">
+                               <svg
+                                 xmlns="http://www.w3.org/2000/svg"
+                                 width="22"
+                                 height="22"
+                                 viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 strokeWidth="2"
+                                 strokeLinecap="round"
+                                 strokeLinejoin="round"
+                               >
+                                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                               </svg>
+                             </button> */}
+                             <label>{column.headerName}</label>
+                           </div>
+                           <div className="col-md-4">
+                             <div className="form-check form-switch mt-1">
+                               <input
+                                 className="form-check-input"
+                                 type="checkbox"
+                                 checked={columnVisibility[column.field]}
+                                 onChange={() => handleToggleColumn(column.field)}
+                                 role="switch"
+                                 id={`flexSwitchCheckDefault-${column.field}`}
+                               />
+                             </div>
+                           </div>
+                         </div>
+                       ))}
+                   </Modal.Body>
+           
+                   <Modal.Footer>
+                     {/* <Button variant="primary" onClick={handleShowAll}>
+                       Show All
+                     </Button>
+                     <Button variant="danger" onClick={handleHideAll}>
+                       Hide All
+                     </Button> */}
+                     <button className="purple-btn2" onClick={handleShowAll}>
+                       Show All
+                     </button>
+                     <button className="purple-btn1" onClick={handleHideAll}>
+                       Hide All
+                     </button>
+                   </Modal.Footer>
+                 </Modal>
           
           </div>
         </div>
@@ -637,49 +1426,7 @@ const PoList = () => {
             <div className="modal-body" style={{ overflowY: "scroll" }}>
               <div className="row">
                 <div className="row mt-2 px-2">
-                  <div className="col-md-12 card mx-3">
-                    <div className="card-header2">
-                      <h3 className="card-title2">
-                        <div className="form-group form-control">
-                          Applied Fliter
-                        </div>
-                      </h3>
-                    </div>
-                    <div className="card-body">
-                      <div className="row align-items-center">
-                        <div className="col-md-4">
-                          <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                            <label className="px-1">Company</label>
-                            <button
-                              type="button"
-                              className="btn-close"
-                              aria-label="Close"
-                            />
-                          </div>
-                        </div>
-                        <div className="col-md-4">
-                          <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                            <label className="px-1">Project</label>
-                            <button
-                              type="button"
-                              className="btn-close"
-                              aria-label="Close"
-                            />
-                          </div>
-                        </div>
-                        <div className="col-md-4">
-                          <div className="form-group d-flex align-items-center justify-content-around tbl-search">
-                            <p className="px-1">Sub-project</p>
-                            <button
-                              type="button"
-                              className="btn-close"
-                              aria-label="Close"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                 
                 </div>
                 <div className="col-md-12">
                   <div className="form-group">
@@ -938,6 +1685,257 @@ const PoList = () => {
         </div>
       </div>
       {/* filter modal end */}
+      
+      {/* Advanced Filter Modal */}
+      <Modal
+        show={filterShow}
+        onHide={handleFilterClose}
+        dialogClassName="modal-right"
+        className="setting-modal"
+        backdrop={true}
+      >
+        <Modal.Header>
+          <div className="container-fluid p-0">
+            <div className="border-0 d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <button
+                  type="button"
+                  className="btn"
+                  aria-label="Close"
+                  onClick={handleFilterClose}
+                >
+                  <svg
+                    width="10"
+                    height="16"
+                    viewBox="0 0 10 18"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M9 1L1 9L9 17"
+                      stroke="#8B0203"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                <h3 className="modal-title m-0" style={{ fontWeight: 500 }}>
+                  Filter
+                </h3>
+              </div>
+              <span
+                className="resetCSS"
+                style={{ fontSize: "14px", textDecoration: "underline" }}
+                onClick={handleFilterReset}
+                role="button"
+              >
+                Reset
+              </span>
+            </div>
+          </div>
+        </Modal.Header>
+
+        <div className="modal-body" style={{ overflowY: "scroll" }}>
+          <div className="row">
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">PO Date From</label>
+              <input
+                type="date"
+                className="form-control"
+                value={poDateFrom}
+                onChange={handlePoDateFromChange}
+                placeholder="Select From Date"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">PO Date To</label>
+              <input
+                type="date"
+                className="form-control"
+                value={poDateTo}
+                onChange={handlePoDateToChange}
+                placeholder="Select To Date"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">PO Number</label>
+              <SingleSelector
+                options={poNumberOptions}
+                value={selectedPoNumber}
+                onChange={handlePoNumberChange}
+                placeholder="Select PO Number"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">PO Type</label>
+              <SingleSelector
+                options={poTypeOptions}
+                value={selectedPoType}
+                onChange={handlePoTypeChange}
+                placeholder="Select PO Type"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Event No.</label>
+              <SingleSelector
+                options={eventNoOptions}
+                value={selectedEventNo}
+                onChange={handleEventNoChange}
+                placeholder="Select Event No."
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">MOR No.</label>
+              <SingleSelector
+                options={morNoOptions}
+                value={selectedMorNo}
+                onChange={handleMorNoChange}
+                placeholder="Select MOR No."
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Company</label>
+              <SingleSelector
+                options={companies.map((c) => ({
+                  value: c.id,
+                  label: c.company_name,
+                }))}
+                value={selectedCompany}
+                onChange={handleCompanyChange}
+                placeholder="Select Company"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Project</label>
+              <SingleSelector
+                options={projects.map((p) => ({
+                  value: p.id,
+                  label: p.name,
+                }))}
+                value={selectedProject}
+                onChange={handleProjectChange}
+                placeholder="Select Project"
+                isDisabled={!selectedCompany}
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Sub Project</label>
+              <SingleSelector
+                options={siteOptions.map((s) => ({
+                  value: s.id,
+                  label: s.name,
+                }))}
+                value={selectedSite}
+                onChange={handleSiteChange}
+                placeholder="Select Sub Project"
+                isDisabled={!selectedProject}
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Material Type</label>
+              <SingleSelector
+                options={materialTypeOptions}
+                value={selectedMaterialType}
+                onChange={handleMaterialTypeChange}
+                placeholder="Select Material Type"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Status</label>
+              <SingleSelector
+                options={statusOptions}
+                value={selectedStatus}
+                onChange={handleStatusChange}
+                placeholder="Select Status"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Advance Applicable</label>
+              <SingleSelector
+                options={advanceApplicableOptions}
+                value={selectedAdvanceApplicable}
+                onChange={handleAdvanceApplicableChange}
+                placeholder="Select Advance Applicable"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Advance Amount</label>
+              <SingleSelector
+                options={advanceAmountOptions}
+                value={selectedAdvanceAmount}
+                onChange={handleAdvanceAmountChange}
+                placeholder="Select Advance Amount"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Supplier/Vendor</label>
+              <SingleSelector
+                options={supplierOptions}
+                value={selectedSupplier}
+                onChange={handleSupplierChange}
+                placeholder="Select Supplier"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Consumption Category</label>
+              <SingleSelector
+                options={consumptionCategoryOptions}
+                value={selectedConsumptionCategory}
+                onChange={handleConsumptionCategoryChange}
+                placeholder="Select Consumption Category"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Requisition Department</label>
+              <SingleSelector
+                options={requisitionDepartmentOptions}
+                value={selectedRequisitionDepartment}
+                onChange={handleRequisitionDepartmentChange}
+                placeholder="Select Department"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">Created By</label>
+              <SingleSelector
+                options={createdByOptions}
+                value={selectedCreatedBy}
+                onChange={handleCreatedByChange}
+                placeholder="Select Created By"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">PO Base Value</label>
+              <SingleSelector
+                options={poBaseValueOptions}
+                value={selectedPoBaseValue}
+                onChange={handlePoBaseValueChange}
+                placeholder="Select PO Base Value"
+              />
+            </div>
+            <div className="col-md-6 mt-2">
+              <label className="block text-sm font-medium">PO Gross Value</label>
+              <SingleSelector
+                options={poGrossValueOptions}
+                value={selectedPoGrossValue}
+                onChange={handlePoGrossValueChange}
+                placeholder="Select PO Gross Value"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="modal-footer justify-content-center">
+          <button
+            className="btn"
+            style={{ backgroundColor: "#8b0203", color: "#fff" }}
+            onClick={handleFilterApply}
+          >
+            Apply Filter
+          </button>
+        </div>
+      </Modal>
+
       {/* Setting modal */}
     </>
   );
