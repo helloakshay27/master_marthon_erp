@@ -387,7 +387,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                             <td className="text-start">{item?.missing_qty || "-"}</td>
                                             <td className="text-start">{item?.damage_qty || "-"}</td>
                                             <td className="text-start">{item?.adjustment_qty || "-"}</td>
-                                            <td className="text-start">{item?.gate_pass__qty || "-"}</td>
+                                            <td className="text-start">{item?.gate_pass_qty || "-"}</td>
                                             <td className="text-start"></td>
                                           </tr>
                                         ))}
