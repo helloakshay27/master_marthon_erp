@@ -4,15 +4,15 @@ const PoCreate = () => {
   return (
    <>
 
-  <main className="h-100 w-100">
+  {/* <main className="h-100 w-100"> */}
     
     {/* top navigation above */}
     <div className="main-content">
      
       {/* sidebar ends above */}
       {/* webpage conteaint start */}
-      <div className="website-content overflow-auto">
-        <div className="module-data-section container-fluid">
+      <div className="website-content container-fluid">
+        <div className="module-data-section ">
           <a href="">Home &gt; Purchase &gt; MTO &gt; MTO Pending Approval</a>
           <h5 className="mt-3">Create Purchase Order</h5>
           <div className="row my-4 align-items-center">
@@ -114,9 +114,9 @@ const PoCreate = () => {
                 </div>
                 <div className="card-body">
                   <div className="row">
-                    <div className="col-md-2">
-                      <div className="form-group">
-                        <div className="form-check">
+                    {/* <div className="col-md-2">
+                      <div className="form-group"> */}
+                        {/* <div className="form-check">
                           <input
                             className="form-check-input"
                             type="radio"
@@ -125,11 +125,11 @@ const PoCreate = () => {
                             defaultChecked=""
                           />
                           <label className="form-check-label">Domestic</label>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-md-2">
-                      <div className="form-group">
+                        </div> */}
+                      {/* </div>
+                    </div> */}
+                    {/* <div className="col-md-2">
+                      <div className="form-group"> */}
                         {/* <div className="form-check">
                           <input
                             className="form-check-input"
@@ -139,10 +139,10 @@ const PoCreate = () => {
                           />
                           <label className="form-check-label">Import</label>
                         </div> */}
-                      </div>
-                    </div>
+                      {/* </div> */}
+                    {/* </div> */}
                     <div className="col-md-2">
-                      {/* <div className="form-group">
+                      <div className="form-group">
                         <div className="form-check">
                           <input
                             className="form-check-input "
@@ -152,7 +152,7 @@ const PoCreate = () => {
                           />
                           <label className="form-check-label">ROPO</label>
                         </div>
-                      </div> */}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -854,7 +854,7 @@ const PoCreate = () => {
                               </div>
                             </div>
                           </div>
-                          <div className="mt-3 d-flex justify-content-between align-items-center">
+                          {/* <div className="mt-3 d-flex justify-content-between align-items-center">
                             <h5 className=" mt-3">Advance Payment Schedule</h5>
                             <button className="purple-btn2"> Add</button>
                           </div>
@@ -877,8 +877,8 @@ const PoCreate = () => {
                                 </tr>
                               </tbody>
                             </table>
-                          </div>
-                          <div className="mt-3 d-flex justify-content-between align-items-center">
+                          </div> */}
+                          {/* <div className="mt-3 d-flex justify-content-between align-items-center">
                             <h5 className=" mt-3">Delivery Schedule</h5>
                             <button className="purple-btn2"> Add</button>
                           </div>
@@ -909,7 +909,7 @@ const PoCreate = () => {
                                 </tr>
                               </tbody>
                             </table>
-                          </div>
+                          </div> */}
                           <div className="mt-3 ">
                             <h5 className=" ">General Term &amp; Conditions</h5>
                           </div>
@@ -2791,12 +2791,7 @@ const PoCreate = () => {
         </div>
       </div>
     </div>
-    <footer className="footer">
-      <p className="">
-        Powered by <img src="./images/go-logo.JPG" />
-      </p>
-    </footer>
-  </main>
+   
   {/* Navigation Top */}
   {/* sidebar start below */}
   <div

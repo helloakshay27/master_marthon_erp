@@ -4,6 +4,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Modal, Button } from "react-bootstrap";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain"; // adjust path if needed
+import SingleSelector from "../components/base/Select/SingleSelector";
 
 const PoList = () => {
   // Quick Filter states
@@ -50,6 +51,10 @@ const PoList = () => {
     dueFrom: true,
   });
 
+  // Collapse states - start collapsed by default
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [bulkActionCollapsed, setBulkActionCollapsed] = useState(true);
+
   // Table columns
   const allColumns = [
     { field: "srNo", headerName: "Sr.no", width: 80 },
@@ -92,28 +97,52 @@ const PoList = () => {
   }, []);
 
   // Handle company selection
-  const handleCompanyChange = (e) => {
-    const value = e.target.value;
-    setSelectedCompany(value);
-    setSelectedProject("");
-    setSelectedSite("");
-    const company = companies.find((c) => c.id === Number(value));
-    setProjects(company?.projects || []);
+  const handleCompanyChange = (selectedOption) => {
+    setSelectedCompany(selectedOption);
+    setSelectedProject(null);
+    setSelectedSite(null);
+
+    if (selectedOption) {
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedOption.value
+      );
+      setProjects(selectedCompanyData?.projects || []);
+    } else {
+      setProjects([]);
+    }
     setSiteOptions([]);
   };
 
   // Handle project selection
-  const handleProjectChange = (e) => {
-    const value = e.target.value;
-    setSelectedProject(value);
-    setSelectedSite("");
-    const project = projects.find((p) => p.id === Number(value));
-    setSiteOptions(project?.pms_sites || []);
+  const handleProjectChange = (selectedOption) => {
+    setSelectedProject(selectedOption);
+    setSelectedSite(null);
+
+    if (selectedOption) {
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedCompany?.value
+      );
+      const selectedProjectData = selectedCompanyData?.projects.find(
+        (project) => project.id === selectedOption.value
+      );
+      setSiteOptions(selectedProjectData?.pms_sites || []);
+    } else {
+      setSiteOptions([]);
+    }
   };
 
   // Handle site selection
-  const handleSiteChange = (e) => {
-    setSelectedSite(e.target.value);
+  const handleSiteChange = (selectedOption) => {
+    setSelectedSite(selectedOption);
+  };
+
+  // Handle reset
+  const handleReset = () => {
+    setSelectedCompany(null);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setProjects([]);
+    setSiteOptions([]);
   };
 
   // Fetch ROPO mapping data (replace with your real API)
@@ -205,92 +234,14 @@ const PoList = () => {
           </div>
           <div className="card mt-3 pb-4">
             {/* Quick Filter */}
-            <div className="card mx-3 mt-3 collapsed-card">
+            <div className="card mx-3 mt-3">
               <div className="card-header3">
                 <h3 className="card-title">Quick Filter</h3>
-                <div className="card-tools">
-                  <button type="button" className="btn btn-tool">
-                    <svg
-                      width={32}
-                      height={32}
-                      viewBox="0 0 32 32"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle cx={16} cy={16} r={16} fill="#8B0203" />
-                      <path
-                        d="M16 24L9.0718 12L22.9282 12L16 24Z"
-                        fill="white"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <div className="card-body pt-0 mt-0">
-                <div className="row align-items-end">
-                  <div className="col-md-2">
-                    <div className="form-group">
-                      <label>Company</label>
-                      <select
-                        className="form-control form-select"
-                        value={selectedCompany || ""}
-                        onChange={handleCompanyChange}
-                      >
-                        <option value="">Select Company</option>
-                        {companies.map((c) => (
-                          <option key={c.id} value={c.id}>{c.company_name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="col-md-2">
-                    <div className="form-group">
-                      <label>Project</label>
-                      <select
-                        className="form-control form-select"
-                        value={selectedProject || ""}
-                        onChange={handleProjectChange}
-                        disabled={!selectedCompany}
-                      >
-                        <option value="">Select Project</option>
-                        {projects.map((p) => (
-                          <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="col-md-2">
-                    <div className="form-group">
-                      <label>Sub-Project</label>
-                      <select
-                        className="form-control form-select"
-                        value={selectedSite || ""}
-                        onChange={handleSiteChange}
-                        disabled={!selectedProject}
-                      >
-                        <option value="">Select Sub-Project</option>
-                        {siteOptions.map((s) => (
-                          <option key={s.id} value={s.id}>{s.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="col-md-2">
-                    <button className="purple-btn2 m-0" onClick={fetchRopoData}>Go</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* DataGrid Table with Settings */}
-          <div className="card mx-3 collapsed-card">
-              <div className="card-header3">
-                <h3 className="card-title">Bulk Action</h3>
                 <div className="card-tools">
                   <button
                     type="button"
                     className="btn btn-tool"
-                    // data-card-widget="collapse"
+                    onClick={() => setIsCollapsed(!isCollapsed)}
                   >
                     <svg
                       width={32}
@@ -301,6 +252,98 @@ const PoList = () => {
                     >
                       <circle cx={16} cy={16} r={16} fill="#8B0203" />
                       <path
+                        d={
+                          isCollapsed
+                            ? "M16 24L9.0718 12L22.9282 12L16 24Z"
+                            : "M16 8L22.9282 20L9.0718 20L16 8Z"
+                        }
+                        fill="white"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {!isCollapsed && (
+                <div className="card-body pt-0 mt-0">
+                  <div className="row my-2 align-items-end">
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Company</label>
+                        <SingleSelector
+                          options={companies.map((c) => ({
+                            value: c.id,
+                            label: c.company_name,
+                          }))}
+                          onChange={handleCompanyChange}
+                          value={selectedCompany}
+                          placeholder="Select Company"
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Project</label>
+                        <SingleSelector
+                          options={projects.map((p) => ({
+                            value: p.id,
+                            label: p.name,
+                          }))}
+                          onChange={handleProjectChange}
+                          value={selectedProject}
+                          placeholder="Select Project"
+                          isDisabled={!selectedCompany}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label>Sub-project</label>
+                        <SingleSelector
+                          options={siteOptions.map((s) => ({
+                            value: s.id,
+                            label: s.name,
+                          }))}
+                          onChange={handleSiteChange}
+                          value={selectedSite}
+                          placeholder="Select Sub-project"
+                          isDisabled={!selectedProject}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <button className="purple-btn2 m-0" onClick={fetchRopoData}>
+                        Go
+                      </button>
+                      <button className="purple-btn2 ms-2" onClick={handleReset}>
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* DataGrid Table with Settings */}
+          <div className="card mx-3 collapsed-card">
+              <div className="card-header3">
+                <h3 className="card-title">Bulk Action</h3>
+                <div className="card-tools">
+                  <button
+                    type="button"
+                    className="btn btn-tool"
+                    onClick={() => setBulkActionCollapsed(!bulkActionCollapsed)}
+                  >
+                    <svg
+                      width={32}
+                      height={32}
+                      viewBox="0 0 32 32"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      style={{ transform: bulkActionCollapsed ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }}
+                    >
+                      <circle cx={16} cy={16} r={16} fill="#8B0203" />
+                      <path
                         d="M16 24L9.0718 12L22.9282 12L16 24Z"
                         fill="white"
                       />
@@ -308,7 +351,7 @@ const PoList = () => {
                   </button>
                 </div>
               </div>
-              <div className="card-body mt-0 pt-0">
+              <div className={`card-body mt-0 pt-0 ${bulkActionCollapsed ? 'd-none' : ''}`}>
                 <div className="row align-items-center">
                   <div className="col-md-4">
                     <div className="form-group">
