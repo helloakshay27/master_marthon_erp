@@ -1719,6 +1719,13 @@ console.log("attachments:", attachmentsPayload)
       })
       .filter(Boolean);
 
+      const totalIssued = gp_batches_attributes.reduce((sum, b) => sum + b.gp_batch_qty, 0);
+      if (totalIssued !== batchMaxQty) {
+        toast.error(
+          `Total issued quantity (${totalIssued}) must exactly match Gate Pass Qty (${batchMaxQty}).`
+        );
+        return;
+      }
     if (batchTableType === "maintenance") {
       setMaintenanceRows((rows) =>
         rows.map((row, idx) =>
