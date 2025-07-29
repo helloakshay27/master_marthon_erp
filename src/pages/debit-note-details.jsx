@@ -1975,6 +1975,86 @@ const DebitNoteDetails = () => {
                         </div>
 
 
+                         <div className="d-flex justify-content-between mt-3 me-2">
+                  <h5 className=" ">Advance Adjusted</h5>
+                </div>
+                <div className="tbl-container mx-1 mt-3">
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th className="text-start">Advance Note No.</th>
+                        <th className="text-start">PO  No.</th>
+                        <th className="text-start">Project</th>
+                        <th className="text-start">Advance Amount (INR)</th>
+                        <th className="text-start">
+                          Debit Note For Advance (INR)
+                        </th>
+                        <th className="text-start">
+                          Advance Adjusted Till Date (INR)
+                        </th>
+                        <th className="text-start">
+                          Advance Outstanding till Certificate Date (INR)
+                        </th>
+                        <th className="text-start">
+                          Advance Outstanding till current Date (INR)
+                        </th>
+                        <th className="text-start">This Recovery (INR)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {debitNoteData?.bill_advance_notes &&
+                        debitNoteData.bill_advance_notes.length > 0 ? (
+                        debitNoteData.bill_advance_notes.map((note, idx) => (
+                          <tr key={note.id}>
+                            <td className="text-start">
+                              {note.advance_note?.advance_number || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.advance_note?.po_number || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.advance_note?.project_name || "-"}
+                            </td>
+                            <td className="text-start">
+                              {note.advance_note?.advance_amount || "-"}
+                            </td>
+                            <td className="text-start">
+                              {
+                                /* Credit Note Recovery Till Date (add logic if available) */ "-"
+                              }
+                            </td>
+                            <td className="text-start">
+                              {
+                                /* Waive off Till Date (add logic if available) */
+                              }
+
+                              {note.advance_note?.recovered_amount || "0"}
+                            </td>
+                            {/* {console.log("recovery adjusted:",note.advance_note?.recovered_amount)} */}
+                            <td className="text-start">
+                              {/* Outstanding Amount (Certificate Date) */ }
+                              {note.advance_note?.advance_amount - note.advance_note?.recovered_amount || "0"}
+                            </td>
+                            <td className="text-start">
+                              {/* Outstanding Amount (Current Date) */ }
+                              {note.advance_note?.advance_amount - note.advance_note?.recovered_amount || "0"}
+                            </td>
+                            {/* <td className="text-start">{"-"}</td> */}
+                            <td className="text-start">{note.amount || ""}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td className="text-center" colSpan={10}>
+                            No Advance Notes Found
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+
                         {/* <div className="d-flex justify-content-between mt-4 ">
                           <h5 className=" ">Document Attachment</h5>
                           <div

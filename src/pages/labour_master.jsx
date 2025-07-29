@@ -7,231 +7,432 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Modal, Button } from "react-bootstrap";
 
 const LabourMaster = () => {
-    const [pageSize, setPageSize] = useState(10);
-     const [showModal, setShowModal] = useState(false);
-    const [showOnlyPinned, setShowOnlyPinned] = useState(false);
-    const [pinnedRows, setPinnedRows] = useState([]);
-    const [isCollapsed, setIsCollapsed] = useState(true);
-    const [settingShow, setSettingShow] = useState(false);
-    const [show, setShow] = useState(false);
-    const [activeSearch, setActiveSearch] = useState("");
-    const [billEntries, setBillEntries] = useState([]);
+  const [pageSize, setPageSize] = useState(10);
+  const [showModal, setShowModal] = useState(false);
+  const [showOnlyPinned, setShowOnlyPinned] = useState(false);
+  const [pinnedRows, setPinnedRows] = useState([]);
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [settingShow, setSettingShow] = useState(false);
+  const [show, setShow] = useState(false);
+  const [activeSearch, setActiveSearch] = useState("");
+  const [labourList, setLabourList] = useState([]);
+  const [editRowIndex, setEditRowIndex] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // Or any number you prefer
 
-    const handleClose = () => setShowModal(false);
+  const handleClose = () => setShowModal(false);
   const handleOpen = () => setShowModal(true);
 
-    const [formData, setFormData] = useState({
-  labour_code: "",
-  contractor_name: "",
-  labour_sub_type: "",
-  first_name: "",
-  middle_name: "",
-  last_name: "",
-  dob: "",
-  phone_number: "",
-  job_title: "",
-  labour_category: "",
-  work_shifts: "",
-  availability: "",
-  employment_status: "",
-  bank_account_name: "",
-  bank_account_no: "",
-  bank_branch_name: "",
-  ifsc_code: "",
-  union_memberships: "",
-  hourly_rate: "",
-  overtime_rate: "",
-  address: "",
-  department: "",
-  supervisor: "",
-  hire_date: "",
-  certifications: "",
-  license_info: "",
-  documents: "",   // assuming dropdown value
-  photo: null      // for file input
-});
+  const [formData, setFormData] = useState({
+    labour_code: "",
+    contractor_name: "",
+    labour_sub_type: "",
+    first_name: "",
+    middle_name: "",
+    last_name: "",
+    dob: "",
+    phone_number: "",
+    job_title: "",
+    labour_category: "",
+    work_shifts: "",
+    availability: "",
+    employment_status: "",
+    bank_account_name: "",
+    bank_account_no: "",
+    bank_branch_name: "",
+    ifsc_code: "",
+    union_memberships: "",
+    hourly_rate: "",
+    overtime_rate: "",
+    address: "",
+    department: "",
+    supervisor: "",
+    hire_date: "",
+    certifications: "",
+    license_info: "",
+    documents: "",
+    document_upload: null,  // assuming dropdown value
+    photo: null      // for file input
+  });
 
 
 
-const handleInputChange = (e) => {
-  const { name, value } = e.target;
-  setFormData((prev) => ({
-    ...prev,
-    [name]: value,
-  }));
-};
-
-const handleFileChange = (e, fieldName) => {
-  const file = e.target.files[0];
-  if (file) {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [fieldName]: file,
+      [name]: value,
     }));
-  }
-};
+  };
 
-    //   column sort and setting
-    const [columnVisibility, setColumnVisibility] = useState({
-        sr_no: true,
-        labour_code: true,
-        contractor_name: true,
-        labour_sub_type: true,
-        first_name: true,
-        last_name: true,
-        middle_name: true,
-        dob: true,
-        phone_number: true,
-        job_title: true,
-        labour_category: true,
-        work_shifts: true,
-        availability: true,
-        employment_status: true,
-        bank_account_name: true,
-        bank_account_no: true,
-        bank_branch_name: true,
-        ifsc_code: true,
-        union_memberships: true,
-        hourly_rate: true,
-        overtime_rate: true,
-        address: true,
-        department: true,
-        supervisor: true,
-        hire_date: true,
-        certifications: true,
-        photo: true,
-        documents: true,
-        license_info: true,
-        action: true,
+  // const handleFileChange = (e, fieldName) => {
+  //   const file = e.target.files[0];
+  //   if (file) {
+  //     setFormData((prev) => ({
+  //       ...prev,
+  //       [fieldName]: file,
+  //     }));
+  //   }
+  // };
+
+  const handleFileChange = (e, fieldName) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const contentType = file.type;
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      const base64Content = reader.result.split(",")[1]; // Remove data:<type>;base64, prefix
+
+      setFormData((prev) => ({
+        ...prev,
+        [fieldName]: {
+          fileName: file.name,
+          content_type: contentType,
+          content: base64Content,
+        },
+      }));
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  // const handleEdit = (row, index) => {
+  //   setFormData(row); // Pre-fill the form
+  //   setEditRowIndex(index);
+  //   setShowModal(true);
+  // };
+
+  const handleEdit = (row) => {
+    setFormData(row); // Pre-fill the form
+    const index = labourList.findIndex((item) => item.id === row.id);
+    setEditRowIndex(index);
+    setShowModal(true);
+    setCurrentPage(1);
+  };
+  // const handleCreate = () => {
+  //   const newEntry = {
+  //     ...formData,
+  //     id: Date.now(), // Ensure unique ID
+  //   };
+
+  //   setLabourList((prev) => [...prev, newEntry]);
+
+  //   // Optional: Reset form
+  //   setFormData({
+  //     labour_code: "",
+  //     contractor_name: "",
+  //     labour_sub_type: "",
+  //     first_name: "",
+  //     middle_name: "",
+  //     last_name: "",
+  //     dob: "",
+  //     phone_number: "",
+  //     job_title: "",
+  //     labour_category: "",
+  //     work_shifts: "",
+  //     availability: "",
+  //     employment_status: "",
+  //     bank_account_name: "",
+  //     bank_account_no: "",
+  //     bank_branch_name: "",
+  //     ifsc_code: "",
+  //     union_memberships: "",
+  //     hourly_rate: "",
+  //     overtime_rate: "",
+  //     address: "",
+  //     department: "",
+  //     supervisor: "",
+  //     hire_date: "",
+  //     certifications: "",
+  //     license_info: "",
+  //     documents: "",
+  //     document_upload: null,
+  //     photo: null,
+  //   });
+
+  //   // Optional: Close modal or provide feedback
+  //   setShowModal(false);
+  // };
+
+
+  const handleCreate = () => {
+    const newEntry = {
+      ...formData,
+      id: formData.id || Date.now(), // retain ID if exists, else create new
+    };
+
+    if (editRowIndex !== null) {
+      // Edit mode: update existing row
+      setLabourList((prev) =>
+        prev.map((item, index) =>
+          index === editRowIndex ? newEntry : item
+        )
+      );
+    } else {
+      // Add new entry
+      setLabourList((prev) => [...prev, newEntry]);
+    }
+
+    // Reset form and edit index
+    setFormData({
+      labour_code: "",
+      contractor_name: "",
+      labour_sub_type: "",
+      first_name: "",
+      middle_name: "",
+      last_name: "",
+      dob: "",
+      phone_number: "",
+      job_title: "",
+      labour_category: "",
+      work_shifts: "",
+      availability: "",
+      employment_status: "",
+      bank_account_name: "",
+      bank_account_no: "",
+      bank_branch_name: "",
+      ifsc_code: "",
+      union_memberships: "",
+      hourly_rate: "",
+      overtime_rate: "",
+      address: "",
+      department: "",
+      supervisor: "",
+      hire_date: "",
+      certifications: "",
+      license_info: "",
+      documents: "",
+      document_upload: null,
+      photo: null,
     });
 
-    const allColumns = [
-        { field: "sr_no", headerName: "Sr No.", width: 100 },
-        { field: "labour_code", headerName: "Labour Code/ID", width: 150 },
-        { field: "contractor_name", headerName: "Contractor Name", width: 180 },
-        { field: "labour_sub_type", headerName: "Labour Sub-Type", width: 150 },
-        { field: "first_name", headerName: "First Name", width: 130 },
-        { field: "last_name", headerName: "Last Name", width: 130 },
-        { field: "middle_name", headerName: "Middle Name", width: 130 },
-        { field: "dob", headerName: "Date of Birth", width: 150 },
-        { field: "phone_number", headerName: "Phone Number", width: 150 },
-        { field: "job_title", headerName: "Job Title/Position", width: 180 },
-        { field: "labour_category", headerName: "Labour Category", width: 150 },
-        { field: "work_shifts", headerName: "Work Shifts", width: 130 },
-        { field: "availability", headerName: "Availability", width: 130 },
-        { field: "employment_status", headerName: "Employment Status", width: 180 },
-        { field: "bank_account_name", headerName: "Bank Account Name", width: 180 },
-        { field: "bank_account_no", headerName: "Bank Account No.", width: 170 },
-        { field: "bank_branch_name", headerName: "Bank Branch Name", width: 170 },
-        { field: "ifsc_code", headerName: "Bank Branch IFSC Code", width: 170 },
-        { field: "union_memberships", headerName: "Union Memberships", width: 180 },
-        { field: "hourly_rate", headerName: "Hourly Rate/Salary", width: 170 },
-        { field: "overtime_rate", headerName: "Overtime Rate", width: 150 },
-        { field: "address", headerName: "Address", width: 200 },
-        { field: "department", headerName: "Department", width: 150 },
-        { field: "supervisor", headerName: "Supervisor", width: 150 },
-        { field: "hire_date", headerName: "Hire Date", width: 150 },
-        { field: "certifications", headerName: "Equipment Certifications", width: 200 },
-        { field: "photo", headerName: "Photo", width: 120 },
-        { field: "documents", headerName: "Documents", width: 150 },
-        { field: "license_info", headerName: "License/Permit Information", width: 200 },
-        {
-            field: "action",
-            headerName: "Action",
-            width: 100,
-            renderCell: (params) => (
-                <button className="btn btn-sm btn-danger" onClick={() => handleDelete(params.row.id)}>
-                    Delete
-                </button>
-            ),
-        },
+    setEditRowIndex(null); // Clear edit state
+    setShowModal(false);   // Close modal
+    setCurrentPage(1);
+  };
 
 
-    ];
+  const handleDelete = (id) => {
+    setLabourList((prevList) => prevList.filter((item) => item.id !== id));
+    setCurrentPage(1);
+  };
 
-    const columns = allColumns.filter((col) => columnVisibility[col.field]);
 
-    const handleSettingClose = () => setSettingShow(false);
-    // const handleClose = () => setShow(false);
-    const handleSettingModalShow = () => setSettingShow(true);
-    const handleModalShow = () => setShow(true);
+  //   column sort and setting
+  const [columnVisibility, setColumnVisibility] = useState({
+    sr_no: true,
+    labour_code: true,
+    contractor_name: true,
+    labour_sub_type: true,
+    first_name: true,
+    last_name: true,
+    middle_name: true,
+    dob: true,
+    phone_number: true,
+    job_title: true,
+    labour_category: true,
+    work_shifts: true,
+    availability: true,
+    employment_status: true,
+    bank_account_name: true,
+    bank_account_no: true,
+    bank_branch_name: true,
+    ifsc_code: true,
+    union_memberships: true,
+    hourly_rate: true,
+    overtime_rate: true,
+    address: true,
+    department: true,
+    supervisor: true,
+    hire_date: true,
+    certifications: true,
+    photo: true,
+    documents: true,
+    license_info: true,
+    action: true,
+  });
 
-    const handleToggleColumn = (field) => {
-        setColumnVisibility((prev) => ({ ...prev, [field]: !prev[field] }));
-    };
-
-    const handleShowAll = () => {
-        const updatedVisibility = allColumns.reduce((acc, column) => {
-            acc[column.field] = true;
-            return acc;
-        }, {});
-        setColumnVisibility(updatedVisibility);
-    };
-
-    const handleHideAll = () => {
-        const updatedVisibility = allColumns.reduce((acc, column) => {
-            acc[column.field] = false;
-            return acc;
-        }, {});
-        setColumnVisibility(updatedVisibility);
-    };
-
-    const handleResetColumns = () => {
-        const defaultVisibility = allColumns.reduce((acc, column) => {
-            acc[column.field] = true;
-            return acc;
-        }, {});
-        setColumnVisibility(defaultVisibility);
-    };
-
-    const getTransformedRows = () => {
-        let rowsToShow = showOnlyPinned
-            ? billEntries.filter((row) => pinnedRows.includes(row.id))
-            : billEntries;
-
-        // const normalizedSearchTerm = searchKeyword.trim().toLowerCase();
-        // if (normalizedSearchTerm) {
-        //     rowsToShow = rowsToShow.filter((item) =>
-        //         Object.values(item).some(
-        //             (value) =>
-        //                 value && String(value).toLowerCase().includes(normalizedSearchTerm)
-        //         )
-        //     );
-        // }
-
-        return rowsToShow;
-    };
-
-    const labourCategoryOptions = [
-  { value: "Skilled", label: "Skilled" },
-  { value: "Unskilled", label: "Unskilled" },
-  { value: "Semi-skilled", label: "Semi-skilled" },
-  { value: "Supervisor", label: "Supervisor" },
-  { value: "Technician", label: "Technician" },
-  { value: "Engineer", label: "Engineer" },
-  { value: "Foreman", label: "Foreman" },
-  { value: "Operator", label: "Operator" },
-  { value: "Helper", label: "Helper" },
-  { value: "Electrician", label: "Electrician" },
-];
-const availabilityOptions = [
-  { value: "available", label: "Available" },
-  { value: "not_available", label: "Not Available" },
-  { value: "on_leave", label: "On Leave" },
-  { value: "in_training", label: "In Training" },
-  { value: "on_duty", label: "On Duty" }
-];
-const employmentStatusOptions = [
-  { value: "permanent", label: "Permanent" },
-  { value: "contract", label: "Contract" },
-  { value: "probation", label: "Probation" },
-  { value: "intern", label: "Intern" },
-  { value: "terminated", label: "Terminated" }
-];
-    return (
+  const allColumns = [
+    { field: "sr_no", headerName: "Sr No.", width: 100 },
+    { field: "labour_code", headerName: "Labour Code/ID", width: 150 },
+    { field: "contractor_name", headerName: "Contractor Name", width: 180 },
+    { field: "labour_sub_type", headerName: "Labour Sub-Type", width: 150 },
+    { field: "first_name", headerName: "First Name", width: 130 },
+    { field: "last_name", headerName: "Last Name", width: 130 },
+    { field: "middle_name", headerName: "Middle Name", width: 130 },
+    { field: "dob", headerName: "Date of Birth", width: 150 },
+    { field: "phone_number", headerName: "Phone Number", width: 150 },
+    { field: "job_title", headerName: "Job Title/Position", width: 180 },
+    { field: "labour_category", headerName: "Labour Category", width: 150 },
+    { field: "work_shifts", headerName: "Work Shifts", width: 130 },
+    { field: "availability", headerName: "Availability", width: 130 },
+    { field: "employment_status", headerName: "Employment Status", width: 180 },
+    { field: "bank_account_name", headerName: "Bank Account Name", width: 180 },
+    { field: "bank_account_no", headerName: "Bank Account No.", width: 170 },
+    { field: "bank_branch_name", headerName: "Bank Branch Name", width: 170 },
+    { field: "ifsc_code", headerName: "Bank Branch IFSC Code", width: 170 },
+    { field: "union_memberships", headerName: "Union Memberships", width: 180 },
+    { field: "hourly_rate", headerName: "Hourly Rate/Salary", width: 170 },
+    { field: "overtime_rate", headerName: "Overtime Rate", width: 150 },
+    { field: "address", headerName: "Address", width: 200 },
+    { field: "department", headerName: "Department", width: 150 },
+    { field: "supervisor", headerName: "Supervisor", width: 150 },
+    { field: "hire_date", headerName: "Hire Date", width: 150 },
+    { field: "certifications", headerName: "Equipment Certifications", width: 200 },
+    { field: "photo", headerName: "Photo", width: 120 },
+    { field: "documents", headerName: "Documents", width: 150 },
+    { field: "license_info", headerName: "License/Permit Information", width: 200 },
+    {
+      field: "action",
+      headerName: "Action",
+      width: 100,
+      renderCell: (params) => (
         <>
-            <style type="text/css">
-                {`.tbl-container {
+          <button className="btn mt-0 pt-0" onClick={() => handleDelete(params.row.id)}>
+            <svg
+              width="16"
+              height="20"
+              viewBox="0 0 16 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M14.7921 2.44744H10.8778C10.6485 1.0366 9.42966 0 8.00005 0C6.57044 0 5.35166 1.03658 5.12225 2.44744H1.20804C0.505736 2.48655 -0.0338884 3.08663 0.00166019 3.78893V5.26379C0.00166019 5.38914 0.0514441 5.51003 0.140345 5.59895C0.229246 5.68787 0.35015 5.73764 0.475508 5.73764H1.45253V17.2689C1.45253 18.4468 2.40731 19.4025 3.58612 19.4025H12.4139C13.5927 19.4025 14.5475 18.4468 14.5475 17.2689V5.73764H15.5245C15.6498 5.73764 15.7707 5.68785 15.8597 5.59895C15.9486 5.51005 15.9983 5.38914 15.9983 5.26379V3.78893C16.0339 3.08663 15.4944 2.48654 14.7921 2.44744ZM8.00005 0.94948C8.90595 0.94948 9.69537 1.56823 9.91317 2.44744H6.08703C6.30483 1.56821 7.09417 0.94948 8.00005 0.94948ZM13.5998 17.2688C13.5998 17.5835 13.4744 17.8849 13.2522 18.1072C13.0299 18.3294 12.7285 18.4539 12.4138 18.4539H3.58608C2.93089 18.4539 2.40017 17.9231 2.40017 17.2688V5.73762H13.5998L13.5998 17.2688ZM15.0506 4.78996H0.949274V3.78895C0.949274 3.56404 1.08707 3.39512 1.20797 3.39512H14.792C14.9129 3.39512 15.0507 3.56314 15.0507 3.78895L15.0506 4.78996ZM4.91788 16.5533V7.63931C4.91788 7.37706 5.13035 7.16548 5.3926 7.16548C5.65396 7.16548 5.86643 7.37706 5.86643 7.63931V16.5533C5.86643 16.8147 5.65396 17.0271 5.3926 17.0271C5.13035 17.0271 4.91788 16.8147 4.91788 16.5533ZM7.52531 16.5533L7.5262 7.63931C7.5262 7.37706 7.73778 7.16548 8.00003 7.16548C8.26228 7.16548 8.47386 7.37706 8.47386 7.63931V16.5533C8.47386 16.8147 8.26228 17.0271 8.00003 17.0271C7.73778 17.0271 7.5262 16.8147 7.5262 16.5533H7.52531ZM10.1327 16.5533L10.1336 7.63931C10.1336 7.37706 10.3461 7.16548 10.6075 7.16548C10.8697 7.16548 11.0822 7.37706 11.0822 7.63931V16.5533C11.0822 16.8147 10.8697 17.0271 10.6075 17.0271C10.3461 17.0271 10.1336 16.8147 10.1336 16.5533H10.1327Z"
+                fill="#B25657"
+              />
+            </svg>
+          </button>
+
+
+
+          <span
+            onClick={() => handleEdit(params.row)} // Pass the whole row for editing
+            style={{ cursor: "pointer", marginLeft: 8 }}
+          >
+            {/* Edit */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"></path></svg>
+          </span>
+        </>
+      ),
+    },
+
+
+  ];
+
+  const columns = allColumns.filter((col) => columnVisibility[col.field]);
+
+  const handleSettingClose = () => setSettingShow(false);
+  // const handleClose = () => setShow(false);
+  const handleSettingModalShow = () => setSettingShow(true);
+  const handleModalShow = () => setShow(true);
+
+  const handleToggleColumn = (field) => {
+    setColumnVisibility((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
+
+  const handleShowAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+
+  const handleHideAll = () => {
+    const updatedVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = false;
+      return acc;
+    }, {});
+    setColumnVisibility(updatedVisibility);
+  };
+
+  const handleResetColumns = () => {
+    const defaultVisibility = allColumns.reduce((acc, column) => {
+      acc[column.field] = true;
+      return acc;
+    }, {});
+    setColumnVisibility(defaultVisibility);
+  };
+
+  const getTransformedRows = () => {
+    // let rowsToShow = showOnlyPinned
+    //   ? labourList.filter((row) => pinnedRows.includes(row.id))
+    //   : labourList;
+
+    return labourList.map((item, index) => ({
+      ...item,
+      sr_no: index + 1,
+      photo: item.photo ? item.photo.fileName : "",
+      // documents: item.document_upload ? `${item.documents} - ${item.document_upload.fileName}` : "-",
+    }));
+    return rowsToShow;
+  };
+
+  const labourCategoryOptions = [
+    { value: "Skilled", label: "Skilled" },
+    { value: "Unskilled", label: "Unskilled" },
+    { value: "Semi-skilled", label: "Semi-skilled" },
+    { value: "Supervisor", label: "Supervisor" },
+    { value: "Technician", label: "Technician" },
+    { value: "Engineer", label: "Engineer" },
+    { value: "Foreman", label: "Foreman" },
+    { value: "Operator", label: "Operator" },
+    { value: "Helper", label: "Helper" },
+    { value: "Electrician", label: "Electrician" },
+  ];
+  const availabilityOptions = [
+    { value: "available", label: "Available" },
+    { value: "not_available", label: "Not Available" },
+    { value: "on_leave", label: "On Leave" },
+    { value: "in_training", label: "In Training" },
+    { value: "on_duty", label: "On Duty" }
+  ];
+  const employmentStatusOptions = [
+    { value: "permanent", label: "Permanent" },
+    { value: "contract", label: "Contract" },
+    { value: "probation", label: "Probation" },
+    { value: "intern", label: "Intern" },
+    { value: "terminated", label: "Terminated" }
+  ];
+  const departmentOptions = [
+    { value: "hr", label: "Human Resources" },
+    { value: "finance", label: "Finance" },
+    { value: "engineering", label: "Engineering" },
+    { value: "sales", label: "Sales" },
+    { value: "marketing", label: "Marketing" },
+    { value: "operations", label: "Operations" },
+    { value: "it", label: "IT Support" }
+  ];
+  const supervisorOptions = [
+    { value: "john_doe", label: "John Doe" },
+    { value: "jane_smith", label: "Jane Smith" },
+    { value: "amit_patel", label: "Amit Patel" },
+    { value: "sunita_kumar", label: "Sunita Kumar" },
+    { value: "rahul_sharma", label: "Rahul Sharma" }
+  ];
+  const documentOptions = [
+    { value: "aadhar", label: "Aadhar Card" },
+    { value: "pan", label: "PAN Card" },
+    { value: "dl", label: "Driving License" }
+  ];
+  const totalEntries = labourList.length;
+  const totalPages = Math.ceil(totalEntries / itemsPerPage);
+
+  const paginatedData = labourList.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
+  return (
+    <>
+      <style type="text/css">
+        {`.tbl-container {
 
 height: auto !important;
 max-height: 100% !important;
@@ -248,354 +449,407 @@ display:none !important;
   display: block !important;
 }
         `}
-            </style>
+      </style>
 
-            <div className="website-content overflow-auto">
-                <div className="module-data-section p-4">
-                    <a href="#">Setup &gt; Purchase Setup &gt; Labour Master</a>
-                    <h5 className="mt-4">Labour Master</h5>
+      <div className="website-content overflow-auto">
+        <div className="module-data-section p-4">
+          <a href="#">Setup &gt; Purchase Setup &gt; Labour Master</a>
+          <h5 className="mt-4">Labour Master</h5>
 
-                    <div className="card mt-5 pb-4">
-                        <div className="d-flex justify-content-end ">
-                            <div className="card-tools">
-                                <button className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={handleOpen}>
-                                    <i className="bi bi-plus"></i> Add
-                                </button>
-                            </div>
-                        </div>
 
-                        <div className="tbl-container  mt-3">
-                            <table className="w-100">
-                                <thead>
-                                    <tr>
-                                        <th>Sr No.</th>
-                                        <th>Labour Code/ID</th>
-                                        <th>Contractor Name</th>
-                                        <th>Labour Sub-Type</th>
-                                        <th>First Name</th>
-                                        <th>Last Name</th>
-                                        <th>Middle Name</th>
-                                        <th>Date of Birth</th>
-                                        <th>Phone Number</th>
-                                        <th>Job Title/Position</th>
-                                        <th>Labour Category</th>
-                                        <th>Work Shifts</th>
-                                        <th>Availability</th>
-                                        <th>Employment Status</th>
-                                        <th>Bank Account Name</th>
-                                        <th>Bank Account No.</th>
-                                        <th>Bank Branch Name</th>
-                                        <th>Bank Branch IFSC Code</th>
-                                        <th>Union Memberships</th>
-                                        <th>Hourly Rate/Salary</th>
-                                        <th>Overtime Rate</th>
-                                        <th>Address</th>
-                                        <th>Department</th>
-                                        <th>Supervisor</th>
-                                        <th>Hire Date</th>
-                                        <th>Equipment Certifications</th>
-                                        <th>Photo</th>
-                                        <th>Documents</th>
-                                        <th>License/Permit Information</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {[1, 2].map((num) => (
-                                        <tr key={num} data-bs-toggle="modal" data-bs-target="#readOnlyModal">
-                                            <td>{num}</td>
-                                            {Array(28).fill(null).map((_, i) => (
-                                                <td key={i}></td>
-                                            ))}
-                                            <td>
-                                                <div className="d-flex justify-content-center gap-2">
-                                                    <img src="../Data_Mapping/img/Green_check.svg" alt="Check" />
-                                                    <img src="../Data_Mapping/img/Edit.svg" alt="Edit" data-bs-toggle="modal" data-bs-target="#exampleModal" />
-                                                    <img src="../Data_Mapping/img/Delete_red.svg" alt="Delete" />
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
 
-                        {/* data grid start */}
+          {/* {labourList.map((row, idx) => (
+            <pre key={idx}>{JSON.stringify(row, null, 2)}</pre>
+          ))} */}
+          <div className="card mt-5 pb-4">
+            {/* data grid start */}
+            <div className="d-flex justify-content-end mx-2 mt-4 mb-2">
+              {/* <button className="purple-btn2">Bulk Upload</button> */}
+              <button
+                className="purple-btn2 me-2"
+                data-bs-toggle="modal"
+                data-bs-target="#addnewModal"
+                // onClick={() => setShowModal(true)}
+                onClick={handleOpen}
+              // onClick={() => {
+              //     // setFieldErrors({});
+              //     // setShowModal(true);
+              //     handleOpen
+              // }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="white"
+                  className="bi bi-plus"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                </svg>
+                <span>Add</span>
+              </button>
+            </div>
+            <div
+              className="mt-3 mx-3"
+              style={{
+                //   width: "100%",
+                //   height: "430px",
+                //   boxShadow: "unset",
+                overflowY: "hidden",
+              }}
+            >
+              <DataGrid
+                rows={getTransformedRows()}
+                columns={columns}
+                pageSize={pageSize}
+                autoHeight={true}
+                // getRowId={(row) => row.id}
+                getRowId={(row) => {
+                  //   console.log("Row ID:", row.id);
+                  return row.id;
+                }}
+                loading={false}
+                disableSelectionOnClick
+                // checkboxSelection // <-- enables checkboxes and select all
+                //  checkboxSelection={!!fromStatus} //
+                // selectionModel={selectedBoqDetails}
+                //   onSelectionModelChange={(ids) => setSelectedBoqDetails(ids)}
+                // onSelectionModelChange={(ids) => {
+                //   setSelectedBoqDetails(ids.map(String));
+                //   console.log("Selected Row IDs:", ids); // This will log the selected row ids array
+                // }}
+                // onRowSelectionModelChange={(ids) => {
+                //   setSelectedBoqDetails(ids);
+                //   console.log("Selected Row IDs: 2", ids);
+                // }}
+                components={{
+                  ColumnMenu: () => null,
+                }}
+                localeText={{
+                  noRowsLabel: "No data available",
+                }}
+                sx={{
+                  "& .MuiDataGrid-columnHeaders": {
+                    backgroundColor: "#f8f9fa",
+                    color: "#000",
+                    fontWeight: "bold",
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 1,
+                  },
+                  "& .MuiDataGrid-cell": {
+                    borderColor: "#dee2e6",
+                  },
+                  "& .MuiDataGrid-columnHeader": {
+                    borderColor: "#dee2e6",
+                  },
+                  // Red color for checked checkboxes
+                  "& .MuiCheckbox-root.Mui-checked .MuiSvgIcon-root": {
+                    color: "#8b0203",
+                  },
+                  // Black for header (select all) checkbox, even when checked
+                  "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root":
+                  {
+                    color: "#fff",
+                  },
+                  // Make checkboxes smaller
+                  "& .MuiCheckbox-root .MuiSvgIcon-root": {
+                    fontSize: "1.1rem", // adjust as needed (default is 1.5rem)
+                  },
+                  // // Hide vertical scrollbar
+                  // "& .MuiDataGrid-virtualScroller": {
+                  //   overflowY: "hidden !important",
+                  // },
+                }}
+              />
+            </div>
 
-                        <div
-                            className="mt-3 mx-3"
-                            style={{
-                                //   width: "100%",
-                                //   height: "430px",
-                                //   boxShadow: "unset",
-                                overflowY: "hidden",
-                            }}
-                        >
-                            <DataGrid
-                                rows={getTransformedRows()}
-                                columns={columns}
-                                pageSize={pageSize}
-                                autoHeight={true}
-                                // getRowId={(row) => row.id}
-                                getRowId={(row) => {
-                                    //   console.log("Row ID:", row.id);
-                                    return row.id;
-                                }}
-                                loading={false}
-                                disableSelectionOnClick
-                                // checkboxSelection // <-- enables checkboxes and select all
-                                //  checkboxSelection={!!fromStatus} //
-                                // selectionModel={selectedBoqDetails}
-                                //   onSelectionModelChange={(ids) => setSelectedBoqDetails(ids)}
-                                onSelectionModelChange={(ids) => {
-                                    setSelectedBoqDetails(ids.map(String));
-                                    console.log("Selected Row IDs:", ids); // This will log the selected row ids array
-                                }}
-                                onRowSelectionModelChange={(ids) => {
-                                    setSelectedBoqDetails(ids);
-                                    console.log("Selected Row IDs: 2", ids);
-                                }}
-                                components={{
-                                    ColumnMenu: () => null,
-                                }}
-                                localeText={{
-                                    noRowsLabel: "No data available",
-                                }}
-                                sx={{
-                                    "& .MuiDataGrid-columnHeaders": {
-                                        backgroundColor: "#f8f9fa",
-                                        color: "#000",
-                                        fontWeight: "bold",
-                                        position: "sticky",
-                                        top: 0,
-                                        zIndex: 1,
-                                    },
-                                    "& .MuiDataGrid-cell": {
-                                        borderColor: "#dee2e6",
-                                    },
-                                    "& .MuiDataGrid-columnHeader": {
-                                        borderColor: "#dee2e6",
-                                    },
-                                    // Red color for checked checkboxes
-                                    "& .MuiCheckbox-root.Mui-checked .MuiSvgIcon-root": {
-                                        color: "#8b0203",
-                                    },
-                                    // Black for header (select all) checkbox, even when checked
-                                    "& .MuiDataGrid-columnHeader .MuiCheckbox-root .MuiSvgIcon-root":
-                                    {
-                                        color: "#fff",
-                                    },
-                                    // Make checkboxes smaller
-                                    "& .MuiCheckbox-root .MuiSvgIcon-root": {
-                                        fontSize: "1.1rem", // adjust as needed (default is 1.5rem)
-                                    },
-                                    // // Hide vertical scrollbar
-                                    // "& .MuiDataGrid-virtualScroller": {
-                                    //   overflowY: "hidden !important",
-                                    // },
-                                }}
-                            />
-                        </div>
+            {/* data grid end */}
 
-                        {/* data grid end */}
-                    </div>
-                </div>
+            <div className="d-flex justify-content-between align-items-center px-3 mt-3 mb-4">
+              <ul className="pagination justify-content-center d-flex">
+                <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                  <button className="page-link" onClick={() => handlePageChange(1)} disabled={currentPage === 1}>First</button>
+                </li>
+                <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                  <button className="page-link" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>Prev</button>
+                </li>
 
-                
+                {Array.from({ length: totalPages }, (_, index) => (
+                  <li key={index + 1} className={`page-item ${currentPage === index + 1 ? "active" : ""}`}>
+                    <button className="page-link" onClick={() => handlePageChange(index + 1)}>{index + 1}</button>
+                  </li>
+                ))}
+
+                <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                  <button className="page-link" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next</button>
+                </li>
+                <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                  <button className="page-link" onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages}>Last</button>
+                </li>
+              </ul>
+
+              <div>
+                Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                {Math.min(currentPage * itemsPerPage, totalEntries)} of {totalEntries} entries
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+
+      </div>
+
+
+      <Modal centered size="xl" show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <h5><span>Labour Master</span></h5>
+        </Modal.Header>
+        <Modal.Body>
+
+
+          <div className="row">
+            <div className="col-md-4 mb-3">
+              <label>Labour Code <span>*</span></label>
+              <input type="text" name="labour_code" value={formData.labour_code} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Contractor Name <span>*</span></label>
+              <input type="text" name="contractor_name" value={formData.contractor_name} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Labour Sub Type <span>*</span></label>
+              <input type="text" name="labour_sub_type" value={formData.labour_sub_type} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>First Name <span>*</span></label>
+              <input type="text" name="first_name" value={formData.first_name} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Last Name <span>*</span></label>
+              <input type="text" name="last_name" value={formData.last_name} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Middle Name <span>*</span></label>
+              <input type="text" name="middle_name" value={formData.middle_name} onChange={handleInputChange} className="form-control" />
+            </div>
+
+            <div className="col-md-4 mb-3">
+              <label>Date of Birth</label>
+              <input type="date" name="dob" value={formData.dob} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Phone Number</label>
+              <input type="text" name="phone_number" value={formData.phone_number} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Job Title/Position <span>*</span></label>
+              <input type="text" name="job_title" value={formData.job_title} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Labour Category <span>*</span></label>
+              <SingleSelector
+                options={labourCategoryOptions}
+                value={labourCategoryOptions.find(option => option.value === formData.labour_category) || null}
+                onChange={(selectedOption) =>
+                  handleInputChange({
+                    target: { name: "labour_category", value: selectedOption?.value || "" },
+                  })
+                }
+                placeholder="Select Labour Category"
+              />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Work Shifts <span>*</span></label>
+              <input type="text" name="work_shifts" value={formData.work_shifts} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Availability <span>*</span></label>
+              <SingleSelector
+                options={availabilityOptions}
+                value={
+                  availabilityOptions.find(
+                    (option) => option.value === formData.availability
+                  ) || null
+                }
+                onChange={(selectedOption) =>
+                  handleInputChange({
+                    target: { name: "availability", value: selectedOption?.value || "" },
+                  })
+                }
+                placeholder="Select Availability"
+              />
+
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Employment Status <span>*</span></label>
+              <SingleSelector
+                options={employmentStatusOptions}
+                value={
+                  employmentStatusOptions.find(
+                    (option) => option.value === formData.employment_status
+                  ) || null
+                }
+                onChange={(selectedOption) =>
+                  handleInputChange({
+                    target: {
+                      name: "employment_status",
+                      value: selectedOption?.value || "",
+                    },
+                  })
+                }
+                placeholder="Select Employment Status"
+              />
+
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Bank Account Name <span>*</span></label>
+              <input type="text" name="bank_account_name" value={formData.bank_account_name} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Bank Account No <span>*</span></label>
+              <input type="text" name="bank_account_no" value={formData.bank_account_no} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Bank Branch Name <span>*</span></label>
+              <input type="text" name="bank_branch_name" value={formData.bank_branch_name} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Bank Branch IFSC Code <span>*</span></label>
+              <input type="text" name="ifsc_code" value={formData.ifsc_code} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Union Memberships <span>*</span></label>
+              <input type="text" name="union_memberships" value={formData.union_memberships} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Hourly Rate/Salary <span>*</span></label>
+              <input type="number" name="hourly_rate" value={formData.hourly_rate} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Overtime Rate <span>*</span></label>
+              <input type="number" name="overtime_rate" value={formData.overtime_rate} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Address <span>*</span></label>
+              <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Department <span>*</span></label>
+              <SingleSelector
+                options={departmentOptions}
+                value={
+                  departmentOptions.find(
+                    (option) => option.value === formData.department
+                  ) || null
+                }
+                onChange={(selectedOption) =>
+                  handleInputChange({
+                    target: {
+                      name: "department",
+                      value: selectedOption?.value || "",
+                    },
+                  })
+                }
+                placeholder="Select Department"
+              />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Supervisor <span>*</span></label>
+              <SingleSelector
+                options={supervisorOptions}
+                value={
+                  supervisorOptions.find(
+                    (option) => option.value === formData.supervisor
+                  ) || null
+                }
+                onChange={(selectedOption) =>
+                  handleInputChange({
+                    target: {
+                      name: "supervisor",
+                      value: selectedOption?.value || "",
+                    },
+                  })
+                }
+                placeholder="Select Supervisor"
+              />
+
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Hire Date <span>*</span></label>
+              <input type="date" name="hire_date" value={formData.hire_date} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Equipment Certifications  <span>*</span></label>
+              <input type="text" name="certifications" value={formData.certifications} onChange={handleInputChange} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Photo  <span>*</span></label>
+              <input type="file" name="photo" onChange={(e) => handleFileChange(e, "photo")} className="form-control" />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>Documents <span>*</span></label>
+              <SingleSelector
+                options={documentOptions}
+                value={
+                  documentOptions.find(
+                    (option) => option.value === formData.documents
+                  ) || null
+                }
+                onChange={(selectedOption) =>
+                  handleInputChange({
+                    target: {
+                      name: "documents",
+                      value: selectedOption?.value || "",
+                    },
+                  })
+                }
+                placeholder="Select Document"
+              />
+            </div>
+
+            <div className="col-md-4 mb-3">
+              <label>Documents Upload <span>*</span></label>
+              <input
+                type="file"
+                name="document"
+                onChange={(e) => handleFileChange(e, "document_upload")}
+                className="form-control"
+              />
+            </div>
+            <div className="col-md-4 mb-3">
+              <label>License/Permit Information <span>*</span></label>
+              <input type="text" name="license_info" value={formData.license_info} onChange={handleInputChange} className="form-control" />
             </div>
 
 
-            <Modal centered size="xl" show={showModal} onHide={() => setShowModal(false)}>
-  <Modal.Header closeButton>
-    <h5>Labour Master</h5>
-  </Modal.Header>
-  <Modal.Body>
+          </div>
+
+          <div className="row mt-2 justify-content-center mt-5">
+            <div className="col-md-3 mt-2">
+              <button className="purple-btn2 w-100"
+                onClick={handleCreate}
+              >Create</button>
+            </div>
+            <div className="col-md-3">
+              <button type="button" className="purple-btn1 w-100" data-bs-dismiss="modal" aria-label="Close"
+              // onClick={() => {
+              //     setShowModal(false);
+              //     setEditRowIndex(null); // <-- Reset here too
+              // }}
+              >Cancel</button>
+            </div>
+          </div>
 
 
-<div className="row">
-  <div className="col-md-4 mb-3">
-    <label>Labour Code <span>*</span></label>
-    <input type="text" name="labour_code" value={formData.labour_code} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Contractor Name <span>*</span></label>
-    <input type="text" name="contractor_name" value={formData.contractor_name} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Labour Sub Type <span>*</span></label>
-    <input type="text" name="labour_sub_type" value={formData.labour_sub_type} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>First Name <span>*</span></label>
-    <input type="text" name="first_name" value={formData.first_name} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Last Name <span>*</span></label>
-    <input type="text" name="last_name" value={formData.last_name} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Middle Name <span>*</span></label>
-    <input type="text" name="middle_name" value={formData.middle_name} onChange={handleInputChange} className="form-control" />
-  </div>
-  
-  <div className="col-md-4 mb-3">
-    <label>Date of Birth</label>
-    <input type="date" name="dob" value={formData.dob} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Phone Number</label>
-    <input type="text" name="phone_number" value={formData.phone_number} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Job Title/Position <span>*</span></label>
-    <input type="text" name="job_title" value={formData.job_title} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Labour Category <span>*</span></label>
-     <SingleSelector
-    options={labourCategoryOptions}
-    value={labourCategoryOptions.find(option => option.value === formData.labour_category) || null}
-    onChange={(selectedOption) =>
-      handleInputChange({
-        target: { name: "labour_category", value: selectedOption?.value || "" },
-      })
-    }
-    placeholder="Select Labour Category"
-  />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Work Shifts <span>*</span></label>
-    <input type="text" name="work_shifts" value={formData.work_shifts} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Availability <span>*</span></label>
-     <SingleSelector
-    options={availabilityOptions}
-    value={
-      availabilityOptions.find(
-        (option) => option.value === formData.availability
-      ) || null
-    }
-    onChange={(selectedOption) =>
-      handleInputChange({
-        target: { name: "availability", value: selectedOption?.value || "" },
-      })
-    }
-    placeholder="Select Availability"
-  />
-    
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Employment Status <span>*</span></label>
-     <SingleSelector
-    options={employmentStatusOptions}
-    value={
-      employmentStatusOptions.find(
-        (option) => option.value === formData.employment_status
-      ) || null
-    }
-    onChange={(selectedOption) =>
-      handleInputChange({
-        target: {
-          name: "employment_status",
-          value: selectedOption?.value || "",
-        },
-      })
-    }
-    placeholder="Select Employment Status"
-  />
-    
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Bank Account Name <span>*</span></label>
-    <input type="text" name="bank_account_name" value={formData.bank_account_name} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Bank Account No <span>*</span></label>
-    <input type="text" name="bank_account_no" value={formData.bank_account_no} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Bank Branch Name <span>*</span></label>
-    <input type="text" name="bank_branch_name" value={formData.bank_branch_name} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Bank Branch IFSC Code <span>*</span></label>
-    <input type="text" name="ifsc_code" value={formData.ifsc_code} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Union Memberships <span>*</span></label>
-    <input type="text" name="union_memberships" value={formData.union_memberships} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Hourly Rate/Salary <span>*</span></label>
-    <input type="number" name="hourly_rate" value={formData.hourly_rate} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Overtime Rate <span>*</span></label>
-    <input type="number" name="overtime_rate" value={formData.overtime_rate} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Address <span>*</span></label>
-    <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Department</label>
-    <input type="text" name="department" value={formData.department} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Supervisor</label>
-    <input type="text" name="supervisor" value={formData.supervisor} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Hire Date</label>
-    <input type="date" name="hire_date" value={formData.hire_date} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Certifications</label>
-    <input type="text" name="certifications" value={formData.certifications} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>License Info</label>
-    <input type="text" name="license_info" value={formData.license_info} onChange={handleInputChange} className="form-control" />
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Documents</label>
-    <select name="documents" value={formData.documents} onChange={handleInputChange} className="form-control">
-      <option value="">Select</option>
-      <option value="aadhar">Aadhar Card</option>
-      <option value="pan">PAN Card</option>
-      <option value="dl">Driving License</option>
-    </select>
-  </div>
-  <div className="col-md-4 mb-3">
-    <label>Photo</label>
-    <input type="file" name="photo" onChange={(e) => handleFileChange(e, "photo")} className="form-control" />
-  </div>
-</div>
 
- <div className="row mt-2 justify-content-center mt-5">
-                                <div className="col-md-3 mt-2">
-                                    <button className="purple-btn2 w-100" 
-                                    // onClick={handleCreate}
-                                    >Create</button>
-                                </div>
-                                <div className="col-md-3">
-                                    <button type="button" className="purple-btn1 w-100" data-bs-dismiss="modal" aria-label="Close"
-                                        // onClick={() => {
-                                        //     setShowModal(false);
-                                        //     setEditRowIndex(null); // <-- Reset here too
-                                        // }}
-                                        >Cancel</button>
-                                </div>
-                            </div>
-                        
+        </Modal.Body>
+      </Modal>
 
 
-  </Modal.Body>
-</Modal>
-
-
-  {/* Settings Modal */}
+      {/* Settings Modal */}
       <Modal
         show={settingShow}
         onHide={handleSettingClose}
@@ -709,8 +963,8 @@ display:none !important;
         </Modal.Footer>
       </Modal>
 
-        </>
-    );
+    </>
+  );
 };
 
 export default LabourMaster;

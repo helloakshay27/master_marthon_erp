@@ -168,7 +168,7 @@ const BillBookingDetails = () => {
         try {
           // const grnIds = selectedGRNs.map((grn) => grn.id);
           const response = await axios.get(
-            `${baseURL}bill_bookings/deduction_data?grns=${selectedGRNs}&token=653002727bac82324277efbb6279fcf97683048e44a7a839`
+            `${baseURL}bill_bookings/deduction_data?grns=[${selectedGRNs}]&token=653002727bac82324277efbb6279fcf97683048e44a7a839`
           );
           setTaxDeductionData(response.data);
         } catch (error) {
@@ -187,7 +187,7 @@ const BillBookingDetails = () => {
         try {
           // const grnIds = selectedGRNs.map((grn) => grn.id);
           const response = await axios.get(
-            `${baseURL}bill_bookings/taxes_data?grns=${selectedGRNs}&token=653002727bac82324277efbb6279fcf97683048e44a7a839`
+            `${baseURL}bill_bookings/taxes_data?grns=[${selectedGRNs}]&token=653002727bac82324277efbb6279fcf97683048e44a7a839`
           );
           setTaxDetailsData(response.data);
         } catch (error) {
@@ -706,14 +706,17 @@ const BillBookingDetails = () => {
                         <th className="text-start">Base Cost</th>
                         <th className="text-start">Net Taxes</th>
                         <th className="text-start">Net Charges</th>
+                        <th>Discount Amount</th>
+                        <th>Base with Discount</th>
+                        {/* <th>Discount %</th> */}
                         <th className="text-start">Qty</th>
                         <th className="text-start">All Inclusive Cost</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {details?.bill_purchase_orders?.flatMap(
+                      {/* {details?.bill_purchase_orders?.flatMap(
                         (order, orderIndex) =>
-                          order.bill_grn_materials.map(
+                          order.bill_grn_materials.grn_material.map(
                             (material, materialIndex) => (
                               <tr key={material.id}>
                                 <td className="text-start">
@@ -735,6 +738,9 @@ const BillBookingDetails = () => {
                                 <td className="text-start">
                                   {material.net_charges || "-"}
                                 </td>
+                                <td className="text-start">{material.discount_amount || "-"}</td>
+                                <td className="text-start">{material.base_with_discount || "-"}</td>
+                                <td className="text-start">{material.discount_per || "-"}</td>
                                 <td className="text-start">
                                   {material.qty || "-"}
                                 </td>
@@ -744,12 +750,35 @@ const BillBookingDetails = () => {
                               </tr>
                             )
                           )
-                      )}
+                      )} */}
+
+{details?.bill_purchase_orders?.flatMap((order, orderIndex) =>
+    order.bill_grn_materials?.map((billGrnMat, billGrnMatIndex) => {
+      const material = billGrnMat?.grn_material;
+      if (!material) return null;
+      return (
+        <tr key={material.id}>
+          <td className="text-start">{billGrnMatIndex + 1}</td>
+          <td className="text-start">{billGrnMat.material_name || "-"}</td>
+          <td className="text-start">{billGrnMat.material_grn_amount || "-"}</td>
+          <td className="text-start">{material.total_all_inc_cost || "-"}</td>
+          <td className="text-start">{material.base_cost || "-"}</td>
+          <td className="text-start">{material.tax_amount || "-"}</td>
+          <td className="text-start">{material.charge_amount || "-"}</td>
+          <td className="text-start">{material.discount_amount || "-"}</td>
+          <td className="text-start">{material.base_with_discount || "-"}</td>
+          {/* <td className="text-start">{material.billing_quantity || "-"}</td> */}
+          <td className="text-start">{material.accepted || "-"}</td>
+          <td className="text-start">{material.total_all_inc_cost || "-"}</td>
+        </tr>
+      );
+    }) || []
+  )}
                     </tbody>
                   </table>
                 </div>
 
-                  {/* ----------------------------------------- */}
+                {/* ----------------------------------------- */}
 
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Charges With Taxes</h5>
@@ -1271,7 +1300,7 @@ const BillBookingDetails = () => {
                     <thead>
                       <tr>
                         <th className="text-start">Advance Note No.</th>
-                        <th className="text-start">PO Display No.</th>
+                        <th className="text-start">PO No.</th>
                         <th className="text-start">Project</th>
                         <th className="text-start">Advance Amount (INR)</th>
                         <th className="text-start">
@@ -1320,10 +1349,12 @@ const BillBookingDetails = () => {
                             </td>
                             {/* {console.log("recovery adjusted:",note.advance_note?.recovered_amount)} */}
                             <td className="text-start">
-                              {/* Outstanding Amount (Certificate Date) */ "-"}
+                              {/* Outstanding Amount (Certificate Date) */ }
+                              {note.advance_note?.advance_amount - note.advance_note?.recovered_amount || "0"}
                             </td>
                             <td className="text-start">
-                              {/* Outstanding Amount (Current Date) */ "-"}
+                              {/* Outstanding Amount (Current Date) */ }
+                              {note.advance_note?.advance_amount - note.advance_note?.recovered_amount || "0"}
                             </td>
                             {/* <td className="text-start">{"-"}</td> */}
                             <td className="text-start">{note.amount || ""}</td>
@@ -1382,13 +1413,13 @@ const BillBookingDetails = () => {
                     <thead>
                       <tr>
                         <th className="text-start">Debit Note No.</th>
-                        <th className="text-start">PO Display No.</th>
+                        <th className="text-start">PO No.</th>
                         <th className="text-start">Project</th>
                         <th className="text-start">Debit Note Amount</th>
                         <th className="text-start">
                           Debit Note Recovery Till Date
                         </th>
-                        <th className="text-start">Waive off Till Date</th>
+                        {/* <th className="text-start">Waive off Till Date</th> */}
                         <th className="text-start">
                           Outstanding Amount (Certificate Date)
                         </th>
@@ -1424,19 +1455,19 @@ const BillBookingDetails = () => {
                               {note.debit_note?.recovered_amount || "0"}
                             </td>
                             {/* {console.log("recovery debit:",note.debit_note?.recovered_amount)} */}
+                            {/* <td className="text-start">
+                             "---"
+                            </td> */}
                             <td className="text-start">
-                              {
-                                /* Waive off Till Date (add logic if available) */ "-"
-                              }
+                              {/* Outstanding Amount (Certificate Date) */ }
+                               {note.debit_note?.debit_note_amount - note.debit_note?.recovered_amount || "0"}
                             </td>
                             <td className="text-start">
-                              {/* Outstanding Amount (Certificate Date) */ "-"}
+                              {/* Outstanding Amount (Current Date) */}
+                              {note.debit_note?.debit_note_amount - note.debit_note?.recovered_amount || "0"}
                             </td>
-                            <td className="text-start">
-                              {/* Outstanding Amount (Current Date) */ "-"}
-                            </td>
-                            <td className="text-start">{"-"}</td>
-                            <td className="text-start">{note.amount || ""}</td>
+                            <td className="text-start">{ note.debit_note.reason || "-"}</td>
+                            <td className="text-start">{note.debit_note?.recovered_amount || "0"}</td>
                           </tr>
                         ))
                       ) : (

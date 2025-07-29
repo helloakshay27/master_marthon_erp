@@ -753,22 +753,22 @@ const BillBookingCreate = () => {
   // };
 
   const handleChange = (index, field, value) => {
-  const updated = [...charges];
+    const updated = [...charges];
 
-  if (field === "payable_amount") {
-    const payableAmount = parseFloat(value) || 0;
-    const paidTillDate = parseFloat(updated[index].paid_amount) || 0;
-    const realisedAmount = parseFloat(updated[index].realised_amount) || 0;
+    if (field === "payable_amount") {
+      const payableAmount = parseFloat(value) || 0;
+      const paidTillDate = parseFloat(updated[index].paid_amount) || 0;
+      const realisedAmount = parseFloat(updated[index].realised_amount) || 0;
 
-    if (payableAmount + paidTillDate > realisedAmount) {
-      toast.error("Payable Amount + Amount Paid Till Date cannot exceed Realised Amount");
-      return; // don't update state
+      if (payableAmount + paidTillDate > realisedAmount) {
+        toast.error("Payable Amount + Amount Paid Till Date cannot exceed Realised Amount");
+        return; // don't update state
+      }
     }
-  }
 
-  updated[index][field] = value;
-  setCharges(updated);
-};
+    updated[index][field] = value;
+    setCharges(updated);
+  };
 
 
   const handleRemove2 = (index) => {
@@ -1183,10 +1183,38 @@ const BillBookingCreate = () => {
           <thead>
             <tr>
               <th>
-                <input
+                {/* <input
                   type="checkbox"
                   checked={areAllGRNsSelected}
                   onChange={handleSelectAllGRNs}
+                /> */}
+
+                <input
+                  type="checkbox"
+                  checked={
+                    selectedPO.grn_materials
+                      .filter(
+                        (grn) =>
+                          parseFloat(grn.certified_till_date || 0) <
+                          parseFloat(grn.all_inc_tax || 0)
+                      )
+                      .every((grn) =>
+                        selectedGRNs.some((selected) => selected.id === grn.id)
+                      )
+                  }
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    const selectableGRNs = selectedPO.grn_materials.filter(
+                      (grn) =>
+                        parseFloat(grn.certified_till_date || 0) <
+                        parseFloat(grn.all_inc_tax || 0)
+                    );
+                    if (checked) {
+                      setSelectedGRNs(selectableGRNs);
+                    } else {
+                      setSelectedGRNs([]);
+                    }
+                  }}
                 />
               </th>
               <th>GRN No.</th>
@@ -1196,6 +1224,11 @@ const BillBookingCreate = () => {
               <th>Base cost</th>
               <th>Net Taxes</th>
               <th>Net Charges</th>
+              <th>Discount Amount</th>
+              <th>Base with Discount</th>
+              <th>Discount %</th>
+              <th>Qty</th>
+
               <th className="text-start">All Inclusive Cost</th>
               <th className="text-start">Action</th>
             </tr>
@@ -1208,19 +1241,23 @@ const BillBookingCreate = () => {
                     type="checkbox"
                     checked={selectedGRNs.some((g) => g.id === grn.id)}
                     onChange={() => handleGRNCheckboxSelect(grn)}
-                  // disabled={
-                  //   parseFloat(grn.certified_till_date || 0) >= parseFloat(grn.all_inc_tax || 0)
-                  // }
+                    disabled={
+                      parseFloat(grn.certified_till_date || 0) >= parseFloat(grn.all_inc_tax || 0)
+                    }
                   />
                 </td>
-                <td>{grn.grn_number}</td>
-                <td>{grn.material_name}</td>
-                <td>{grn.material_grn_amount}</td>
-                <td>{grn.certified_till_date || "-"}</td>
-                <td>{grn.base_cost}</td>
-                <td>{grn.net_taxes}</td>
-                <td>{grn.net_charges}</td>
-                <td>{grn.all_inc_tax}</td>
+                <td className="text-start">{grn.grn_number || "-"}</td>
+                <td className="text-start">{grn.material_name || "-"}</td>
+                <td className="text-start">{grn.material_grn_amount || "-"}</td>
+                <td className="text-start">{grn.certified_till_date || "-"}</td>
+                <td className="text-start">{grn.base_cost || "0"}</td>
+                <td className="text-start">{grn.net_taxes || "0"}</td>
+                <td className="text-start">{grn.net_charges || "0"}</td>
+                <td className="text-start">{grn.discount_amount || "-"}</td>
+                <td className="text-start">{grn.base_with_discount || "-"}</td>
+                <td className="text-start">{grn.discount_per || "-"}</td>
+                <td className="text-start">{grn.qty || "-"}</td>
+                <td className="text-start">{grn.all_inc_tax || "0"}</td>
                 <td>
                   <button
                     className="btn btn-light p-0 border-0"
@@ -2892,6 +2929,9 @@ const BillBookingCreate = () => {
                         <th className="text-start">Base Cost</th>
                         <th className="text-start">Net Taxes</th>
                         <th className="text-start">Net Charges</th>
+                        <th>Discount Amount</th>
+                        <th>Base with Discount</th>
+                        <th>Discount %</th>
                         <th className="text-start">Qty</th>
                         <th className="text-start">All Inclusive Cost</th>
                       </tr>
@@ -2900,17 +2940,20 @@ const BillBookingCreate = () => {
                       {selectedGRNs.map((grn, index) => (
                         <tr key={grn.id}>
                           <td className="text-start">{index + 1}</td>
-                          <td className="text-start">{grn.grn_number}</td>
-                          <td className="text-start">{grn.material_name}</td>
-                          <td className="text-start">{grn.all_inc_tax}</td>
+                          <td className="text-start">{grn.grn_number || "-"}</td>
+                          <td className="text-start">{grn.material_name || "-"}</td>
+                          <td className="text-start">{grn.all_inc_tax || "-"}</td>
                           <td className="text-start">
                             {grn.certified_till_date || "-"}
                           </td>
-                          <td className="text-start">{grn.base_cost}</td>
-                          <td className="text-start">{grn.net_taxes}</td>
-                          <td className="text-start">{grn.net_charges}</td>
+                          <td className="text-start">{grn.base_cost || "-"}</td>
+                          <td className="text-start">{grn.net_taxes || "-"}</td>
+                          <td className="text-start">{grn.net_charges || "-"}</td>
+                          <td className="text-start">{grn.discount_amount || "-"}</td>
+                          <td className="text-start">{grn.base_with_discount || "-"}</td>
+                          <td className="text-start">{grn.discount_per || "-"}</td>
                           <td className="text-start">{grn.qty || "-"}</td>
-                          <td className="text-start">{grn.all_inc_tax}</td>
+                          <td className="text-start">{grn.all_inc_tax || "-"}</td>
                         </tr>
                       ))}
                       {/* <tr>
@@ -3001,18 +3044,18 @@ const BillBookingCreate = () => {
                               className="form-control"
                               value={row.payable_amount}
                               onChange={(e) => handleChange(index, "payable_amount", e.target.value)}
-                              // onChange={(e) => {
-                              //   const value = parseFloat(e.target.value) || 0;
-                              //   const realised = parseFloat(row.realised_amount) || 0;
-                              //   const paidTillDate = parseFloat(row.paid_amount) || 0;
+                            // onChange={(e) => {
+                            //   const value = parseFloat(e.target.value) || 0;
+                            //   const realised = parseFloat(row.realised_amount) || 0;
+                            //   const paidTillDate = parseFloat(row.paid_amount) || 0;
 
-                              //   if (value + paidTillDate > realised) {
-                              //     toast.error("Payable amount + Amount Paid Till Date cannot exceed Realised Amount");
-                              //     return;
-                              //   }
+                            //   if (value + paidTillDate > realised) {
+                            //     toast.error("Payable amount + Amount Paid Till Date cannot exceed Realised Amount");
+                            //     return;
+                            //   }
 
-                              //   handleChange(index, "payable_amount", value);
-                              // }}
+                            //   handleChange(index, "payable_amount", value);
+                            // }}
                             />
                           </td>
 
@@ -3079,14 +3122,15 @@ const BillBookingCreate = () => {
                               {advance.status || "-"}
                             </td>
                             <td className="text-start">
-                              {advance.paid_amount || "-"}
+                              {advance.recovered_amount || "0"}
                             </td>
                             <td className="text-start">
                               {advance.recovered_amount || "0"}
                             </td>
                             {/* {console.log("advance recoverd:",advance.recovered_amount )} */}
                             <td className="text-start">
-                              {advance.balance_amount || "-"}
+                              {/* {advance.balance_amount || "-"} */}
+                              {advance?.advance_amount - advance?.recovered_amount || "0"}
                             </td>
                             <td className="text-start">
                               {advance.current_adjustment || "-"}
@@ -3134,7 +3178,7 @@ const BillBookingCreate = () => {
                         <th className="text-start">Status</th>
                         <th className="text-start">Debit Note Amount</th>
                         <th className="text-start">Recovery Till Date</th>
-                        <th className="text-start">Waive off Till Date</th>
+                        {/* <th className="text-start">Waive off Till Date</th> */}
                         <th className="text-start">
                           Outstanding Amount (Certificate Date)
                         </th>
@@ -3143,7 +3187,7 @@ const BillBookingCreate = () => {
                         </th>
                         <th className="text-start">Debit Note Reason Type</th>
 
-                        <th className="text-start">This Recovery</th>
+                        {/* <th className="text-start">This Recovery</th> */}
                       </tr>
                     </thead>
                     <tbody>
@@ -3169,22 +3213,24 @@ const BillBookingCreate = () => {
                             <td className="text-start">
                               {note.recovered_amount || "0"}
                             </td>
+                            {/* <td className="text-start">
+                              {note.waive_off_till_date || "----"}
+                            </td> */}
                             <td className="text-start">
-                              {note.waive_off_till_date || "-"}
+                              {/* {note.outstanding_certificate_date || "-"} */}
+                              {note.debit_note_amount - note.recovered_amount || "0"}
                             </td>
                             <td className="text-start">
-                              {note.outstanding_certificate_date || "-"}
+                              {/* {note.outstanding_current_date || "-"} */}
+                              {note.debit_note_amount - note.recovered_amount || "0"}
                             </td>
                             <td className="text-start">
-                              {note.outstanding_current_date || "-"}
-                            </td>
-                            <td className="text-start">
-                              {note.reason_type || "-"}
+                              {note.reason || "-"}
                             </td>
 
-                            <td className="text-start">
+                            {/* <td className="text-start">
                               {note.this_recovery || "-"}
-                            </td>
+                            </td> */}
                           </tr>
                         ))
                       ) : (
@@ -3860,7 +3906,7 @@ const BillBookingCreate = () => {
                     <thead>
                       <tr>
                         <th className="text-start">ID</th>
-                        <th className="text-start">PO Display No.</th>
+                        <th className="text-start">PO No.</th>
                         <th className="text-start">Project</th>
                         <th className="text-start">Advance Number</th>
 
@@ -3909,12 +3955,15 @@ const BillBookingCreate = () => {
                               {note.recovered_amount || "0"}
                             </td>
                             <td className="text-start">
-                              {note.advance_outstanding_till_certificate_date ||
-                                "-"}
+                              {/* {note.advance_outstanding_till_certificate_date ||
+                                "-"} */}
+
+                              {note.advance_amount - note.recovered_amount || "0"}
                             </td>
                             <td className="text-start">
-                              {note.advance_outstanding_till_current_date ||
-                                "-"}
+                              {/* {note.advance_outstanding_till_current_date || */}
+                              {/* "-"} */}
+                              {note.advance_amount - note.recovered_amount || "0"}
                             </td>
                             <td className="text-start">
                               <input
@@ -3978,13 +4027,13 @@ const BillBookingCreate = () => {
                     <thead>
                       <tr>
                         <th className="text-start">Debit Note No.</th>
-                        <th className="text-start">PO Display No.</th>
+                        <th className="text-start">PO  No.</th>
                         <th className="text-start">Project</th>
                         <th className="text-start">Debit Note Amount</th>
                         <th className="text-start">
                           Debit Note Recovery Till Date
                         </th>
-                        <th className="text-start">Waive off Till Date</th>
+                        {/* <th className="text-start">Waive off Till Date</th> */}
                         <th className="text-start">
                           Outstanding Amount (Certificate Date)
                         </th>
@@ -4060,17 +4109,19 @@ const BillBookingCreate = () => {
                             <td className="text-start">
                               {note.recovered_amount || "0"}
                             </td>
-                            <td className="text-start">
+                            {/* <td className="text-start">
                               {note.waive_off_till_date || "-"}
+                            </td> */}
+                            <td className="text-start">
+                              {/* {note.outstanding_certificate_date || "-"} */}
+                              {note.debit_note_amount - note.recovered_amount || "-"}
                             </td>
                             <td className="text-start">
-                              {note.outstanding_certificate_date || "-"}
+                              {/* {note.outstanding_current_date || "-"} */}
+                              {note.debit_note_amount - note.recovered_amount || "-"}
                             </td>
                             <td className="text-start">
-                              {note.outstanding_current_date || "-"}
-                            </td>
-                            <td className="text-start">
-                              {note.reason_type || "-"}
+                              {note.reason || "-"}
                             </td>
                             {/* <td className="text-start">
                               {note.this_recovery || "-"}
@@ -5123,11 +5174,11 @@ const BillBookingCreate = () => {
 
                   </th>
                   <th className="text-start">Debit Note No.</th>
-                  <th className="text-start">PO Display No.</th>
+                  <th className="text-start">PO No.</th>
                   <th className="text-start">Project</th>
                   <th className="text-start">Debit Note Amount</th>
                   <th className="text-start">Recovery Till Date</th>
-                  <th className="text-start">Waive off Till Date</th>
+                  {/* <th className="text-start">Waive off Till Date</th> */}
                   <th className="text-start">
                     Outstanding Amount (Certificate Date)
                   </th>
@@ -5166,16 +5217,18 @@ const BillBookingCreate = () => {
                       <td className="text-start">
                         {note.recovered_amount || "0"}
                       </td>
-                      <td className="text-start">
+                      {/* <td className="text-start">
                         {note.waive_off_till_date || "-"}
+                      </td> */}
+                      <td className="text-start">
+                        {/* {note.outstanding_certificate_date || "-"} */}
+                        {note.debit_note_amount - note.recovered_amount || "0"}
                       </td>
                       <td className="text-start">
-                        {note.outstanding_certificate_date || "-"}
+                        {/* {note.outstanding_current_date || "-"} */}
+                        {note.debit_note_amount - note.recovered_amount || "0"}
                       </td>
-                      <td className="text-start">
-                        {note.outstanding_current_date || "-"}
-                      </td>
-                      <td className="text-start">{note.reason_type || "-"}</td>
+                      <td className="text-start">{note.reason || "-"}</td>
                       <td className="text-start">
                         {note.this_recovery || "-"}
                       </td>
@@ -5270,7 +5323,7 @@ const BillBookingCreate = () => {
 
                   </th>
                   <th className="text-start">ID</th>
-                  <th className="text-start">PO Display No.</th>
+                  <th className="text-start">PO No.</th>
                   <th className="text-start">Project</th>
                   <th className="text-start">Advance Number</th>
 
@@ -5322,10 +5375,12 @@ const BillBookingCreate = () => {
                         {note.recovered_amount || "0"}
                       </td>
                       <td className="text-start">
-                        {note.advance_outstanding_till_certificate_date || "-"}
+                        {/* {note.advance_outstanding_till_certificate_date || "-"} */}
+                        {note.advance_amount - note.recovered_amount || "0"}
                       </td>
                       <td className="text-start">
-                        {note.advance_outstanding_till_current_date || "-"}
+                        {/* {note.advance_outstanding_till_current_date || "-"} */}
+                        {note.advance_amount - note.recovered_amount || "0"}
                       </td>
                       <td className="text-start">
                         {note.this_recovery || "-"}
