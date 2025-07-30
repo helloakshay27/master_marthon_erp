@@ -149,6 +149,11 @@ const ErpStockRegisterCreationDetail13C = () => {
     }
   }, [data, selectedStore]);
 
+  const formatQty = (value) =>
+  value !== null && value !== undefined && !isNaN(value)
+    ? Number(value).toFixed(2)
+    : "-";
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -291,7 +296,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                           <div className="col-6">
                             <label className="text">
                               <span className="me-3">:</span>
-                              {data?.deadstock_qty || "0"}
+                              {formatQty(data?.deadstock_qty) || "0"}
                             </label>
                           </div>
                         </div>
@@ -380,14 +385,14 @@ const ErpStockRegisterCreationDetail13C = () => {
                                             <td className="text-start">{item?.resource_number}</td>
                                             <td className="text-start">{item?.status}</td>
                                             <td className="text-start">{item?.uom || "-"}</td>
-                                            <td className="text-start">{item?.received_qty || "-"}</td>
-                                            <td className="text-start">{item?.issued_qty || "-"}</td>
-                                            <td className="text-start">{item?.returned_qty || "-"}</td>
-                                            <td className="text-start">{item?.deadstock_qty || "-"}</td>
-                                            <td className="text-start">{item?.missing_qty || "-"}</td>
-                                            <td className="text-start">{item?.damage_qty || "-"}</td>
-                                            <td className="text-start">{item?.adjustment_qty || "-"}</td>
-                                            <td className="text-start">{item?.gate_pass_qty || "-"}</td>
+                                            <td className="text-start">{formatQty(item?.received_qty) || "-"}</td>
+                                            <td className="text-start">{formatQty(item?.issued_qty) || "-"}</td>
+                                            <td className="text-start">{formatQty(item?.returned_qty) || "-"}</td>
+                                            <td className="text-start">{formatQty(item?.deadstock_qty) || "-"}</td>
+                                            <td className="text-start">{formatQty(item?.missing_qty )|| "-"}</td>
+                                            <td className="text-start">{formatQty(item?.damage_qty) || "-"}</td>
+                                            <td className="text-start">{formatQty(item?.adjustment_qty) || "-"}</td>
+                                            <td className="text-start">{formatQty(item?.gate_pass_qty) || "-"}</td>
                                             <td className="text-start"></td>
                                           </tr>
                                         ))}
@@ -426,7 +431,7 @@ const ErpStockRegisterCreationDetail13C = () => {
                                               <td></td>
                                               <td></td>
                                               <td></td>
-                                              <td className="text-center"><strong>{item?.balanced_qty}</strong></td>
+                                              <td className="text-center"><strong>{formatQty(item?.balanced_qty)}</strong></td>
                                             </tr>
                                           ))}
                                       </>

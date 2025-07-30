@@ -123,12 +123,13 @@ const GatePassEdit = () => {
 
   const [poMaterialsLoading, setPoMaterialsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
- 
-  const [attachments, setAttachments] = useState([]);
-  const attachmentsPayload = attachments
-  .flatMap((att) => att.attachments || []);
 
-console.log("attachments:", attachmentsPayload)
+  const [attachments, setAttachments] = useState([]);
+  const attachmentsPayload = attachments.flatMap(
+    (att) => att.attachments || []
+  );
+
+  console.log("attachments:", attachmentsPayload);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -381,7 +382,7 @@ console.log("attachments:", attachmentsPayload)
                 _destroy: item._destroy || undefined, // <-- ADD THIS LINE
               })),
         // attachments: attachments.length > 0 ? attachments : null,
-        attachments: attachmentsPayload|| [],
+        attachments: attachmentsPayload || [],
         to_resource_id: to_resource_id,
         to_resource_type: to_resource_type,
         ...(other_vendor_attributes ? { other_vendor_attributes } : {}),
@@ -476,7 +477,6 @@ console.log("attachments:", attachmentsPayload)
     }
   };
 
- 
   const getHeaderTitle = () => {
     switch (formData.gate_pass_type) {
       case "transfer_to_site":
@@ -1323,7 +1323,10 @@ console.log("attachments:", attachmentsPayload)
           if (data.attachments && Array.isArray(data.attachments)) {
             const formattedAttachments = data.attachments.map((att) => {
               const originalDate = new Date(att.created_at);
-              const localDate = new Date(originalDate.getTime() - originalDate.getTimezoneOffset() * 60000);
+              const localDate = new Date(
+                originalDate.getTime() -
+                  originalDate.getTimezoneOffset() * 60000
+              );
               const uploadDate = localDate.toISOString().slice(0, 19);
               return {
                 id: att.blob_id || att.id || Math.random(),
@@ -1334,7 +1337,7 @@ console.log("attachments:", attachmentsPayload)
                 file: att.document_file_name || att.filename,
                 isExisting: true,
                 blob_id: att.blob_id,
-                doc_path: att.doc_path|| "",
+                doc_path: att.doc_path || "",
               };
             });
             setAttachments(formattedAttachments);
@@ -1719,13 +1722,16 @@ console.log("attachments:", attachmentsPayload)
       })
       .filter(Boolean);
 
-      const totalIssued = gp_batches_attributes.reduce((sum, b) => sum + b.gp_batch_qty, 0);
-      if (totalIssued !== batchMaxQty) {
-        toast.error(
-          `Total issued quantity (${totalIssued}) must exactly match Gate Pass Qty (${batchMaxQty}).`
-        );
-        return;
-      }
+    const totalIssued = gp_batches_attributes.reduce(
+      (sum, b) => sum + b.gp_batch_qty,
+      0
+    );
+    if (totalIssued !== batchMaxQty) {
+      toast.error(
+        `Total issued quantity (${totalIssued}) must exactly match Gate Pass Qty (${batchMaxQty}).`
+      );
+      return;
+    }
     if (batchTableType === "maintenance") {
       setMaintenanceRows((rows) =>
         rows.map((row, idx) =>
@@ -1798,7 +1804,7 @@ console.log("attachments:", attachmentsPayload)
     return localDate.toISOString().slice(0, 19); // "YYYY-MM-DDTHH:MM"
   };
 
-//  const attachmentsPayload = attachments.flatMap((att) => att.attachments || []);
+  //  const attachmentsPayload = attachments.flatMap((att) => att.attachments || []);
 
   const handleAddRow = () => {
     setAttachments((prev) => [
@@ -2026,8 +2032,7 @@ console.log("attachments:", attachmentsPayload)
                           <div className="col-md-3 ">
                             <div className="form-group">
                               <label>
-                                From Store{" "}
-                                <span >*</span>
+                                From Store <span>*</span>
                               </label>
                               <SingleSelector
                                 options={stores}
@@ -2111,7 +2116,9 @@ console.log("attachments:", attachmentsPayload)
                           </div>
                           <div className="col-md-3 mt-2">
                             <div className="form-group">
-                              <label>PO/WO No  <span> *</span></label>
+                              <label>
+                                PO/WO No <span> *</span>
+                              </label>
                               <SingleSelector
                                 options={poOptions}
                                 onChange={(selected) => {
@@ -2315,7 +2322,9 @@ console.log("attachments:", attachmentsPayload)
                     <label>
                       Expected Return Date{" "}
                       {/* {formData.gate_pass_type === "return_to_vendor"} */}
-                       {formData.is_returnable === "returnable" && <span > *</span>}
+                      {formData.is_returnable === "returnable" && (
+                        <span> *</span>
+                      )}
                     </label>
                     <input
                       type="date"
@@ -2986,7 +2995,10 @@ console.log("attachments:", attachmentsPayload)
                 </div>
               </div>
 
-              <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
+              <div
+                className="tbl-container mb-4"
+                style={{ maxHeight: "500px" }}
+              >
                 <table className="w-100">
                   <thead>
                     <tr>
@@ -3014,7 +3026,9 @@ console.log("attachments:", attachmentsPayload)
                             className="form-control file_name"
                             required
                             value={att.fileName}
-                            onChange={(e) => handleFileNameChange(att.id, e.target.value)}
+                            onChange={(e) =>
+                              handleFileNameChange(att.id, e.target.value)
+                            }
                           />
                         </td>
                         <td>
@@ -3038,7 +3052,9 @@ console.log("attachments:", attachmentsPayload)
                           )}
                         </td>
                         <td className="document">
-                          <div style={{ display: "flex", alignItems: "center" }}>
+                          <div
+                            style={{ display: "flex", alignItems: "center" }}
+                          >
                             <div className="attachment-placeholder">
                               {att.isExisting && (
                                 <div className="file-box">
@@ -3050,16 +3066,24 @@ console.log("attachments:", attachmentsPayload)
                                     >
                                       <DownloadIcon />
                                     </a> */}
-                                      {/* <a
+                                    {/* <a
                                 href={`${baseURL}gate_passes/${id}/download_attachment?token=${token}&blob_id=${att.blob_id}`}
                                 download={att.file_name}
                               >
                                 <DownloadIcon />
                               </a> */}
-                              <a href={att.doc_path} download target="_blank" rel="noopener noreferrer">
-  <DownloadIcon />
-</a>
-{console.log("Attachment path:", att.doc_path)}
+                                    <a
+                                      href={att.doc_path}
+                                      download
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <DownloadIcon />
+                                    </a>
+                                    {console.log(
+                                      "Attachment path:",
+                                      att.doc_path
+                                    )}
                                   </div>
                                   <div className="file-name">
                                     <span>{att.fileName}</span>
@@ -3072,7 +3096,9 @@ console.log("attachments:", attachmentsPayload)
                               className="btn btn-sm btn-link text-danger"
                               onClick={() => handleRemove(att.id)}
                             >
-                              <span className="material-symbols-outlined">cancel</span>
+                              <span className="material-symbols-outlined">
+                                cancel
+                              </span>
                             </button>
                           </div>
                         </td>
@@ -3149,11 +3175,21 @@ console.log("attachments:", attachmentsPayload)
                   <th>
                     <input
                       type="checkbox"
-                      checked={poMaterials.length > 0 && selectedMaterialIndexes.length === poMaterials.length}
-                      indeterminate={selectedMaterialIndexes.length > 0 && selectedMaterialIndexes.length < poMaterials.length ? "true" : undefined}
-                      onChange={e => {
+                      checked={
+                        poMaterials.length > 0 &&
+                        selectedMaterialIndexes.length === poMaterials.length
+                      }
+                      indeterminate={
+                        selectedMaterialIndexes.length > 0 &&
+                        selectedMaterialIndexes.length < poMaterials.length
+                          ? "true"
+                          : undefined
+                      }
+                      onChange={(e) => {
                         if (e.target.checked) {
-                          setSelectedMaterialIndexes(poMaterials.map((_, idx) => idx));
+                          setSelectedMaterialIndexes(
+                            poMaterials.map((_, idx) => idx)
+                          );
                         } else {
                           setSelectedMaterialIndexes([]);
                         }
@@ -3476,7 +3512,8 @@ console.log("attachments:", attachmentsPayload)
                                 .slice(0, idx)
                                 .reduce(
                                   (sum, b) =>
-                                    sum + (parseFloat(batchIssueQty[b.id]) || 0),
+                                    sum +
+                                    (parseFloat(batchIssueQty[b.id]) || 0),
                                   0
                                 );
                               const remaining = batchMaxQty - prevTotal;
@@ -3503,7 +3540,8 @@ console.log("attachments:", attachmentsPayload)
                                 .slice(0, j)
                                 .reduce(
                                   (sum, b) =>
-                                    sum + (parseFloat(batchIssueQty[b.id]) || 0),
+                                    sum +
+                                    (parseFloat(batchIssueQty[b.id]) || 0),
                                   0
                                 );
                               const prevMax = Math.min(
