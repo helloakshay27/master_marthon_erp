@@ -930,7 +930,7 @@ const BillBookingDetails = () => {
                           {taxDeductionData.total_material_cost}
                         </td>
                       </tr>
-                      {Object.entries(taxDetailsData.tax_data).map(
+                      {Object.entries(taxDetailsData?.tax_data).map(
                         ([taxType, amount]) => (
                           <tr key={taxType}>
                             <td className="text-start">{taxType}</td>
@@ -941,7 +941,7 @@ const BillBookingDetails = () => {
                       <tr>
                         <th className="text-start">Total</th>
                         <td className="text-start">
-                          {Object.values(taxDetailsData.tax_data).reduce(
+                          {Object.values(taxDetailsData?.tax_data).reduce(
                             (sum, value) => sum + (value || 0),
                             0
                           ) + taxDeductionData.total_material_cost}
