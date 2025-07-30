@@ -1737,14 +1737,40 @@ const BillBookingCreate = () => {
     } catch (error) {
       console.error("Error creating bill booking:", error);
       // alert("Failed to create bill booking. Please try again.");
-      toast.error("Failed to create bill booking. Please try again.", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      // toast.error("Failed to create bill booking. Please try again.", {
+      //   position: "top-right",
+      //   autoClose: 3000,
+      //   hideProgressBar: false,
+      //   closeOnClick: true,
+      //   pauseOnHover: true,
+      //   draggable: true,
+      // });
+
+ if (error.response && error.response.status === 422) {
+    const errors = error.response.data?.errors;
+    const message = Array.isArray(errors) ? errors.join("\n") : "Validation failed.";
+
+    toast.error(message, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  } else {
+    toast.error("Failed to create bill booking. Please try again.", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  }
+
+
+      
       setLoading(false);
     } finally {
       setLoading(false);
