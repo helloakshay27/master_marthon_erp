@@ -1215,8 +1215,19 @@ const MaterialReconciliationEdit = () => {
                 : null,
               remarks: item.remarks || "",
               reason_id: item.reason_id || null,
+              // ...(item.mr_batches_attributes
+              //   ? { mr_batches_attributes: item.mr_batches_attributes }
+              //   : {}),
               ...(item.mr_batches_attributes
-                ? { mr_batches_attributes: item.mr_batches_attributes }
+                ? {
+                    mr_batches_attributes: item.mr_batches_attributes.map(
+                      (batch) => ({
+                        ...(batch.id ? { id: batch.id } : {}),
+                        grn_batch_id: batch.grn_batch_id,
+                        grn_batch_qty: batch.grn_batch_qty,
+                      })
+                    ),
+                  }
                 : {}),
               _destroy: item._destroy || false,
             })),
@@ -1369,12 +1380,47 @@ const MaterialReconciliationEdit = () => {
 
   const handleBatchModalSubmit = () => {
     // Prepare batch data
+    // const batchData = Object.entries(batchIssueQty)
+    //   .filter(([batchId, qty]) => qty && Number(qty) > 0)
+    //   .map(([batchId, qty]) => ({
+    //     grn_batch_id: Number(batchId),
+    //     grn_batch_qty: Number(qty),
+    //   }));
+    // const batchData = Object.entries(batchIssueQty)
+    //   .filter(([batchId, qty]) => qty && Number(qty) > 0)
+    //   .map(([batchId, qty]) => {
+    //     // Find the original batch to get its id
+    //     const origBatch = batchList.find(
+    //       (b) => b.grn_batch_id === Number(batchId)
+    //     );
+    //     return {
+    //       ...(origBatch && origBatch.id ? { id: origBatch.id } : {}),
+    //       grn_batch_id: Number(batchId),
+    //       grn_batch_qty: Number(qty),
+    //     };
+    //   });
     const batchData = Object.entries(batchIssueQty)
       .filter(([batchId, qty]) => qty && Number(qty) > 0)
-      .map(([batchId, qty]) => ({
-        grn_batch_id: Number(batchId),
-        grn_batch_qty: Number(qty),
-      }));
+      .map(([batchId, qty]) => {
+        // Find the original batch to get its id
+        const inv = formData.material_reconciliation_items_attributes.find(
+          (item) => item.material_inventory_id === selectedInventoryId
+        );
+        let origBatch = null;
+        if (inv && inv.batches) {
+          origBatch = inv.batches.find(
+            (b) => String(b.grn_batch_id) === String(batchId)
+          );
+        }
+        if (origBatch && origBatch.id) {
+          console.log("Passing existing batch id:", origBatch.id);
+        }
+        return {
+          ...(origBatch && origBatch.id ? { id: origBatch.id } : {}),
+          grn_batch_id: Number(batchId),
+          grn_batch_qty: Number(qty),
+        };
+      });
     // Enforce that the sum matches the required total
     const totalIssued = batchData.reduce((sum, b) => sum + b.grn_batch_qty, 0);
     const requiredQty = getBatchRequiredQty();
@@ -1574,8 +1620,12 @@ const MaterialReconciliationEdit = () => {
                               }
                               onChange={(e) => {
                                 let value = e.target.value;
-                                if (Number(value) < 0) value = '';
-                                handleInputChange(index, 'deadstock_qty', value);
+                                if (Number(value) < 0) value = "";
+                                handleInputChange(
+                                  index,
+                                  "deadstock_qty",
+                                  value
+                                );
                               }}
                               min="0"
                             />
@@ -1593,8 +1643,12 @@ const MaterialReconciliationEdit = () => {
                               }
                               onChange={(e) => {
                                 let value = e.target.value;
-                                if (Number(value) < 0) value = '';
-                                handleInputChange(index, 'theft_or_missing_qty', value);
+                                if (Number(value) < 0) value = "";
+                                handleInputChange(
+                                  index,
+                                  "theft_or_missing_qty",
+                                  value
+                                );
                               }}
                               min="0"
                             />
@@ -1612,8 +1666,8 @@ const MaterialReconciliationEdit = () => {
                               }
                               onChange={(e) => {
                                 let value = e.target.value;
-                                if (Number(value) < 0) value = '';
-                                handleInputChange(index, 'damage_qty', value);
+                                if (Number(value) < 0) value = "";
+                                handleInputChange(index, "damage_qty", value);
                               }}
                               min="0"
                             />
@@ -1648,8 +1702,12 @@ const MaterialReconciliationEdit = () => {
                               }
                               onChange={(e) => {
                                 let value = e.target.value;
-                                if (Number(value) < 0) value = '';
-                                handleInputChange(index, 'adjustment_qty', value);
+                                if (Number(value) < 0) value = "";
+                                handleInputChange(
+                                  index,
+                                  "adjustment_qty",
+                                  value
+                                );
                               }}
                             />
                           </td>
@@ -1820,7 +1878,16 @@ const MaterialReconciliationEdit = () => {
               </button>
             </div>
             <div className="col-md-2">
-              <button className="purple-btn1 w-100" onClick={() => navigate(`/material-reconciliation-detail/${id}?token=${token}`)}>Cancel</button>
+              <button
+                className="purple-btn1 w-100"
+                onClick={() =>
+                  navigate(
+                    `/material-reconciliation-detail/${id}?token=${token}`
+                  )
+                }
+              >
+                Cancel
+              </button>
             </div>
           </div>
           <div className="row mt-2 w-100">
