@@ -286,7 +286,7 @@ const EditRate = () => {
         if (!formData.materialSubType) errors.materialSubType = "Material Sub Type is required.";
         if (!formData.uom) errors.uom = "UOM is required.";
         if (!formData.effectiveDate) errors.effectiveDate = "Effective Date is required.";
-        if (!formData.rate) errors.rate = "Rate is required.";
+        // if (!formData.rate) errors.rate = "Rate is required.";
 
         if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
@@ -910,6 +910,25 @@ const EditRate = () => {
     console.log(" update payload :", payload)
 
     const handleSubmit = () => {
+
+         // Validate missing or invalid rate
+        const missingRateIndex = tableData.findIndex(
+          row =>
+            row.rate === null ||
+            row.rate === undefined ||
+            row.rate === "" ||
+            isNaN(parseFloat(row.rate))
+        );
+        if (missingRateIndex !== -1) {
+          toast.error(
+            `Row ${missingRateIndex + 1}: Please enter Rate(INR), AVG Rate, or PO Rate for material.`,
+            {
+              position: "top-right",
+              autoClose: 3000,
+            }
+          );
+          return;
+        }
         const missingIndex = tableData.findIndex(row => !row.rateType);
         if (missingIndex !== -1) {
             toast.error(`row ${missingIndex + 1} : Please check the Rate, AVG Rate, or PO Rate checkbox for material .`);
@@ -1130,7 +1149,7 @@ const EditRate = () => {
                                             <th className="text-start">Brand</th>
                                             <th className="text-start">UOM</th>
                                             <th className="text-start">Effective Date</th>
-                                            <th className="text-start">Rate (INR)
+                                            <th className="text-start">Rate (INR) <span>*</span>
                                                 <span className="ms-2 pt-2">
                                                     {/* <input type="checkbox" /> */}
                                                     <input type="checkbox"
@@ -1434,14 +1453,14 @@ const EditRate = () => {
                                 <div className="col-md-4 mt-3">
                                     <div className="form-group">
 
-                                        <label>Rate <span>*</span></label>
+                                        <label>Rate </label>
                                         <input className="form-control" type="number" name="rate"
                                             value={formData.rate}
                                             onChange={handleInputChange}
                                         />
-                                        {fieldErrors.rate && (
+                                        {/* {fieldErrors.rate && (
                                             <span className="text-danger">{fieldErrors.rate}</span>
-                                        )}
+                                        )} */}
                                     </div>
                                 </div>
                                 <div className="col-md-4 mt-3">

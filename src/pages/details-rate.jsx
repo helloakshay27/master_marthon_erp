@@ -25,6 +25,8 @@ const RateDetails = () => {
     const [showRevisionModal, setShowRevisionModal] = useState(false);
     // ...existing state...
     const [activeTab, setActiveTab] = useState("details");
+    const [showRemarkModal, setShowRemarkModal] = useState(false);
+    const [selectedRemark, setSelectedRemark] = useState("");
 
 
     const [rateDetails, setRateDetails] = useState(null);
@@ -334,28 +336,28 @@ const RateDetails = () => {
                             )}
 
                             <div className="card-body">
-                                                    {/* Show Rate Revision card if display_name exists */}
-    {rateDetails?.display_name && (
-      <div
-        className="d-flex justify-content-between align-items-center mx-1 p-3 mb-3 rounded-3"
-        style={{
-          background: "linear-gradient(90deg, #fff3cd 0%, #ffeeba 100%)",
-          border: "2px solid #ffc107",
-          boxShadow: "0 2px 8px rgba(255,193,7,0.15)",
-          color: "#856404",
-        }}
-      >
-        <div>
-          <p style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: 4 }}>
-            <i className="bi bi-exclamation-triangle-fill me-2" style={{ color: "#856404" }} />
-            Rate Revision
-          </p>
-          <p style={{ marginBottom: 0 }}>
-            {rateDetails?.display_name}
-          </p>
-        </div>
-      </div>
-    )}
+                                {/* Show Rate Revision card if display_name exists */}
+                                {rateDetails?.display_name && (
+                                    <div
+                                        className="d-flex justify-content-between align-items-center mx-1 p-3 mb-3 rounded-3"
+                                        style={{
+                                            background: "linear-gradient(90deg, #fff3cd 0%, #ffeeba 100%)",
+                                            border: "2px solid #ffc107",
+                                            boxShadow: "0 2px 8px rgba(255,193,7,0.15)",
+                                            color: "#856404",
+                                        }}
+                                    >
+                                        <div>
+                                            <p style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: 4 }}>
+                                                <i className="bi bi-exclamation-triangle-fill me-2" style={{ color: "#856404" }} />
+                                                Rate Revision
+                                            </p>
+                                            <p style={{ marginBottom: 0 }}>
+                                                {rateDetails?.display_name}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                                 {/* Tabs */}
                                 <nav className="mb-5">
                                     <div className="nav nav-tabs" id="nav-tab" role="tablist">
@@ -518,7 +520,7 @@ const RateDetails = () => {
                                                 </span> */}
                                                                     </th>
 
-                                                                    {/* <th className="text-start">Action</th> */}
+                                                                    <th className="text-start">Remark</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
@@ -815,6 +817,16 @@ const RateDetails = () => {
                                                                                     </span>
                                                                                 )}
 
+                                                                            </td>
+                                                                            <td className="text-start"> 
+                                                                                {row.remarks && (
+                                                                                <span className="boq-id-link"
+                                                                                onClick={() => {
+                                                                                    setSelectedRemark(row.remarks || "No remark available");
+                                                                                    setShowRemarkModal(true);
+                                                                                }}
+                                                                            >Remark</span>
+                                                                            )}
                                                                             </td>
 
                                                                         </tr>
@@ -1170,7 +1182,7 @@ const RateDetails = () => {
                 <Modal.Body>
                     <form>
                         <div className="row">
-                             <div className="col-md-3 d-flex align-items-center  custom-radio">
+                            <div className="col-md-3 d-flex align-items-center  custom-radio">
                                 <input
                                     type="radio"
                                     id="companyRadio"
@@ -1187,7 +1199,7 @@ const RateDetails = () => {
                                     Company
                                 </label>
                             </div>
-                             <div className="col-md-4 d-flex align-items-center custom-radio">
+                            <div className="col-md-4 d-flex align-items-center custom-radio">
                                 <input
                                     type="radio"
                                     className="me-2"
@@ -1322,6 +1334,8 @@ const RateDetails = () => {
                             </div>
                         </div>
                     </div>
+
+                    
                     {/* <div>
                        
                         <img src="#" className="img-thumbnail" alt="Document 1" />
@@ -1401,6 +1415,22 @@ const RateDetails = () => {
                     </button>
                 </Modal.Footer>
             </Modal> */}
+
+
+
+            <Modal size="l" centered show={showRemarkModal} onHide={() => setShowRemarkModal(false)}>
+                        <Modal.Header closeButton>
+                            <Modal.Title>Remark</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <div>{selectedRemark}</div>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <button className="purple-btn1 " onClick={() => setShowRemarkModal(false)}>
+                                Close
+                            </button>
+                        </Modal.Footer>
+                    </Modal>
 
         </>
     )
