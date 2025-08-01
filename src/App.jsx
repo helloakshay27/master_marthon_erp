@@ -119,7 +119,9 @@ import PoList from "./pages/po-list";
 import PoDetails from "./pages/po-details";
 import PoCreate from "./pages/po-create";
 import InviteVendor from "./pages/invite-vendor";
-import LabourMaster from "./pages/labour_master";
+import LabourMaster from "./pages/labour-master-list";
+import BillBookingEdit from "./pages/bill-booking-edit";
+import LabourMasterCreate from "./pages/labour-master-create";
 
 function App() {
   return (
@@ -201,6 +203,10 @@ function App() {
           <Route
             path="/bill-booking-details/:id"
             element={<BillBookingDetails />}
+          />
+          <Route
+            path="/bill-booking-edit/:id"
+            element={<BillBookingEdit />}
           />
           <Route path="/bill-entry-details" element={<BillEntryDetails />} />
           <Route path="/bill-booking-list" element={<BillBookingList />} />
@@ -575,8 +581,12 @@ function App() {
           />
 
            <Route
-            path="/labour-master"
+            path="/labour-master-list"
             element={<LabourMaster />}
+          />
+           <Route
+            path="/labour-master-create"
+            element={<LabourMasterCreate />}
           />
         </Routes>
       </div>

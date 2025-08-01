@@ -5,8 +5,10 @@ import { baseURL } from "../confi/apiDomain";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { DataGrid } from "@mui/x-data-grid";
 import { Modal, Button } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 const LabourMaster = () => {
+  const navigate = useNavigate();
   const [pageSize, setPageSize] = useState(10);
   const [showModal, setShowModal] = useState(false);
   const [showOnlyPinned, setShowOnlyPinned] = useState(false);
@@ -470,12 +472,13 @@ display:none !important;
                 data-bs-toggle="modal"
                 data-bs-target="#addnewModal"
                 // onClick={() => setShowModal(true)}
-                onClick={handleOpen}
+                // onClick={handleOpen}
               // onClick={() => {
               //     // setFieldErrors({});
               //     // setShowModal(true);
               //     handleOpen
               // }}
+              onClick={() => navigate("/labour-master-create")}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

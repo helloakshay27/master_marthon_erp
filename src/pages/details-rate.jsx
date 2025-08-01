@@ -570,7 +570,12 @@ const RateDetails = () => {
                                                                             <td className="text-start">{row.color}</td>
                                                                             <td className="text-start">{row.brand}</td>
                                                                             <td className="text-start">{row.uom}</td>
-                                                                            <td className="text-start">{row.effective_date}</td>
+                                                                            <td className="text-start">
+                                                                                {/* {row.effective_date} */}
+                                                                                {row.effective_date
+                                                                                    ? new Date(row.effective_date).toLocaleDateString("en-GB").replaceAll("/", "-")
+                                                                                    : "-"}
+                                                                            </td>
                                                                             <td className="text-start">
                                                                                 {/* {row.rate || "0"}
                                                                                 <input
@@ -818,15 +823,15 @@ const RateDetails = () => {
                                                                                 )}
 
                                                                             </td>
-                                                                            <td className="text-start"> 
+                                                                            <td className="text-start">
                                                                                 {row.remarks && (
-                                                                                <span className="boq-id-link"
-                                                                                onClick={() => {
-                                                                                    setSelectedRemark(row.remarks || "No remark available");
-                                                                                    setShowRemarkModal(true);
-                                                                                }}
-                                                                            >Remark</span>
-                                                                            )}
+                                                                                    <span className="boq-id-link"
+                                                                                        onClick={() => {
+                                                                                            setSelectedRemark(row.remarks || "No remark available");
+                                                                                            setShowRemarkModal(true);
+                                                                                        }}
+                                                                                    >Remark</span>
+                                                                                )}
                                                                             </td>
 
                                                                         </tr>
@@ -1335,7 +1340,7 @@ const RateDetails = () => {
                         </div>
                     </div>
 
-                    
+
                     {/* <div>
                        
                         <img src="#" className="img-thumbnail" alt="Document 1" />
@@ -1419,18 +1424,18 @@ const RateDetails = () => {
 
 
             <Modal size="l" centered show={showRemarkModal} onHide={() => setShowRemarkModal(false)}>
-                        <Modal.Header closeButton>
-                            <Modal.Title>Remark</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
-                            <div>{selectedRemark}</div>
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <button className="purple-btn1 " onClick={() => setShowRemarkModal(false)}>
-                                Close
-                            </button>
-                        </Modal.Footer>
-                    </Modal>
+                <Modal.Header closeButton>
+                    <Modal.Title>Remark</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div>{selectedRemark}</div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <button className="purple-btn1 " onClick={() => setShowRemarkModal(false)}>
+                        Close
+                    </button>
+                </Modal.Footer>
+            </Modal>
 
         </>
     )
