@@ -21,7 +21,7 @@ function Members() {
                <h1>Labour master</h1>
               <ul>
                 <li>
-                  <Link to="/labour-master"> Labour Master</Link>
+                  <Link to="/labour-master-list"> Labour Master</Link>
                 </li>
                 </ul>
 

@@ -11,6 +11,7 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import { baseURL } from "../confi/apiDomain";
 import { toast, ToastContainer } from "react-toastify";
 import { useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const BillBookingDetails = () => {
   const urlParams = new URLSearchParams(location.search);
@@ -403,6 +404,24 @@ const BillBookingDetails = () => {
             Home &gt; Billing &amp; Accounts &gt; Bill Booking Details
           </a>
           <h5 className="mt-3">Bill Booking Details</h5>
+          {/* {status && status.toLowerCase() === "draft" && ( */}
+          <div className="d-flex justify-content-end m-2">
+
+            <Link
+              to={`/bill-booking-edit/${id}?token=${token}`}
+              className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+
+              <button class="purple-btn1" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="#8b0203" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z" fill="#8b0203" />
+                  <path d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#8b0203" />
+                </svg>
+              </button>
+
+            </Link>
+
+          </div>
+          {/* )} */}
           <div className="row my-4 align-items-center">
             <div className="col-md-12 ">
               <div className="card p-3">
@@ -949,13 +968,13 @@ const BillBookingDetails = () => {
                       )} */}
 
                       {Object.entries(taxDetailsData?.tax_data ?? {}).map(
-  ([taxType, amount]) => (
-    <tr key={taxType}>
-      <td className="text-start">{taxType}</td>
-      <td className="text-start">{amount}</td>
-    </tr>
-  )
-)}
+                        ([taxType, amount]) => (
+                          <tr key={taxType}>
+                            <td className="text-start">{taxType}</td>
+                            <td className="text-start">{amount}</td>
+                          </tr>
+                        )
+                      )}
                       <tr>
                         <th className="text-start">Total</th>
                         <td className="text-start">
@@ -965,11 +984,11 @@ const BillBookingDetails = () => {
                           ) + taxDeductionData.total_material_cost} */}
 
                           {
-  Object.values(taxDetailsData?.tax_data || {}).reduce(
-    (sum, value) => sum + (value || 0),
-    0
-  ) + (taxDeductionData?.total_material_cost || 0)
-}
+                            Object.values(taxDetailsData?.tax_data || {}).reduce(
+                              (sum, value) => sum + (value || 0),
+                              0
+                            ) + (taxDeductionData?.total_material_cost || 0)
+                          }
                         </td>
                       </tr>
                     </tbody>
