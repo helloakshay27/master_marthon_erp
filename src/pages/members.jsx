@@ -23,6 +23,9 @@ function Members() {
                 <li>
                   <Link to="/labour-master-list"> Labour Master</Link>
                 </li>
+                <li>
+                  <Link to="/labour-master-edit"> Labour Master Edit</Link>
+                </li>
                 </ul>
 
                <h1>ROPO</h1>

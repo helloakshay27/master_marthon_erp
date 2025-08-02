@@ -11,7 +11,7 @@ import { toast, ToastContainer } from "react-toastify";
 
 
 
-const LabourMasterCreate = () => {
+const LabourMasterEdit = () => {
     const [showModal, setShowModal] = useState(false);
     const [file, setFile] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -24,31 +24,230 @@ const LabourMasterCreate = () => {
     const token = urlParams.get("token");
     const [showResultModal, setShowResultModal] = useState(false);
     const [resultMessages, setResultMessages] = useState([]);
-    const [supplierOptions, setSupplierOptions] = useState([]);
 
-    useEffect(() => {
-        const fetchSuppliers = async () => {
+    const handleSubmit2 = async (e) => {
+        e.preventDefault();
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const base64String = event.target.result.split(",")[1];
+
             try {
-                const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
-                const response = await axios.get(
-                    `https://marathon.lockated.com/labours/supplier_list.json?token=${token}`
+                const response = await axios.post(
+                    `${baseURL}rate_details/import.json?token=${token}`,
+                    { file: base64String },
+                    { headers: { "Content-Type": "application/json" } }
                 );
-                const formattedOptions = response.data.suppliers.map((s) => ({
-                    value: s.id,
-                    label: s.full_name,
-                }));
-                setSupplierOptions(formattedOptions);
+                if (response.status === 200) {
+                    console.log("Upload response:", response.data);
+                    // toast.success(response.data.message);
+                    // If response.data.message is an array, show modal with all messages
+                    if (Array.isArray(response.data.message)) {
+                        setResultMessages(response.data.message);
+                        setShowResultModal(true);
+                    } else {
+                        toast.success(response.data.message);
+                    }
+                    // alert("File uploaded successfully!");
+                }
+                setShowModal(false);
+                setFile(null);
             } catch (error) {
-                console.error("Failed to fetch suppliers:", error);
+
+                if (error.response && error.response.status === 422) {
+                    console.log("422 response:", error.response.data);
+                    if (Array.isArray(error.response.data.errors)) {
+                        error.response.data.errors.forEach(errObj => {
+                            const rowInfo = errObj.row ? `Row ${errObj.row}: ` : "";
+                            toast.error(`${rowInfo}${errObj.error}`);
+                            setShowModal(false);
+                        });
+                    } else if (typeof error.response.data.errors === "string") {
+                        toast.error(error.response.data.errors);
+                        setShowModal(false);
+                    } else if (error.response && error.response.status === 500) {
+                        toast.error("Server error occurred. Please try again later.");
+                        setShowModal(false);
+                    }
+                } else {
+                    console.error(error);
+                    toast.error("Failed to upload. Please try again.");
+                    setShowModal(false);
+                }
+                //   alert("File upload failed!");
+                console.error(error);
             }
         };
+        reader.readAsDataURL(file);
+    };
 
-        fetchSuppliers();
+    useEffect(() => {
+        setLoading(true);
+        axios
+            .get(
+                `${baseURL}rate_details.json?q[id_eq]=&q[projects_id_eq]=&q[pms_sites_id_eq]=&q[pms_wings_id_eq]=&token=${token}`
+            )
+            // .then((response) => setData(response.data))
+            // .catch((error) => console.error("Error fetching data:", error));
+            .then((response) => {
+                setData(response.data);
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.error("Error fetching data:", error);
+                setLoading(false);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     }, []);
+
+    const handleClick = () => {
+        // Optionally, show the modal here if needed before navigating
+        // setShowModal(true);
+        navigate(`/create-rate?token=${token}`); // This will navigate to /create-rate
+    };
+
+    // States to store data company, project ,subproject ,wing
+    const [companies, setCompanies] = useState([]);
+    const [projects, setProjects] = useState([]);
+    const [selectedCompany, setSelectedCompany] = useState(null);
+    const [selectedProject, setSelectedProject] = useState(null);
+    const [selectedSite, setSelectedSite] = useState(null);
+    const [selectedWing, setSelectedWing] = useState(null);
+    const [siteOptions, setSiteOptions] = useState([]);
+    const [wingsOptions, setWingsOptions] = useState([]);
+
+    // Fetch company data on component mount
+    useEffect(() => {
+        axios.get(`${baseURL}pms/company_setups.json?token=${token}`)
+            .then(response => {
+                setCompanies(response.data.companies);
+
+            })
+            .catch(error => {
+                console.error('Error fetching company data:', error);
+
+            });
+    }, []);
+
+    // Handle company selection
+    const handleCompanyChange = (selectedOption) => {
+        setSelectedCompany(selectedOption);  // Set selected company
+        setSelectedProject(null); // Reset project selection
+        setSelectedSite(null); // Reset site selection
+        setSelectedWing(null); // Reset wing selection
+        setProjects([]); // Reset projects
+        setSiteOptions([]); // Reset site options
+        setWingsOptions([]); // Reset wings options
+
+        if (selectedOption) {
+            // Find the selected company from the list
+            const selectedCompanyData = companies.find(company => company.id === selectedOption.value);
+            setProjects(
+                selectedCompanyData?.projects.map(prj => ({
+                    value: prj.id,
+                    label: prj.name
+                }))
+            );
+        }
+    };
+
+    // Handle project selection
+    const handleProjectChange = (selectedOption) => {
+        setSelectedProject(selectedOption);
+        setSelectedSite(null); // Reset site selection
+        setSelectedWing(null); // Reset wing selection
+        setSiteOptions([]); // Reset site options
+        setWingsOptions([]); // Reset wings options
+
+        if (selectedOption) {
+            // Find the selected project from the list of projects of the selected company
+            const selectedCompanyData = companies.find(company => company.id === selectedCompany.value);
+            const selectedProjectData = selectedCompanyData?.projects.find(project => project.id === selectedOption.value);
+
+            // Set site options based on selected project
+            setSiteOptions(
+                selectedProjectData?.pms_sites.map(site => ({
+                    value: site.id,
+                    label: site.name
+                })) || []
+            );
+        }
+    };
+
+
+    // Handle site selection
+    const handleSiteChange = (selectedOption) => {
+        setSelectedSite(selectedOption);
+        setSelectedWing(null); // Reset wing selection
+        setWingsOptions([]); // Reset wings options
+
+        if (selectedOption) {
+            // Find the selected project and site data
+            const selectedCompanyData = companies.find(company => company.id === selectedCompany.value);
+            const selectedProjectData = selectedCompanyData.projects.find(project => project.id === selectedProject.value);
+            const selectedSiteData = selectedProjectData?.pms_sites.find(site => site.id === selectedOption.value);
+
+            // Set wings options based on selected site
+            setWingsOptions(
+                selectedSiteData?.pms_wings.map(wing => ({
+                    value: wing.id,
+                    label: wing.name
+                })) || []
+            );
+        }
+    };
+
+    // Handle wing selection
+    const handleWingChange = (selectedOption) => {
+        setSelectedWing(selectedOption);
+    };
+
+    // Map companies to options for the dropdown
+    const companyOptions = companies.map(company => ({
+        value: company.id,
+        label: company.company_name
+    }));
+
+
+    const fetchFilteredData = async () => {
+        const companyId = selectedCompany?.value || "";
+        const projectId = selectedProject?.value || "";
+        const siteId = selectedSite?.value || "";
+        const wingId = selectedWing?.value || ""
+        try {
+            const response = await axios.get(
+                `${baseURL}rate_details.json?q[id_eq]=${companyId}&q[projects_id_eq]=${projectId}&q[pms_sites_id_eq]=${siteId}&q[pms_wings_id_eq]=${wingId}&token=${token}`
+            );
+            setData(response.data);
+        } catch (error) {
+            console.error("Error fetching filtered data:", error);
+        }
+    };
+
+
+    const handleReset = async () => {
+        setSelectedCompany(null);
+        setSelectedProject(null);
+        setSelectedSite(null);
+        setSelectedWing(null)
+        try {
+            const response = await axios.get(
+                `${baseURL}rate_details.json?token=${token}`
+            );
+            setData(response.data); // or setData(response.data) as per your structure
+            // Optionally, reset filter states here as well
+        } catch (error) {
+            console.error("Error fetching initial data:", error);
+        }
+    };
+
 
     const [formData, setFormData] = useState({
         labour_code: "",
-        contractor_name: null,
+        contractor_name: "",
         labour_sub_type: "",
         first_name: "",
         middle_name: "",
@@ -119,12 +318,6 @@ const LabourMasterCreate = () => {
 
         reader.readAsDataURL(file);
     };
-    const handleSupplierChange = (selected) => {
-        setFormData((prev) => ({
-            ...prev,
-            contractor_name: selected, // entire object: { value, label }
-        }));
-    };
 
 
     const labourCategoryOptions = [
@@ -138,9 +331,9 @@ const LabourMasterCreate = () => {
         // { value: "Operator", label: "Operator" },
         // { value: "Helper", label: "Helper" },
         // { value: "Electrician", label: "Electrician" },
-        { value: "Skilled", label: "Skilled Labor" },
-        { value: "Unskilled", label: "Unskilled Labor" },
-        { value: "Managerial", label: "Managerial" },
+        { value: "skilled", label: "Skilled Labor" },
+        { value: "unskilled", label: "Unskilled Labor" },
+        { value: "managerial", label: "Managerial" },
     ];
     const availabilityOptions = [
         // { value: "available", label: "Available" },
@@ -148,23 +341,23 @@ const LabourMasterCreate = () => {
         // { value: "on_leave", label: "On Leave" },
         // { value: "in_training", label: "In Training" },
         // { value: "on_duty", label: "On Duty" },
-        { value: "Full-time", label: "Full-time" },
-        { value: "Part-time", label: "Part-time" },
-        { value: "On-call", label: "On-call" },
+        { value: "full_time", label: "Full-time" },
+        { value: "part_time", label: "Part-time" },
+        { value: "on_call", label: "On-call" },
     ];
     const employmentStatusOptions = [
-        { value: "Permanent", label: "Permanent" },
-        { value: "Temporary", label: "Temporary" },
-        { value: "Contract", label: "Contract" },
+        { value: "permanent", label: "Permanent" },
+        { value: "temporary", label: "Temporary" },
+        { value: "contract", label: "Contract" },
         // { value: "probation", label: "Probation" },
         // { value: "intern", label: "Intern" },
         // { value: "terminated", label: "Terminated" },
 
     ];
     const departmentOptions = [
-        { value: "Hr", label: "Human Resources" },
-        { value: "Finance", label: "Finance" },
-        { value: "Engineering", label: "Engineering" },
+        { value: "hr", label: "Human Resources" },
+        { value: "finance", label: "Finance" },
+        { value: "engineering", label: "Engineering" },
         // { value: "sales", label: "Sales" },
         // { value: "marketing", label: "Marketing" },
         // { value: "operations", label: "Operations" },
@@ -431,8 +624,7 @@ const LabourMasterCreate = () => {
     const payload = {
         labour: {
             labour_code: formData.labour_code,
-            // supplier:formData.contractor_name.value,
-            vendor_id: formData.contractor_name.value, // You can replace it if needed
+            vendor_id: "", // You can replace it if needed
             labour_sub_type_id: 25,
             firstname: formData.first_name,
             lastname: formData.last_name,
@@ -471,64 +663,61 @@ const LabourMasterCreate = () => {
     //   console.log("photo data:",formData.photo)
     console.log("payload create:", payload)
 
-    const handleSubmit = async () => {
+const handleSubmit = async () => {
 
-        const payload = {
-            labour: {
-                labour_code: formData.labour_code,
-                vendor_id: formData.contractor_name.value, // You can replace it if needed
-                // supplier:formData.contractor_name,
-                labour_sub_type_id: 25,
-                firstname: formData.first_name,
-                lastname: formData.last_name,
-                middlename: formData.middle_name,
-                date_of_birth: formData.dob,
-                phone_no: formData.phone_number,
-                job_title: formData.job_title,
-                labour_category: formData.labour_category,
-                work_shift: formData.work_shifts,
-                availability: formData.availability,
-                employment_status: formData.employment_status,
-                union_membership: formData.union_memberships,
-                hourly_rate: formData.hourly_rate,
-                overtime_rate: formData.overtime_rate,
-                address: formData.address,
-                department_id: 45,
-                supervisor_id: 22,
-                hire_date: formData.hire_date,
-                equipment_certification: formData.certifications,
-                license_info: formData.license_info,
+    const payload = {
+        labour: {
+            labour_code: formData.labour_code,
+            vendor_id: "", // You can replace it if needed
+            labour_sub_type_id: 25,
+            firstname: formData.first_name,
+            lastname: formData.last_name,
+            middlename: formData.middle_name,
+            date_of_birth: formData.dob,
+            phone_no: formData.phone_number,
+            job_title: formData.job_title,
+            labour_category: formData.labour_category,
+            work_shift: formData.work_shifts,
+            availability: formData.availability,
+            employment_status: formData.employment_status,
+            union_membership: formData.union_memberships,
+            hourly_rate: formData.hourly_rate,
+            overtime_rate: formData.overtime_rate,
+            address: formData.address,
+            department_id: 45,
+            supervisor_id: 22,
+            hire_date: formData.hire_date,
+            equipment_certification: formData.certifications,
+            license_info: formData.license_info,
 
-                bank_detail_attributes: {
-                    bank_name: formData.bank_account_name,
-                    account_number: formData.bank_account_no,
-                    confirm_account_number: formData.bank_account_no,
-                    branch_name: formData.bank_branch_name,
-                    ifsc_code: formData.ifsc_code,
-                },
-
-                documents: allDocuments,
-
-                avatar: formData.photo || {},
+            bank_detail_attributes: {
+                bank_name: formData.bank_account_name,
+                account_number: formData.bank_account_no,
+                confirm_account_number: formData.bank_account_no,
+                branch_name: formData.bank_branch_name,
+                ifsc_code: formData.ifsc_code,
             },
-        }
 
-        console.log("payload submit:",payload)
-        try {
-            const response = await axios.post(
-                `${baseURL}labours.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-                payload,
-            );
+            documents: allDocuments,
 
-            console.log('Success:', response.data);
-            alert("created .....")
-            // Optionally redirect
-            //   navigate(`/credit-note-list?token=${token}`);
-        } catch (error) {
-            console.error('Error submitting data:', error);
-            // Optionally show error message to user
-        }
-    };
+            avatar: formData.photo || {},
+        },
+    }
+    try {
+      const response = await axios.post(
+        `${baseURL}labours.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        payload,
+      );
+
+      console.log('Success:', response.data);
+      alert("created .....")
+      // Optionally redirect
+    //   navigate(`/credit-note-list?token=${token}`);
+    } catch (error) {
+      console.error('Error submitting data:', error);
+      // Optionally show error message to user
+    }
+  };
 
 
 
@@ -545,10 +734,10 @@ const LabourMasterCreate = () => {
                     <a href="">
                         <a href="#">Setup &gt; Purchase Setup &gt; Labour Master</a>
                     </a>
-                    <h5 class="mt-4">Labour Master Create</h5>
+                    <h5 class="mt-4">Labour Master Edit</h5>
 
 
-                    {/* <pre>{JSON.stringify(formData, null, 2)}</pre> */}
+                    <pre>{JSON.stringify(formData, null, 2)}</pre>
 
                     <CollapsibleCard title="Labour Details" showCollapseButton={false}>
 
@@ -559,14 +748,7 @@ const LabourMasterCreate = () => {
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>Contractor Name <span>*</span></label>
-                                {/* <input type="text" name="contractor_name" value={formData.contractor_name} onChange={handleInputChange} className="form-control" /> */}
-
-                                <SingleSelector
-                                    options={supplierOptions}
-                                    value={formData.contractor_name}
-                                    onChange={handleSupplierChange}
-                                    placeholder="Select Contractor"
-                                />
+                                <input type="text" name="contractor_name" value={formData.contractor_name} onChange={handleInputChange} className="form-control" />
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>Labour Sub Type <span>*</span></label>
@@ -996,7 +1178,7 @@ const LabourMasterCreate = () => {
                     <div className="row mt-4 justify-content-center w-100">
                         <div className="col-md-2 mt-2">
                             <button className="purple-btn2 w-100"
-                                onClick={handleSubmit}
+                            onClick={handleSubmit}
                             >Submit</button>
                         </div>
                         <div className="col-md-2">
@@ -1283,7 +1465,7 @@ const LabourMasterCreate = () => {
                         )}
                     </div>
                     <div className="row mt-2 justify-content-center">
-                        <div className="col-md-4 mt-2">
+                        <div className="col-md-4">
                             <button
                                 className="purple-btn2 w-100"
                                 onClick={handleAttachDocument}
@@ -1308,4 +1490,4 @@ const LabourMasterCreate = () => {
     )
 }
 
-export default LabourMasterCreate;
+export default LabourMasterEdit;

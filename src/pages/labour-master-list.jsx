@@ -6,6 +6,7 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import { DataGrid } from "@mui/x-data-grid";
 import { Modal, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const LabourMaster = () => {
   const navigate = useNavigate();
@@ -25,224 +26,61 @@ const LabourMaster = () => {
   const handleClose = () => setShowModal(false);
   const handleOpen = () => setShowModal(true);
 
-  const [formData, setFormData] = useState({
-    labour_code: "",
-    contractor_name: "",
-    labour_sub_type: "",
-    first_name: "",
-    middle_name: "",
-    last_name: "",
-    dob: "",
-    phone_number: "",
-    job_title: "",
-    labour_category: "",
-    work_shifts: "",
-    availability: "",
-    employment_status: "",
-    bank_account_name: "",
-    bank_account_no: "",
-    bank_branch_name: "",
-    ifsc_code: "",
-    union_memberships: "",
-    hourly_rate: "",
-    overtime_rate: "",
-    address: "",
-    department: "",
-    supervisor: "",
-    hire_date: "",
-    certifications: "",
-    license_info: "",
-    documents: "",
-    document_upload: null,  // assuming dropdown value
-    photo: null      // for file input
-  });
 
+  const [labours, setLabours] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  // const handleFileChange = (e, fieldName) => {
-  //   const file = e.target.files[0];
-  //   if (file) {
-  //     setFormData((prev) => ({
-  //       ...prev,
-  //       [fieldName]: file,
-  //     }));
-  //   }
-  // };
-
-  const handleFileChange = (e, fieldName) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const contentType = file.type;
-    const reader = new FileReader();
-
-    reader.onloadend = () => {
-      const base64Content = reader.result.split(",")[1]; // Remove data:<type>;base64, prefix
-
-      setFormData((prev) => ({
-        ...prev,
-        [fieldName]: {
-          fileName: file.name,
-          content_type: contentType,
-          content: base64Content,
-        },
-      }));
+  useEffect(() => {
+    const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
+    const fetchLabours = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}labours.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        );
+        setLabours(response.data.labours);
+        
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to load labour list.");
+        setLoading(false);
+      }
     };
 
-    reader.readAsDataURL(file);
-  };
+    fetchLabours();
+  }, []);
 
-  // const handleEdit = (row, index) => {
-  //   setFormData(row); // Pre-fill the form
-  //   setEditRowIndex(index);
-  //   setShowModal(true);
-  // };
-
-  const handleEdit = (row) => {
-    setFormData(row); // Pre-fill the form
-    const index = labourList.findIndex((item) => item.id === row.id);
-    setEditRowIndex(index);
-    setShowModal(true);
-    setCurrentPage(1);
-  };
-  // const handleCreate = () => {
-  //   const newEntry = {
-  //     ...formData,
-  //     id: Date.now(), // Ensure unique ID
-  //   };
-
-  //   setLabourList((prev) => [...prev, newEntry]);
-
-  //   // Optional: Reset form
-  //   setFormData({
-  //     labour_code: "",
-  //     contractor_name: "",
-  //     labour_sub_type: "",
-  //     first_name: "",
-  //     middle_name: "",
-  //     last_name: "",
-  //     dob: "",
-  //     phone_number: "",
-  //     job_title: "",
-  //     labour_category: "",
-  //     work_shifts: "",
-  //     availability: "",
-  //     employment_status: "",
-  //     bank_account_name: "",
-  //     bank_account_no: "",
-  //     bank_branch_name: "",
-  //     ifsc_code: "",
-  //     union_memberships: "",
-  //     hourly_rate: "",
-  //     overtime_rate: "",
-  //     address: "",
-  //     department: "",
-  //     supervisor: "",
-  //     hire_date: "",
-  //     certifications: "",
-  //     license_info: "",
-  //     documents: "",
-  //     document_upload: null,
-  //     photo: null,
-  //   });
-
-  //   // Optional: Close modal or provide feedback
-  //   setShowModal(false);
-  // };
+  console.log("res:",labours)
 
 
-  const handleCreate = () => {
-    const newEntry = {
-      ...formData,
-      id: formData.id || Date.now(), // retain ID if exists, else create new
-    };
-
-    if (editRowIndex !== null) {
-      // Edit mode: update existing row
-      setLabourList((prev) =>
-        prev.map((item, index) =>
-          index === editRowIndex ? newEntry : item
-        )
-      );
-    } else {
-      // Add new entry
-      setLabourList((prev) => [...prev, newEntry]);
-    }
-
-    // Reset form and edit index
-    setFormData({
-      labour_code: "",
-      contractor_name: "",
-      labour_sub_type: "",
-      first_name: "",
-      middle_name: "",
-      last_name: "",
-      dob: "",
-      phone_number: "",
-      job_title: "",
-      labour_category: "",
-      work_shifts: "",
-      availability: "",
-      employment_status: "",
-      bank_account_name: "",
-      bank_account_no: "",
-      bank_branch_name: "",
-      ifsc_code: "",
-      union_memberships: "",
-      hourly_rate: "",
-      overtime_rate: "",
-      address: "",
-      department: "",
-      supervisor: "",
-      hire_date: "",
-      certifications: "",
-      license_info: "",
-      documents: "",
-      document_upload: null,
-      photo: null,
-    });
-
-    setEditRowIndex(null); // Clear edit state
-    setShowModal(false);   // Close modal
-    setCurrentPage(1);
-  };
+ 
 
 
-  const handleDelete = (id) => {
-    setLabourList((prevList) => prevList.filter((item) => item.id !== id));
-    setCurrentPage(1);
-  };
 
+ 
 
+ 
   //   column sort and setting
   const [columnVisibility, setColumnVisibility] = useState({
     sr_no: true,
     labour_code: true,
     contractor_name: true,
     labour_sub_type: true,
-    first_name: true,
-    last_name: true,
-    middle_name: true,
-    dob: true,
-    phone_number: true,
+    firstname: true,
+    lastname: true,
+    middlename: true,
+    date_of_birth: true,
+    phone_no: true,
     job_title: true,
     labour_category: true,
-    work_shifts: true,
+    work_shift: true,
     availability: true,
     employment_status: true,
-    bank_account_name: true,
-    bank_account_no: true,
-    bank_branch_name: true,
+    bank_name: true,
+    account_number: true,
+    branch_name: true,
     ifsc_code: true,
-    union_memberships: true,
+    union_membership: true,
     hourly_rate: true,
     overtime_rate: true,
     address: true,
@@ -250,8 +88,8 @@ const LabourMaster = () => {
     supervisor: true,
     hire_date: true,
     certifications: true,
-    photo: true,
-    documents: true,
+    // photo: true,
+    // documents: true,
     license_info: true,
     action: true,
   });
@@ -261,21 +99,33 @@ const LabourMaster = () => {
     { field: "labour_code", headerName: "Labour Code/ID", width: 150 },
     { field: "contractor_name", headerName: "Contractor Name", width: 180 },
     { field: "labour_sub_type", headerName: "Labour Sub-Type", width: 150 },
-    { field: "first_name", headerName: "First Name", width: 130 },
-    { field: "last_name", headerName: "Last Name", width: 130 },
-    { field: "middle_name", headerName: "Middle Name", width: 130 },
-    { field: "dob", headerName: "Date of Birth", width: 150 },
-    { field: "phone_number", headerName: "Phone Number", width: 150 },
+    { field: "firstname", headerName: "First Name", width: 130 },
+    { field: "lastname", headerName: "Last Name", width: 130 },
+    { field: "middlename", headerName: "Middle Name", width: 130 },
+    { field: "date_of_birth", headerName: "Date of Birth", width: 150 ,
+       renderCell: (params) => {
+    if (!params.value) return ""; // handle empty/null
+
+    const date = new Date(params.value);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    const formatted = `${day}-${month}-${year}`;
+
+    return <span>{formatted}</span>;
+  },
+    },
+    { field: "phone_no", headerName: "Phone Number", width: 150 },
     { field: "job_title", headerName: "Job Title/Position", width: 180 },
     { field: "labour_category", headerName: "Labour Category", width: 150 },
-    { field: "work_shifts", headerName: "Work Shifts", width: 130 },
+    { field: "work_shift", headerName: "Work Shifts", width: 130 },
     { field: "availability", headerName: "Availability", width: 130 },
     { field: "employment_status", headerName: "Employment Status", width: 180 },
-    { field: "bank_account_name", headerName: "Bank Account Name", width: 180 },
-    { field: "bank_account_no", headerName: "Bank Account No.", width: 170 },
-    { field: "bank_branch_name", headerName: "Bank Branch Name", width: 170 },
+    { field: "bank_name", headerName: "Bank Account Name", width: 180 },
+    { field: "account_number", headerName: "Bank Account No.", width: 170 },
+    { field: "branch_name", headerName: "Bank Branch Name", width: 170 },
     { field: "ifsc_code", headerName: "Bank Branch IFSC Code", width: 170 },
-    { field: "union_memberships", headerName: "Union Memberships", width: 180 },
+    { field: "union_membership", headerName: "Union Memberships", width: 180 },
     { field: "hourly_rate", headerName: "Hourly Rate/Salary", width: 170 },
     { field: "overtime_rate", headerName: "Overtime Rate", width: 150 },
     { field: "address", headerName: "Address", width: 200 },
@@ -283,8 +133,8 @@ const LabourMaster = () => {
     { field: "supervisor", headerName: "Supervisor", width: 150 },
     { field: "hire_date", headerName: "Hire Date", width: 150 },
     { field: "certifications", headerName: "Equipment Certifications", width: 200 },
-    { field: "photo", headerName: "Photo", width: 120 },
-    { field: "documents", headerName: "Documents", width: 150 },
+    // { field: "photo", headerName: "Photo", width: 120 },
+    // { field: "documents", headerName: "Documents", width: 150 },
     { field: "license_info", headerName: "License/Permit Information", width: 200 },
     {
       field: "action",
@@ -363,74 +213,17 @@ const LabourMaster = () => {
     //   ? labourList.filter((row) => pinnedRows.includes(row.id))
     //   : labourList;
 
-    return labourList.map((item, index) => ({
+    return labours.map((item, index) => ({
       ...item,
       sr_no: index + 1,
-      photo: item.photo ? item.photo.fileName : "",
+      
       // documents: item.document_upload ? `${item.documents} - ${item.document_upload.fileName}` : "-",
     }));
     return rowsToShow;
   };
 
-  const labourCategoryOptions = [
-    { value: "Skilled", label: "Skilled" },
-    { value: "Unskilled", label: "Unskilled" },
-    { value: "Semi-skilled", label: "Semi-skilled" },
-    { value: "Supervisor", label: "Supervisor" },
-    { value: "Technician", label: "Technician" },
-    { value: "Engineer", label: "Engineer" },
-    { value: "Foreman", label: "Foreman" },
-    { value: "Operator", label: "Operator" },
-    { value: "Helper", label: "Helper" },
-    { value: "Electrician", label: "Electrician" },
-  ];
-  const availabilityOptions = [
-    { value: "available", label: "Available" },
-    { value: "not_available", label: "Not Available" },
-    { value: "on_leave", label: "On Leave" },
-    { value: "in_training", label: "In Training" },
-    { value: "on_duty", label: "On Duty" }
-  ];
-  const employmentStatusOptions = [
-    { value: "permanent", label: "Permanent" },
-    { value: "contract", label: "Contract" },
-    { value: "probation", label: "Probation" },
-    { value: "intern", label: "Intern" },
-    { value: "terminated", label: "Terminated" }
-  ];
-  const departmentOptions = [
-    { value: "hr", label: "Human Resources" },
-    { value: "finance", label: "Finance" },
-    { value: "engineering", label: "Engineering" },
-    { value: "sales", label: "Sales" },
-    { value: "marketing", label: "Marketing" },
-    { value: "operations", label: "Operations" },
-    { value: "it", label: "IT Support" }
-  ];
-  const supervisorOptions = [
-    { value: "john_doe", label: "John Doe" },
-    { value: "jane_smith", label: "Jane Smith" },
-    { value: "amit_patel", label: "Amit Patel" },
-    { value: "sunita_kumar", label: "Sunita Kumar" },
-    { value: "rahul_sharma", label: "Rahul Sharma" }
-  ];
-  const documentOptions = [
-    { value: "aadhar", label: "Aadhar Card" },
-    { value: "pan", label: "PAN Card" },
-    { value: "dl", label: "Driving License" }
-  ];
-  const totalEntries = labourList.length;
-  const totalPages = Math.ceil(totalEntries / itemsPerPage);
-
-  const paginatedData = labourList.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-  const handlePageChange = (pageNumber) => {
-    if (pageNumber >= 1 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-    }
-  };
+ 
+ 
   return (
     <>
       <style type="text/css">
@@ -570,34 +363,6 @@ display:none !important;
 
             {/* data grid end */}
 
-            <div className="d-flex justify-content-between align-items-center px-3 mt-3 mb-4">
-              <ul className="pagination justify-content-center d-flex">
-                <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-                  <button className="page-link" onClick={() => handlePageChange(1)} disabled={currentPage === 1}>First</button>
-                </li>
-                <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-                  <button className="page-link" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>Prev</button>
-                </li>
-
-                {Array.from({ length: totalPages }, (_, index) => (
-                  <li key={index + 1} className={`page-item ${currentPage === index + 1 ? "active" : ""}`}>
-                    <button className="page-link" onClick={() => handlePageChange(index + 1)}>{index + 1}</button>
-                  </li>
-                ))}
-
-                <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-                  <button className="page-link" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next</button>
-                </li>
-                <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-                  <button className="page-link" onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages}>Last</button>
-                </li>
-              </ul>
-
-              <div>
-                Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                {Math.min(currentPage * itemsPerPage, totalEntries)} of {totalEntries} entries
-              </div>
-            </div>
 
           </div>
         </div>
@@ -606,7 +371,7 @@ display:none !important;
       </div>
 
 
-      <Modal centered size="xl" show={showModal} onHide={() => setShowModal(false)}>
+      {/* <Modal centered size="xl" show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
           <h5><span>Labour Master</span></h5>
         </Modal.Header>
@@ -849,7 +614,7 @@ display:none !important;
 
 
         </Modal.Body>
-      </Modal>
+      </Modal> */}
 
 
       {/* Settings Modal */}
