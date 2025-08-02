@@ -231,6 +231,7 @@ export default function Table({
                   "vendor_name",
                   "pms_supplier_id",
                   "material_name",
+                  "po_exist",
                   "id",
                 ].includes(columns[rowIndex]?.key) && (
                   <tr key={rowIndex}>

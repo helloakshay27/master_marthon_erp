@@ -5,6 +5,13 @@ export const SegregatedBidMaterials = (inputArray) => {
     const bid = vendor.bids[0];
 
     bid.bid_materials.forEach((material) => {
+      // Use po_exist from material, fallback to po_exists if po_exist is undefined
+      const poExistValue = material.po_exist !== undefined
+        ? material.po_exist
+        : material.po_exists !== undefined
+          ? material.po_exists
+          : null;
+
       if (!materialMap.has(material.event_material_id)) {
         materialMap.set(material.event_material_id, {
           id: material.id,
@@ -23,7 +30,8 @@ export const SegregatedBidMaterials = (inputArray) => {
         });
       }
       const materialData = materialMap.get(material.event_material_id);
-
+      console.log("materialData----", materialData);
+      
       materialData.bids_values.push({
         ...material,
         bid_id: bid.id,
@@ -37,7 +45,8 @@ export const SegregatedBidMaterials = (inputArray) => {
         isChecked: false, // Add the isChecked property with a default value
         status: bid.status,
         original_bid_id: bid.original_bid_id,
-        serialized_last_bid : bid.serialized_last_bid
+        serialized_last_bid : bid.serialized_last_bid,
+        po_exist: poExistValue,
       });
       materialData.bid_ids.push(bid.id);
       materialData.vendor_ids.push(vendor.id);

@@ -743,9 +743,10 @@ export default function EditEvent() {
   };
 
   const handleAddDocumentRow = () => {
-    const newRow = { srNo: documentRows.length + 1, upload: null };
-    documentRowsRef.current.push(newRow);
-    setDocumentRows([...documentRowsRef.current]);
+    setDocumentRows(prevRows => [
+      ...prevRows,
+      { srNo: prevRows.length + 1, upload: null }
+    ]);
   };
 
   const handleRemoveDocumentRow = (index) => {
@@ -1641,16 +1642,7 @@ const toUTCStartTimeString = (dateTime) => {
         const response = await fetch(
           `${baseURL}rfq/events/material_types?token=${token}`
         );
-        const data = await response.json();
-
-        if (response.ok && data.inventory_types) {
-          const formattedMaterials = data.inventory_types?.map((item) => ({
-            label: item.name,
-            value: item.value,
-          }));
-
-          setMaterialSelectList(formattedMaterials);
-        }
+        // You may want to handle the response here
       } catch (error) {
         console.error("Error fetching material types:", error);
       }
@@ -1903,64 +1895,148 @@ const toUTCStartTimeString = (dateTime) => {
                     <span>Add</span>
                   </button>
                 </div>
-                      {console.log("documentRows:-",documentRows)}
-                <Table
-                  columns={[
-                    { label: "Sr No", key: "srNo" },
-                    { label: "File Name", key: "fileName" },
-                    { label: "Upload File", key: "upload" },
-                    { label: "Action", key: "action" },
-                  ]}
-                  onRowSelect={undefined}
-                  resetSelectedRows={undefined}
-                  onResetComplete={undefined}
-                  data={documentRows.map((row, index) => ({
-                    srNo: row.srNo,
-                    fileName: (
-                      <td
-                      >
-                        { row?.upload?.filename || row.filename || "No File Selected"}
-                      </td>
-                    ),
-                    upload: (
-                      <td style={{ border: "none" }}>
-                        <input
-                          type="file"
-                          id={`file-input-${index}`}
-                          key={row?.srNo}
-                          style={{ display: "none" }}
-                          onChange={(e) => handleFileChange(index, e.target.files[0])}
-                          accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
-                        />
-                        <label
-                          htmlFor={`file-input-${index}`}
-                          style={{
-                            display: "inline-block",
-                            width: "120px",
-                            padding: "8px",
-                            border: "1px solid #ccc",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            color: "#555",
-                            backgroundColor: "#f5f5f5",
-                            textAlign: "center",
-                          }}
-                        >
-                          Upload
-                        </label>
-                      </td>
-                    ),
-                    action: (
-                      <button
-                        className="btn btn-danger"
-                        onClick={() => handleRemoveDocumentRow(index)}
-                        disabled={documentRows.length === 1}
-                      >
-                        Remove
-                      </button>
-                    ),
-                  }))}
-                />
+                {/* New Document Attachments Table */}
+                                <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
+
+                <table className="w-100">
+                  <thead>
+                    <tr>
+                      <th className="main2-th">File Type</th>
+                      <th className="main2-th">File Name </th>
+                      <th className="main2-th">Upload At</th>
+                      <th className="main2-th">Upload File</th>
+                      <th className="main2-th" style={{ width: 100 }}>
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {documentRows.map((att, index) => (
+                      <tr key={att.id || index}>
+                        <td>
+                          <input
+                            className="form-control document_content_type"
+                            readOnly
+                            disabled
+                            value={att.fileType || att.content_type || ""}
+                            placeholder="File Type"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="form-control file_name"
+                            required
+                            value={att.fileName || att.filename || ""}
+                            onChange={e => {
+                              // Update fileName in documentRows
+                              setDocumentRows(prev => {
+                                const updated = [...prev];
+                                updated[index] = {
+                                  ...updated[index],
+                                  fileName: e.target.value,
+                                };
+                                return updated;
+                              });
+                            }}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="form-control created_at"
+                            readOnly
+                            disabled
+                            type="datetime-local"
+                            step="1"
+                            value={
+                              att.uploadDate ||
+                              (att.created_at
+                                ? new Date(att.created_at).toISOString().slice(0, 19)
+                                : "")
+                            }
+                          />
+                        </td>
+                        <td>
+                          {!att.isExisting && (
+                            <input
+                              type="file"
+                              className="form-control"
+                              required
+                              onChange={e => {
+                                // Update file in documentRows
+                                const file = e.target.files[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  const base64String = reader.result.split(",")[1];
+                                  setDocumentRows(prev => {
+                                    const updated = [...prev];
+                                    updated[index] = {
+                                      ...updated[index],
+                                      upload: {
+                                        filename: file.name,
+                                        content: base64String,
+                                        content_type: file.type,
+                                      },
+                                      fileName: file.name,
+                                      fileType: file.type,
+                                      isExisting: false,
+                                      uploadDate: new Date().toISOString().slice(0, 19),
+                                    };
+                                    return updated;
+                                  });
+                                };
+                                reader.readAsDataURL(file);
+                              }}
+                            />
+                          )}
+                        </td>
+                        <td className="document">
+                          <div style={{ display: "flex", alignItems: "center" }}>
+                            <div className="attachment-placeholder">
+                              {att.isExisting && att.fileUrl && (
+                                <div className="file-box">
+                                  <div className="image">
+                                    <a href={att.fileUrl} target="_blank" rel="noreferrer">
+                                      <img
+                                        alt="preview"
+                                        className="img-responsive"
+                                        height={50}
+                                        width={50}
+                                        src={att.fileUrl}
+                                      />
+                                    </a>
+                                  </div>
+                                  <div className="file-name">
+                                    <a href={att.fileUrl} download>
+                                      <span className="material-symbols-outlined">file_download</span>
+                                    </a>
+                                    <span>{att.fileName || att.filename}</span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-link text-danger"
+                              onClick={() => {
+                                // Remove document row
+                                setDocumentRows(prev => {
+                                  // if (prev.length === 1) return prev;
+                                  const updated = [...prev];
+                                  updated.splice(index, 1);
+                                  return updated;
+                                });
+                              }}
+                            >
+                              <span className="material-symbols-outlined">cancel</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                </div>
               </div>
 
               <div>
@@ -2043,54 +2119,67 @@ const toUTCStartTimeString = (dateTime) => {
               {statusLogData?.length > 0 && (
                 <>
                   <h5 className="mt-5">Audit Log</h5>
-                  <table className="tbl-container w-100">
-                    <thead>
-                      <tr>
-                        <th>Comment</th>
-                        <th>Remark</th>
-                        <th>Status</th>
-                        <th>Created By</th>
-                        <th>Created at</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {editableStatusLogData?.map((item, idx) => {
-                        if (item.id === null) {
-                          return null;
-                        }
-                        return (
-                          <tr key={idx}>
-                            <td>
-                              <input
-                                type="text"
-                                className="form-control"
-                                value={item.comment || item.comments || ""}
-                                onChange={(e) => handleStatusLogChange(idx, 'comment', e.target.value)}
-                                placeholder="Enter comment"
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="text"
-                                className="form-control"
-                                value={item.remark || item.remarks || ""}
-                                onChange={(e) => handleStatusLogChange(idx, 'remark', e.target.value)}
-                                placeholder="Enter remark"
-                              />
-                            </td>
-                            <td>{item.status || "-"}</td>
-                            <td>{item.created_by_name || "-"}</td>
-                            <td>{new Date(item.created_at).toLocaleString() || "-"}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                  <div className="tbl-container mt-1" style={{ maxHeight: "450px" }}>
+                    <table className="w-100">
+                      <thead>
+                        <tr>
+                          <th>Sr.No.</th>
+                          <th>Created By</th>
+                          <th>Created At</th>
+                          <th>Status</th>
+                          {/* <th>Remark</th> */}
+                          {/* <th>Comment</th> */}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {editableStatusLogData?.slice(0, 10).map((log, idx) => {
+                          if (log.id === null) return null;
+                          return (
+                            <tr key={log.id || idx}>
+                              <td className="text-start">{idx + 1}</td>
+                              <td className="text-start">{log.created_by_name || "-"}</td>
+                              <td className="text-start">
+                                {log.created_at
+                                  ? `${new Date(log.created_at).toLocaleDateString("en-GB", {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                    }).replaceAll("/", "-")}, ${new Date(log.created_at).toLocaleTimeString("en-GB", {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      hour12: true,
+                                    }).toUpperCase()}`
+                                  : "-"}
+                              </td>
+                              <td className="text-start">
+                                {log.status
+                                  ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                  : ""}
+                              </td>
+                              {/* <td className="text-start">{log.remarks || ""}</td>
+                              <td className="text-start">{log.comments || ""}</td> */}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                    {editableStatusLogData?.length > 10 && (
+                      <div className="mt-2 text-start">
+                        <span
+                          className="boq-id-link"
+                          style={{ fontWeight: "bold", cursor: "pointer" }}
+                          onClick={() => {/* setShowAuditModal(true) or your logic here */}}
+                        >
+                          Show More
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
 
               <div className="row mt-2 justify-content-end align-items-center mt-4">
-                {/* <div className="col-md-2">
+                {/* <div className class="col-md-2">
                   <button className="purple-btn2 w-100">Preview</button>
                 </div> */}
                 <div className="col-md-2">

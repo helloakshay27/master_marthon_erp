@@ -588,6 +588,10 @@ function App() {
             path="/labour-master-create"
             element={<LabourMasterCreate />}
           />
+           <Route
+            path="/labour-master-edit"
+            element={<LabourMasterCreate />}
+          />
         </Routes>
       </div>
     </BrowserRouter>
