@@ -728,31 +728,33 @@ export default function CounterOffer() {
     return total.toFixed(2); // Return the total as a string with two decimal places
   };
 
-  const productTableColumns = [
-    { label: "Material Name", key: "product" },
-    { label: "Material Type", key: "materialType" },
-    { label: "Material Sub Type", key: "materialSubType" },
-    { label: "Delivery Location", key: "deliveryLocation" },
-    { label: "Quantity Requested", key: "quantityRequested" },
-    { label: "Brand", key: "pmsBrand" },
-    { label: "Colour", key: "pmsColour" },
-    { label: "Generic Info", key: "genericInfo" },
-    { label: "Quantity Available", key: "quantityAvailable" },
-    { label: "Price", key: "price" },
-    { label: "Realised Price", key: "realisedPrice" },
-    { label: "Discount %", key: "discount" },
-    { label: "Realised Discount", key: "realisedDiscount" },
-    { label: "Landed Amount", key: "landedAmount" },
-    { label: "Total Amount", key: "totalAmount" },
-    { label: "Vendor Remark", key: "vendorRemark" },
-    { label: "Tax Rate", key: "taxRate" },
-    ...Object.entries(formData?.bid_materials?.[0]?.extra_data || {})
-      .filter(([_, { value }]) => !Array.isArray(value)) // Exclude array-type values
-      .map(([key]) => ({
-        label: key.replace(/_/g, " ").toUpperCase(),
-        key,
-      })),
-  ];
+  // Add "UOM" column to productTableColumns
+const productTableColumns = [
+  { label: "Material Name", key: "product" },
+  { label: "Material Type", key: "materialType" },
+  { label: "Material Sub Type", key: "materialSubType" },
+  { label: "Delivery Location", key: "deliveryLocation" },
+  { label: "Quantity Requested", key: "quantityRequested" },
+  { label: "UOM", key: "uom" }, // <-- Add UOM column here
+  { label: "Brand", key: "pmsBrand" },
+  { label: "Colour", key: "pmsColour" },
+  { label: "Generic Info", key: "genericInfo" },
+  { label: "Quantity Available", key: "quantityAvailable" },
+  { label: "Price", key: "price" },
+  { label: "Realised Price", key: "realisedPrice" },
+  { label: "Discount %", key: "discount" },
+  { label: "Realised Discount", key: "realisedDiscount" },
+  { label: "Landed Amount", key: "landedAmount" },
+  { label: "Total Amount", key: "totalAmount" },
+  { label: "Vendor Remark", key: "vendorRemark" },
+  { label: "Tax Rate", key: "taxRate" },
+  ...Object.entries(formData?.bid_materials?.[0]?.extra_data || {})
+    .filter(([_, { value }]) => !Array.isArray(value)) // Exclude array-type values
+    .map(([key]) => ({
+      label: key.replace(/_/g, " ").toUpperCase(),
+      key,
+    })),
+];
 
   const productTableData =
     formData?.bid_materials?.map((item, index) => {
@@ -1019,17 +1021,38 @@ export default function CounterOffer() {
         {}
       );
 
+      // UOM cell (define here, not as a variable reference)
+      const uomCell = (
+        <input
+          type="text"
+          className="form-control"
+          style={{ width: "auto" }}
+          value={
+            item.event_material?.uom_name ||
+            item.event_material?.uom_short_name ||
+            item.event_material?.unit ||
+            item.uom_name ||
+            item.uom_short_name ||
+            item.unit ||
+            "_"
+          }
+          readOnly
+          disabled
+        />
+      );
+
       return {
         product: <span>{productName}</span>,
         materialType,
         materialSubType,
         deliveryLocation,
         quantityRequested,
+        uom: uomCell, // <-- Use uomCell here
         quantityAvailable,
         price,
         discount,
         realisedDiscount,
-        realisedPrice, // Add realised price to table data
+        realisedPrice,
         gst,
         realisedGst,
         vendorRemark,

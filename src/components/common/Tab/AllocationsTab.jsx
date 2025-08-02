@@ -351,6 +351,7 @@ export default function AllocationTab({ isCounterOffer }) {
         bidId: material.bid_id,
         pms_supplier_id: material.pms_supplier_id,
         id: material.id,
+        po_exist: material.po_exist,
       }));
 
       setSelectedData((prevSelectedData) => {
@@ -751,34 +752,23 @@ export default function AllocationTab({ isCounterOffer }) {
 
                   return (
                     <>
+
                       <Accordion
                         key={ind}
                         title={materialData.material_name || "_"}
-                        amount={materialData.total_amounts}
+                        amount={materialData.bids_values?.map(bv => bv.total_amount)} // Use bids_values to get amounts
                         enableHoverEffect={true}
                         isAllocation={true}
                         tableColumn={[
-                          {
-                            label: "Best Total Amount",
-                            key: "bestTotalAmount",
-                          },
-                          {
-                            label: "Quantity Available",
-                            key: "quantityAvailable",
-                          },
+                          { label: "Best Total Amount", key: "bestTotalAmount" },
+                          { label: "Quantity Available", key: "quantityAvailable" },
                           { label: "Price", key: "price" },
                           { label: "Discount", key: "discount" },
-                          {
-                            label: "Realised Discount",
-                            key: "realisedDiscount",
-                          },
+                          { label: "Realised Discount", key: "realisedDiscount" },
                           { label: "GST", key: "gst" },
                           { label: "Realised GST", key: "realisedGST" },
                           { label: "Landed Amount", key: "landedAmount" },
-                          {
-                            label: "Participant Attachment",
-                            key: "participantAttachment",
-                          },
+                          { label: "Participant Attachment", key: "participantAttachment" },
                           { label: "Total Amount", key: "totalAmount" },
                           { label: "bid Id", key: "bid_id" },
                           { label: "Material ID", key: "material_id" },
@@ -787,6 +777,7 @@ export default function AllocationTab({ isCounterOffer }) {
                           { label: "vendor name", key: "vendor_name" },
                           { label: "pms supplier id", key: "pms_supplier_id" },
                           { label: "material name", key: "material_name" },
+                          // { label: "PO Exist", key: "po_exist" },
                           ...extraColumns
                             .filter((column) => /^[A-Z]/.test(column))
                             .map((column) => ({
@@ -806,12 +797,10 @@ export default function AllocationTab({ isCounterOffer }) {
 
                             return {
                               bestTotalAmount: material.total_amount || "_",
-                              quantityAvailable:
-                                material.quantity_available || "_",
+                              quantityAvailable: material.quantity_available || "_",
                               price: material.price || "_",
                               discount: material.discount || "_",
-                              realisedDiscount:
-                                material.realised_discount || "_",
+                              realisedDiscount: material.realised_discount || "_",
                               gst: material.gst || "_",
                               realisedGST: material.realised_gst || "_",
                               landedAmount: material.landed_amount || "_",
@@ -825,6 +814,7 @@ export default function AllocationTab({ isCounterOffer }) {
                               pms_supplier_id: material.pms_supplier_id,
                               material_name: material.material_name,
                               isChecked: material.isChecked || false,
+                              po_exist: material.po_exist, // <-- you get po_exist here
                               ...material.extra_columns.reduce(
                                 (acc, column) => {
                                   if (extraData[column]?.value) {
@@ -874,7 +864,7 @@ export default function AllocationTab({ isCounterOffer }) {
                             false,
                             updatedSegeregatedMaterialData
                           );
-                        }} // Pass the event object
+                        }}
                         onSelectAll={() => handleSelectAll(materialData)}
                         accordianIndex={ind}
                       />

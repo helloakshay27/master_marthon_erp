@@ -1106,6 +1106,7 @@ export default function ParticipantsTab({ id }) {
                 <div className="d-flex flex-column justify-content-center align-items-center h-100">
                   {filteredTableData.length > 0 ? (
                     <Table
+                    scrollable={true}
                       columns={participantsTabColumns}
                       showCheckbox={true}
                       data={filteredTableData.map((vendor, index) => ({

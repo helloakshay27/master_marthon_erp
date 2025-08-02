@@ -146,7 +146,11 @@ export default function Accordion({
                       <input
                         type="checkbox"
                         checked={updatedTableData[index]?.isChecked || false}
+                        // Disable if po_exist is true for this bid/material
+                        disabled={updatedTableData[index]?.po_exist}
                         onChange={(e) => {
+                          console.log("Checkbox clicked", e.target.checked, updatedTableData[index]);
+                          
                           e.stopPropagation(); // Prevent the event from bubbling up to the button
                           const isChecked = e.target.checked;
                           const bidId =
@@ -164,8 +168,8 @@ export default function Accordion({
 
                           setSegeregatedMaterialData((prevData) => {
                             const updatedData = prevData.map(
-                              (material, index) =>
-                                index === accordianIndex
+                              (material, idx) =>
+                                idx === accordianIndex
                                   ? {
                                       ...material,
                                       bids_values: material.bids_values.map(
@@ -192,7 +196,10 @@ export default function Accordion({
                         style={{ cursor: "pointer" }}
                       />
                     )}
-                    {amt}
+                    <span>
+                      {amt}
+                      {/* Show PO icon or text if po_exist is true */}
+                    </span>
                   </span>
                 ))}
               </span>

@@ -775,7 +775,7 @@ export default function ResponseTab({ isCounterOffer }) {
                                         }
                                       }
                                     }}
-                                    disabled={isCounterOffer}
+                                    // disabled={isCounterOffer}
                                   >
                                     Counter
                                   </button>

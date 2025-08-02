@@ -433,9 +433,10 @@ export default function CreateEvent() {
   };
 
   const handleAddDocumentRow = () => {
-    const newRow = { srNo: documentRows.length + 1, upload: null };
-    documentRowsRef.current.push(newRow);
-    setDocumentRows([...documentRowsRef.current]);
+    setDocumentRows(prevRows => [
+      ...prevRows,
+      { srNo: prevRows.length + 1, upload: null }
+    ]);
   };
 
   const handleRemoveDocumentRow = (index) => {
@@ -1186,62 +1187,144 @@ export default function CreateEvent() {
                   </button>
                 </div>
                 {/* Show filename in a separate column, like edit event */}
-                <Table
-                  columns={[
-                    { label: "Sr No", key: "srNo" },
-                    { label: "File Name", key: "fileName" },
-                    { label: "Upload File", key: "upload" },
-                    { label: "Action", key: "action" },
-                  ]}
-                  onRowSelect={undefined}
-                  resetSelectedRows={undefined}
-                  onResetComplete={undefined}
-                  data={documentRows.map((row, index) => ({
-                    srNo: row.srNo,
-                    fileName: (
-                      <td>
-                        {row?.upload?.filename || row.filename || "No File Selected"}
-                      </td>
-                    ),
-                    upload: (
-                      <td style={{ border: "none" }}>
-                        <input
-                          type="file"
-                          id={`file-input-${index}`}
-                          key={row?.srNo}
-                          style={{ display: "none" }}
-                          onChange={(e) => handleFileChange(index, e.target.files[0])}
-                          accept=".xlsx,.csv,.pdf,.docx,.doc,.xls,.txt,.png,.jpg,.jpeg,.zip,.rar,.jfif,.svg,.mp4,.mp3,.avi,.flv,.wmv"
+                <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
+  <table className="w-100">
+    <thead>
+      <tr>
+        <th className="main2-th">File Type</th>
+        <th className="main2-th">File Name </th>
+        <th className="main2-th">Upload At</th>
+        <th className="main2-th">Upload File</th>
+        <th className="main2-th" style={{ width: 100 }}>
+          Action
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {documentRows.map((row, index) => (
+        <tr key={row.id || index}>
+          <td>
+            <input
+              className="form-control document_content_type"
+              readOnly
+              disabled
+              value={row.fileType || row.content_type || ""}
+              placeholder="File Type"
+            />
+          </td>
+          <td>
+            <input
+              className="form-control file_name"
+              required
+              value={row.fileName || row.filename || ""}
+              onChange={e => {
+                setDocumentRows(prev => {
+                  const updated = [...prev];
+                  updated[index] = {
+                    ...updated[index],
+                    fileName: e.target.value,
+                  };
+                  return updated;
+                });
+              }}
+            />
+          </td>
+          <td>
+            <input
+              className="form-control created_at"
+              readOnly
+              disabled
+              type="datetime-local"
+              step="1"
+              value={
+                row.uploadDate ||
+                (row.created_at
+                  ? new Date(row.created_at).toISOString().slice(0, 19)
+                  : "")
+              }
+            />
+          </td>
+          <td>
+            {!row.isExisting && (
+              <input
+                type="file"
+                className="form-control"
+                required
+                onChange={e => {
+                  const file = e.target.files[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    const base64String = reader.result.split(",")[1];
+                    setDocumentRows(prev => {
+                      const updated = [...prev];
+                      updated[index] = {
+                        ...updated[index],
+                        upload: {
+                          filename: file.name,
+                          content: base64String,
+                          content_type: file.type,
+                        },
+                        fileName: file.name,
+                        fileType: file.type,
+                        isExisting: false,
+                        uploadDate: new Date().toISOString().slice(0, 19),
+                      };
+                      return updated;
+                    });
+                  };
+                  reader.readAsDataURL(file);
+                }}
+              />
+            )}
+          </td>
+          <td className="document">
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <div className="attachment-placeholder">
+                {row.isExisting && row.fileUrl && (
+                  <div className="file-box">
+                    <div className="image">
+                      <a href={row.fileUrl} target="_blank" rel="noreferrer">
+                        <img
+                          alt="preview"
+                          className="img-responsive"
+                          height={50}
+                          width={50}
+                          src={row.fileUrl}
                         />
-                        <label
-                          htmlFor={`file-input-${index}`}
-                          style={{
-                            display: "inline-block",
-                            width: "120px",
-                            padding: "8px",
-                            border: "1px solid #ccc",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            color: "#555",
-                            backgroundColor: "#f5f5f5",
-                            textAlign: "center",
-                          }}
-                        >
-                          Upload
-                        </label>
-                      </td>
-                    ),
-                    action: (
-                      <button
-                        className="btn btn-danger"
-                        onClick={() => handleRemoveDocumentRow(index)}
-                        disabled={documentRows.length === 1}
-                      >
-                        Remove
-                      </button>
-                    ),
-                  }))}
-                />
+                      </a>
+                    </div>
+                    <div className="file-name">
+                      <a href={row.fileUrl} download>
+                        <span className="material-symbols-outlined">file_download</span>
+                      </a>
+                      <span>{row.fileName || row.filename}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                className="btn btn-sm btn-link text-danger"
+                onClick={() => {
+                  setDocumentRows(prev => {
+                    // if (prev.length === 1) return prev;
+                    const updated = [...prev];
+                    updated.splice(index, 1);
+                    return updated;
+                  });
+                }}
+                disabled={documentRows.length === 1}
+              >
+                <span className="material-symbols-outlined">cancel</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
               </div>
 
               <div>
