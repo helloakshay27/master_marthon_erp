@@ -818,7 +818,7 @@ const ViewRate = () => {
                                     {msg.rate_id && (
                                         <a
                                             href={`/details-rate/${msg.rate_id}?token=${token}`}
-                                            target="_blank"
+                                            // target="_blank"
                                             rel="noopener noreferrer"
                                             style={{ color: "#8b0203", textDecoration: "underline", marginLeft: 8 }}
                                         >
