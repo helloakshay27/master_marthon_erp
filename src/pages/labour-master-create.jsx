@@ -25,19 +25,40 @@ const LabourMasterCreate = () => {
     const [showResultModal, setShowResultModal] = useState(false);
     const [resultMessages, setResultMessages] = useState([]);
     const [supplierOptions, setSupplierOptions] = useState([]);
+    const [labourSubTypeOptions, setLabourSubTypeOptions] = useState([]);
+    const [departmentOptions, setDepartmentOptions] = useState([]);
+    const [supervisorOptions, setSupervisorOptions] = useState([]);
 
     useEffect(() => {
         const fetchSuppliers = async () => {
             try {
                 const token = "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414";
                 const response = await axios.get(
-                    `https://marathon.lockated.com/labours/supplier_list.json?token=${token}`
+                    `${baseURL}labours/supplier_list.json?token=${token}`
                 );
                 const formattedOptions = response.data.suppliers.map((s) => ({
                     value: s.id,
                     label: s.full_name,
                 }));
                 setSupplierOptions(formattedOptions);
+
+                const formattedSubTypes = response.data.labour_sub_types.map((t) => ({
+                    value: t.id,
+                    label: t.labour_sub_type,
+                }));
+                setLabourSubTypeOptions(formattedSubTypes); // ⬅️ new state
+                const formattedDepartments = response.data.departments.map((d) => ({
+                    value: d.id,
+                    label: d.name,
+                }));
+                setDepartmentOptions(formattedDepartments);
+
+                // Supervisors
+                const formattedSupervisors = response.data.supervisors.map((s) => ({
+                    value: s.id,
+                    label: s.full_name,
+                }));
+                setSupervisorOptions(formattedSupervisors);
             } catch (error) {
                 console.error("Failed to fetch suppliers:", error);
             }
@@ -161,22 +182,22 @@ const LabourMasterCreate = () => {
         // { value: "terminated", label: "Terminated" },
 
     ];
-    const departmentOptions = [
-        { value: "Hr", label: "Human Resources" },
-        { value: "Finance", label: "Finance" },
-        { value: "Engineering", label: "Engineering" },
-        // { value: "sales", label: "Sales" },
-        // { value: "marketing", label: "Marketing" },
-        // { value: "operations", label: "Operations" },
-        // { value: "it", label: "IT Support" }
-    ];
-    const supervisorOptions = [
-        { value: "john_doe", label: "John Doe" },
-        { value: "jane_smith", label: "Jane Smith" },
-        { value: "amit_patel", label: "Amit Patel" },
-        // { value: "sunita_kumar", label: "Sunita Kumar" },
-        // { value: "rahul_sharma", label: "Rahul Sharma" }
-    ];
+    // const departmentOptions = [
+    //     { value: "Hr", label: "Human Resources" },
+    //     { value: "Finance", label: "Finance" },
+    //     { value: "Engineering", label: "Engineering" },
+    //     // { value: "sales", label: "Sales" },
+    //     // { value: "marketing", label: "Marketing" },
+    //     // { value: "operations", label: "Operations" },
+    //     // { value: "it", label: "IT Support" }
+    // ];
+    // const supervisorOptions = [
+    //     { value: "john_doe", label: "John Doe" },
+    //     { value: "jane_smith", label: "Jane Smith" },
+    //     { value: "amit_patel", label: "Amit Patel" },
+    //     // { value: "sunita_kumar", label: "Sunita Kumar" },
+    //     // { value: "rahul_sharma", label: "Rahul Sharma" }
+    // ];
     const documentOptions = [
         { value: "aadhar", label: "Aadhar Card" },
         { value: "pan", label: "PAN Card" },
@@ -184,10 +205,10 @@ const LabourMasterCreate = () => {
         { value: "training_cert", label: "Training Certificate" },
     ];
     const jobTitleOptions = [
-        { value: "electrician", label: "Electrician" },
-        { value: "plumber", label: "Plumber" },
-        { value: "carpenter", label: "Carpenter" },
-        { value: "project_manager", label: "Project Manager" },
+        { value: "Electrician", label: "Electrician" },
+        { value: "Plumber", label: "Plumber" },
+        { value: "Carpenter", label: "Carpenter" },
+        { value: "Project Manager", label: "Project Manager" },
     ];
 
     // attachment like mor start******
@@ -432,8 +453,8 @@ const LabourMasterCreate = () => {
         labour: {
             labour_code: formData.labour_code,
             // supplier:formData.contractor_name.value,
-            vendor_id: formData.contractor_name.value, // You can replace it if needed
-            labour_sub_type_id: 25,
+            vendor_id: formData?.contractor_name?.value, // You can replace it if needed
+            labour_sub_type_id: formData?.labour_sub_type,
             firstname: formData.first_name,
             lastname: formData.last_name,
             middlename: formData.middle_name,
@@ -448,8 +469,8 @@ const LabourMasterCreate = () => {
             hourly_rate: formData.hourly_rate,
             overtime_rate: formData.overtime_rate,
             address: formData.address,
-            department_id: 45,
-            supervisor_id: 22,
+            department_id: formData.department,
+            supervisor_id: formData.supervisor,
             hire_date: formData.hire_date,
             equipment_certification: formData.certifications,
             license_info: formData.license_info,
@@ -478,7 +499,7 @@ const LabourMasterCreate = () => {
                 labour_code: formData.labour_code,
                 vendor_id: formData.contractor_name.value, // You can replace it if needed
                 // supplier:formData.contractor_name,
-                labour_sub_type_id: 25,
+                labour_sub_type_id: formData?.labour_sub_type,
                 firstname: formData.first_name,
                 lastname: formData.last_name,
                 middlename: formData.middle_name,
@@ -493,8 +514,8 @@ const LabourMasterCreate = () => {
                 hourly_rate: formData.hourly_rate,
                 overtime_rate: formData.overtime_rate,
                 address: formData.address,
-                department_id: 45,
-                supervisor_id: 22,
+                department_id: formData.department,
+                supervisor_id: formData.supervisor,
                 hire_date: formData.hire_date,
                 equipment_certification: formData.certifications,
                 license_info: formData.license_info,
@@ -513,7 +534,7 @@ const LabourMasterCreate = () => {
             },
         }
 
-        console.log("payload submit:",payload)
+        console.log("payload submit:", payload)
         try {
             const response = await axios.post(
                 `${baseURL}labours.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
@@ -570,7 +591,24 @@ const LabourMasterCreate = () => {
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>Labour Sub Type <span>*</span></label>
-                                <input type="text" name="labour_sub_type" value={formData.labour_sub_type} onChange={handleInputChange} className="form-control" />
+                                {/* <input type="text" name="labour_sub_type" value={formData.labour_sub_type} onChange={handleInputChange} className="form-control" /> */}
+                                <SingleSelector
+                                    options={labourSubTypeOptions}
+                                    value={
+                                        labourSubTypeOptions.find(
+                                            (option) => option.value === formData.labour_sub_type
+                                        ) || null
+                                    }
+                                    onChange={(selectedOption) =>
+                                        handleInputChange({
+                                            target: {
+                                                name: "labour_sub_type",
+                                                value: selectedOption?.value || "",
+                                            },
+                                        })
+                                    }
+                                    placeholder="Select Sub Type"
+                                />
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>First Name <span>*</span></label>
@@ -628,7 +666,7 @@ const LabourMasterCreate = () => {
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>Work Shifts <span>*</span></label>
-                                <input type="text" name="work_shifts" value={formData.work_shifts} onChange={handleInputChange} className="form-control" />
+                                <input type="number" name="work_shifts" value={formData.work_shifts} onChange={handleInputChange} className="form-control" />
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>Availability <span>*</span></label>
@@ -687,6 +725,8 @@ const LabourMasterCreate = () => {
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>Department <span>*</span></label>
+
+
                                 <SingleSelector
                                     options={departmentOptions}
                                     value={
@@ -707,6 +747,7 @@ const LabourMasterCreate = () => {
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>Supervisor <span>*</span></label>
+
                                 <SingleSelector
                                     options={supervisorOptions}
                                     value={

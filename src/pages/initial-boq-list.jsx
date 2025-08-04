@@ -1686,7 +1686,7 @@ const InitialBOQList = () => {
                                     {msg.boq_id && (
                                         <a
                                             href={`/boq-details-page-master/${msg.boq_id}?token=${token}`}
-                                            target="_blank"
+                                            // target="_blank"
                                             rel="noopener noreferrer"
                                             style={{ color: "#8b0203", textDecoration: "underline", marginLeft: 8 }}
                                         >

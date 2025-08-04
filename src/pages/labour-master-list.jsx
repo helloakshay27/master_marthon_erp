@@ -64,7 +64,7 @@ const LabourMaster = () => {
   const [columnVisibility, setColumnVisibility] = useState({
     sr_no: true,
     labour_code: true,
-    contractor_name: true,
+    vendor_name: true,
     labour_sub_type: true,
     firstname: true,
     lastname: true,
@@ -87,7 +87,7 @@ const LabourMaster = () => {
     department: true,
     supervisor: true,
     hire_date: true,
-    certifications: true,
+    equipment_certification: true,
     // photo: true,
     // documents: true,
     license_info: true,
@@ -97,7 +97,7 @@ const LabourMaster = () => {
   const allColumns = [
     { field: "sr_no", headerName: "Sr No.", width: 100 },
     { field: "labour_code", headerName: "Labour Code/ID", width: 150 },
-    { field: "contractor_name", headerName: "Contractor Name", width: 180 },
+    { field: "vendor_name", headerName: "Contractor Name", width: 180 },
     { field: "labour_sub_type", headerName: "Labour Sub-Type", width: 150 },
     { field: "firstname", headerName: "First Name", width: 130 },
     { field: "lastname", headerName: "Last Name", width: 130 },
@@ -132,7 +132,7 @@ const LabourMaster = () => {
     { field: "department", headerName: "Department", width: 150 },
     { field: "supervisor", headerName: "Supervisor", width: 150 },
     { field: "hire_date", headerName: "Hire Date", width: 150 },
-    { field: "certifications", headerName: "Equipment Certifications", width: 200 },
+    { field: "equipment_certification", headerName: "Equipment Certifications", width: 200 },
     // { field: "photo", headerName: "Photo", width: 120 },
     // { field: "documents", headerName: "Documents", width: 150 },
     { field: "license_info", headerName: "License/Permit Information", width: 200 },
@@ -142,7 +142,7 @@ const LabourMaster = () => {
       width: 100,
       renderCell: (params) => (
         <>
-          <button className="btn mt-0 pt-0" onClick={() => handleDelete(params.row.id)}>
+          {/* <button className="btn mt-0 pt-0" onClick={() => handleDelete(params.row.id)}>
             <svg
               width="16"
               height="20"
@@ -155,7 +155,21 @@ const LabourMaster = () => {
                 fill="#B25657"
               />
             </svg>
-          </button>
+          </button> */}
+
+          <button className="btn" title="View" onClick={() => handleView(params.row)}>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    fill="currentColor"
+    className="bi bi-eye"
+    viewBox="0 0 16 16"
+  >
+    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
+    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
+  </svg>
+</button>
 
 
 
@@ -222,7 +236,12 @@ const LabourMaster = () => {
     return rowsToShow;
   };
 
- 
+ const handleEdit = (row) => {
+  navigate(`/labour-master-edit/${row.id}`); // passing full row via state (optional)
+};
+const handleView = (row) => {
+  navigate(`/labour-master-details/${row.id}`);
+};
  
   return (
     <>
