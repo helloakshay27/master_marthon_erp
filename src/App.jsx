@@ -122,6 +122,8 @@ import InviteVendor from "./pages/invite-vendor";
 import LabourMaster from "./pages/labour-master-list";
 import BillBookingEdit from "./pages/bill-booking-edit";
 import LabourMasterCreate from "./pages/labour-master-create";
+import LabourMasterEdit from "./pages/labour-master-edit";
+import LabourMasterDetails from "./pages/labour-master-details";
 
 function App() {
   return (
@@ -589,8 +591,12 @@ function App() {
             element={<LabourMasterCreate />}
           />
            <Route
-            path="/labour-master-edit"
-            element={<LabourMasterCreate />}
+            path="/labour-master-edit/:id"
+            element={<LabourMasterEdit />}
+          />
+           <Route
+            path="/labour-master-details/:id"
+            element={<LabourMasterDetails />}
           />
         </Routes>
       </div>

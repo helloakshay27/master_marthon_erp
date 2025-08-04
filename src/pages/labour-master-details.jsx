@@ -13,7 +13,7 @@ import { DownloadIcon } from "../components";
 
 
 
-const LabourMasterEdit = () => {
+const LabourMasterDetails = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const [showModal, setShowModal] = useState(false);
@@ -32,14 +32,12 @@ const LabourMasterEdit = () => {
     const [labourSubTypeOptions, setLabourSubTypeOptions] = useState([]);
     const [departmentOptions, setDepartmentOptions] = useState([]);
     const [supervisorOptions, setSupervisorOptions] = useState([]);
-    const [deletedDocumentIds, setDeletedDocumentIds] = useState([]);
-
+    
 
     const [labour, setLabour] = useState(null);
     const [documents, setDocuments] = useState([]);
 
     const [formData, setFormData] = useState({
-        id: null,
         labour_code: "",
         contractor_name: null,
         labour_sub_type: "",
@@ -56,7 +54,6 @@ const LabourMasterEdit = () => {
         bank_account_name: "",
         bank_account_no: "",
         bank_branch_name: "",
-        bank_detail_id: null,
         ifsc_code: "",
         union_memberships: "",
         hourly_rate: "",
@@ -92,7 +89,6 @@ const LabourMasterEdit = () => {
         if (!labour) return;
 
         setFormData({
-            id: labour.id || null,
             labour_code: labour.labour_code || "",
             contractor_name: labour.vendor_id
                 ? { value: labour.vendor_id, label: labour.vendor_name }
@@ -109,7 +105,6 @@ const LabourMasterEdit = () => {
             availability: labour.availability || "",
             employment_status: labour.employment_status || "",
             bank_account_name: labour.bank_name || "",
-            bank_detail_id: labour.bank_detail_id,
             bank_account_no: labour.account_number || "",
             bank_branch_name: labour.branch_name || "",
             ifsc_code: labour.ifsc_code || "",
@@ -507,86 +502,30 @@ const LabourMasterEdit = () => {
     };
 
 
-    // const allDocuments = initialDocumentTypes.map((docType) => {
-    //     // Find corresponding document from documents state
-    //     const existingDoc = documents.find(
-    //         (doc) => doc.document_type === docType.name
-    //     );
-
-    //     return {
-    //         document_type: docType.name,
-    //         id: null,
-    //         attachments:
-    //             existingDoc?.attachments?.map((attachment) => ({
-    //                 filename: attachment.filename,
-    //                 content_type: attachment.content_type,
-    //                 content: attachment.content,
-    //             })) || [], // If no attachments, pass empty array
-    //     };
-    // });
-
-
     const allDocuments = initialDocumentTypes.map((docType) => {
-        // Match the current document type with what's in state
+        // Find corresponding document from documents state
         const existingDoc = documents.find(
             (doc) => doc.document_type === docType.name
         );
 
-        // Check if it’s a newly added document (i.e., has valid attachment content)
-        const hasNewAttachments = existingDoc?.attachments?.some(
-            (att) => att?.content && att?.filename && att?.content_type
-        );
-
         return {
             document_type: docType.name,
-            attachments: hasNewAttachments
-                ? existingDoc.attachments.map((att) => ({
-                    filename: att.filename,
-                    content_type: att.content_type,
-                    content: att.content,
-                }))
-                : [], // Empty array if no valid new attachments
+            id: null,
+            attachments:
+                existingDoc?.attachments?.map((attachment) => ({
+                    filename: attachment.filename,
+                    content_type: attachment.content_type,
+                    content: attachment.content,
+                })) || [], // If no attachments, pass empty array
         };
     });
 
-    const handleDeleteDocument = (attachmentId) => {
-        // Add the id to deletedDocumentIds
-        setDeletedDocumentIds((prev) => [...prev, attachmentId]);
-
-        // Remove from selectedDocument.attachments
-        setSelectedDocument((prev) => {
-            if (!prev) return prev;
-            const updatedAttachments = prev.attachments.filter(
-                (attachment) => attachment.id !== attachmentId
-            );
-            return {
-                ...prev,
-                attachments: updatedAttachments,
-            };
-        });
-
-        // Remove from main documents state
-        setDocuments((prevDocs) =>
-            prevDocs.map((doc) => {
-                if (doc.document_type === selectedDocument.document_type) {
-                    return {
-                        ...doc,
-                        attachments: doc.attachments.filter(
-                            (attachment) => attachment.id !== attachmentId
-                        ),
-                    };
-                }
-                return doc;
-            })
-        );
-    };
-
     const payload = {
         labour: {
-            id: formData.id, // Include labour ID for update
             labour_code: formData.labour_code,
-            vendor_id: formData?.contractor_name?.value || "",
-            labour_sub_type_id: formData.labour_sub_type,
+            // supplier:formData.contractor_name.value,
+            vendor_id: formData?.contractor_name?.value, // You can replace it if needed
+            labour_sub_type_id: 25,
             firstname: formData.first_name,
             lastname: formData.last_name,
             middlename: formData.middle_name,
@@ -601,14 +540,13 @@ const LabourMasterEdit = () => {
             hourly_rate: formData.hourly_rate,
             overtime_rate: formData.overtime_rate,
             address: formData.address,
-            department_id: formData.department,
-            supervisor_id: formData.supervisor,
+            department_id: 45,
+            supervisor_id: 22,
             hire_date: formData.hire_date,
             equipment_certification: formData.certifications,
             license_info: formData.license_info,
 
             bank_detail_attributes: {
-                id: formData.bank_detail_id, // Make sure this exists for update
                 bank_name: formData.bank_account_name,
                 account_number: formData.bank_account_no,
                 confirm_account_number: formData.bank_account_no,
@@ -616,15 +554,11 @@ const LabourMasterEdit = () => {
                 ifsc_code: formData.ifsc_code,
             },
 
-            documents: allDocuments, // Expected to be in the correct format
+            documents: allDocuments,
 
-            avatar: labour?.avatar?.document_name
-                ? {} // Already present, so don't update
-                : formData.photo || {}, // Include only if new photo is added,
-
-            deleted_documents: deletedDocumentIds || [], // Pass IDs of deleted documents if any
+            avatar: formData.photo || {},
         },
-    };
+    }
 
     //   console.log("photo data:",formData.photo)
     console.log("payload create:", payload)
@@ -633,10 +567,10 @@ const LabourMasterEdit = () => {
 
         const payload = {
             labour: {
-                id: formData.id, // Include labour ID for update
                 labour_code: formData.labour_code,
-                vendor_id: formData?.contractor_name?.value || "",
-                labour_sub_type_id: formData.labour_sub_type,
+                vendor_id: formData.contractor_name.value, // You can replace it if needed
+                // supplier:formData.contractor_name,
+                labour_sub_type_id: 25,
                 firstname: formData.first_name,
                 lastname: formData.last_name,
                 middlename: formData.middle_name,
@@ -651,14 +585,13 @@ const LabourMasterEdit = () => {
                 hourly_rate: formData.hourly_rate,
                 overtime_rate: formData.overtime_rate,
                 address: formData.address,
-                department_id: formData.department,
-                supervisor_id: formData.supervisor,
+                department_id: 45,
+                supervisor_id: 22,
                 hire_date: formData.hire_date,
                 equipment_certification: formData.certifications,
                 license_info: formData.license_info,
 
                 bank_detail_attributes: {
-                    id: formData.bank_detail_id, // Make sure this exists for update
                     bank_name: formData.bank_account_name,
                     account_number: formData.bank_account_no,
                     confirm_account_number: formData.bank_account_no,
@@ -666,27 +599,23 @@ const LabourMasterEdit = () => {
                     ifsc_code: formData.ifsc_code,
                 },
 
-                documents: allDocuments, // Expected to be in the correct format
+                documents: allDocuments,
 
-                avatar: labour?.avatar?.document_name
-                    ? {} // Already present, so don't update
-                    : formData.photo || {}, // Include only if new photo is added,
-
-                deleted_documents: deletedDocumentIds || [], // Pass IDs of deleted documents if any
+                avatar: formData.photo || {},
             },
-        };
+        }
 
         console.log("payload submit:", payload)
         try {
-            const response = await axios.patch(
-                `${baseURL}labours/${id}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+            const response = await axios.post(
+                `${baseURL}labours.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
                 payload,
             );
 
             console.log('Success:', response.data);
-            alert("updated .....")
+            alert("created .....")
             // Optionally redirect
-            navigate(`/labour-master-list`);
+            //   navigate(`/credit-note-list?token=${token}`);
         } catch (error) {
             console.error('Error submitting data:', error);
             // Optionally show error message to user
@@ -712,476 +641,450 @@ const LabourMasterEdit = () => {
 
 
                     {/* <pre>{JSON.stringify(formData, null, 2)}</pre> */}
-
-                    <CollapsibleCard title="Labour Details" showCollapseButton={false}>
-
-                        <div className="row card-body mt-0 pt-0">
-                            <div className="col-md-4 mb-3">
-                                <label>Labour Code <span>*</span></label>
-                                <input type="text" name="labour_code" value={formData.labour_code} onChange={handleInputChange} className="form-control" />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Contractor Name <span>*</span></label>
-                                {/* <input type="text" name="contractor_name" value={formData.contractor_name} onChange={handleInputChange} className="form-control" /> */}
-
-                                <SingleSelector
-                                    options={supplierOptions}
-                                    value={formData.contractor_name}
-                                    onChange={handleSupplierChange}
-                                    placeholder="Select Contractor"
-                                />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Labour Sub Type <span>*</span></label>
-                                {/* <input type="text" name="labour_sub_type" value={formData.labour_sub_type} onChange={handleInputChange} className="form-control" /> */}
-                                <SingleSelector
-                                    options={labourSubTypeOptions}
-                                    value={
-                                        labourSubTypeOptions.find(
-                                            (option) => option.value === formData.labour_sub_type
-                                        ) || null
-                                    }
-                                    onChange={(selectedOption) =>
-                                        handleInputChange({
-                                            target: {
-                                                name: "labour_sub_type",
-                                                value: selectedOption?.value || "",
-                                            },
-                                        })
-                                    }
-                                    placeholder="Select Sub Type"
-                                />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>First Name <span>*</span></label>
-                                <input type="text" name="first_name" value={formData.first_name} onChange={handleInputChange} className="form-control" />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Last Name <span>*</span></label>
-                                <input type="text" name="last_name" value={formData.last_name} onChange={handleInputChange} className="form-control" />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Middle Name <span>*</span></label>
-                                <input type="text" name="middle_name" value={formData.middle_name} onChange={handleInputChange} className="form-control" />
-                            </div>
-
-                            <div className="col-md-4 mb-3">
-                                <label>Date of Birth</label>
-                                <input type="date" name="dob" value={formData.dob} onChange={handleInputChange} className="form-control" />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Phone Number</label>
-                                <input type="text" name="phone_number" value={formData.phone_number} onChange={handleInputChange} className="form-control" />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Job Title/Position <span>*</span></label>
-                                {/* <input type="text" name="job_title" value={formData.job_title} onChange={handleInputChange} className="form-control" /> */}
-
-                                <SingleSelector
-
-
-                                    options={jobTitleOptions}
-                                    value={jobTitleOptions.find((opt) => opt.value === formData.job_title) || null}
-                                    onChange={(selectedOption) =>
-                                        handleInputChange({
-                                            target: {
-                                                name: "job_title",
-                                                value: selectedOption?.value || "",
-                                            },
-                                        })
-                                    }
-                                    placeholder="Select Job Title"
-                                />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Labour Category <span>*</span></label>
-                                <SingleSelector
-                                    options={labourCategoryOptions}
-                                    value={labourCategoryOptions.find(option => option.value === formData.labour_category) || null}
-                                    onChange={(selectedOption) =>
-                                        handleInputChange({
-                                            target: { name: "labour_category", value: selectedOption?.value || "" },
-                                        })
-                                    }
-                                    placeholder="Select Labour Category"
-                                />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Work Shifts <span>*</span></label>
-                                <input type="number" name="work_shifts" value={formData.work_shifts} onChange={handleInputChange} className="form-control" />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Availability <span>*</span></label>
-                                <SingleSelector
-                                    options={availabilityOptions}
-                                    value={
-                                        availabilityOptions.find(
-                                            (option) => option.value === formData.availability
-                                        ) || null
-                                    }
-                                    onChange={(selectedOption) =>
-                                        handleInputChange({
-                                            target: { name: "availability", value: selectedOption?.value || "" },
-                                        })
-                                    }
-                                    placeholder="Select Availability"
-                                />
-
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Employment Status <span>*</span></label>
-                                <SingleSelector
-                                    options={employmentStatusOptions}
-                                    value={
-                                        employmentStatusOptions.find(
-                                            (option) => option.value === formData.employment_status
-                                        ) || null
-                                    }
-                                    onChange={(selectedOption) =>
-                                        handleInputChange({
-                                            target: {
-                                                name: "employment_status",
-                                                value: selectedOption?.value || "",
-                                            },
-                                        })
-                                    }
-                                    placeholder="Select Employment Status"
-                                />
-
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Union Memberships <span>*</span></label>
-                                <input type="text" name="union_memberships" value={formData.union_memberships} onChange={handleInputChange} className="form-control" />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Hourly Rate/Salary <span>*</span></label>
-                                <input type="number" name="hourly_rate" value={formData.hourly_rate} onChange={handleInputChange} className="form-control" />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Overtime Rate <span>*</span></label>
-                                <input type="number" name="overtime_rate" value={formData.overtime_rate} onChange={handleInputChange} className="form-control" />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Address <span>*</span></label>
-                                <textarea name="address" value={formData.address} onChange={handleInputChange} className="form-control" />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Department <span>*</span></label>
-
-
-                                <SingleSelector
-                                    options={departmentOptions}
-                                    value={
-                                        departmentOptions.find(
-                                            (option) => option.value === formData.department
-                                        ) || null
-                                    }
-                                    onChange={(selectedOption) =>
-                                        handleInputChange({
-                                            target: {
-                                                name: "department",
-                                                value: selectedOption?.value || "",
-                                            },
-                                        })
-                                    }
-                                    placeholder="Select Department"
-                                />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Supervisor <span>*</span></label>
-
-                                <SingleSelector
-                                    options={supervisorOptions}
-                                    value={
-                                        supervisorOptions.find(
-                                            (option) => option.value === formData.supervisor
-                                        ) || null
-                                    }
-                                    onChange={(selectedOption) =>
-                                        handleInputChange({
-                                            target: {
-                                                name: "supervisor",
-                                                value: selectedOption?.value || "",
-                                            },
-                                        })
-                                    }
-                                    placeholder="Select Supervisor"
-                                />
-
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Hire Date <span>*</span></label>
-                                <input type="date" name="hire_date" value={formData.hire_date} onChange={handleInputChange} className="form-control" />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Equipment Certifications  <span>*</span></label>
-                                <input type="text" name="certifications" value={formData.certifications} onChange={handleInputChange} className="form-control" />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>Photo  <span>*</span></label>
-                                <input type="file" name="photo" onChange={(e) => handleFileChange2(e, "photo")} className="form-control" />
-                            </div>
-                            <div className="col-md-4 mb-3">
-                                <label>License/Permit Information <span>*</span></label>
-                                <input type="text" name="license_info" value={formData.license_info} onChange={handleInputChange} className="form-control" />
-                            </div>
-
-                            {/* <div className="d-flex justify-content-between mt-5 p-0 ">
-                                <h5 className=" ">Document Attachment</h5>
-                                <div
-                                    className="card-tools d-flex"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#attachModal"
-                                    // onClick={openattachModal}
-                                    onClick={handleAddRow}
-                                >
-                                    <button
-                                        className="purple-btn2 mb-2 "
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#attachModal"
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width={20}
-                                            height={20}
-                                            fill="currentColor"
-                                            className="bi bi-plus"
-                                            viewBox="0 0 16 16"
-                                        >
-                                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                        </svg>
-                                        <span>Add Attachments</span>
-                                    </button>
+                    <div className="card p-3">
+                        <div className="details_page">
+                            <div className="row px-3 ">
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Labour Code</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.labour_code || "-"}
+                                        </label>
+                                    </div>
                                 </div>
-                            </div> */}
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Contractor Name</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.vendor_name || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Labour Sub Type</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.labour_sub_type || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>First Name</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.firstname || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Last Name</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.lastname || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Middle Name</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.middlename || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Date of Birth</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
 
-                            {/* <div className="tbl-container mb-4 mt-2 p-0" style={{ maxHeight: "500px" }}>
-                                <table className="w-100">
-                                    <thead>
-                                        <tr>
-                                            <th className="main2-th">File Type</th>
-                                            <th>Document</th>
-                                            <th className="main2-th">File Name </th>
-                                            <th className="main2-th">Upload At</th>
-                                            <th className="main2-th">Upload File</th>
-                                            <th className="main2-th" style={{ width: 100 }}>
-                                                Action
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {attachments.map((att, index) => (
-                                            <tr key={att.id}>
-                                                <td>
-                                                    <input
-                                                        className="form-control document_content_type"
-                                                        readOnly
-                                                        disabled
-                                                        value={att.fileType}
-                                                        placeholder="File Type"
-                                                    />
-                                                </td>
-                                                <td >
-                                                    <SingleSelector
-                                                        options={documentOptions}
-                                                        value={documentOptions.find((opt) => opt.value === att.document) || null}
-                                                        onChange={(selected) => handleDocumentChange(att.id, selected?.value || "")}
-                                                        placeholder="Select Document"
-                                                    />
-                                                </td>
-                                                <td style={{ minWidth: "400px" }}>
-                                                    <input
-                                                        className="form-control file_name"
-                                                        required
-                                                        value={att.fileName}
-                                                        onChange={(e) => handleFileNameChange(att.id, e.target.value)}
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <input
-                                                        className="form-control created_at"
-                                                        readOnly
-                                                        disabled
-                                                        type="datetime-local"
-                                                        step="1"
-                                                        value={att.uploadDate || ""}
-                                                    />
-                                                </td>
-                                                <td style={{ minWidth: "300px" }}>
-                                                    {!att.isExisting && (
-                                                        <input
-                                                            type="file"
-                                                            className="form-control"
-                                                            required
-                                                            onChange={(e) => handleFileChange(e, att.id)}
-                                                        />
-                                                    )}
-                                                </td>
-                                                <td className="document">
-                                                    <div style={{ display: "flex", alignItems: "center" }}>
-                                                        <div className="attachment-placeholder">
-                                                            {att.isExisting && (
-                                                                <div className="file-box">
-                                                                    <div className="image">
-                                                                        <a href={att.fileUrl} target="_blank" rel="noreferrer">
-                                                                            <img
-                                                                                alt="preview"
-                                                                                className="img-responsive"
-                                                                                height={50}
-                                                                                width={50}
-                                                                                src={att.fileUrl}
-                                                                            />
-                                                                        </a>
-                                                                    </div>
-                                                                    <div className="file-name">
-                                                                        <a href={att.fileUrl} download>
-                                                                            <span className="material-symbols-outlined">file_download</span>
-                                                                        </a>
-                                                                        <span>{att.fileName}</span>
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-sm btn-link text-danger"
-                                                            onClick={() => handleRemove(att.id)}
-                                                        >
-                                                            <span className="material-symbols-outlined">cancel</span>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                            {labour?.date_of_birth
+                                                ? new Date(labour.date_of_birth)
+                                                    .toLocaleDateString("en-GB")
+                                                    .split("/")
+                                                    .join("-")
+                                                : "-"}
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Phone Number</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.phone_no || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Job Title/Position</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.job_title || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Labour Category</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.labour_category || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Work Shifts</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.work_shift || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Availability </label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.availability || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Employment Status</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.employment_status || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Union Memberships</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.union_membership || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Hourly Rate/Salary</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.hourly_rate || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Overtime Rate</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.overtime_rate || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Address</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.address || "-"}
+                                        </label>
+                                    </div>
+                                </div>
 
 
-                            </div> */}
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Supervisor</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.supervisor || "-"}
+                                        </label>
+                                    </div>
+                                </div>
 
 
 
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Department</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.department || "-"}
+                                        </label>
+                                    </div>
+                                </div>
 
-                            <div className="d-flex justify-content-between mt-5 p-0">
-                                <h5 className=" ">Document Attachments</h5>
-                                <div className="card-tools d-flex">
-                                    <div>
-                                        <button
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Hire Date</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+
+                                            {labour?.hire_date
+                                                ? new Date(labour.hire_date)
+                                                    .toLocaleDateString("en-GB")
+                                                    .split("/")
+                                                    .join("-")
+                                                : "-"}
+                                        </label>
+                                    </div>
+                                </div>
+
+
+
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Equipment Certifications </label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.equipment_certification || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+
+
+
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Photo </label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {/* {labour?.department || "-"} */}
+                                            
+                                                {labour?.avatar?.blob_id ? (
+                                                    <>
+        <a
+          href={`${baseURL}labours/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${labour.avatar.blob_id}`}
+          rel="noopener noreferrer"
+          target="_blank"
+          className="me-2"
+        >
+          <DownloadIcon />
+           
+        </a>
+        {labour.avatar.document_name}
+        </>
+      ) : (
+        "-"
+      )}
+                                        </label>
+                                    </div>
+                                </div>
+
+
+
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>License/Permit Information </label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.license_info || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+
+
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Bank Account Name</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.bank_name || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+
+
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Bank Account No</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.account_number || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+
+
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Bank Branch Name</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.branch_name || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                        <label>Bank Branch IFSC Code</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">:</span>
+                                            {labour?.ifsc_code || "-"}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div className="d-flex justify-content-between mt-5 p-0">
+                        <h5 className=" ">Document Attachments</h5>
+                        <div className="card-tools d-flex">
+                            <div>
+                                {/* <button
                                             className="purple-btn2 me-2"
                                             data-bs-toggle="modal"
                                             data-bs-target="#RevisionModal"
                                             onClick={openattachModal}
                                         >
                                             + Attach Document
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div
-                                className="tbl-container mt-3 p-0"
-                                style={{ maxHeight: "400px" }}
-                            >
-                                <table className="w-100">
-                                    <thead>
-                                        <tr>
-                                            <th className="text-start">Sr. No.</th>
-                                            <th className="text-start">Document Name</th>
-                                            <th className="text-start">No. of Documents</th>
-                                            <th className="text-start">Attach Additional Copy</th>
-                                        </tr>
-                                    </thead>
-                                    {/* // Replace your existing table body with this */}
-                                    <tbody>
-                                        {documents.map((doc, index) => (
-                                            <tr key={index}>
-                                                <td className="text-start">{index + 1}</td>
-                                                <td className="text-start">{doc.document_type}</td>
-                                                <td
-                                                    className="text-start"
-                                                    style={{
-                                                        color: "#8b0203",
-                                                        textDecoration: "underline",
-                                                        cursor: "pointer",
-                                                    }}
-                                                    onClick={() =>
-                                                        handleDocumentCountClick(doc.document_type)
-                                                    }
-                                                >
-                                                    {doc.attachments.length}
-                                                </td>
-                                                <td className="text-start">
-                                                    <button
-                                                        className="text-decoration-underline border-0 bg-transparent"
-                                                        style={{
-                                                            color: "#8b0203",
-                                                            textDecoration: "underline",
-                                                            cursor: "pointer",
-                                                        }}
-                                                        onClick={() => {
-                                                            setNewDocument((prev) => ({
-                                                                ...prev,
-                                                                document_type: doc.document_type,
-                                                            }));
-                                                            openattachModal();
-                                                        }}
-                                                    >
-                                                        + Attach
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </button> */}
                             </div>
                         </div>
-
-
-
-                    </CollapsibleCard>
-
-                    <div className="mt-5">
-                        <CollapsibleCard title="Bank Details" showCollapseButton={false}>
-
-                            <div className="row card-body mt-0 pt-0">
-
-
-                                <div className="col-md-4 mb-3">
-                                    <label>Bank Account Name <span>*</span></label>
-                                    <input type="text" name="bank_account_name" value={formData.bank_account_name} onChange={handleInputChange} className="form-control" />
-                                </div>
-                                <div className="col-md-4 mb-3">
-                                    <label>Bank Account No <span>*</span></label>
-                                    <input type="text" name="bank_account_no" value={formData.bank_account_no} onChange={handleInputChange} className="form-control" />
-                                </div>
-                                <div className="col-md-4 mb-3">
-                                    <label>Bank Branch Name <span>*</span></label>
-                                    <input type="text" name="bank_branch_name" value={formData.bank_branch_name} onChange={handleInputChange} className="form-control" />
-                                </div>
-                                <div className="col-md-4 mb-3">
-                                    <label>Bank Branch IFSC Code <span>*</span></label>
-                                    <input type="text" name="ifsc_code" value={formData.ifsc_code} onChange={handleInputChange} className="form-control" />
-                                </div>
-
-
-
-
-                            </div>
-
-
-
-                        </CollapsibleCard>
-
+                    </div>
+                    <div
+                        className="tbl-container mt-3 p-0"
+                        style={{ maxHeight: "400px" }}
+                    >
+                        <table className="w-100">
+                            <thead>
+                                <tr>
+                                    <th className="text-start">Sr. No.</th>
+                                    <th className="text-start">Document Name</th>
+                                    <th className="text-start">No. of Documents</th>
+                                    <th className="text-start">Attach Additional Copy</th>
+                                </tr>
+                            </thead>
+                            {/* // Replace your existing table body with this */}
+                            <tbody>
+                                {documents.map((doc, index) => (
+                                    <tr key={index}>
+                                        <td className="text-start">{index + 1}</td>
+                                        <td className="text-start">{doc.document_type}</td>
+                                        <td
+                                            className="text-start"
+                                            style={{
+                                                color: "#8b0203",
+                                                textDecoration: "underline",
+                                                cursor: "pointer",
+                                            }}
+                                            onClick={() =>
+                                                handleDocumentCountClick(doc.document_type)
+                                            }
+                                        >
+                                            {doc.attachments.length}
+                                        </td>
+                                        <td className="text-start">
+                                            <button
+                                                className="text-decoration-underline border-0 bg-transparent"
+                                                style={{
+                                                    color: "#8b0203",
+                                                    textDecoration: "underline",
+                                                    cursor: "pointer",
+                                                }}
+                                                onClick={() => {
+                                                    setNewDocument((prev) => ({
+                                                        ...prev,
+                                                        document_type: doc.document_type,
+                                                    }));
+                                                    openattachModal();
+                                                }}
+                                            >
+                                                + Attach
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
 
 
 
 
+
+
+
                     <div className="row mt-4 justify-content-center w-100">
-                        <div className="col-md-2 mt-2">
+                        {/* <div className="col-md-2 mt-2">
                             <button className="purple-btn2 w-100"
                                 onClick={handleSubmit}
                             >Submit</button>
-                        </div>
+                        </div> */}
                         <div className="col-md-2">
                             <button className="purple-btn1 w-100"
                             // onClick={() => navigate(`/credit-note-list?token=${token}`)}
@@ -1224,7 +1127,7 @@ const LabourMasterEdit = () => {
 
             <Modal
                 centered
-                size="xl"
+                size="lg"
                 show={viewDocumentModal}
                 onHide={() => {
                     setviewDocumentModal(false);
@@ -1242,7 +1145,7 @@ const LabourMasterEdit = () => {
                         <div className="d-flex justify-content-between mt-3 me-2">
                             <h5>Latest Documents</h5>
                             <div className="card-tools d-flex">
-                                <button
+                                {/* <button
                                     className="purple-btn2 rounded-3"
                                     onClick={() => {
                                         setviewDocumentModal(false);
@@ -1264,7 +1167,7 @@ const LabourMasterEdit = () => {
                                         <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
                                     </svg>
                                     <span>Attach</span>
-                                </button>
+                                </button> */}
                             </div>
                         </div>
                         <div className="tbl-container px-0">
@@ -1307,34 +1210,11 @@ const LabourMasterEdit = () => {
                                                 //   download={attachment.filename}
                                                 > <DownloadIcon />
                                                 </a>
-
-
-
-                                                {attachment.id && (
-
-                                                    <button className="btn mt-0 pt-0" onClick={() => handleDeleteDocument(attachment.id)}>
-                                                        <svg
-                                                            width="16"
-                                                            height="20"
-                                                            viewBox="0 0 16 20"
-                                                            fill="none"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                        >
-                                                            <path
-                                                                d="M14.7921 2.44744H10.8778C10.6485 1.0366 9.42966 0 8.00005 0C6.57044 0 5.35166 1.03658 5.12225 2.44744H1.20804C0.505736 2.48655 -0.0338884 3.08663 0.00166019 3.78893V5.26379C0.00166019 5.38914 0.0514441 5.51003 0.140345 5.59895C0.229246 5.68787 0.35015 5.73764 0.475508 5.73764H1.45253V17.2689C1.45253 18.4468 2.40731 19.4025 3.58612 19.4025H12.4139C13.5927 19.4025 14.5475 18.4468 14.5475 17.2689V5.73764H15.5245C15.6498 5.73764 15.7707 5.68785 15.8597 5.59895C15.9486 5.51005 15.9983 5.38914 15.9983 5.26379V3.78893C16.0339 3.08663 15.4944 2.48654 14.7921 2.44744ZM8.00005 0.94948C8.90595 0.94948 9.69537 1.56823 9.91317 2.44744H6.08703C6.30483 1.56821 7.09417 0.94948 8.00005 0.94948ZM13.5998 17.2688C13.5998 17.5835 13.4744 17.8849 13.2522 18.1072C13.0299 18.3294 12.7285 18.4539 12.4138 18.4539H3.58608C2.93089 18.4539 2.40017 17.9231 2.40017 17.2688V5.73762H13.5998L13.5998 17.2688ZM15.0506 4.78996H0.949274V3.78895C0.949274 3.56404 1.08707 3.39512 1.20797 3.39512H14.792C14.9129 3.39512 15.0507 3.56314 15.0507 3.78895L15.0506 4.78996ZM4.91788 16.5533V7.63931C4.91788 7.37706 5.13035 7.16548 5.3926 7.16548C5.65396 7.16548 5.86643 7.37706 5.86643 7.63931V16.5533C5.86643 16.8147 5.65396 17.0271 5.3926 17.0271C5.13035 17.0271 4.91788 16.8147 4.91788 16.5533ZM7.52531 16.5533L7.5262 7.63931C7.5262 7.37706 7.73778 7.16548 8.00003 7.16548C8.26228 7.16548 8.47386 7.37706 8.47386 7.63931V16.5533C8.47386 16.8147 8.26228 17.0271 8.00003 17.0271C7.73778 17.0271 7.5262 16.8147 7.5262 16.5533H7.52531ZM10.1327 16.5533L10.1336 7.63931C10.1336 7.37706 10.3461 7.16548 10.6075 7.16548C10.8697 7.16548 11.0822 7.37706 11.0822 7.63931V16.5533C11.0822 16.8147 10.8697 17.0271 10.6075 17.0271C10.3461 17.0271 10.1336 16.8147 10.1336 16.5533H10.1327Z"
-                                                                fill="#B25657"
-                                                            />
-                                                        </svg>
-                                                    </button>
-                                                )}
-
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
-
-                            {console.log("Deleted Attachment IDs:", deletedDocumentIds)}
                         </div>
                         <div className="mt-3 me-2">
                             <h5>Document Attachment History</h5>
@@ -1367,8 +1247,6 @@ const LabourMasterEdit = () => {
                                                     return `${day}-${month}-${year}`;
                                                 })()
                                             }</td>
-
-
                                             <td>{attachment.created_by}</td>
                                             <td>
                                                 <a
@@ -1516,4 +1394,4 @@ const LabourMasterEdit = () => {
     )
 }
 
-export default LabourMasterEdit;
+export default LabourMasterDetails;
