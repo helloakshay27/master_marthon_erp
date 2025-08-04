@@ -1,122 +1,1718 @@
-import React from 'react'
+import React, { useState, useEffect, useCallback } from "react";
+import { Modal, Button, Form } from "react-bootstrap";
+import axios from "axios";
+import SingleSelector from "../components/base/Select/SingleSelector";
+import MultiSelector from "../components/base/Select/MultiSelector";
+import SelectBox from "../components/base/Select/SelectBox";
+import { baseURL } from "../confi/apiDomain";
 
 const PoCreate = () => {
-  return (
-   <>
+  // State variables for the modal
+  const [showModal, setShowModal] = useState(false);
+  const [editRowIndex, setEditRowIndex] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
 
-  {/* <main className="h-100 w-100"> */}
-    
-    {/* top navigation above */}
-    <div className="main-content">
-     
-      {/* sidebar ends above */}
-      {/* webpage conteaint start */}
-      <div className="website-content container-fluid">
-        <div className="module-data-section ">
-          <a href="">Home &gt; Purchase &gt; MTO &gt; MTO Pending Approval</a>
-          <h5 className="mt-3">Create Purchase Order</h5>
-          <div className="row my-4 align-items-center">
-            <div className="col-md-12 ">
-              <div className="mor-tabs mt-4">
-                <ul
-                  className="nav nav-pills mb-3 justify-content-center"
-                  id="pills-tab"
-                  role="tablist"
-                >
-                  <li className="nav-item" role="presentation">
-                    <button
-                      className="nav-link"
-                      data-bs-toggle="pill"
-                      data-bs-target="#create-mor"
-                      type="button"
-                      role="tab"
-                      aria-controls="create-mor"
-                      aria-selected="false"
-                    >
-                      MOR
-                    </button>
-                  </li>
-                  <li className="nav-item" role="presentation">
-                    <button
-                      className="nav-link"
-                      data-bs-toggle="pill"
-                      data-bs-target="#mor-approval-create"
-                      type="button"
-                      role="tab"
-                      aria-controls="mor-approval-create"
-                      aria-selected="true"
-                    >
-                      MTO Creation
-                    </button>
-                  </li>
-                  <li className="nav-item" role="presentation">
-                    <button
-                      className="nav-link"
-                      id="pills-contact-tab"
-                      data-bs-toggle="pill"
-                      data-bs-target="#pills-contact"
-                      type="button"
-                      role="tab"
-                      aria-controls="pills-contact"
-                      aria-selected="false"
-                    >
-                      MTO Approval
-                    </button>
-                  </li>
-                  <li className="nav-item" role="presentation">
-                    <button
-                      className="nav-link active"
-                      id="pills-contact-tab"
-                      data-bs-toggle="pill"
-                      data-bs-target="#pills-contact"
-                      type="button"
-                      role="tab"
-                      aria-controls="pills-contact"
-                      aria-selected="false"
-                    >
-                      PO
-                    </button>
-                  </li>
-                  <li className="nav-item" role="presentation">
-                    <button
-                      className="nav-link"
-                      id="pills-contact-tab"
-                      data-bs-toggle="pill"
-                      data-bs-target="#pills-contact"
-                      type="button"
-                      role="tab"
-                      aria-controls="pills-contact"
-                      aria-selected="false"
-                    >
-                      Material Received
-                    </button>
-                  </li>
-                  <li className="nav-item" role="presentation">
-                    <button
-                      className="nav-link"
-                      id="pills-contact-tab"
-                      data-bs-toggle="pill"
-                      data-bs-target="#pills-contact"
-                      type="button"
-                      role="tab"
-                      aria-controls="pills-contact"
-                      aria-selected="false"
-                    >
-                      Material Issued
-                    </button>
-                  </li>
-                  <li className="nav-item" role="presentation" />
-                </ul>
-              </div>
-              <div className="card  ms-3">
-                <div className="card-header">
-                  <h3 className="card-title">Po Type</h3>
+  // Tax modal state variables
+  const [showTaxModal, setShowTaxModal] = useState(false);
+  const [tableId, setTableId] = useState(null);
+  const [taxRateData, setTaxRateData] = useState({});
+  const [taxOptions, setTaxOptions] = useState([]);
+  const [deductionTaxOptions, setDeductionTaxOptions] = useState([]);
+  const [taxPercentageOptions, setTaxPercentageOptions] = useState([]);
+  const [materialTaxPercentages, setMaterialTaxPercentages] = useState({});
+
+  // Form data state
+  const [formData, setFormData] = useState({
+    materialType: "",
+    materialSubType: "",
+    material: "",
+    genericSpecification: "",
+    colour: "",
+    brand: "",
+    effectiveDate: "",
+    rate: "",
+    uom: "",
+  });
+
+  // States to store data company, project ,subproject ,wing
+  const [companies, setCompanies] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedSite, setSelectedSite] = useState(null);
+  const [selectedWing, setSelectedWing] = useState(null);
+  const [siteOptions, setSiteOptions] = useState([]);
+  const [wingsOptions, setWingsOptions] = useState([]);
+
+  // PO form state
+  const [poDate, setPoDate] = useState(new Date().toISOString().split("T")[0]);
+  const [createdOn, setCreatedOn] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+
+  // Material data from API response
+  const [submittedMaterials, setSubmittedMaterials] = useState([]);
+  const [purchaseOrderId, setPurchaseOrderId] = useState(null);
+
+  // Terms and conditions state
+  const [termsConditions, setTermsConditions] = useState([]);
+  const [selectedConditionCategory, setSelectedConditionCategory] =
+    useState(null);
+  const [conditionCategories, setConditionCategories] = useState([]);
+  const [materialTermConditions, setMaterialTermConditions] = useState([]);
+
+  // Supplier state
+  const [suppliers, setSuppliers] = useState([]);
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
+
+  // Loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch company data on component mount
+  useEffect(() => {
+    axios
+      .get(`${baseURL}pms/company_setups.json?token=${token}`)
+      .then((response) => {
+        setCompanies(response.data.companies);
+      })
+      .catch((error) => {
+        console.error("Error fetching company data:", error);
+      });
+  }, []);
+
+  // Fetch suppliers data on component mount
+  useEffect(() => {
+    axios
+      .get(`${baseURL}pms/suppliers.json?token=${token}`)
+      .then((response) => {
+        setSuppliers(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching suppliers data:", error);
+      });
+  }, []);
+
+  // Handle company selection
+  const handleCompanyChange = (selectedOption) => {
+    setSelectedCompany(selectedOption); // Set selected company
+    // setSelectedProject(null); // Reset project selection
+    // setSelectedSite(null); // Reset site selection
+    // setSelectedWing(null); // Reset wing selection
+    // setProjects([]); // Reset projects
+    // setSiteOptions([]); // Reset site options
+    // setWingsOptions([]); // Reset wings options
+
+    if (selectedOption) {
+      // Find the selected company from the list
+      const selectedCompanyData = companies.find(
+        (company) => company.id === selectedOption.value
+      );
+      setProjects(
+        selectedCompanyData?.projects.map((prj) => ({
+          value: prj.id,
+          label: prj.name,
+        }))
+      );
+    }
+  };
+
+  // Handle supplier selection
+  const handleSupplierChange = (selectedOption) => {
+    setSelectedSupplier(selectedOption);
+  };
+  // Map companies to options for the dropdown
+  const companyOptions = companies.map((company) => ({
+    value: company.id,
+    label: company.company_name,
+  }));
+
+  // Map suppliers to options for the dropdown
+  const supplierOptions = suppliers.map((supplier) => ({
+    value: supplier.id,
+    label: supplier.organization_name || supplier.full_name,
+  }));
+
+  // State for dropdown options
+  const [inventoryTypes2, setInventoryTypes2] = useState([]);
+  const [selectedInventory2, setSelectedInventory2] = useState(null);
+  const [inventorySubTypes2, setInventorySubTypes2] = useState([]);
+  const [selectedSubType2, setSelectedSubType2] = useState(null);
+  const [inventoryMaterialTypes2, setInventoryMaterialTypes2] = useState([]);
+  const [selectedInventoryMaterialTypes2, setSelectedInventoryMaterialTypes2] =
+    useState(null);
+  const [unitOfMeasures, setUnitOfMeasures] = useState([]);
+  const [selectedUnit, setSelectedUnit] = useState(null);
+  const [genericSpecifications, setGenericSpecifications] = useState([]);
+  const [selectedGenericSpecifications, setSelectedGenericSpecifications] =
+    useState(null);
+  const [colors, setColors] = useState([]);
+  const [selectedColors, setSelectedColors] = useState(null);
+  const [inventoryBrands, setInventoryBrands] = useState([]);
+  const [selectedInventoryBrands, setSelectedInventoryBrands] = useState(null);
+
+  // Get token from URL
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
+
+  // Table data state
+  const [tableData, setTableData] = useState([]);
+
+  // Handler functions
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSelectorChange = (field, selectedOption) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: selectedOption ? selectedOption.value : "",
+    }));
+
+    // Update the selectedInventory2 state when material type is selected
+    if (field === "materialType") {
+      setSelectedInventory2(selectedOption);
+      // Clear dependent fields when material type changes
+      setFormData((prev) => ({
+        ...prev,
+        materialSubType: "",
+        material: "",
+        genericSpecification: "",
+        colour: "",
+        brand: "",
+        uom: "",
+      }));
+    }
+  };
+
+  const handleCreate = (e) => {
+    // Prevent form submission and page refresh
+    e.preventDefault();
+
+    // Validation logic here
+    const errors = {};
+    if (!formData.materialType)
+      errors.materialType = "Material Type is required";
+    if (!formData.materialSubType)
+      errors.materialSubType = "Material Sub Type is required";
+    if (!formData.material) errors.material = "Material is required";
+
+    if (!formData.uom) errors.uom = "UOM is required";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    // Add to table data or update existing
+    const newRow = {
+      id: editRowIndex !== null ? tableData[editRowIndex].id : Date.now(),
+      materialType: formData.materialType,
+      materialTypeLabel:
+        inventoryTypes2.find((opt) => opt.value === formData.materialType)
+          ?.label || "",
+      materialSubType: formData.materialSubType,
+      materialSubTypeLabel:
+        inventorySubTypes2.find((opt) => opt.value === formData.materialSubType)
+          ?.label || "",
+      material: formData.material,
+      materialLabel:
+        inventoryMaterialTypes2.find((opt) => opt.value === formData.material)
+          ?.label || "",
+      genericSpecification: formData.genericSpecification,
+      genericSpecificationLabel:
+        genericSpecifications.find(
+          (opt) => opt.value === formData.genericSpecification
+        )?.label || "",
+      colour: formData.colour,
+      colourLabel:
+        colors.find((opt) => opt.value === formData.colour)?.label || "",
+      brand: formData.brand,
+      brandLabel:
+        inventoryBrands.find((opt) => opt.value === formData.brand)?.label ||
+        "",
+      uom: formData.uom,
+      uomLabel:
+        unitOfMeasures.find((opt) => opt.value === formData.uom)?.label || "",
+      effectiveDate: formData.effectiveDate,
+    };
+
+    if (editRowIndex !== null) {
+      // Update existing row
+      setTableData((prev) =>
+        prev.map((row, index) => (index === editRowIndex ? newRow : row))
+      );
+    } else {
+      // Add new row
+      setTableData((prev) => [...prev, newRow]);
+    }
+
+    // Reset form
+    setFormData({
+      materialType: "",
+      materialSubType: "",
+      material: "",
+      genericSpecification: "",
+      colour: "",
+      brand: "",
+      effectiveDate: "",
+      uom: "",
+    });
+
+    setShowModal(false);
+    setEditRowIndex(null);
+    setFieldErrors({});
+  };
+
+  const handleEffectiveDateChange = (id, value) => {
+    setTableData((prev) =>
+      prev.map((row) => {
+        if (row.id === id) {
+          return { ...row, effectiveDate: value };
+        }
+        return row;
+      })
+    );
+  };
+
+  const handleEditRow = (index, material) => {
+    const row = tableData[index];
+    setFormData({
+      materialType: row.materialType,
+      materialSubType: row.materialSubType,
+      material: row.material,
+      genericSpecification: row.genericSpecification,
+      colour: row.colour,
+      brand: row.brand,
+      effectiveDate: row.effectiveDate,
+      uom: row.uom,
+    });
+    setEditRowIndex(index);
+    setShowModal(true);
+  };
+
+  const handleDeleteRow = (index) => {
+    setTableData((prev) =>
+      prev.map((row, i) =>
+        i === index
+          ? { ...row, _destroy: true } // Mark for deletion
+          : row
+      )
+    );
+  };
+
+  // Handle submit button click
+  const handleSubmitMaterials = async () => {
+    console.log("Submit button clicked");
+    console.log("tableData:", tableData);
+    console.log("selectedCompany:", selectedCompany);
+
+    // Simple test alert
+
+    if (!selectedCompany) {
+      console.log("No company selected");
+      alert("Please select a company.");
+      return;
+    }
+
+    // Filter out deleted rows for validation
+    const activeRows = tableData.filter((row) => !row._destroy);
+
+    if (activeRows.length === 0) {
+      console.log("No materials in table");
+      alert("Please add at least one material before submitting.");
+      return;
+    }
+
+    // Check if any row is missing a material
+    const missingMaterial = activeRows.some((row) => !row.material);
+    console.log("missingMaterial:", missingMaterial);
+    if (missingMaterial) {
+      console.log("Some rows missing material");
+      alert("Please select a material for all rows before submitting.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    // Prepare materials array for API
+    const materials = tableData.map((row) => ({
+      id: row.id, // Include ID for existing records
+      pms_inventory_id: row.material,
+      unit_of_measure_id: row.uom,
+      pms_inventory_sub_type_id: row.materialSubType,
+      pms_generic_info_id: row.genericSpecification || null,
+      pms_colour_id: row.colour || null,
+      pms_brand_id: row.brand || null,
+      _destroy: row._destroy || false, // Include destroy flag
+    }));
+
+    const payload = {
+      company_id: selectedCompany.value,
+      materials: materials,
+    };
+
+    // Add po_id only if we have a purchase order ID from previous submission
+    if (purchaseOrderId) {
+      payload.po_id = purchaseOrderId;
+      console.log("Including po_id in payload:", purchaseOrderId);
+    } else {
+      console.log("No po_id included in payload (first submission)");
+    }
+
+    try {
+      const response = await axios.post(
+        `${baseURL}purchase_orders/ropo_material_details.json?token=${token}`,
+        payload
+      );
+
+      if (response.status === 200 || response.status === 201) {
+        console.log("API Response:", response.data);
+
+        // Store the materials data from API response
+        if (response.data.success && response.data.materials) {
+          setSubmittedMaterials(response.data.materials);
+        }
+
+        // Store the purchase order ID for future submissions
+        if (response.data.success && response.data.purchase_order_id) {
+          setPurchaseOrderId(response.data.purchase_order_id);
+          console.log(
+            "Purchase Order ID stored:",
+            response.data.purchase_order_id
+          );
+        }
+
+        alert("Materials submitted successfully!");
+        // Change tab to Rate & Taxes
+        const rateTaxesTab = document.querySelector(
+          '[data-bs-target="#Domestic2"]'
+        );
+        if (rateTaxesTab) {
+          rateTaxesTab.click();
+        }
+      }
+    } catch (error) {
+      console.error("Error submitting materials:", error);
+      alert("Error submitting materials. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Tax modal functions
+  const handleOpenTaxModal = async (rowIndex) => {
+    console.log("Opening tax modal for row:", rowIndex);
+    console.log("Current tax options:", taxOptions);
+    setTableId(rowIndex);
+    setShowTaxModal(true);
+
+    // Get the material ID from submitted materials
+    const material = submittedMaterials[rowIndex];
+    if (material && material.id) {
+      try {
+        console.log("Fetching rate details for material ID:", material.id);
+        const response = await axios.get(
+          `${baseURL}po_mor_inventories/${material.id}/ropo_rate_details.json?token=${token}`
+        );
+
+        console.log("Rate details API response:", response.data);
+
+        // Map the API response to our tax data structure
+        const rateData = response.data;
+        setTaxRateData((prev) => ({
+          ...prev,
+          [rowIndex]: {
+            material: rateData.material_name,
+            hsnCode: rateData.hsn_code,
+            ratePerNos: rateData.rate_per_nos?.toString(),
+            totalPoQty: rateData.order_qty?.toString(),
+            discount: rateData.discount_per?.toString(),
+            materialCost: rateData.material_cost?.toString(),
+            discountRate: rateData.discount_rate?.toString(),
+            afterDiscountValue: rateData.after_discount_value?.toString(),
+            remark: rateData.remarks || "",
+
+            netCost: rateData.total_material_cost?.toString(),
+            pms_inventory_id: rateData.pms_inventory_id || null, // Store pms_inventory_id
+            addition_bid_material_tax_details:
+              rateData.addition_tax_details?.map((tax) => ({
+                id: tax.id,
+                resource_id: tax.resource_id,
+                tax_category_id: tax.tax_category_id,
+                taxChargeType:
+                  taxOptions.find((option) => option.id === tax.resource_id)
+                    ?.value || tax.resource_type,
+                taxType: tax.resource_type, // Set taxType based on API response
+                taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
+                percentageId: tax.percentage_id || null, // Add percentageId from API response
+                inclusive: tax.inclusive,
+                amount: tax.amount?.toString() || "0",
+              })) || [],
+            deduction_bid_material_tax_details:
+              rateData.deduction_tax_details?.map((tax) => ({
+                id: tax.id,
+                resource_id: tax.resource_id,
+                tax_category_id: tax.tax_category_id,
+                taxChargeType:
+                  deductionTaxOptions.find(
+                    (option) => option.id === tax.resource_id
+                  )?.value || tax.resource_type,
+                taxType: tax.resource_type, // Set taxType based on API response
+                taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
+                percentageId: tax.percentage_id || null, // Add percentageId from API response
+                inclusive: tax.inclusive,
+                amount: tax.amount?.toString() || "0",
+              })) || [],
+          },
+        }));
+
+        // Fetch tax percentages for each tax item after setting the data
+        const pmsInventoryId = rateData.pms_inventory_id || material.id;
+
+        // Fetch percentages for addition taxes
+        for (const tax of rateData.addition_tax_details || []) {
+          if (tax.tax_category_id) {
+            try {
+              const percentages = await fetchTaxPercentagesByMaterial(
+                pmsInventoryId,
+                tax.tax_category_id
+              );
+              setMaterialTaxPercentages((prev) => ({
+                ...prev,
+                [tax.id]: percentages,
+              }));
+            } catch (error) {
+              console.error(
+                `Error fetching percentages for tax ${tax.id}:`,
+                error
+              );
+            }
+          }
+        }
+
+        // Fetch percentages for deduction taxes
+        for (const tax of rateData.deduction_tax_details || []) {
+          if (tax.tax_category_id) {
+            try {
+              const percentages = await fetchTaxPercentagesByMaterial(
+                pmsInventoryId,
+                tax.tax_category_id
+              );
+              setMaterialTaxPercentages((prev) => ({
+                ...prev,
+                [tax.id]: percentages,
+              }));
+            } catch (error) {
+              console.error(
+                `Error fetching percentages for tax ${tax.id}:`,
+                error
+              );
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching rate details:", error);
+        // Fallback to default data if API fails
+        if (!taxRateData[rowIndex]) {
+          setTaxRateData((prev) => ({
+            ...prev,
+            [rowIndex]: {
+              material: "Sample Material",
+              hsnCode: "123456",
+              ratePerNos: "100",
+              totalPoQty: "10",
+              discount: "5",
+              materialCost: "950",
+              discountRate: "95",
+              afterDiscountValue: "950",
+              remark: "",
+              netCost: "950",
+              addition_bid_material_tax_details: [],
+              deduction_bid_material_tax_details: [],
+            },
+          }));
+        }
+      }
+    } else {
+      // Fallback if no material data
+      if (!taxRateData[rowIndex]) {
+        setTaxRateData((prev) => ({
+          ...prev,
+          [rowIndex]: {
+            material: "Sample Material",
+            hsnCode: "123456",
+            ratePerNos: "100",
+            totalPoQty: "10",
+            discount: "5",
+            materialCost: "950",
+            discountRate: "95",
+            afterDiscountValue: "950",
+            remark: "",
+            netCost: "950",
+            addition_bid_material_tax_details: [],
+            deduction_bid_material_tax_details: [],
+          },
+        }));
+      }
+    }
+  };
+
+  const handleCloseTaxModal = () => {
+    setShowTaxModal(false);
+    setTableId(null);
+  };
+
+  const addAdditionTaxCharge = (rowIndex) => {
+    const newTaxCharge = {
+      id: Date.now(),
+      taxChargeType: "",
+      taxChargePerUom: "",
+      inclusive: false,
+      amount: "0",
+      taxType: "TaxCharge", // Default to TaxCharge
+    };
+
+    setTaxRateData((prev) => {
+      const updatedData = { ...prev };
+      updatedData[rowIndex] = {
+        ...updatedData[rowIndex],
+        addition_bid_material_tax_details: [
+          ...(updatedData[rowIndex]?.addition_bid_material_tax_details || []),
+          newTaxCharge,
+        ],
+      };
+
+      // Recalculate net cost after adding new tax charge
+      const newNetCost = calculateNetCostWithTaxes(
+        updatedData[rowIndex]?.afterDiscountValue || 0,
+        updatedData[rowIndex]?.addition_bid_material_tax_details || [],
+        updatedData[rowIndex]?.deduction_bid_material_tax_details || []
+      );
+
+      updatedData[rowIndex].netCost = newNetCost.toString();
+      return updatedData;
+    });
+  };
+
+  const addDeductionTaxCharge = (rowIndex) => {
+    const newTaxCharge = {
+      id: Date.now(),
+      taxChargeType: "",
+      taxChargePerUom: "",
+      inclusive: false,
+      amount: "0",
+      taxType: "TaxCharge", // Default to TaxCharge
+    };
+
+    setTaxRateData((prev) => {
+      const updatedData = { ...prev };
+      updatedData[rowIndex] = {
+        ...updatedData[rowIndex],
+        deduction_bid_material_tax_details: [
+          ...(updatedData[rowIndex]?.deduction_bid_material_tax_details || []),
+          newTaxCharge,
+        ],
+      };
+
+      // Recalculate net cost after adding new tax charge
+      const newNetCost = calculateNetCostWithTaxes(
+        updatedData[rowIndex]?.afterDiscountValue || 0,
+        updatedData[rowIndex]?.addition_bid_material_tax_details || [],
+        updatedData[rowIndex]?.deduction_bid_material_tax_details || []
+      );
+
+      updatedData[rowIndex].netCost = newNetCost.toString();
+      return updatedData;
+    });
+  };
+
+  const removeTaxChargeItem = (rowIndex, id, type) => {
+    setTaxRateData((prev) => ({
+      ...prev,
+      [rowIndex]: {
+        ...prev[rowIndex],
+        [type === "addition"
+          ? "addition_bid_material_tax_details"
+          : "deduction_bid_material_tax_details"]: prev[rowIndex][
+          type === "addition"
+            ? "addition_bid_material_tax_details"
+            : "deduction_bid_material_tax_details"
+        ].map((item) =>
+          item.id === id
+            ? { ...item, _destroy: true } // Mark for deletion
+            : item
+        ),
+      },
+    }));
+  };
+
+  const handleTaxChargeChange = useCallback(
+    (rowIndex, id, field, value, type) => {
+      setTaxRateData((prev) => {
+        const updatedData = { ...prev };
+        const taxDetails =
+          type === "addition"
+            ? updatedData[rowIndex]?.addition_bid_material_tax_details || []
+            : updatedData[rowIndex]?.deduction_bid_material_tax_details || [];
+
+        const taxIndex = taxDetails.findIndex((tax) => tax.id === id);
+        if (taxIndex !== -1) {
+          const currentTax = { ...taxDetails[taxIndex] };
+
+          // Handle different tax types
+          if (field === "taxChargeType") {
+            // Find the selected tax option to determine type
+            const selectedTaxOption =
+              type === "addition"
+                ? taxOptions.find((option) => option.value === value)
+                : deductionTaxOptions.find((option) => option.value === value);
+
+            // Set the tax type for later reference
+            currentTax.taxType = selectedTaxOption?.type || "TaxCharge";
+            currentTax[field] = value;
+
+            // Clear amount when tax type changes
+            currentTax.amount = "0";
+            currentTax.taxChargePerUom = "";
+            currentTax.percentageId = null; // Clear percentage ID
+          } else if (field === "taxChargePerUom") {
+            // Auto-calculate amount based on tax type
+            currentTax[field] = value;
+
+            // Find the percentage ID from materialTaxPercentages
+            if (value && value.includes("%")) {
+              const percentage = parseFloat(value.replace("%", "")) || 0;
+              const percentages = materialTaxPercentages[currentTax.id] || [];
+              const percentageData = percentages.find(
+                (p) => p.percentage === percentage
+              );
+              currentTax.percentageId = percentageData?.id || null;
+
+              console.log("Setting percentageId for tax:", {
+                taxId: currentTax.id,
+                taxType: type,
+                percentage: percentage,
+                percentageData: percentageData,
+                percentageId: currentTax.percentageId,
+              });
+            }
+
+            if (currentTax.taxChargeType) {
+              const baseAmount =
+                parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
+              let calculatedAmount = 0;
+
+              // Check if it's a percentage-based tax (TaxCategory)
+              if (value && value.includes("%")) {
+                const percentage = parseFloat(value.replace("%", "")) || 0;
+                calculatedAmount = (baseAmount * percentage) / 100;
+              } else if (value && !isNaN(parseFloat(value))) {
+                // Fixed amount (TaxCharge)
+                calculatedAmount = parseFloat(value) || 0;
+              }
+
+              currentTax.amount = calculatedAmount.toString();
+            }
+          } else if (field === "amount") {
+            // Handle direct amount input for TaxCharge type
+            currentTax[field] = value;
+
+            // For TaxCategory, amount is auto-calculated from percentage
+            if (
+              currentTax.taxType === "TaxCategory" &&
+              currentTax.taxChargePerUom
+            ) {
+              const baseAmount =
+                parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
+              const percentage =
+                parseFloat(currentTax.taxChargePerUom.replace("%", "")) || 0;
+              const calculatedAmount = (baseAmount * percentage) / 100;
+              currentTax.amount = calculatedAmount.toString();
+            }
+          } else {
+            // Handle other fields (inclusive, etc.)
+            currentTax[field] = value;
+          }
+
+          taxDetails[taxIndex] = currentTax;
+
+          if (type === "addition") {
+            updatedData[rowIndex].addition_bid_material_tax_details =
+              taxDetails;
+          } else {
+            updatedData[rowIndex].deduction_bid_material_tax_details =
+              taxDetails;
+          }
+
+          // Recalculate net cost only if there are changes
+          if (taxIndex !== -1) {
+            const newNetCost = calculateNetCostWithTaxes(
+              updatedData[rowIndex]?.afterDiscountValue || 0,
+              updatedData[rowIndex]?.addition_bid_material_tax_details || [],
+              updatedData[rowIndex]?.deduction_bid_material_tax_details || []
+            );
+
+            updatedData[rowIndex].netCost = newNetCost.toString();
+          }
+        }
+
+        return updatedData;
+      });
+    },
+    [taxOptions]
+  );
+
+  const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
+    const percent = parseFloat(percentage) || 0;
+    const amount = parseFloat(baseAmount) || 0;
+
+    if (inclusive) {
+      return (amount * percent) / (100 + percent);
+    } else {
+      return (amount * percent) / 100;
+    }
+  };
+
+  const calculateNetCost = (rowIndex, updatedData = taxRateData) => {
+    const data = updatedData[rowIndex];
+    if (!data) return 0;
+
+    const baseAmount = parseFloat(data.afterDiscountValue) || 0;
+
+    // Calculate addition amounts
+    const additionAmount = (
+      data.addition_bid_material_tax_details || []
+    ).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+
+    // Calculate deduction amounts
+    const deductionAmount = (
+      data.deduction_bid_material_tax_details || []
+    ).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+
+    return baseAmount + additionAmount - deductionAmount;
+  };
+
+  const handleSaveTaxChanges = async () => {
+    if (tableId !== null) {
+      const currentData = taxRateData[tableId];
+      if (!currentData) {
+        console.error("No data available for saving");
+        return;
+      }
+
+      // Get the material ID from submitted materials
+      const material = submittedMaterials[tableId];
+      if (!material || !material.id) {
+        console.error("No material ID available for API call");
+        return;
+      }
+
+      // Prepare the payload based on the API response structure
+      const payload = {
+        po_mor_inventory: {
+          active: true,
+          additional_info: currentData.remark || "",
+          remarks: currentData.remark || "",
+          rate_per_nos: parseFloat(currentData.ratePerNos) || 0,
+          discount_per: parseFloat(currentData.discount) || 0,
+          discount_rate: parseFloat(currentData.discountRate) || 0,
+          material_cost: parseFloat(currentData.materialCost) || 0,
+          total_material_cost: parseFloat(currentData.netCost) || 0,
+          after_discount_value: parseFloat(currentData.afterDiscountValue) || 0,
+          tax_applicable_cost: parseFloat(currentData.afterDiscountValue) || 0,
+          material_inventory_id: currentData.pms_inventory_id || material.id,
+
+          // Map addition tax details
+          mor_inventory_tax_details_attributes: (
+            currentData.addition_bid_material_tax_details || []
+          ).map((tax) => {
+            const payload = {
+              resource_type: tax.taxType || "TaxCharge",
+              resource_id:
+                tax.percentageId ||
+                taxOptions.find((option) => option.value === tax.taxChargeType)
+                  ?.id ||
+                tax.resource_id,
+              amount: parseFloat(tax.amount) || 0,
+              inclusive: tax.inclusive || false,
+              addition: true,
+              remarks: `${tax.taxChargeType} - ${tax.amount}`,
+              _destroy: tax._destroy, // Include destroy flag
+            };
+
+            // Only include id for existing records (not temporary UI IDs)
+            if (tax.id && tax.id.toString().length < 10) {
+              payload.id = tax.id;
+            }
+
+            return payload;
+          }),
+
+          // Map deduction tax details
+          deduction_mor_inventory_tax_details_attributes: (
+            currentData.deduction_bid_material_tax_details || []
+          ).map((tax) => {
+            console.log("Processing deduction tax for payload:", {
+              taxId: tax.id,
+              taxChargeType: tax.taxChargeType,
+              taxType: tax.taxType,
+              percentageId: tax.percentageId,
+              resource_id: tax.resource_id,
+              amount: tax.amount,
+            });
+
+            const payload = {
+              resource_type: tax.taxType || "TaxCharge",
+              resource_id:
+                tax.percentageId ||
+                deductionTaxOptions.find(
+                  (option) => option.value === tax.taxChargeType
+                )?.id ||
+                tax.resource_id,
+              amount: parseFloat(tax.amount) || 0,
+              inclusive: tax.inclusive || false,
+              addition: false,
+              remarks: `${tax.taxChargeType} - ${tax.amount}`,
+              _destroy: tax._destroy, // Include destroy flag
+            };
+
+            console.log("Deduction tax payload:", payload);
+
+            // Only include id for existing records (not temporary UI IDs)
+            if (tax.id && tax.id.toString().length < 10) {
+              payload.id = tax.id;
+            }
+
+            return payload;
+          }),
+        },
+      };
+
+      console.log("Saving tax changes with payload:", payload);
+      console.log("Material ID:", material.id);
+
+      try {
+        const response = await axios.patch(
+          `${baseURL}po_mor_inventories/${material.id}.json?token=${token}`,
+          payload
+        );
+
+        console.log("API Response:", response.data);
+
+        if (response.status === 200 || response.status === 201) {
+          // Update local state with the response data
+          const responseData = response.data;
+          setTaxRateData((prev) => ({
+            ...prev,
+            [tableId]: {
+              ...prev[tableId],
+              ratePerNos:
+                responseData.rate_per_nos?.toString() || currentData.ratePerNos,
+              discount:
+                responseData.discount_per?.toString() || currentData.discount,
+              materialCost:
+                responseData.material_cost?.toString() ||
+                currentData.materialCost,
+              discountRate:
+                responseData.discount_rate?.toString() ||
+                currentData.discountRate,
+              afterDiscountValue:
+                responseData.after_discount_value?.toString() ||
+                currentData.afterDiscountValue,
+              netCost:
+                responseData.total_material_cost?.toString() ||
+                currentData.netCost,
+              remark: responseData.remarks || currentData.remark,
+              addition_bid_material_tax_details:
+                responseData.addition_tax_details?.map((tax) => ({
+                  id: tax.id,
+                  resource_id: tax.resource_id,
+                  taxChargeType:
+                    taxOptions.find((option) => option.id === tax.resource_id)
+                      ?.value || "",
+                  taxType: tax.resource_type,
+                  taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
+                  inclusive: tax.inclusive,
+                  amount: tax.amount?.toString() || "0",
+                })) || currentData.addition_bid_material_tax_details,
+              deduction_bid_material_tax_details:
+                responseData.deduction_tax_details?.map((tax) => ({
+                  id: tax.id,
+                  resource_id: tax.resource_id,
+                  taxChargeType:
+                    deductionTaxOptions.find(
+                      (option) => option.id === tax.resource_id
+                    )?.value || "",
+                  taxType: tax.resource_type,
+                  taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
+                  inclusive: tax.inclusive,
+                  amount: tax.amount?.toString() || "0",
+                })) || currentData.deduction_bid_material_tax_details,
+            },
+          }));
+
+          alert("Tax changes saved successfully!");
+        }
+      } catch (error) {
+        console.error("Error saving tax changes:", error);
+        alert("Error saving tax changes. Please try again.");
+      }
+    }
+    handleCloseTaxModal();
+  };
+
+  // Fetch tax options on component mount
+  useEffect(() => {
+    const fetchTaxOptions = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}rfq/events/taxes_dropdown?token=${token}`
+        );
+        console.log("Tax options response:", response.data);
+
+        // Check if response has taxes property
+        const taxesData = response.data.taxes || response.data;
+        const options = taxesData.map((tax) => ({
+          id: tax.id,
+          value: tax.name,
+          label: tax.name,
+          // type: tax.type,
+          type: tax.type === "TaxCategory" ? "TaxDetail" : tax.type,
+        }));
+        console.log("Formatted tax options:", options);
+        setTaxOptions(options);
+      } catch (error) {
+        console.error("Error fetching tax options:", error);
+        // Set fallback options if API fails
+        setTaxOptions([
+          { value: "CGST", label: "CGST", id: 19, type: "TaxCategory" },
+          { value: "SGST", label: "SGST", id: 18, type: "TaxCategory" },
+          { value: "IGST", label: "IGST", id: 20, type: "TaxCategory" },
+          {
+            value: "Handling Charges",
+            label: "Handling Charges",
+            id: 2,
+            type: "TaxCharge",
+          },
+          {
+            value: "Other charges",
+            label: "Other charges",
+            id: 4,
+            type: "TaxCharge",
+          },
+          { value: "Freight", label: "Freight", id: 5, type: "TaxCharge" },
+        ]);
+      }
+    };
+
+    const fetchDeductionTaxOptions = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}rfq/events/deduction_tax_details?token=${token}`
+        );
+
+        if (response.data?.taxes) {
+          const formattedOptions = response.data.taxes.map((tax) => ({
+            value: tax.name,
+            label: tax.name,
+            id: tax.id,
+            type: tax.type === "TaxCategory" ? "TaxDetail" : tax.type,
+          }));
+
+          setDeductionTaxOptions([
+            { value: "", label: "Select Tax & Charges" },
+            ...formattedOptions,
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching deduction tax data:", error);
+      }
+    };
+
+    const fetchTaxPercentages = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}rfq/events/tax_percentage?token=${token}`
+        );
+        setTaxPercentageOptions(response.data);
+      } catch (error) {
+        console.error("Error fetching tax percentages:", error);
+        setTaxPercentageOptions([]);
+      }
+    };
+
+    fetchTaxOptions();
+    fetchDeductionTaxOptions();
+    fetchTaxPercentages();
+  }, []);
+
+  // Fetch terms and conditions on component mount
+  useEffect(() => {
+    const fetchTermsConditions = async () => {
+      try {
+        const response = await axios.get(
+          `${baseURL}term_conditions.json?token=${token}&q[condition_category_condition_group_eq]=general`
+        );
+        console.log("Terms and conditions response:", response.data);
+        setTermsConditions(response.data);
+
+        // Extract unique condition categories from API response
+        const categories = [
+          ...new Set(response.data.map((item) => item.condition_category_name)),
+        ];
+        setConditionCategories(categories);
+        console.log("Available categories:", categories);
+      } catch (error) {
+        console.error("Error fetching terms and conditions:", error);
+        // Set fallback data if API fails
+        setTermsConditions([
+          {
+            id: 10,
+            condition: "the order should be delivered before delivery date",
+            condition_category_name: "validity",
+          },
+          {
+            id: 9,
+            condition: "aa",
+            condition_category_name: "as",
+          },
+        ]);
+        setConditionCategories(["validity", "as"]);
+      }
+    };
+
+    fetchTermsConditions();
+  }, []);
+
+  // Fetch material term conditions when submitted materials change
+  useEffect(() => {
+    const fetchMaterialTermConditions = async () => {
+      try {
+        // Get material IDs from submitted materials
+        const materialIds = submittedMaterials
+          .map((material) => material.id)
+          .join(",");
+
+        if (materialIds) {
+          const response = await axios.get(
+            `${baseURL}po_mor_inventories/material_term_conditions.json?po_mor_inventory_ids=${materialIds}&token=${token}`
+          );
+          console.log("Material term conditions response:", response.data);
+          setMaterialTermConditions(response.data || []);
+        } else {
+          setMaterialTermConditions([]);
+        }
+      } catch (error) {
+        console.error("Error fetching material term conditions:", error);
+        setMaterialTermConditions([]);
+      }
+    };
+
+    fetchMaterialTermConditions();
+  }, [submittedMaterials]);
+  // Fetching inventory types data from API on component mount
+  useEffect(() => {
+    axios
+      .get(
+        `${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`
+      )
+      .then((response) => {
+        const options = response.data.map((inventory) => ({
+          value: inventory.id,
+          label: inventory.name,
+        }));
+        setInventoryTypes2(options);
+      })
+      .catch((error) => {
+        console.error("Error fetching inventory types:", error);
+      });
+  }, []);
+
+  // Fetch inventory sub-types when an inventory type is selected
+  useEffect(() => {
+    if (selectedInventory2 || formData.materialType) {
+      const materialTypeId = selectedInventory2?.value || formData.materialType;
+      if (materialTypeId) {
+        axios
+          .get(
+            `${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${materialTypeId}&token=${token}`
+          )
+          .then((response) => {
+            const options = response.data.map((subType) => ({
+              value: subType.id,
+              label: subType.name,
+            }));
+            setInventorySubTypes2(options);
+          })
+          .catch((error) => {
+            console.error("Error fetching inventory sub-types:", error);
+          });
+      }
+    }
+  }, [selectedInventory2, formData.materialType]);
+
+  // Fetch inventory Material when an inventory type is selected
+  useEffect(() => {
+    if (selectedInventory2 || formData.materialType) {
+      const materialTypeId = selectedInventory2?.value || formData.materialType;
+      if (materialTypeId) {
+        axios
+          .get(
+            `${baseURL}pms/inventories.json?q[inventory_type_id_in]=${materialTypeId}&q[material_category_eq]=material&token=${token}`
+          )
+          .then((response) => {
+            const options = response.data.map((subType) => ({
+              value: subType.id,
+              label: subType.name,
+            }));
+            setInventoryMaterialTypes2(options);
+          })
+          .catch((error) => {
+            console.error("Error fetching inventory sub-types:", error);
+          });
+      }
+    }
+  }, [selectedInventory2, formData.materialType]);
+
+  // Fetch UOMs
+  useEffect(() => {
+    if (selectedInventoryMaterialTypes2 || formData.material) {
+      const materialId =
+        selectedInventoryMaterialTypes2?.value || formData.material;
+      if (materialId) {
+        axios
+          .get(
+            `${baseURL}unit_of_measures.json?q[material_uoms_material_id_eq]=${materialId}&token=${token}`
+          )
+          .then((response) => {
+            const options = response.data.map((unit) => ({
+              value: unit.id,
+              label: unit.name,
+            }));
+            setUnitOfMeasures(options);
+          })
+          .catch((error) => {
+            console.error("Error fetching unit of measures:", error);
+          });
+      }
+    }
+  }, [selectedInventoryMaterialTypes2, formData.material]);
+
+  // Fetch generic specifications
+  useEffect(() => {
+    if (selectedInventoryMaterialTypes2 || formData.material) {
+      const materialId =
+        selectedInventoryMaterialTypes2?.value || formData.material;
+      if (materialId) {
+        axios
+          .get(
+            `${baseURL}pms/generic_infos.json?q[material_id_eq]=${materialId}&token=${token}`
+          )
+          .then((response) => {
+            const options = response.data.map((specification) => ({
+              value: specification.id,
+              label: specification.generic_info,
+            }));
+            setGenericSpecifications(options);
+          })
+          .catch((error) => {
+            console.error("Error fetching generic specifications:", error);
+          });
+      }
+    }
+  }, [selectedInventoryMaterialTypes2, formData.material]);
+
+  // Fetch colors
+  useEffect(() => {
+    if (selectedInventoryMaterialTypes2 || formData.material) {
+      const materialId =
+        selectedInventoryMaterialTypes2?.value || formData.material;
+      if (materialId) {
+        axios
+          .get(
+            `${baseURL}pms/colours.json?q[material_id_eq]=${materialId}&token=${token}`
+          )
+          .then((response) => {
+            const options = response.data.map((color) => ({
+              value: color.id,
+              label: color.colour,
+            }));
+            setColors(options);
+          })
+          .catch((error) => {
+            console.error("Error fetching colors:", error);
+          });
+      }
+    }
+  }, [selectedInventoryMaterialTypes2, formData.material]);
+
+  // Fetch brands
+  useEffect(() => {
+    if (selectedInventoryMaterialTypes2 || formData.material) {
+      const materialId =
+        selectedInventoryMaterialTypes2?.value || formData.material;
+      if (materialId) {
+        axios
+          .get(
+            `${baseURL}pms/inventory_brands.json?q[material_id_eq]=${materialId}&token=${token}`
+          )
+          .then((response) => {
+            const options = response.data.map((brand) => ({
+              value: brand.id,
+              label: brand.brand_name,
+            }));
+            setInventoryBrands(options);
+          })
+          .catch((error) => {
+            console.error(
+              "Error fetching inventory brands for material:",
+              error
+            );
+          });
+      }
+    }
+  }, [selectedInventoryMaterialTypes2, formData.material]);
+
+  const [attachments, setAttachments] = useState([]);
+
+  const getLocalDateTime = () => {
+    const now = new Date();
+    const offset = now.getTimezoneOffset(); // in minutes
+    const localDate = new Date(now.getTime() - offset * 60000);
+    return localDate.toISOString().slice(0, 19); // "YYYY-MM-DDTHH:MM"
+  };
+
+  const handleAddRow = () => {
+    setAttachments((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        fileType: "",
+        fileName: "",
+        uploadDate: getLocalDateTime(),
+        fileUrl: "",
+        file: null,
+        isExisting: false,
+      },
+    ]);
+  };
+
+  const handleRemove = (id) => {
+    setAttachments((prev) => prev.filter((att) => att.id !== id));
+  };
+
+  const handleFileChange = (e, id) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const contentType = file.type;
+
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      const base64Content = reader.result.split(",")[1]; // Remove data:<type>;base64, prefix
+
+      setAttachments((prev) =>
+        prev.map((att) =>
+          att.id === id
+            ? {
+                ...att,
+                file,
+                fileType: contentType,
+                fileName: file.name,
+                isExisting: false,
+                document_file_name: att.document_file_name || file.name,
+                uploadDate: getLocalDateTime(),
+                attachments: [
+                  {
+                    filename: file.name,
+                    content: base64Content,
+                    content_type: contentType,
+                    document_file_name: att.document_file_name || file.name,
+                  },
+                ],
+              }
+            : att
+        )
+      );
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileNameChange = (id, newFileName) => {
+    setAttachments((prev) =>
+      prev.map((att) =>
+        att.id === id
+          ? {
+              ...att,
+              fileName: newFileName,
+              attachments: att.attachments?.length
+                ? [
+                    {
+                      ...att.attachments[0],
+                      filename: newFileName,
+                    },
+                  ]
+                : [],
+            }
+          : att
+      )
+    );
+  };
+
+  const attachmentsPayload = attachments.flatMap(
+    (att) => att.attachments || []
+  );
+
+  console.log("attachments:", attachmentsPayload);
+  // document secttion
+
+  // terms and condtion section
+  // ...existing code...
+  const [generalTerms, setGeneralTerms] = useState([]);
+
+  // Add new row to terms and conditions
+  const addTermsConditionRow = () => {
+    const newRow = {
+      id: Date.now(), // Temporary ID for new rows
+      condition_category_name: "",
+      condition: "",
+      isNew: true,
+    };
+    setTermsConditions([...termsConditions, newRow]);
+  };
+
+  // Remove row from terms and conditions
+  const removeTermsConditionRow = (index) => {
+    const updatedConditions = termsConditions.filter((_, i) => i !== index);
+    setTermsConditions(updatedConditions);
+  };
+
+  // Handle condition category change for a specific row
+  const handleConditionCategoryChange = (index, selectedCategory) => {
+    // Find existing conditions for the selected category from API data
+    const existingConditionsForCategory = termsConditions.filter(
+      (item) => item.condition_category_name === selectedCategory
+    );
+
+    // Get the first condition text for this category (or empty if none exists)
+    const defaultConditionText =
+      existingConditionsForCategory.length > 0
+        ? existingConditionsForCategory[0].condition
+        : "";
+
+    const updatedConditions = termsConditions.map((condition, i) =>
+      i === index
+        ? {
+            ...condition,
+            condition_category_name: selectedCategory,
+            condition: defaultConditionText, // Auto-populate with existing condition
+          }
+        : condition
+    );
+    setTermsConditions(updatedConditions);
+  };
+
+  // Handle condition text change for a specific row
+  const handleConditionTextChange = (index, conditionText) => {
+    const updatedConditions = termsConditions.map((condition, i) =>
+      i === index ? { ...condition, condition: conditionText } : condition
+    );
+    setTermsConditions(updatedConditions);
+  };
+
+  // Calculate discount rate based on rate per nos and discount percentage
+  const calculateDiscountRate = (ratePerNos, discountPercentage) => {
+    const rate = parseFloat(ratePerNos) || 0;
+    const discount = parseFloat(discountPercentage) || 0;
+    return Math.max(0, rate - discount);
+  };
+
+  // Calculate material cost based on rate per nos and total PO qty
+  const calculateMaterialCost = (ratePerNos, totalPoQty) => {
+    const rate = parseFloat(ratePerNos) || 0;
+    const qty = parseFloat(totalPoQty) || 0;
+    return rate * qty;
+  };
+
+  // Calculate after discount value based on material cost and discount percentage
+  const calculateAfterDiscountValue = (materialCost, discountPercentage) => {
+    const cost = parseFloat(materialCost) || 0;
+    const discount = parseFloat(discountPercentage) || 0;
+    const discountAmount = (cost * discount) / 100;
+    return Math.max(0, cost - discountAmount);
+  };
+
+  // Calculate net cost including tax charges and deductions
+  const calculateNetCostWithTaxes = (
+    baseAmount,
+    additionTaxes,
+    deductionTaxes
+  ) => {
+    let netCost = parseFloat(baseAmount) || 0;
+
+    // Add addition taxes/charges
+    additionTaxes.forEach((tax) => {
+      if (tax.amount) {
+        const amount = parseFloat(tax.amount) || 0;
+        netCost += amount;
+      }
+    });
+
+    // Subtract deduction taxes/charges
+    deductionTaxes.forEach((tax) => {
+      if (tax.amount) {
+        const amount = parseFloat(tax.amount) || 0;
+        netCost -= amount;
+      }
+    });
+
+    return Math.max(0, netCost);
+  };
+
+  // Handle rate per nos change with automatic discount rate calculation
+  const handleRatePerNosChange = useCallback(
+    (value) => {
+      const currentData = taxRateData[tableId];
+      if (!currentData) return;
+
+      const discountPercentage = parseFloat(currentData.discount) || 0;
+      const totalPoQty = parseFloat(currentData.totalPoQty) || 0;
+
+      const newDiscountRate = calculateDiscountRate(value, discountPercentage);
+      const newMaterialCost = calculateMaterialCost(value, totalPoQty);
+      const newAfterDiscountValue = calculateAfterDiscountValue(
+        newMaterialCost,
+        discountPercentage
+      );
+
+      setTaxRateData((prev) => ({
+        ...prev,
+        [tableId]: {
+          ...prev[tableId],
+          ratePerNos: value,
+          discountRate: newDiscountRate.toString(),
+          materialCost: newMaterialCost.toString(),
+          afterDiscountValue: newAfterDiscountValue.toString(),
+        },
+      }));
+    },
+    [tableId, taxRateData]
+  );
+
+  // Handle discount percentage change with automatic discount rate calculation
+  const handleDiscountPercentageChange = useCallback(
+    (value) => {
+      const currentData = taxRateData[tableId];
+      if (!currentData) return;
+
+      const ratePerNos = parseFloat(currentData.ratePerNos) || 0;
+      const totalPoQty = parseFloat(currentData.totalPoQty) || 0;
+
+      const newDiscountRate = calculateDiscountRate(ratePerNos, value);
+      const newMaterialCost = calculateMaterialCost(ratePerNos, totalPoQty);
+      const newAfterDiscountValue = calculateAfterDiscountValue(
+        newMaterialCost,
+        value
+      );
+
+      setTaxRateData((prev) => ({
+        ...prev,
+        [tableId]: {
+          ...prev[tableId],
+          discount: value,
+          discountRate: newDiscountRate.toString(),
+          materialCost: newMaterialCost.toString(),
+          afterDiscountValue: newAfterDiscountValue.toString(),
+        },
+      }));
+    },
+    [tableId, taxRateData]
+  );
+
+  // Handle tax category selection and fetch percentages
+  const handleTaxCategoryChange = async (rowIndex, taxCategoryId, taxId) => {
+    const currentData = taxRateData[rowIndex];
+    if (!currentData || !currentData.pms_inventory_id) {
+      console.error("No pms_inventory_id available for tax category change");
+      return;
+    }
+
+    console.log(
+      `Fetching tax percentages for pms_inventory_id: ${currentData.pms_inventory_id}, tax_category_id: ${taxCategoryId}`
+    );
+
+    try {
+      const percentages = await fetchTaxPercentagesByMaterial(
+        currentData.pms_inventory_id,
+        taxCategoryId
+      );
+      setMaterialTaxPercentages((prev) => ({
+        ...prev,
+        [taxId]: percentages,
+      }));
+      console.log("Fetched tax percentages:", percentages);
+    } catch (error) {
+      console.error("Error fetching tax percentages:", error);
+      setMaterialTaxPercentages((prev) => ({
+        ...prev,
+        [taxId]: [],
+      }));
+    }
+  };
+
+  // Get available conditions for a specific category
+  const getConditionsForCategory = (category) => {
+    return termsConditions.filter(
+      (item) => item.condition_category_name === category
+    );
+  };
+
+  // Helper function to check if a tax is TaxCategory type
+  const isTaxCategory = (taxType) => {
+    const taxOption = taxOptions.find((option) => option.value === taxType);
+    return taxOption?.type === "TaxCategory";
+  };
+
+  // Fetch tax percentages for specific material and tax category
+  const fetchTaxPercentagesByMaterial = async (
+    pmsInventoryId,
+    taxCategoryId
+  ) => {
+    try {
+      const response = await axios.get(
+        `${baseURL}tax_percentage_by_material.json?pms_inventory_id=${pmsInventoryId}&tax_category_id=${taxCategoryId}&token=${token}`
+      );
+      console.log("Tax percentages by material response:", response.data);
+      console.log("Percentages array:", response.data.percentages);
+      return response.data.percentages || [];
+    } catch (error) {
+      console.error("Error fetching tax percentages by material:", error);
+      return [];
+    }
+  };
+
+  // ...existing code...
+
+  return (
+    <>
+      {/* <main className="h-100 w-100"> */}
+
+      {/* top navigation above */}
+      <div className="main-content overflow-auto">
+        {/* sidebar ends above */}
+        {/* webpage conteaint start */}
+        <div className="website-content ">
+          <div className="module-data-section ">
+            <a href="">Home &gt; Purchase &gt; MTO &gt; MTO Pending Approval</a>
+            <h5 className="mt-3">Create Purchase Order</h5>
+            <div className="row my-4 container-fluid align-items-center">
+              <div className="col-md-12 ">
+                <div className="mor-tabs mt-4">
+                  <ul
+                    className="nav nav-pills mb-3 justify-content-center"
+                    id="pills-tab"
+                    role="tablist"
+                  >
+                    <li className="nav-item" role="presentation">
+                      <button
+                        className="nav-link"
+                        data-bs-toggle="pill"
+                        data-bs-target="#create-mor"
+                        type="button"
+                        role="tab"
+                        aria-controls="create-mor"
+                        aria-selected="false"
+                      >
+                        MOR
+                      </button>
+                    </li>
+                    <li className="nav-item" role="presentation">
+                      <button
+                        className="nav-link"
+                        data-bs-toggle="pill"
+                        data-bs-target="#mor-approval-create"
+                        type="button"
+                        role="tab"
+                        aria-controls="mor-approval-create"
+                        aria-selected="true"
+                      >
+                        MTO Creation
+                      </button>
+                    </li>
+                    <li className="nav-item" role="presentation">
+                      <button
+                        className="nav-link"
+                        id="pills-contact-tab"
+                        data-bs-toggle="pill"
+                        data-bs-target="#pills-contact"
+                        type="button"
+                        role="tab"
+                        aria-controls="pills-contact"
+                        aria-selected="false"
+                      >
+                        MTO Approval
+                      </button>
+                    </li>
+                    <li className="nav-item" role="presentation">
+                      <button
+                        className="nav-link active"
+                        id="pills-contact-tab"
+                        data-bs-toggle="pill"
+                        data-bs-target="#pills-contact"
+                        type="button"
+                        role="tab"
+                        aria-controls="pills-contact"
+                        aria-selected="false"
+                      >
+                        PO
+                      </button>
+                    </li>
+                    <li className="nav-item" role="presentation">
+                      <button
+                        className="nav-link"
+                        id="pills-contact-tab"
+                        data-bs-toggle="pill"
+                        data-bs-target="#pills-contact"
+                        type="button"
+                        role="tab"
+                        aria-controls="pills-contact"
+                        aria-selected="false"
+                      >
+                        Material Received
+                      </button>
+                    </li>
+                    <li className="nav-item" role="presentation">
+                      <button
+                        className="nav-link"
+                        id="pills-contact-tab"
+                        data-bs-toggle="pill"
+                        data-bs-target="#pills-contact"
+                        type="button"
+                        role="tab"
+                        aria-controls="pills-contact"
+                        aria-selected="false"
+                      >
+                        Material Issued
+                      </button>
+                    </li>
+                    <li className="nav-item" role="presentation" />
+                  </ul>
                 </div>
-                <div className="card-body">
-                  <div className="row">
-                    {/* <div className="col-md-2">
+                <div className="card  ms-3">
+                  <div className="card-header">
+                    <h3 className="card-title">Po Type</h3>
+                  </div>
+                  <div className="card-body">
+                    <div className="row">
+                      {/* <div className="col-md-2">
                       <div className="form-group"> */}
-                        {/* <div className="form-check">
+                      {/* <div className="form-check">
                           <input
                             className="form-check-input"
                             type="radio"
@@ -128,9 +1724,9 @@ const PoCreate = () => {
                         </div> */}
                       {/* </div>
                     </div> */}
-                    {/* <div className="col-md-2">
+                      {/* <div className="col-md-2">
                       <div className="form-group"> */}
-                        {/* <div className="form-check">
+                      {/* <div className="form-check">
                           <input
                             className="form-check-input"
                             type="radio"
@@ -140,721 +1736,817 @@ const PoCreate = () => {
                           <label className="form-check-label">Import</label>
                         </div> */}
                       {/* </div> */}
-                    {/* </div> */}
-                    <div className="col-md-2">
-                      <div className="form-group">
-                        <div className="form-check">
-                          <input
-                            className="form-check-input "
-                            type="radio"
-                            name="contentSelector"
-                            defaultValue="content3"
-                          />
-                          <label className="form-check-label">ROPO</label>
+                      {/* </div> */}
+                      <div className="col-md-2">
+                        <div className="form-group">
+                          <div className="form-check">
+                            <input
+                              className="form-check-input "
+                              type="radio"
+                              name="contentSelector"
+                              defaultValue="content3"
+                            />
+                            <label className="form-check-label">ROPO</label>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div  className="">
-              <div className="card ms-3">
-                <div className="card-body">
-                  <div className=" text-center">
-                    <h4>PO for New Material (Domestic)</h4>
-                  </div>
-                  <div className="d-flex justify-content-end ">
-                    <div className="me-1 ">
-                      <button className="d-btn purple-btn2">Copy PO</button>
+              <div className="">
+                <div className="card ms-3">
+                  <div className="card-body">
+                    <div className=" text-center">
+                      <h4>PO for New Material (ROPO)</h4>
                     </div>
-                    <div>
-                      <button className="d-btn purple-btn2">Download</button>
-                    </div>
-                  </div>
-                  <div className="d-flex justify-content-end mt-2">
-                    <div className="me-3 text-decoration-underline">
-                      <a href="#">View MOR</a>
-                    </div>
-                    <div className="ms-1 text-decoration-underline">
-                      <a href="#">View MTO</a>
-                    </div>
-                  </div>
-                  <section className="mor p-2 pt-2">
-                    <div className="container-fluid">
-                      <nav>
-                        <div
-                          className="nav nav-tabs"
-                          id="nav-tab"
-                          role="tablist"
-                        >
-                          <button
-                            className="nav-link active"
-                            id="nav-home-tab"
-                            data-bs-toggle="tab"
-                            data-bs-target="#Domestic1"
-                            type="button"
-                            role="tab"
-                            aria-controls="nav-home"
-                            aria-selected="true"
+
+                    <section className="mor p-2 pt-2">
+                      <div className="container-fluid">
+                        <nav>
+                          <div
+                            className="nav nav-tabs"
+                            id="nav-tab"
+                            role="tablist"
                           >
-                            PO Details
-                          </button>
-                          <button
-                            className="nav-link"
-                            id="nav-profile-tab"
-                            data-bs-toggle="tab"
-                            data-bs-target="#Domestic2"
-                            type="button"
-                            role="tab"
-                            aria-controls="nav-profile"
-                            aria-selected="false"
+                            <button
+                              className="nav-link active"
+                              id="nav-home-tab"
+                              data-bs-toggle="tab"
+                              data-bs-target="#Domestic1"
+                              type="button"
+                              role="tab"
+                              aria-controls="nav-home"
+                              aria-selected="true"
+                            >
+                              PO Details
+                            </button>
+                            <button
+                              className="nav-link"
+                              id="nav-profile-tab"
+                              data-bs-toggle="tab"
+                              data-bs-target="#Domestic2"
+                              type="button"
+                              role="tab"
+                              aria-controls="nav-profile"
+                              aria-selected="false"
+                            >
+                              Rate &amp; Taxes
+                            </button>
+                            <button
+                              className="nav-link"
+                              id="nav-contact-tab"
+                              data-bs-toggle="tab"
+                              data-bs-target="#Domestic3"
+                              type="button"
+                              role="tab"
+                              aria-controls="nav-contact"
+                              aria-selected="false"
+                            >
+                              Term &amp; Conditions
+                            </button>
+                          </div>
+                        </nav>
+                        <div className="tab-content" id="nav-tabContent">
+                          <div
+                            className="tab-pane fade show active"
+                            id="Domestic1"
+                            role="tabpanel"
+                            aria-labelledby="nav-home-tab"
+                            tabIndex={0}
                           >
-                            Rate &amp; Taxes
-                          </button>
-                          <button
-                            className="nav-link"
-                            id="nav-contact-tab"
-                            data-bs-toggle="tab"
-                            data-bs-target="#Domestic3"
-                            type="button"
-                            role="tab"
-                            aria-controls="nav-contact"
-                            aria-selected="false"
-                          >
-                            Term &amp; Conditions
-                          </button>
-                        </div>
-                      </nav>
-                      <div className="tab-content" id="nav-tabContent">
-                        <div
-                          className="tab-pane fade show active"
-                          id="Domestic1"
-                          role="tabpanel"
-                          aria-labelledby="nav-home-tab"
-                          tabIndex={0}
-                        >
-                          <div className="card-body">
-                            <div className="row">
-                              <div className="col-md-4 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">Company</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="MRPL"
-                                  />
+                            <div className="card-body">
+                              <div className="row">
+                                <div className="col-md-4 mt-2">
+                                  <div className="form-group">
+                                    <label>
+                                      Company <span>*</span>
+                                    </label>
+                                    <SingleSelector
+                                      options={companyOptions}
+                                      onChange={handleCompanyChange}
+                                      value={selectedCompany}
+                                      placeholder={`Select Company`} // Dynamic placeholder
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="col-md-4 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">Project</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="Neo Valley"
-                                  />
+                                <div className="col-md-4 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      PO Type <span>*</span>
+                                    </label>
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      value="ROPO"
+                                      disabled
+                                      style={{
+                                        backgroundColor: "#f8f9fa",
+                                        cursor: "not-allowed",
+                                      }}
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="col-md-4 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    PO Category
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="Materia"
-                                  />
+                                <div className="col-md-4 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      PO Date <span>*</span>
+                                    </label>
+                                    <input
+                                      className="form-control"
+                                      type="date"
+                                      value={poDate}
+                                      onChange={(e) =>
+                                        setPoDate(e.target.value)
+                                      }
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">PO Type</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="Default input"
-                                  />
+                                <div className="col-md-4 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      Created On
+                                    </label>
+                                    <input
+                                      className="form-control"
+                                      type="date"
+                                      value={createdOn}
+                                      disabled
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">PO Date</label>
-                                  <input
-                                    className="form-control"
-                                    type="date"
-                                    placeholder="Default input"
-                                  />
+                                {/* <div className="col-md-4 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">PO No</label>
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      placeholder="PO 056"
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Created On
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="date"
-                                    placeholder="05-02-2024"
-                                  />
+                                <div className="col-md-4 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      Total PO Value
+                                    </label>
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      placeholder={1}
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">PO No</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="PO 056"
-                                  />
+                                <div className="col-md-4 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      Total Discount
+                                    </label>
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      placeholder="INR 600.00"
+                                    />
+                                  </div>
+                                </div> */}
+                                <div className="col-md-4 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      Supplier <span>*</span>
+                                    </label>
+                                    <SingleSelector
+                                      options={supplierOptions}
+                                      value={selectedSupplier}
+                                      onChange={handleSupplierChange}
+                                      placeholder="Select Supplier"
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Total PO Value
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={1}
-                                  />
+                                {/* <div className="col-md-4 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      Branch
+                                    </label>
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      placeholder="82.77 INR"
+                                    />
+                                  </div>
+                                </div> */}
+                                <div className="col-md-4 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      Vendor GSTIN
+                                    </label>
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      placeholder="Site"
+                                      disabled
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Total Discount
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="INR 600.00"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Supplier
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="NR 0.00"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">Branch</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="82.77 INR"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Vendor GSTIN
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="Site"
-                                  />
+                                <div className="col-md-4 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      Branch
+                                    </label>
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      placeholder="Site"
+                                      disabled
+                                    />
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                          <div className="d-flex justify-content-between  align-items-center">
-                            <h5
-                              className=" "
-                              data-bs-toggle="modal"
-                              data-bs-target="#sereneModal"
-                            >
-                              Material Details
-                            </h5>
-                            <div className="card-tools">
+                            <div className="d-flex justify-content-between  align-items-center">
+                              <h5
+                                className=" ms-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#sereneModal"
+                              >
+                                Material Details
+                              </h5>
+
                               <div>
-                                
                                 <button
-                                  className="d-btn purple-btn2"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#customModal"
+                                  className="purple-btn2  ms-3"
+                                  onClick={() => {
+                                    setFieldErrors({});
+                                    setShowModal(true);
+                                  }}
                                 >
-                                  Select MOR
+                                  <span> + Add</span>
                                 </button>
                               </div>
                             </div>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Sr. No</th>
-                                  <th>Sub-Project</th>
-                                  <th>MOR No.</th>
-                                  <th>Material Description</th>
-                                  <th>Material Specifications</th>
-                                  <th>UMO</th>
-                                  <th>Pending Mor Qty</th>
-                                  <th>PO Order Qty</th>
-                                  <th>GRN Qty</th>
-                                  <th>PO Balance Qty</th>
-                                  <th>Action</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>1</td>
-                                  <td className="text-decoration-underline">
-                                    Neo Valley- Building
-                                  </td>
-                                  <td>MOR/MAR/MAX/ 101/02/2024</td>
-                                  <td>Plain White Sperenza Tiles</td>
-                                  <td>300 x 300 mm</td>
-                                  <td>
-                                    <div className="form-group">
-                                      <label className="po-fontBold">
-                                        Supplier
-                                      </label>
-                                      <select
-                                        className="form-control form-select"
-                                        style={{ width: "100%" }}
-                                      >
-                                        <option selected="selected">Nos</option>
-                                        <option>Alaska</option>
-                                        <option>California</option>
-                                        <option>Delaware</option>
-                                        <option>Tennessee</option>
-                                        <option>Texas</option>
-                                        <option>Washington</option>
-                                      </select>
-                                    </div>
-                                  </td>
-                                  <td>150</td>
-                                  <td>40</td>
-                                  <td>50</td>
-                                  <td>60</td>
-                                  <td>
-                                    <i
-                                      className="fa-solid fa-xmark"
-                                      style={{ fontSize: 18 }}
-                                    />
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                        <div
-                          className="tab-pane fade"
-                          id="Domestic2"
-                          role="tabpanel"
-                          aria-labelledby="nav-profile-tab"
-                          tabIndex={0}
-                        >
-                          <div className=" mt-3">
-                            <h5 className=" ">Quotation Details</h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Quotation No.</th>
-                                  <th>Supplier Ref. No</th>
-                                  <th>Material</th>
-                                  <th>Brand</th>
-                                  <th>UOM</th>
-                                  <th>All Incl. Rate</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td className="text-decoration-underline">
-                                    Quotation 9655295
-                                  </td>
-                                  <td>65985</td>
-                                  <td>Plain White Sperenza Tiles</td>
-                                  <td>Sperenza</td>
-                                  <td>Nos</td>
-                                  <td>600</td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className=" ">
-                            <h5 className="mt-3 ">Rate &amp; Taxes</h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Sr. No</th>
-                                  <th>Material Description</th>
-                                  <th>Brand</th>
-                                  <th>UOM</th>
-                                  <th>PO Qty</th>
-                                  <th colSpan={2}>Material Rate</th>
-                                  <th colSpan={2}>Material Cost</th>
-                                  <th>Tax Addition</th>
-                                  <th>Total Changes</th>
-                                  <th>Other Addition</th>
-                                  <th>Other Deductions</th>
-                                  <th>All Incl. Cost</th>
-                                  <th>Tax Deductions</th>
-                                  <th>Select Tax</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>1</td>
-                                  <td>Plain White Sperenza Tiles</td>
-                                  <td>Sperenza</td>
-                                  <td>300 x 300 mm</td>
-                                  <td>nos</td>
-                                  <td
-                                    className="text-decoration-underline"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#cozyModal"
-                                  >
-                                    Attributes
-                                  </td>
-                                  <td>40</td>
-                                  <td>USD 0.24</td>
-                                  <td>INR 20</td>
-                                  <td>USD 9.67</td>
-                                  <td>INR 800</td>
-                                  <td>108</td>
-                                  <td>708</td>
-                                  <td>108</td>
-                                  <td>708</td>
-                                  <td
-                                    className="text-decoration-underline"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#zenithModal"
-                                  >
-                                    select
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className=" ">
-                            <h5 className=" mt-3">Tax &amp; Charges Summary</h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th rowSpan={2}>Tax / Charge Type</th>
-                                  <th colSpan={2}>Amount</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>Total Base Cost</td>
-                                  <td>800</td>
-                                </tr>
-                                <tr>
-                                  <td>Custom Duty</td>
-                                  <td>400</td>
-                                </tr>
-                                <tr>
-                                  <td>C &amp; F Charges</td>
-                                  <td>30.4</td>
-                                </tr>
-                                <tr>
-                                  <td className="fw-bold">
-                                    Total All Incl. Cost
-                                  </td>
-                                  <td className="fw-bold">1230.4</td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className=" mt-3 d-flex justify-content-between ">
-                            <h5 className=" ">Other Cost</h5>
-                            <div className="card-tools">
-                              <button className="purple-btn2 m-0">
-                                <span className="material-symbols-outlined align-text-top me-2">
-                                  add{" "}
-                                </span>
-                                Add Item
+                            <div className="mx-3">
+                              <div
+                                className="tbl-container mt-1"
+                                style={{ maxHeight: "600px" }}
+                              >
+                                <table className="w-100">
+                                  <thead>
+                                    <tr>
+                                      <th className="text-start">Sr.No.</th>
+                                      <th className="text-start">
+                                        Material Type
+                                      </th>
+                                      <th className="text-start">
+                                        Material Sub-Type
+                                      </th>
+                                      <th className="text-start">Material</th>
+                                      <th className="text-start">
+                                        Generic Specification
+                                      </th>
+                                      <th className="text-start">Colour</th>
+                                      <th className="text-start">Brand</th>
+                                      <th className="text-start">UOM</th>
+
+                                      <th className="text-start">Edit</th>
+                                      <th className="text-start">Action</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {tableData.filter((row) => !row._destroy)
+                                      .length > 0 ? (
+                                      tableData
+                                        .filter((row) => !row._destroy)
+                                        .map((row, index) => (
+                                          <tr key={index}>
+                                            <td className="text-start">
+                                              {index + 1}
+                                            </td>
+                                            <td className="text-start">
+                                              {row.materialTypeLabel}
+                                            </td>
+                                            <td className="text-start">
+                                              {row.materialSubTypeLabel}
+                                            </td>
+                                            <td className="text-start">
+                                              {row.materialLabel}
+                                            </td>
+                                            <td className="text-start">
+                                              {row.genericSpecificationLabel}
+                                            </td>
+                                            <td className="text-start">
+                                              {row.colourLabel}
+                                            </td>
+                                            <td className="text-start">
+                                              {row.brandLabel}
+                                            </td>
+                                            <td className="text-start">
+                                              {row.uomLabel}
+                                            </td>
+
+                                            <td className="text-start">
+                                              <span
+                                                onClick={() =>
+                                                  handleEditRow(
+                                                    index,
+                                                    row.material
+                                                  )
+                                                }
+                                                style={{ cursor: "pointer" }}
+                                              >
+                                                <svg
+                                                  xmlns="http://www.w3.org/2000/svg"
+                                                  width="16"
+                                                  height="16"
+                                                  fill="currentColor"
+                                                  className="bi bi-pencil-square"
+                                                  viewBox="0 0 16 16"
+                                                >
+                                                  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"></path>
+                                                  <path
+                                                    fillRule="evenodd"
+                                                    d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+                                                  ></path>
+                                                </svg>
+                                              </span>
+                                            </td>
+                                            <td className="text-start">
+                                              <button
+                                                className="btn mt-0 pt-0"
+                                                onClick={() =>
+                                                  handleDeleteRow(index)
+                                                }
+                                              >
+                                                <svg
+                                                  width="16"
+                                                  height="20"
+                                                  viewBox="0 0 16 20"
+                                                  fill="none"
+                                                  xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                  <path
+                                                    d="M14.7921 2.44744H10.8778C10.6485 1.0366 9.42966 0 8.00005 0C6.57044 0 5.35166 1.03658 5.12225 2.44744H1.20804C0.505736 2.48655 -0.0338884 3.08663 0.00166019 3.78893V5.26379C0.00166019 5.38914 0.0514441 5.51003 0.140345 5.59895C0.229246 5.68787 0.35015 5.73764 0.475508 5.73764H1.45253V17.2689C1.45253 18.4468 2.40731 19.4025 3.58612 19.4025H12.4139C13.5927 19.4025 14.5475 18.4468 14.5475 17.2689V5.73764H15.5245C15.6498 5.73764 15.7707 5.68785 15.8597 5.59895C15.9486 5.51005 15.9983 5.38914 15.9983 5.26379V3.78893C16.0339 3.08663 15.4944 2.48654 14.7921 2.44744ZM8.00005 0.94948C8.90595 0.94948 9.69537 1.56823 9.91317 2.44744H6.08703C6.30483 1.56821 7.09417 0.94948 8.00005 0.94948ZM13.5998 17.2688C13.5998 17.5835 13.4744 17.8849 13.2522 18.1072C13.0299 18.3294 12.7285 18.4539 12.4138 18.4539H3.58608C2.93089 18.4539 2.40017 17.9231 2.40017 17.2688V5.73762H13.5998L13.5998 17.2688ZM15.0506 4.78996H0.949274V3.78895C0.949274 3.56404 1.08707 3.39512 1.20797 3.39512H14.792C14.9129 3.39512 15.0507 3.56314 15.0507 3.78895L15.0506 4.78996ZM4.91788 16.5533V7.63931C4.91788 7.37706 5.13035 7.16548 5.3926 7.16548C5.65396 7.16548 5.86643 7.37706 5.86643 7.63931V16.5533C5.86643 16.8147 5.65396 17.0271 5.3926 17.0271C5.13035 17.0271 4.91788 16.8147 4.91788 16.5533ZM7.52531 16.5533L7.5262 7.63931C7.5262 7.37706 7.73778 7.16548 8.00003 7.16548C8.26228 7.16548 8.47386 7.37706 8.47386 7.63931V16.5533C8.47386 16.8147 8.26228 17.0271 8.00003 17.0271C7.73778 17.0271 7.5262 16.8147 7.5262 16.5533H7.52531ZM10.1327 16.5533L10.1336 7.63931C10.1336 7.37706 10.3461 7.16548 10.6075 7.16548C10.8697 7.16548 11.0822 7.37706 11.0822 7.63931V16.5533C11.0822 16.8147 10.8697 17.0271 10.6075 17.0271C10.3461 17.0271 10.1336 16.8147 10.1336 16.5533H10.1327Z"
+                                                    fill="#B25657"
+                                                  />
+                                                </svg>
+                                              </button>
+                                            </td>
+                                          </tr>
+                                        ))
+                                    ) : (
+                                      <tr>
+                                        <td
+                                          colSpan="11"
+                                          className="text-center"
+                                        >
+                                          No data added yet.
+                                        </td>
+                                      </tr>
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                            {/* Submit Button */}
+                            <div className="d-flex justify-content-center mt-4 mb-3">
+                              <button
+                                className="purple-btn2 px-4 py-2"
+                                onClick={handleSubmitMaterials}
+                                disabled={isSubmitting}
+                              >
+                                {isSubmitting
+                                  ? "Submitting..."
+                                  : "Submit Materials"}
                               </button>
                             </div>
                           </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>
-                                    Transportation, Loading &amp; Unloading
-                                    Details
-                                  </th>
-                                  <th>Cost</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>Loading</td>
-                                  <td>0.00</td>
-                                </tr>
-                                <tr>
-                                  <td>Unloading</td>
-                                  <td>0.00</td>
-                                </tr>
-                                <tr>
-                                  <td>Transportation</td>
-                                  <td>0.00</td>
-                                </tr>
-                                <tr>
-                                  <th>Total</th>
-                                  <th>0.00</th>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                        <div
-                          className="tab-pane fade"
-                          id="Domestic3"
-                          role="tabpanel"
-                          aria-labelledby="nav-contact-tab"
-                          tabIndex={0}
-                        >
-                          <div className="card-body">
-                            <div className="row">
-                              <div className="col-md-6 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Credit Period (Days)
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={0}
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-6 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    P.O Validity Period (Days)
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={0}
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-6 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Advance Reminder Duration (Days)
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={0}
-                                  />
-                                </div>
+                          <div
+                            className="tab-pane fade"
+                            id="Domestic2"
+                            role="tabpanel"
+                            aria-labelledby="nav-profile-tab"
+                            tabIndex={0}
+                          >
+                            <div className=" mt-3">
+                              <h5 className=" ">Quotation Details</h5>
+                            </div>
+                            <div className="tbl-container me-2 mt-3">
+                              <table className="w-100">
+                                <thead>
+                                  <tr>
+                                    <th>Quotation No.</th>
+                                    <th>Supplier Ref. No</th>
+                                    <th>Material</th>
+                                    <th>Brand</th>
+                                    <th>UOM</th>
+                                    <th>All Incl. Rate</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td className="text-decoration-underline">
+                                      Quotation 9655295
+                                    </td>
+                                    <td>65985</td>
+                                    <td>Plain White Sperenza Tiles</td>
+                                    <td>Sperenza</td>
+                                    <td>Nos</td>
+                                    <td>600</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                            <div className=" ">
+                              <h5 className="mt-3 ">Rate &amp; Taxes</h5>
+                            </div>
+                            <div className="tbl-container me-2 mt-3">
+                              <table className="w-100">
+                                <thead>
+                                  <tr>
+                                    <th>Sr. No</th>
+                                    <th>Material Description</th>
+
+                                    <th>UOM</th>
+                                    <th>PO Qty</th>
+
+                                    <th>Tax Addition</th>
+                                    <th>Total Changes</th>
+                                    <th>Other Addition</th>
+                                    <th>Other Deductions</th>
+                                    <th>All Incl. Cost</th>
+                                    <th>Tax Deductions</th>
+                                    <th>Select Tax</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {submittedMaterials.length > 0 ? (
+                                    submittedMaterials.map(
+                                      (material, index) => (
+                                        <tr key={material.id}>
+                                          <td>{index + 1}</td>
+                                          <td>{material.material_name}</td>
+                                          <td>{material.uom_name}</td>
+                                          <td></td>
+                                          <td></td>
+                                          <td></td>
+                                          <td></td>
+                                          <td></td>
+                                          <td></td>
+                                          <td></td>
+                                          <td
+                                            className="text-decoration-underline"
+                                            style={{ cursor: "pointer" }}
+                                            onClick={() =>
+                                              handleOpenTaxModal(index)
+                                            }
+                                          >
+                                            select
+                                          </td>
+                                        </tr>
+                                      )
+                                    )
+                                  ) : (
+                                    <tr>
+                                      {/* <td>1</td>
+                                      <td>Plain White Sperenza Tiles</td>
+                                      <td>300 x 300 mm</td>
+                                      <td>nos</td>
+                                    <td>USD 9.67</td>
+                                    <td>INR 800</td>
+                                    <td>108</td>
+                                    <td>708</td>
+                                    <td>108</td>
+                                    <td>708</td>
+                                    <td
+                                      className="text-decoration-underline"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => handleOpenTaxModal(0)}
+                                    >
+                                      select
+                                      </td> */}
+                                      <td colSpan="11" className="text-center">
+                                        No materials added yet.
+                                      </td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
+                            <div className=" ">
+                              <h5 className=" mt-3">
+                                Tax &amp; Charges Summary
+                              </h5>
+                            </div>
+                            <div className="tbl-container me-2 mt-3">
+                              <table className="w-100">
+                                <thead>
+                                  <tr>
+                                    <th rowSpan={2}>Tax / Charge Type</th>
+                                    <th colSpan={2}>Amount</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td>Total Base Cost</td>
+                                    <td>800</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Total Tax </td>
+                                    <td>400</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Total Charge</td>
+                                    <td>30.4</td>
+                                  </tr>
+                                  <tr>
+                                    <td className="fw-bold">
+                                      Total All Incl. Cost
+                                    </td>
+                                    <td className="fw-bold">1230.4</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                            <div className=" mt-3 d-flex justify-content-between ">
+                              <h5 className=" ">Other Cost</h5>
+                              <div className="card-tools">
+                                <button className="purple-btn2 m-0">
+                                  <span className="material-symbols-outlined align-text-top me-2">
+                                    add{" "}
+                                  </span>
+                                  Add Item
+                                </button>
                               </div>
                             </div>
-                          </div>
-                          <div className="card-body pt-1">
-                            <div className="row">
-                              <div className="mb-3 w-50">
-                                <label
-                                  htmlFor="exampleFormControlTextarea1"
-                                  className="form-label po-fontBoldM"
-                                >
-                                  Payment Terms
-                                </label>
-                                <textarea
-                                  className="form-control"
-                                  id="exampleFormControlTextarea1"
-                                  rows={3}
-                                  defaultValue={""}
-                                />
-                              </div>
-                              <div className="mb-3 w-50">
-                                <label
-                                  htmlFor="exampleFormControlTextarea1"
-                                  className="form-label po-fontBoldM"
-                                >
-                                  Remark
-                                </label>
-                                <textarea
-                                  className="form-control"
-                                  id="exampleFormControlTextarea1"
-                                  rows={3}
-                                  defaultValue={""}
-                                />
-                              </div>
+                            <div className="tbl-container me-2 mt-3">
+                              <table className="w-100">
+                                <thead>
+                                  <tr>
+                                    <th>
+                                      Transportation, Loading &amp; Unloading
+                                      Details
+                                    </th>
+                                    <th>Cost</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td>Loading</td>
+                                    <td>0.00</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Unloading</td>
+                                    <td>0.00</td>
+                                  </tr>
+                                  <tr>
+                                    <td>Transportation</td>
+                                    <td>0.00</td>
+                                  </tr>
+                                  <tr>
+                                    <th>Total</th>
+                                    <th>0.00</th>
+                                  </tr>
+                                </tbody>
+                              </table>
                             </div>
                           </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Charges And Taxes</th>
-                                  <th>Amount</th>
-                                  <th>Payable Currency</th>
-                                  <th>Service Certificate</th>
-                                  <th>Select Service Provider</th>
-                                  <th>Remarks</th>
-                                </tr>
-                                <tr>
-                                  <th colSpan={6}>Tax Addition(Exclusive)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  {/* <td colspan="6">No Records Found.
-                                                            </td> */}
-                                  <td>CGST</td>
-                                  <td colSpan={2}>INR 0.00</td>
-                                  <td>
-                                    <input type="checkbox" />
-                                  </td>
-                                  <td colSpan={2}>
-                                    <textarea
+                          <div
+                            className="tab-pane fade"
+                            id="Domestic3"
+                            role="tabpanel"
+                            aria-labelledby="nav-contact-tab"
+                            tabIndex={0}
+                          >
+                            <div className="card-body">
+                              <div className="row">
+                                <div className="col-md-6 mt-0">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      Credit Period (Days)
+                                    </label>
+                                    <input
                                       className="form-control"
-                                      id="exampleFormControlTextarea1"
-                                      rows={2}
-                                      defaultValue={""}
+                                      type="text"
+                                      placeholder={0}
                                     />
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td>SGST</td>
-                                  <td colSpan={2}>INR 0.00</td>
-                                  <td>
-                                    <input type="checkbox" />
-                                  </td>
-                                  <td colSpan={2}>
-                                    <textarea
+                                  </div>
+                                </div>
+                                <div className="col-md-6 mt-0">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      P.O Validity Period (Days)
+                                    </label>
+                                    <input
                                       className="form-control"
-                                      id="exampleFormControlTextarea1"
-                                      rows={2}
-                                      defaultValue={""}
+                                      type="text"
+                                      placeholder={0}
                                     />
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th colSpan={6}>Charges (Exclusive)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>OTHER CHARGES </td>
-                                  <td colSpan={2}>INR 0.00</td>
-                                  <td>
-                                    <input type="checkbox" />
-                                  </td>
-                                  <td colSpan={2}>
-                                    <textarea
+                                  </div>
+                                </div>
+                                <div className="col-md-6 mt-0">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      Advance Reminder Duration (Days)
+                                    </label>
+                                    <input
                                       className="form-control"
-                                      id="exampleFormControlTextarea1"
-                                      rows={2}
-                                      defaultValue={""}
+                                      type="text"
+                                      placeholder={0}
                                     />
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="card-body">
-                            <div className="row">
-                              <div className="col-md-6 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Total PO Value
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="INR 0.00"
-                                  />
+                                  </div>
                                 </div>
                               </div>
-                              <div className="col-md-6 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Supplier Advance Allowed (%)
+                            </div>
+                            <div className="card-body pt-1">
+                              <div className="row">
+                                <div className="mb-3 w-50">
+                                  <label
+                                    htmlFor="exampleFormControlTextarea1"
+                                    className="form-label po-fontBoldM"
+                                  >
+                                    Payment Terms
                                   </label>
-                                  <input
+                                  <textarea
                                     className="form-control"
-                                    type="text"
-                                    placeholder={0}
+                                    id="exampleFormControlTextarea1"
+                                    rows={3}
+                                    defaultValue={""}
                                   />
                                 </div>
-                              </div>
-                              <div className="col-md-6 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Total Discount
+                                <div className="mb-3 w-50">
+                                  <label
+                                    htmlFor="exampleFormControlTextarea1"
+                                    className="form-label po-fontBoldM"
+                                  >
+                                    Remark
                                   </label>
-                                  <input
+                                  <textarea
                                     className="form-control"
-                                    type="text"
-                                    placeholder="NR 0.00"
+                                    id="exampleFormControlTextarea1"
+                                    rows={3}
+                                    defaultValue={""}
                                   />
                                 </div>
                               </div>
                             </div>
-                            <div className="row">
-                              <div className="col-md-6 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Supplier Advance Amount
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="INR 0.00"
-                                  />
+                            {/* <div className="tbl-container me-2 mt-3">
+                              <table className="w-100">
+                                <thead>
+                                  <tr>
+                                    <th>Charges And Taxes</th>
+                                    <th>Amount</th>
+                                    <th>Payable Currency</th>
+                                    <th>Service Certificate</th>
+                                    <th>Select Service Provider</th>
+                                    <th>Remarks</th>
+                                  </tr>
+                                  <tr>
+                                    <th colSpan={6}>Tax Addition(Exclusive)</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                  
+                                    <td>CGST</td>
+                                    <td colSpan={2}>INR 0.00</td>
+                                    <td>
+                                      <input type="checkbox" />
+                                    </td>
+                                    <td colSpan={2}>
+                                      <textarea
+                                        className="form-control"
+                                        id="exampleFormControlTextarea1"
+                                        rows={2}
+                                        defaultValue={""}
+                                      />
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>SGST</td>
+                                    <td colSpan={2}>INR 0.00</td>
+                                    <td>
+                                      <input type="checkbox" />
+                                    </td>
+                                    <td colSpan={2}>
+                                      <textarea
+                                        className="form-control"
+                                        id="exampleFormControlTextarea1"
+                                        rows={2}
+                                        defaultValue={""}
+                                      />
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div> */}
+                            {/* <div className="tbl-container me-2 mt-3">
+                              <table className="w-100">
+                                <thead>
+                                  <tr>
+                                    <th colSpan={6}>Charges (Exclusive)</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td>OTHER CHARGES </td>
+                                    <td colSpan={2}>INR 0.00</td>
+                                    <td>
+                                      <input type="checkbox" />
+                                    </td>
+                                    <td colSpan={2}>
+                                      <textarea
+                                        className="form-control"
+                                        id="exampleFormControlTextarea1"
+                                        rows={2}
+                                        defaultValue={""}
+                                      />
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div> */}
+                            <div className="card-body">
+                              <div className="row">
+                                <div className="col-md-6 mt-0">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      Total PO Value
+                                    </label>
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      placeholder="INR 0.00"
+                                      disabled
+                                    />
+                                  </div>
+                                </div>
+                                <div className="col-md-6 mt-0">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      Supplier Advance Allowed (%)
+                                    </label>
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      placeholder={0}
+                                    />
+                                  </div>
+                                </div>
+                                <div className="col-md-6 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      Total Discount
+                                    </label>
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      placeholder="NR 0.00"
+                                      disabled
+                                    />
+                                  </div>
                                 </div>
                               </div>
-                              <div className="col-md-6 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Service Certificate Advance Allowed (%)
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={0}
-                                  />
+                              <div className="row">
+                                <div className="col-md-6 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      Supplier Advance Amount
+                                    </label>
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      placeholder="INR 0.00"
+                                      disabled
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="col-md-6 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Service Certificate Advance Amount
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="INR 0.00"
-                                  />
+                                <div className="col-md-6 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      Service Certificate Advance Allowed (%)
+                                    </label>
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      placeholder={0}
+                                      disabled
+                                    />
+                                  </div>
+                                </div>
+                                <div className="col-md-6 mt-2">
+                                  <div className="form-group">
+                                    <label className="po-fontBold">
+                                      Service Certificate Advance Amount
+                                    </label>
+                                    <input
+                                      className="form-control"
+                                      type="text"
+                                      placeholder="INR 0.00"
+                                      disabled
+                                    />
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                          {/* <div className="mt-3 d-flex justify-content-between align-items-center">
+                            {/* <div className="mt-3 d-flex justify-content-between align-items-center">
                             <h5 className=" mt-3">Advance Payment Schedule</h5>
                             <button className="purple-btn2"> Add</button>
                           </div>
@@ -878,7 +2570,7 @@ const PoCreate = () => {
                               </tbody>
                             </table>
                           </div> */}
-                          {/* <div className="mt-3 d-flex justify-content-between align-items-center">
+                            {/* <div className="mt-3 d-flex justify-content-between align-items-center">
                             <h5 className=" mt-3">Delivery Schedule</h5>
                             <button className="purple-btn2"> Add</button>
                           </div>
@@ -910,2924 +2602,1340 @@ const PoCreate = () => {
                               </tbody>
                             </table>
                           </div> */}
-                          <div className="mt-3 ">
-                            <h5 className=" ">General Term &amp; Conditions</h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-2">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Condition Category</th>
-                                  <th>Condition</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td />
-                                  <td />
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="mt-3 ">
-                            <h5 className=" mt-3">
-                              Material Specific Term &amp; Conditions
-                            </h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-2">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Material</th>
-                                  <th>Condition Category</th>
-                                  <th>Condition</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td />
-                                  <td />
-                                  <td />
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                        <div
-                          className="tab-pane fade"
-                          id="Domestic4"
-                          role="tabpanel"
-                          aria-labelledby="nav-home-tab"
-                          tabIndex={0}
-                        >
-                          Amendment Details
-                        </div>
-                      </div>
-                      {/* /.container-fluid */}
-                    </div>
-                  </section>
-                </div>
-              </div>
-            </div>
-            <div id="content2" className="contentpo">
-              <div className="card">
-                <div className="card-body">
-                  <div className=" text-center">
-                    <h4>PO for New Material (Import)</h4>
-                  </div>
-                  <div className="d-flex justify-content-end ">
-                    <div className="me-1 ">
-                      <button className="d-btn purple-btn2">Copy PO</button>
-                    </div>
-                    <div>
-                      <button className="d-btn purple-btn2">Download</button>
-                    </div>
-                  </div>
-                  <div className="d-flex justify-content-end mt-2">
-                    <div className="me-3 text-decoration-underline">
-                      <a href="#">View MOR</a>
-                    </div>
-                    <div className="ms-1 text-decoration-underline">
-                      <a href="#">View MTO</a>
-                    </div>
-                  </div>
-                  <section className="mor p-2 pt-2">
-                    <div className="container-fluid">
-                      <nav>
-                        <div
-                          className="nav nav-tabs"
-                          id="nav-tab"
-                          role="tablist"
-                        >
-                          <button
-                            className="nav-link active"
-                            id="nav-home-tab"
-                            data-bs-toggle="tab"
-                            data-bs-target="#Import1"
-                            type="button"
-                            role="tab"
-                            aria-controls="nav-home"
-                            aria-selected="true"
-                          >
-                            PO Details
-                          </button>
-                          <button
-                            className="nav-link"
-                            id="nav-profile-tab"
-                            data-bs-toggle="tab"
-                            data-bs-target="#Import2"
-                            type="button"
-                            role="tab"
-                            aria-controls="nav-profile"
-                            aria-selected="false"
-                          >
-                            Rate &amp; Taxes
-                          </button>
-                          <button
-                            className="nav-link"
-                            id="nav-contact-tab"
-                            data-bs-toggle="tab"
-                            data-bs-target="#Import3"
-                            type="button"
-                            role="tab"
-                            aria-controls="nav-contact"
-                            aria-selected="false"
-                          >
-                            Term &amp; Conditions
-                          </button>
-                        </div>
-                      </nav>
-                      <div className="tab-content" id="nav-tabContent">
-                        <div
-                          className="tab-pane fade show active"
-                          id="Import1"
-                          role="tabpanel"
-                          aria-labelledby="nav-home-tab"
-                          tabIndex={0}
-                        >
-                          <div className="card-body">
-                            <div className="row">
-                              <div className="col-md-4 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">Company</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="MRPL"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">Project</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="Neo Valley"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    PO Category
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="Materia"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">PO Type</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="Default input"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">PO Date</label>
-                                  <input
-                                    className="form-control"
-                                    type="date"
-                                    placeholder="Default input"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Created On
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="05-02-2024"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">PO No</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="PO 056"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Total PO Value
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={1}
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Total Discount
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="INR 600.00"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Supplier
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="NR 0.00"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">Branch</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="Site"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    PO Currency
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="$ USD"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Conversion Rate
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="82.77 INR"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="d-flex justify-content-between  align-items-center">
-                            <h5
-                              className=" "
-                              data-bs-toggle="modal"
-                              data-bs-target="#sereneModal"
-                            >
-                              Material Details
-                            </h5>
-                            <div className="card-tools">
-                              <div>
-                                <button className="d-btn purple-btn2">
-                                  Delete
-                                </button>
-                                <button
-                                  className="d-btn purple-btn2"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#exampleModal32"
-                                >
-                                  Select RFQ
-                                </button>
-                                <button
-                                  className="d-btn purple-btn2"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#customModal"
-                                >
-                                  Select MOR
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Sr. No</th>
-                                  <th>Sub-Project</th>
-                                  <th>MOR No.</th>
-                                  <th>Material Description</th>
-                                  <th>Material Specifications</th>
-                                  <th>UMO</th>
-                                  <th>Pending Mor Qty</th>
-                                  <th>PO Order Qty</th>
-                                  <th>GRN Qty</th>
-                                  <th>PO Balance Qty</th>
-                                  <th>Action</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>1</td>
-                                  <td className="text-decoration-underline">
-                                    Neo Valley- Building
-                                  </td>
-                                  <td>MOR/MAR/MAX/ 101/02/2024</td>
-                                  <td>Plain White Sperenza Tiles</td>
-                                  <td>300 x 300 mm</td>
-                                  <td>
-                                    <div className="form-group">
-                                      <label className="po-fontBold">
-                                        Supplier
-                                      </label>
-                                      <select
-                                        className="form-control form-select"
-                                        style={{ width: "100%" }}
-                                      >
-                                        <option selected="selected">Nos</option>
-                                        <option>Alaska</option>
-                                        <option>California</option>
-                                        <option>Delaware</option>
-                                        <option>Tennessee</option>
-                                        <option>Texas</option>
-                                        <option>Washington</option>
-                                      </select>
-                                    </div>
-                                  </td>
-                                  <td>150</td>
-                                  <td>40</td>
-                                  <td>50</td>
-                                  <td>60</td>
-                                  <td>
-                                    <i
-                                      className="fa-solid fa-xmark"
-                                      style={{ fontSize: 18 }}
-                                    />
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                        <div
-                          className="tab-pane fade"
-                          id="Import2"
-                          role="tabpanel"
-                          aria-labelledby="nav-profile-tab"
-                          tabIndex={0}
-                        >
-                          <div className=" mt-3">
-                            <h5 className=" ">Quotation Details</h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Quotation No.</th>
-                                  <th>Supplier Ref. No</th>
-                                  <th>Material</th>
-                                  <th>Brand</th>
-                                  <th>UOM</th>
-                                  <th>All Incl. Rate</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td className="text-decoration-underline">
-                                    Quotation 9655295
-                                  </td>
-                                  <td>65985</td>
-                                  <td>Plain White Sperenza Tiles</td>
-                                  <td>Sperenza</td>
-                                  <td>Nos</td>
-                                  <td>600</td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className=" ">
-                            <h5 className="mt-3 ">Rate &amp; Taxes</h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Sr. No</th>
-                                  <th>Material Description</th>
-                                  <th>Brand</th>
-                                  <th>UOM</th>
-                                  <th>PO Qty</th>
-                                  <th colSpan={2}>Material Rate</th>
-                                  <th colSpan={2}>Material Cost</th>
-                                  <th>Tax Addition</th>
-                                  <th>Total Changes</th>
-                                  <th>Other Addition</th>
-                                  <th>Other Deductions</th>
-                                  <th>All Incl. Cost</th>
-                                  <th>Tax Deductions</th>
-                                  <th>Select Tax</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>1</td>
-                                  <td>Plain White Sperenza Tiles</td>
-                                  <td>Sperenza</td>
-                                  <td>300 x 300 mm</td>
-                                  <td>nos</td>
-                                  <td
-                                    className="text-decoration-underline"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#cozyModal"
-                                  >
-                                    Attributes
-                                  </td>
-                                  <td>40</td>
-                                  <td>USD 0.24</td>
-                                  <td>INR 20</td>
-                                  <td>USD 9.67</td>
-                                  <td>INR 800</td>
-                                  <td>108</td>
-                                  <td>708</td>
-                                  <td>108</td>
-                                  <td>708</td>
-                                  <td
-                                    className="text-decoration-underline"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#zenithModal"
-                                  >
-                                    select
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className=" ">
-                            <h5 className=" mt-3">Tax &amp; Charges Summary</h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th rowSpan={2}>Tax / Charge Type</th>
-                                  <th colSpan={2}>Amount</th>
-                                </tr>
-                                <tr>
-                                  <th>INR</th>
-                                  <th>USD</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>Total Base Cost</td>
-                                  <td>800</td>
-                                  <td>800</td>
-                                </tr>
-                                <tr>
-                                  <td>Custom Duty</td>
-                                  <td>400</td>
-                                  <td>400</td>
-                                </tr>
-                                <tr>
-                                  <td>C &amp; F Charges</td>
-                                  <td>30.4</td>
-                                  <td>30.4</td>
-                                </tr>
-                                <tr>
-                                  <td className="fw-bold">
-                                    Total All Incl. Cost
-                                  </td>
-                                  <td className="fw-bold">1230.4</td>
-                                  <td className="fw-bold">1230.4</td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className=" mt-3 d-flex justify-content-between ">
-                            <h5 className=" ">Other Cost</h5>
-                            <div className="card-tools">
-                              <button className="purple-btn2 m-0">
+                            {/* General Term & Conditions Section */}
+                            <div className="mt-3 d-flex justify-content-between align-items-center">
+                              <h5 className="">
+                                General Term &amp; Conditions
+                              </h5>
+                              <button
+                                className="purple-btn2"
+                                style={{ minWidth: 100 }}
+                                onClick={() =>
+                                  setGeneralTerms((prev) => [
+                                    ...prev,
+                                    {
+                                      id: Date.now(),
+                                      category: "",
+                                      condition: "",
+                                    },
+                                  ])
+                                }
+                              >
                                 <span className="material-symbols-outlined align-text-top me-2">
-                                  add{" "}
+                                  add
                                 </span>
-                                Add Item
+                                Add
                               </button>
                             </div>
+                            <div className="tbl-container me-2 mt-2">
+                              <table className="w-100">
+                                <thead>
+                                  <tr>
+                                    <th>Condition Category</th>
+                                    <th>Condition</th>
+                                    <th>Action</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {generalTerms && generalTerms.length > 0 ? (
+                                    generalTerms.map((row, idx) => (
+                                      <tr key={row.id}>
+                                        <td>
+                                          <select
+                                            className="form-control"
+                                            value={row.category}
+                                            onChange={(e) => {
+                                              const selectedCategory =
+                                                e.target.value;
+                                              // Find existing conditions for the selected category from API data
+                                              const existingConditionsForCategory =
+                                                termsConditions.filter(
+                                                  (item) =>
+                                                    item.condition_category_name ===
+                                                    selectedCategory
+                                                );
+
+                                              // Get the first condition text for this category (or empty if none exists)
+                                              const defaultConditionText =
+                                                existingConditionsForCategory.length >
+                                                0
+                                                  ? existingConditionsForCategory[0]
+                                                      .condition
+                                                  : "";
+
+                                              setGeneralTerms((prev) =>
+                                                prev.map((item, i) =>
+                                                  i === idx
+                                                    ? {
+                                                        ...item,
+                                                        category:
+                                                          selectedCategory,
+                                                        condition:
+                                                          defaultConditionText, // Auto-populate with existing condition
+                                                      }
+                                                    : item
+                                                )
+                                              );
+                                            }}
+                                          >
+                                            <option value="">
+                                              Select Category
+                                            </option>
+                                            {conditionCategories.map(
+                                              (category, catIndex) => (
+                                                <option
+                                                  key={catIndex}
+                                                  value={category}
+                                                >
+                                                  {category}
+                                                </option>
+                                              )
+                                            )}
+                                          </select>
+                                        </td>
+                                        <td>
+                                          <input
+                                            className="form-control"
+                                            value={row.condition}
+                                            onChange={(e) =>
+                                              setGeneralTerms((prev) =>
+                                                prev.map((item, i) =>
+                                                  i === idx
+                                                    ? {
+                                                        ...item,
+                                                        condition:
+                                                          e.target.value,
+                                                      }
+                                                    : item
+                                                )
+                                              )
+                                            }
+                                            placeholder={
+                                              row.category
+                                                ? "Enter condition"
+                                                : "Select category first"
+                                            }
+                                            disabled={!row.category}
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <button
+                                            type="button"
+                                            className="btn btn-link text-danger"
+                                            onClick={() =>
+                                              setGeneralTerms((prev) =>
+                                                prev.filter((_, i) => i !== idx)
+                                              )
+                                            }
+                                          >
+                                            <span className="material-symbols-outlined">
+                                              cancel
+                                            </span>
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))
+                                  ) : (
+                                    <tr>
+                                      <td colSpan={3} className="text-center">
+                                        No conditions added.
+                                      </td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
+                            <div className="mt-3 ">
+                              <h5 className=" mt-3">
+                                Material Specific Term &amp; Conditions
+                              </h5>
+                            </div>
+                            <div className="tbl-container me-2 mt-2">
+                              <table className="w-100">
+                                <thead>
+                                  <tr>
+                                    <th>Material</th>
+                                    <th>Condition Category</th>
+                                    <th>Condition</th>
+                                    <th>Actions</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {materialTermConditions &&
+                                  materialTermConditions.length > 0 ? (
+                                    materialTermConditions.map(
+                                      (item, index) => (
+                                        <tr key={index}>
+                                          <td>
+                                            {item.material_name ||
+                                              item.material ||
+                                              "N/A"}
+                                          </td>
+                                          <td>
+                                            {item.condition_category_name ||
+                                              item.category ||
+                                              "N/A"}
+                                          </td>
+                                          <td>
+                                            {item.condition ||
+                                              item.condition_text ||
+                                              "N/A"}
+                                          </td>
+                                          <td className="text-center">
+                                            <button
+                                              type="button"
+                                              className="btn btn-link text-danger"
+                                              onClick={() => {
+                                                // Handle remove if needed
+                                                console.log(
+                                                  "Remove material term condition:",
+                                                  item
+                                                );
+                                              }}
+                                            >
+                                              <span className="material-symbols-outlined">
+                                                cancel
+                                              </span>
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      )
+                                    )
+                                  ) : (
+                                    <tr>
+                                      <td colSpan={4} className="text-center">
+                                        No material specific conditions found.
+                                      </td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>
-                                    Transportation, Loading &amp; Unloading
-                                    Details
-                                  </th>
-                                  <th>Cost</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>Loading</td>
-                                  <td>0.00</td>
-                                </tr>
-                                <tr>
-                                  <td>Unloading</td>
-                                  <td>0.00</td>
-                                </tr>
-                                <tr>
-                                  <td>Transportation</td>
-                                  <td>0.00</td>
-                                </tr>
-                                <tr>
-                                  <th>Total</th>
-                                  <th>0.00</th>
-                                </tr>
-                              </tbody>
-                            </table>
+                          <div
+                            className="tab-pane fade"
+                            id="Domestic4"
+                            role="tabpanel"
+                            aria-labelledby="nav-home-tab"
+                            tabIndex={0}
+                          >
+                            Amendment Details
                           </div>
                         </div>
-                        <div
-                          className="tab-pane fade"
-                          id="Import3"
-                          role="tabpanel"
-                          aria-labelledby="nav-contact-tab"
-                          tabIndex={0}
-                        >
-                          <div className="card-body">
-                            <div className="row">
-                              <div className="col-md-6 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Credit Period (Days)
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={0}
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-6 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    P.O Validity Period (Days)
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={0}
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-6 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Advance Reminder Duration (Days)
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={0}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="card-body pt-1">
-                            <div className="row">
-                              <div className="mb-3 w-50">
-                                <label
-                                  htmlFor="exampleFormControlTextarea1"
-                                  className="form-label po-fontBoldM"
-                                >
-                                  Payment Terms
-                                </label>
-                                <textarea
-                                  className="form-control"
-                                  id="exampleFormControlTextarea1"
-                                  rows={3}
-                                  defaultValue={""}
-                                />
-                              </div>
-                              <div className="mb-3 w-50">
-                                <label
-                                  htmlFor="exampleFormControlTextarea1"
-                                  className="form-label po-fontBoldM"
-                                >
-                                  Remark
-                                </label>
-                                <textarea
-                                  className="form-control"
-                                  id="exampleFormControlTextarea1"
-                                  rows={3}
-                                  defaultValue={""}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th rowSpan={2}>Charges And Taxes</th>
-                                  <th colSpan={2}>Amount</th>
-                                  <th rowSpan={2}>Payable Currency</th>
-                                  <th rowSpan={2}>Service Certificate</th>
-                                  <th rowSpan={2}>Select Service Provider</th>
-                                  <th rowSpan={2}>Remarks</th>
-                                </tr>
-                                <tr>
-                                  <th>INR</th>
-                                  <th>USD</th>
-                                </tr>
-                                <tr>
-                                  <th colSpan={7}>Tax Addition(Exclusive)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td colSpan={7}>No Records Found.</td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th colSpan={6}>Charges (Exclusive)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>Custom Duty </td>
-                                  <td colSpan={1}>INR 0.00</td>
-                                  <td colSpan={1}>USD 4.83</td>{" "}
-                                  <td>
-                                    <input type="checkbox" />
-                                  </td>
-                                  <td colSpan={2}>
-                                    <textarea
-                                      className="form-control"
-                                      id="exampleFormControlTextarea1"
-                                      rows={2}
-                                      defaultValue={""}
-                                    />
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td>C AND F CHARGES </td>
-                                  <td colSpan={1}>INR 0.00</td>
-                                  <td colSpan={1}>USD 4.83</td>
-                                  <td>
-                                    <input type="checkbox" />
-                                  </td>
-                                  <td colSpan={2}>
-                                    <textarea
-                                      className="form-control"
-                                      id="exampleFormControlTextarea1"
-                                      rows={2}
-                                      defaultValue={""}
-                                    />
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="card-body">
-                            <div className="row">
-                              <div className="col-md-6 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Total PO Value
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="INR 0.00"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-6 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Supplier Advance Allowed (%)
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={0}
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-6 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Total Discount
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="NR 0.00"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                            <div className="row">
-                              <div className="col-md-6 mt-2">
-                                <div className="form-grou2">
-                                  <label className="po-fontBold">
-                                    Supplier Advance Amount
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="INR 0.00"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-6 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Service Certificate Advance Allowed (%)
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={0}
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-6 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Service Certificate Advance Amount
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="INR 0.00"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="mt-3 d-flex justify-content-between align-items-center">
-                            <h5 className=" mt-3">Advance Payment Schedule</h5>
-                            <button className="purple-btn2"> Add</button>
-                          </div>
-                          <div className="tbl-container me-2 mt-2">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Payment Date</th>
-                                  <th>Payment %age</th>
-                                  <th>Payment Amount</th>
-                                  <th>Remark</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>05-03-2024</td>
-                                  <td>40</td>
-                                  <td />
-                                  <td />
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="mt-3 d-flex justify-content-between align-items-center">
-                            <h5 className=" mt-3">Delivery Schedule</h5>
-                            <button className="purple-btn2"> Add</button>
-                          </div>
-                          <div className="tbl-container me-2 mt-2">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>MOR No.</th>
-                                  <th>Material</th>
-                                  <th>MOR Delivery Schedule</th>
-                                  <th>PO Delivery Date</th>
-                                  <th>Sch. Delivery Qty</th>
-                                  <th>Delivery Address</th>
-                                  <th>Store Name</th>
-                                  <th>Remarks</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>05-03-2024</td>
-                                  <td>40</td>
-                                  <td />
-                                  <td />
-                                  <td />
-                                  <td />
-                                  <td />
-                                  <td />
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="mt-3 ">
-                            <h5 className=" ">General Term &amp; Conditions</h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-2">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Condition Category</th>
-                                  <th>Condition</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td />
-                                  <td />
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="mt-3 ">
-                            <h5 className=" mt-3">
-                              Material Specific Term &amp; Conditions
-                            </h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-2">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Material</th>
-                                  <th>Condition Category</th>
-                                  <th>Condition</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td />
-                                  <td />
-                                  <td />
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                        <div
-                          className="tab-pane fade"
-                          id="Import4"
-                          role="tabpanel"
-                          aria-labelledby="nav-home-tab"
-                          tabIndex={0}
-                        >
-                          Amendment Details
-                        </div>
+                        {/* /.container-fluid */}
                       </div>
-                      {/* /.container-fluid */}
-                    </div>
-                  </section>
+                    </section>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div id="content3" className="contentpo">
-              <div className="card">
-                <div className="card-body">
-                  <div className=" text-center">
-                    <h4>PO for New Material (ROPO)</h4>
-                  </div>
-                  <div className="d-flex justify-content-end ">
-                    <div className="me-1 ">
-                      <button className="d-btn purple-btn2">Copy PO</button>
-                    </div>
-                    <div>
-                      <button className="d-btn purple-btn2">Download</button>
-                    </div>
-                  </div>
-                  <div className="d-flex justify-content-end mt-2">
-                    <div className="me-3 text-decoration-underline">
-                      <a href="#">View MOR</a>
-                    </div>
-                    <div className="ms-1 text-decoration-underline">
-                      <a href="#">View MTO</a>
-                    </div>
-                  </div>
-                  <section className="mor p-2 pt-2">
-                    <div className="container-fluid">
-                      <nav>
-                        <div
-                          className="nav nav-tabs"
-                          id="nav-tab"
-                          role="tablist"
-                        >
-                          <button
-                            className="nav-link active"
-                            id="nav-home-tab"
-                            data-bs-toggle="tab"
-                            data-bs-target="#ROPO1"
-                            type="button"
-                            role="tab"
-                            aria-controls="nav-home"
-                            aria-selected="true"
-                          >
-                            PO Details
-                          </button>
-                          <button
-                            className="nav-link"
-                            id="nav-profile-tab"
-                            data-bs-toggle="tab"
-                            data-bs-target="#ROPO2"
-                            type="button"
-                            role="tab"
-                            aria-controls="nav-profile"
-                            aria-selected="false"
-                          >
-                            Rate &amp; Taxes
-                          </button>
-                          <button
-                            className="nav-link"
-                            id="nav-contact-tab"
-                            data-bs-toggle="tab"
-                            data-bs-target="#ROPO3"
-                            type="button"
-                            role="tab"
-                            aria-controls="nav-contact"
-                            aria-selected="false"
-                          >
-                            Term &amp; Conditions
-                          </button>
-                        </div>
-                      </nav>
-                      <div className="tab-content" id="nav-tabContent">
-                        <div
-                          className="tab-pane fade show active"
-                          id="ROPO1"
-                          role="tabpanel"
-                          aria-labelledby="nav-home-tab"
-                          tabIndex={0}
-                        >
-                          <div className="card-body">
-                            <div className="row">
-                              <div className="col-md-4 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">Company</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="MRPL"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">Project</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="Neo Valley"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    PO Category
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="Materia"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">PO Type</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="Materia"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">PO Date</label>
-                                  <input
-                                    className="form-control"
-                                    type="date"
-                                    placeholder="Default input"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Created On
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="date"
-                                    placeholder="05-02-2024"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">PO No</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="PO 056"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Total PO Value
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={1}
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Total Discount
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="INR 600.00"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Supplier
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="NR 0.00"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Vendor GSTIN
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="Site"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-4 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">Branch</label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="82.77 INR"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="d-flex justify-content-between  align-items-center">
-                            <h5
-                              className=" "
-                              data-bs-toggle="modal"
-                              data-bs-target="#sereneModal"
-                            >
-                              Material Details
-                            </h5>
-                            <div className="card-tools">
-                              <div>
-                                <button className="d-btn purple-btn2">
-                                  Delete
-                                </button>
-                                <button
-                                  className="d-btn purple-btn2"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#exampleModal32"
-                                >
-                                  Select RFQ
-                                </button>
-                                <button
-                                  className="d-btn purple-btn2"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#customModal"
-                                >
-                                  Select MOR
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Sr. No</th>
-                                  <th>Sub-Project</th>
-                                  <th>MOR No.</th>
-                                  <th>Material Description</th>
-                                  <th>Material Specifications</th>
-                                  <th>UMO</th>
-                                  <th>Pending Mor Qty</th>
-                                  <th>PO Order Qty</th>
-                                  <th>GRN Qty</th>
-                                  <th>PO Balance Qty</th>
-                                  <th>Action</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>1</td>
-                                  <td className="text-decoration-underline">
-                                    Neo Valley- Building
-                                  </td>
-                                  <td>MOR/MAR/MAX/ 101/02/2024</td>
-                                  <td>Plain White Sperenza Tiles</td>
-                                  <td>300 x 300 mm</td>
-                                  <td>
-                                    <div className="form-group">
-                                      <label className="po-fontBold">
-                                        Supplier
-                                      </label>
-                                      <select
-                                        className="form-control form-select"
-                                        style={{ width: "100%" }}
-                                      >
-                                        <option selected="selected">Nos</option>
-                                        <option>Alaska</option>
-                                        <option>California</option>
-                                        <option>Delaware</option>
-                                        <option>Tennessee</option>
-                                        <option>Texas</option>
-                                        <option>Washington</option>
-                                      </select>
-                                    </div>
-                                  </td>
-                                  <td>150</td>
-                                  <td>40</td>
-                                  <td>50</td>
-                                  <td>60</td>
-                                  <td>
-                                    <i
-                                      className="fa-solid fa-xmark"
-                                      style={{ fontSize: 18 }}
-                                    />
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                        <div
-                          className="tab-pane fade"
-                          id="ROPO2"
-                          role="tabpanel"
-                          aria-labelledby="nav-profile-tab"
-                          tabIndex={0}
-                        >
-                          <div className=" mt-3">
-                            <h5 className=" ">Quotation Details</h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Quotation No.</th>
-                                  <th>Supplier Ref. No</th>
-                                  <th>Material</th>
-                                  <th>Brand</th>
-                                  <th>UOM</th>
-                                  <th>All Incl. Rate</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td className="text-decoration-underline">
-                                    Quotation 9655295
-                                  </td>
-                                  <td>65985</td>
-                                  <td>Plain White Sperenza Tiles</td>
-                                  <td>Sperenza</td>
-                                  <td>Nos</td>
-                                  <td>600</td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className=" ">
-                            <h5 className="mt-3 ">Rate &amp; Taxes</h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Sr. No</th>
-                                  <th>Material Description</th>
-                                  <th>Brand</th>
-                                  <th>UOM</th>
-                                  <th>PO Qty</th>
-                                  <th colSpan={2}>Material Rate</th>
-                                  <th colSpan={2}>Material Cost</th>
-                                  <th>Tax Addition</th>
-                                  <th>Total Changes</th>
-                                  <th>Other Addition</th>
-                                  <th>Other Deductions</th>
-                                  <th>All Incl. Cost</th>
-                                  <th>Tax Deductions</th>
-                                  <th>Select Tax</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>1</td>
-                                  <td>Plain White Sperenza Tiles</td>
-                                  <td>Sperenza</td>
-                                  <td>300 x 300 mm</td>
-                                  <td>nos</td>
-                                  <td
-                                    className="text-decoration-underline"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#cozyModal"
-                                  >
-                                    Attributes
-                                  </td>
-                                  <td>40</td>
-                                  <td>USD 0.24</td>
-                                  <td>INR 20</td>
-                                  <td>USD 9.67</td>
-                                  <td>INR 800</td>
-                                  <td>108</td>
-                                  <td>708</td>
-                                  <td
-                                    className="text-decoration-underline"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#zenithModal"
-                                  >
-                                    select
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className=" ">
-                            <h5 className=" mt-3">Tax &amp; Charges Summary</h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th rowSpan={2}>Tax / Charge Type</th>
-                                  <th colSpan={2}>Amount</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>Total Base Cost</td>
-                                  <td>800</td>
-                                </tr>
-                                <tr>
-                                  <td>Custom Duty</td>
-                                  <td>400</td>
-                                </tr>
-                                <tr>
-                                  <td>C &amp; F Charges</td>
-                                  <td>30.4</td>
-                                </tr>
-                                <tr>
-                                  <td className="fw-bold">
-                                    Total All Incl. Cost
-                                  </td>
-                                  <td className="fw-bold">1230.4</td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className=" mt-3 d-flex justify-content-between ">
-                            <h5 className=" ">Other Cost</h5>
-                            <div className="card-tools">
-                              <button className="purple-btn2 m-0">
-                                <span className="material-symbols-outlined align-text-top me-2">
-                                  add{" "}
-                                </span>
-                                Add Item
-                              </button>
-                            </div>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>
-                                    Transportation, Loading &amp; Unloading
-                                    Details
-                                  </th>
-                                  <th>Cost</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>Loading</td>
-                                  <td>0.00</td>
-                                </tr>
-                                <tr>
-                                  <td>Unloading</td>
-                                  <td>0.00</td>
-                                </tr>
-                                <tr>
-                                  <td>Transportation</td>
-                                  <td>0.00</td>
-                                </tr>
-                                <tr>
-                                  <th>Total</th>
-                                  <th>0.00</th>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                        <div
-                          className="tab-pane fade"
-                          id="ROPO3"
-                          role="tabpanel"
-                          aria-labelledby="nav-contact-tab"
-                          tabIndex={0}
-                        >
-                          <div className="card-body">
-                            <div className="row">
-                              <div className="col-md-6 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Credit Period (Days)
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={0}
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-6 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    P.O Validity Period (Days)
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={0}
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-6 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Advance Reminder Duration (Days)
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={0}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="card-body pt-1">
-                            <div className="row">
-                              <div className="mb-3 w-50">
-                                <label
-                                  htmlFor="exampleFormControlTextarea1"
-                                  className="form-label po-fontBoldM"
-                                >
-                                  Payment Terms
-                                </label>
-                                <textarea
-                                  className="form-control"
-                                  id="exampleFormControlTextarea1"
-                                  rows={3}
-                                  defaultValue={""}
-                                />
-                              </div>
-                              <div className="mb-3 w-50">
-                                <label
-                                  htmlFor="exampleFormControlTextarea1"
-                                  className="form-label po-fontBoldM"
-                                >
-                                  Remark
-                                </label>
-                                <textarea
-                                  className="form-control"
-                                  id="exampleFormControlTextarea1"
-                                  rows={3}
-                                  defaultValue={""}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Charges And Taxes</th>
-                                  <th>Amount</th>
-                                  <th>Payable Currency</th>
-                                  <th>Service Certificate</th>
-                                  <th>Select Service Provider</th>
-                                  <th>Remarks</th>
-                                </tr>
-                                <tr>
-                                  <th colSpan={6}>Tax Addition(Exclusive)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td colSpan={6}>No Records Found.</td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="tbl-container me-2 mt-3">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th colSpan={6}>Charges (Exclusive)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>OTHER CHARGES </td>
-                                  <td colSpan={2}>INR 0.00</td>
-                                  <td>
-                                    <input type="checkbox" />
-                                  </td>
-                                  <td colSpan={2}>
-                                    <textarea
-                                      className="form-control"
-                                      id="exampleFormControlTextarea1"
-                                      rows={2}
-                                      defaultValue={""}
-                                    />
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="card-body">
-                            <div className="row">
-                              <div className="col-md-6 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Total PO Value
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="INR 0.00"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-6 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Total Discount
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="NR 0.00"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-6 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Retention Amount
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="NR 0.00"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-6 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Retention (%)
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="NR 0.00"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                            <div className="row">
-                              <div className="col-md-6 mt-0">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Supplier Advance Allowed (%)
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={0}
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-6 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Supplier Advance Amount
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="INR 0.00"
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-6 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Service Certificate Advance Allowed (%)
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder={0}
-                                  />
-                                </div>
-                              </div>
-                              <div className="col-md-6 mt-2">
-                                <div className="form-group">
-                                  <label className="po-fontBold">
-                                    Service Certificate Advance Amount
-                                  </label>
-                                  <input
-                                    className="form-control"
-                                    type="text"
-                                    placeholder="INR 0.00"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="mt-3 d-flex justify-content-between align-items-center">
-                            <h5 className=" mt-3">Advance Payment Schedule</h5>
-                            <button className="purple-btn2"> Add</button>
-                          </div>
-                          <div className="tbl-container me-2 mt-2">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Payment Date</th>
-                                  <th>Payment %age</th>
-                                  <th>Payment Amount</th>
-                                  <th>Remark</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>05-03-2024</td>
-                                  <td>40</td>
-                                  <td />
-                                  <td />
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="mt-3 d-flex justify-content-between align-items-center">
-                            <h5 className=" mt-3">Delivery Schedule</h5>
-                            <button className="purple-btn2"> Add</button>
-                          </div>
-                          <div className="tbl-container me-2 mt-2">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>MOR No.</th>
-                                  <th>Material</th>
-                                  <th>MOR Delivery Schedule</th>
-                                  <th>PO Delivery Date</th>
-                                  <th>Sch. Delivery Qty</th>
-                                  <th>Delivery Address</th>
-                                  <th>Store Name</th>
-                                  <th>Remarks</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>05-03-2024</td>
-                                  <td>40</td>
-                                  <td />
-                                  <td />
-                                  <td />
-                                  <td />
-                                  <td />
-                                  <td />
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="mt-3 ">
-                            <h5 className=" ">General Term &amp; Conditions</h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-2">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Condition Category</th>
-                                  <th>Condition</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td />
-                                  <td />
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="mt-3 ">
-                            <h5 className=" mt-3">
-                              Material Specific Term &amp; Conditions
-                            </h5>
-                          </div>
-                          <div className="tbl-container me-2 mt-2">
-                            <table className="w-100">
-                              <thead>
-                                <tr>
-                                  <th>Material</th>
-                                  <th>Condition Category</th>
-                                  <th>Condition</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td />
-                                  <td />
-                                  <td />
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                        <div
-                          className="tab-pane fade"
-                          id="nav-amendment-tab"
-                          role="tabpanel"
-                          aria-labelledby="nav-home-tab"
-                          tabIndex={0}
-                        >
-                          Amendment Details
-                        </div>
-                      </div>
-                      {/* /.container-fluid */}
-                    </div>
-                  </section>
+
+              {/* 
+Document */}
+
+              <div className="d-flex justify-content-between mt-5 ">
+                <h5>Document Attachment</h5>
+                <div
+                  className="card-tools d-flex"
+                  data-bs-toggle="modal"
+                  data-bs-target="#attachModal"
+                  // onClick={openattachModal}
+                  onClick={handleAddRow}
+                >
+                  <button
+                    className="purple-btn2 mb-2 "
+                    data-bs-toggle="modal"
+                    data-bs-target="#attachModal"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={20}
+                      height={20}
+                      fill="currentColor"
+                      className="bi bi-plus"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                    </svg>
+                    <span>Add Attachments</span>
+                  </button>
                 </div>
               </div>
-            </div>
-            <div className=" d-flex justify-content-between align-items-center">
-              <h5 className=" mt-3">Document Attachment</h5>
-              <button
-                className="purple-btn2 m-0"
-                data-bs-toggle="modal"
-                data-bs-target="#file_attchement"
+
+              <div
+                className="tbl-container mb-4"
+                style={{ maxHeight: "500px" }}
               >
-                <svg
-                  width={16}
-                  height={17}
-                  viewBox="0 0 16 17"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M15.1892 16.0745H0.794209C0.364012 16.0745 0 15.7435 0 15.3133V8.03309C0 7.61944 0.347466 7.27197 0.794209 7.27197C1.24095 7.27197 1.58842 7.60289 1.58842 8.03309V14.5688H14.4116V8.03309C14.4116 7.61944 14.759 7.27197 15.2058 7.27197C15.6525 7.27197 16 7.60289 16 8.03309V15.3133C15.9669 15.727 15.6194 16.0745 15.1892 16.0745Z"
-                    fill="white"
-                  />
-                  <path
-                    d="M11.6318 3.28438L8.57081 0.223371C8.27298 -0.0744571 7.7766 -0.0744571 7.46222 0.223371L4.36812 3.28438C4.2192 3.4333 4.13647 3.63185 4.13647 3.84695C4.13647 4.06205 4.2192 4.24405 4.36812 4.39297C4.51703 4.54188 4.71558 4.62461 4.91414 4.62461C5.12924 4.62461 5.32779 4.54188 5.4767 4.39297L7.1644 2.72182V10.5812C7.1644 11.0445 7.52841 11.4085 7.9917 11.4085C8.45498 11.4085 8.819 11.0445 8.819 10.5812V2.68873L10.5232 4.39297C10.8211 4.6908 11.3174 4.6908 11.6318 4.39297C11.7807 4.24405 11.8635 4.0455 11.8635 3.84695C11.8635 3.63185 11.7807 3.4333 11.6318 3.28438Z"
-                    fill="white"
-                  />
-                </svg>
-                <span className="ms-2">Attchment File </span>
-              </button>
-            </div>
-            <div className=" px-3 mt-2">
-              <div className="tbl-container px-0  m-0">
-                <table className="w-100">
-                  <thead className="w-100">
-                    <tr>
-                      <th className="main2-th">Sr. No.</th>
-                      <th className="main2-th">Document Name</th>
-                      <th className="main2-th">File Name</th>
-                      <th className="main2-th">File Type</th>
-                      <th className="main2-th">Upload Date</th>
-                      <th className="main2-th">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <th>1</th>
-                      <td>03-03-2024</td>
-                      <th>MTO Copy.pdf</th>
-                      <td>03-03-2024</td>
-                      <th>MTO Copy.pdf</th>
-                      <td>
-                        <i
-                          className="fa-regular fa-eye"
-                          data-bs-toggle="modal"
-                          data-bs-target="#document_attchment"
-                          style={{ fontSize: 18 }}
-                        />
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div className="card-body mt-3">
-              <div className="row">
-                <div className="mb-3  ">
-                  <label
-                    htmlFor="exampleFormControlTextarea1"
-                    className="form-label po-fontBoldM"
-                  >
-                    Remark
-                  </label>
-                  <textarea
-                    className="form-control"
-                    id="exampleFormControlTextarea1"
-                    rows={2}
-                    defaultValue={""}
-                  />
-                </div>
-                <div className="mb-3  ">
-                  <label
-                    htmlFor="exampleFormControlTextarea1"
-                    className="form-label po-fontBoldM"
-                  >
-                    Comments
-                  </label>
-                  <textarea
-                    className="form-control"
-                    id="exampleFormControlTextarea1"
-                    rows={1}
-                    defaultValue={""}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="d-flex justify-content-end align-items-center gap-3">
-              <p className="">Status</p>
-              <div className="dropdown">
-                <button
-                  className="btn purple-btn2 btn-secondary dropdown-toggle"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  PO Draft
-                </button>
-                <ul className="dropdown-menu">
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      Action
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      Another action
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      Something else here
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div className="row mt-2 justify-content-end">
-              <div className="col-md-2">
-                <button className="purple-btn2 w-100">Print</button>
-              </div>
-              <div className="col-md-2">
-                <button className="purple-btn2 w-100">Submit</button>
-              </div>
-              <div className="col-md-2">
-                <button className="purple-btn1 w-100">Cancel</button>
-              </div>
-            </div>
-            <h5 className=" mt-3">Audit Log</h5>
-            <div className="px-3">
-              <div className="tbl-container px-0">
                 <table className="w-100">
                   <thead>
                     <tr>
-                      <th>Sr.No.</th>
-                      <th>User</th>
-                      <th>Date</th>
-                      <th>Status</th>
-                      <th>Remark</th>
-                      <th>Comments</th>
+                      <th className="main2-th">File Type</th>
+                      <th className="main2-th">File Name </th>
+                      <th className="main2-th">Upload At</th>
+                      <th className="main2-th">Upload File</th>
+                      <th className="main2-th" style={{ width: 100 }}>
+                        Action
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <th>1</th>
-                      <td>Pratham Shastri</td>
-                      <td>15-02-2024</td>
-                      <td>Verified</td>
-                      <td>
-                        <i
-                          className="fa-regular fa-eye"
-                          data-bs-toggle="modal"
-                          data-bs-target="#remark-modal"
-                          style={{ fontSize: 18 }}
-                        />
-                      </td>
-                      <td>
-                        <i
-                          className="fa-regular fa-eye"
-                          data-bs-toggle="modal"
-                          data-bs-target="#comments-modal"
-                          style={{ fontSize: 18 }}
-                        />
-                      </td>
-                    </tr>
+                    {attachments.map((att, index) => (
+                      <tr key={att.id}>
+                        <td>
+                          <input
+                            className="form-control document_content_type"
+                            readOnly
+                            disabled
+                            value={att.fileType}
+                            placeholder="File Type"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="form-control file_name"
+                            required
+                            value={att.fileName}
+                            onChange={(e) =>
+                              handleFileNameChange(att.id, e.target.value)
+                            }
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="form-control created_at"
+                            readOnly
+                            disabled
+                            type="datetime-local"
+                            step="1"
+                            value={att.uploadDate || ""}
+                          />
+                        </td>
+                        <td>
+                          {!att.isExisting && (
+                            <input
+                              type="file"
+                              className="form-control"
+                              required
+                              onChange={(e) => handleFileChange(e, att.id)}
+                            />
+                          )}
+                        </td>
+                        <td className="document">
+                          <div
+                            style={{ display: "flex", alignItems: "center" }}
+                          >
+                            <div className="attachment-placeholder">
+                              {att.isExisting && (
+                                <div className="file-box">
+                                  <div className="image">
+                                    <a
+                                      href={att.fileUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                    >
+                                      <img
+                                        alt="preview"
+                                        className="img-responsive"
+                                        height={50}
+                                        width={50}
+                                        src={att.fileUrl}
+                                      />
+                                    </a>
+                                  </div>
+                                  <div className="file-name">
+                                    <a href={att.fileUrl} download>
+                                      <span className="material-symbols-outlined">
+                                        file_download
+                                      </span>
+                                    </a>
+                                    <span>{att.fileName}</span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-link text-danger"
+                              onClick={() => handleRemove(att.id)}
+                            >
+                              <span className="material-symbols-outlined">
+                                cancel
+                              </span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-   
-  {/* Navigation Top */}
-  {/* sidebar start below */}
-  <div
-    className="modal fade"
-    id="Attachment"
-    tabIndex={-1}
-    aria-labelledby="exampleModalLabel32"
-    aria-hidden="true"
-  >
-    <div className="modal-dialog">
-      <div className="modal-content">
-        <div className="modal-header align-items-center">
-          <h5>Upload File</h5>
-          <button
-            type="button"
-            className="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          />
-        </div>
-        <div className="modal-body">
-          <div className="card-body p-0">
-            <div className="row">
-              <div className="col-md-5 mt-0">
-                <div className="form-group">
-                  <label>
-                    File Name <span>*</span>{" "}
-                  </label>
-                  <input
-                    className="form-control"
-                    type="text"
-                    placeholder="INR 0.00"
-                  />
+
+              <div className="card-body mt-3">
+                <div className="row">
+                  <div className="mb-3  ">
+                    <label
+                      htmlFor="exampleFormControlTextarea1"
+                      className="form-label po-fontBoldM"
+                    >
+                      Remark
+                    </label>
+                    <textarea
+                      className="form-control"
+                      id="exampleFormControlTextarea1"
+                      rows={2}
+                      defaultValue={""}
+                    />
+                  </div>
+                  <div className="mb-3  ">
+                    <label
+                      htmlFor="exampleFormControlTextarea1"
+                      className="form-label po-fontBoldM"
+                    >
+                      Comments
+                    </label>
+                    <textarea
+                      className="form-control"
+                      id="exampleFormControlTextarea1"
+                      rows={1}
+                      defaultValue={""}
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="col-md-5 mt-0">
-                <div className="form-group">
-                  <label>
-                    Attachment Name <span>*</span>{" "}
-                  </label>
-                  <input
-                    className="form-control"
-                    type="text"
-                    placeholder="INR 0.00"
-                  />
+              <div className="d-flex justify-content-end align-items-center gap-3">
+                <p className="">Status</p>
+                <div className="dropdown">
+                  <button
+                    className="btn purple-btn2 btn-secondary dropdown-toggle"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    PO Draft
+                  </button>
+                  <ul className="dropdown-menu">
+                    <li>
+                      <a className="dropdown-item" href="#">
+                        Action
+                      </a>
+                    </li>
+                    <li>
+                      <a className="dropdown-item" href="#">
+                        Another action
+                      </a>
+                    </li>
+                    <li>
+                      <a className="dropdown-item" href="#">
+                        Something else here
+                      </a>
+                    </li>
+                  </ul>
                 </div>
               </div>
-              <div className="col-md-12 mt-3">
-                <div className="form-group">
-                  <input
-                    className="form-control"
-                    type="file"
-                    placeholder="INR 0.00"
-                  />
+              <div className="row mt-2 justify-content-end">
+                <div className="col-md-2">
+                  <button className="purple-btn2 w-100">Submit</button>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="modal-footer justify-content-center">
-          <button className="purple-btn2">sumbit</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  {/* webpage container end */}
-  {/* Select RfQ Start*/}
-  <div
-    className="modal fade"
-    id="exampleModal32"
-    tabIndex={-1}
-    aria-labelledby="exampleModalLabel32"
-    aria-hidden="true"
-  >
-    <div className="modal-dialog">
-      <div className="modal-content">
-        <div className="modal-header align-items-center">
-          <h5>Select RFQ</h5>
-          <button
-            type="button"
-            className="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          />
-        </div>
-        <div className="modal-body">
-          <div className="card-body">
-            <div className="row">
-              <div className="col-md-4 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">RFQ No.</label>
-                  <input className="form-control" type="text" />
-                </div>
-              </div>
-              <div className="col-md-4 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold"> RFQ From</label>
-                  <input className="form-control" type="text" />
-                </div>
-              </div>
-              <div className="col-md-4 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">RFQ To</label>
-                  <input className="form-control" type="text" />
+                <div className="col-md-2">
+                  <button className="purple-btn1 w-100">Cancel</button>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div className="modal-footer">
-          <button className="purple-btn2">Go</button>
-        </div>
       </div>
-    </div>
-  </div>
-  {/* Select RfQ end */}
-  {/* Modal Attributes*/}
-  <div
-    className="modal fade"
-    id="customModal"
-    tabIndex={-1}
-    aria-labelledby="customModalLabel"
-    aria-hidden="true"
-  >
-    <div className="modal-dialog modal-xl">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h5 className="modal-title fs-5">Select MoR</h5>
-          <button
-            type="button"
-            className="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          />
-        </div>
-        <div
-          className="modal-body"
-          style={{ maxHeight: 500, overflowY: "auto" }}
-        >
-          <h5 className="mt-2 ms-2">Search MoR</h5>
-          <div className="card-body mt-0">
+
+      {/* Navigation Top */}
+      {/* sidebar start below */}
+
+      {/* webpage container end */}
+      {/* Select RfQ Start*/}
+
+      {/* Select RfQ end */}
+      {/* Modal Attributes*/}
+
+      {/* Modal end */}
+      {/* rate & taxes Attributes modal start */}
+
+      {/* rate & taxes Attributes modal end */}
+      {/* rate & taxes select modal start */}
+
+      {/* rate & taxes select modal end */}
+      {/* Matarial Details (sereneModal) modal start */}
+
+      {/* Matarial Details (sereneModal) modal end */}
+
+      {/* Remark  modal start end */}
+      {/* Comments  modal start */}
+
+      {/* Comments  modal start end */}
+      {/* file_attchement add modal */}
+
+      {/* file_attchement add modal end */}
+      {/* document_attchment schedule modal */}
+
+      {/* document_attchment schedule modal end */}
+
+      {/* Add Material Modal */}
+      <Modal
+        centered
+        size="lg"
+        show={showModal}
+        onHide={() => {
+          setShowModal(false);
+          setEditRowIndex(null); // <-- Reset editRowIndex on modal close
+        }}
+      >
+        <Modal.Header closeButton>
+          <h5>{editRowIndex !== null ? "Edit Material" : "Add Material"}</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <form onSubmit={handleCreate}>
             <div className="row">
-              <div className="col-md-4 mt-0">
+              <div className="col-md-4 mt-3">
                 <div className="form-group">
                   <label className="po-fontBold">
-                    Project <span>*</span>
+                    Material Type <span>*</span>
+                  </label>
+                  <SingleSelector
+                    options={inventoryTypes2}
+                    value={inventoryTypes2.find(
+                      (option) => option.value === formData.materialType
+                    )}
+                    placeholder={`Select Material Type`}
+                    onChange={(selectedOption) =>
+                      handleSelectorChange("materialType", selectedOption)
+                    }
+                  />
+                  {fieldErrors.materialType && (
+                    <span className="text-danger">
+                      {fieldErrors.materialType}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="col-md-4 mt-3">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Material Sub Type <span>*</span>
+                  </label>
+                  <SingleSelector
+                    options={inventorySubTypes2}
+                    value={inventorySubTypes2.find(
+                      (option) => option.value === formData.materialSubType
+                    )}
+                    placeholder={`Select Material Sub Type`}
+                    onChange={(selectedOption) =>
+                      handleSelectorChange("materialSubType", selectedOption)
+                    }
+                  />
+                  {fieldErrors.materialSubType && (
+                    <span className="text-danger">
+                      {fieldErrors.materialSubType}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="col-md-4 mt-3">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    Material <span>*</span>
+                  </label>
+                  <SingleSelector
+                    options={inventoryMaterialTypes2}
+                    value={inventoryMaterialTypes2.find(
+                      (option) => option.value === formData.material
+                    )}
+                    placeholder={`Select Material`}
+                    onChange={(selectedOption) =>
+                      handleSelectorChange("material", selectedOption)
+                    }
+                  />
+                  {fieldErrors.material && (
+                    <span className="text-danger">{fieldErrors.material}</span>
+                  )}
+                </div>
+              </div>
+              <div className="col-md-4 mt-3">
+                <div className="form-group">
+                  <label className="po-fontBold">Generic Specification</label>
+                  <SingleSelector
+                    options={
+                      Array.isArray(genericSpecifications)
+                        ? genericSpecifications
+                        : []
+                    }
+                    value={genericSpecifications.find(
+                      (option) => option.value === formData.genericSpecification
+                    )}
+                    placeholder={`Select Specification`}
+                    onChange={(selectedOption) =>
+                      handleSelectorChange(
+                        "genericSpecification",
+                        selectedOption
+                      )
+                    }
+                  />
+                </div>
+              </div>
+              <div className="col-md-4 mt-3">
+                <div className="form-group">
+                  <label className="po-fontBold">Colour</label>
+                  <SingleSelector
+                    options={colors || []}
+                    value={colors.find(
+                      (option) => option.value === formData.colour
+                    )}
+                    placeholder={`Select Colour`}
+                    onChange={(selectedOption) =>
+                      handleSelectorChange("colour", selectedOption)
+                    }
+                  />
+                </div>
+              </div>
+              <div className="col-md-4 mt-3">
+                <div className="form-group">
+                  <label className="po-fontBold">Brand</label>
+                  <SingleSelector
+                    options={inventoryBrands || []}
+                    value={inventoryBrands.find(
+                      (option) => option.value === formData.brand
+                    )}
+                    placeholder={`Select Brand`}
+                    onChange={(selectedOption) =>
+                      handleSelectorChange("brand", selectedOption)
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="col-md-4 mt-3">
+                <div className="form-group">
+                  <label className="po-fontBold">
+                    UOM <span>*</span>
+                  </label>
+                  <SingleSelector
+                    options={unitOfMeasures}
+                    value={unitOfMeasures.find(
+                      (option) => option.value === formData.uom
+                    )}
+                    placeholder={`Select UOM`}
+                    onChange={(selectedOption) =>
+                      handleSelectorChange("uom", selectedOption)
+                    }
+                  />
+                  {fieldErrors.uom && (
+                    <span className="text-danger">{fieldErrors.uom}</span>
+                  )}
+                </div>
+              </div>
+              <div className="row mt-2 justify-content-center mt-5">
+                <div className="col-md-3 mt-2">
+                  <button type="submit" className="purple-btn2 w-100">
+                    {editRowIndex !== null ? "Update" : "Add"}
+                  </button>
+                </div>
+                <div className="col-md-3">
+                  <button
+                    type="button"
+                    className="purple-btn1 w-100"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                    onClick={() => {
+                      setShowModal(false);
+                      setEditRowIndex(null);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </Modal.Body>
+      </Modal>
+
+      {/* Tax Modal */}
+      <Modal
+        show={showTaxModal}
+        onHide={handleCloseTaxModal}
+        size="lg"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>View Tax & Rate</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="container-fluid p-0">
+            {console.log("Modal is rendering, tableId:", tableId)}
+            {console.log("Tax options in modal:", taxOptions)}
+            <div className="row mb-3">
+              <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label fw-bold">Material</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={taxRateData[tableId]?.material || ""}
+                    readOnly
+                    disabled={true}
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label fw-bold">HSN Code</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={taxRateData[tableId]?.hsnCode || ""}
+                    readOnly
+                    disabled={true}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="row mb-3">
+              <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label fw-bold">Rate per Nos</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={taxRateData[tableId]?.ratePerNos || ""}
+                    onChange={(e) => handleRatePerNosChange(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label fw-bold">Total PO Qty</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={taxRateData[tableId]?.totalPoQty || ""}
+                    readOnly
+                    disabled={true}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="row mb-3">
+              <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label fw-bold">Discount (%)</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={taxRateData[tableId]?.discount || ""}
+                    onChange={(e) =>
+                      handleDiscountPercentageChange(e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label fw-bold">Material Cost</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={taxRateData[tableId]?.materialCost || ""}
+                    readOnly
+                    disabled={true}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="row mb-3">
+              <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label fw-bold">Discount Rate</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={taxRateData[tableId]?.discountRate || ""}
+                    readOnly
+                    disabled={true}
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label fw-bold">
+                    After Discount Value
                   </label>
                   <input
-                    className="form-control"
                     type="text"
-                    placeholder="MRPL"
+                    className="form-control"
+                    value={taxRateData[tableId]?.afterDiscountValue || ""}
+                    readOnly
+                    disabled={true}
                   />
                 </div>
               </div>
-              <div className="col-md-4">
-                <div className="form-group">
-                  <label className="po-fontBold">Sub Project</label>
-                  <select
-                    className="form-control form-select"
-                    style={{ width: "100%" }}
-                  >
-                    <option selected="selected">[Select One]</option>
-                    <option>Alaska</option>
-                    <option>California</option>
-                    <option>Delaware</option>
-                    <option>Tennessee</option>
-                    <option>Texas</option>
-                    <option>Washington</option>
-                  </select>
-                </div>
-              </div>
-              <div className="col-md-4 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Mor No.</label>
-                  <input className="form-control" type="text" placeholder=" " />
-                </div>
-              </div>
-              <div className="col-md-4 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Work Order No.</label>
-                  <input className="form-control" type="text" placeholder=" " />
-                </div>
-              </div>
-              <div className="col-md-4 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Material Type</label>
-                  <input
+            </div>
+
+            <div className="row mb-3">
+              <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label fw-bold">Remark</label>
+                  <textarea
                     className="form-control"
-                    type="text"
-                    placeholder="Not Selected"
+                    rows={3}
+                    value={taxRateData[tableId]?.remark || ""}
+                    onChange={(e) => {
+                      setTaxRateData((prev) => ({
+                        ...prev,
+                        [tableId]: {
+                          ...prev[tableId],
+                          remark: e.target.value,
+                        },
+                      }));
+                    }}
                   />
                 </div>
               </div>
-              <div className="col-md-4 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Mor Start Date</label>
-                  <input className="form-control" type="text" placeholder="" />
-                </div>
-              </div>
-              <div className="col-md-4 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Work Category</label>
-                  <input className="form-control" type="text" placeholder="" />
-                </div>
-              </div>
-              <div className="col-md-4 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Material Sub Type</label>
-                  <input
-                    className="form-control"
-                    type="text"
-                    placeholder="Not Selected"
-                  />
-                </div>
-              </div>
-              <div className="col-md-4 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Mor End Date</label>
-                  <input className="form-control" type="text" placeholder="" />
-                </div>
-              </div>
-              <div className="col-md-4 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Sub Work Category</label>
-                  <input className="form-control" type="text" placeholder="" />
-                </div>
-              </div>
-              <div className="col-md-4 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Material</label>
-                  <input
-                    className="form-control"
-                    type="text"
-                    placeholder="Not Selected"
-                  />
-                </div>
-              </div>
-              <div className="col-md-4 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Contractor</label>
-                  <input className="form-control" type="text" placeholder="" />
+            </div>
+
+            {/* Tax Charges Table */}
+            <div className="row mt-4">
+              <div className="col-12">
+                <div className="table-responsive">
+                  <table className="table table-bordered">
+                    <thead className="tax-table-header">
+                      <tr>
+                        <th>Tax / Charge Type</th>
+                        <th>Tax / Charges per UOM (INR)</th>
+                        <th>Inclusive</th>
+                        <th>Amount</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* Total Base Cost Row */}
+                      <tr>
+                        <td>Total Base Cost</td>
+                        <td></td>
+                        <td></td>
+                        <td>
+                          <input
+                            type="number"
+                            className="form-control "
+                            value={
+                              taxRateData[tableId]?.afterDiscountValue || ""
+                            }
+                            readOnly
+                            disabled={true}
+                          />
+                        </td>
+                        <td></td>
+                      </tr>
+
+                      {/* Addition Tax & Charges Row */}
+                      <tr>
+                        <td>Addition Tax & Charges</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td className="text-center">
+                          <button
+                            className="btn btn-outline-danger btn-sm"
+                            onClick={() => addAdditionTaxCharge(tableId)}
+                          >
+                            <span>+</span>
+                          </button>
+                        </td>
+                      </tr>
+                      {taxRateData[tableId]?.addition_bid_material_tax_details
+                        ?.filter((item) => !item._destroy)
+                        .map((item, rowIndex) => (
+                          <tr key={`${rowIndex}-${item.id}`}>
+                            <td>
+                              {taxOptions && taxOptions.length > 0 ? (
+                                <SelectBox
+                                  options={taxOptions}
+                                  defaultValue={
+                                    item.taxChargeType ||
+                                    taxOptions.find(
+                                      (option) => option.id === item.resource_id
+                                    )?.value ||
+                                    taxOptions.find(
+                                      (option) =>
+                                        option.value === item.taxChargeType
+                                    )?.value ||
+                                    ""
+                                  }
+                                  onChange={(value) => {
+                                    const selectedOption = taxOptions.find(
+                                      (option) => option.value === value
+                                    );
+                                    const selectedTaxType =
+                                      selectedOption?.value || value;
+
+                                    // Update tax charge type
+                                    handleTaxChargeChange(
+                                      tableId,
+                                      item.id,
+                                      "taxChargeType",
+                                      selectedTaxType,
+                                      "addition"
+                                    );
+
+                                    // Fetch tax percentages for the selected category
+                                    if (selectedOption?.id) {
+                                      handleTaxCategoryChange(
+                                        tableId,
+                                        selectedOption.id,
+                                        item.id
+                                      );
+                                    }
+                                  }}
+                                  className="custom-select"
+                                  disabledOptions={(
+                                    taxRateData[
+                                      tableId
+                                    ]?.addition_bid_material_tax_details?.reduce(
+                                      (acc, item) => {
+                                        const matchedOption = taxOptions.find(
+                                          (option) =>
+                                            option.id === item.resource_id
+                                        );
+                                        const taxType = item.taxChargeType;
+                                        if (taxType === "CGST") {
+                                          acc.push("CGST", "IGST");
+                                        }
+                                        if (taxType === "SGST") {
+                                          acc.push("SGST", "IGST");
+                                        }
+                                        if (taxType === "IGST") {
+                                          acc.push("CGST", "SGST");
+                                        }
+                                        if (taxType) {
+                                          acc.push(taxType);
+                                        } else if (matchedOption?.value) {
+                                          acc.push(matchedOption.value);
+                                        }
+                                        return acc;
+                                      },
+                                      []
+                                    ) || []
+                                  ).filter(
+                                    (value, index, self) =>
+                                      self.indexOf(value) === index
+                                  )}
+                                />
+                              ) : (
+                                <select
+                                  className="form-control"
+                                  value={item.taxChargeType || ""}
+                                  onChange={(e) => {
+                                    const selectedValue = e.target.value;
+                                    handleTaxChargeChange(
+                                      tableId,
+                                      item.id,
+                                      "taxChargeType",
+                                      selectedValue,
+                                      "addition"
+                                    );
+
+                                    // Find the tax category ID for the selected value
+                                    const selectedOption = taxOptions.find(
+                                      (option) => option.value === selectedValue
+                                    );
+                                    if (selectedOption?.id) {
+                                      handleTaxCategoryChange(
+                                        tableId,
+                                        selectedOption.id
+                                      );
+                                    }
+                                  }}
+                                >
+                                  <option value="">Select Tax</option>
+                                  <option value="CGST">CGST</option>
+                                  <option value="SGST">SGST</option>
+                                  <option value="IGST">IGST</option>
+                                  <option value="Handling Charges">
+                                    Handling Charges
+                                  </option>
+                                  <option value="Other charges">
+                                    Other charges
+                                  </option>
+                                  <option value="Freight">Freight</option>
+                                </select>
+                              )}
+                            </td>
+
+                            <td>
+                              <SelectBox
+                                options={(() => {
+                                  // Use material-specific tax percentages from API for this specific tax item
+                                  const percentages =
+                                    materialTaxPercentages[item.id] || [];
+                                  if (percentages.length > 0) {
+                                    return percentages.map((percent) => ({
+                                      label: `${percent.percentage}%`,
+                                      value: `${percent.percentage}%`,
+                                    }));
+                                  }
+
+                                  // If no percentages from API, return empty array (no options)
+                                  return [];
+                                })()}
+                                defaultValue={
+                                  item?.taxChargePerUom ||
+                                  (() => {
+                                    const foundPercentage = (
+                                      materialTaxPercentages[item.id] || []
+                                    ).find(
+                                      (option) =>
+                                        option.id === item.tax_category_id
+                                    );
+                                    return foundPercentage
+                                      ? `${foundPercentage.percentage}%`
+                                      : "";
+                                  })() ||
+                                  ""
+                                }
+                                onChange={(e) =>
+                                  handleTaxChargeChange(
+                                    tableId,
+                                    item.id,
+                                    "taxChargePerUom",
+                                    e,
+                                    "addition"
+                                  )
+                                }
+                                disabled={
+                                  (materialTaxPercentages[item.id] || [])
+                                    .length === 0
+                                }
+                                placeholder={
+                                  (materialTaxPercentages[item.id] || [])
+                                    .length === 0
+                                    ? "No percentages available"
+                                    : "Select percentage"
+                                }
+                              />
+                            </td>
+
+                            <td className="text-center">
+                              <input
+                                type="checkbox"
+                                className="form-check-input"
+                                checked={item.inclusive}
+                                onChange={(e) =>
+                                  handleTaxChargeChange(
+                                    tableId,
+                                    item.id,
+                                    "inclusive",
+                                    e.target.checked,
+                                    "addition"
+                                  )
+                                }
+                              />
+                            </td>
+
+                            <td>
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={item.amount || ""}
+                                onChange={(e) =>
+                                  handleTaxChargeChange(
+                                    tableId,
+                                    item.id,
+                                    "amount",
+                                    e.target.value,
+                                    "addition"
+                                  )
+                                }
+                                disabled={
+                                  item.taxType === "TaxCategory" ||
+                                  (item.taxChargeType &&
+                                    ["SGST", "CGST", "IGST", "TDS"].includes(
+                                      item.taxChargeType
+                                    ) &&
+                                    item.taxChargePerUom &&
+                                    item.taxChargePerUom.includes("%")) ||
+                                  (item.tax_category_id &&
+                                    (
+                                      materialTaxPercentages[item.id] || []
+                                    ).find(
+                                      (option) =>
+                                        option.id === item.tax_category_id
+                                    ))
+                                }
+                                placeholder={
+                                  item.taxType === "TaxCategory" ||
+                                  (item.taxChargeType &&
+                                    ["SGST", "CGST", "IGST", "TDS"].includes(
+                                      item.taxChargeType
+                                    ) &&
+                                    item.taxChargePerUom &&
+                                    item.taxChargePerUom.includes("%")) ||
+                                  (item.tax_category_id &&
+                                    (
+                                      materialTaxPercentages[item.id] || []
+                                    ).find(
+                                      (option) =>
+                                        option.id === item.tax_category_id
+                                    ))
+                                    ? "Auto-calculated"
+                                    : "Enter amount"
+                                }
+                              />
+                            </td>
+
+                            <td className="text-center">
+                              <button
+                                className="btn btn-outline-danger btn-sm"
+                                onClick={() =>
+                                  removeTaxChargeItem(
+                                    tableId,
+                                    item.id,
+                                    "addition"
+                                  )
+                                }
+                              >
+                                <span>×</span>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+
+                      <tr>
+                        <td>Deduction Tax</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td className="text-center">
+                          <button
+                            className="btn btn-outline-danger btn-sm"
+                            onClick={() => addDeductionTaxCharge(tableId)}
+                          >
+                            <span>+</span>
+                          </button>
+                        </td>
+                      </tr>
+
+                      {taxRateData[tableId]?.deduction_bid_material_tax_details
+                        ?.filter((item) => !item._destroy)
+                        .map((item) => (
+                          <tr key={item.id}>
+                            <td>
+                              <SelectBox
+                                options={deductionTaxOptions || []}
+                                defaultValue={
+                                  item.taxChargeType ||
+                                  deductionTaxOptions.find(
+                                    (option) => option.id == item.resource_id
+                                  )?.value ||
+                                  deductionTaxOptions.find(
+                                    (option) =>
+                                      option.value === item.taxChargeType
+                                  )?.value ||
+                                  ""
+                                }
+                                onChange={(value) => {
+                                  handleTaxChargeChange(
+                                    tableId,
+                                    item.id,
+                                    "taxChargeType",
+                                    value,
+                                    "deduction"
+                                  );
+
+                                  // Fetch tax percentages for the selected category
+                                  const selectedOption =
+                                    deductionTaxOptions.find(
+                                      (option) => option.value === value
+                                    );
+                                  if (selectedOption?.id) {
+                                    handleTaxCategoryChange(
+                                      tableId,
+                                      selectedOption.id,
+                                      item.id
+                                    );
+                                  }
+                                }}
+                                disabledOptions={taxRateData[
+                                  tableId
+                                ]?.deduction_bid_material_tax_details?.map(
+                                  (item) => item.taxChargeType
+                                )}
+                              />
+                            </td>
+                            <td>
+                              <SelectBox
+                                options={(() => {
+                                  // Use material-specific tax percentages from API for this specific tax item
+                                  const percentages =
+                                    materialTaxPercentages[item.id] || [];
+                                  if (percentages.length > 0) {
+                                    return percentages.map((percent) => ({
+                                      label: `${percent.percentage}%`,
+                                      value: `${percent.percentage}%`,
+                                    }));
+                                  }
+
+                                  // If no percentages from API, return empty array (no options)
+                                  return [];
+                                })()}
+                                defaultValue={
+                                  item?.taxChargePerUom ||
+                                  (() => {
+                                    const foundPercentage = (
+                                      materialTaxPercentages[item.id] || []
+                                    ).find(
+                                      (option) =>
+                                        option.id === item.tax_category_id
+                                    );
+                                    return foundPercentage
+                                      ? `${foundPercentage.percentage}%`
+                                      : "";
+                                  })() ||
+                                  ""
+                                }
+                                onChange={(e) =>
+                                  handleTaxChargeChange(
+                                    tableId,
+                                    item.id,
+                                    "taxChargePerUom",
+                                    e,
+                                    "deduction"
+                                  )
+                                }
+                                disabled={
+                                  (materialTaxPercentages[item.id] || [])
+                                    .length === 0
+                                }
+                                placeholder={
+                                  (materialTaxPercentages[item.id] || [])
+                                    .length === 0
+                                    ? "No percentages available"
+                                    : "Select percentage"
+                                }
+                              />
+                            </td>
+                            <td className="text-center">
+                              <input
+                                type="checkbox"
+                                className="form-check-input"
+                                checked={item.inclusive}
+                                onChange={(e) =>
+                                  handleTaxChargeChange(
+                                    tableId,
+                                    item.id,
+                                    "inclusive",
+                                    e.target.checked,
+                                    "deduction"
+                                  )
+                                }
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={item.amount || ""}
+                                onChange={(e) =>
+                                  handleTaxChargeChange(
+                                    tableId,
+                                    item.id,
+                                    "amount",
+                                    e.target.value,
+                                    "deduction"
+                                  )
+                                }
+                                disabled={
+                                  item.taxType === "TaxCategory" ||
+                                  (item.taxChargeType &&
+                                    ["SGST", "CGST", "IGST", "TDS"].includes(
+                                      item.taxChargeType
+                                    ) &&
+                                    item.taxChargePerUom &&
+                                    item.taxChargePerUom.includes("%")) ||
+                                  (item.tax_category_id &&
+                                    (
+                                      materialTaxPercentages[item.id] || []
+                                    ).find(
+                                      (option) =>
+                                        option.id === item.tax_category_id
+                                    ))
+                                }
+                                placeholder={
+                                  item.taxType === "TaxCategory" ||
+                                  (item.taxChargeType &&
+                                    ["SGST", "CGST", "IGST", "TDS"].includes(
+                                      item.taxChargeType
+                                    ) &&
+                                    item.taxChargePerUom &&
+                                    item.taxChargePerUom.includes("%"))
+                                    ? "Auto-calculated"
+                                    : "Enter amount"
+                                }
+                              />
+                            </td>
+                            <td className="text-center">
+                              <button
+                                className="btn btn-outline-danger btn-sm"
+                                onClick={() =>
+                                  removeTaxChargeItem(
+                                    tableId,
+                                    item.id,
+                                    "deduction"
+                                  )
+                                }
+                              >
+                                <span>×</span>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      <tr>
+                        <td>Net Cost</td>
+                        <td></td>
+                        <td></td>
+                        <td className="text-center">
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={taxRateData[tableId]?.netCost || ""}
+                            readOnly
+                            disabled={true}
+                          />
+                        </td>
+                        <td></td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
           </div>
-          <h5 className="mt-3">MOR List</h5>
-          <div className="tbl-container me-2 mt-3" style={{ maxHeight: 500 }}>
-            <table className="w-100">
-              <thead>
-                <tr>
-                  <th rowSpan={2} />
-                  <th rowSpan={2}>Project_SubProject</th>
-                  <th rowSpan={2}>Mor _Date _ Contractor</th>
-                  <th rowSpan={2}>
-                    <input type="checkbox" />
-                  </th>
-                  <th colSpan={9}>Material Details</th>
-                </tr>
-                <tr>
-                  <th>Material Type</th>
-                  <th>Material Sub Type</th>
-                  <th>Material</th>
-                  <th>UOM</th>
-                  <th>Pending Qty</th>
-                  <th>Order Qty</th>
-                  <th>Mored UOM</th>
-                  <th>Balance Qty</th>
-                  <th>Current Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td rowSpan={2}>
-                    <input type="checkbox" />
-                  </td>
-                  <td rowSpan={2}>NEXTOWN PHASE II_RUBY</td>
-                  <td rowSpan={2}>
-                    IN/NXTPH2/X301/35_Mar 31, 2023_United Builders - Crs
-                  </td>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>Steel</td>
-                  <td>STEEL-TMT</td>
-                  <td>TEEL (TMT-500)-08MM</td>
-                  <td>MT</td>
-                  <td>10.611</td>
-                  <td>36.020</td>
-                  <td>MT</td>
-                  <td>10.611</td>
-                  <td>Approved</td>
-                </tr>
-                <tr>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>Steel</td>
-                  <td>STEEL-TMT</td>
-                  <td>STEEL (TMT-500)-12MM</td>
-                  <td>MT</td>
-                  <td>7.346</td>
-                  <td>21.190</td>
-                  <td>MT</td>
-                  <td>7.346</td>
-                  <td>Approved</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div className="modal-footer justify-content-center">
-          <button className="purple-btn2">Accept Selected</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  {/* Modal end */}
-  {/* rate & taxes Attributes modal start */}
-  <div
-    className="modal fade"
-    id="cozyModal"
-    tabIndex={-1}
-    aria-labelledby="cozyModalLabel"
-    aria-hidden="true"
-  >
-    <div className="modal-dialog">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h5 className="modal-title fs-5" id="exampleModalLabel">
-            Material Attributes
-          </h5>
+        </Modal.Body>
+        <Modal.Footer className="justify-content-center">
           <button
-            type="button"
-            className="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          />
-        </div>
-        <div className="modal-body">
-          <div className="d-flex justify-content-between">
-            <p>Material Attributes</p>
-            <p className="text-decoration-underline">Create Attribute Group</p>
-          </div>
-          <div className="tbl-container me-2 mt-3">
-            <table className="w-100">
-              <thead>
-                <tr>
-                  <th>
-                    <input type="checkbox" />
-                  </th>
-                  <th>Attribute Group</th>
-                  <th>Attributes</th>
-                  <th>Quantity</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td colSpan={4}>No Records Found.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div className="d-flex">
-            <p className="text-decoration-underline">
-              Material Attributes <span>/</span>
-            </p>
-            <p className="text-decoration-underline">Create Attribute Group</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  {/* rate & taxes Attributes modal end */}
-  {/* rate & taxes select modal start */}
-  <div
-    className="modal fade"
-    id="zenithModal"
-    tabIndex={-1}
-    aria-labelledby="zenithModalLabel"
-    aria-hidden="true"
-  >
-    <div className="modal-dialog modal-xl">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h5 className="modal-title fs-5" id="exampleModalLabel">
-            View Tax &amp; Rate
-          </h5>
-          <button
-            type="button"
-            className="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          />
-        </div>
-        <div
-          className="modal-body p-2"
-          style={{ maxHeight: 500, overflowY: "auto" }}
-        >
-          <div className="card-body">
-            <div className="row">
-              <div className="col-md-6 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Material</label>
-                  <input className="form-control" type="text" placeholder={0} />
-                </div>
-              </div>
-              <div className="col-md-6 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">HSN Code</label>
-                  <input className="form-control" type="text" placeholder={0} />
-                </div>
-              </div>
-              <div className="col-md-6 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Rate per Nos</label>
-                  <input className="form-control" type="text" placeholder={0} />
-                </div>
-              </div>
-              <div className="col-md-6 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Total Po Qty</label>
-                  <input className="form-control" type="text" placeholder={0} />
-                </div>
-              </div>
-              <div className="col-md-6 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Discount</label>
-                  <input className="form-control" type="text" placeholder={0} />
-                </div>
-              </div>
-              <div className="col-md-6 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Discount Value</label>
-                  <input className="form-control" type="text" placeholder={0} />
-                </div>
-              </div>
-              <div className="col-md-6 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Discount Rate</label>
-                  <input className="form-control" type="text" placeholder={0} />
-                </div>
-              </div>
-              <div className="col-md-6 mt-0">
-                <div className="form-group">
-                  <label className="po-fontBold">Material Cost</label>
-                  <input className="form-control" type="text" placeholder={0} />
-                </div>
-              </div>
-              <div className="mb-3 w-50">
-                <label
-                  htmlFor="exampleFormControlTextarea1"
-                  className="form-label po-fontBoldM"
-                >
-                  Remark
-                </label>
-                <textarea
-                  className="form-control"
-                  id="exampleFormControlTextarea1"
-                  rows={3}
-                  defaultValue={""}
-                />
-              </div>
-              <div className="mb-3 w-50">
-                <label
-                  htmlFor="exampleFormControlTextarea1"
-                  className="form-label po-fontBoldM"
-                >
-                  Additional Info.
-                </label>
-                <textarea
-                  className="form-control"
-                  id="exampleFormControlTextarea1"
-                  rows={3}
-                  defaultValue={""}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="tbl-container  mt-3">
-            <table className="w-100">
-              <thead>
-                <tr>
-                  <th className="modal-th" rowSpan={2}>
-                    Tax / Charge Type
-                  </th>
-                  <th className="modal-th" colSpan={2}>
-                    Tax / Charges per UOM (INR)
-                  </th>
-                  <th className="modal-th" rowSpan={2}>
-                    Inclusive
-                  </th>
-                  <th className="modal-th" colSpan={2}>
-                    Tax / Charges Amount
-                  </th>
-                  <th className="modal-th" rowSpan={2}>
-                    Action
-                  </th>
-                </tr>
-                <tr>
-                  <th className="modal-th">INR</th>
-                  <th className="modal-th">USD</th>
-                  <th className="modal-th">INR</th>
-                  <th className="modal-th">USD</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="text-center">
-                  <th>Total Base Cost</th>
-                  <td />
-                  <td />
-                  <td />
-                  <td>2160</td>
-                  <td>2160</td>
-                  <td />
-                </tr>
-                <tr className="text-center">
-                  <th>Addition Tax &amp; Charges</th>
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                  <td />
-                </tr>
-                <tr className="text-center">
-                  <td>
-                    <div className="dropdown">
-                      <button
-                        className="btn dropdown-toggle drop-modal-btn"
-                        type="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                      >
-                        Custom Duty
-                      </button>
-                      <ul className="dropdown-menu">
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Action
-                          </a>
-                        </li>
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Another action
-                          </a>
-                        </li>
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Something else here
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </td>
-                  <td>10</td>
-                  <td>012</td>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>400</td>
-                  <td>4.83</td>
-                  <td>cancel</td>
-                </tr>
-                <tr className="text-center">
-                  <td>
-                    <div className="dropdown">
-                      <button
-                        className="btn dropdown-toggle drop-modal-btn"
-                        type="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                      >
-                        C &amp; F Charges
-                      </button>
-                      <ul className="dropdown-menu">
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Action
-                          </a>
-                        </li>
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Another action
-                          </a>
-                        </li>
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Something else here
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </td>
-                  <td>10</td>
-                  <td>012</td>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>400</td>
-                  <td>4.83</td>
-                  <td>cancel</td>
-                </tr>
-                <tr className="text-center">
-                  <th>Sub Total A</th>
-                  <td />
-                  <td />
-                  <td />
-                  <th>2548.8</th>
-                  <th>2548.8</th>
-                </tr>
-                <tr className="text-center">
-                  <td>
-                    <div className="dropdown">
-                      <button
-                        className="btn dropdown-toggle drop-modal-btn"
-                        type="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                      >
-                        TDS
-                      </button>
-                      <ul className="dropdown-menu">
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Action
-                          </a>
-                        </li>
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Another action
-                          </a>
-                        </li>
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Something else here
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="dropdown">
-                      <button
-                        className="btn dropdown-toggle drop-modal-btn"
-                        type="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                      >
-                        select
-                      </button>
-                      <ul className="dropdown-menu">
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Action
-                          </a>
-                        </li>
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Another action
-                          </a>
-                        </li>
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Something else here
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </td>
-                  <td>0 00</td>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <th>0 00</th>
-                  <td>0 00</td>
-                  <td>Cancel</td>
-                </tr>
-                <tr className="text-center">
-                  <th>Sub Total B</th>
-                  <td />
-                  <td />
-                  <td />
-                  <th>0 00</th>
-                  <th>0 00</th>
-                  <td />
-                </tr>
-                <tr className="text-center">
-                  <th>Net Cost</th>
-                  <td />
-                  <td />
-                  <td />
-                  <th>2548.8</th>
-                  <th>2548.8</th>
-                  <td />
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div className="modal-footer justify-content-center">
-          <div className="purple-btn2">save</div>
-        </div>
-      </div>
-    </div>
-  </div>
-  {/* rate & taxes select modal end */}
-  {/* Matarial Details (sereneModal) modal start */}
-  <div
-    className="modal fade"
-    id="sereneModal"
-    tabIndex={-1}
-    aria-labelledby="sereneModalLabel"
-    aria-hidden="true"
-  >
-    <div className="modal-dialog">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h5 className="modal-title fs-5" id="exampleModalLabel">
-            Store Wise Material Stock
-          </h5>
-          <button
-            type="button"
-            className="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          />
-        </div>
-        <div className="modal-body">
-          <div className="tbl-container me-2 mt-3">
-            <table className="w-100">
-              <thead>
-                <tr>
-                  <th>Store Name</th>
-                  <th>Stock As On Date</th>
-                  <th>UOM</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <th>Marathon ERA</th>
-                  <th>1.500</th>
-                  <th>KG</th>
-                </tr>
-                <tr>
-                  <th>COS-CHM-OMG</th>
-                  <th>2.500</th>
-                  <th>KG</th>
-                </tr>
-                <tr>
-                  <th>COS-CHM-OMG</th>
-                  <th>2.500</th>
-                  <th>KG</th>
-                </tr>
-                <tr>
-                  <th>Krishna Mandir</th>
-                  <th>0.250</th>
-                  <th>KG</th>
-                </tr>
-                <tr>
-                  <th>Nexworld Common Store</th>
-                  <th>8.000</th>
-                  <th>KG</th>
-                </tr>
-                <tr>
-                  <th>IXOXI-Nexzone</th>
-                  <th>175.000</th>
-                  <th>KG</th>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div className="d-flex justify-content-center">
-            <button className="PO-blue-btn">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  {/* Matarial Details (sereneModal) modal end */}
-  {/* Remark  modal start */}
-  <div
-    className="modal fade"
-    id="remark-modal"
-    tabIndex={-1}
-    aria-labelledby="exampleModalLabel32"
-    aria-hidden="true"
-  >
-    <div className="modal-dialog">
-      <div className="modal-content">
-        <div className="modal-header align-items-center">
-          <h5>Remark</h5>
-          <button
-            type="button"
-            className="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          />
-        </div>
-        <div className="modal-body">
-          <div className="row p-3">
-            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Iusto
-            temporibus sit nulla pariatur alias adipisci nesciunt. Ex molestiae
-            itaque nihil doloremque incidunt? Est illum fugiat voluptates alias
-            optio quae vel.
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  {/* Remark  modal start end */}
-  {/* Comments  modal start */}
-  <div
-    className="modal fade"
-    id="comments-modal"
-    tabIndex={-1}
-    aria-labelledby="exampleModalLabel32"
-    aria-hidden="true"
-  >
-    <div className="modal-dialog">
-      <div className="modal-content">
-        <div className="modal-header align-items-center">
-          <h5>comments</h5>
-          <button
-            type="button"
-            className="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          />
-        </div>
-        <div className="modal-body">
-          <div className="row p-3">
-            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Iusto
-            temporibus sit nulla pariatur alias adipisci nesciunt. Ex molestiae
-            itaque nihil doloremque incidunt? Est illum fugiat voluptates alias
-            optio quae vel.
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  {/* Comments  modal start end */}
-  {/* file_attchement add modal */}
-  <div
-    className="modal fade"
-    id="file_attchement"
-    tabIndex={-1}
-    aria-labelledby="exampleModal2Label"
-    style={{ display: "none" }}
-    aria-hidden="true"
-  >
-    <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-md">
-      <div className="modal-content">
-        <div className="modal-header modal-header-k">
-          <h5 className="modal-title text-center w-100" id="exampleModalLabel">
-            Upload File
-          </h5>
-          <button
-            type="button"
-            className="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          />
-        </div>
-        <div className="modal-body ">
-          <div className="row mt-2">
-            <div className="col-md-12">
-              <div className="form-group">
-                <label>
-                  Name of the Document<span>*</span>
-                </label>
-                <input
-                  className="form-control"
-                  type="text"
-                  placeholder="Default input"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row mt-2">
-            <div className="col-md-12">
-              <div className="form-group">
-                <label>
-                  File Upload <span>*</span>
-                </label>
-                <input
-                  className="form-control"
-                  type="file"
-                  placeholder="Default input"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="modal-footer justify-content-center">
-          <button className="purple-btn2">Sumbit</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  {/* file_attchement add modal end */}
-  {/* document_attchment schedule modal */}
-  <div
-    className="modal fade"
-    id="document_attchment"
-    tabIndex={-1}
-    aria-labelledby="exampleModal2Label"
-    style={{ display: "none" }}
-    aria-hidden="true"
-  >
-    <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
-      <div className="modal-content">
-        <div className="modal-header modal-header-k">
-          <h5 className="modal-title text-center w-100" id="exampleModalLabel">
-            Document Attchement
-          </h5>
-          <button
-            type="button"
-            className="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          />
-        </div>
-        <div className="modal-body ">
-          <div className="row mt-2">
-            <div className="col-12 px-4">
-              <div className="d-flex justify-content-between">
-                <h5>Latest Documents</h5>
-                <button
-                  className="purple-btn2 m-0"
-                  data-bs-toggle="modal"
-                  data-bs-target="#file_attchement"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                >
-                  <svg
-                    width={16}
-                    height={17}
-                    viewBox="0 0 16 17"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M15.1892 16.0745H0.794209C0.364012 16.0745 0 15.7435 0 15.3133V8.03309C0 7.61944 0.347466 7.27197 0.794209 7.27197C1.24095 7.27197 1.58842 7.60289 1.58842 8.03309V14.5688H14.4116V8.03309C14.4116 7.61944 14.759 7.27197 15.2058 7.27197C15.6525 7.27197 16 7.60289 16 8.03309V15.3133C15.9669 15.727 15.6194 16.0745 15.1892 16.0745Z"
-                      fill="white"
-                    />
-                    <path
-                      d="M11.6318 3.28438L8.57081 0.223371C8.27298 -0.0744571 7.7766 -0.0744571 7.46222 0.223371L4.36812 3.28438C4.2192 3.4333 4.13647 3.63185 4.13647 3.84695C4.13647 4.06205 4.2192 4.24405 4.36812 4.39297C4.51703 4.54188 4.71558 4.62461 4.91414 4.62461C5.12924 4.62461 5.32779 4.54188 5.4767 4.39297L7.1644 2.72182V10.5812C7.1644 11.0445 7.52841 11.4085 7.9917 11.4085C8.45498 11.4085 8.819 11.0445 8.819 10.5812V2.68873L10.5232 4.39297C10.8211 4.6908 11.3174 4.6908 11.6318 4.39297C11.7807 4.24405 11.8635 4.0455 11.8635 3.84695C11.8635 3.63185 11.7807 3.4333 11.6318 3.28438Z"
-                      fill="white"
-                    />
-                  </svg>
-                  <span className="ms-2">Attchment File </span>
-                </button>
-              </div>
-              <div className="tbl-container me-2 mt-3">
-                <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th>Sr.No.</th>
-                      <th>Document Name</th>
-                      <th>Attchement Name</th>
-                      <th>Upload Date</th>
-                      <th>Upload By</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>1</td>
-                      <td>MTC</td>
-                      <td>Material test cert.pdf</td>
-                      <td>01-11-202</td>
-                      <td>vendor user</td>
-                      <td>
-                        <i className="fa-regular fa-eye" />
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              {/* /.form-group */}
-            </div>
-            {/* /.col */}
-            {/* /.col */}
-          </div>
-          <div className="row mt-2">
-            <div className="col-12 px-4">
-              <h5> Documents Attchment History</h5>
-              <div className="tbl-container me-2 mt-3">
-                <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th>Sr.No.</th>
-                      <th>Document Name</th>
-                      <th>Attchement Name</th>
-                      <th>Upload Date</th>
-                      <th>Upload By</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>1</td>
-                      <td>MTC</td>
-                      <td>Material test cert.pdf</td>
-                      <td>01-11-202</td>
-                      <td>vendor user</td>
-                      <td>
-                        <i className="fa-regular fa-eye" />
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              {/* /.form-group */}
-            </div>
-            {/* /.col */}
-            {/* /.col */}
-          </div>
-        </div>
-        <div className="modal-footer justify-content-center">
-          <button
-            className="purple-btn2"
-            type="button"
-            data-bs-dismiss="modal"
-            aria-label="Close"
+            variant="secondary"
+            onClick={handleCloseTaxModal}
+            className="purple-btn1"
           >
             Close
           </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  {/* document_attchment schedule modal end */}
-</>
+          <button
+            variant="primary"
+            onClick={handleSaveTaxChanges}
+            className="purple-btn2"
+          >
+            Save Changes
+          </button>
+        </Modal.Footer>
+      </Modal>
+    </>
+  );
+};
 
-  )
-}
-
-export default PoCreate 
+export default PoCreate;
