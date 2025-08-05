@@ -482,6 +482,14 @@ export default function AllocationTab({ isCounterOffer }) {
         jsonBody
       );
       toast.success("PO created successfully");
+
+      // Navigate to PO tab and refresh PO data
+      if (typeof setActiveTab === 'function') {
+        setActiveTab('po');
+      }
+      if (typeof fetchPOData === 'function') {
+        fetchPOData();
+      }
     } catch (error) {
       console.error("Error creating PO:", error);
       if (error.response?.status === 422) {
