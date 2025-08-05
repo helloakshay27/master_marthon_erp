@@ -1434,7 +1434,7 @@ const getTransformedRows = () => {
       {dataGridRows.length > 0 ? (
         <DataGrid
           rows={getTransformedRows()}
-          columns={fixedColumns}
+          columns={fixedColumns.map(col => ({ ...col, flex: 1, minWidth: 80, width: undefined, maxWidth: undefined }))}
           pageSize={pageSize}
           rowCount={Number.isInteger(pagination?.total_count) ? pagination.total_count : 0}
           paginationMode="server"
@@ -1443,28 +1443,50 @@ const getTransformedRows = () => {
           loading={loading}
           columnBuffer={0}
           getRowId={(row) => row.id}
+          autoHeight
+          disableColumnMenu
           sx={{
-            flexGrow: 1,
-            width: "100%",
+            width: '100%',
+            minWidth: 0,
+            maxWidth: '100%',
+            minHeight: 0,
+            maxHeight: 'none',
+            padding: 0,
+            margin: 0,
+            border: 'none',
+            boxShadow: 'none',
+            overflowX: 'hidden',
+            "& .MuiDataGrid-main": {
+              minHeight: 0,
+              maxHeight: 'none',
+              overflowX: 'hidden',
+            },
             "& .MuiDataGrid-columnHeaders": {
               backgroundColor: "#f8f9fa",
               color: "#000",
               fontWeight: "bold",
-              position: "sticky",
-              top: 0,
+              position: "static",
+              top: "unset",
               zIndex: 1,
             },
             "& .MuiDataGrid-cell": {
               borderColor: "#dee2e6",
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             },
             "& .MuiDataGrid-columnHeader": {
               borderColor: "#dee2e6",
             },
             "& .MuiDataGrid-virtualScroller": {
-              overflowY: "auto",
+              overflowX: 'hidden',
+              minHeight: 0,
+              maxHeight: 'none',
             },
             "& .MuiDataGrid-virtualScrollerContent": {
-              minWidth: `${containerWidth}px !important`,
+              minWidth: 0,
+              width: '100%',
+              maxWidth: '100%',
             },
             "& .MuiDataGrid-footerContainer": {
               borderTop: "1px solid #dee2e6",
