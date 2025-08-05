@@ -1912,7 +1912,7 @@ const [details, setDetails] = useState(null); // State to store API data
         // Add delay before navigation
         setTimeout(() => {
           setLoading(false);
-          navigate(`/bill-booking-details?token=${token}`);
+          navigate(`/bill-booking-details/${id}?token=${token}`);
         }, 1000);
       }
     } catch (error) {
