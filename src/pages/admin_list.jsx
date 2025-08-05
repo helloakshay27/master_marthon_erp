@@ -455,12 +455,9 @@ export default function adminList() {
   const dataGridRows = eventsToDisplay.map((event, index) => ({
     id: event.id,
     srNo:
-      (Number.isInteger(pagination?.current_page)
+      ((Number.isInteger(pagination?.current_page) && pagination.current_page > 0
         ? pagination.current_page - 1
-        : 0) *
-        pageSize +
-      index +
-      1,
+        : 0) * pageSize) + index + 1,
     event_no: event.event_no,
     bid_placed: event.bid_placed,
     event_schedule: event.event_schedule,
