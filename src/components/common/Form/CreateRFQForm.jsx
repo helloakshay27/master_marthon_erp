@@ -171,7 +171,16 @@ export default function CreateRFQForm({
   const handleTemplateChange = async (event) => {
     setSelectedTemplate(event);
     updateSelectedTemplate(event); // Update the parent component's state
-    
+
+    if (!event) {
+      // If unselected, clear additional fields and bid template fields
+      setAdditionalFields([]);
+      setBidTemplateFields([]);
+      updateAdditionalFields([]);
+      updateBidTemplateFields([]);
+      return;
+    }
+
     try {
       const response = await axios.get(
         `${baseURL}rfq/event_templates/${event}?token=${token}`
@@ -180,7 +189,7 @@ export default function CreateRFQForm({
         const templateData = response.data;
         const updatedAdditionalFields =
           templateData.bid_material_template_fields || [];
-          updateAdditionalFields(updatedAdditionalFields);
+        updateAdditionalFields(updatedAdditionalFields);
 
         updateBidTemplateFields(
           mapBidTemplateFields(templateData.bid_template_fields || [])
@@ -898,8 +907,7 @@ export default function CreateRFQForm({
       { label: "Generic Info", key: "generic_info_id" }, // Add Generic Info column
       // { label: "Location", key: "location" }, // REMOVE location column
       { label: "Rate", key: "rate" },
-      { label: "Amount", key: "amount" },
-      { label: "Actions", key: "actions" },
+      { label: "Amount", key: "amount" }
     ];
 
     const additionalColumns = additionalFields.map((field) => ({
@@ -907,7 +915,8 @@ export default function CreateRFQForm({
       key: field.field_name,
     }));
 
-    return [...defaultColumns, ...additionalColumns];
+    // Always put Actions column last
+    return [...defaultColumns, ...additionalColumns, { label: "Actions", key: "actions" }];
   };
 
   const renderAdminFields = (field, rowIndex, sectionIndex) => {
@@ -1322,6 +1331,7 @@ export default function CreateRFQForm({
                 options={templateOptions}
                 onChange={handleTemplateChange}
                 defaultValue={selectedTemplate}
+                allowUnselect={true} // Allow unselecting the template
               />
             </div>
             {isMorChecked && (
@@ -2343,6 +2353,7 @@ export default function CreateRFQForm({
             onChange={(value) =>
               setEditField({ ...editField, fieldType: value })
             }
+
           />
         </div>
       </DynamicModalBox>

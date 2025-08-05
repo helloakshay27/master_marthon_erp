@@ -1042,7 +1042,7 @@ const LabourMasterCreate = () => {
                         </div>
                         <div className="col-md-2">
                             <button className="purple-btn1 w-100"
-                            // onClick={() => navigate(`/credit-note-list?token=${token}`)}
+                            onClick={() => navigate(`/labour-master-list`)}
                             >Cancel</button>
                         </div>
                     </div>

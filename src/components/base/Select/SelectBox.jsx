@@ -10,7 +10,8 @@ export default function SelectBox({
   className = "",
   isDisableFirstOption = false, // New prop
   disabled = false, // Add disabled prop
-  disabledOptions = [] // New prop to pass option labels to disable
+  disabledOptions = [], // New prop to pass option labels to disable
+  allowUnselect = false // New prop: allow clearing selection
 }) {
   const [selectedOption, setSelectedOption] = useState(null); 
 
@@ -18,8 +19,10 @@ export default function SelectBox({
     if (defaultValue) {
       const defaultOption = options.find((option) => option.value === defaultValue);
       setSelectedOption(defaultOption);
+    } else if (allowUnselect) {
+      setSelectedOption(null);
     }
-  }, [defaultValue, options]);
+  }, [defaultValue, options, allowUnselect]);
 
   const customStyles = {
     control: (base, state) => ({
@@ -103,6 +106,7 @@ export default function SelectBox({
         isDisabled={disabled} // Pass disabled prop to react-select
         styles={customStyles}
         menuPortalTarget={document.body}
+        isClearable={allowUnselect} // <-- allow clearing if prop is true
       />
     </div>
   );

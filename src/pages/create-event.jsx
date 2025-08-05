@@ -1120,21 +1120,23 @@ export default function CreateEvent() {
                     </thead>
                     <tbody>
                       {isInvite ? (
-                        <>
-                          <div className="loader-container">
-                            <div className="lds-ring">
-                              <div></div>
-                              <div></div>
-                              <div></div>
-                              <div></div>
-                              <div></div>
-                              <div></div>
-                              <div></div>
-                              <div></div>
+                        <tr>
+                          <td colSpan="6">
+                            <div className="loader-container">
+                              <div className="lds-ring">
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                              </div>
+                              <p>Loading...</p>
                             </div>
-                            <p>Loading...</p>
-                          </div>
-                        </>
+                          </td>
+                        </tr>
                       ) : selectedVendors.length > 0 ? (
                         selectedVendors
                           .filter(
@@ -1453,21 +1455,7 @@ export default function CreateEvent() {
                   <button className="purple-btn2 w-100">Preview</button>
                 </div>
                 <div className="col-md-2">
-                  {loading && (
-                    <div className="loader-container">
-                      <div className="lds-ring">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                      </div>
-                      <p>Loading ...</p>
-                    </div>
-                  )}
+                  {/* Loader removed from here to prevent duplicate loader */}
                   <button
                     className={
                       submitted ? "disabled-btn w-100" : "purple-btn2 w-100"

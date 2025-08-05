@@ -7,6 +7,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Modal, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { SettingIcon } from "../components";
 
 const LabourMaster = () => {
   const navigate = useNavigate();
@@ -20,8 +21,12 @@ const LabourMaster = () => {
   const [activeSearch, setActiveSearch] = useState("");
   const [labourList, setLabourList] = useState([]);
   const [editRowIndex, setEditRowIndex] = useState(null);
+  
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // Or any number you prefer
+    const [totalPages, setTotalPages] = useState(1);
+    const itemsPerPage = 5; // Items per page
+    const [totalEntries, setTotalEntries] = useState(0);
+    const [searchKeyword, setSearchKeyword] = useState("");
 
   const handleClose = () => setShowModal(false);
   const handleOpen = () => setShowModal(true);
@@ -39,6 +44,8 @@ const LabourMaster = () => {
           `${baseURL}labours.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
         setLabours(response.data.labours);
+         setTotalPages(response.data.pagination.total_pages); // Set total pages
+      setTotalEntries(response.data.pagination.total_entries);
         
         setLoading(false);
       } catch (err) {
@@ -242,6 +249,34 @@ const LabourMaster = () => {
 const handleView = (row) => {
   navigate(`/labour-master-details/${row.id}`);
 };
+
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
+// Calculate displayed rows for the current page
+  const startEntry = (currentPage - 1) * pageSize + 1;
+  const endEntry = Math.min(currentPage * pageSize, totalEntries);
+
+  const fetchSearchResults = async () => {
+  setLoading(true);
+  try {
+    const response = await axios.get(
+      `${baseURL}labours.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&search=${searchKeyword}`
+    );
+
+    setLabours(response.data.labours);
+    setTotalPages(response.data.pagination.total_pages);
+    setTotalEntries(response.data.pagination.total_entries);
+    setLoading(false);
+  } catch (err) {
+    setError("Failed to fetch search results.");
+    setLoading(false);
+  }
+};
  
   return (
     <>
@@ -275,11 +310,104 @@ display:none !important;
           {/* {labourList.map((row, idx) => (
             <pre key={idx}>{JSON.stringify(row, null, 2)}</pre>
           ))} */}
+
+
           <div className="card mt-5 pb-4">
-            {/* data grid start */}
-            <div className="d-flex justify-content-end mx-2 mt-4 mb-2">
-              {/* <button className="purple-btn2">Bulk Upload</button> */}
-              <button
+
+
+             <div className="d-flex justify-content-between align-items-center me-2 mt-5">
+                          {/* Search Input */}
+                          <div className="col-md-4">
+                            <form>
+                              <div className="input-group ms-3">
+                                <input
+                                  type="search"
+                                  id="searchInput"
+                                  value={searchKeyword}
+                                  onChange={(e) => setSearchKeyword(e.target.value)} // <- Add this line
+                                  className="form-control tbl-search"
+                                  placeholder="Type your keywords here"
+                                />
+                                <div className="input-group-append">
+                                  <button
+                                    type="button"
+                                    className="btn btn-md btn-default"
+                                    // onClick={() => fetchSearchResults()}
+                                    onClick={() => {
+                                      //   setSearchKeyword(searchInput); // Set the main search keyword
+                                      fetchSearchResults(); // Trigger search
+                                    }}
+                                  >
+                                    <svg
+                                      width={16}
+                                      height={16}
+                                      viewBox="0 0 16 16"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
+                                        fill="#8B0203"
+                                      />
+                                      <path
+                                        d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
+                                        fill="#8B0203"
+                                      />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </div>
+                            </form>
+                          </div>
+          
+                          {/* Buttons & Filter Section */}
+                          <div className="col-md-6">
+                            <div className="d-flex justify-content-end align-items-center gap-3">
+                              {/* Filter Icon */}
+                              {/* <button className="btn btn-md btn-default">
+                                <svg
+                                  width={28}
+                                  height={28}
+                                  viewBox="0 0 32 32"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    clipRule="evenodd"
+                                    d="M6.66604 5.64722C6.39997 5.64722 6.15555 5.7938 6.03024 6.02851C5.90494 6.26322 5.91914 6.54788 6.06718 6.76895L13.7378 18.2238V29.0346C13.7378 29.2945 13.8778 29.5343 14.1041 29.6622C14.3305 29.79 14.6081 29.786 14.8307 29.6518L17.9136 27.7927C18.13 27.6622 18.2622 27.4281 18.2622 27.1755V18.225L25.9316 6.76888C26.0796 6.5478 26.0938 6.26316 25.9685 6.02847C25.8432 5.79378 25.5987 5.64722 25.3327 5.64722H6.66604ZM15.0574 17.6037L8.01605 7.08866H23.9829L16.9426 17.6051C16.8631 17.7237 16.8207 17.8633 16.8207 18.006V26.7685L15.1792 27.7584V18.0048C15.1792 17.862 15.1368 17.7224 15.0574 17.6037Z"
+                                    fill="#8B0203"
+                                  />
+                                </svg>
+                              </button> */}
+                              <button
+                                type="button"
+                                className="btn btn-md"
+                                onClick={handleSettingModalShow}
+                              >
+                                <SettingIcon />
+                              </button>
+                              {/* Create BOQ Button */}
+                              {/* <button
+                                className="purple-btn2 me-2"
+                                onClick={() =>
+                                  navigate(`/miscellaneous-bill-create?token=${token}`)
+                                }
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="20"
+                                  height="20"
+                                  fill="white"
+                                  className="bi bi-plus"
+                                  viewBox="0 0 16 16"
+                                >
+                                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                </svg>
+                                <span> Add</span>
+                              </button> */}
+
+                               <button
                 className="purple-btn2 me-2"
                 data-bs-toggle="modal"
                 data-bs-target="#addnewModal"
@@ -304,7 +432,41 @@ display:none !important;
                 </svg>
                 <span>Add</span>
               </button>
-            </div>
+                            </div>
+                          </div>
+                        </div>
+
+
+
+            {/* data grid start */}
+            {/* <div className="d-flex justify-content-end mx-2 mt-4 mb-2">
+              {/* <button className="purple-btn2">Bulk Upload</button> */}
+              {/* <button
+                className="purple-btn2 me-2"
+                data-bs-toggle="modal"
+                data-bs-target="#addnewModal"
+                // onClick={() => setShowModal(true)}
+                // onClick={handleOpen}
+              // onClick={() => {
+              //     // setFieldErrors({});
+              //     // setShowModal(true);
+              //     handleOpen
+              // }}
+              onClick={() => navigate("/labour-master-create")}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="white"
+                  className="bi bi-plus"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                </svg>
+                <span>Add</span>
+              </button>
+            </div> */} 
             <div
               className="mt-3 mx-3"
               style={{
@@ -381,7 +543,77 @@ display:none !important;
             </div>
 
             {/* data grid end */}
-
+ {/* Custom Pagination Bar */}
+            <div className="d-flex justify-content-between align-items-center px-3 mt-3 mb-3">
+              <ul className="pagination justify-content-center d-flex">
+                <li
+                  className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handlePageChange(null, 1)}
+                    disabled={currentPage === 1}
+                  >
+                    First
+                  </button>
+                </li>
+                <li
+                  className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handlePageChange(null, currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    Prev
+                  </button>
+                </li>
+                {Array.from({ length: totalPages }, (_, index) => (
+                  <li
+                    key={index + 1}
+                    className={`page-item ${
+                      currentPage === index + 1 ? "active" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(null, index + 1)}
+                    >
+                      {index + 1}
+                    </button>
+                  </li>
+                ))}
+                <li
+                  className={`page-item ${
+                    currentPage === totalPages ? "disabled" : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handlePageChange(null, currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </li>
+                <li
+                  className={`page-item ${
+                    currentPage === totalPages ? "disabled" : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handlePageChange(null, totalPages)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Last
+                  </button>
+                </li>
+              </ul>
+              <div>
+                Showing {startEntry} to {endEntry} of {totalEntries} entries
+              </div>
+            </div>
 
           </div>
         </div>
