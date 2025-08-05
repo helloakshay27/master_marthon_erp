@@ -1641,6 +1641,7 @@ const [details, setDetails] = useState(null); // State to store API data
   if (details?.bill_advance_notes && Array.isArray(details.bill_advance_notes)) {
     // Map API data to your table row format
     const preselectedAdvanceNotes = details.bill_advance_notes.map((item) => {
+      const paid=item.recovered_amount_exclude
       const note = item.advance_note || {};
       return {
         id: note.id,
@@ -1657,6 +1658,7 @@ const [details, setDetails] = useState(null); // State to store API data
         this_recovery: item.amount, // Use the amount from bill_advance_notes
         certificate_number: note.certificate_number,
         net_amount: note.net_amount,
+        paid:paid,
       };
     });
     setSelectedAdvanceNotes(preselectedAdvanceNotes);
@@ -1665,6 +1667,7 @@ const [details, setDetails] = useState(null); // State to store API data
    // Preselect debit notes from API
   if (details?.bill_debit_notes && Array.isArray(details.bill_debit_notes)) {
     const preselectedDebitNotes = details.bill_debit_notes.map((item) => {
+      const paid=item.recovered_amount_exclude
       const note = item.debit_note || {};
       return {
         id: note.id,
@@ -1677,6 +1680,7 @@ const [details, setDetails] = useState(null); // State to store API data
         recovered_amount: note.recovered_amount,
         reason: note.reason,
         this_recovery: item.amount, // Use the amount from bill_debit_notes
+        paid:paid,
       };
     });
     setSelectedDebitNotes(preselectedDebitNotes);
@@ -1886,8 +1890,8 @@ const [details, setDetails] = useState(null); // State to store API data
 
       console.log("Payload for API after submit:", payload);
 
-      const response = await axios.post(
-        `${baseURL}bill_bookings?token=${token}`,
+      const response = await axios.put(
+        `${baseURL}bill_bookings/${id}?token=${token}`,
         payload
       );
 
@@ -1896,7 +1900,7 @@ const [details, setDetails] = useState(null); // State to store API data
         // setLoading(false);
         // navigate("/bill-booking-list"); // Redirect to bill-booking-list
         // Reset form or redirect as needed
-        toast.success("Bill booking created successfully!", {
+        toast.success("Bill booking updated successfully!", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -1908,7 +1912,7 @@ const [details, setDetails] = useState(null); // State to store API data
         // Add delay before navigation
         setTimeout(() => {
           setLoading(false);
-          navigate(`/bill-booking-list?token=${token}`);
+          navigate(`/bill-booking-details?token=${token}`);
         }, 1000);
       }
     } catch (error) {
@@ -2207,7 +2211,7 @@ const [details, setDetails] = useState(null); // State to store API data
   // Add validation handler
   const validateAdvanceRecovery = (note, value) => {
     // const recovery = parseFloat(value) || 0;
-    const recovery = (parseFloat(value) || 0) + (parseFloat(note.recovered_amount) || 0);
+    const recovery = (parseFloat(value) || 0) + (parseFloat(note.paid) || 0);
     const advanceAmount = parseFloat(note.advance_amount) || 0;
 
     if (recovery > advanceAmount) {
@@ -2330,7 +2334,7 @@ const [details, setDetails] = useState(null); // State to store API data
 
   const validateDebitRecovery = (note, value) => {
     // const recovery = parseFloat(value) || 0;
-    const recovery = (parseFloat(value) || 0) + (parseFloat(note.recovered_amount) || 0);
+    const recovery = (parseFloat(value) || 0) + (parseFloat(note.paid) || 0);
     const debitAmount = parseFloat(note.debit_note_amount) || 0;
     // const outstandingAmount = parseFloat(note.outstanding_current_date) || 0;
     if (recovery > debitAmount) {
@@ -2387,66 +2391,52 @@ const [details, setDetails] = useState(null); // State to store API data
 
 
   const calculateAmountPayable = () => {
-    const totalAmount = parseFloat(calculateTotalAmount()) || 0;
-    const retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
-    const otherDed = parseFloat(otherDeductions) || 0;
-    const otherAdd = parseFloat(otherAdditions) || 0;
+    let totalAmount = parseFloat(calculateTotalAmount()) || 0;
+    let retentionAmount = parseFloat(calculateRetentionAmount()) || 0;
+    let otherDed = parseFloat(otherDeductions) || 0;
+    let otherAdd = parseFloat(otherAdditions) || 0;
 
-    const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
-    const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0;
+    let debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
+    let advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0;
 
-    const totalAdjustments = (-debitAdjustment) + advanceAdjustment;
+     // Set to 0 if NaN or undefined
+  totalAmount = isNaN(totalAmount) ? 0 : totalAmount;
+  retentionAmount = isNaN(retentionAmount) ? 0 : retentionAmount;
+  otherDed = isNaN(otherDed) ? 0 : otherDed;
+  otherAdd = isNaN(otherAdd) ? 0 : otherAdd;
+  debitAdjustment = isNaN(debitAdjustment) ? 0 : debitAdjustment;
+  advanceAdjustment = isNaN(advanceAdjustment) ? 0 : advanceAdjustment;
+const totalAdjustments = (-debitAdjustment) + advanceAdjustment;
 
-    // if (debitAdjustment > totalAmount) {
-    //   toast.error("Debit note adjustment exceeds the total amount.");
-    //   return null;
-    // }
+console.log("total amount:",totalAmount)
+console.log("debitAdjustment",debitAdjustment)
 
-    // if (advanceAdjustment > totalAmount) {
-    //   toast.error("Advance recovery exceeds the total amount.");
-    //   return null;
-    // }
-
-    // if (totalAdjustments > totalAmount) {
-    //   toast.error("Combined debit note and advance recovery exceed the total amount.");
-    //   return null;
-    // }
-
-    //   if (debitAdjustment > totalAmount) {
-    //   toast.error("Debit note adjustment exceeds the total amount.");
+console.log("totalAmount:", totalAmount, typeof totalAmount);
+console.log("debitAdjustment:", debitAdjustment, typeof debitAdjustment);
+console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmount);
+    // Only show a toast once per unique error
+    // if ((-debitAdjustment) > totalAmount) {
+    //   if (lastErrorType.current !== "debit") {
+    //     toast.error("Debit note adjustment exceeds the total amount.");
+    //     lastErrorType.current = "debit";
+    //   }
     //   return null;
     // } else if (advanceAdjustment > totalAmount) {
-    //   toast.error("Advance recovery exceeds the total amount.");
+    //   if (lastErrorType.current !== "advance") {
+    //     toast.error("Advance recovery exceeds the total amount.");
+    //     lastErrorType.current = "advance";
+    //   }
     //   return null;
     // } else if (totalAdjustments > totalAmount) {
-    //   toast.error("Combined debit note and advance recovery exceed the total amount.");
+    //   if (lastErrorType.current !== "combined") {
+    //     toast.error("Combined debit note and advance recovery exceed the total amount.");
+    //     lastErrorType.current = "combined";
+    //   }
     //   return null;
+    // } else {
+    //   // Reset last error type if everything is okay
+    //   lastErrorType.current = null;
     // }
-
-
-    // Only show a toast once per unique error
-    if ((-debitAdjustment) > totalAmount) {
-      if (lastErrorType.current !== "debit") {
-        toast.error("Debit note adjustment exceeds the total amount.");
-        lastErrorType.current = "debit";
-      }
-      return null;
-    } else if (advanceAdjustment > totalAmount) {
-      if (lastErrorType.current !== "advance") {
-        toast.error("Advance recovery exceeds the total amount.");
-        lastErrorType.current = "advance";
-      }
-      return null;
-    } else if (totalAdjustments > totalAmount) {
-      if (lastErrorType.current !== "combined") {
-        toast.error("Combined debit note and advance recovery exceed the total amount.");
-        lastErrorType.current = "combined";
-      }
-      return null;
-    } else {
-      // Reset last error type if everything is okay
-      lastErrorType.current = null;
-    }
 
     const amountPayable = (
       totalAmount -
@@ -3473,7 +3463,8 @@ const [details, setDetails] = useState(null); // State to store API data
                       <tr>
                         <td className="text-start">Total Deduction</td>
                         <td className="text-start">
-                          {taxDeductionData.total_deduction_cost}
+                          {/* {taxDeductionData.total_deduction_cost} */}
+                          0
                         </td>
                       </tr>
                       <tr>
@@ -4127,6 +4118,9 @@ const [details, setDetails] = useState(null); // State to store API data
                         <th className="text-start">
                           Advance Outstanding till current Date (INR)
                         </th>
+                         <th className="text-start">
+                          Paid Till Date (INR)
+                        </th>
                         <th className="text-start" style={{ width: "200px" }}>
                           This Recovery (INR)
                         </th>
@@ -4168,6 +4162,7 @@ const [details, setDetails] = useState(null); // State to store API data
                               {/* "-"} */}
                               {note.advance_amount - note.recovered_amount || "0"}
                             </td>
+                            <td className="text-start">{note.paid || "0"}</td>
                             <td className="text-start">
                               <input
                                 type="number"
@@ -4229,14 +4224,14 @@ const [details, setDetails] = useState(null); // State to store API data
                   <table className="w-100">
                     <thead>
                       <tr>
-                        <th className="text-start">Debit Note No.</th>
+                        <th className="text-start">Debit Note No.________</th>
                         <th className="text-start">PO  No.</th>
                         <th className="text-start">Project</th>
                         <th className="text-start">Debit Note Amount</th>
                         <th className="text-start">
                           Debit Note Recovery Till Date
                         </th>
-                        {/* <th className="text-start">Waive off Till Date</th> */}
+                        <th className="text-start">Amount Paid Till Date</th>
                         <th className="text-start">
                           Outstanding Amount (Certificate Date)
                         </th>
@@ -4312,9 +4307,9 @@ const [details, setDetails] = useState(null); // State to store API data
                             <td className="text-start">
                               {note.recovered_amount || "0"}
                             </td>
-                            {/* <td className="text-start">
-                              {note.waive_off_till_date || "-"}
-                            </td> */}
+                            <td className="text-start">
+                              {note.paid || "-"}
+                            </td>
                             <td className="text-start">
                               {/* {note.outstanding_certificate_date || "-"} */}
                               {note.debit_note_amount - note.recovered_amount || "-"}
@@ -4362,7 +4357,7 @@ const [details, setDetails] = useState(null); // State to store API data
                     </tbody>
                   </table>
                 </div>
-                {/* <div className="d-flex justify-content-between mt-3 me-2">
+                <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Credit Note</h5>
                   <button className="purple-btn2" onClick={openCreditNoteModal}>
                     <svg
@@ -4378,7 +4373,7 @@ const [details, setDetails] = useState(null); // State to store API data
                     <span>Select Credit Note</span>
                   </button>
                 </div>
-                <div className="tbl-container mx-3 mt-3">
+                <div className="tbl-container  mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -4465,8 +4460,8 @@ const [details, setDetails] = useState(null); // State to store API data
                       )}
                     </tbody>
                   </table>
-                </div> */}
-                {/* <div className="d-flex justify-content-between mt-3 me-2">
+                </div> 
+                 <div className="d-flex justify-content-between mt-3 me-2">
                 <h5 className=" ">Document Attachment</h5>
                 <div
                   className="card-tools d-flex"
@@ -4492,7 +4487,7 @@ const [details, setDetails] = useState(null); // State to store API data
                     <span>Attach</span>
                   </button>
                 </div>
-              </div> */}
+              </div>
                 {/* Document Table (dynamic) */}
                 {/* <div className="tbl-container mx-3 mt-3">
                 <table className="w-100">
@@ -5209,7 +5204,7 @@ const [details, setDetails] = useState(null); // State to store API data
       </Modal>
       {/* Credit Note Modal */}
       {/* // Update the Credit Note Modal table structure */}
-      {/* <Modal
+      <Modal
         centered
         size="xl"
         show={creditNoteModal}
@@ -5309,7 +5304,7 @@ const [details, setDetails] = useState(null); // State to store API data
           <div className="row mt-2 justify-content-center">
             <div className="col-md-3">
               <button
-                className="purple-btn2 w-100"
+                className="purple-btn2 w-100 mt-2"
                 onClick={closeCreditNoteModal}
                 disabled={selectedCreditNotes.length === 0}
               >
@@ -5326,7 +5321,7 @@ const [details, setDetails] = useState(null); // State to store API data
             </div>
           </div>
         </Modal.Body>
-      </Modal> */}
+      </Modal>
       {/* Update the Debit Note Modal with similar structure */}
       <Modal
         centered

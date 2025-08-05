@@ -816,14 +816,24 @@ const ViewRate = () => {
                                 </span>
                                 <div className="m-0">
                                     {msg.rate_id && (
-                                        <a
+                                        <>
+                                        {/* <a
                                             href={`/details-rate/${msg.rate_id}?token=${token}`}
                                             // target="_blank"
                                             rel="noopener noreferrer"
                                             style={{ color: "#8b0203", textDecoration: "underline", marginLeft: 8 }}
                                         >
                                             <span>View Details</span>
-                                        </a>
+                                        </a> */}
+
+
+<Link
+    to={`/details-rate/${msg.rate_id}?token=${token}`}
+    style={{ color: "#8b0203", textDecoration: "underline", marginLeft: 8 }}
+  >
+    View Details
+  </Link>
+  </>
                                     )}
                                 </div>
                             </div>

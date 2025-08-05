@@ -2099,10 +2099,10 @@ const BillBookingCreate = () => {
       if (formData.pms_supplier_id) {
         try {
           // Fetch Credit Notes
-          // const creditResponse = await axios.get(
-          //   `${baseURL}credit_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=${token}`
-          // );
-          // setCreditNotes(creditResponse.data.credit_notes || []);
+          const creditResponse = await axios.get(
+            `${baseURL}credit_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=${token}`
+          );
+          setCreditNotes(creditResponse.data.credit_notes || []);
 
           // Fetch Debit Notes
           const debitResponse = await axios.get(
@@ -2123,13 +2123,13 @@ const BillBookingCreate = () => {
 
   // Add these handler functions if not already present
 
-  // const handleSelectAllCreditNotes = (e) => {
-  //   if (e.target.checked) {
-  //     setSelectedCreditNotes(creditNotes);
-  //   } else {
-  //     setSelectedCreditNotes([]);
-  //   }
-  // };
+  const handleSelectAllCreditNotes = (e) => {
+    if (e.target.checked) {
+      setSelectedCreditNotes(creditNotes);
+    } else {
+      setSelectedCreditNotes([]);
+    }
+  };
 
   const handleSelectAllDebitNotes = (e) => {
     if (e.target.checked) {
@@ -2139,17 +2139,17 @@ const BillBookingCreate = () => {
     }
   };
 
-  // const validateCreditRecovery = (note, value) => {
-  //   const recovery = parseFloat(value) || 0;
-  //   const creditAmount = parseFloat(note.credit_note_amount) || 0;
+  const validateCreditRecovery = (note, value) => {
+    const recovery = parseFloat(value) || 0;
+    const creditAmount = parseFloat(note.credit_note_amount) || 0;
 
-  //   // const outstandingAmount = parseFloat(note.outstanding_current_date) || 0;
-  //   if (recovery > creditAmount) {
-  //     alert("Recovery amount cannot exceed credit amount");
-  //     return false;
-  //   }
-  //   return true;
-  // };
+    // const outstandingAmount = parseFloat(note.outstanding_current_date) || 0;
+    if (recovery > creditAmount) {
+      alert("Recovery amount cannot exceed credit amount");
+      return false;
+    }
+    return true;
+  };
 
   const validateDebitRecovery = (note, value) => {
     // const recovery = parseFloat(value) || 0;
@@ -4185,7 +4185,7 @@ const BillBookingCreate = () => {
                     </tbody>
                   </table>
                 </div>
-                {/* <div className="d-flex justify-content-between mt-3 me-2">
+                <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Credit Note</h5>
                   <button className="purple-btn2" onClick={openCreditNoteModal}>
                     <svg
@@ -4201,7 +4201,7 @@ const BillBookingCreate = () => {
                     <span>Select Credit Note</span>
                   </button>
                 </div>
-                <div className="tbl-container mx-3 mt-3">
+                <div className="tbl-container mt-3">
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -4288,7 +4288,7 @@ const BillBookingCreate = () => {
                       )}
                     </tbody>
                   </table>
-                </div> */}
+                </div>
                 {/* <div className="d-flex justify-content-between mt-3 me-2">
                 <h5 className=" ">Document Attachment</h5>
                 <div
@@ -5021,7 +5021,7 @@ const BillBookingCreate = () => {
       </Modal>
       {/* Credit Note Modal */}
       {/* // Update the Credit Note Modal table structure */}
-      {/* <Modal
+      <Modal
         centered
         size="xl"
         show={creditNoteModal}
@@ -5121,7 +5121,7 @@ const BillBookingCreate = () => {
           <div className="row mt-2 justify-content-center">
             <div className="col-md-3">
               <button
-                className="purple-btn2 w-100"
+                className="purple-btn2 w-100 mt-2"
                 onClick={closeCreditNoteModal}
                 disabled={selectedCreditNotes.length === 0}
               >
@@ -5138,7 +5138,7 @@ const BillBookingCreate = () => {
             </div>
           </div>
         </Modal.Body>
-      </Modal> */}
+      </Modal>
       {/* Update the Debit Note Modal with similar structure */}
       <Modal
         centered

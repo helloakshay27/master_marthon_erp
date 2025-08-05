@@ -179,7 +179,7 @@ const POAdvanceNoteDetails = () => {
         advance_amount: advanceNote.advance_amount || "",
         net_payable: advanceNote.net_payable || "",
         mode_of_payment: advanceNote.payment_mode || "",
-        favoring_payee: advanceNote.payee_name || "",
+        favoring_payee: advanceNote.supplier_name || "",
         expected_payment_date: advanceNote.expected_payment_date || "",
         remark: advanceNote.remark || "",
       });

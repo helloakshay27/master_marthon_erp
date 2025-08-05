@@ -919,6 +919,29 @@ const LabourMasterEdit = () => {
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>Photo  <span>*</span></label>
+                                {labour?.avatar?.blob_id ? (
+                                    <>
+
+                                        <a
+                                            href={
+                                                // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                                                // `${baseURL}bill_entries/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
+                                                labour?.avatar?.url
+                                            }
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            download={labour?.avatar?.document_name}
+                                            className="me-2 ms-2"
+                                        >
+                                            <DownloadIcon />
+
+                                        </a>
+                                        {labour.avatar.document_name}
+                                        {/* {console.log("url:", labour?.avatar?.url)} */}
+                                    </>
+                                ) : (
+                                    "-"
+                                )}
                                 <input type="file" name="photo" onChange={(e) => handleFileChange2(e, "photo")} className="form-control" />
                             </div>
                             <div className="col-md-4 mb-3">
@@ -1184,7 +1207,7 @@ const LabourMasterEdit = () => {
                         </div>
                         <div className="col-md-2">
                             <button className="purple-btn1 w-100"
-                            // onClick={() => navigate(`/credit-note-list?token=${token}`)}
+                                onClick={() => navigate(`/labour-master-list`)}
                             >Cancel</button>
                         </div>
                     </div>
@@ -1296,7 +1319,7 @@ const LabourMasterEdit = () => {
                                             }</td>
                                             <td>{attachment.created_by}</td>
                                             <td>
-                                                <a
+                                                {/* <a
                                                     href={
                                                         // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
                                                         `${baseURL}labours/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
@@ -1306,8 +1329,19 @@ const LabourMasterEdit = () => {
                                                     rel="noopener noreferrer"
                                                 //   download={attachment.filename}
                                                 > <DownloadIcon />
+                                                </a> */}
+                                                <a
+                                                    href={
+                                                        // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                                                        // `${baseURL}bill_entries/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
+                                                        attachment.url
+                                                    }
+                                                    target="_blank"
+                                                    // rel="noopener noreferrer"
+                                                    download={attachment.filename}
+                                                >
+                                                    <DownloadIcon />
                                                 </a>
-
 
 
                                                 {attachment.id && (
@@ -1371,7 +1405,7 @@ const LabourMasterEdit = () => {
 
                                             <td>{attachment.created_by}</td>
                                             <td>
-                                                <a
+                                                {/* <a
                                                     href={
                                                         // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
                                                         `${baseURL}labours/${id}/download?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414&blob_id=${attachment.blob_id}`
@@ -1381,6 +1415,19 @@ const LabourMasterEdit = () => {
                                                     rel="noopener noreferrer"
                                                 //   download={attachment.filename}
                                                 > <DownloadIcon />
+                                                </a> */}
+
+                                                <a
+                                                    href={
+                                                        // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                                                        // `${baseURL}bill_entries/${id}/download?token=${token}&blob_id=${attachment.blob_id}`
+                                                        attachment.url
+                                                    }
+                                                    target="_blank"
+                                                    // rel="noopener noreferrer"
+                                                    download={attachment.filename}
+                                                >
+                                                    <DownloadIcon />
                                                 </a>
                                             </td>
                                         </tr>
