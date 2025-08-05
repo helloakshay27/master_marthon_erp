@@ -1104,7 +1104,7 @@ useEffect(() => {
             // console.log("option  for unit related to material++:", response.data)
             const options = response.data.map((unit) => ({
               value: unit.id,
-              label: unit.name,
+              label: unit.uom_short_name,
             }));
             // setUnitOfMeasures2(options)
             // setSelectedUnit2(options); // Save the formatted options to state
