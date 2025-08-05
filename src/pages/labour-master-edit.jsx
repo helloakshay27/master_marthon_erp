@@ -628,8 +628,57 @@ const LabourMasterEdit = () => {
 
     //   console.log("photo data:",formData.photo)
     console.log("payload create:", payload)
+     const [formErrors, setFormErrors] = useState({});
 
     const handleSubmit = async () => {
+
+           const errors = {};
+        // Validation checks
+        if (!formData.contractor_name || !formData.contractor_name.value) {
+            errors.contractor_name = "Contractor is required.";
+        }
+        // Labour Sub Type
+        if (!formData.labour_sub_type) {
+            errors.labour_sub_type = "Labour sub type is required";
+        }
+        if (!formData.first_name?.trim()) {
+            errors.first_name = "First name is required.";
+        }
+        if (!formData.middle_name?.trim()) {
+            errors.middle_name = "Middle name is required.";
+        }
+        if (!formData.last_name?.trim()) {
+            errors.last_name = "Last name is required.";
+        }
+        // if (!formData.phone_number?.trim()) {
+        //     errors.phone_number = "Phone number is required.";
+        // }
+
+        if (!formData.phone_number?.trim()) {
+            errors.phone_number = "Phone number is required";
+        } else if (!/^\d{10}$/.test(formData.phone_number.trim())) {
+            errors.phone_number = "Phone number must be exactly 10 digits.";
+        }
+
+        // Bank details
+        if (!formData.bank_account_name?.trim()) {
+            errors.bank_account_name = "Bank account name is required.";
+        }
+        if (!formData.bank_account_no?.trim()) {
+            errors.bank_account_no = "Account number is required.";
+        }
+        if (!formData.bank_branch_name?.trim()) {
+            errors.bank_branch_name = "Branch name is required.";
+        }
+        if (!formData.ifsc_code?.trim()) {
+            errors.ifsc_code = "IFSC code is required.";
+        }
+
+        // If there are errors, stop and display them
+        if (Object.keys(errors).length > 0) {
+            setFormErrors(errors); // You need to define this state: const [formErrors, setFormErrors] = useState({});
+            return;
+        }
 
         const payload = {
             labour: {
@@ -717,7 +766,7 @@ const LabourMasterEdit = () => {
 
                         <div className="row card-body mt-0 pt-0">
                             <div className="col-md-4 mb-3">
-                                <label>Labour Code <span>*</span></label>
+                                <label>Labour Code </label>
                                 <input type="text" name="labour_code" value={formData.labour_code} onChange={handleInputChange} className="form-control" />
                             </div>
                             <div className="col-md-4 mb-3">
@@ -730,6 +779,9 @@ const LabourMasterEdit = () => {
                                     onChange={handleSupplierChange}
                                     placeholder="Select Contractor"
                                 />
+                                 {formErrors.contractor_name && (
+                                    <span className="text-danger">{formErrors.contractor_name}</span>
+                                )}
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>Labour Sub Type <span>*</span></label>
@@ -751,18 +803,30 @@ const LabourMasterEdit = () => {
                                     }
                                     placeholder="Select Sub Type"
                                 />
+                                 {formErrors.labour_sub_type && (
+                                    <span className="text-danger">{formErrors.labour_sub_type}</span>
+                                )}
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>First Name <span>*</span></label>
                                 <input type="text" name="first_name" value={formData.first_name} onChange={handleInputChange} className="form-control" />
+                                 {formErrors.first_name && (
+                                    <span className="text-danger">{formErrors.first_name}</span>
+                                )}
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>Last Name <span>*</span></label>
                                 <input type="text" name="last_name" value={formData.last_name} onChange={handleInputChange} className="form-control" />
+                                  {formErrors.last_name && (
+                                    <span className="text-danger">{formErrors.last_name}</span>
+                                )}
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>Middle Name <span>*</span></label>
                                 <input type="text" name="middle_name" value={formData.middle_name} onChange={handleInputChange} className="form-control" />
+                                 {formErrors.middle_name && (
+                                    <span className="text-danger">{formErrors.middle_name}</span>
+                                )}
                             </div>
 
                             <div className="col-md-4 mb-3">
@@ -772,14 +836,15 @@ const LabourMasterEdit = () => {
                             <div className="col-md-4 mb-3">
                                 <label>Phone Number</label>
                                 <input type="text" name="phone_number" value={formData.phone_number} onChange={handleInputChange} className="form-control" />
+                                 {formErrors.phone_number && (
+                                    <span className="text-danger">{formErrors.phone_number}</span>
+                                )}
                             </div>
                             <div className="col-md-4 mb-3">
-                                <label>Job Title/Position <span>*</span></label>
+                                <label>Job Title/Position </label>
                                 {/* <input type="text" name="job_title" value={formData.job_title} onChange={handleInputChange} className="form-control" /> */}
 
                                 <SingleSelector
-
-
                                     options={jobTitleOptions}
                                     value={jobTitleOptions.find((opt) => opt.value === formData.job_title) || null}
                                     onChange={(selectedOption) =>
@@ -794,7 +859,7 @@ const LabourMasterEdit = () => {
                                 />
                             </div>
                             <div className="col-md-4 mb-3">
-                                <label>Labour Category <span>*</span></label>
+                                <label>Labour Category</label>
                                 <SingleSelector
                                     options={labourCategoryOptions}
                                     value={labourCategoryOptions.find(option => option.value === formData.labour_category) || null}
@@ -807,11 +872,11 @@ const LabourMasterEdit = () => {
                                 />
                             </div>
                             <div className="col-md-4 mb-3">
-                                <label>Work Shifts <span>*</span></label>
+                                <label>Work Shifts </label>
                                 <input type="number" name="work_shifts" value={formData.work_shifts} onChange={handleInputChange} className="form-control" />
                             </div>
                             <div className="col-md-4 mb-3">
-                                <label>Availability <span>*</span></label>
+                                <label>Availability </label>
                                 <SingleSelector
                                     options={availabilityOptions}
                                     value={
@@ -829,7 +894,7 @@ const LabourMasterEdit = () => {
 
                             </div>
                             <div className="col-md-4 mb-3">
-                                <label>Employment Status <span>*</span></label>
+                                <label>Employment Status</label>
                                 <SingleSelector
                                     options={employmentStatusOptions}
                                     value={
@@ -850,25 +915,23 @@ const LabourMasterEdit = () => {
 
                             </div>
                             <div className="col-md-4 mb-3">
-                                <label>Union Memberships <span>*</span></label>
+                                <label>Union Memberships </label>
                                 <input type="text" name="union_memberships" value={formData.union_memberships} onChange={handleInputChange} className="form-control" />
                             </div>
                             <div className="col-md-4 mb-3">
-                                <label>Hourly Rate/Salary <span>*</span></label>
+                                <label>Hourly Rate/Salary </label>
                                 <input type="number" name="hourly_rate" value={formData.hourly_rate} onChange={handleInputChange} className="form-control" />
                             </div>
                             <div className="col-md-4 mb-3">
-                                <label>Overtime Rate <span>*</span></label>
+                                <label>Overtime Rate </label>
                                 <input type="number" name="overtime_rate" value={formData.overtime_rate} onChange={handleInputChange} className="form-control" />
                             </div>
                             <div className="col-md-4 mb-3">
-                                <label>Address <span>*</span></label>
+                                <label>Address </label>
                                 <textarea name="address" value={formData.address} onChange={handleInputChange} className="form-control" />
                             </div>
                             <div className="col-md-4 mb-3">
-                                <label>Department <span>*</span></label>
-
-
+                                <label>Department</label>
                                 <SingleSelector
                                     options={departmentOptions}
                                     value={
@@ -888,7 +951,7 @@ const LabourMasterEdit = () => {
                                 />
                             </div>
                             <div className="col-md-4 mb-3">
-                                <label>Supervisor <span>*</span></label>
+                                <label>Supervisor </label>
 
                                 <SingleSelector
                                     options={supervisorOptions}
@@ -910,15 +973,15 @@ const LabourMasterEdit = () => {
 
                             </div>
                             <div className="col-md-4 mb-3">
-                                <label>Hire Date <span>*</span></label>
+                                <label>Hire Date</label>
                                 <input type="date" name="hire_date" value={formData.hire_date} onChange={handleInputChange} className="form-control" />
                             </div>
                             <div className="col-md-4 mb-3">
-                                <label>Equipment Certifications  <span>*</span></label>
+                                <label>Equipment Certifications </label>
                                 <input type="text" name="certifications" value={formData.certifications} onChange={handleInputChange} className="form-control" />
                             </div>
                             <div className="col-md-4 mb-3">
-                                <label>Photo  <span>*</span></label>
+                                <label>Photo </label>
                                 {labour?.avatar?.blob_id ? (
                                     <>
 
@@ -945,7 +1008,7 @@ const LabourMasterEdit = () => {
                                 <input type="file" name="photo" onChange={(e) => handleFileChange2(e, "photo")} className="form-control" />
                             </div>
                             <div className="col-md-4 mb-3">
-                                <label>License/Permit Information <span>*</span></label>
+                                <label>License/Permit Information</label>
                                 <input type="text" name="license_info" value={formData.license_info} onChange={handleInputChange} className="form-control" />
                             </div>
 
@@ -1171,18 +1234,30 @@ const LabourMasterEdit = () => {
                                 <div className="col-md-4 mb-3">
                                     <label>Bank Account Name <span>*</span></label>
                                     <input type="text" name="bank_account_name" value={formData.bank_account_name} onChange={handleInputChange} className="form-control" />
+                                     {formErrors.bank_account_name && (
+                                        <span className="text-danger">{formErrors.bank_account_name}</span>
+                                    )}
                                 </div>
                                 <div className="col-md-4 mb-3">
                                     <label>Bank Account No <span>*</span></label>
                                     <input type="text" name="bank_account_no" value={formData.bank_account_no} onChange={handleInputChange} className="form-control" />
+                                     {formErrors.bank_account_no && (
+                                        <span className="text-danger">{formErrors.bank_account_no}</span>
+                                    )}
                                 </div>
                                 <div className="col-md-4 mb-3">
                                     <label>Bank Branch Name <span>*</span></label>
                                     <input type="text" name="bank_branch_name" value={formData.bank_branch_name} onChange={handleInputChange} className="form-control" />
+                                      {formErrors.bank_branch_name && (
+                                        <span className="text-danger">{formErrors.bank_branch_name}</span>
+                                    )}
                                 </div>
                                 <div className="col-md-4 mb-3">
                                     <label>Bank Branch IFSC Code <span>*</span></label>
                                     <input type="text" name="ifsc_code" value={formData.ifsc_code} onChange={handleInputChange} className="form-control" />
+                                      {formErrors.ifsc_code && (
+                                        <span className="text-danger">{formErrors.ifsc_code}</span>
+                                    )}
                                 </div>
 
 

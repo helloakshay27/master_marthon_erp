@@ -1065,7 +1065,7 @@ const ErpStockRegister13B = () => {
           // Mapping the response to the format required by react-select
           const options = response.data.map((unit) => ({
             value: unit.id,
-            label: unit.name,
+            label: unit.uom_short_name,
           }));
           setUnitOfMeasures(options); // Save the formatted options to state
         })
