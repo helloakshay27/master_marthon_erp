@@ -21,10 +21,13 @@ import axios from "axios";
 import { baseURL } from "../confi/apiDomain";
 import { Modal, Button } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+
 
 
 const EstimationList = () => {
     const urlParams = new URLSearchParams(location.search);
+     const navigate = useNavigate();
     const token = urlParams.get("token");
     const [showModal, setShowModal] = useState(false);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -219,6 +222,10 @@ const EstimationList = () => {
         reader.readAsDataURL(file);
     };
 
+
+    const handleClick = () => {
+    navigate("/estimation-creation"); // Navigate to create page
+  };
     console.log("data:", data)
     return (
         <>
@@ -362,8 +369,8 @@ const EstimationList = () => {
 
 
                                             {/* Create BOQ Button */}
-                                            {/* <button className="purple-btn2 me-3"
-                                                // onClick={handleClick}
+                                            <button className="purple-btn2 me-3"
+                                                onClick={handleClick}
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -375,8 +382,8 @@ const EstimationList = () => {
                                                     >
                                                         <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
                                                     </svg>
-                                                    <span> Create BOQ</span>
-                                                </button> */}
+                                                    <span> Create</span>
+                                                </button>
                                         </div>
                                     </div>
                                 </div>

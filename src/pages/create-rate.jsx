@@ -433,10 +433,10 @@ const CreateRate = () => {
 
     // Fetch inventory sub-types when an inventory type is selected
     useEffect(() => {
-        if (selectedInventory2) {
+        if (selectedInventory2 || formData.materialType) {
             //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
 
-            axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${selectedInventory2?.value}&token=${token}`)
+            axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${selectedInventory2?.value || formData.materialType}&token=${token}`)
                 .then(response => {
                     // Map the sub-types to options for the select dropdown
                     const options = response.data.map(subType => ({
@@ -450,14 +450,14 @@ const CreateRate = () => {
                     console.error('Error fetching inventory sub-types:', error);
                 });
         }
-    }, [selectedInventory2]); // Run this effect whenever the selectedInventory state changes
+    }, [selectedInventory2,formData.materialType]); // Run this effect whenever the selectedInventory state changes
 
     // Fetch inventory Material when an inventory type is selected
     useEffect(() => {
-        if (selectedInventory2) {
+        if (selectedInventory2 || formData.materialType) {
             //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
 
-            axios.get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${selectedInventory2?.value}&q[material_category_eq]=material&token=${token}`)
+            axios.get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${selectedInventory2?.value || formData.materialType}&q[material_category_eq]=material&token=${token}`)
                 .then(response => {
                     // Map the sub-types to options for the select dropdown
                     const options = response.data.map(subType => ({
@@ -471,7 +471,7 @@ const CreateRate = () => {
                     console.error('Error fetching inventory sub-types:', error);
                 });
         }
-    }, [selectedInventory2]); // Run this effect whenever the selectedInventory state changes
+    }, [selectedInventory2,formData.materialType]); // Run this effect whenever the selectedInventory state changes
 
     // umo api
 
@@ -1216,6 +1216,7 @@ if (missingRateIndex !== -1) {
                                     {fieldErrors.materialType && (
                                         <span className="text-danger">{fieldErrors.materialType}</span>
                                     )}
+                                    {console.log("materail type:",formData.materialType)}
                                 </div>
                             </div>
                             <div className="col-md-4 mt-3">
