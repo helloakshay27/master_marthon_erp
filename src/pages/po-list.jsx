@@ -146,7 +146,7 @@ const PoList = () => {
       sortable: true,
       renderCell: (params) => (
         <Link
-          to={`/po-edit/${params.row.id}?token=${token}`}
+          to={`/po-details/${params.row.id}?token=${token}`}
           style={{
             color: "#3f51b5",
             textDecoration: "underline",

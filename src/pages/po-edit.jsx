@@ -116,6 +116,10 @@ const PoEdit = () => {
   );
   const [chargesTaxPercentages, setChargesTaxPercentages] = useState([]);
 
+  // Add these state setters at the top of your component if not already present:
+  const [materialDetails, setMaterialDetails] = useState([]);
+  const [rateAndTaxes, setRateAndTaxes] = useState([]);
+
   // Fetch purchase order data on component mount
   useEffect(() => {
     const fetchPurchaseOrderData = async () => {
@@ -367,6 +371,48 @@ const PoEdit = () => {
         };
       });
       setAttachments(formattedAttachments);
+    }
+
+    if (poData.material_details) {
+      const formatted = poData.material_details.map((mat) => ({
+        // Map to your table row structure
+        materialTypeLabel: mat.material_type_name || "", // or whatever field you use
+        materialSubTypeLabel: mat.material_sub_type_name || "",
+        materialLabel: mat.material_name || "",
+        genericSpecificationLabel: mat.generic_info || "",
+        colourLabel: mat.colour || "",
+        brandLabel: mat.brand_name || "",
+        uomLabel: mat.uom || "",
+        // ...other fields as needed
+        // You may want to keep the original data for editing
+        material: mat, // for edit modal
+      }));
+      setTableData(formatted); // <-- THIS IS THE KEY LINE
+    }
+
+    if (poData.rate_and_taxes) {
+      setRateAndTaxes(
+        poData.rate_and_taxes.map((rate) => ({
+          id: rate.id,
+          material_inventory_id: rate.material_inventory_id,
+          material: rate.material,
+          uom: rate.uom,
+          po_qty: rate.po_qty,
+          adjusted_qty: rate.adjusted_qty,
+          tolerance_qty: rate.tolerance_qty,
+          material_rate: rate.material_rate,
+          material_cost: rate.material_cost,
+          discount_percentage: rate.discount_percentage,
+          discount_rate: rate.discount_rate,
+          after_discount_value: rate.after_discount_value,
+          tax_addition: rate.tax_addition,
+          tax_deduction: rate.tax_deduction,
+          total_charges: rate.total_charges,
+          total_base_cost: rate.total_base_cost,
+          all_inclusive_cost: rate.all_inclusive_cost,
+          // ...add other fields as needed
+        }))
+      );
     }
   };
 
@@ -641,16 +687,36 @@ const PoEdit = () => {
     setIsSubmitting(true);
 
     // Prepare materials array for API
-    const materials = tableData.map((row) => ({
-      id: row.id, // Include ID for existing records
-      pms_inventory_id: row.material,
-      unit_of_measure_id: row.uom,
-      pms_inventory_sub_type_id: row.materialSubType,
-      pms_generic_info_id: row.genericSpecification || null,
-      pms_colour_id: row.colour || null,
-      pms_brand_id: row.brand || null,
-      _destroy: row._destroy || false, // Include destroy flag
-    }));
+    const materials = tableData.map((row) => {
+      // Check if this is an existing material (has material object with id)
+      if (row.material && typeof row.material === "object" && row.material.id) {
+        // Existing material - extract values from the material object
+        return {
+          id: row.material.id, // Use the actual ID from the material object
+          pms_inventory_id: row.material.pms_inventory_id,
+          unit_of_measure_id: row.material.uom_id,
+          pms_inventory_sub_type_id: row.material.pms_inventory_sub_type_id,
+          pms_generic_info_id: row.material.pms_generic_info_id,
+          pms_colour_id: row.material.pms_colour_id,
+          pms_brand_id: row.material.pms_brand_id,
+          _destroy: row._destroy || false,
+        };
+      } else {
+        // New material - use the direct values
+        return {
+          id: row.id, // Include ID for existing records
+          pms_inventory_id: row.material,
+          unit_of_measure_id: row.uom,
+          pms_inventory_sub_type_id: row.materialSubType,
+          pms_generic_info_id: row.genericSpecification || null,
+          pms_colour_id: row.colour || null,
+          pms_brand_id: row.brand || null,
+          _destroy: row._destroy || false, // Include destroy flag
+        };
+      }
+    });
+
+    console.log("Processed materials for API:", materials);
 
     const payload = {
       company_id: selectedCompany.value,
@@ -720,19 +786,27 @@ const PoEdit = () => {
     setTableId(rowIndex);
     setShowTaxModal(true);
 
-    // Get the material ID from submitted materials
-    const material = submittedMaterials[rowIndex];
+    // Get the material from combined materials (both existing and submitted)
+    const combinedMaterials = getCombinedMaterials();
+    const material = combinedMaterials[rowIndex];
+
+    console.log("Selected material for tax modal:", material);
+
     if (material && material.id) {
       try {
-        console.log("Fetching rate details for material ID:", material.id);
+        // For existing materials from API, use the material.id directly
+        // For submitted materials, use material.id as well
+        const materialId = material.id;
+        console.log("Fetching rate details for material ID:", materialId);
         const response = await axios.get(
-          `${baseURL}po_mor_inventories/${material.id}/ropo_rate_details.json?token=${token}`
+          `${baseURL}po_mor_inventories/${materialId}/ropo_rate_details.json?token=${token}`
         );
 
         console.log("Rate details API response:", response.data);
 
         // Map the API response to our tax data structure
         const rateData = response.data;
+        console.log("Processing rate data for material:", material.material);
         setTaxRateData((prev) => ({
           ...prev,
           [rowIndex]: {
@@ -848,21 +922,25 @@ const PoEdit = () => {
         }
       }
     } else {
-      // Fallback if no material data
+      // Fallback if no material data or new material without ID
+      console.log(
+        "No material ID found, opening modal with empty data for new material"
+      );
       if (!taxRateData[rowIndex]) {
         setTaxRateData((prev) => ({
           ...prev,
           [rowIndex]: {
-            material: "Sample Material",
-            hsnCode: "123456",
-            ratePerNos: "100",
-            totalPoQty: "10",
-            discount: "5",
-            materialCost: "950",
-            discountRate: "95",
-            afterDiscountValue: "950",
+            material: material?.material || "Sample Material",
+            hsnCode: "",
+            ratePerNos: "",
+            totalPoQty: "",
+            discount: "",
+            materialCost: "",
+            discountRate: "",
+            afterDiscountValue: "",
             remark: "",
-            netCost: "950",
+            netCost: "",
+            pms_inventory_id: material?.material_inventory_id || null,
             addition_bid_material_tax_details: [],
             deduction_bid_material_tax_details: [],
           },
@@ -2391,7 +2469,7 @@ const PoEdit = () => {
           total_discount: 0,
           po_date: getLocalDateTime().split("T")[0], // Current date
           company_id: selectedCompany?.value,
-          po_type: "ROPO",
+          po_type: "ropo",
           supplier_id: selectedSupplier?.value,
           remark: termsFormData.remark || "",
           comments: termsFormData.comments || "",
@@ -2533,6 +2611,65 @@ const PoEdit = () => {
   };
 
   // ...existing code...
+
+  const handleAddMaterial = (newMaterial) => {
+    setMaterialDetails((prev) => [...prev, newMaterial]);
+  };
+
+  const handleUpdateMaterial = (index, updatedMaterial) => {
+    setMaterialDetails((prev) =>
+      prev.map((mat, idx) => (idx === index ? updatedMaterial : mat))
+    );
+  };
+
+  // Function to get combined materials (prepopulated + submitted)
+  const getCombinedMaterials = () => {
+    const combined = [];
+
+    console.log("rateAndTaxes:", rateAndTaxes);
+    console.log("submittedMaterials:", submittedMaterials);
+
+    // Add prepopulated rate and taxes data
+    if (rateAndTaxes && rateAndTaxes.length > 0) {
+      combined.push(...rateAndTaxes);
+      console.log("Added prepopulated data:", rateAndTaxes.length, "items");
+    }
+
+    // Add submitted materials (if not already in rateAndTaxes)
+    if (submittedMaterials && submittedMaterials.length > 0) {
+      submittedMaterials.forEach((submitted) => {
+        const exists = combined.some(
+          (item) =>
+            item.material_inventory_id === submitted.material_inventory_id ||
+            item.material === submitted.material_name
+        );
+        if (!exists) {
+          combined.push({
+            id: submitted.id,
+            material: submitted.material_name,
+            uom: submitted.uom_name,
+            po_qty: submitted.po_qty || "",
+            material_rate: submitted.material_rate || "",
+            material_cost: submitted.material_cost || "",
+            discount_percentage: submitted.discount_percentage || "",
+            discount_rate: submitted.discount_rate || "",
+            after_discount_value: submitted.after_discount_value || "",
+            tax_addition: submitted.tax_addition || "",
+            tax_deduction: submitted.tax_deduction || "",
+            total_charges: submitted.total_charges || "",
+            total_base_cost: submitted.total_base_cost || "",
+            all_inclusive_cost: submitted.all_inclusive_cost || "",
+            material_inventory_id: submitted.material_inventory_id,
+            isSubmitted: true, // Flag to identify submitted materials
+          });
+          console.log("Added submitted material:", submitted.material_name);
+        }
+      });
+    }
+
+    console.log("Combined materials:", combined);
+    return combined;
+  };
 
   return (
     <>
@@ -3112,34 +3249,48 @@ const PoEdit = () => {
                                   <tr>
                                     <th>Sr. No</th>
                                     <th>Material Description</th>
-
                                     <th>UOM</th>
                                     <th>PO Qty</th>
-
+                                    <th>Material Rate</th>
+                                    <th>Material Cost</th>
+                                    <th>Discount(%)</th>
+                                    <th>Discount Rate</th>
+                                    <th>After Discount Value</th>
                                     <th>Tax Addition</th>
-                                    <th>Total Changes</th>
-                                    <th>Other Addition</th>
-                                    <th>Other Deductions</th>
+                                    <th>Tax Deduction</th>
+                                    <th>Total Charges</th>
+                                    <th>Total Base Cost</th>
                                     <th>All Incl. Cost</th>
-                                    <th>Tax Deductions</th>
                                     <th>Select Tax</th>
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {submittedMaterials.length > 0 ? (
-                                    submittedMaterials.map(
-                                      (material, index) => (
-                                        <tr key={material.id}>
+                                  {(() => {
+                                    const combinedMaterials =
+                                      getCombinedMaterials();
+                                    return combinedMaterials.length > 0 ? (
+                                      combinedMaterials.map((item, index) => (
+                                        <tr key={item.id || index}>
                                           <td>{index + 1}</td>
-                                          <td>{material.material_name}</td>
-                                          <td>{material.uom_name}</td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
-                                          <td></td>
+                                          <td>{item.material}</td>
+                                          <td>{item.uom}</td>
+                                          <td>{item.po_qty || "-"}</td>
+                                          <td>{item.material_rate || "-"}</td>
+                                          <td>{item.material_cost || "-"}</td>
+                                          <td>
+                                            {item.discount_percentage || "-"}
+                                          </td>
+                                          <td>{item.discount_rate || "-"}</td>
+                                          <td>
+                                            {item.after_discount_value || "-"}
+                                          </td>
+                                          <td>{item.tax_addition || "-"}</td>
+                                          <td>{item.tax_deduction || "-"}</td>
+                                          <td>{item.total_charges || "-"}</td>
+                                          <td>{item.total_base_cost || "-"}</td>
+                                          <td>
+                                            {item.all_inclusive_cost || "-"}
+                                          </td>
                                           <td
                                             className="text-decoration-underline"
                                             style={{ cursor: "pointer" }}
@@ -3150,32 +3301,18 @@ const PoEdit = () => {
                                             select
                                           </td>
                                         </tr>
-                                      )
-                                    )
-                                  ) : (
-                                    <tr>
-                                      {/* <td>1</td>
-                                      <td>Plain White Sperenza Tiles</td>
-                                      <td>300 x 300 mm</td>
-                                      <td>nos</td>
-                                    <td>USD 9.67</td>
-                                    <td>INR 800</td>
-                                    <td>108</td>
-                                    <td>708</td>
-                                    <td>108</td>
-                                    <td>708</td>
-                                    <td
-                                      className="text-decoration-underline"
-                                        style={{ cursor: "pointer" }}
-                                        onClick={() => handleOpenTaxModal(0)}
-                                    >
-                                      select
-                                      </td> */}
-                                      <td colSpan="11" className="text-center">
-                                        No materials added yet.
-                                      </td>
-                                    </tr>
-                                  )}
+                                      ))
+                                    ) : (
+                                      <tr>
+                                        <td
+                                          colSpan="15"
+                                          className="text-center"
+                                        >
+                                          No materials added yet.
+                                        </td>
+                                      </tr>
+                                    );
+                                  })()}
                                 </tbody>
                               </table>
                             </div>

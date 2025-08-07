@@ -881,7 +881,7 @@ const PoCreate = () => {
           total_material_cost: parseFloat(currentData.netCost) || 0,
           after_discount_value: parseFloat(currentData.afterDiscountValue) || 0,
           tax_applicable_cost: parseFloat(currentData.afterDiscountValue) || 0,
-          material_inventory_id: currentData.pms_inventory_id || material.id,
+          // material_inventory_id: currentData.pms_inventory_id || material.id,
 
           // Map addition tax details
           mor_inventory_tax_details_attributes: (
@@ -2086,7 +2086,7 @@ const PoCreate = () => {
           total_discount: 0,
           po_date: getLocalDateTime().split("T")[0], // Current date
           company_id: selectedCompany?.value,
-          po_type: "ROPO",
+          po_type: "ropo",
           supplier_id: selectedSupplier?.value,
           remark: termsFormData.remark || "",
           comments: termsFormData.comments || "",
