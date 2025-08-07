@@ -4,14 +4,18 @@ import axios from "axios";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import MultiSelector from "../components/base/Select/MultiSelector";
 import SelectBox from "../components/base/Select/SelectBox";
+import DownloadIcon from "../components/common/Icon/DownloadIcon";
 import { baseURL } from "../confi/apiDomain";
+import { useParams, useLocation } from "react-router-dom";
 
-const PoCreate = () => {
+const PoEdit = () => {
   // State variables for the modal
+  const [apiMaterialInventoryIds, setApiMaterialInventoryIds] = useState();
   const [showModal, setShowModal] = useState(false);
   const [editRowIndex, setEditRowIndex] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
-  const [apiMaterialInventoryIds, setApiMaterialInventoryIds] = useState();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
 
   // Tax modal state variables
   const [showTaxModal, setShowTaxModal] = useState(false);
@@ -21,6 +25,7 @@ const PoCreate = () => {
   const [deductionTaxOptions, setDeductionTaxOptions] = useState([]);
   const [taxPercentageOptions, setTaxPercentageOptions] = useState([]);
   const [materialTaxPercentages, setMaterialTaxPercentages] = useState({});
+  const { id } = useParams();
 
   // Form data state
   const [formData, setFormData] = useState({
@@ -54,6 +59,8 @@ const PoCreate = () => {
   // Material data from API response
   const [submittedMaterials, setSubmittedMaterials] = useState([]);
   const [purchaseOrderId, setPurchaseOrderId] = useState(null);
+  const [purchaseOrderData, setPurchaseOrderData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Terms and conditions state
   const [termsConditions, setTermsConditions] = useState([]);
@@ -68,7 +75,7 @@ const PoCreate = () => {
 
   // Loading state
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [isUpdatingOrder, setIsUpdatingOrder] = useState(false);
 
   // Terms and conditions form state
   const [termsFormData, setTermsFormData] = useState({
@@ -79,6 +86,9 @@ const PoCreate = () => {
     paymentRemarks: "",
     remark: "",
     comments: "",
+    supplierAdvance: "",
+    supplierAdvanceAmount: "",
+    surviceCertificateAdvance: "",
   });
 
   // Charges state
@@ -105,6 +115,260 @@ const PoCreate = () => {
     []
   );
   const [chargesTaxPercentages, setChargesTaxPercentages] = useState([]);
+
+  // Fetch purchase order data on component mount
+  useEffect(() => {
+    const fetchPurchaseOrderData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(
+          `${baseURL}purchase_orders/${id}/ropo_detail.json?token=${token}`
+        );
+        console.log("Purchase order data:", response.data);
+        setPurchaseOrderData(response.data);
+        populateFormData(response.data);
+      } catch (error) {
+        console.error("Error fetching purchase order data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPurchaseOrderData();
+  }, [id, token]);
+
+  // Function to populate form data from API response
+  const populateFormData = (poData) => {
+    // Populate company and supplier
+    if (poData.company_id) {
+      const companyOption = {
+        value: poData.company_id,
+        label: poData.company_name || "",
+      };
+      setSelectedCompany(companyOption);
+    }
+
+    if (poData.supplier_id) {
+      const supplierOption = {
+        value: poData.supplier_id,
+        label: poData.supplier_name || "",
+      };
+      setSelectedSupplier(supplierOption);
+    }
+
+    // Set PO date
+    if (poData.po_date) {
+      setPoDate(poData.po_date);
+    }
+
+    // Populate terms and conditions
+    if (poData.terms_and_conditions) {
+      setTermsFormData({
+        creditPeriod:
+          poData.terms_and_conditions.credit_period?.toString() || "",
+        poValidityPeriod:
+          poData.terms_and_conditions.po_validity_period?.toString() || "",
+        advanceReminderDuration:
+          poData.terms_and_conditions.advance_reminder_duration?.toString() ||
+          "",
+        paymentTerms: poData.terms_and_conditions.payment_terms || "",
+        paymentRemarks: poData.terms_and_conditions.payment_remarks || "",
+        remark: poData.terms_and_conditions.remark || "",
+        comments: poData.terms_and_conditions.comments || "",
+        supplierAdvance:
+          poData.terms_and_conditions.supplier_advance?.toString() || "",
+        supplierAdvanceAmount:
+          poData.terms_and_conditions.supplier_advance_amount?.toString() || "",
+        surviceCertificateAdvance:
+          poData.terms_and_conditions.survice_certificate_advance?.toString() ||
+          "",
+      });
+    }
+
+    // Populate other cost details
+    if (poData.other_cost_details) {
+      console.log("Raw other_cost_details:", poData.other_cost_details);
+
+      const formattedOtherCosts = poData.other_cost_details.map((cost) => {
+        // Log tax data for debugging
+        if (cost.taxes_and_charges && cost.taxes_and_charges.length > 0) {
+          console.log(
+            `Taxes for cost ${cost.cost_type}:`,
+            cost.taxes_and_charges
+          );
+        }
+
+        return {
+          id: cost.id || Date.now(),
+          cost_name: cost.cost_type || "",
+          amount: cost.cost?.toString() || "",
+          scope: cost.scope || "",
+          realised_amount: cost.cost?.toString() || "",
+          taxes: {
+            additionTaxes:
+              cost.taxes_and_charges
+                ?.filter((tax) => tax.addition)
+                .map((tax) => {
+                  console.log(`Processing addition tax for cost:`, tax);
+                  return {
+                    id: tax.id || Date.now(),
+                    taxType: tax.resource_id?.toString() || "",
+                    taxPercentage: tax.percentage?.toString() || "",
+                    inclusive: tax.inclusive || false,
+                    amount: tax.amount?.toString() || "0",
+                  };
+                }) || [],
+            deductionTaxes:
+              cost.taxes_and_charges
+                ?.filter((tax) => !tax.addition)
+                .map((tax) => {
+                  console.log(`Processing deduction tax for cost:`, tax);
+                  return {
+                    id: tax.id || Date.now(),
+                    taxType: tax.resource_id?.toString() || "",
+                    taxPercentage: tax.percentage?.toString() || "",
+                    inclusive: tax.inclusive || false,
+                    amount: tax.amount?.toString() || "0",
+                  };
+                }) || [],
+            netCost: cost.cost?.toString() || "0",
+          },
+        };
+      });
+
+      console.log("Formatted other costs:", formattedOtherCosts);
+      setOtherCosts(formattedOtherCosts);
+    }
+
+    // Populate charges with taxes - only if charge names are available
+    if (poData.charges_with_taxes && chargeNames.length > 0) {
+      console.log("Raw charges_with_taxes:", poData.charges_with_taxes);
+      console.log("Available chargeNames:", chargeNames);
+
+      const formattedCharges = poData.charges_with_taxes.map((charge) => {
+        // Find the charge name by charge_id
+        const chargeNameObj = chargeNames.find(
+          (cn) => cn.id === charge.charge_id
+        );
+        const chargeName = chargeNameObj
+          ? chargeNameObj.name
+          : charge.charge_id?.toString() || "";
+
+        console.log(
+          `Mapping charge_id ${charge.charge_id} to charge name: ${chargeName}`
+        );
+
+        // Log tax data for debugging
+        if (charge.taxes_and_charges && charge.taxes_and_charges.length > 0) {
+          console.log(
+            `Taxes for charge ${charge.charge_id}:`,
+            charge.taxes_and_charges
+          );
+        }
+
+        return {
+          id: charge.id || Date.now(),
+          charge_name: chargeName,
+          charge_id: charge.charge_id || 0,
+          amount: charge.amount?.toString() || "",
+          realised_amount: charge.realised_amount?.toString() || "",
+          taxes: {
+            additionTaxes:
+              charge.taxes_and_charges
+                ?.filter((tax) => tax.addition)
+                .map((tax) => {
+                  console.log(`Re-processing addition tax:`, tax);
+                  return {
+                    id: tax.id || Date.now(),
+                    taxType: tax.resource_id?.toString() || "",
+                    taxPercentage: tax.percentage?.toString() || "",
+                    inclusive: tax.inclusive || false,
+                    amount: tax.amount?.toString() || "0",
+                  };
+                }) || [],
+            deductionTaxes:
+              charge.taxes_and_charges
+                ?.filter((tax) => !tax.addition)
+                .map((tax) => {
+                  console.log(`Re-processing deduction tax:`, tax);
+                  return {
+                    id: tax.id || Date.now(),
+                    taxType: tax.resource_id?.toString() || "",
+                    taxPercentage: tax.percentage?.toString() || "",
+                    inclusive: tax.inclusive || false,
+                    amount: tax.amount?.toString() || "0",
+                  };
+                }) || [],
+            netCost: charge.realised_amount?.toString() || "0",
+          },
+        };
+      });
+
+      console.log("Formatted charges:", formattedCharges);
+      setCharges(formattedCharges);
+    } else if (poData.charges_with_taxes) {
+      // Store the raw charges data for later processing when charge names are available
+      console.log("Charges data available but charge names not loaded yet");
+    }
+
+    // Populate resource term conditions
+    if (poData.resource_term_conditions) {
+      const formattedTermConditions = poData.resource_term_conditions.map(
+        (condition) => ({
+          id: condition.id || Date.now(),
+          term_condition_id: condition.term_condition_id || "",
+          category: condition.condition_category || "",
+          condition: condition.condition || "",
+        })
+      );
+      setTermsConditions(formattedTermConditions);
+      setGeneralTerms(formattedTermConditions); // <-- ADD THIS LINE
+    }
+
+    // Populate resource material term conditions
+    if (poData.resource_material_term_conditions) {
+      console.log(
+        "Raw resource_material_term_conditions:",
+        poData.resource_material_term_conditions
+      );
+      const formattedMaterialTermConditions =
+        poData.resource_material_term_conditions.map((condition) => ({
+          id: condition.id || Date.now(),
+          term_condition_id: condition.term_condition_id || "",
+          material_sub_type: condition.material_sub_type || "",
+          condition_category: condition.condition_category || "",
+          condition: condition.condition || "",
+        }));
+      console.log(
+        "Formatted material term conditions:",
+        formattedMaterialTermConditions
+      );
+      setMaterialTermConditions(formattedMaterialTermConditions);
+    }
+
+    // Populate attachments
+    if (poData.attachments && Array.isArray(poData.attachments)) {
+      const formattedAttachments = poData.attachments.map((att) => {
+        const originalDate = new Date(att.created_at || att.uploaded_at);
+        const localDate = new Date(
+          originalDate.getTime() - originalDate.getTimezoneOffset() * 60000
+        );
+        const uploadDate = localDate.toISOString().slice(0, 19);
+        return {
+          id: att.blob_id || att.id || Math.random(),
+          fileType: att.document_content_type || att.file_type || "",
+          fileName: att.file_name || "",
+          uploadDate,
+          fileUrl: att.url || "",
+          file: att.document_file_name || att.filename,
+          isExisting: true,
+          blob_id: att.blob_id,
+          doc_path: att.doc_path || "",
+        };
+      });
+      setAttachments(formattedAttachments);
+    }
+  };
 
   // Fetch company data on component mount
   useEffect(() => {
@@ -159,16 +423,20 @@ const PoCreate = () => {
     setSelectedSupplier(selectedOption);
   };
   // Map companies to options for the dropdown
-  const companyOptions = companies.map((company) => ({
-    value: company.id,
-    label: company.company_name,
-  }));
+  const companyOptions = Array.isArray(companies)
+    ? companies.map((company) => ({
+        value: company.id,
+        label: company.company_name,
+      }))
+    : [];
 
   // Map suppliers to options for the dropdown
-  const supplierOptions = suppliers.map((supplier) => ({
-    value: supplier.id,
-    label: supplier.organization_name || supplier.full_name,
-  }));
+  const supplierOptions = Array.isArray(suppliers)
+    ? suppliers.map((supplier) => ({
+        value: supplier.id,
+        label: supplier.organization_name || supplier.full_name,
+      }))
+    : [];
 
   // State for dropdown options
   const [inventoryTypes2, setInventoryTypes2] = useState([]);
@@ -187,10 +455,6 @@ const PoCreate = () => {
   const [selectedColors, setSelectedColors] = useState(null);
   const [inventoryBrands, setInventoryBrands] = useState([]);
   const [selectedInventoryBrands, setSelectedInventoryBrands] = useState(null);
-
-  // Get token from URL
-  const urlParams = new URLSearchParams(location.search);
-  const token = urlParams.get("token");
 
   // Table data state
   const [tableData, setTableData] = useState([]);
@@ -365,18 +629,6 @@ const PoCreate = () => {
       return;
     }
 
-    // Check for duplicate materials
-    const materialIds = activeRows.map((row) => row.material);
-    const hasDuplicate = materialIds.some(
-      (id, idx) => id && materialIds.indexOf(id) !== idx
-    );
-    if (hasDuplicate) {
-      alert(
-        "Duplicate materials are not allowed. Please ensure each material is unique."
-      );
-      return;
-    }
-
     // Check if any row is missing a material
     const missingMaterial = activeRows.some((row) => !row.material);
     console.log("missingMaterial:", missingMaterial);
@@ -426,6 +678,7 @@ const PoCreate = () => {
         if (response.data.success && response.data.materials) {
           setSubmittedMaterials(response.data.materials);
         }
+
         if (response.data.success && response.data.material_inventory_ids) {
           setApiMaterialInventoryIds(response.data.material_inventory_ids);
           console.log(
@@ -1130,7 +1383,18 @@ const PoCreate = () => {
       } catch (error) {
         console.error("Error fetching terms and conditions:", error);
         // Set fallback data if API fails
-
+        setTermsConditions([
+          {
+            id: 10,
+            condition: "the order should be delivered before delivery date",
+            condition_category_name: "validity",
+          },
+          {
+            id: 9,
+            condition: "aa",
+            condition_category_name: "as",
+          },
+        ]);
         setConditionCategories(["validity", "as"]);
       }
     };
@@ -1180,6 +1444,63 @@ const PoCreate = () => {
     fetchChargesDeductionTaxes();
     fetchChargesTaxPercentages();
   }, []);
+
+  // Re-populate charges when charge names are available
+  useEffect(() => {
+    if (chargeNames.length > 0 && purchaseOrderData?.charges_with_taxes) {
+      console.log("Re-populating charges with available charge names");
+
+      const formattedCharges = purchaseOrderData.charges_with_taxes.map(
+        (charge) => {
+          // Find the charge name by charge_id
+          const chargeNameObj = chargeNames.find(
+            (cn) => cn.id === charge.charge_id
+          );
+          const chargeName = chargeNameObj
+            ? chargeNameObj.name
+            : charge.charge_id?.toString() || "";
+
+          console.log(
+            `Re-mapping charge_id ${charge.charge_id} to charge name: ${chargeName}`
+          );
+
+          return {
+            id: charge.id || Date.now(),
+            charge_name: chargeName,
+            charge_id: charge.charge_id || 0,
+            amount: charge.amount?.toString() || "",
+            realised_amount: charge.realised_amount?.toString() || "",
+            taxes: {
+              additionTaxes:
+                charge.taxes_and_charges
+                  ?.filter((tax) => tax.addition)
+                  .map((tax) => ({
+                    id: tax.id || Date.now(),
+                    taxType: tax.resource_id?.toString() || "",
+                    taxPercentage: tax.percentage?.toString() || "",
+                    inclusive: tax.inclusive || false,
+                    amount: tax.amount?.toString() || "0",
+                  })) || [],
+              deductionTaxes:
+                charge.taxes_and_charges
+                  ?.filter((tax) => !tax.addition)
+                  .map((tax) => ({
+                    id: tax.id || Date.now(),
+                    taxType: tax.resource_id?.toString() || "",
+                    taxPercentage: tax.percentage?.toString() || "",
+                    inclusive: tax.inclusive || false,
+                    amount: tax.amount?.toString() || "0",
+                  })) || [],
+              netCost: charge.realised_amount?.toString() || "0",
+            },
+          };
+        }
+      );
+
+      console.log("Re-formatted charges:", formattedCharges);
+      setCharges(formattedCharges);
+    }
+  }, [chargeNames, purchaseOrderData]);
   // Fetching inventory types data from API on component mount
   useEffect(() => {
     axios
@@ -1363,6 +1684,7 @@ const PoCreate = () => {
         fileUrl: "",
         file: null,
         isExisting: false,
+        doc_path: "",
       },
     ]);
   };
@@ -1393,6 +1715,7 @@ const PoCreate = () => {
                 isExisting: false,
                 document_file_name: att.document_file_name || file.name,
                 uploadDate: getLocalDateTime(),
+                doc_path: "",
                 attachments: [
                   {
                     filename: file.name,
@@ -1492,6 +1815,7 @@ const PoCreate = () => {
     setTermsConditions(updatedConditions);
   };
 
+  // Calculate discount rate based on rate per nos and discount percentage
   // Calculate discount rate based on rate per nos and discount percentage
   const calculateDiscountRate = (ratePerNos, discountPercentage) => {
     const rate = parseFloat(ratePerNos) || 0;
@@ -2014,50 +2338,28 @@ const PoCreate = () => {
     return taxData ? taxData.percentage : [];
   };
 
-  // Handle purchase order creation
-  const handleCreatePurchaseOrder = async () => {
+  // Handle purchase order update
+  const handleUpdatePurchaseOrder = async () => {
     try {
-      setIsCreatingOrder(true);
+      setIsUpdatingOrder(true);
 
       // Validate required fields
       if (!selectedCompany?.value) {
         alert("Please select a company.");
-        setIsCreatingOrder(false);
+        setIsUpdatingOrder(false);
         return;
       }
 
       if (!selectedSupplier?.value) {
         alert("Please select a supplier.");
-        setIsCreatingOrder(false);
+        setIsUpdatingOrder(false);
         return;
       }
 
       // Get material inventory IDs from submitted materials
-      console.log("Submitted materials:", submittedMaterials);
-
-      // Extract material inventory IDs - check if pms_inventory_id is available
-      // const materialInventoryIds = submittedMaterials.map((material) => {
-      //   // Try to get pms_inventory_id first, fallback to id
-      //   const inventoryId =
-      //     material.pms_inventory_id || material.inventory_id || material.id;
-      //   console.log(
-      //     `Material ${
-      //       material.material_name || material.id
-      //     }: inventory_id = ${inventoryId}`
-      //   );
-      //   return inventoryId;
-      // });
-
-      // console.log("Material inventory IDs:", materialInventoryIds);
-      // console.log("Purchase Order ID (if available):", purchaseOrderId);
-      console.log("apiMaterialInventoryIds", apiMaterialInventoryIds);
-
-      if (purchaseOrderId) {
-        console.log(
-          "Including po_id in purchase order payload:",
-          purchaseOrderId
-        );
-      }
+      const materialInventoryIds = submittedMaterials.map(
+        (material) => material.id
+      );
 
       // Debug logging
       console.log("materialTermConditions:", materialTermConditions);
@@ -2080,8 +2382,11 @@ const PoCreate = () => {
             parseInt(termsFormData.advanceReminderDuration) || 0,
           payment_terms: termsFormData.paymentTerms || "",
           payment_remarks: termsFormData.paymentRemarks || "",
-          supplier_advance: 0,
-          survice_certificate_advance: 0,
+          supplier_advance: parseFloat(termsFormData.supplierAdvance) || 0,
+          supplier_advance_amount:
+            parseFloat(termsFormData.supplierAdvanceAmount) || 0,
+          survice_certificate_advance:
+            parseFloat(termsFormData.surviceCertificateAdvance) || 0,
           total_value: 0,
           total_discount: 0,
           po_date: getLocalDateTime().split("T")[0], // Current date
@@ -2091,9 +2396,6 @@ const PoCreate = () => {
           remark: termsFormData.remark || "",
           comments: termsFormData.comments || "",
           material_inventory_ids: apiMaterialInventoryIds,
-
-          // Include purchase order ID if available (for updates)
-          ...(purchaseOrderId && { po_id: purchaseOrderId }),
 
           // Format other cost details with taxes
           other_cost_details_attributes: otherCosts.map((cost) => ({
@@ -2152,6 +2454,13 @@ const PoCreate = () => {
           }),
 
           // Resource term conditions
+          // resource_term_conditions_attributes: Array.isArray(termsConditions)
+          //   ? termsConditions.map((term) => ({
+          //       term_condition_id: term.term_condition_id,
+          //       condition_category: term.condition_category,
+          //       condition: term.condition,
+          //     }))
+          //   : [],
           resource_term_conditions_attributes: Array.isArray(generalTerms)
             ? generalTerms
                 .filter((row) => row.category && row.condition) // Only include filled rows
@@ -2177,8 +2486,10 @@ const PoCreate = () => {
             materialTermConditions
           )
             ? materialTermConditions.map((term) => ({
-                term_condition_id: term.id,
-                condition_type: "material",
+                term_condition_id: term.term_condition_id,
+                material_sub_type: term.material_sub_type,
+                condition_category: term.condition_category,
+                condition: term.condition,
               }))
             : [],
 
@@ -2196,23 +2507,28 @@ const PoCreate = () => {
         },
       };
 
-      console.log("Creating purchase order with payload:", payload);
+      console.log("Updating purchase order with payload:", payload);
+      console.log("Purchase Order ID:", id);
+      console.log(
+        "API URL:",
+        `${baseURL}purchase_orders/${id}.json?token=${token}`
+      );
 
-      const response = await axios.post(
-        `${baseURL}purchase_orders.json?token=${token}`,
+      const response = await axios.patch(
+        `${baseURL}purchase_orders/${id}.json?token=${token}`,
         payload
       );
 
-      console.log("Purchase order created successfully:", response.data);
-      alert("Purchase order created successfully!");
+      console.log("Purchase order updated successfully:", response.data);
+      alert("Purchase order updated successfully!");
 
-      // Optionally redirect or clear form
-      // window.location.href = '/po-list'; // Redirect to PO list
+      // Optionally redirect to PO list after successful update
+      // window.location.href = '/po-list'; // Uncomment to redirect
     } catch (error) {
-      console.error("Error creating purchase order:", error);
-      alert("Error creating purchase order. Please try again.");
+      console.error("Error updating purchase order:", error);
+      alert("Error updating purchase order. Please try again.");
     } finally {
-      setIsCreatingOrder(false);
+      setIsUpdatingOrder(false);
     }
   };
 
@@ -2222,6 +2538,19 @@ const PoCreate = () => {
     <>
       {/* <main className="h-100 w-100"> */}
 
+      {/* Loading state */}
+      {isLoading && (
+        <div
+          className="d-flex justify-content-center align-items-center"
+          style={{ height: "100vh" }}
+        >
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <span className="ms-3">Loading purchase order data...</span>
+        </div>
+      )}
+
       {/* top navigation above */}
       <div className="main-content overflow-auto">
         {/* sidebar ends above */}
@@ -2229,7 +2558,7 @@ const PoCreate = () => {
         <div className="website-content ">
           <div className="module-data-section ">
             <a href="">Home &gt; Purchase &gt; MTO &gt; MTO Pending Approval</a>
-            <h5 className="mt-3">Create Purchase Order</h5>
+            <h5 className="mt-3">Edit Purchase Order</h5>
             <div className="row my-4 container-fluid align-items-center">
               <div className="col-md-12 ">
                 <div className="mor-tabs mt-4">
@@ -3259,6 +3588,75 @@ const PoCreate = () => {
                                   />
                                 </div>
                               </div>
+                              {/* <div className="row">
+                                <div className="mb-3 w-50">
+                                  <label
+                                    htmlFor="supplierAdvance"
+                                    className="form-label po-fontBoldM"
+                                  >
+                                    Supplier Advance
+                                  </label>
+                                  <input
+                                    type="number"
+                                    className="form-control"
+                                    id="supplierAdvance"
+                                    value={termsFormData.supplierAdvance}
+                                    onChange={(e) =>
+                                      handleTermsFormChange(
+                                        "supplierAdvance",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="Enter supplier advance"
+                                  />
+                                </div>
+                                <div className="mb-3 w-50">
+                                  <label
+                                    htmlFor="supplierAdvanceAmount"
+                                    className="form-label po-fontBoldM"
+                                  >
+                                    Supplier Advance Amount
+                                  </label>
+                                  <input
+                                    type="number"
+                                    className="form-control"
+                                    id="supplierAdvanceAmount"
+                                    value={termsFormData.supplierAdvanceAmount}
+                                    onChange={(e) =>
+                                      handleTermsFormChange(
+                                        "supplierAdvanceAmount",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="Enter supplier advance amount"
+                                  />
+                                </div>
+                              </div>
+                              <div className="row">
+                                <div className="mb-3 w-50">
+                                  <label
+                                    htmlFor="surviceCertificateAdvance"
+                                    className="form-label po-fontBoldM"
+                                  >
+                                    Service Certificate Advance
+                                  </label>
+                                  <input
+                                    type="number"
+                                    className="form-control"
+                                    id="surviceCertificateAdvance"
+                                    value={
+                                      termsFormData.surviceCertificateAdvance
+                                    }
+                                    onChange={(e) =>
+                                      handleTermsFormChange(
+                                        "surviceCertificateAdvance",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="Enter service certificate advance"
+                                  />
+                                </div>
+                              </div> */}
                             </div>
                             {/* <div className="tbl-container me-2 mt-3">
                               <table className="w-100">
@@ -3636,44 +4034,52 @@ const PoCreate = () => {
                                 <tbody>
                                   {materialTermConditions &&
                                   materialTermConditions.length > 0 ? (
-                                    materialTermConditions.map(
-                                      (item, index) => (
-                                        <tr key={index}>
-                                          <td>
-                                            {item.material_name ||
-                                              item.material ||
-                                              "N/A"}
-                                          </td>
-                                          <td>
-                                            {item.condition_category_name ||
-                                              item.category ||
-                                              "N/A"}
-                                          </td>
-                                          <td>
-                                            {item.condition ||
-                                              item.condition_text ||
-                                              "N/A"}
-                                          </td>
-                                          <td className="text-center">
-                                            <button
-                                              type="button"
-                                              className="btn btn-link text-danger"
-                                              onClick={() => {
-                                                // Handle remove if needed
-                                                console.log(
-                                                  "Remove material term condition:",
-                                                  item
-                                                );
-                                              }}
-                                            >
-                                              <span className="material-symbols-outlined">
-                                                cancel
-                                              </span>
-                                            </button>
-                                          </td>
-                                        </tr>
-                                      )
-                                    )
+                                    (() => {
+                                      console.log(
+                                        "Rendering materialTermConditions:",
+                                        materialTermConditions
+                                      );
+                                      return materialTermConditions.map(
+                                        (item, index) => (
+                                          <tr key={index}>
+                                            <td>
+                                              {item.material_sub_type ||
+                                                item.material_name ||
+                                                item.material ||
+                                                "N/A"}
+                                            </td>
+                                            <td>
+                                              {item.condition_category ||
+                                                item.condition_category_name ||
+                                                item.category ||
+                                                "N/A"}
+                                            </td>
+                                            <td>
+                                              {item.condition ||
+                                                item.condition_text ||
+                                                "N/A"}
+                                            </td>
+                                            <td className="text-center">
+                                              <button
+                                                type="button"
+                                                className="btn btn-link text-danger"
+                                                onClick={() => {
+                                                  // Handle remove if needed
+                                                  console.log(
+                                                    "Remove material term condition:",
+                                                    item
+                                                  );
+                                                }}
+                                              >
+                                                <span className="material-symbols-outlined">
+                                                  cancel
+                                                </span>
+                                              </button>
+                                            </td>
+                                          </tr>
+                                        )
+                                      );
+                                    })()
                                   ) : (
                                     <tr>
                                       <td colSpan={4} className="text-center">
@@ -3799,27 +4205,21 @@ Document */}
                             <div className="attachment-placeholder">
                               {att.isExisting && (
                                 <div className="file-box">
-                                  <div className="image">
+                                  <div className="">
                                     <a
-                                      href={att.fileUrl}
+                                      href={att.doc_path}
+                                      download
                                       target="_blank"
-                                      rel="noreferrer"
+                                      rel="noopener noreferrer"
                                     >
-                                      <img
-                                        alt="preview"
-                                        className="img-responsive"
-                                        height={50}
-                                        width={50}
-                                        src={att.fileUrl}
-                                      />
+                                      <DownloadIcon />
                                     </a>
+                                    {console.log(
+                                      "Attachment path:",
+                                      att.doc_path
+                                    )}
                                   </div>
                                   <div className="file-name">
-                                    <a href={att.fileUrl} download>
-                                      <span className="material-symbols-outlined">
-                                        file_download
-                                      </span>
-                                    </a>
                                     <span>{att.fileName}</span>
                                   </div>
                                 </div>
@@ -3890,10 +4290,10 @@ Document */}
                 <div className="col-md-2">
                   <button
                     className="purple-btn2 w-100  mt-2"
-                    onClick={handleCreatePurchaseOrder}
-                    disabled={isCreatingOrder}
+                    onClick={handleUpdatePurchaseOrder}
+                    disabled={isUpdatingOrder}
                   >
-                    {isCreatingOrder ? "Creating..." : "Submit"}
+                    {isUpdatingOrder ? "Updating..." : "Update Purchase Order"}
                   </button>
                 </div>
                 <div className="col-md-2">
@@ -4441,10 +4841,7 @@ Document */}
             <div className="row mb-3">
               <div className="col-md-6">
                 <div className="mb-3">
-                  <label className="form-label fw-bold">
-                    {" "}
-                    Rate per Nos <span> *</span>
-                  </label>
+                  <label className="form-label fw-bold">Rate per Nos</label>
                   <input
                     type="text"
                     className="form-control"
@@ -5102,4 +5499,4 @@ Document */}
   );
 };
 
-export default PoCreate;
+export default PoEdit;
