@@ -5,6 +5,7 @@ import { Modal, Button } from "react-bootstrap";
 import axios from "axios";
 import { baseURL } from "../confi/apiDomain"; // adjust path if needed
 import SingleSelector from "../components/base/Select/SingleSelector";
+import { Link } from "react-router-dom";
 
 import {
   DownloadIcon,
@@ -39,7 +40,7 @@ const PoList = () => {
     approved: 0,
     rejected: 0,
     terminated: 0,
-    total_amount: 0
+    total_amount: 0,
   });
 
   // Add state to store current filters
@@ -60,13 +61,19 @@ const PoList = () => {
   const [statusOptions, setStatusOptions] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [advanceApplicableOptions, setAdvanceApplicableOptions] = useState([]);
-  const [selectedAdvanceApplicable, setSelectedAdvanceApplicable] = useState(null);
+  const [selectedAdvanceApplicable, setSelectedAdvanceApplicable] =
+    useState(null);
   const [supplierOptions, setSupplierOptions] = useState([]);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
-  const [consumptionCategoryOptions, setConsumptionCategoryOptions] = useState([]);
-  const [selectedConsumptionCategory, setSelectedConsumptionCategory] = useState(null);
-  const [requisitionDepartmentOptions, setRequisitionDepartmentOptions] = useState([]);
-  const [selectedRequisitionDepartment, setSelectedRequisitionDepartment] = useState(null);
+  const [consumptionCategoryOptions, setConsumptionCategoryOptions] = useState(
+    []
+  );
+  const [selectedConsumptionCategory, setSelectedConsumptionCategory] =
+    useState(null);
+  const [requisitionDepartmentOptions, setRequisitionDepartmentOptions] =
+    useState([]);
+  const [selectedRequisitionDepartment, setSelectedRequisitionDepartment] =
+    useState(null);
   const [createdByOptions, setCreatedByOptions] = useState([]);
   const [selectedCreatedBy, setSelectedCreatedBy] = useState(null);
   const [poDateFrom, setPoDateFrom] = useState("");
@@ -119,7 +126,6 @@ const PoList = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [bulkActionCollapsed, setBulkActionCollapsed] = useState(true);
 
-  
   const [searchInput, setSearchInput] = useState("");
 
   // Handle search button click
@@ -131,11 +137,34 @@ const PoList = () => {
   // Table columns
   const allColumns = [
     { field: "srNo", headerName: "Sr.no", width: 80 },
-   
-    { field: "poNo", headerName: "PO No.", width: 140, sortable: true },
+
+    // ...existing code...
+    {
+      field: "poNo",
+      headerName: "PO No.",
+      width: 140,
+      sortable: true,
+      renderCell: (params) => (
+        <Link
+          to={`/po-edit/${params.row.id}?token=${token}`}
+          style={{
+            color: "#3f51b5",
+            textDecoration: "underline",
+            cursor: "pointer",
+          }}
+        >
+          {params.value}
+        </Link>
+      ),
+    },
+    // ...existing code...
     { field: "poDate", headerName: "PO Date", width: 140, sortable: true },
     { field: "poType", headerName: "PO Type", width: 120 },
-    { field: "consumptionCategory", headerName: "Consumption Category", width: 160 },
+    {
+      field: "consumptionCategory",
+      headerName: "Consumption Category",
+      width: 160,
+    },
     { field: "company", headerName: "Company", width: 150 },
     { field: "project", headerName: "Project", width: 150 },
     { field: "subProject", headerName: "Sub Project", width: 150 },
@@ -143,14 +172,31 @@ const PoList = () => {
     { field: "createdBy", headerName: "Created By", width: 140 },
     { field: "morNo", headerName: "MOR No.", width: 120 },
     { field: "eventNos", headerName: "Event Nos.", width: 120 },
-    { field: "advanceApplicable", headerName: "Advance Applicable", width: 140 },
+    {
+      field: "advanceApplicable",
+      headerName: "Advance Applicable",
+      width: 140,
+    },
     { field: "advanceAmount", headerName: "Advance Amount", width: 140 },
-    { field: "advancePaymentDate", headerName: "Advance Payment Date", width: 160 },
+    {
+      field: "advancePaymentDate",
+      headerName: "Advance Payment Date",
+      width: 160,
+    },
     { field: "supplier", headerName: "Supplier / Vendor", width: 150 },
-    { field: "requestionToDepartment", headerName: "Requestion to Department", width: 180 },
+    {
+      field: "requestionToDepartment",
+      headerName: "Requestion to Department",
+      width: 180,
+    },
     { field: "rfqNo", headerName: "RFQ No.", width: 120 },
     { field: "poBaseValue", headerName: "PO Base Value", width: 140 },
-    { field: "poGrossValue", headerName: "PO Gross Value", width: 140, sortable: true },
+    {
+      field: "poGrossValue",
+      headerName: "PO Gross Value",
+      width: 140,
+      sortable: true,
+    },
     { field: "poAmount", headerName: "PO Amount", width: 140, sortable: true },
     { field: "status", headerName: "Status", width: 120 },
     { field: "dueDate", headerName: "Due Date", width: 120 },
@@ -195,7 +241,7 @@ const PoList = () => {
 
         // Add status filter
         if (statusFilter !== null) {
-          if (statusFilter === 'pending') {
+          if (statusFilter === "pending") {
             // Filter for pending status (total - approved - rejected - terminated)
             // This will be handled by the API response filtering
           } else {
@@ -204,13 +250,13 @@ const PoList = () => {
         }
 
         const response = await axios.get(url);
-        
+
         // Debug: Log the response structure
-        console.log('API Response:', response.data);
-        
+        console.log("API Response:", response.data);
+
         // Get the purchase_orders array from the response
         const responseData = response.data.purchase_orders || [];
-        
+
         // Transform the data to match table columns
         const data = responseData.map((entry, index) => ({
           id: entry.id,
@@ -244,24 +290,25 @@ const PoList = () => {
         }));
 
         setRows(data);
-        
+
         // Set pagination info if available
         setMeta(response.data.pagination || {});
         setTotalPages(response.data.pagination?.total_pages || 1);
         setTotalEntries(response.data.pagination?.total_count || data.length);
-        
+
         // Set summary cards data
-        setSummaryCards(response.data.summary_cards || {
-          total: 0,
-          approved: 0,
-          rejected: 0,
-          terminated: 0,
-          total_amount: 0
-        });
-        
+        setSummaryCards(
+          response.data.summary_cards || {
+            total: 0,
+            approved: 0,
+            rejected: 0,
+            terminated: 0,
+            total_amount: 0,
+          }
+        );
+
         // Debug: Log the transformed data
-        console.log('Transformed data:', data);
-        
+        console.log("Transformed data:", data);
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to fetch data");
@@ -278,9 +325,14 @@ const PoList = () => {
     if (!token) return;
 
     // Fetch PO Numbers
-    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+    axios
+      .get(`${baseURL}purchase_orders.json?token=${token}`)
       .then((response) => {
-        const poNumbers = [...new Set((response.data.purchase_orders || []).map(item => item.po_number))];
+        const poNumbers = [
+          ...new Set(
+            (response.data.purchase_orders || []).map((item) => item.po_number)
+          ),
+        ];
         const options = poNumbers.map((poNumber) => ({
           value: poNumber,
           label: poNumber,
@@ -290,9 +342,14 @@ const PoList = () => {
       .catch(() => setPoNumberOptions([]));
 
     // Fetch PO Types
-    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+    axios
+      .get(`${baseURL}purchase_orders.json?token=${token}`)
       .then((response) => {
-        const poTypes = [...new Set((response.data.purchase_orders || []).map(item => item.po_type))];
+        const poTypes = [
+          ...new Set(
+            (response.data.purchase_orders || []).map((item) => item.po_type)
+          ),
+        ];
         const options = poTypes.map((poType) => ({
           value: poType,
           label: poType,
@@ -302,9 +359,16 @@ const PoList = () => {
       .catch(() => setPoTypeOptions([]));
 
     // Fetch Material Types
-    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+    axios
+      .get(`${baseURL}purchase_orders.json?token=${token}`)
       .then((response) => {
-        const materialTypes = [...new Set((response.data.purchase_orders || []).flatMap(item => item.material_types || []))];
+        const materialTypes = [
+          ...new Set(
+            (response.data.purchase_orders || []).flatMap(
+              (item) => item.material_types || []
+            )
+          ),
+        ];
         const options = materialTypes.map((materialType) => ({
           value: materialType,
           label: materialType,
@@ -314,9 +378,14 @@ const PoList = () => {
       .catch(() => setMaterialTypeOptions([]));
 
     // Fetch Status Options
-    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+    axios
+      .get(`${baseURL}purchase_orders.json?token=${token}`)
       .then((response) => {
-        const statuses = [...new Set((response.data.purchase_orders || []).map(item => item.status))];
+        const statuses = [
+          ...new Set(
+            (response.data.purchase_orders || []).map((item) => item.status)
+          ),
+        ];
         const options = statuses.map((status) => ({
           value: status,
           label: status,
@@ -328,13 +397,20 @@ const PoList = () => {
     // Fetch Advance Applicable Options
     setAdvanceApplicableOptions([
       { value: true, label: "Yes" },
-      { value: false, label: "No" }
+      { value: false, label: "No" },
     ]);
 
     // Fetch Suppliers
-    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+    axios
+      .get(`${baseURL}purchase_orders.json?token=${token}`)
       .then((response) => {
-        const suppliers = [...new Set((response.data.purchase_orders || []).map(item => item.supplier_name))];
+        const suppliers = [
+          ...new Set(
+            (response.data.purchase_orders || []).map(
+              (item) => item.supplier_name
+            )
+          ),
+        ];
         const options = suppliers.map((supplier) => ({
           value: supplier,
           label: supplier,
@@ -344,9 +420,16 @@ const PoList = () => {
       .catch(() => setSupplierOptions([]));
 
     // Fetch Consumption Categories
-    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+    axios
+      .get(`${baseURL}purchase_orders.json?token=${token}`)
       .then((response) => {
-        const categories = [...new Set((response.data.purchase_orders || []).flatMap(item => item.consumption_category || []))];
+        const categories = [
+          ...new Set(
+            (response.data.purchase_orders || []).flatMap(
+              (item) => item.consumption_category || []
+            )
+          ),
+        ];
         const options = categories.map((category) => ({
           value: category,
           label: category,
@@ -356,9 +439,16 @@ const PoList = () => {
       .catch(() => setConsumptionCategoryOptions([]));
 
     // Fetch Requisition Departments
-    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+    axios
+      .get(`${baseURL}purchase_orders.json?token=${token}`)
       .then((response) => {
-        const departments = [...new Set((response.data.purchase_orders || []).flatMap(item => item.department_names || []))];
+        const departments = [
+          ...new Set(
+            (response.data.purchase_orders || []).flatMap(
+              (item) => item.department_names || []
+            )
+          ),
+        ];
         const options = departments.map((department) => ({
           value: department,
           label: department,
@@ -368,9 +458,16 @@ const PoList = () => {
       .catch(() => setRequisitionDepartmentOptions([]));
 
     // Fetch Created By Users
-    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+    axios
+      .get(`${baseURL}purchase_orders.json?token=${token}`)
       .then((response) => {
-        const users = [...new Set((response.data.purchase_orders || []).map(item => item.created_by).filter(Boolean))];
+        const users = [
+          ...new Set(
+            (response.data.purchase_orders || [])
+              .map((item) => item.created_by)
+              .filter(Boolean)
+          ),
+        ];
         const options = users.map((user) => ({
           value: user,
           label: user,
@@ -380,9 +477,16 @@ const PoList = () => {
       .catch(() => setCreatedByOptions([]));
 
     // Fetch PO Base Value Options
-    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+    axios
+      .get(`${baseURL}purchase_orders.json?token=${token}`)
       .then((response) => {
-        const baseValues = [...new Set((response.data.purchase_orders || []).map(item => item.po_base_value))];
+        const baseValues = [
+          ...new Set(
+            (response.data.purchase_orders || []).map(
+              (item) => item.po_base_value
+            )
+          ),
+        ];
         const options = baseValues.map((value) => ({
           value: value,
           label: `₹${value}`,
@@ -392,9 +496,16 @@ const PoList = () => {
       .catch(() => setPoBaseValueOptions([]));
 
     // Fetch PO Gross Value Options
-    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+    axios
+      .get(`${baseURL}purchase_orders.json?token=${token}`)
       .then((response) => {
-        const grossValues = [...new Set((response.data.purchase_orders || []).map(item => item.po_gross_value))];
+        const grossValues = [
+          ...new Set(
+            (response.data.purchase_orders || []).map(
+              (item) => item.po_gross_value
+            )
+          ),
+        ];
         const options = grossValues.map((value) => ({
           value: value,
           label: `₹${value}`,
@@ -404,9 +515,16 @@ const PoList = () => {
       .catch(() => setPoGrossValueOptions([]));
 
     // Fetch Event Numbers
-    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+    axios
+      .get(`${baseURL}purchase_orders.json?token=${token}`)
       .then((response) => {
-        const eventNos = [...new Set((response.data.purchase_orders || []).flatMap(item => item.event_nos || []))];
+        const eventNos = [
+          ...new Set(
+            (response.data.purchase_orders || []).flatMap(
+              (item) => item.event_nos || []
+            )
+          ),
+        ];
         const options = eventNos.map((eventNo) => ({
           value: eventNo,
           label: eventNo,
@@ -416,7 +534,10 @@ const PoList = () => {
       .catch(() => setEventNoOptions([]));
 
     // Fetch MOR Numbers
-    axios.get(`${baseURL}material_order_requests/filter_mor_numbers.json?token=${token}`)
+    axios
+      .get(
+        `${baseURL}material_order_requests/filter_mor_numbers.json?token=${token}`
+      )
       .then((response) => {
         const options = (response.data || []).map((morNo) => ({
           value: morNo,
@@ -427,9 +548,16 @@ const PoList = () => {
       .catch(() => setMorNoOptions([]));
 
     // Fetch Advance Amounts
-    axios.get(`${baseURL}purchase_orders.json?token=${token}`)
+    axios
+      .get(`${baseURL}purchase_orders.json?token=${token}`)
       .then((response) => {
-        const advanceAmounts = [...new Set((response.data.purchase_orders || []).map(item => item.advance_amount))];
+        const advanceAmounts = [
+          ...new Set(
+            (response.data.purchase_orders || []).map(
+              (item) => item.advance_amount
+            )
+          ),
+        ];
         const options = advanceAmounts.map((amount) => ({
           value: amount,
           label: `₹${amount}`,
@@ -437,7 +565,6 @@ const PoList = () => {
         setAdvanceAmountOptions(options);
       })
       .catch(() => setAdvanceAmountOptions([]));
-
   }, [token]);
 
   // Handle company selection
@@ -610,101 +737,113 @@ const PoList = () => {
 
     // PO Date filters
     if (poDateFrom) {
-      filterParams['q[po_date_gteq]'] = poDateFrom;
+      filterParams["q[po_date_gteq]"] = poDateFrom;
     }
     if (poDateTo) {
-      filterParams['q[po_date_lteq]'] = poDateTo;
+      filterParams["q[po_date_lteq]"] = poDateTo;
     }
 
     // PO Number filter
     if (selectedPoNumber) {
-      filterParams['q[po_number_in][]'] = selectedPoNumber.value;
+      filterParams["q[po_number_in][]"] = selectedPoNumber.value;
     }
 
     // PO Type filter
     if (selectedPoType) {
-      filterParams['q[po_type_in][]'] = selectedPoType.value;
+      filterParams["q[po_type_in][]"] = selectedPoType.value;
     }
 
     // Event No. filter
     if (selectedEventNo) {
-      filterParams['q[event_nos][]'] = selectedEventNo.value;
+      filterParams["q[event_nos][]"] = selectedEventNo.value;
     }
 
     // MOR No. filter
     if (selectedMorNo) {
-      filterParams['q[po_mor_inventories_mor_inventory_material_order_request_mor_number_in][]'] = selectedMorNo.value;
+      filterParams[
+        "q[po_mor_inventories_mor_inventory_material_order_request_mor_number_in][]"
+      ] = selectedMorNo.value;
     }
 
     // Advance Amount filter
     if (selectedAdvanceAmount) {
-      filterParams['q[supplier_advance_amount_in][]'] = selectedAdvanceAmount.value;
+      filterParams["q[supplier_advance_amount_in][]"] =
+        selectedAdvanceAmount.value;
     }
 
     // Company filter
     if (selectedCompany) {
-      filterParams['q[company_id_in][]'] = selectedCompany.value;
+      filterParams["q[company_id_in][]"] = selectedCompany.value;
     }
 
     // Project filter
     if (selectedProject) {
-      filterParams['q[po_mor_inventories_mor_inventory_material_order_request_project_id_in][]'] = selectedProject.value;
+      filterParams[
+        "q[po_mor_inventories_mor_inventory_material_order_request_project_id_in][]"
+      ] = selectedProject.value;
     }
 
     // Sub Project filter
     if (selectedSite) {
-      filterParams['q[po_mor_inventories_mor_inventory_material_order_request_pms_site_id_in][]'] = selectedSite.value;
+      filterParams[
+        "q[po_mor_inventories_mor_inventory_material_order_request_pms_site_id_in][]"
+      ] = selectedSite.value;
     }
 
     // Material Type filter
     if (selectedMaterialType) {
-      filterParams['q[po_mor_inventories_material_inventory_material_sub_type_material_type_id_in][]'] = selectedMaterialType.value;
+      filterParams[
+        "q[po_mor_inventories_material_inventory_material_sub_type_material_type_id_in][]"
+      ] = selectedMaterialType.value;
     }
 
     // Status filter
     if (selectedStatus) {
-      filterParams['q[list_status_in][]'] = selectedStatus.value;
+      filterParams["q[list_status_in][]"] = selectedStatus.value;
     }
 
     // Advance Applicable filter
     if (selectedAdvanceApplicable) {
-      filterParams['q[with_advance]'] = selectedAdvanceApplicable.value;
+      filterParams["q[with_advance]"] = selectedAdvanceApplicable.value;
     }
 
     // Supplier filter
     if (selectedSupplier) {
-      filterParams['q[supplier_id_in][]'] = selectedSupplier.value;
+      filterParams["q[supplier_id_in][]"] = selectedSupplier.value;
     }
 
     // Consumption Category filter
     if (selectedConsumptionCategory) {
-      filterParams['q[po_mor_inventories_mor_inventory_material_order_request_consumption_id_in][]'] = selectedConsumptionCategory.value;
+      filterParams[
+        "q[po_mor_inventories_mor_inventory_material_order_request_consumption_id_in][]"
+      ] = selectedConsumptionCategory.value;
     }
 
     // Requisition Department filter
     if (selectedRequisitionDepartment) {
-      filterParams['q[request_to_department_id_in][]'] = selectedRequisitionDepartment.value;
+      filterParams["q[request_to_department_id_in][]"] =
+        selectedRequisitionDepartment.value;
     }
 
     // PO Base Value filter
     if (selectedPoBaseValue) {
-      filterParams['q[po_base_value_in][]'] = selectedPoBaseValue.value;
+      filterParams["q[po_base_value_in][]"] = selectedPoBaseValue.value;
     }
 
     // PO Gross Value filter
     if (selectedPoGrossValue) {
-      filterParams['q[total_value_in][]'] = selectedPoGrossValue.value;
+      filterParams["q[total_value_in][]"] = selectedPoGrossValue.value;
     }
 
     // Created By filter
     if (selectedCreatedBy) {
-      filterParams['q[created_by_id_in][]'] = selectedCreatedBy.value;
+      filterParams["q[created_by_id_in][]"] = selectedCreatedBy.value;
     }
 
     // Update current filters with new filter params
-    setCurrentFilters(prev => ({
+    setCurrentFilters((prev) => ({
       ...prev,
-      ...filterParams
+      ...filterParams,
     }));
 
     setCurrentPage(1);
@@ -752,7 +891,7 @@ const PoList = () => {
 
   return (
     <>
-     <style type="text/css">
+      <style type="text/css">
         {`.tbl-container {
 
 height: auto !important;
@@ -773,10 +912,8 @@ display:none !important;
       </style>
       <div className="website-content overflow-auto">
         <div className="module-data-section p-4">
-          <a href="">
-            Home &gt; Store &gt; Store Operations &gt; ROPO List
-          </a>
-          <h5 className="mt-4">ROPO  List</h5>
+          <a href="">Home &gt; Store &gt; Store Operations &gt; ROPO List</a>
+          <h5 className="mt-4">ROPO List</h5>
           <div className="material-boxes mt-3">
             <div className="container-fluid">
               <div className="row justify-content-center">
@@ -805,7 +942,12 @@ display:none !important;
                     }}
                   >
                     <h4 className="content-box-title fw-semibold">Pending</h4>
-                    <p className="content-box-sub">{summaryCards.total - summaryCards.approved - summaryCards.rejected - summaryCards.terminated}</p>
+                    <p className="content-box-sub">
+                      {summaryCards.total -
+                        summaryCards.approved -
+                        summaryCards.rejected -
+                        summaryCards.terminated}
+                    </p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
@@ -846,14 +988,20 @@ display:none !important;
                       setCurrentPage(1);
                     }}
                   >
-                    <h4 className="content-box-title fw-semibold">Terminated</h4>
+                    <h4 className="content-box-title fw-semibold">
+                      Terminated
+                    </h4>
                     <p className="content-box-sub">{summaryCards.terminated}</p>
                   </div>
                 </div>
                 <div className="col-md-2 text-center">
                   <div className="content-box">
-                    <h4 className="content-box-title fw-semibold">Amount value</h4>
-                    <p className="content-box-sub">₹{summaryCards.total_amount}</p>
+                    <h4 className="content-box-title fw-semibold">
+                      Amount value
+                    </h4>
+                    <p className="content-box-sub">
+                      ₹{summaryCards.total_amount}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -892,67 +1040,73 @@ display:none !important;
               </div>
 
               {!isCollapsed && (
-              <div className="card-body pt-0 mt-0">
+                <div className="card-body pt-0 mt-0">
                   <div className="row my-2 align-items-end">
                     <div className="col-md-3">
-                    <div className="form-group">
-                      <label>Company</label>
+                      <div className="form-group">
+                        <label>Company</label>
                         <SingleSelector
                           options={companies.map((c) => ({
                             value: c.id,
                             label: c.company_name,
                           }))}
-                        onChange={handleCompanyChange}
+                          onChange={handleCompanyChange}
                           value={selectedCompany}
                           placeholder="Select Company"
                         />
+                      </div>
                     </div>
-                  </div>
                     <div className="col-md-3">
-                    <div className="form-group">
-                      <label>Project</label>
+                      <div className="form-group">
+                        <label>Project</label>
                         <SingleSelector
                           options={projects.map((p) => ({
                             value: p.id,
                             label: p.name,
                           }))}
-                        onChange={handleProjectChange}
+                          onChange={handleProjectChange}
                           value={selectedProject}
                           placeholder="Select Project"
                           isDisabled={!selectedCompany}
                         />
+                      </div>
                     </div>
-                  </div>
                     <div className="col-md-3">
-                    <div className="form-group">
+                      <div className="form-group">
                         <label>Sub-project</label>
                         <SingleSelector
                           options={siteOptions.map((s) => ({
                             value: s.id,
                             label: s.name,
                           }))}
-                        onChange={handleSiteChange}
+                          onChange={handleSiteChange}
                           value={selectedSite}
                           placeholder="Select Sub-project"
                           isDisabled={!selectedProject}
                         />
+                      </div>
                     </div>
-                  </div>
                     <div className="col-md-3">
-                      <button className="purple-btn2 m-0" onClick={fetchRopoData}>
+                      <button
+                        className="purple-btn2 m-0"
+                        onClick={fetchRopoData}
+                      >
                         Go
                       </button>
-                      <button className="purple-btn2 ms-2" onClick={handleReset}>
+                      <button
+                        className="purple-btn2 ms-2"
+                        onClick={handleReset}
+                      >
                         Reset
                       </button>
+                    </div>
                   </div>
                 </div>
-              </div>
               )}
             </div>
 
             {/* DataGrid Table with Settings */}
-          <div className="card mx-3">
+            <div className="card mx-3">
               <div className="card-header3">
                 <h3 className="card-title">Bulk Action</h3>
                 <div className="card-tools">
@@ -984,55 +1138,55 @@ display:none !important;
 
               {!bulkActionCollapsed && (
                 <div className="card-body mt-0 pt-0">
-                <div className="row align-items-center">
-                  <div className="col-md-4">
-                    <div className="form-group">
-                      <label>From Status</label>
-                      <select
-                        name="from_status"
-                        id="from_status"
-                        className="form-control form-select from"
-                      >
-                        <option value="">Select Status</option>
-                        <option value="draft">Draft</option>
-                        <option value="send_for_approval">
-                          Sent For Approval
-                        </option>
-                      </select>
+                  <div className="row align-items-center">
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label>From Status</label>
+                        <select
+                          name="from_status"
+                          id="from_status"
+                          className="form-control form-select from"
+                        >
+                          <option value="">Select Status</option>
+                          <option value="draft">Draft</option>
+                          <option value="send_for_approval">
+                            Sent For Approval
+                          </option>
+                        </select>
+                      </div>
+                      <div className="form-group mt-3">
+                        <label>To Status</label>
+                        <select
+                          name="to_status"
+                          id="to_status"
+                          className="form-control form-select to"
+                        >
+                          <option value="">Select Status</option>
+                          <option value="draft">Draft</option>
+                          <option value="send_for_approval">
+                            Sent For Approval
+                          </option>
+                        </select>
+                      </div>
                     </div>
-                    <div className="form-group mt-3">
-                      <label>To Status</label>
-                      <select
-                        name="to_status"
-                        id="to_status"
-                        className="form-control form-select to"
-                      >
-                        <option value="">Select Status</option>
-                        <option value="draft">Draft</option>
-                        <option value="send_for_approval">
-                          Sent For Approval
-                        </option>
-                      </select>
+                    <div className="col-md-4">
+                      <div className="form-group">
+                        <label>Remark</label>
+                        <textarea
+                          className="form-control remark"
+                          rows={4}
+                          placeholder="Enter ..."
+                          defaultValue={""}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="col-md-4">
-                    <div className="form-group">
-                      <label>Remark</label>
-                      <textarea
-                        className="form-control remark"
-                        rows={4}
-                        placeholder="Enter ..."
-                        defaultValue={""}
-                      />
+                    <div className="offset-md-1 col-md-2">
+                      <button className="purple-btn2 m-0 status">
+                        <a style={{ color: "white !important" }}> Submit </a>
+                      </button>
                     </div>
-                  </div>
-                  <div className="offset-md-1 col-md-2">
-                    <button className="purple-btn2 m-0 status">
-                      <a style={{ color: "white !important" }}> Submit </a>
-                    </button>
                   </div>
                 </div>
-              </div>
               )}
             </div>
             <div className="d-flex mt-3 align-items-end px-3">
@@ -1045,15 +1199,15 @@ display:none !important;
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
                     onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
+                      if (e.key === "Enter") {
                         e.preventDefault();
                         handleSearch();
                       }
                     }}
                   />
                   <div className="input-group-append">
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="btn btn-md btn-default"
                       // onClick={() => setCurrentPage(1)}
                       onClick={handleSearch}
@@ -1079,27 +1233,27 @@ display:none !important;
                 </div>
               </div>
               <div className="col-md-6 d-flex justify-content-end align-items-center gap-2  mt-4">
-                             <button
-                               type="button"
-                               className="btn btn-md"
-                               onClick={handleFilterModalShow}
-                             >
-                               <FilterIcon />
-                             </button>
-                             <button
-                               type="button"
-                               className="btn btn-md me-4"
-                               onClick={handleSettingModalShow}
-                             >
-                               <SettingIcon />
-                             </button>
-                             <button
-                               className="purple-btn2"
-                               onClick={() => navigate(`/gate-pass-create?token=${token}`)}
-                             >
-                               <span> + Add</span>
-                             </button>
-                           </div>
+                <button
+                  type="button"
+                  className="btn btn-md"
+                  onClick={handleFilterModalShow}
+                >
+                  <FilterIcon />
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-md me-4"
+                  onClick={handleSettingModalShow}
+                >
+                  <SettingIcon />
+                </button>
+                <button
+                  className="purple-btn2"
+                  onClick={() => navigate(`/gate-pass-create?token=${token}`)}
+                >
+                  <span> + Add</span>
+                </button>
+              </div>
             </div>
             <div className="mx-1 mt-3" style={{ overflowY: "auto" }}>
               <DataGrid
@@ -1244,87 +1398,90 @@ display:none !important;
               </nav>
               <div className="ms-3">
                 <span>
-                  Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalEntries)} of {totalEntries} entries
+                  Showing {(currentPage - 1) * pageSize + 1} to{" "}
+                  {Math.min(currentPage * pageSize, totalEntries)} of{" "}
+                  {totalEntries} entries
                 </span>
               </div>
             </div>
 
             {/* Settings Modal */}
-         
+
             {/* Settings Modal */}
-                 <Modal
-                   show={settingShow}
-                   onHide={handleSettingClose}
-                   dialogClassName="modal-right"
-                   className="setting-modal"
-                   backdrop={true}
-                 >
-                   <Modal.Header>
-                     <div className="container-fluid p-0">
-                       <div className="border-0 d-flex justify-content-between align-items-center">
-                         <div className="d-flex align-items-center">
-                           <button
-                             type="button"
-                             className="btn"
-                             aria-label="Close"
-                             onClick={handleSettingClose}
-                           >
-                             <svg
-                               width="10"
-                               height="16"
-                               viewBox="0 0 10 16"
-                               fill="none"
-                               xmlns="http://www.w3.org/2000/svg"
-                             >
-                               <path
-                                 d="M8 2L2 8L8 14"
-                                 stroke="currentColor"
-                                 strokeWidth="2"
-                                 strokeLinecap="round"
-                                 strokeLinejoin="round"
-                               />
-                             </svg>
-                           </button>
-                         </div>
-                         <Button
-                           style={{ textDecoration: "underline" }}
-                           variant="alert"
-                           onClick={handleResetColumns}
-                         >
-                           Reset
-                         </Button>
-                       </div>
-                     </div>
-                   </Modal.Header>
-           
-                   <Modal.Body style={{ height: "400px", overflowY: "auto" }}>
-                     {allColumns
-                       .filter(
-                         (column) => column.field !== "srNo" && column.field !== "Star"
-                       )
-                       .map((column) => (
-                         <div
-                           className="row justify-content-between align-items-center mt-2"
-                           key={column.field}
-                         >
-                           <div className="col-md-6">
-                             <button type="submit" className="btn btn-md">
-                               <svg
-                                 xmlns="http://www.w3.org/2000/svg"
-                                 width={22}
-                                 height={22}
-                                 viewBox="0 0 48 48"
-                                 fill="none"
-                               >
-                                 <path
-                                   fillRule="evenodd"
-                                   clipRule="evenodd"
-                                   d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
-                                   fill="black"
-                                 />
-                               </svg>
-                             </button>
-                             {/* <button type="submit" className="btn btn-md">
+            <Modal
+              show={settingShow}
+              onHide={handleSettingClose}
+              dialogClassName="modal-right"
+              className="setting-modal"
+              backdrop={true}
+            >
+              <Modal.Header>
+                <div className="container-fluid p-0">
+                  <div className="border-0 d-flex justify-content-between align-items-center">
+                    <div className="d-flex align-items-center">
+                      <button
+                        type="button"
+                        className="btn"
+                        aria-label="Close"
+                        onClick={handleSettingClose}
+                      >
+                        <svg
+                          width="10"
+                          height="16"
+                          viewBox="0 0 10 16"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M8 2L2 8L8 14"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                    <Button
+                      style={{ textDecoration: "underline" }}
+                      variant="alert"
+                      onClick={handleResetColumns}
+                    >
+                      Reset
+                    </Button>
+                  </div>
+                </div>
+              </Modal.Header>
+
+              <Modal.Body style={{ height: "400px", overflowY: "auto" }}>
+                {allColumns
+                  .filter(
+                    (column) =>
+                      column.field !== "srNo" && column.field !== "Star"
+                  )
+                  .map((column) => (
+                    <div
+                      className="row justify-content-between align-items-center mt-2"
+                      key={column.field}
+                    >
+                      <div className="col-md-6">
+                        <button type="submit" className="btn btn-md">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width={22}
+                            height={22}
+                            viewBox="0 0 48 48"
+                            fill="none"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              clipRule="evenodd"
+                              d="M19 10C19 11.0609 18.5786 12.0783 17.8284 12.8284C17.0783 13.5786 16.0609 14 15 14C13.9391 14 12.9217 13.5786 12.1716 12.8284C11.4214 12.0783 11 11.0609 11 10C11 8.93913 11.4214 7.92172 12.1716 7.17157C12.9217 6.42143 13.9391 6 15 6C16.0609 6 17.0783 6.42143 17.8284 7.17157C18.5786 7.92172 19 8.93913 19 10ZM15 28C16.0609 28 17.0783 27.5786 17.8284 26.8284C18.5786 26.0783 19 25.0609 19 24C19 22.9391 18.5786 21.9217 17.8284 21.1716C17.0783 20.4214 16.0609 20 15 20C13.9391 20 12.9217 20.4214 12.1716 21.1716C11.4214 21.9217 11 22.9391 11 24C11 25.0609 11.4214 26.0783 12.1716 26.8284C12.9217 27.5786 13.9391 28 15 28ZM15 42C16.0609 42 17.0783 41.5786 17.8284 40.8284C18.5786 40.0783 19 39.0609 19 38C19 36.9391 18.5786 35.9217 17.8284 35.1716C17.0783 34.4214 16.0609 34 15 34C13.9391 34 12.9217 34.4214 12.1716 35.1716C11.4214 35.9217 11 36.9391 11 38C11 39.0609 11.4214 40.0783 12.1716 40.8284C12.9217 41.5786 13.9391 42 15 42ZM37 10C37 11.0609 36.5786 12.0783 35.8284 12.8284C35.0783 13.5786 34.0609 14 33 14C31.9391 14 30.9217 13.5786 30.1716 12.8284C29.4214 12.0783 29 11.0609 29 10C29 8.93913 29.4214 7.92172 30.1716 7.17157C30.9217 6.42143 31.9391 6 33 6C34.0609 6 35.0783 6.42143 35.8284 7.17157C36.5786 7.92172 37 8.93913 37 10ZM33 28C34.0609 28 35.0783 27.5786 35.8284 26.8284C36.5786 26.0783 37 25.0609 37 24C37 22.9391 36.5786 21.9217 35.8284 21.1716C35.0783 20.4214 34.0609 20 33 20C31.9391 20 30.9217 20.4214 30.1716 21.1716C29.4214 21.9217 29 22.9391 29 24C29 25.0609 29.4214 26.0783 30.1716 26.8284C30.9217 27.5786 31.9391 28 33 28ZM33 42C34.0609 42 35.0783 41.5786 35.8284 40.8284C36.5786 40.0783 37 39.0609 37 38C37 36.9391 36.5786 35.9217 35.8284 35.1716C35.0783 34.4214 34.0609 34 33 34C31.9391 34 30.9217 34.4214 30.1716 35.1716C29.4214 35.9217 29 36.9391 29 38C29 39.0609 29.4214 40.0783 30.1716 40.8284C30.9217 41.5786 31.9391 42 33 42Z"
+                              fill="black"
+                            />
+                          </svg>
+                        </button>
+                        {/* <button type="submit" className="btn btn-md">
                                <svg
                                  xmlns="http://www.w3.org/2000/svg"
                                  width="22"
@@ -1339,40 +1496,39 @@ display:none !important;
                                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                                </svg>
                              </button> */}
-                             <label>{column.headerName}</label>
-                           </div>
-                           <div className="col-md-4">
-                             <div className="form-check form-switch mt-1">
-                               <input
-                                 className="form-check-input"
-                                 type="checkbox"
-                                 checked={columnVisibility[column.field]}
-                                 onChange={() => handleToggleColumn(column.field)}
-                                 role="switch"
-                                 id={`flexSwitchCheckDefault-${column.field}`}
-                               />
-                             </div>
-                           </div>
-                         </div>
-                       ))}
-                   </Modal.Body>
-           
-                   <Modal.Footer>
-                     {/* <Button variant="primary" onClick={handleShowAll}>
+                        <label>{column.headerName}</label>
+                      </div>
+                      <div className="col-md-4">
+                        <div className="form-check form-switch mt-1">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            checked={columnVisibility[column.field]}
+                            onChange={() => handleToggleColumn(column.field)}
+                            role="switch"
+                            id={`flexSwitchCheckDefault-${column.field}`}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </Modal.Body>
+
+              <Modal.Footer>
+                {/* <Button variant="primary" onClick={handleShowAll}>
                        Show All
                      </Button>
                      <Button variant="danger" onClick={handleHideAll}>
                        Hide All
                      </Button> */}
-                     <button className="purple-btn2" onClick={handleShowAll}>
-                       Show All
-                     </button>
-                     <button className="purple-btn1" onClick={handleHideAll}>
-                       Hide All
-                     </button>
-                   </Modal.Footer>
-                 </Modal>
-          
+                <button className="purple-btn2" onClick={handleShowAll}>
+                  Show All
+                </button>
+                <button className="purple-btn1" onClick={handleHideAll}>
+                  Hide All
+                </button>
+              </Modal.Footer>
+            </Modal>
           </div>
         </div>
       </div>
@@ -1425,9 +1581,7 @@ display:none !important;
             </div>
             <div className="modal-body" style={{ overflowY: "scroll" }}>
               <div className="row">
-                <div className="row mt-2 px-2">
-                 
-                </div>
+                <div className="row mt-2 px-2"></div>
                 <div className="col-md-12">
                   <div className="form-group">
                     <label style={{ fontSize: 16, fontWeight: 600 }}>
@@ -1685,7 +1839,7 @@ display:none !important;
         </div>
       </div>
       {/* filter modal end */}
-      
+
       {/* Advanced Filter Modal */}
       <Modal
         show={filterShow}
@@ -1851,7 +2005,9 @@ display:none !important;
               />
             </div>
             <div className="col-md-6 mt-2">
-              <label className="block text-sm font-medium">Advance Applicable</label>
+              <label className="block text-sm font-medium">
+                Advance Applicable
+              </label>
               <SingleSelector
                 options={advanceApplicableOptions}
                 value={selectedAdvanceApplicable}
@@ -1860,7 +2016,9 @@ display:none !important;
               />
             </div>
             <div className="col-md-6 mt-2">
-              <label className="block text-sm font-medium">Advance Amount</label>
+              <label className="block text-sm font-medium">
+                Advance Amount
+              </label>
               <SingleSelector
                 options={advanceAmountOptions}
                 value={selectedAdvanceAmount}
@@ -1869,7 +2027,9 @@ display:none !important;
               />
             </div>
             <div className="col-md-6 mt-2">
-              <label className="block text-sm font-medium">Supplier/Vendor</label>
+              <label className="block text-sm font-medium">
+                Supplier/Vendor
+              </label>
               <SingleSelector
                 options={supplierOptions}
                 value={selectedSupplier}
@@ -1878,7 +2038,9 @@ display:none !important;
               />
             </div>
             <div className="col-md-6 mt-2">
-              <label className="block text-sm font-medium">Consumption Category</label>
+              <label className="block text-sm font-medium">
+                Consumption Category
+              </label>
               <SingleSelector
                 options={consumptionCategoryOptions}
                 value={selectedConsumptionCategory}
@@ -1887,7 +2049,9 @@ display:none !important;
               />
             </div>
             <div className="col-md-6 mt-2">
-              <label className="block text-sm font-medium">Requisition Department</label>
+              <label className="block text-sm font-medium">
+                Requisition Department
+              </label>
               <SingleSelector
                 options={requisitionDepartmentOptions}
                 value={selectedRequisitionDepartment}
@@ -1914,7 +2078,9 @@ display:none !important;
               />
             </div>
             <div className="col-md-6 mt-2">
-              <label className="block text-sm font-medium">PO Gross Value</label>
+              <label className="block text-sm font-medium">
+                PO Gross Value
+              </label>
               <SingleSelector
                 options={poGrossValueOptions}
                 value={selectedPoGrossValue}

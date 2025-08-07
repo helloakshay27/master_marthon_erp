@@ -41,7 +41,13 @@ function Members() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/po-details/:id"> PO Details</Link>
+                  <Link to="/po-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    {" "}
+                    PO List
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/po-edit/:id"> PO Edit</Link>
                 </li>
                 <li>
                   <Link to="/ropo-mapping-list/?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">

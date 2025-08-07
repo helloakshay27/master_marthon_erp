@@ -124,6 +124,7 @@ import BillBookingEdit from "./pages/bill-booking-edit";
 import LabourMasterCreate from "./pages/labour-master-create";
 import LabourMasterEdit from "./pages/labour-master-edit";
 import LabourMasterDetails from "./pages/labour-master-details";
+import PoEdit from "./pages/po-edit";
 
 function App() {
   return (
@@ -131,30 +132,13 @@ function App() {
       <div>
         <Routes>
           <Route path="/" element={<Members />} />
-           <Route
-            path="/invite-vendor"
-            element={<InviteVendor />}
-          />
-          <Route
-            path="/ropo-mapping-create"
-            element={<RopoMappingCreate />}
-          />
-           <Route
-            path="/ropo-mapping-list"
-            element={<RopoMappingList />}
-          />
-            <Route
-            path="/po-list"
-            element={<PoList />}
-          />
-            <Route
-            path="/po-details/:id"
-            element={<PoDetails />}
-          />
-           <Route
-            path="/po-create"
-            element={<PoCreate />}
-          />
+          <Route path="/invite-vendor" element={<InviteVendor />} />
+          <Route path="/ropo-mapping-create" element={<RopoMappingCreate />} />
+          <Route path="/ropo-mapping-list" element={<RopoMappingList />} />
+          <Route path="/po-list" element={<PoList />} />
+          <Route path="/po-details/:id" element={<PoDetails />} />
+          <Route path="/po-create" element={<PoCreate />} />
+          <Route path="/po-edit/:id" element={<PoEdit />} />
           <Route
             path="/stock_register_detail/:id"
             element={<ErpStockRegisterCreationDetail13C />}
@@ -206,10 +190,7 @@ function App() {
             path="/bill-booking-details/:id"
             element={<BillBookingDetails />}
           />
-          <Route
-            path="/bill-booking-edit/:id"
-            element={<BillBookingEdit />}
-          />
+          <Route path="/bill-booking-edit/:id" element={<BillBookingEdit />} />
           <Route path="/bill-entry-details" element={<BillEntryDetails />} />
           <Route path="/bill-booking-list" element={<BillBookingList />} />
           <Route
@@ -281,7 +262,6 @@ function App() {
             path="/good_receive_notes/:id"
             element={<GoodReceiveNoteDetails />}
           />
-
           <Route
             path="/TreeDataWithStaticRows"
             element={<TreeDataWithStaticRows />}
@@ -581,20 +561,16 @@ function App() {
             path="/vendor-approval-edit/:id"
             element={<VendorApprovalEdit />}
           />
-
-           <Route
-            path="/labour-master-list"
-            element={<LabourMaster />}
-          />
-           <Route
+          <Route path="/labour-master-list" element={<LabourMaster />} />
+          <Route
             path="/labour-master-create"
             element={<LabourMasterCreate />}
           />
-           <Route
+          <Route
             path="/labour-master-edit/:id"
             element={<LabourMasterEdit />}
           />
-           <Route
+          <Route
             path="/labour-master-details/:id"
             element={<LabourMasterDetails />}
           />
