@@ -2326,7 +2326,7 @@ const GatePassEdit = () => {
                         <span> *</span>
                       )}
                     </label>
-                    <input
+                    {/* <input
                       type="date"
                       className="form-control"
                       value={formData.expected_return_date}
@@ -2338,6 +2338,23 @@ const GatePassEdit = () => {
                       }
                       required={formData.gate_pass_type === "return_to_vendor"}
                       min={new Date().toISOString().split("T")[0]}
+                    /> */}
+                    <input
+                      type="date"
+                      className="form-control"
+                      value={formData.expected_return_date}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          expected_return_date: e.target.value,
+                        })
+                      }
+                      required={
+                        formData.gate_pass_type === "return_to_vendor" &&
+                        formData.is_returnable === "returnable"
+                      }
+                      min={new Date().toISOString().split("T")[0]}
+                      disabled={formData.is_returnable === "non_returnable"}
                     />
                   </div>
                 </div>

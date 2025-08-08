@@ -2475,6 +2475,9 @@ const PoEdit = () => {
           comments: termsFormData.comments || "",
           material_inventory_ids: apiMaterialInventoryIds,
 
+           // Include purchase order ID if available (for updates)
+          ...(purchaseOrderId && { po_id: purchaseOrderId }),
+
           // Format other cost details with taxes
           other_cost_details_attributes: otherCosts.map((cost) => ({
             ...(cost.id && { id: cost.id }), // Include ID if it exists (existing record)
