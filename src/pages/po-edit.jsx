@@ -1212,7 +1212,7 @@ const PoEdit = () => {
           total_material_cost: parseFloat(currentData.netCost) || 0,
           after_discount_value: parseFloat(currentData.afterDiscountValue) || 0,
           tax_applicable_cost: parseFloat(currentData.afterDiscountValue) || 0,
-          material_inventory_id: currentData.pms_inventory_id || material.id,
+          // material_inventory_id: currentData.pms_inventory_id || material.id,
 
           // Map addition tax details
           mor_inventory_tax_details_attributes: (
@@ -2477,11 +2477,13 @@ const PoEdit = () => {
 
           // Format other cost details with taxes
           other_cost_details_attributes: otherCosts.map((cost) => ({
+            ...(cost.id && { id: cost.id }), // Include ID if it exists (existing record)
             cost_type: cost.cost_name || "",
             cost: parseFloat(cost.amount) || 0,
             scope: cost.scope || "",
             taxes_and_charges_attributes: [
               ...(cost.taxes?.additionTaxes || []).map((tax) => ({
+                ...(tax.id && { id: tax.id }), // Include ID if it exists (existing record)
                 resource_id: parseInt(tax.taxType) || 0,
                 resource_type: "TaxCategory",
                 percentage:
@@ -2491,6 +2493,7 @@ const PoEdit = () => {
                 addition: true,
               })),
               ...(cost.taxes?.deductionTaxes || []).map((tax) => ({
+                ...(tax.id && { id: tax.id }), // Include ID if it exists (existing record)
                 resource_id: parseInt(tax.taxType) || 0,
                 resource_type: "TaxCategory",
                 percentage:
@@ -2505,11 +2508,13 @@ const PoEdit = () => {
           // Format charges with taxes
           charges_with_taxes_attributes: charges.map((charge) => {
             return {
+              ...(charge.id && { id: charge.id }), // Include ID if it exists (existing record)
               charge_id: charge.charge_id || 0,
               amount: parseFloat(charge.amount) || 0,
               realised_amount: parseFloat(charge.realised_amount) || 0,
               taxes_and_charges_attributes: [
                 ...(charge.taxes?.additionTaxes || []).map((tax) => ({
+                  ...(tax.id && { id: tax.id }), // Include ID if it exists (existing record)
                   resource_id: parseInt(tax.taxType) || 0,
                   resource_type: "TaxCategory",
                   percentage:
@@ -2519,6 +2524,7 @@ const PoEdit = () => {
                   addition: true,
                 })),
                 ...(charge.taxes?.deductionTaxes || []).map((tax) => ({
+                  ...(tax.id && { id: tax.id }), // Include ID if it exists (existing record)
                   resource_id: parseInt(tax.taxType) || 0,
                   resource_type: "TaxCategory",
                   percentage:
@@ -2549,6 +2555,7 @@ const PoEdit = () => {
                   );
                   return term
                     ? {
+                        ...(row.id && { id: row.id }), // Include ID if it exists (existing record)
                         term_condition_id: term.id,
                         condition_type: "general",
                         // Optionally, you can also send the condition text if your API expects it:
@@ -2564,6 +2571,7 @@ const PoEdit = () => {
             materialTermConditions
           )
             ? materialTermConditions.map((term) => ({
+                ...(term.id && { id: term.id }), // Include ID if it exists (existing record)
                 term_condition_id: term.term_condition_id,
                 material_sub_type: term.material_sub_type,
                 condition_category: term.condition_category,
