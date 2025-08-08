@@ -472,7 +472,7 @@ const PoDetails = () => {
                                       </th>
                                       <th>Project</th>
                                       <th>Sub-Project</th>
-                                      <th>MOR No.</th>
+                                      {/* <th>MOR No.</th> */}
                                       <th>Material</th>
                                       <th>UOM</th>
                                       <th>Mor Qty</th>
@@ -489,7 +489,7 @@ const PoDetails = () => {
                                             <td>{idx + 1}</td>
                                             <td>{mat.project_name}</td>
                                             <td>{mat.sub_project_name}</td>
-                                            <td>
+                                            {/* <td>
                                               <a
                                                 style={{
                                                   textDecoration:
@@ -500,8 +500,8 @@ const PoDetails = () => {
                                               >
                                                 {mat.mor_no}
                                               </a>
-                                            </td>
-                                            <td>{mat.material_name}</td>
+                                            </td> */}
+                                            <td>{mat.material}</td>
                                             <td>{mat.uom}</td>
                                             <td>{mat.mor_qty}</td>
                                             <td>{mat.po_order_qty}</td>
