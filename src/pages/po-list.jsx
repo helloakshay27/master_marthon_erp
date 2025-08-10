@@ -1951,10 +1951,18 @@ display:none !important;
             <div className="col-md-6 mt-2">
               <label className="block text-sm font-medium">Company</label>
               <SingleSelector
-                options={companies.map((c) => ({
-                  value: c.id,
-                  label: c.company_name,
-                }))}
+                // options={companies.map((c) => ({
+                //   value: c.id,
+                //   label: c.company_name,
+                // }))}
+                options={
+                  Array.isArray(companies)
+                    ? companies.map((c) => ({
+                        value: c.id,
+                        label: c.company_name,
+                      }))
+                    : []
+                }
                 value={selectedCompany}
                 onChange={handleCompanyChange}
                 placeholder="Select Company"
