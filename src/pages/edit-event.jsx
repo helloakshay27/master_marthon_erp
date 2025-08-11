@@ -440,14 +440,8 @@ export default function EditEvent() {
 
           totalPages = data?.pagination?.total_pages || 1;
           totalCount = data?.pagination?.total_count || 0; // Get total count from API
-          const filteredData = formattedData.filter(
-            (vendor) =>
-              !selectedVendors.some(
-                (selected) => selected.pms_supplier_id === vendor.id
-              )
-          );
 
-          setTableData(filteredData);
+          setTableData(formattedData);
           setCurrentPage(page);
           setTotalPages(totalPages);
           setTotalCount(totalCount); // Set the total count
@@ -704,7 +698,7 @@ export default function EditEvent() {
   const isVendorSelected = (vendorId) => {
     return (
       selectedRows.some((vendor) => vendor.id === vendorId) ||
-      selectedVendors.some((vendor) => vendor.id === vendorId)
+      selectedVendors.some((vendor) => vendor.pms_supplier_id === vendorId)
     );
   };
 
@@ -1321,15 +1315,6 @@ const toUTCStartTimeString = (dateTime) => {
       ];
     });
 
-    setTableData((prevTableData) =>
-      prevTableData.filter(
-        (vendor) =>
-          !selectedRows.some(
-            (selectedVendor) => selectedVendor.id === vendor.id
-          )
-      )
-    );
-
     setVendorModal(false);
     setSelectedRows([]);
     setResetSelectedRows(true);
@@ -1339,21 +1324,6 @@ const toUTCStartTimeString = (dateTime) => {
     const updatedSelected = selectedVendors.filter(
       (vendor) => vendor.pms_supplier_id !== id
     );
-
-    const removedVendor = selectedVendors.find(
-      (vendor) => vendor.pms_supplier_id === id
-    );
-
-    if (removedVendor) {
-      const alreadyExists = filteredTableData.some(
-        (vendor) => vendor.pms_supplier_id === removedVendor.pms_supplier_id
-      );
-
-      if (!alreadyExists) {
-        const updatedFiltered = [...filteredTableData, removedVendor];
-        setFilteredTableData(updatedFiltered);
-      }
-    }
 
     setSelectedVendors(updatedSelected);
   };
@@ -1857,6 +1827,7 @@ const toUTCStartTimeString = (dateTime) => {
                       ) : (
                         selectedVendors?.map((vendor, index) => (
                           <tr key={vendor.id}>
+                            {console.log("selectedVendors", selectedVendors)}
                             <td style={{ width: "100px" }}>{index + 1}</td>
                             <td>{vendor.name}</td>
                             {/* <td>{vendor.organisation}</td> */}
@@ -2463,7 +2434,7 @@ const toUTCStartTimeString = (dateTime) => {
                       />
                     </div>
                   </div>
-                  {/* {console.log("filteredTableData", filteredTableData)} */}
+                  {console.log("filteredTableData", filteredTableData)}
 
                   <div className="d-flex flex-column justify-content-center align-items-center h-100">
                     {filteredTableData.length > 0 ? (
