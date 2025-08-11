@@ -65,6 +65,7 @@ export default function Table({
   isWidth = false,
   scrollable = false, // Add scrollable prop
   accordionRender = null,
+  isRowSelected = null, // Add new prop to determine if a row is selected externally
   ...rest
 }) {
   const [selectAll, setSelectAll] = useState(false);
@@ -421,9 +422,13 @@ export default function Table({
                 <th style={{ width: "50px", textAlign: "center" }}>
                   <input
                     type="checkbox"
-                    checked={data.every((vendor) =>
-                      selectedRows.some((row) => row.id === vendor.id)
-                    )}
+                    checked={
+                      isRowSelected 
+                        ? data.every((vendor) => isRowSelected(vendor.id))
+                        : data.every((vendor) =>
+                            selectedRows.some((row) => row.id === vendor.id)
+                          )
+                    }
                     onChange={handleSelectAllChange}
                   />
                 </th>
@@ -486,9 +491,13 @@ export default function Table({
                     <td>
                       <input
                         type="checkbox"
-                        checked={selectedRows.some(
-                          (selectedRow) => selectedRow.id === row.id
-                        )}
+                        checked={
+                          isRowSelected 
+                            ? isRowSelected(row.id) 
+                            : selectedRows.some(
+                                (selectedRow) => selectedRow.id === row.id
+                              )
+                        }
                         onChange={() => handleRowSelection(rowIndex)}
                       />
                     </td>

@@ -91,6 +91,13 @@ const PoEdit = () => {
     surviceCertificateAdvance: "",
   });
 
+  const [taxSummary, setTaxSummary] = useState({
+  total_base_cost: 0,
+  total_tax: 0,
+  total_charge: 0,
+  total_inclusive_cost: 0,
+});
+
   // Charges state
   const [charges, setCharges] = useState([]);
   const [otherCosts, setOtherCosts] = useState([]);
@@ -100,6 +107,7 @@ const PoEdit = () => {
   const [showTaxesModal, setShowTaxesModal] = useState(false);
   const [selectedChargeId, setSelectedChargeId] = useState(null);
   const [selectedItemType, setSelectedItemType] = useState(null); // 'charge' or 'cost'
+
   const [chargeTaxes, setChargeTaxes] = useState({
     additionTaxes: [],
     deductionTaxes: [],
@@ -125,6 +133,13 @@ const PoEdit = () => {
     const fetchPurchaseOrderData = async () => {
       try {
         setIsLoading(true);
+
+        // If we have an ID from URL params, set it as purchaseOrderId for existing PO
+        if (id) {
+          setPurchaseOrderId(id);
+          console.log("Setting purchaseOrderId from URL params:", id);
+        }
+
         const response = await axios.get(
           `${baseURL}purchase_orders/${id}/ropo_detail.json?token=${token}`
         );
@@ -203,7 +218,7 @@ const PoEdit = () => {
         }
 
         return {
-          id: cost.id || Date.now(),
+          ...(cost.id && { id: cost.id }), // Only include ID if it exists (existing record)
           cost_name: cost.cost_type || "",
           amount: cost.cost?.toString() || "",
           scope: cost.scope || "",
@@ -215,7 +230,7 @@ const PoEdit = () => {
                 .map((tax) => {
                   console.log(`Processing addition tax for cost:`, tax);
                   return {
-                    id: tax.id || Date.now(),
+                    ...(tax.id && { id: tax.id }), // Only include ID if it exists (existing record)
                     taxType: tax.resource_id?.toString() || "",
                     taxPercentage: tax.percentage?.toString() || "",
                     inclusive: tax.inclusive || false,
@@ -228,7 +243,7 @@ const PoEdit = () => {
                 .map((tax) => {
                   console.log(`Processing deduction tax for cost:`, tax);
                   return {
-                    id: tax.id || Date.now(),
+                    ...(tax.id && { id: tax.id }), // Only include ID if it exists (existing record)
                     taxType: tax.resource_id?.toString() || "",
                     taxPercentage: tax.percentage?.toString() || "",
                     inclusive: tax.inclusive || false,
@@ -271,7 +286,7 @@ const PoEdit = () => {
         }
 
         return {
-          id: charge.id || Date.now(),
+          ...(charge.id && { id: charge.id }), // Only include ID if it exists (existing record)
           charge_name: chargeName,
           charge_id: charge.charge_id || 0,
           amount: charge.amount?.toString() || "",
@@ -283,7 +298,7 @@ const PoEdit = () => {
                 .map((tax) => {
                   console.log(`Re-processing addition tax:`, tax);
                   return {
-                    id: tax.id || Date.now(),
+                    ...(tax.id && { id: tax.id }), // Only include ID if it exists (existing record)
                     taxType: tax.resource_id?.toString() || "",
                     taxPercentage: tax.percentage?.toString() || "",
                     inclusive: tax.inclusive || false,
@@ -296,7 +311,7 @@ const PoEdit = () => {
                 .map((tax) => {
                   console.log(`Re-processing deduction tax:`, tax);
                   return {
-                    id: tax.id || Date.now(),
+                    ...(tax.id && { id: tax.id }), // Only include ID if it exists (existing record)
                     taxType: tax.resource_id?.toString() || "",
                     taxPercentage: tax.percentage?.toString() || "",
                     inclusive: tax.inclusive || false,
@@ -315,11 +330,20 @@ const PoEdit = () => {
       console.log("Charges data available but charge names not loaded yet");
     }
 
+    if (poData.tax_summary) {
+      setTaxSummary({
+        total_base_cost: poData.tax_summary.total_base_cost ?? 0,
+        total_tax: poData.tax_summary.total_tax ?? 0,
+        total_charge: poData.tax_summary.total_charge ?? 0,
+        total_inclusive_cost: poData.tax_summary.total_inclusive_cost ?? 0,
+      });
+    }
+
     // Populate resource term conditions
     if (poData.resource_term_conditions) {
       const formattedTermConditions = poData.resource_term_conditions.map(
         (condition) => ({
-          id: condition.id || Date.now(),
+          ...(condition.id && { id: condition.id }), // Only include ID if it exists (existing record)
           term_condition_id: condition.term_condition_id || "",
           category: condition.condition_category || "",
           condition: condition.condition || "",
@@ -337,7 +361,7 @@ const PoEdit = () => {
       );
       const formattedMaterialTermConditions =
         poData.resource_material_term_conditions.map((condition) => ({
-          id: condition.id || Date.now(),
+          ...(condition.id && { id: condition.id }), // Only include ID if it exists (existing record)
           term_condition_id: condition.term_condition_id || "",
           material_sub_type: condition.material_sub_type || "",
           condition_category: condition.condition_category || "",
@@ -642,12 +666,41 @@ const PoEdit = () => {
     setShowModal(true);
   };
 
+  // const handleDeleteRow = (index) => {
+  //   setTableData((prev) =>
+  //     prev.map((row, i) =>
+  //       i === index
+  //         ? { ...row, _destroy: true } // Mark for deletion
+  //         : row
+  //     )
+  //   );
+  // };
+  //   const handleDeleteRow = (index) => {
+  //     // setTableData(
+  //     //   (prev) => prev.filter((_, i) => i !== index) // Remove the row entirely, do not mark with _destroy
+  //     // );
+  //     setTableData(prev =>
+  //   prev.map((row, i) =>
+  //     i === index ? { ...row, _destroy: true } : row
+  //   )
+  // );
+  //   };
   const handleDeleteRow = (index) => {
-    setTableData((prev) =>
-      prev.map((row, i) =>
-        i === index
-          ? { ...row, _destroy: true } // Mark for deletion
-          : row
+    const deletedMaterial = tableData[index];
+
+    setTableData((prev) => prev.filter((_, i) => i !== index));
+
+    // Remove from submittedMaterials
+    setSubmittedMaterials((prev) =>
+      prev.filter(
+        (m) => m.material_inventory_id !== deletedMaterial.material_inventory_id
+      )
+    );
+
+    // Remove from rateAndTaxes
+    setRateAndTaxes((prev) =>
+      prev.filter(
+        (m) => m.material_inventory_id !== deletedMaterial.material_inventory_id
       )
     );
   };
@@ -657,6 +710,8 @@ const PoEdit = () => {
     console.log("Submit button clicked");
     console.log("tableData:", tableData);
     console.log("selectedCompany:", selectedCompany);
+    console.log("URL param id:", id);
+    console.log("purchaseOrderId state:", purchaseOrderId);
 
     // Simple test alert
 
@@ -687,34 +742,42 @@ const PoEdit = () => {
     setIsSubmitting(true);
 
     // Prepare materials array for API
-    const materials = tableData.map((row) => {
-      // Check if this is an existing material (has material object with id)
-      if (row.material && typeof row.material === "object" && row.material.id) {
-        // Existing material - extract values from the material object
-        return {
-          id: row.material.id, // Use the actual ID from the material object
-          pms_inventory_id: row.material.pms_inventory_id,
-          unit_of_measure_id: row.material.uom_id,
-          pms_inventory_sub_type_id: row.material.pms_inventory_sub_type_id,
-          pms_generic_info_id: row.material.pms_generic_info_id,
-          pms_colour_id: row.material.pms_colour_id,
-          pms_brand_id: row.material.pms_brand_id,
-          _destroy: row._destroy || false,
-        };
-      } else {
-        // New material - use the direct values
-        return {
-          id: row.id, // Include ID for existing records
-          pms_inventory_id: row.material,
-          unit_of_measure_id: row.uom,
-          pms_inventory_sub_type_id: row.materialSubType,
-          pms_generic_info_id: row.genericSpecification || null,
-          pms_colour_id: row.colour || null,
-          pms_brand_id: row.brand || null,
-          _destroy: row._destroy || false, // Include destroy flag
-        };
-      }
-    });
+    const materials =
+      //  tableData.map((row) => {
+      tableData
+        .filter((row) => row) // Only include rows that exist (not deleted)
+        .map((row) => {
+          // Check if this is an existing material (has material object with id)
+          if (
+            row.material &&
+            typeof row.material === "object" &&
+            row.material.id
+          ) {
+            // Existing material - extract values from the material object
+            return {
+              id: row.material.id, // Use the actual ID from the material object
+              pms_inventory_id: row.material.pms_inventory_id,
+              unit_of_measure_id: row.material.uom_id,
+              pms_inventory_sub_type_id: row.material.pms_inventory_sub_type_id,
+              pms_generic_info_id: row.material.pms_generic_info_id,
+              pms_colour_id: row.material.pms_colour_id,
+              pms_brand_id: row.material.pms_brand_id,
+              _destroy: row._destroy || false,
+            };
+          } else {
+            // New material - use the direct values
+            return {
+              id: row.id, // Include ID for existing records
+              pms_inventory_id: row.material,
+              unit_of_measure_id: row.uom,
+              pms_inventory_sub_type_id: row.materialSubType,
+              pms_generic_info_id: row.genericSpecification || null,
+              pms_colour_id: row.colour || null,
+              pms_brand_id: row.brand || null,
+              _destroy: row._destroy || false, // Include destroy flag
+            };
+          }
+        });
 
     console.log("Processed materials for API:", materials);
 
@@ -723,10 +786,11 @@ const PoEdit = () => {
       materials: materials,
     };
 
-    // Add po_id only if we have a purchase order ID from previous submission
-    if (purchaseOrderId) {
-      payload.po_id = purchaseOrderId;
-      console.log("Including po_id in payload:", purchaseOrderId);
+    // Add po_id if we have a purchase order ID (either from URL params for existing PO or from previous submission)
+    const poIdToUse = id || purchaseOrderId; // Use URL param id first, then fallback to purchaseOrderId
+    if (poIdToUse) {
+      payload.po_id = poIdToUse;
+      console.log("Including po_id in payload:", poIdToUse);
     } else {
       console.log("No po_id included in payload (first submission)");
     }
@@ -743,6 +807,7 @@ const PoEdit = () => {
         // Store the materials data from API response
         if (response.data.success && response.data.materials) {
           setSubmittedMaterials(response.data.materials);
+          setTableData(response.data.materials);
         }
 
         if (response.data.success && response.data.material_inventory_ids) {
@@ -763,6 +828,7 @@ const PoEdit = () => {
         }
 
         alert("Materials submitted successfully!");
+
         // Change tab to Rate & Taxes
         const rateTaxesTab = document.querySelector(
           '[data-bs-target="#Domestic2"]'
@@ -1846,7 +1912,7 @@ const PoEdit = () => {
   // Add new row to terms and conditions
   const addTermsConditionRow = () => {
     const newRow = {
-      id: Date.now(), // Temporary ID for new rows
+      // No ID for new records - let the API generate it
       condition_category_name: "",
       condition: "",
       isNew: true,
@@ -2077,7 +2143,7 @@ const PoEdit = () => {
   // Handle charges functions
   const addCharge = () => {
     const newCharge = {
-      id: Date.now(),
+      // No ID for new records - let the API generate it
       charge_name: "",
       charge_id: 0,
       amount: "",
@@ -2113,7 +2179,7 @@ const PoEdit = () => {
   // ...existing code...
   const addCost = () => {
     const newCost = {
-      id: Date.now(),
+      // No ID for new records - let the API generate it
       cost_name: "",
       amount: "",
       scope: "",
@@ -2173,7 +2239,7 @@ const PoEdit = () => {
 
   const addTaxRow = (type) => {
     const newTax = {
-      id: Date.now(),
+      // No ID for new records - let the API generate it
       taxType: "",
       taxPercentage: "",
       inclusive: false,
@@ -2475,69 +2541,103 @@ const PoEdit = () => {
           comments: termsFormData.comments || "",
           material_inventory_ids: apiMaterialInventoryIds,
 
-           // Include purchase order ID if available (for updates)
+          // Include purchase order ID if available (for updates)
           ...(purchaseOrderId && { po_id: purchaseOrderId }),
 
           // Format other cost details with taxes
-          other_cost_details_attributes: otherCosts.map((cost) => ({
-            ...(cost.id && { id: cost.id }), // Include ID if it exists (existing record)
-            cost_type: cost.cost_name || "",
-            cost: parseFloat(cost.amount) || 0,
-            scope: cost.scope || "",
-            taxes_and_charges_attributes: [
-              ...(cost.taxes?.additionTaxes || []).map((tax) => ({
-                ...(tax.id && { id: tax.id }), // Include ID if it exists (existing record)
-                resource_id: parseInt(tax.taxType) || 0,
-                resource_type: "TaxCategory",
-                percentage:
-                  parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
-                inclusive: tax.inclusive || false,
-                amount: parseFloat(tax.amount) || 0,
-                addition: true,
-              })),
-              ...(cost.taxes?.deductionTaxes || []).map((tax) => ({
-                ...(tax.id && { id: tax.id }), // Include ID if it exists (existing record)
-                resource_id: parseInt(tax.taxType) || 0,
-                resource_type: "TaxCategory",
-                percentage:
-                  parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
-                inclusive: tax.inclusive || false,
-                amount: parseFloat(tax.amount) || 0,
-                addition: false,
-              })),
-            ],
-          })),
+          other_cost_details_attributes: otherCosts.map((cost) => {
+            const costPayload = {
+              cost_type: cost.cost_name || "",
+              cost: parseFloat(cost.amount) || 0,
+              scope: cost.scope || "",
+              taxes_and_charges_attributes: [
+                ...(cost.taxes?.additionTaxes || []).map((tax) => {
+                  const taxPayload = {
+                    resource_id: parseInt(tax.taxType) || 0,
+                    resource_type: "TaxCategory",
+                    percentage:
+                      parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+                    inclusive: tax.inclusive || false,
+                    amount: parseFloat(tax.amount) || 0,
+                    addition: true,
+                  };
+                  // Only include ID if it exists and is not undefined/null
+                  if (tax.id) {
+                    taxPayload.id = tax.id;
+                  }
+                  return taxPayload;
+                }),
+                ...(cost.taxes?.deductionTaxes || []).map((tax) => {
+                  const taxPayload = {
+                    resource_id: parseInt(tax.taxType) || 0,
+                    resource_type: "TaxCategory",
+                    percentage:
+                      parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+                    inclusive: tax.inclusive || false,
+                    amount: parseFloat(tax.amount) || 0,
+                    addition: false,
+                  };
+                  // Only include ID if it exists and is not undefined/null
+                  if (tax.id) {
+                    taxPayload.id = tax.id;
+                  }
+                  return taxPayload;
+                }),
+              ],
+            };
+            // Only include ID if it exists and is not undefined/null
+            if (cost.id) {
+              costPayload.id = cost.id;
+            }
+            return costPayload;
+          }),
 
           // Format charges with taxes
           charges_with_taxes_attributes: charges.map((charge) => {
-            return {
-              ...(charge.id && { id: charge.id }), // Include ID if it exists (existing record)
+            const chargePayload = {
               charge_id: charge.charge_id || 0,
               amount: parseFloat(charge.amount) || 0,
               realised_amount: parseFloat(charge.realised_amount) || 0,
               taxes_and_charges_attributes: [
-                ...(charge.taxes?.additionTaxes || []).map((tax) => ({
-                  ...(tax.id && { id: tax.id }), // Include ID if it exists (existing record)
-                  resource_id: parseInt(tax.taxType) || 0,
-                  resource_type: "TaxCategory",
-                  percentage:
-                    parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
-                  inclusive: tax.inclusive || false,
-                  amount: parseFloat(tax.amount) || 0,
-                  addition: true,
-                })),
-                ...(charge.taxes?.deductionTaxes || []).map((tax) => ({
-                  ...(tax.id && { id: tax.id }), // Include ID if it exists (existing record)
-                  resource_id: parseInt(tax.taxType) || 0,
-                  resource_type: "TaxCategory",
-                  percentage:
-                    parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
-                  inclusive: tax.inclusive || false,
-                  amount: parseFloat(tax.amount) || 0,
-                  addition: false,
-                })),
+                ...(charge.taxes?.additionTaxes || []).map((tax) => {
+                  const taxPayload = {
+                    resource_id: parseInt(tax.taxType) || 0,
+                    resource_type: "TaxCategory",
+                    percentage:
+                      parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+                    inclusive: tax.inclusive || false,
+                    amount: parseFloat(tax.amount) || 0,
+                    addition: true,
+                  };
+                  // Only include ID if it exists and is not undefined/null
+                  if (tax.id) {
+                    taxPayload.id = tax.id;
+                  }
+                  return taxPayload;
+                }),
+                ...(charge.taxes?.deductionTaxes || []).map((tax) => {
+                  const taxPayload = {
+                    resource_id: parseInt(tax.taxType) || 0,
+                    resource_type: "TaxCategory",
+                    percentage:
+                      parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
+                    inclusive: tax.inclusive || false,
+                    amount: parseFloat(tax.amount) || 0,
+                    addition: false,
+                  };
+                  // Only include ID if it exists and is not undefined/null
+                  if (tax.id) {
+                    taxPayload.id = tax.id;
+                  }
+                  return taxPayload;
+                }),
               ],
             };
+            // Only include ID if it exists and is not undefined/null
+            if (charge.id) {
+              chargePayload.id = charge.id;
+            }
+            return chargePayload;
           }),
 
           // Resource term conditions
@@ -2548,38 +2648,174 @@ const PoEdit = () => {
           //       condition: term.condition,
           //     }))
           //   : [],
+          // resource_term_conditions_attributes: Array.isArray(generalTerms)
+          //   ? generalTerms
+          //       .filter((row) => row.category && row.condition) // Only include filled rows
+          //       .map((row) => {
+          //         // Find the term in termsConditions that matches the selected category
+          //         const term = termsConditions.find(
+          //           (t) => t.condition_category_name === row.category
+          //         );
+          //         if (term) {
+          //           const termPayload = {
+          //             term_condition_id: term.id,
+          //             condition_type: "general",
+          //             // Optionally, you can also send the condition text if your API expects it:
+          //             // condition: row.condition,
+          //           };
+          //           // Only include ID if it exists and is not undefined/null
+          //           if (row.id) {
+          //             termPayload.id = row.id;
+          //           }
+          //           return termPayload;
+          //         }
+          //         return null;
+          //       })
+          //       .filter(Boolean) // Remove any nulls if no match found
+          //   : [],
+
+          // resource_term_conditions_attributes: Array.isArray(generalTerms)
+          //   ? // ? generalTerms
+          //     //     .filter((row) => row.category && row.condition)
+          //     generalTerms
+          //       .filter((row) => {
+          //         // Keep rows that are either valid for creation/update OR are marked for deletion
+          //         return (row.category && row.condition) || row._destroy;
+          //       })
+          //       .map((row) => {
+          //         // Find the term in termsConditions that matches the selected category
+          //         const term = termsConditions.find(
+          //           (t) => t.condition_category_name === row.category
+          //         );
+          //         if (term) {
+          //           const termPayload = {
+          //             term_condition_id: term.id,
+          //             condition_type: "general",
+          //             // Only include ID if it exists, is not undefined/null, and is not a random (new) ID
+          //             // Only pass id if it is from API (assume API IDs are less than 10 digits)
+          //           };
+          //           if (row.id && row.id.toString().length < 10) {
+          //             termPayload.id = row.id;
+          //           }
+          //           if (row._destroy) {
+          //             termPayload.destroy = true;
+          //             return termPayload;
+          //           }
+
+          //           // For normal create/update, set term_condition_id
+          //           if (term) {
+          //             termPayload.term_condition_id = term.id;
+          //           }
+          //           return termPayload;
+          //         }
+          //         return null;
+          //       })
+          //       .filter(Boolean)
+          //   : [],
           resource_term_conditions_attributes: Array.isArray(generalTerms)
             ? generalTerms
-                .filter((row) => row.category && row.condition) // Only include filled rows
+                .filter((row) => {
+                  // Keep rows that are valid for create/update OR are marked for deletion
+                  return (row.category && row.condition) || row._destroy;
+                })
                 .map((row) => {
-                  // Find the term in termsConditions that matches the selected category
+                  // Find matching term from API data
                   const term = termsConditions.find(
                     (t) => t.condition_category_name === row.category
                   );
-                  return term
-                    ? {
-                        ...(row.id && { id: row.id }), // Include ID if it exists (existing record)
-                        term_condition_id: term.id,
-                        condition_type: "general",
-                        // Optionally, you can also send the condition text if your API expects it:
-                        // condition: row.condition,
-                      }
-                    : null;
+
+                  const termPayload = {
+                    condition_type: "general",
+                  };
+
+                  // Pass existing DB id only if it’s a real API id (shorter than 10 digits)
+                  if (row.id && row.id.toString().length < 10) {
+                    termPayload.id = row.id;
+                  }
+
+                  // If marked for deletion
+                  if (row._destroy) {
+                    termPayload._destroy = true;
+                    return termPayload; // Only send id + _destroy (and condition_type)
+                  }
+
+                  // For create/update, set the term_condition_id
+                  if (term) {
+                    termPayload.term_condition_id = term.id;
+                  }
+
+                  return termPayload;
                 })
-                .filter(Boolean) // Remove any nulls if no match found
+                .filter(Boolean)
             : [],
 
           // Resource material term conditions
+          // ...existing code...
+          // resource_material_term_conditions_attributes: Array.isArray(
+          //   materialTermConditions
+          // )
+          //   ? materialTermConditions.map((term) => {
+          //       const termPayload = {
+          //         // Always send the correct term_condition_id (not id)
+          //         term_condition_id: term.term_condition_id,
+          //         material_sub_type: term.material_sub_type,
+          //         condition_category: term.condition_category,
+          //         condition: term.condition,
+          //       };
+
+          //       // Only include the record id if it is a real API id (not a term_condition_id)
+          //       // Usually, API ids are short (e.g. < 10 digits), and term_condition_id is always required
+          //       if (
+          //         term.id &&
+          //         term.id !== term.term_condition_id && // Don't send if id is same as term_condition_id
+          //         term.id.toString().length < 10 // Only include if it's a real DB id
+          //       ) {
+          //         termPayload.id = term.id;
+          //       }
+
+          //       return termPayload;
+          //     })
+          //   : [],
+          // ...existing code...
+
           resource_material_term_conditions_attributes: Array.isArray(
             materialTermConditions
           )
-            ? materialTermConditions.map((term) => ({
-                ...(term.id && { id: term.id }), // Include ID if it exists (existing record)
-                term_condition_id: term.term_condition_id,
-                material_sub_type: term.material_sub_type,
-                condition_category: term.condition_category,
-                condition: term.condition,
-              }))
+            ? materialTermConditions
+                .filter((term) => {
+                  // Keep normal rows OR ones marked for deletion
+                  return (
+                    (term.term_condition_id &&
+                      term.material_sub_type &&
+                      term.condition_category &&
+                      term.condition) ||
+                    term._destroy
+                  );
+                })
+                .map((term) => {
+                  const termPayload = {
+                    term_condition_id: term.term_condition_id,
+                    material_sub_type: term.material_sub_type,
+                    condition_category: term.condition_category,
+                    condition: term.condition,
+                  };
+
+                  // If this is from DB, pass its real id
+                  if (
+                    term.id &&
+                    term.id !== term.term_condition_id &&
+                    term.id.toString().length < 10
+                  ) {
+                    termPayload.id = term.id;
+                  }
+
+                  // If deleted, mark with _destroy
+                  if (term._destroy) {
+                    termPayload._destroy = true;
+                  }
+
+                  return termPayload;
+                })
             : [],
 
           attachments: attachmentsPayload || [],
@@ -3343,21 +3579,23 @@ const PoEdit = () => {
                                 <tbody>
                                   <tr>
                                     <td>Total Base Cost</td>
-                                    <td>0</td>
+                                    <td>{taxSummary.total_base_cost}</td>
                                   </tr>
                                   <tr>
-                                    <td>Total Tax </td>
-                                    <td>0</td>
+                                    <td>Total Tax</td>
+                                    <td>{taxSummary.total_tax}</td>
                                   </tr>
                                   <tr>
                                     <td>Total Charge</td>
-                                    <td>0</td>
+                                    <td>{taxSummary.total_charge}</td>
                                   </tr>
                                   <tr>
                                     <td className="fw-bold">
                                       Total All Incl. Cost
                                     </td>
-                                    <td className="fw-bold">0</td>
+                                    <td className="fw-bold">
+                                      {taxSummary.total_inclusive_cost}
+                                    </td>
                                   </tr>
                                 </tbody>
                               </table>
@@ -4033,9 +4271,10 @@ const PoEdit = () => {
                                   setGeneralTerms((prev) => [
                                     ...prev,
                                     {
-                                      id: Date.now(),
+                                      // id: Date.now(),
                                       category: "",
                                       condition: "",
+                                      destroy: false, // new flag for backend deletion
                                     },
                                   ])
                                 }
@@ -4046,6 +4285,7 @@ const PoEdit = () => {
                                 Add
                               </button>
                             </div>
+
                             <div className="tbl-container me-2 mt-2">
                               <table className="w-100">
                                 <thead>
@@ -4056,104 +4296,114 @@ const PoEdit = () => {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {generalTerms && generalTerms.length > 0 ? (
-                                    generalTerms.map((row, idx) => (
-                                      <tr key={row.id}>
-                                        <td>
-                                          <select
-                                            className="form-control"
-                                            value={row.category}
-                                            onChange={(e) => {
-                                              const selectedCategory =
-                                                e.target.value;
-                                              // Find existing conditions for the selected category from API data
-                                              const existingConditionsForCategory =
-                                                termsConditions.filter(
-                                                  (item) =>
-                                                    item.condition_category_name ===
-                                                    selectedCategory
+                                  {generalTerms &&
+                                  generalTerms.filter((item) => !item._destroy)
+                                    .length > 0 ? (
+                                    generalTerms
+                                      .filter((item) => !item._destroy) // hide deleted in UI
+                                      .map((row, idx) => (
+                                        <tr key={row.id}>
+                                          <td>
+                                            <select
+                                              className="form-control"
+                                              value={row.category}
+                                              onChange={(e) => {
+                                                const selectedCategory =
+                                                  e.target.value;
+
+                                                const existingConditionsForCategory =
+                                                  termsConditions.filter(
+                                                    (item) =>
+                                                      item.condition_category_name ===
+                                                      selectedCategory
+                                                  );
+
+                                                const defaultConditionText =
+                                                  existingConditionsForCategory.length >
+                                                  0
+                                                    ? existingConditionsForCategory[0]
+                                                        .condition
+                                                    : "";
+
+                                                setGeneralTerms((prev) =>
+                                                  prev.map((item) =>
+                                                    item.id === row.id
+                                                      ? {
+                                                          ...item,
+                                                          category:
+                                                            selectedCategory,
+                                                          condition:
+                                                            defaultConditionText,
+                                                        }
+                                                      : item
+                                                  )
                                                 );
-
-                                              // Get the first condition text for this category (or empty if none exists)
-                                              const defaultConditionText =
-                                                existingConditionsForCategory.length >
-                                                0
-                                                  ? existingConditionsForCategory[0]
-                                                      .condition
-                                                  : "";
-
-                                              setGeneralTerms((prev) =>
-                                                prev.map((item, i) =>
-                                                  i === idx
-                                                    ? {
-                                                        ...item,
-                                                        category:
-                                                          selectedCategory,
-                                                        condition:
-                                                          defaultConditionText, // Auto-populate with existing condition
-                                                      }
-                                                    : item
+                                              }}
+                                            >
+                                              <option value="">
+                                                Select Category
+                                              </option>
+                                              {conditionCategories.map(
+                                                (category, catIndex) => (
+                                                  <option
+                                                    key={catIndex}
+                                                    value={category}
+                                                  >
+                                                    {category}
+                                                  </option>
                                                 )
-                                              );
-                                            }}
-                                          >
-                                            <option value="">
-                                              Select Category
-                                            </option>
-                                            {conditionCategories.map(
-                                              (category, catIndex) => (
-                                                <option
-                                                  key={catIndex}
-                                                  value={category}
-                                                >
-                                                  {category}
-                                                </option>
-                                              )
-                                            )}
-                                          </select>
-                                        </td>
-                                        <td>
-                                          <input
-                                            className="form-control"
-                                            value={row.condition}
-                                            onChange={(e) =>
-                                              setGeneralTerms((prev) =>
-                                                prev.map((item, i) =>
-                                                  i === idx
-                                                    ? {
-                                                        ...item,
-                                                        condition:
-                                                          e.target.value,
-                                                      }
-                                                    : item
+                                              )}
+                                            </select>
+                                          </td>
+                                          <td>
+                                            <input
+                                              className="form-control"
+                                              value={row.condition}
+                                              onChange={(e) =>
+                                                setGeneralTerms((prev) =>
+                                                  prev.map((item) =>
+                                                    item.id === row.id
+                                                      ? {
+                                                          ...item,
+                                                          condition:
+                                                            e.target.value,
+                                                        }
+                                                      : item
+                                                  )
                                                 )
-                                              )
-                                            }
-                                            placeholder={
-                                              row.category
-                                                ? "Enter condition"
-                                                : "Select category first"
-                                            }
-                                            disabled={!row.category}
-                                          />
-                                        </td>
-                                        <td className="text-center">
-                                          <button
-                                            type="button"
-                                            className="btn btn-link text-danger"
-                                            onClick={() =>
-                                              setGeneralTerms((prev) =>
-                                                prev.filter((_, i) => i !== idx)
-                                              )
-                                            }
-                                          >
-                                            <span className="material-symbols-outlined">
-                                              cancel
-                                            </span>
-                                          </button>
-                                        </td>
-                                      </tr>
-                                    ))
+                                              }
+                                              placeholder={
+                                                row.category
+                                                  ? "Enter condition"
+                                                  : "Select category first"
+                                              }
+                                              disabled={!row.category}
+                                            />
+                                          </td>
+                                          <td className="text-center">
+                                            <button
+                                              type="button"
+                                              className="btn btn-link text-danger"
+                                              onClick={() =>
+                                                setGeneralTerms((prev) =>
+                                                  prev.map((item) =>
+                                                    item.id === row.id
+                                                      ? {
+                                                          ...item,
+                                                          _destroy: true,
+                                                        } // mark for deletion
+                                                      : item
+                                                  )
+                                                )
+                                              }
+                                            >
+                                              <span className="material-symbols-outlined">
+                                                cancel
+                                              </span>
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      ))
                                   ) : (
                                     <tr>
                                       <td colSpan={3} className="text-center">
@@ -4164,6 +4414,7 @@ const PoEdit = () => {
                                 </tbody>
                               </table>
                             </div>
+
                             <div className="mt-3 ">
                               <h5 className=" mt-3">
                                 Material Specific Term &amp; Conditions
@@ -4179,7 +4430,7 @@ const PoEdit = () => {
                                     <th>Actions</th>
                                   </tr>
                                 </thead>
-                                <tbody>
+                                {/* <tbody>
                                   {materialTermConditions &&
                                   materialTermConditions.length > 0 ? (
                                     (() => {
@@ -4228,6 +4479,65 @@ const PoEdit = () => {
                                         )
                                       );
                                     })()
+                                  ) : (
+                                    <tr>
+                                      <td colSpan={4} className="text-center">
+                                        No material specific conditions found.
+                                      </td>
+                                    </tr>
+                                  )}
+                                </tbody> */}
+                                <tbody>
+                                  {materialTermConditions &&
+                                  materialTermConditions.filter(
+                                    (item) => !item._destroy
+                                  ).length > 0 ? (
+                                    materialTermConditions
+                                      .filter((item) => !item._destroy) // hide deleted rows in UI
+                                      .map((item, index) => (
+                                        <tr key={index}>
+                                          <td>
+                                            {item.material_sub_type ||
+                                              item.material_name ||
+                                              item.material ||
+                                              "N/A"}
+                                          </td>
+                                          <td>
+                                            {item.condition_category ||
+                                              item.condition_category_name ||
+                                              item.category ||
+                                              "N/A"}
+                                          </td>
+                                          <td>
+                                            {item.condition ||
+                                              item.condition_text ||
+                                              "N/A"}
+                                          </td>
+                                          <td className="text-center">
+                                            <button
+                                              type="button"
+                                              className="btn btn-link text-danger"
+                                              onClick={() => {
+                                                setMaterialTermConditions(
+                                                  (prev) =>
+                                                    prev.map((row) =>
+                                                      row === item
+                                                        ? {
+                                                            ...row,
+                                                            _destroy: true,
+                                                          } // mark deleted for backend
+                                                        : row
+                                                    )
+                                                );
+                                              }}
+                                            >
+                                              <span className="material-symbols-outlined">
+                                                cancel
+                                              </span>
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      ))
                                   ) : (
                                     <tr>
                                       <td colSpan={4} className="text-center">
