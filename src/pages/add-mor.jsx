@@ -9,9 +9,11 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
+
 const AddMor = () => {
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
+    const navigate = useNavigate();
 
       const [formData, setFormData] = useState({
           materialType: "",
@@ -335,7 +337,7 @@ const AddMor = () => {
             
             const response = await axios.get(apiUrl);
             
-            // Transform the data to create separate rows for each material
+            // Transform the data to create separate rows for each material with rowspan info
             let transformedData = [];
             
             if (response.data && Array.isArray(response.data.material_order_requests)) {
@@ -351,26 +353,32 @@ const AddMor = () => {
                     }
                     
                     if (mor.mor_inventories && Array.isArray(mor.mor_inventories)) {
+                        const inventoryCount = mor.mor_inventories.length;
+                        
                         mor.mor_inventories.forEach((inventory, invIndex) => {
                             console.log(`  Adding inventory ${invIndex + 1}:`, inventory.material_name);
                             
-                            // Create a separate row for each material
-                            // Show MOR info only for the first material of each MOR
+                            // Create a separate row for each material with rowspan info
                             const materialRow = {
                                 mor_id: mor.id,
                                 project_name: mor.project_name,
                                 sub_project_name: mor.sub_project_name,
-                                mor_number: invIndex === 0 ? mor.mor_number : '', // Only show for first material
-                                mor_date: invIndex === 0 ? mor.mor_date : '', // Only show for first material
+                                mor_number: mor.mor_number,
+                                mor_date: mor.mor_date,
                                 status: mor.status,
                                 // Material details
                                 inventory_id: inventory.id,
+                                material_type: inventory.material_type || '',
+                                material_sub_type: inventory.material_sub_type || '',
                                 material_name: inventory.material_name,
                                 uom_name: inventory.uom_name,
                                 required_quantity: inventory.required_quantity,
                                 prev_order_qty: inventory.prev_order_qty,
                                 order_qty: inventory.order_qty,
-                                inventory_status: inventory.status
+                                inventory_status: inventory.status,
+                                // Rowspan information
+                                isFirstMaterial: invIndex === 0,
+                                rowspan: invIndex === 0 ? inventoryCount : 0
                             };
                             
                             transformedData.push(materialRow);
@@ -398,26 +406,32 @@ const AddMor = () => {
                     }
                     
                     if (mor.mor_inventories && Array.isArray(mor.mor_inventories)) {
+                        const inventoryCount = mor.mor_inventories.length;
+                        
                         mor.mor_inventories.forEach((inventory, invIndex) => {
                             console.log(`  Adding inventory ${invIndex + 1}:`, inventory.material_name);
                             
-                            // Create a separate row for each material
-                            // Show MOR info only for the first material of each MOR
+                            // Create a separate row for each material with rowspan info
                             const materialRow = {
                                 mor_id: mor.id,
                                 project_name: mor.project_name,
                                 sub_project_name: mor.sub_project_name,
-                                mor_number: invIndex === 0 ? mor.mor_number : '', // Only show for first material
-                                mor_date: invIndex === 0 ? mor.mor_date : '', // Only show for first material
+                                mor_number: mor.mor_number,
+                                mor_date: mor.mor_date,
                                 status: mor.status,
                                 // Material details
                                 inventory_id: inventory.id,
+                                material_type: inventory.material_type || '',
+                                material_sub_type: inventory.material_sub_type || '',
                                 material_name: inventory.material_name,
                                 uom_name: inventory.uom_name,
                                 required_quantity: inventory.required_quantity,
                                 prev_order_qty: inventory.prev_order_qty,
                                 order_qty: inventory.order_qty,
-                                inventory_status: inventory.status
+                                inventory_status: inventory.status,
+                                // Rowspan information
+                                isFirstMaterial: invIndex === 0,
+                                rowspan: invIndex === 0 ? inventoryCount : 0
                             };
                             
                             transformedData.push(materialRow);
@@ -474,8 +488,56 @@ const AddMor = () => {
 
     // Handle accept selected materials
     const handleAcceptSelectedMaterials = () => {
-        console.log('Selected material items:', selectedMaterialItems);
-        // Add your logic here for accepting selected materials
+        if (selectedMaterialItems.length === 0) {
+            alert('Please select at least one material item');
+            return;
+        }
+
+        // Get the selected MOR data
+        const selectedMORs = selectedMaterialItems.map(index => {
+            const item = materialDetailsData[index];
+            return {
+                mor_id: item.mor_id,
+                project_name: item.project_name,
+                sub_project_name: item.sub_project_name,
+                mor_number: item.mor_number,
+                mor_date: item.mor_date,
+                status: item.status,
+                mor_inventories: materialDetailsData
+                    .filter(material => material.mor_id === item.mor_id)
+                    .map(material => ({
+                        id: material.inventory_id,
+                        mor_id: material.mor_id,
+                        material_name: material.material_name,
+                        uom_name: material.uom_name,
+                        required_quantity: material.required_quantity,
+                        prev_order_qty: material.prev_order_qty,
+                        order_qty: material.order_qty,
+                        status: material.inventory_status,
+                        material_type: material.material_type,
+                        material_sub_type: material.material_sub_type
+                    }))
+            };
+        });
+
+        // Remove duplicates based on mor_id
+        const uniqueMORs = selectedMORs.filter((mor, index, self) => 
+            index === self.findIndex(m => m.mor_id === mor.mor_id)
+        );
+
+        // Navigate to ropo-mapping-create with the selected MOR data
+        // navigate('/ropo-mapping-create?token=${token}', { 
+        //     state: { 
+        //         selectedMORs: uniqueMORs,
+        //         fromAddMor: true 
+        //     } 
+        // });
+        navigate(`/ropo-mapping-create?token=${token}`, { 
+  state: { 
+    selectedMORs: uniqueMORs,
+    fromAddMor: true 
+  } 
+});
     };
 
     // Handle search with filters
@@ -516,6 +578,7 @@ const AddMor = () => {
         setSelectedInventoryMaterialTypes2(null);
         setMaterialDetailsData([]);
         setSelectedMaterialItems([]);
+     fetchMaterialDetails(false);
     };
 
     // Load material details on component mount
@@ -660,9 +723,9 @@ const AddMor = () => {
 
                 <div className="mt-1 justify-content-center d-flex gap-2">
                   <button className="purple-btn1" onClick={handleSearch}>Search</button>
-                  <button className="purple-btn1" onClick={handleShowAll}>Show All</button>
+                  {/* <button className="purple-btn1" onClick={handleShowAll}>Show All</button> */}
                   <button className="purple-btn1" onClick={handleResetForm}>Reset</button>
-                  <button className="purple-btn1">Close</button>
+                  {/* <button className="purple-btn1">Close</button> */}
                 </div>
 
                 <div className="tbl-container me-2 mt-3">
@@ -676,25 +739,34 @@ const AddMor = () => {
                     <table className="w-100">
                       <thead>
                         <tr>
-                           <th>
+                          <th rowSpan="2">
                             <input 
                               type="checkbox" 
                               checked={selectedMaterialItems.length === materialDetailsData.length && materialDetailsData.length > 0}
                               onChange={handleSelectAllMaterials}
                             />
                           </th>
-                           <th>Project SubProject</th>
-                           <th>MOR Number</th>
-                           <th>MOR Date</th>
-                           <th>Material Name</th>
+                          <th rowSpan="2">Project SubProject</th>
+                          <th rowSpan="2">MOR Number</th>
+                          <th rowSpan="2">MOR Date</th>
+                          <th colSpan="8">Material Details</th>
+                        </tr>
+                        <tr>
+                          {/* <th>Material Type</th>
+                          <th>Material Sub Type</th> */}
+                          <th>
+                            <input type="checkbox" />
+                          </th>
+                          <th>Material</th>
                           <th>UOM</th>
-                           <th>Required Qty</th>
-                           <th>Prev Order Qty</th>
-                           <th>Order Qty</th>
+                          <th>Required Qty</th>
+                          <th>Prev Order Qty</th>
+                          <th>Order Qty</th>
+                          <th>Status</th>
                         </tr>
                       </thead>
-                                             <tbody>
-                         {materialDetailsData.length > 0 ? (
+                      <tbody>
+                        {materialDetailsData.length > 0 ? (
                            materialDetailsData.map((item, index) => {
                              // Debug logging for specific MOR
                              if (item.mor_number === 'MOR/2025/11176') {
@@ -703,30 +775,51 @@ const AddMor = () => {
                              
                              return (
                                <tr key={`${item.mor_id}-${item.inventory_id}-${index}`}>
-                               <td>
-                                 <input 
-                                   type="checkbox" 
-                                   checked={selectedMaterialItems.includes(index)}
-                                   onChange={() => handleMaterialCheckboxChange(index)}
-                                 />
-                               </td>
-                                   <td>{item.project_name && item.sub_project_name ? `${item.project_name} - ${item.sub_project_name}` : (item.project_name || item.sub_project_name || '-')}</td>
-                                   <td>{item.mor_number || '-'}</td>
-                                   <td>{item.mor_date || '-'}</td>
-                                   <td>{item.material_name || '-'}</td>
-                                   <td>{item.uom_name || '-'}</td>
-                                   <td>{item.required_quantity || '-'}</td>
-                                   <td>{item.prev_order_qty || '-'}</td>
-                                   <td>{item.order_qty || '-'}</td>
-                             </tr>
+                                 <td>
+                                   <input 
+                                     type="checkbox" 
+                                     checked={selectedMaterialItems.includes(index)}
+                                     onChange={() => handleMaterialCheckboxChange(index)}
+                                   />
+                                 </td>
+                                 {item.isFirstMaterial ? (
+                                   <td rowSpan={item.rowspan}>
+                                     {item.project_name && item.sub_project_name ? `${item.project_name} - ${item.sub_project_name}` : (item.project_name || item.sub_project_name || '')}
+                                   </td>
+                                 ) : null}
+                                 {item.isFirstMaterial ? (
+                                   <td rowSpan={item.rowspan}>
+                                     {item.mor_number || ''}
+                                   </td>
+                                 ) : null}
+                                 {item.isFirstMaterial ? (
+                                   <td rowSpan={item.rowspan}>
+                                     {item.mor_date || ''}
+                                   </td>
+                                 ) : null}
+                              <td>
+                                <input 
+                                  type="checkbox" 
+                                  checked={selectedMaterialItems.includes(index)}
+                                  onChange={() => handleMaterialCheckboxChange(index)}
+                                />
+                              </td>
+                                 
+                                 <td>{item.material_name || ''}</td>
+                                 <td>{item.uom_name || ''}</td>
+                                 <td>{item.required_quantity || ''}</td>
+                                 <td>{item.prev_order_qty || ''}</td>
+                                 <td>{item.order_qty || ''}</td>
+                                 <td>{item.inventory_status || ''}</td>
+                            </tr>
                              );
                            })
-                         ) : (
-                           <tr>
-                             <td colSpan="9" className="text-center">No data available</td>
-                           </tr>
-                         )}
-                       </tbody>
+                        ) : (
+                          <tr>
+                             <td colSpan="12" className="text-center">No data available</td>
+                          </tr>
+                        )}
+                      </tbody>
                     </table>
                   )}
                 </div>

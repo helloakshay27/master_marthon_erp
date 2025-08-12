@@ -40,11 +40,11 @@ const RateDetails = () => {
     const openModal = () => setShowModal(true);
     const closeModal = () => setShowModal(false);
 
-    const fetchRateDetails = async (id) => {
+    const fetchRateDetails = async (page,id) => {
         setLoading(true);
         try {
             const response = await axios.get(
-                `${baseURL}rate_details/${id}.json?token=${token}`
+                `${baseURL}rate_details/${id}.json?page=${page}&per_page=10&token=${token}`
             );
             setRateDetails(response.data);
             setStatus(response.data.selected_status || "");
@@ -266,6 +266,12 @@ const RateDetails = () => {
             });
 
     };
+
+    const handlePageChange = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
     return (
         <>
             <div className="website-content overflow-auto">
@@ -479,7 +485,7 @@ const RateDetails = () => {
                                                 </div>
                                                 <div className="mt-3 mb-5 ">
                                                     {/* <h5 className="mb-3">Materials</h5> */}
-                                                    <div className="tbl-container  mt-1">
+                                                    <div className="tbl-container  mt-1"  style={{minHeight:"400px"}}>
                                                         <table className="w-100">
                                                             <thead>
                                                                 <tr>
@@ -561,7 +567,10 @@ const RateDetails = () => {
                                                                 {tableData.length > 0 ? (
                                                                     tableData.map((row, index) => (
                                                                         <tr key={index}>
-                                                                            <td className="text-start">{index + 1}</td>
+                                                                            <td className="text-start">
+                                                                                {/* {index + 1} */}
+                                                                                 {(currentPage - 1) * itemsPerPage + index + 1}
+                                                                                </td>
                                                                             <td className="text-start">{row.material_type}</td>
                                                                             <td className="text-start">{row.material_sub_type}</td>
                                                                             <td className="text-start">{row.material_name}</td>

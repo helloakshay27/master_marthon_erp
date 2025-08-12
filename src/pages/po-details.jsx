@@ -17,8 +17,6 @@ const PoDetails = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
- 
-
 
   // Tax modal state variables
   const [showTaxModal, setShowTaxModal] = useState(false);
@@ -159,7 +157,7 @@ const PoDetails = () => {
     fetchPurchaseOrderData();
   }, [id, token]);
 
-   const isStatusDisabled = purchaseOrderData?.status === "Approved";
+  const isStatusDisabled = purchaseOrderData?.status === "Approved";
   // Function to populate form data from API response
   const populateFormData = (poData) => {
     // Populate company and supplier
@@ -493,7 +491,6 @@ const PoDetails = () => {
   };
 
   // Handle supplier selection
-  
 
   // State for dropdown options
   const [inventoryTypes2, setInventoryTypes2] = useState([]);
@@ -2904,49 +2901,48 @@ const PoDetails = () => {
     console.log("Combined materials:", combined);
     return combined;
   };
-    const [selectedStatus, setSelectedStatus] = useState({
-      value: "",
-      label: "Select Status",
-    });
+  const [selectedStatus, setSelectedStatus] = useState({
+    value: "",
+    label: "Select Status",
+  });
 
-      const [adminComment, setAdminComment] = useState("");
+  const [adminComment, setAdminComment] = useState("");
 
-      useEffect(() => {
-  if (purchaseOrderData?.selected_status) {
-    setSelectedStatus({
-      value: purchaseOrderData.selected_status,
-      label: purchaseOrderData.selected_status,
-    });
-  }
-}, [purchaseOrderData?.selected_status]);
+  useEffect(() => {
+    if (purchaseOrderData?.selected_status) {
+      setSelectedStatus({
+        value: purchaseOrderData.selected_status.toLowerCase(),
+        label: purchaseOrderData.selected_status,
+      });
+    }
+  }, [purchaseOrderData?.selected_status]);
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const payload = {
-      status_log: {
-        status: selectedStatus?.value || "Draft", // default to "Draft"
-        remarks: adminComment || "", // in case you have a remarks field
-      },
-    };
+    try {
+      const payload = {
+        status_log: {
+          status: selectedStatus?.value.toLowerCase() || "Draft", // default to "Draft"
+          remarks: adminComment || "", // in case you have a remarks field
+        },
+      };
 
-    const response = await axios.patch(
-      `${baseURL}purchase_orders/${id}/update_status.json?token=${token}`,
-      payload
-    );
+      const response = await axios.put(
+        `${baseURL}purchase_orders/${id}/update_status.json?token=${token}`,
+        payload
+      );
 
-    console.log("Status update successful:", response.data);
-     alert("Status updated successfully!");
-    setTimeout(() => {
-      window.location.reload();
-    }, 2000);
-  } catch (error) {
-    console.error("Error updating status:", error);
-    alert("Error updating status. Please try again.");
-  }
-};
-
+      console.log("Status update successful:", response.data);
+      alert("Status updated successfully!");
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 2000);
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Error updating status. Please try again.");
+    }
+  };
 
   const openModal = () => {
     setShowModal(true);
@@ -3222,206 +3218,233 @@ const PoDetails = () => {
                               </button>
                             )}
                         </div>
-                      
+
                         <div className="tab-content" id="nav-tabContent">
-                            {purchaseOrderData ? (
-                          <div
-                            className="tab-pane fade active show"
-                            id="Domestic1"
-                            role="tabpanel"
-                            aria-labelledby="nav-home-tab"
-                            tabIndex={0}
-                          >
-                            <div className="card-body">
-                              <div className="row">
-                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-                                  <div className="col-6 ">
-                                    <label>Company </label>
+                          {purchaseOrderData ? (
+                            <div
+                              className="tab-pane fade active show"
+                              id="Domestic1"
+                              role="tabpanel"
+                              aria-labelledby="nav-home-tab"
+                              tabIndex={0}
+                            >
+                              <div className="card-body">
+                                <div className="row">
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                      <label>Company </label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3 text-dark">
+                                          :
+                                        </span>
+                                        {purchaseOrderData.company_name}
+                                      </label>
+                                    </div>
                                   </div>
-                                  <div className="col-6">
-                                    <label className="text">
-                                      <span className="me-3 text-dark">:</span>
-                                      {purchaseOrderData.company_name}
-                                    </label>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>PO Type </label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3 text-dark">
+                                          :
+                                        </span>
+                                        {purchaseOrderData.po_type}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>PO Date </label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3 text-dark">
+                                          :
+                                        </span>
+                                        {purchaseOrderData.po_date
+                                          ? (() => {
+                                              const d = new Date(
+                                                purchaseOrderData.po_date
+                                              );
+                                              const day = String(
+                                                d.getDate()
+                                              ).padStart(2, "0");
+                                              const month = String(
+                                                d.getMonth() + 1
+                                              ).padStart(2, "0");
+                                              const year = d.getFullYear();
+                                              return `${day}-${month}-${year}`;
+                                            })()
+                                          : "-"}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>Created ON </label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3 text-dark">
+                                          :
+                                        </span>
+                                        {purchaseOrderData.created_at
+                                          ? (() => {
+                                              const d = new Date(
+                                                purchaseOrderData.created_at
+                                              );
+                                              const day = String(
+                                                d.getDate()
+                                              ).padStart(2, "0");
+                                              const month = String(
+                                                d.getMonth() + 1
+                                              ).padStart(2, "0");
+                                              const year = d.getFullYear();
+                                              return `${day}-${month}-${year}`;
+                                            })()
+                                          : "-"}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>PO No </label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3 text-dark">
+                                          :
+                                        </span>
+                                        {purchaseOrderData.po_number}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>Total PO Value</label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3 text-dark">
+                                          :
+                                        </span>
+                                        {purchaseOrderData.total_value}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>Total Discount</label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3 text-dark">
+                                          :
+                                        </span>
+                                        {purchaseOrderData.total_discount}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>Supplier</label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3 text-dark">
+                                          :
+                                        </span>
+                                        {purchaseOrderData.supplier_name}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>Vendor GSTIN</label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3 text-dark">
+                                          :
+                                        </span>
+                                        {purchaseOrderData.vendor_gstin || "-"}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>Branch</label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3 text-dark">
+                                          :
+                                        </span>
+                                        {purchaseOrderData.branch || "-"}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>Unloading scope</label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3 text-dark">
+                                          :
+                                        </span>
+                                        {purchaseOrderData.unloading_scope ||
+                                          "-"}
+                                      </label>
+                                    </div>
                                   </div>
                                 </div>
-                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                  <div className="col-6 ">
-                                    <label>PO Type </label>
-                                  </div>
-                                  <div className="col-6">
-                                    <label className="text">
-                                      <span className="me-3 text-dark">:</span>
-                                      {purchaseOrderData.po_type}
-                                    </label>
-                                  </div>
+                                <div className="d-flex justify-content-between  align-items-center">
+                                  <h5
+                                    className="mt-2 "
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#sereneModal"
+                                  >
+                                    Material Details
+                                  </h5>
                                 </div>
-                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                  <div className="col-6 ">
-                                    <label>PO Date </label>
-                                  </div>
-                                  <div className="col-6">
-                                    <label className="text">
-                                      <span className="me-3 text-dark">:</span>
-                                      {purchaseOrderData.po_date
-                                        ? (() => {
-                                            const d = new Date(purchaseOrderData.po_date);
-                                            const day = String(
-                                              d.getDate()
-                                            ).padStart(2, "0");
-                                            const month = String(
-                                              d.getMonth() + 1
-                                            ).padStart(2, "0");
-                                            const year = d.getFullYear();
-                                            return `${day}-${month}-${year}`;
-                                          })()
-                                        : "-"}
-                                    </label>
-                                  </div>
-                                </div>
-                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                  <div className="col-6 ">
-                                    <label>Created ON </label>
-                                  </div>
-                                  <div className="col-6">
-                                    <label className="text">
-                                      <span className="me-3 text-dark">:</span>
-                                      {purchaseOrderData.created_at
-                                        ? (() => {
-                                            const d = new Date(
-                                              purchaseOrderData.created_at
-                                            );
-                                            const day = String(
-                                              d.getDate()
-                                            ).padStart(2, "0");
-                                            const month = String(
-                                              d.getMonth() + 1
-                                            ).padStart(2, "0");
-                                            const year = d.getFullYear();
-                                            return `${day}-${month}-${year}`;
-                                          })()
-                                        : "-"}
-                                    </label>
-                                  </div>
-                                </div>
-                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                  <div className="col-6 ">
-                                    <label>PO No </label>
-                                  </div>
-                                  <div className="col-6">
-                                    <label className="text">
-                                      <span className="me-3 text-dark">:</span>
-                                      {purchaseOrderData.po_number}
-                                    </label>
-                                  </div>
-                                </div>
-                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                  <div className="col-6 ">
-                                    <label>Total PO Value</label>
-                                  </div>
-                                  <div className="col-6">
-                                    <label className="text">
-                                      <span className="me-3 text-dark">:</span>
-                                      {purchaseOrderData.total_value}
-                                    </label>
-                                  </div>
-                                </div>
-                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                  <div className="col-6 ">
-                                    <label>Total Discount</label>
-                                  </div>
-                                  <div className="col-6">
-                                    <label className="text">
-                                      <span className="me-3 text-dark">:</span>
-                                      {purchaseOrderData.total_discount}
-                                    </label>
-                                  </div>
-                                </div>
-                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                  <div className="col-6 ">
-                                    <label>Supplier</label>
-                                  </div>
-                                  <div className="col-6">
-                                    <label className="text">
-                                      <span className="me-3 text-dark">:</span>
-                                      {purchaseOrderData.supplier_name}
-                                    </label>
-                                  </div>
-                                </div>
-                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                  <div className="col-6 ">
-                                    <label>Vendor GSTIN</label>
-                                  </div>
-                                  <div className="col-6">
-                                    <label className="text">
-                                      <span className="me-3 text-dark">:</span>
-                                      {purchaseOrderData.vendor_gstin || "-"}
-                                    </label>
-                                  </div>
-                                </div>
-                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                  <div className="col-6 ">
-                                    <label>Branch</label>
-                                  </div>
-                                  <div className="col-6">
-                                    <label className="text">
-                                      <span className="me-3 text-dark">:</span>
-                                      {purchaseOrderData.branch || "-"}
-                                    </label>
-                                  </div>
-                                </div>
-                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-                                  <div className="col-6 ">
-                                    <label>Unloading scope</label>
-                                  </div>
-                                  <div className="col-6">
-                                    <label className="text">
-                                      <span className="me-3 text-dark">:</span>
-                                      {purchaseOrderData.unloading_scope || "-"}
-                                    </label>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="d-flex justify-content-between  align-items-center">
-                                <h5
-                                  className="mt-2 "
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#sereneModal"
-                                >
-                                  Material Details
-                                </h5>
-                              </div>
-                              <div className="tbl-container me-2 mt-3">
-                                <table
-                                  className="w-100"
-                                  style={{ width: "100%" }}
-                                >
-                                  <thead>
-                                    <tr>
-                                      <th style={{ width: "66px !important" }}>
-                                        Sr. No
-                                      </th>
-                                      <th>Project</th>
-                                      <th>Sub-Project</th>
-                                      {/* <th>MOR No.</th> */}
-                                      <th>Material</th>
-                                      <th>UOM</th>
-                                      <th>Mor Qty</th>
-                                      <th>PO Order Qty</th>
-                                      <th>GRN Qty</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {purchaseOrderData.material_details &&
-                                    purchaseOrderData.material_details.length >
-                                      0 ? (
-                                      purchaseOrderData.material_details.map(
-                                        (mat, idx) => (
-                                          <tr key={mat.id || idx}>
-                                            <td>{idx + 1}</td>
-                                            <td>{mat.project_name}</td>
-                                            <td>{mat.sub_project_name}</td>
-                                            {/* <td>
+                                <div className="tbl-container me-2 mt-3">
+                                  <table
+                                    className="w-100"
+                                    style={{ width: "100%" }}
+                                  >
+                                    <thead>
+                                      <tr>
+                                        <th
+                                          style={{ width: "66px !important" }}
+                                        >
+                                          Sr. No
+                                        </th>
+                                        <th>Project</th>
+                                        <th>Sub-Project</th>
+                                        {/* <th>MOR No.</th> */}
+                                        <th>Material</th>
+                                        <th>UOM</th>
+                                        <th>Mor Qty</th>
+                                        <th>PO Order Qty</th>
+                                        <th>GRN Qty</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {purchaseOrderData.material_details &&
+                                      purchaseOrderData.material_details
+                                        .length > 0 ? (
+                                        purchaseOrderData.material_details.map(
+                                          (mat, idx) => (
+                                            <tr key={mat.id || idx}>
+                                              <td>{idx + 1}</td>
+                                              <td>{mat.project_name}</td>
+                                              <td>{mat.sub_project_name}</td>
+                                              {/* <td>
                                               <a
                                                 style={{
                                                   textDecoration:
@@ -3433,27 +3456,29 @@ const PoDetails = () => {
                                                 {mat.mor_no}
                                               </a>
                                             </td> */}
-                                            <td>{mat.material}</td>
-                                            <td>{mat.uom}</td>
-                                            <td>{mat.mor_qty}</td>
-                                            <td>{mat.po_order_qty}</td>
-                                            <td>{mat.grn_qty}</td>
-                                          </tr>
+                                              <td>{mat.material}</td>
+                                              <td>{mat.uom}</td>
+                                              <td>{mat.mor_qty}</td>
+                                              <td>{mat.po_order_qty}</td>
+                                              <td>{mat.grn_qty}</td>
+                                            </tr>
+                                          )
                                         )
-                                      )
-                                    ) : (
-                                      <tr>
-                                        <td colSpan={9}>No material details</td>
-                                      </tr>
-                                    )}
-                                  </tbody>
-                                </table>
+                                      ) : (
+                                        <tr>
+                                          <td colSpan={9}>
+                                            No material details
+                                          </td>
+                                        </tr>
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
                               </div>
                             </div>
-                          </div>
-) : (
-  <div>Loading purchase order details...</div>
-)}
+                          ) : (
+                            <div>Loading purchase order details...</div>
+                          )}
                           <div
                             className="tab-pane fade"
                             id="Domestic2"
@@ -3608,7 +3633,6 @@ const PoDetails = () => {
                             <div className="mt-4">
                               <div className="d-flex justify-content-between align-items-center">
                                 <h5 className="mt-3">Charges</h5>
-                               
                               </div>
 
                               <div className="tbl-container me-2 mt-3">
@@ -3636,11 +3660,10 @@ const PoDetails = () => {
                                                 e.target.value
                                               )
                                             }
-                                              disabled={true}  // <-- add this line to disable the select
+                                            disabled={true} // <-- add this line to disable the select
                                           >
                                             <option value="">
                                               Select Type
-
                                             </option>
                                             {chargeNames.map((chargeName) => (
                                               <option
@@ -3650,9 +3673,7 @@ const PoDetails = () => {
                                                 {chargeName.name}
                                               </option>
                                             ))}
-                                            
                                           </select>
-                                          
                                         </td>
                                         <td>
                                           <input
@@ -3677,8 +3698,6 @@ const PoDetails = () => {
                                             className="form-control forname-control decimal-input"
                                             value={charge.realised_amount}
                                             disabled
-                                         
-
                                           />
                                         </td>
                                         <td>
@@ -3765,7 +3784,7 @@ const PoDetails = () => {
                                                 e.target.value
                                               )
                                             }
-                                              disabled={true}  // <-- add this line to disable the select
+                                            disabled={true} // <-- add this line to disable the select
                                           >
                                             <option value="">
                                               Select Type
@@ -3809,7 +3828,7 @@ const PoDetails = () => {
                                                 e.target.value
                                               )
                                             }
-                                              disabled={true}  // <-- add this line to disable the select
+                                            disabled={true} // <-- add this line to disable the select
                                           >
                                             <option value="">
                                               Select Scope
@@ -3836,7 +3855,6 @@ const PoDetails = () => {
                                             Add Taxes and Charges
                                           </button>
                                         </td>
-                                       
                                       </tr>
                                     ))}
                                   </tbody>
@@ -3845,210 +3863,242 @@ const PoDetails = () => {
                               {/* )} */}
                             </div>
                           </div>
-                         {purchaseOrderData?.terms_and_conditions ? (
-  <div
-    className="tab-pane fade"
-    id="Domestic3"
-    role="tabpanel"
-    aria-labelledby="nav-contact-tab"
-    tabIndex={0}
-  >
-    <div className="card-body">
-      <div className="row">
-        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-          <div className="col-6 ">
-            <label>Credit Period (Days) </label>
-          </div>
-          <div className="col-6">
-            <label className="text">
-              <span className="me-3">:-</span>
-              {purchaseOrderData.terms_and_conditions?.credit_period ?? "-"}
-            </label>
-          </div>
-        </div>
-        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-          <div className="col-6 ">
-            <label>P.O Validity Period (Days) </label>
-          </div>
-          <div className="col-6">
-            <label className="text">
-              <span className="me-3">:-</span>
-              {purchaseOrderData.terms_and_conditions?.po_validity_period ?? "-"}
-            </label>
-          </div>
-        </div>
-        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-          <div className="col-6 ">
-            <label>Advance Reminder Duration (Days) </label>
-          </div>
-          <div className="col-6">
-            <label className="text">
-              <span className="me-3">:-</span>
-              {purchaseOrderData.terms_and_conditions?.advance_reminder_duration ?? "-"}
-            </label>
-          </div>
-        </div>
-        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-          <div className="col-6 ">
-            <label>Payment Terms </label>
-          </div>
-          <div className="col-6">
-            <label className="text">
-              <span className="me-3">:-</span>
-              {purchaseOrderData.terms_and_conditions?.payment_terms ?? "-"}
-            </label>
-          </div>
-        </div>
-        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-          <div className="col-6 ">
-            <label>Remark </label>
-          </div>
-          <div className="col-6">
-            <label className="text">
-              <span className="me-3">:-</span>
-              {purchaseOrderData.terms_and_conditions?.payment_remarks ?? "-"}
-            </label>
-          </div>
-        </div>
-      </div>
-    </div>
+                          {purchaseOrderData?.terms_and_conditions ? (
+                            <div
+                              className="tab-pane fade"
+                              id="Domestic3"
+                              role="tabpanel"
+                              aria-labelledby="nav-contact-tab"
+                              tabIndex={0}
+                            >
+                              <div className="card-body">
+                                <div className="row">
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                      <label>Credit Period (Days) </label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3">:-</span>
+                                        {purchaseOrderData.terms_and_conditions
+                                          ?.credit_period ?? "-"}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                      <label>P.O Validity Period (Days) </label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3">:-</span>
+                                        {purchaseOrderData.terms_and_conditions
+                                          ?.po_validity_period ?? "-"}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>
+                                        Advance Reminder Duration (Days){" "}
+                                      </label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3">:-</span>
+                                        {purchaseOrderData.terms_and_conditions
+                                          ?.advance_reminder_duration ?? "-"}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>Payment Terms </label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3">:-</span>
+                                        {purchaseOrderData.terms_and_conditions
+                                          ?.payment_terms ?? "-"}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>Remark </label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3">:-</span>
+                                        {purchaseOrderData.terms_and_conditions
+                                          ?.payment_remarks ?? "-"}
+                                      </label>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
 
-    <div className="card-body">
-      <div className="row">
-        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-          <div className="col-6 ">
-            <label>Total PO Value </label>
-          </div>
-          <div className="col-6">
-            <label className="text">
-              <span className="me-3">:-</span>
-              {purchaseOrderData.total_value}
-            </label>
-          </div>
-        </div>
-        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
-          <div className="col-6 ">
-            <label>Supplier Advance Allowed (%) </label>
-          </div>
-          <div className="col-6">
-            <label className="text">
-              <span className="me-3">:-</span>
-              {purchaseOrderData.terms_and_conditions?.supplier_advance ?? "-"}
-            </label>
-          </div>
-        </div>
-        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-          <div className="col-6 ">
-            <label>Total Discount </label>
-          </div>
-          <div className="col-6">
-            <label className="text">
-              <span className="me-3">:-</span>
-              {purchaseOrderData.total_discount}
-            </label>
-          </div>
-        </div>
-        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-          <div className="col-6 ">
-            <label>Supplier Advance Amount </label>
-          </div>
-          <div className="col-6">
-            <label className="text">
-              <span className="me-3">:-</span>
-              {purchaseOrderData.terms_and_conditions?.supplier_advance_amount ?? "-"}
-            </label>
-          </div>
-        </div>
-        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-          <div className="col-6 ">
-            <label>Service Certificate Advance Allowed (%) </label>
-          </div>
-          <div className="col-6">
-            <label className="text">
-              <span className="me-3">:-</span>
-              {purchaseOrderData.terms_and_conditions?.survice_certificate_advance ?? "-"}
-            </label>
-          </div>
-        </div>
-        <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
-          <div className="col-6 ">
-            <label>Service Certificate Advance Amount </label>
-          </div>
-          <div className="col-6">
-            <label className="text">
-              <span className="me-3">:-</span>
-              {/* No value shown here in your original */}
-            </label>
-          </div>
-        </div>
-      </div>
-    </div>
+                              <div className="card-body">
+                                <div className="row">
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                      <label>Total PO Value </label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3">:-</span>
+                                        {purchaseOrderData.total_value}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 ">
+                                    <div className="col-6 ">
+                                      <label>
+                                        Supplier Advance Allowed (%){" "}
+                                      </label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3">:-</span>
+                                        {purchaseOrderData.terms_and_conditions
+                                          ?.supplier_advance ?? "-"}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>Total Discount </label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3">:-</span>
+                                        {purchaseOrderData.total_discount}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>Supplier Advance Amount </label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3">:-</span>
+                                        {purchaseOrderData.terms_and_conditions
+                                          ?.supplier_advance_amount ?? "-"}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>
+                                        Service Certificate Advance Allowed (%){" "}
+                                      </label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3">:-</span>
+                                        {purchaseOrderData.terms_and_conditions
+                                          ?.survice_certificate_advance ?? "-"}
+                                      </label>
+                                    </div>
+                                  </div>
+                                  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+                                    <div className="col-6 ">
+                                      <label>
+                                        Service Certificate Advance Amount{" "}
+                                      </label>
+                                    </div>
+                                    <div className="col-6">
+                                      <label className="text">
+                                        <span className="me-3">:-</span>
+                                        {/* No value shown here in your original */}
+                                      </label>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
 
-    <div className="mt-3 ">
-      <h5>General Term &amp; Conditions</h5>
-    </div>
-    <div className="tbl-container me-2 mt-2">
-      <table className="w-100" style={{ width: "100%" }}>
-        <thead>
-          <tr>
-            <th>Condition Category</th>
-            <th>Condition</th>
-          </tr>
-        </thead>
-        <tbody>
-          {purchaseOrderData.resource_term_conditions &&
-          purchaseOrderData.resource_term_conditions.length > 0 ? (
-            purchaseOrderData.resource_term_conditions.map((cond, idx) => (
-              <tr key={cond.id || idx}>
-                <td>{cond.condition_category}</td>
-                <td>{cond.condition}</td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={2}>No general term conditions</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+                              <div className="mt-3 ">
+                                <h5>General Term &amp; Conditions</h5>
+                              </div>
+                              <div className="tbl-container me-2 mt-2">
+                                <table
+                                  className="w-100"
+                                  style={{ width: "100%" }}
+                                >
+                                  <thead>
+                                    <tr>
+                                      <th>Condition Category</th>
+                                      <th>Condition</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {purchaseOrderData.resource_term_conditions &&
+                                    purchaseOrderData.resource_term_conditions
+                                      .length > 0 ? (
+                                      purchaseOrderData.resource_term_conditions.map(
+                                        (cond, idx) => (
+                                          <tr key={cond.id || idx}>
+                                            <td>{cond.condition_category}</td>
+                                            <td>{cond.condition}</td>
+                                          </tr>
+                                        )
+                                      )
+                                    ) : (
+                                      <tr>
+                                        <td colSpan={2}>
+                                          No general term conditions
+                                        </td>
+                                      </tr>
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
 
-    <div className="mt-3">
-      <h5>Material Specific Term &amp; Conditions</h5>
-    </div>
-    <div className="tbl-container me-2 mt-2">
-      <table className="w-100" style={{ width: "100%" }}>
-        <thead>
-          <tr>
-            <th>Material Sub Type</th>
-            <th>Condition Category</th>
-            <th>Condition</th>
-          </tr>
-        </thead>
-        <tbody>
-          {purchaseOrderData.resource_material_term_conditions &&
-          purchaseOrderData.resource_material_term_conditions.length > 0 ? (
-            purchaseOrderData.resource_material_term_conditions.map((cond, idx) => (
-              <tr key={cond.id || idx}>
-                <td>{cond.material_sub_type}</td>
-                <td>{cond.condition_category}</td>
-                <td>{cond.condition}</td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={3}>No material specific term conditions</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-  </div>
-) : (
-  <div>Loading purchase order details...</div>
-)}
+                              <div className="mt-3">
+                                <h5>Material Specific Term &amp; Conditions</h5>
+                              </div>
+                              <div className="tbl-container me-2 mt-2">
+                                <table
+                                  className="w-100"
+                                  style={{ width: "100%" }}
+                                >
+                                  <thead>
+                                    <tr>
+                                      <th>Material Sub Type</th>
+                                      <th>Condition Category</th>
+                                      <th>Condition</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {purchaseOrderData.resource_material_term_conditions &&
+                                    purchaseOrderData
+                                      .resource_material_term_conditions
+                                      .length > 0 ? (
+                                      purchaseOrderData.resource_material_term_conditions.map(
+                                        (cond, idx) => (
+                                          <tr key={cond.id || idx}>
+                                            <td>{cond.material_sub_type}</td>
+                                            <td>{cond.condition_category}</td>
+                                            <td>{cond.condition}</td>
+                                          </tr>
+                                        )
+                                      )
+                                    ) : (
+                                      <tr>
+                                        <td colSpan={3}>
+                                          No material specific term conditions
+                                        </td>
+                                      </tr>
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          ) : (
+                            <div>Loading purchase order details...</div>
+                          )}
 
-     
                           <div
                             className="tab-pane fade"
                             id="Domestic4"
@@ -4076,10 +4126,7 @@ Document */}
                   data-bs-toggle="modal"
                   data-bs-target="#attachModal"
                   // onClick={openattachModal}
-                
-                >
-                 
-                </div>
+                ></div>
               </div>
 
               <div
@@ -4167,7 +4214,6 @@ Document */}
                                 </div>
                               )}
                             </div>
-                           
                           </div>
                         </td>
                       </tr>
@@ -4202,77 +4248,84 @@ Document */}
                   </div>
                 </div>
               </div>
-<div className="row mt-4 justify-content-end align-items-center mx-2">
-  <div className="col-md-3">
-    <div className="form-group d-flex gap-3 align-items-center mx-3">
-      <label
-        className="form-label mt-2"
-        style={{ fontSize: "0.95rem", color: "black" }}
-      >
-        Status
-      </label>
-  
-<SingleSelector
-  options={
-    purchaseOrderData?.status_list?.map((status) => ({
-      value: status,
-      label: status,
-    })) || []
+              <div className="row mt-4 justify-content-end align-items-center mx-2">
+                <div className="col-md-3">
+                  <div className="form-group d-flex gap-3 align-items-center mx-3">
+                    <label
+                      className="form-label mt-2"
+                      style={{ fontSize: "0.95rem", color: "black" }}
+                    >
+                      Status
+                    </label>
+
+                    <SingleSelector
+                      options={
+                        purchaseOrderData?.status_list?.map((status) => ({
+                          // value: status,
+                            value: status.toLowerCase(), // internal lowercase value
+                          label: status,
+                        })) || []
+                      }
+                      // value={selectedStatus}
+                       value={
+    selectedStatus
+      ? {
+          value: selectedStatus.value.toLowerCase(),
+          label: selectedStatus.label,
+        }
+      : null
   }
-  value={selectedStatus}
-  onChange={(selected) => setSelectedStatus(selected)}
-  placeholder="Select Status"
-  isClearable={false}
-  isDisabled={purchaseOrderData?.disabled ?? false}
-  classNamePrefix="react-select"
-/>
-
-    </div>
-  </div>
-</div>
-
-                  <div className="row mt-2 justify-content-end">
-                    <div className="col-md-2 mt-2">
-                        <button
-        type="button"
-      className="purple-btn2 w-100"
-      id="submit_tag_button"
-      onClick={handleSubmit}
-      >
-        Submit
-      </button>
-                    </div>
-                    <div className="col-md-2">
-                      <button
-                        type="button"
-                        className="purple-btn1 w-100"
-                        onClick={() => navigate(-1)}
-                      >
-                        Cancel
-                      </button>
-                    </div>
+                      onChange={(selected) => setSelectedStatus(selected)}
+                      placeholder="Select Status"
+                      isClearable={false}
+                      isDisabled={purchaseOrderData?.disabled ?? false}
+                      classNamePrefix="react-select"
+                    />
                   </div>
-                    <div className=" d-flex justify-content-between align-items-center">
-                  <h5 className=" mt-3">Audit Logs</h5>
                 </div>
-                <div className="tbl-container px-0">
-                  <table className="w-100" style={{ width: "100%" }}>
-                    <thead>
-                      <tr>
-                        <th style={{ width: "66px !important" }}>Sr.No.</th>
-                        <th>User</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>PO Remark</th>
-                        <th>PO Comments</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr></tr>
-                    </tbody>
-                  </table>
+              </div>
+
+              <div className="row mt-2 justify-content-end">
+                <div className="col-md-2 mt-2">
+                  <button
+                    type="button"
+                    className="purple-btn2 w-100"
+                    id="submit_tag_button"
+                    onClick={handleSubmit}
+                  >
+                    Submit
+                  </button>
                 </div>
-              
+                <div className="col-md-2">
+                  <button
+                    type="button"
+                    className="purple-btn1 w-100"
+                    onClick={() => navigate(-1)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+              <div className=" d-flex justify-content-between align-items-center">
+                <h5 className=" mt-3">Audit Logs</h5>
+              </div>
+              <div className="tbl-container px-0">
+                <table className="w-100" style={{ width: "100%" }}>
+                  <thead>
+                    <tr>
+                      <th style={{ width: "66px !important" }}>Sr.No.</th>
+                      <th>User</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                      <th>PO Remark</th>
+                      <th>PO Comments</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -4437,7 +4490,6 @@ Document */}
                         className="form-control"
                         value={tax.amount}
                         disabled
-                       
                       />
                     </td>
                     <td className="text-center">
@@ -4775,6 +4827,73 @@ Document */}
         </Modal.Body>
       </Modal>
 
+
+       <Modal size="lg" 
+       show={showModal} onHide={closeModal} 
+       centered>
+        <Modal.Header closeButton>
+          <h5>Approval Log</h5>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="row mt-2 px-2">
+            <div className="col-12">
+              <div className="tbl-container me-2 mt-3">
+                {/* Check if approval_logs is empty or undefined */}
+                {!purchaseOrderData?.approval_logs ||
+                purchaseOrderData?.approval_logs.length === 0 ? (
+                  // Display a message if no logs are available
+                  <div className="text-center py-4">
+                    <p className="text-muted">No approval logs available.</p>
+                  </div>
+                ) : (
+                  // Render the table if logs are available
+                  <table className="w-100" style={{ width: "100%" }}>
+                    <thead>
+                      <tr>
+                        <th style={{ width: "66px !important" }}>Sr.No.</th>
+                        <th>Approval Level</th>
+                        <th>Approved By</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Remark</th>
+                        <th>Users</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {purchaseOrderData?.approval_logs.map((log, id) => (
+                        <tr key={id}>
+                          <td className="text-start">{id + 1}</td>
+                          <td className="text-start">{log.approval_level}</td>
+                          <td className="text-start">
+                            {log.approved_by || "-"}
+                          </td>
+                          <td className="text-start">{log.date}</td>
+                          <td className="text-start">
+                            <span
+                              className="px-2 py-1 rounded text-white"
+                              style={{
+                                backgroundColor:
+                                  log.status === "Pending" ? "red" : "green",
+                              }}
+                            >
+                              {log.status}
+                            </span>
+                          </td>
+                          <td className="text-start">
+                            <p>{log.remark || "-"}</p>
+                          </td>
+                          <td className="text-start">{log.users}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+
       {/* Tax Modal */}
       <Modal
         show={showTaxModal}
@@ -4970,7 +5089,6 @@ Document */}
                             // onClick={() => addAdditionTaxCharge(tableId)}
                           >
                             <span>+</span>
-                            
                           </button>
                         </td>
                       </tr>
@@ -5106,12 +5224,10 @@ Document */}
                                       value: `${percent.percentage}%`,
                                     }));
                                   }
-                                  
 
                                   // If no percentages from API, return empty array (no options)
                                   return [];
                                 })()}
-                               
                                 defaultValue={
                                   item?.taxChargePerUom ||
                                   (() => {
@@ -5464,72 +5580,9 @@ Document */}
           >
             Save Changes
           </button> */}
-         
         </Modal.Footer>
       </Modal>
-       <Modal size="lg" show={showModal} onHide={closeModal} centered>
-              <Modal.Header closeButton>
-                <h5>Approval Log</h5>
-              </Modal.Header>
-              <Modal.Body>
-                <div className="row mt-2 px-2">
-                  <div className="col-12">
-                    <div className="tbl-container me-2 mt-3">
-                      {/* Check if approval_logs is empty or undefined */}
-                      {!purchaseOrderData?.approval_logs ||
-                      purchaseOrderData?.approval_logs.length === 0 ? (
-                        // Display a message if no logs are available
-                        <div className="text-center py-4">
-                          <p className="text-muted">No approval logs available.</p>
-                        </div>
-                      ) : (
-                        // Render the table if logs are available
-                        <table className="w-100" style={{ width: "100%" }}>
-                          <thead>
-                            <tr>
-                              <th style={{ width: "66px !important" }}>Sr.No.</th>
-                              <th>Approval Level</th>
-                              <th>Approved By</th>
-                              <th>Date</th>
-                              <th>Status</th>
-                              <th>Remark</th>
-                              <th>Users</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {purchaseOrderData?.approval_logs.map((log, id) => (
-                              <tr key={id}>
-                                <td className="text-start">{id + 1}</td>
-                                <td className="text-start">{log.approval_level}</td>
-                                <td className="text-start">
-                                  {log.approved_by || "-"}
-                                </td>
-                                <td className="text-start">{log.date}</td>
-                                <td className="text-start">
-                                  <span
-                                    className="px-2 py-1 rounded text-white"
-                                    style={{
-                                      backgroundColor:
-                                        log.status === "Pending" ? "red" : "green",
-                                    }}
-                                  >
-                                    {log.status}
-                                  </span>
-                                </td>
-                                <td className="text-start">
-                                  <p>{log.remark || "-"}</p>
-                                </td>
-                                <td className="text-start">{log.users}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </Modal.Body>
-            </Modal>
+     
     </>
   );
 };
