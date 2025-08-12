@@ -1249,6 +1249,7 @@ const RopoMappingCreate = () => {
       setMappingDate(new Date().toISOString().split("T")[0]);
       setRemarks("");
       setStatus("draft");
+       navigate(`/ropo-mapping-list?token=${token}`);
     } catch (error) {
       console.error("Error submitting ROPO mapping:", error);
       alert(
@@ -1770,7 +1771,7 @@ setPoModalApiData(
                                       />
                                     </div>
                                   </div>
-                                  <div className="col-md-4">
+                                  <div className="col-md-4 mt-2">
                                     <div className="form-group">
                                     <label>Remarks</label>
                                       <input
@@ -2496,7 +2497,7 @@ setPoModalApiData(
         {/* Add MOR Modal */}
         <Modal show={addMORModal} onHide={closeAddMORModal} size="xl">
           <Modal.Header closeButton>
-            <Modal.Title>Add Mor</Modal.Title>
+            <Modal.Title>Add MOR</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <div className="p-3">
@@ -2504,7 +2505,7 @@ setPoModalApiData(
                 <div className="col-md-4 mt-2">
                   <div className="form-group">
                     <label>
-                      Company <span>*</span>
+                      Company <span></span>
                     </label>
                     <SingleSelector
                       options={companyOptions} // company options as {value,label}
@@ -2517,7 +2518,7 @@ setPoModalApiData(
                 <div className="col-md-4 mt-2">
                   <div className="form-group">
                     <label>
-                      Project <span>*</span>
+                      Project <span></span>
                     </label>
                     <SingleSelector
                       options={projects} // filtered projects as {value,label}

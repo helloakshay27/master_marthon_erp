@@ -5,6 +5,7 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import MultiSelector from "../components/base/Select/MultiSelector";
 import SelectBox from "../components/base/Select/SelectBox";
 import { baseURL } from "../confi/apiDomain";
+import { useNavigate } from 'react-router-dom';
 
 const PoCreate = () => {
   // State variables for the modal
@@ -12,6 +13,7 @@ const PoCreate = () => {
   const [editRowIndex, setEditRowIndex] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const [apiMaterialInventoryIds, setApiMaterialInventoryIds] = useState();
+   const navigate = useNavigate();
 
   // Tax modal state variables
   const [showTaxModal, setShowTaxModal] = useState(false);
@@ -2205,6 +2207,7 @@ const PoCreate = () => {
 
       console.log("Purchase order created successfully:", response.data);
       alert("Purchase order created successfully!");
+      navigate(`/po-list?token=${token}`);
 
       // Optionally redirect or clear form
       // window.location.href = '/po-list'; // Redirect to PO list

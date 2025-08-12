@@ -7,6 +7,7 @@ import SelectBox from "../components/base/Select/SelectBox";
 import DownloadIcon from "../components/common/Icon/DownloadIcon";
 import { baseURL } from "../confi/apiDomain";
 import { useParams, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const PoEdit = () => {
   // State variables for the modal
@@ -16,6 +17,8 @@ const PoEdit = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
+  const navigate = useNavigate();
+
 
   // Tax modal state variables
   const [showTaxModal, setShowTaxModal] = useState(false);
@@ -2846,6 +2849,7 @@ const PoEdit = () => {
 
       console.log("Purchase order updated successfully:", response.data);
       alert("Purchase order updated successfully!");
+        navigate(`/po-list?token=${token}`);
 
       // Optionally redirect to PO list after successful update
       // window.location.href = '/po-list'; // Uncomment to redirect
