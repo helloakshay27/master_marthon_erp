@@ -99,8 +99,8 @@ const fetchRopoData = async () => {
   return `${day}-${month}-${year}`;
 };
     // Transform API data to match table columns
-    const transformedData = ropoMappings.map((item) => ({
-      id: item.id,
+    const transformedData = ropoMappings.map((item,index) => ({
+      srNo: (currentPage - 1) * pageSize + index + 1,
       ropoNo: item.ropo_number,
       ropoDate: formatDate(item.mapping_date), // Format date here
       status: item.status,
@@ -140,6 +140,7 @@ useEffect(() => {
   // Settings modal
   const [settingShow, setSettingShow] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState({
+    srNo: true,
     company: true,
     project: true,
     subProject: true,
@@ -160,6 +161,7 @@ useEffect(() => {
 
   // Table columns
 const allColumns = [
+  { field: "srNo", headerName: "SR No.", width: 100, sortable: true },
   { field: "company", headerName: "Company", width: 150, sortable: true },
   { field: "project", headerName: "Project", width: 150, sortable: true },
   { field: "subProject", headerName: "Sub Project", width: 150, sortable: true },
