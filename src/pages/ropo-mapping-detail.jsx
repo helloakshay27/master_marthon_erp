@@ -23,7 +23,7 @@ const handleStatusChange = (option) => {
 
   useEffect(() => {
     axios
-      .get(`https://marathon.lockated.com/ropo_mappings/24.json?token=${token}`)
+      .get(`https://marathon.lockated.com/ropo_mappings/${id}.json?token=${token}`)
       .then((res) => {
         setPurchaseOrderData(res.data);
          // Set initial status from API response
@@ -65,7 +65,7 @@ const handleStatusUpdate = async () => {
 
   try {
     const response = await axios.patch(
-      `https://marathon.lockated.com/ropo_mappings/24/update_status.json?token=${token}`,
+      `https://marathon.lockated.com/ropo_mappings/${id}/update_status.json?token=${token}`,
       {
         status_log: {
         status: selectedStatus.value.toLowerCase(), // Access the value property before toLowerCase
