@@ -3013,6 +3013,7 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
                         }}
                         min="0"
                       />
+                      {console.log("invoice:",formData.invoiceAmount)}
                     </div>
                   </div>
                   <div className="col-md-4 mt-3">
@@ -3214,7 +3215,7 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
                         {/* <th className="main2-th">Taxes</th> */}
                         <th className="main2-th">Payable Amount</th>
                         <th className="main2-th">Amount Paid Till Date</th>
-                        {/* <th className="main2-th" style={{ width: "130px", textAlign: "center" }}>Action</th> */}
+                        <th className="main2-th">Current Paid Amount</th>
                       </tr>
                     </thead>
 
@@ -3235,7 +3236,8 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
                             <input
                               type="number"
                               className="form-control"
-                              value={row.payable_amount}
+                               value={row.payable_amount ?? row.paid_amount ?? ""}
+                              // value={row.payable_amount}
                               onChange={(e) => handleChange(index, "payable_amount", e.target.value)}
                             // onChange={(e) => {
                             //   const value = parseFloat(e.target.value) || 0;
@@ -3256,15 +3258,9 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
                           <td className="text-start">{row.paid_amount ?? "-"}</td>
 
                           {/* Action */}
-                          {/* <td style={{ textAlign: "center" }}>
-        <button
-          type="button"
-          className="btn btn-link text-danger"
-          onClick={() => handleRemove2(index)}
-        >
-          <span className="material-symbols-outlined">cancel</span>
-        </button>
-      </td> */}
+                          <td className="text-start">
+      {row.paid_amount ?? "-"}
+      </td>
                         </tr>
                       ))}
                     </tbody>
@@ -4224,7 +4220,7 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
                   <table className="w-100">
                     <thead>
                       <tr>
-                        <th className="text-start">Debit Note No.________</th>
+                        <th className="text-start">Debit Note No.</th>
                         <th className="text-start">PO  No.</th>
                         <th className="text-start">Project</th>
                         <th className="text-start">Debit Note Amount</th>
@@ -4461,7 +4457,7 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
                     </tbody>
                   </table>
                 </div> 
-                 <div className="d-flex justify-content-between mt-3 me-2">
+                 {/* <div className="d-flex justify-content-between mt-3 me-2">
                 <h5 className=" ">Document Attachment</h5>
                 <div
                   className="card-tools d-flex"
@@ -4487,7 +4483,7 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
                     <span>Attach</span>
                   </button>
                 </div>
-              </div>
+              </div> */}
                 {/* Document Table (dynamic) */}
                 {/* <div className="tbl-container mx-3 mt-3">
                 <table className="w-100">
