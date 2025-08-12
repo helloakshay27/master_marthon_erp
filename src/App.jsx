@@ -127,6 +127,7 @@ import LabourMasterDetails from "./pages/labour-master-details";
 import PoEdit from "./pages/po-edit";
 import AddMor from "./pages/add-mor";
 import AddPo from "./pages/add-po";
+import RopoMappingDetail from "./pages/ropo-mapping-detail";
 
 function App() {
   return (
@@ -137,6 +138,7 @@ function App() {
           <Route path="/invite-vendor" element={<InviteVendor />} />
           <Route path="/ropo-mapping-create" element={<RopoMappingCreate />} />
           <Route path="/ropo-mapping-list" element={<RopoMappingList />} />
+            <Route path="/ropo-mapping-detail/:id" element={<RopoMappingDetail />} />
           <Route path="/add-mor" element={<AddMor />} />
           <Route path="/add-po" element={<AddPo />} />
           <Route path="/po-list" element={<PoList />} />

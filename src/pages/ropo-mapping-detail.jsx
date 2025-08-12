@@ -1,3 +1,8 @@
+
+
+
+
+
 import React from "react";
 import { useState, useEffect, useRef } from "react";
 import { DataGrid } from "@mui/x-data-grid";
@@ -8,7 +13,7 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import { Link } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 
-const RopoMappingCreate = () => {
+const   RopoMappingDetail = () => {
   const [companyOptions, setCompanyOptions] = useState([]);
 
   const navigate = useNavigate();
@@ -3053,4 +3058,4 @@ setPoModalApiData(
   );
 };
 
-export default RopoMappingCreate;
+export default RopoMappingDetail;
