@@ -17,6 +17,9 @@ const PoDetails = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const openApprovalModal = () => setShowApprovalModal(true);
+const closeApprovalModal = () => setShowApprovalModal(false);
 
   // Tax modal state variables
   const [showTaxModal, setShowTaxModal] = useState(false);
@@ -3205,7 +3208,7 @@ const PoDetails = () => {
                               <button
                                 type="button"
                                 className="purple-btn2 mb-3"
-                                onClick={openModal}
+                                onClick={openApprovalModal}
                                 style={{
                                   backgroundColor:
                                     purchaseOrderData?.status === "approved"
@@ -4829,7 +4832,9 @@ Document */}
 
 
        <Modal size="lg" 
-       show={showModal} onHide={closeModal} 
+
+        show={showApprovalModal} 
+  onHide={closeApprovalModal} 
        centered>
         <Modal.Header closeButton>
           <h5>Approval Log</h5>
