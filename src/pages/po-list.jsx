@@ -6,6 +6,7 @@ import axios from "axios";
 import { baseURL } from "../confi/apiDomain"; // adjust path if needed
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { Link } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 import {
   DownloadIcon,
@@ -15,6 +16,7 @@ import {
   MultiSelector,
 } from "../components";
 const PoList = () => {
+   const navigate = useNavigate();
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
   // Quick Filter states
@@ -144,18 +146,19 @@ const PoList = () => {
       headerName: "PO No.",
       width: 140,
       sortable: true,
-      renderCell: (params) => (
-        <Link
-          to={`/po-details/${params.row.id}?token=${token}`}
-          style={{
-            color: "#3f51b5",
-            textDecoration: "underline",
-            cursor: "pointer",
+        renderCell: (params) => (
+        <div
+          style={{ 
+            cursor: 'pointer',
+            color: '#8B0203',
+            textDecoration: 'underline'
           }}
+          onClick={() => navigate(`/po-details/${params.row.id}?token=${token}`)}
         >
           {params.value}
-        </Link>
-      ),
+        </div>
+      )
+    
     },
     // ...existing code...
     { field: "poDate", headerName: "PO Date", width: 140, sortable: true },
@@ -1249,7 +1252,7 @@ display:none !important;
                 </button>
                 <button
                   className="purple-btn2"
-                  onClick={() => navigate(`/gate-pass-create?token=${token}`)}
+                  onClick={() => navigate(`/po-create?token=${token}`)}
                 >
                   <span> + Add</span>
                 </button>

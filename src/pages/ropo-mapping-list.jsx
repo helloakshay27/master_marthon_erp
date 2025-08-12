@@ -622,15 +622,13 @@ display:none !important;
                 <div className="row justify-content-end">
                   <div className="col-md-5">
                     <div className="row justify-content-end px-3">
-                      <div className="col-md-3">
-                       
-                      </div>
                      
-                    
-                      <div className="col-md-3 ">
+
+
+                      <div className="col-md-3 d-flex justify-content-end">
                         <button
                                         type="button"
-                                        className="btn btn-md me-4"
+                                        className="btn btn-md ms-4"
                                         onClick={handleSettingModalShow}
                                       >
                                         <SettingIcon />
@@ -638,7 +636,7 @@ display:none !important;
                       </div>
                     </div>
                   </div>
-                  <div className="col-md-4 mt-1 ms-2">
+                  <div className="col-md-4 mt-1 ">
                     <button type="button" className="purple-btn2"
                      onClick={() => navigate(`/ropo-mapping-create?token=${token}`)}>
                       
