@@ -30,24 +30,12 @@ const AddPo = () => {
     per_page: 5,
   });
 
-  const [filterParams, setFilterParams] = useState({
-    startDate: "",
-    endDate: "",
-    poType: "",
-    poNumber: "",
-    selectedPOIds: [],
-    supplierId: "",
-  });
 
   // State for API response data from ropo-mapping-create page
   const [apiResponseData, setApiResponseData] = useState([]);
-  const [selectedMaterials, setSelectedMaterials] = useState([]);
+  const [selectedPoRows, setSelectedPoRows] = useState([]);
 
-  const poTypes = [
-    { value: "material", label: "Material" },
-    { value: "asset", label: "Asset" },
-    { value: "service", label: "Service" },
-  ];
+  
 
   // useEffect to handle received data from ropo-mapping-create page
   useEffect(() => {
@@ -61,163 +49,9 @@ const AddPo = () => {
   }, [location.state]);
 
   // Fetch purchase orders with filters
-  const fetchPurchaseOrders = async (
-    companyId = null,
-    projectId = null,
-    siteId = null,
-    filters = {
-      startDate: "",
-      endDate: "",
-      poType: "",
-      poNumber: "",
-      selectedPOIds: [],
-      supplierId: "",
-      page: 1,
-      pageSize: 5,
-    }
-  ) => {
-    try {
-      setLoading(true);
-      let url = `${baseURL}purchase_orders/grn_details.json?token=${token}`;
 
-      // Add filters only if they are provided
-      if (companyId) url += `&q[company_id_eq]=${companyId}`;
-      if (projectId) url += `&q[po_mor_inventories_project_id_eq]=${projectId}`;
-      if (siteId) url += `&q[po_mor_inventories_pms_site_id_eq]=${siteId}`;
-      if (filters?.supplierId)
-        url += `&q[supplier_id_eq]=${filters.supplierId}`;
-      if (filters?.startDate) url += `&q[po_date_gteq]=${filters.startDate}`;
-      if (filters?.endDate) url += `&q[po_date_lteq]=${filters.endDate}`;
 
-      if (filters?.poNumber && filters.poNumber !== "") {
-        url += `&q[po_number_cont]=${filters.poNumber}`;
-      }
-      if (filters?.poType && filters.poType !== "") {
-        url += `&q[po_type_cont]=${filters.poType}`;
-      }
 
-      // Always add pagination parameters
-      url += `&page=${filters.page || 1}`;
-      url += `&per_page=${filters.pageSize || 5}`;
-
-      const response = await axios.get(url);
-      setPurchaseOrders(response.data.purchase_orders || []);
-
-      if (response.data.pagination) {
-        setPagination({
-          current_page: parseInt(response.data.pagination.current_page) || 1,
-          next_page: parseInt(response.data.pagination.next_page) || null,
-          prev_page: parseInt(response.data.pagination.prev_page) || null,
-          total_pages: parseInt(response.data.pagination.total_pages) || 1,
-          total_count: parseInt(response.data.pagination.total_count) || 0,
-          per_page: parseInt(response.data.pagination.per_page) || 5,
-        });
-      }
-    } catch (err) {
-      console.error("Error fetching purchase orders:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle search
-  const handleSearch = () => {
-    setPagination((prev) => ({
-      ...prev,
-      current_page: 1,
-    }));
-
-    fetchPurchaseOrders(
-      selectedCompany?.value,
-      selectedProject?.value,
-      selectedSite?.value,
-      {
-        ...filterParams,
-        page: 1,
-        pageSize: pageSize,
-      }
-    );
-  };
-
-  // Handle reset
-  const handleReset = () => {
-    setFilterParams({
-      startDate: "",
-      endDate: "",
-      poType: "",
-      poNumber: "",
-      selectedPOIds: [],
-    });
-    setSelectedCompany(null);
-    setSelectedProject(null);
-    setSelectedSite(null);
-    setProjects([]);
-    setSites([]);
-    setPagination((prev) => ({
-      ...prev,
-      current_page: 1,
-    }));
-    fetchPurchaseOrders(null, null, null, {
-      page: 1,
-      pageSize: pageSize,
-    });
-  };
-
-  // Handle PO selection
-  const handlePOSelect = (po) => {
-    setSelectedPO(po);
-    // Navigate back or handle the selected PO
-    console.log("Selected PO:", po);
-    // You can navigate to another page or update parent component state
-  };
-
-  // Handle pagination
-  const handlePageChange = (page) => {
-    setPagination((prev) => ({
-      ...prev,
-      current_page: page,
-    }));
-
-    fetchPurchaseOrders(
-      selectedCompany?.value,
-      selectedProject?.value,
-      selectedSite?.value,
-      {
-        ...filterParams,
-        page: page,
-        pageSize: pageSize,
-      }
-    );
-  };
-
-  // Get page numbers for pagination
-  const getPageNumbers = () => {
-    const pages = [];
-    const totalPages = pagination.total_pages;
-    const currentPage = pagination.current_page;
-
-    if (totalPages <= 5) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 3) {
-        for (let i = 1; i <= 5; i++) {
-          pages.push(i);
-        }
-      } else if (currentPage >= totalPages - 2) {
-        for (let i = totalPages - 4; i <= totalPages; i++) {
-          pages.push(i);
-        }
-      } else {
-        for (let i = currentPage - 2; i <= currentPage + 2; i++) {
-          pages.push(i);
-        }
-      }
-    }
-
-    return pages;
-  };
 
   // Handle company change
   const handleCompanyChange = (selectedOption) => {
@@ -232,47 +66,66 @@ const AddPo = () => {
       })) || []
     );
     setSites([]);
+    setFilterParams((prev) => ({
+    ...prev,
+    companyId: selectedOption ? selectedOption.value : null,
+    projectId: null,
+    subProjectId: null,
+  }));
   };
 
   // Handle project change
-  const handleProjectChange = (value) => {
-    setSelectedProject(value);
-    setSelectedSite(null);
-    if (value?.sites) {
-      setSites(
-        value.sites.map((site) => ({
-          value: site.id,
-          label: site.name,
-        }))
-      );
-    } else {
-      setSites([]);
-    }
-  };
+const handleProjectChange = (selectedOption) => {  // rename from 'value' to 'selectedOption' for clarity
+  setSelectedProject(selectedOption);
+  setSelectedSite(null);
+  if (selectedOption?.sites) {
+    setSites(
+      selectedOption.sites.map((site) => ({
+        value: site.id,
+        label: site.name,
+      }))
+    );
+  } else {
+    setSites([]);
+  }
+  setFilterParams((prev) => ({
+    ...prev,
+    projectId: selectedOption ? selectedOption.value : null,
+    subProjectId: null,
+  }));
+};
+
+const handleSiteChange = (selectedOption) => {
+  setSelectedSite(selectedOption);
+  setFilterParams((prev) => ({
+    ...prev,
+    subProjectId: selectedOption ? selectedOption.value : null,
+  }));
+};
 
   // Handle site change
-  const handleSiteChange = (value) => {
-    setSelectedSite(value);
-  };
 
-  // Handle material checkbox change
-  const handleMaterialCheckboxChange = (materialId, checked) => {
+
+  // Handle material checkbox change - per row selection
+  const handleMaterialCheckboxChange = (rowKey, checked) => {
     if (checked) {
-      setSelectedMaterials((prev) => [...prev, materialId]);
+      setSelectedPoRows((prev) => [...prev, rowKey]);
     } else {
-      setSelectedMaterials((prev) => prev.filter((id) => id !== materialId));
+      setSelectedPoRows((prev) => prev.filter((key) => key !== rowKey));
     }
   };
 
-  // Handle select all materials
+
+
+  // Handle select all materials - per row selection
   const handleSelectAllMaterials = (checked) => {
     if (checked) {
-      const allMaterialIds = apiResponseData.map(
-        (item) => item.mor_inventory_id
+      const allRowKeys = apiResponseData.map(
+        (item) => `${item.mor_inventory_id}-${item.po_mor_inventory_id}`
       );
-      setSelectedMaterials(allMaterialIds);
+      setSelectedPoRows(allRowKeys);
     } else {
-      setSelectedMaterials([]);
+      setSelectedPoRows([]);
     }
   };
 
@@ -293,49 +146,236 @@ const AddPo = () => {
     }
   };
 
-  // Get showing entries text
-  const getShowingEntriesText = () => {
-    if (!pagination.total_count) return "No entries found";
-
-    const start = (pagination.current_page - 1) * pagination.per_page + 1;
-    const end = Math.min(
-      start + pagination.per_page - 1,
-      pagination.total_count
-    );
-
-    return `Showing ${start} to ${end} of ${pagination.total_count} entries`;
-  };
+  
 
   // Initial data fetch
   useEffect(() => {
     fetchCompanies();
-    fetchPurchaseOrders();
+   
+  }, []);
+  
+   const [formData, setFormData] = useState({
+          materialType: "",
+          materialSubType: "",
+          material: "",
+          genericSpecification: "",
+          colour: "",
+          brand: "",
+          effectiveDate: "",
+          rate: "",
+          rateType: "",
+          poRate: "",
+          avgRate: "",
+          uom: "",
+      });
+
+
+   const [inventoryTypes2, setInventoryTypes2] = useState([]);  // State to hold the fetched data
+      const [selectedInventory2, setSelectedInventory2] = useState(null);  // State to hold selected inventory type
+      const [inventorySubTypes2, setInventorySubTypes2] = useState([]); // State to hold the fetched inventory subtypes
+      const [selectedSubType2, setSelectedSubType2] = useState(null); // State to hold selected sub-type
+      const [inventoryMaterialTypes2, setInventoryMaterialTypes2] = useState([]); // State to hold the fetched inventory subtypes
+      const [selectedInventoryMaterialTypes2, setSelectedInventoryMaterialTypes2] = useState(null); // State to hold selected sub-type
+      // Fetching inventory types data from API on component mount
+      useEffect(() => {
+          axios.get(`${baseURL}pms/inventory_types.json?q[category_eq]=material&token=${token}`)
+              .then(response => {
+                  // Map the fetched data to the format required by react-select
+                  const options = response.data.map(inventory => ({
+                      value: inventory.id,
+                      label: inventory.name
+                  }));
+  
+                  setInventoryTypes2(options)
+              })
+              .catch(error => {
+                  console.error('Error fetching inventory types:', error);
+              });
+      }, []);  // Empty dependency array to run only once on mount
+  
+  
+      // Fetch inventory sub-types when an inventory type is selected
+      useEffect(() => {
+          if (selectedInventory2 || formData.materialType) {
+              //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
+  
+              axios.get(`${baseURL}pms/inventory_sub_types.json?q[pms_inventory_type_id_in]=${selectedInventory2?.value || formData.materialType}&token=${token}`)
+                  .then(response => {
+                      // Map the sub-types to options for the select dropdown
+                      const options = response.data.map(subType => ({
+                          value: subType.id,
+                          label: subType.name
+                      }));
+  
+                      setInventorySubTypes2(options)
+                  })
+                  .catch(error => {
+                      console.error('Error fetching inventory sub-types:', error);
+                  });
+          }
+      }, [selectedInventory2,formData.materialType]); // Run this effect whenever the selectedInventory state changes
+  
+      // Fetch inventory Material when an inventory type is selected
+      useEffect(() => {
+          if (selectedInventory2 || formData.materialType) {
+              //   const inventoryTypeIds = selectedInventory.map(item => item.value).join(','); // Get the selected inventory type IDs as a comma-separated list
+  
+              axios.get(`${baseURL}pms/inventories.json?q[inventory_type_id_in]=${selectedInventory2?.value || formData.materialType}&q[material_category_eq]=material&token=${token}`)
+                  .then(response => {
+                      // Map the sub-types to options for the select dropdown
+                      const options = response.data.map(subType => ({
+                          value: subType.id,
+                          label: subType.name
+                      }));
+  
+                      setInventoryMaterialTypes2(options)
+                  })
+                  .catch(error => {
+                      console.error('Error fetching inventory sub-types:', error);
+                  });
+          }
+      }, [selectedInventory2,formData.materialType]); // Run this effect whenever the selectedInventory state changes
+  
+      // umo api
+
+   const handleSelectorChange = (field, selectedOption) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            [field]: selectedOption?.value || "",
+            [`${field}Label`]: selectedOption?.label || "",
+        }));
+
+        if (field === "materialType") {
+            // Logic for materialType selection
+            setSelectedInventory2(selectedOption); // Set the selected inventory type
+            setSelectedSubType2(null); // Clear the selected sub-type when inventory type changes
+            setInventorySubTypes2([]); // Reset the sub-types list
+            setInventoryMaterialTypes2([]); // Reset the material types list
+            setSelectedInventoryMaterialTypes2(null); // Clear selected material type
+            setGenericSpecifications([])
+            setSelectedGenericSpecifications(null)
+            setColors([])
+            setSelectedColors(null)
+            setInventoryBrands([])
+            setSelectedInventoryBrands(null)
+            setUnitOfMeasures([])
+          
+        }
+
+        if (field === "materialSubType") {
+            // Logic for materialSubType selection
+            setSelectedSubType2(selectedOption); // Set the selected inventory sub-type
+        }
+        if (field === "material") {
+            // Logic for materialSubType selection
+            setSelectedInventoryMaterialTypes2(selectedOption); // Set the selected inventory sub-type
+
+        }
+        if (field === "uom") {
+            // Logic for materialSubType selection
+            setSelectedUnit(selectedOption); // Set the selected inventory sub-type
+        }
+        if (field === "genericSpecification") {
+            // Logic for materialSubType selection
+            setSelectedGenericSpecifications(selectedOption); // Set the selected inventory sub-type
+        }
+        if (field === "colour") {
+            // Logic for materialSubType selection
+            setSelectedColors(selectedOption); // Set the selected inventory sub-type
+        }
+        if (field === "brand") {
+            // Logic for materialSubType selection
+            setSelectedInventoryBrands(selectedOption); // Set the selected inventory sub-type
+        }
+    };
+
+
+  const [materialMatches, setMaterialMatches] = useState([]);
+  const [filterParams, setFilterParams] = useState({
+    companyId: null,
+    projectId: null,
+    subProjectId: null,
+    materialType: "",
+    materialSubType: "",
+    material: "",
+    fromDate: "",
+ endDate: "",
+    poNumber: "",
+  });
+
+  
+  const [selectedSubProject, setSelectedSubProject] = useState(null);
+
+  // Fetch material matches with filters (no pagination)
+  const fetchMaterialMatches = async (filters = {}) => {
+    try {
+      setLoading(true);
+
+      let url = `${baseURL}purchase_orders/ropo_material_matches.json?token=${token}`;
+
+      if (filters.companyId) url += `&company=${filters.companyId}`;
+      if (filters.projectId) url += `&project=${filters.projectId}`;
+      if (filters.subProjectId) url += `&sub_project=${filters.subProjectId}`;
+      if (filters.materialType) url += `&material_type=${filters.materialType}`;
+      if (filters.materialSubType) url += `&material_sub_type=${filters.materialSubType}`;
+      if (filters.material) url += `&material=${filters.material}`;
+      if (filters.fromDate) url += `&from_date=${filters.fromDate}`;
+      if (filters.toDate) url += `&to_date=${filters.toDate}`;
+      if (filters.poNumber) url += `&po_number=${filters.poNumber}`;
+
+      const response = await axios.get(url);
+
+      setMaterialMatches(response.data.matches || []);
+    } catch (error) {
+      console.error("Error fetching material matches:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle search - just fetch with filters
+  const handleSearch = () => {
+    fetchMaterialMatches({
+      companyId: selectedCompany?.value || filterParams.companyId,
+      projectId: selectedProject?.value || filterParams.projectId,
+      subProjectId: selectedSubProject?.value || filterParams.subProjectId,
+   
+      //  materialType: formData.materialType,
+    materialSubType: formData.materialSubType,
+    material: formData.material,
+      fromDate: filterParams.fromDate,
+      toDate: filterParams.toDate,
+      poNumber: filterParams.poNumber,
+    });
+  };
+
+  // Handle reset - clear filters and selections
+  const handleReset = () => {
+    setFilterParams({
+      companyId: null,
+      projectId: null,
+      subProjectId: null,
+      materialType: "",
+      materialSubType: "",
+      material: "",
+      fromDate: "",
+      toDate: "",
+      poNumber: "",
+    });
+    setSelectedCompany(null);
+    setSelectedProject(null);
+    setSelectedSubProject(null);
+
+    fetchMaterialMatches({});
+  };
+
+  // Fetch all data initially (no filters)
+  useEffect(() => {
+    fetchMaterialMatches({});
   }, []);
 
-  // Fetch projects when company changes
-  useEffect(() => {
-    if (selectedCompany?.value) {
-      fetchPurchaseOrders(selectedCompany.value);
-    }
-  }, [selectedCompany]);
 
-  // Fetch sites when project changes
-  useEffect(() => {
-    if (selectedProject?.value) {
-      fetchPurchaseOrders(selectedCompany?.value, selectedProject.value);
-    }
-  }, [selectedProject]);
-
-  // Fetch purchase orders when site changes
-  useEffect(() => {
-    if (selectedSite?.value) {
-      fetchPurchaseOrders(
-        selectedCompany?.value,
-        selectedProject?.value,
-        selectedSite.value
-      );
-    }
-  }, [selectedSite]);
+  
 
   return (
     <div>
@@ -385,7 +425,43 @@ const AddPo = () => {
                           />
                         </div>
                       </div>
-                      <div className="col-md-4">
+                     < div className="col-md-4 mt-3">
+                                                      <div className="form-group">
+                                                          <label className="po-fontBold">Material Type <span></span></label>
+                                                          <SingleSelector
+                                                              options={inventoryTypes2}  // Provide the fetched options to the select component
+                                                              value={inventoryTypes2.find((option) => option.value === formData.materialType)} // Bind value to state
+                                                              placeholder={`Select Material Type`} // Dynamic placeholder
+                                                              onChange={(selectedOption) => handleSelectorChange("materialType", selectedOption)}
+                                                          />
+                                                         
+                                                      </div>
+                                                  </div>
+                                                  <div className="col-md-4 mt-3">
+                                                      <div className="form-group">
+                                                          <label className="po-fontBold">Material Sub Type <span></span></label>
+                                                          <SingleSelector
+                                                              options={inventorySubTypes2}
+                                                              value={inventorySubTypes2.find((option) => option.value === formData.materialSubType)} // Bind value to state
+                                                              placeholder={`Select Material Sub Type`} // Dynamic placeholder
+                                                              onChange={(selectedOption) => handleSelectorChange("materialSubType", selectedOption)}
+                                                          />
+                                                         
+                                                      </div>
+                                                  </div>
+                                                  <div className="col-md-4 mt-3">
+                                                      <div className="form-group">
+                                                          <label className="po-fontBold">Material <span></span></label>
+                                                          <SingleSelector
+                                                              options={inventoryMaterialTypes2}
+                                                              value={inventoryMaterialTypes2.find((option) => option.value === formData.material)} // Bind value to state
+                                                              placeholder={`Select Material`} // Dynamic placeholder
+                                                              onChange={(selectedOption) => handleSelectorChange("material", selectedOption)}
+                                                          />
+                                                         
+                                                      </div>
+                                                  </div>
+                      <div className="col-md-4 mt-2">
                         <div className="form-group">
                           <label>From Date</label>
                           <input
@@ -401,7 +477,7 @@ const AddPo = () => {
                           />
                         </div>
                       </div>
-                      <div className="col-md-4">
+                      <div className="col-md-4 mt-2">
                         <div className="form-group">
                           <label>To Date</label>
                           <input
@@ -417,27 +493,8 @@ const AddPo = () => {
                           />
                         </div>
                       </div>
-                      <div className="col-md-4">
-                        <div className="form-group">
-                          <label>PO Type</label>
-                          <SingleSelector
-                            options={poTypes}
-                            value={
-                              poTypes.find(
-                                (type) => type.value === filterParams.poType
-                              ) || null
-                            }
-                            onChange={(selected) =>
-                              setFilterParams((prev) => ({
-                                ...prev,
-                                poType: selected.value,
-                              }))
-                            }
-                            placeholder="Select PO Type"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-md-4">
+                     
+                      <div className="col-md-4 mt-2">
                         <div className="form-group">
                           <label>PO Number</label>
                           <input
@@ -488,7 +545,7 @@ const AddPo = () => {
                                     <input
                                       type="checkbox"
                                       checked={
-                                        selectedMaterials.length ===
+                                        selectedPoRows.length ===
                                         apiResponseData.length
                                       }
                                       onChange={(e) =>
@@ -505,22 +562,22 @@ const AddPo = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {apiResponseData.map((item, index) => (
-                                  <tr key={item.mor_inventory_id}>
-                                    <td className="text-start">
-                                      <input
-                                        type="checkbox"
-                                        checked={selectedMaterials.includes(
-                                          item.mor_inventory_id
-                                        )}
-                                        onChange={(e) =>
-                                          handleMaterialCheckboxChange(
-                                            item.mor_inventory_id,
-                                            e.target.checked
-                                          )
-                                        }
-                                      />
-                                    </td>
+                                {apiResponseData.map((item, index) => {
+                                  const rowKey = `${item.mor_inventory_id}-${item.po_mor_inventory_id}`;
+                                  return (
+                                    <tr key={rowKey}>
+                                      <td className="text-start">
+                                        <input
+                                          type="checkbox"
+                                          checked={selectedPoRows.includes(rowKey)}
+                                          onChange={(e) =>
+                                            handleMaterialCheckboxChange(
+                                              rowKey,
+                                              e.target.checked
+                                            )
+                                          }
+                                        />
+                                      </td>
                                     <td className="text-start">
                                       {item.material_name}
                                     </td>
@@ -539,7 +596,8 @@ const AddPo = () => {
                                       {item.supplier_organization_name || "-"}
                                     </td>
                                   </tr>
-                                ))}
+                                );
+                              })}
                               </tbody>
                             </table>
                           </div>
@@ -555,20 +613,42 @@ const AddPo = () => {
                       <button 
                         className="purple-btn1" 
                         onClick={() => {
-                          if (selectedMaterials.length === 0) {
+                          if (selectedPoRows.length === 0) {
                             alert('Please select at least one material before submitting');
                             return;
                           }
                           
-                          const selectedData = apiResponseData.filter(item => 
-                            selectedMaterials.includes(item.mor_inventory_id)
+                          // Filter selected data based on row keys
+                          const selectedData = apiResponseData.filter(item => {
+                            const rowKey = `${item.mor_inventory_id}-${item.po_mor_inventory_id}`;
+                            return selectedPoRows.includes(rowKey);
+                          });
+                          
+                          // Check if any of the selected materials are already present in existing PO data
+                          const existingMorData = location.state?.existingMorData || [];
+                          const existingPoData = location.state?.existingPoData || [];
+                          
+                          // Create a set of existing material-PO combinations
+                          const existingMaterialPoKeys = new Set(
+                            existingPoData.map(item => `${item.mor_inventory_id}-${item.po_mor_inventory_id}`)
                           );
+                          
+                          const newMaterials = selectedData.filter(item => {
+                            const rowKey = `${item.mor_inventory_id}-${item.po_mor_inventory_id}`;
+                            return !existingMaterialPoKeys.has(rowKey);
+                          });
+                          
+                          if (newMaterials.length === 0) {
+                            alert('Selected materials are already present in the table');
+                            return;
+                          }
                           
                           navigate(`/ropo-mapping-create?token=${token}`, {
                             state: {
                               selectedMaterials: selectedData,
                               fromAddPo: true,
-                              existingMorData: location.state?.existingMorData || [] // Pass back existing MOR data
+                              existingMorData: location.state?.existingMorData || [], // Pass back existing MOR data
+                              existingPoData: location.state?.existingPoData || [] // Pass back existing PO data
                             }
                           });
                         }}

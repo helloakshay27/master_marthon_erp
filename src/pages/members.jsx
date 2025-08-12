@@ -57,6 +57,14 @@ function Members() {
                     {" "}
                     ROPO Mapping Create
                   </Link>
+
+                </li>
+                 <li>
+                  <Link to="/ropo-mapping-detail/:id?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    {" "}
+                    ROPO Mapping Detail
+                  </Link>
+                  
                 </li>
                 {/* <li>
                   <Link to="/gate-pass-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
