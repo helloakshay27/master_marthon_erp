@@ -1218,7 +1218,7 @@ export default function CreateEvent() {
             <input
               className="form-control file_name"
               required
-              value={row.fileName || row.filename || ""}
+              value={row.fileName || row.document_name || "no files selected yet"}
               onChange={e => {
                 setDocumentRows(prev => {
                   const updated = [...prev];

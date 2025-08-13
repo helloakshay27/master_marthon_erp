@@ -1897,7 +1897,7 @@ const toUTCStartTimeString = (dateTime) => {
                           <input
                             className="form-control file_name"
                             required
-                            value={att.fileName || att.filename || ""}
+                            value={att.fileName || att.document_name || "no files selected yet"}
                             onChange={e => {
                               // Update fileName in documentRows
                               setDocumentRows(prev => {
@@ -1926,6 +1926,7 @@ const toUTCStartTimeString = (dateTime) => {
                             }
                           />
                         </td>
+                        
                         <td>
                           {!att.isExisting && (
                             <input
@@ -1981,7 +1982,7 @@ const toUTCStartTimeString = (dateTime) => {
                                     <a href={att.fileUrl} download>
                                       <span className="material-symbols-outlined">file_download</span>
                                     </a>
-                                    <span>{att.fileName || att.filename}</span>
+                                    <span>{att.fileName || att.document_name}</span>
                                   </div>
                                 </div>
                               )}
