@@ -874,23 +874,28 @@ const PoList = () => {
   };
 
   // Date formatting function
-  const formatDate = (dateString) => {
-    if (!dateString) return "-";
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return "-";
+const formatDate = (dateString) => {
+  if (!dateString) return "-";
+  
+  // Check if date is already in DD/MM/YYYY format
+  if (dateString.includes('/')) {
+    const [day, month, year] = dateString.split('/');
+    return `${day}-${month}-${year.substring(0, 4)}`;
+  }
 
-      // Get day, month, and year (last two digits)
-      const day = date.getDate().toString().padStart(2, "0");
-      const month = (date.getMonth() + 1).toString().padStart(2, "0");
-      const year = date.getFullYear().toString().slice(); // Only last two digits
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "-";
 
-      // Return in DD-MM-YY format
-      return `${day}-${month}-${year}`;
-    } catch (e) {
-      return "-";
-    }
-  };
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}-${month}-${year}`;
+  } catch (e) {
+    return "-";
+  }
+};
 
   return (
     <>
