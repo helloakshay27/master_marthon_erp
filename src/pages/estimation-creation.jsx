@@ -24,6 +24,7 @@ import {
 } from "../components"
 import { estimationListColumns, estimationListData } from "../constant/data";
 import { auditLogColumns, auditLogData } from "../constant/data";
+import { baseURL } from "../confi/apiDomain";
 
 
 
@@ -135,8 +136,8 @@ const EstimationCreation = () => {
     label: company.company_name
   }));
 
-   const [details, setDetails] = useState(null);
-    // 🔹 Fetch sub-project details when project or site changes
+  const [details, setDetails] = useState(null);
+  // 🔹 Fetch sub-project details when project or site changes
   useEffect(() => {
     if (!selectedProject && !selectedSite) return;
 
@@ -158,9 +159,10 @@ const EstimationCreation = () => {
     fetchDetails();
   }, [selectedProject, selectedSite]);
 
-  console.log("details selected:",details)
+  // console.log("details selected:", details)
   const [subProjectDetails, setSubProjectDetails] = useState(
-   {}
+    {}
+
     // {
     //   "rera_area": "",
     //   "construction_area": "",
@@ -239,10 +241,10 @@ const EstimationCreation = () => {
     axios
       .get(
         "https://marathon.lockated.com/work_categories/work_sub_categories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
-        
+
       )
       .then((res) => {
-        console.log("responce cat:",res.data)
+        console.log("responce cat:", res.data)
         setSubProjectDetails(res.data); // store response
       })
       .catch((err) => {
@@ -336,7 +338,7 @@ const EstimationCreation = () => {
   const [modalCategoryIdx, setModalCategoryIdx] = useState(null);
   const [modalSubCategoryIdx, setModalSubCategoryIdx] = useState(null);
   const [modalRows, setModalRows] = useState([
-    { materialType: "", specification: "", type: "Material" }
+    { materialType: "", materialTypeLabel: "", specification: "", specificationLabel: "", labourType: "", labourTypeLabel: "", compositeValue: "", type: "Material" }
   ]);
 
   // Dummy options for dropdowns
@@ -403,10 +405,29 @@ const EstimationCreation = () => {
 
 
   // Handle modal input change
-  const handleModalRowChange = (idx, field, value) => {
-    const updatedRows = modalRows.map((row, i) =>
-      i === idx ? { ...row, [field]: value } : row
-    );
+  // const handleModalRowChange = (idx, field, value) => {
+  //   const updatedRows = modalRows.map((row, i) =>
+  //     i === idx ? { ...row, [field]: value } : row
+  //   );
+  //   setModalRows(updatedRows);
+  // };
+
+
+  const handleModalRowChange = (idx, field, newValue) => {
+    const updatedRows = modalRows.map((row, i) => {
+      if (i === idx) {
+        // If object {value, label}, store value separately and label separately
+        if (newValue && typeof newValue === "object" && "value" in newValue) {
+          return {
+            ...row,
+            [field]: newValue.value,
+            [`${field}Label`]: newValue.label
+          };
+        }
+        return { ...row, [field]: newValue };
+      }
+      return row;
+    });
     setModalRows(updatedRows);
   };
 
@@ -468,7 +489,7 @@ const EstimationCreation = () => {
     setModalSubCategory4Idx(subCategory4Idx);
     setModalSubCategory5Idx(subCategory5Idx);
     // setModalRows([{ materialType: "", specification: "", type: "Material" }]);
-    setModalRows([{ materialType: "", specification: "", type: "Material" }]);
+    setModalRows([{ materialType: "", materialTypeLabel: "", specification: "", specificationLabel: "", labourType: "", labourTypeLabel: "", compositeValue: "", type: "Material" }]);
     setShowAddModal(true);
 
     setOpenCategoryId(subCatIdx === null ? categoryOrSubCatId : subProjectDetails.categories[catIdx].id);
@@ -500,7 +521,7 @@ const EstimationCreation = () => {
     }
   };
 
-console.log("modal rows:",modalRows)
+  // console.log("modal rows:", modalRows)
 
 
   // const handleOpenAddModal = (
@@ -694,6 +715,163 @@ console.log("modal rows:",modalRows)
   // };
 
 
+
+  const [lastCreatedLevelIds, setLastCreatedLevelIds] = useState({
+    level_one_id: null,
+    level_two_id: null,
+    level_three_id: null,
+    level_four_id: null,
+    level_five_id: null,
+  });
+
+  const [lastMaterialDetails, setLastMaterialDetails] = useState([]);
+  // const handleCreateRows = (
+  //   subCategory3Idx = modalSubCategory3Idx,
+  //   subCategory4Idx = modalSubCategory4Idx,
+  //   subCategory5Idx = modalSubCategory5Idx
+  // ) => {
+  //   setSubProjectDetails(prev => {
+  //     const updated = { ...prev };
+  //     // const targetArr = getTargetArrayFromPath(updated, somePath); // however you fetch it
+  //     let targetArr;
+
+  //     if (
+  //       modalSubCategoryIdx === null &&
+  //       subCategory3Idx === null &&
+  //       subCategory4Idx === null &&
+  //       subCategory5Idx === null
+  //     ) {
+  //       // Main category
+  //       targetArr = updated.categories[modalCategoryIdx].material_type_details;
+  //     } else if (
+  //       modalSubCategoryIdx !== null &&
+  //       subCategory3Idx === null &&
+  //       subCategory4Idx === null &&
+  //       subCategory5Idx === null
+  //     ) {
+  //       // Sub-category 2
+  //       targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].material_type_details;
+  //     } else if (
+  //       modalSubCategoryIdx !== null &&
+  //       subCategory3Idx !== null &&
+  //       subCategory4Idx === null &&
+  //       subCategory5Idx === null
+  //     ) {
+  //       // Sub-category 3
+  //       targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx]?.material_type_details;
+  //     } else if (
+  //       modalSubCategoryIdx !== null &&
+  //       subCategory3Idx !== null &&
+  //       subCategory4Idx !== null &&
+  //       subCategory5Idx === null
+  //     ) {
+  //       // Sub-category 4
+  //       targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx]?.sub_categories_4[subCategory4Idx]?.material_type_details;
+  //     } else if (
+  //       modalSubCategoryIdx !== null &&
+  //       subCategory3Idx !== null &&
+  //       subCategory4Idx !== null &&
+  //       subCategory5Idx !== null
+  //     ) {
+  //       // Sub-category 5
+  //       targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx]?.sub_categories_4[subCategory4Idx]?.sub_categories_5[subCategory5Idx]?.material_type_details;
+  //     }
+
+  //     if (!targetArr) return prev; // Prevent error if path is invalid
+
+  //     const row = modalRows[0];
+  //     // // modalRows.forEach(row => {
+  //     // targetArr.push({
+  //     //   id: Date.now() + Math.random(),
+  //     //   name: row.materialType,
+  //     //   specification: row.specification,
+  //     //   type: row.type,
+  //     //   location: "",
+  //     //   qty: "",
+  //     //   rate: "",
+  //     //   wastage: "",
+  //     // });
+  //     // });
+
+
+  //     // Check if a row with same materialType, specification, and type exists
+  //     // const isDuplicate = targetArr.some(item =>
+  //     //   item.name === row.materialTypeLabel &&
+  //     //   item.specification === row.specificationLabel &&
+  //     //   item.type === row.type
+  //     // );
+
+  //     // if (!isDuplicate) {
+  //     //   targetArr.push({
+  //     //     id: Date.now() + Math.random(),
+  //     //     materilTypeId: row.materialType,
+  //     //     name: row.materialTypeLabel,
+  //     //     specificationId: row.specification,
+  //     //     specification: row.specificationLabel,
+  //     //     labourAct: row.labourAct,
+  //     //     labourActLabel:row.labourActLabel,
+  //     //     type: row.type,
+  //     //     location: "",
+  //     //     qty: "",
+  //     //     rate: "",
+  //     //     wastage: "",
+  //     //   });
+  //     // } else {
+  //     //   // console.warn("Duplicate row skipped:", row);
+  //     // }
+
+
+  //     let isDuplicate = false;
+
+  //     if (row.type === "Material") {
+  //       // Duplicate check for Material rows
+  //       isDuplicate = targetArr.some(item =>
+  //         item.type === "Material" &&
+  //         item.name === row.materialTypeLabel &&
+  //         item.specification === row.specificationLabel
+  //       );
+  //     } else if (row.type === "Labour") {
+  //       // Duplicate check for Labour rows
+  //       isDuplicate = targetArr.some(item =>
+  //         item.type === "Labour" &&
+  //         item.labourActLabel === row.labourTypeLabel
+  //       );
+  //     } else if (row.type === "Composite") {
+  //       // Duplicate check for Labour rows
+  //       isDuplicate = targetArr.some(item =>
+  //         item.type === "Composite" &&
+  //         item.compositeValue === row.compositeValue
+  //       );
+  //     }
+
+  //     if (!isDuplicate) {
+  //       targetArr.push({
+  //         id: Date.now() + Math.random(),
+  //         materilTypeId: row.materialType,
+  //         name: row.materialTypeLabel,
+  //         specificationId: row.specification,
+  //         specification: row.specificationLabel,
+  //         labourAct: row.labourType,
+  //         labourActLabel: row.labourTypeLabel,
+  //         compositeValue: row.compositeValue,
+  //         type: row.type,
+  //         location: "",
+  //         qty: "",
+  //         rate: "",
+  //         wastage: "",
+  //       });
+  //     } else {
+  //       console.warn("Duplicate row skipped:", row);
+  //     }
+
+  //     // console.log("modal row:",targetArr)
+  //     return updated;
+  //   });
+  //   setShowAddModal(false);
+  // };
+
+
+
   const handleCreateRows = (
     subCategory3Idx = modalSubCategory3Idx,
     subCategory4Idx = modalSubCategory4Idx,
@@ -701,96 +879,138 @@ console.log("modal rows:",modalRows)
   ) => {
     setSubProjectDetails(prev => {
       const updated = { ...prev };
-      // const targetArr = getTargetArrayFromPath(updated, somePath); // however you fetch it
       let targetArr;
+      let levelIds = {
+        level_one_id: null,
+        level_two_id: null,
+        level_three_id: null,
+        level_four_id: null,
+        level_five_id: null,
+      };
 
+      // 🛠 Level ID mapping
       if (
         modalSubCategoryIdx === null &&
         subCategory3Idx === null &&
         subCategory4Idx === null &&
         subCategory5Idx === null
       ) {
-        // Main category
-        targetArr = updated.categories[modalCategoryIdx].material_type_details;
+        const category = updated.categories[modalCategoryIdx];
+        targetArr = category.material_type_details;
+        levelIds.level_one_id = category.id;
       } else if (
         modalSubCategoryIdx !== null &&
         subCategory3Idx === null &&
         subCategory4Idx === null &&
         subCategory5Idx === null
       ) {
-        // Sub-category 2
-        targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].material_type_details;
+        const subCat2 = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx];
+        targetArr = subCat2.material_type_details;
+        levelIds.level_one_id = updated.categories[modalCategoryIdx].id;
+        levelIds.level_two_id = subCat2.id;
       } else if (
         modalSubCategoryIdx !== null &&
         subCategory3Idx !== null &&
         subCategory4Idx === null &&
         subCategory5Idx === null
       ) {
-        // Sub-category 3
-        targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx]?.material_type_details;
+        const subCat3 = updated.categories[modalCategoryIdx]
+          .sub_categories_2[modalSubCategoryIdx]
+          .sub_categories_3[subCategory3Idx];
+        targetArr = subCat3.material_type_details;
+        levelIds.level_one_id = updated.categories[modalCategoryIdx].id;
+        levelIds.level_two_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].id;
+        levelIds.level_three_id = subCat3.id;
       } else if (
         modalSubCategoryIdx !== null &&
         subCategory3Idx !== null &&
         subCategory4Idx !== null &&
         subCategory5Idx === null
       ) {
-        // Sub-category 4
-        targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx]?.sub_categories_4[subCategory4Idx]?.material_type_details;
+        const subCat4 = updated.categories[modalCategoryIdx]
+          .sub_categories_2[modalSubCategoryIdx]
+          .sub_categories_3[subCategory3Idx]
+          .sub_categories_4[subCategory4Idx];
+        targetArr = subCat4.material_type_details;
+        levelIds.level_one_id = updated.categories[modalCategoryIdx].id;
+        levelIds.level_two_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].id;
+        levelIds.level_three_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx].id;
+        levelIds.level_four_id = subCat4.id;
       } else if (
         modalSubCategoryIdx !== null &&
         subCategory3Idx !== null &&
         subCategory4Idx !== null &&
         subCategory5Idx !== null
       ) {
-        // Sub-category 5
-        targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx]?.sub_categories_4[subCategory4Idx]?.sub_categories_5[subCategory5Idx]?.material_type_details;
+        const subCat5 = updated.categories[modalCategoryIdx]
+          .sub_categories_2[modalSubCategoryIdx]
+          .sub_categories_3[subCategory3Idx]
+          .sub_categories_4[subCategory4Idx]
+          .sub_categories_5[subCategory5Idx];
+        targetArr = subCat5.material_type_details;
+        levelIds.level_one_id = updated.categories[modalCategoryIdx].id;
+        levelIds.level_two_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].id;
+        levelIds.level_three_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx].id;
+        levelIds.level_four_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].id;
+        levelIds.level_five_id = subCat5.id;
       }
 
-      if (!targetArr) return prev; // Prevent error if path is invalid
+      if (!targetArr) return prev;
 
       const row = modalRows[0];
-      // // modalRows.forEach(row => {
-      // targetArr.push({
-      //   id: Date.now() + Math.random(),
-      //   name: row.materialType,
-      //   specification: row.specification,
-      //   type: row.type,
-      //   location: "",
-      //   qty: "",
-      //   rate: "",
-      //   wastage: "",
-      // });
-      // });
 
-
-      // Check if a row with same materialType, specification, and type exists
-      const isDuplicate = targetArr.some(item =>
-        item.name === row.materialType &&
-        item.specification === row.specification &&
-        item.type === row.type
-      );
+      // Duplicate check
+      let isDuplicate = false;
+      if (row.type === "Material") {
+        isDuplicate = targetArr.some(item =>
+          item.type === "Material" &&
+          item.name === row.materialTypeLabel &&
+          item.specification === row.specificationLabel
+        );
+      } else if (row.type === "Labour") {
+        isDuplicate = targetArr.some(item =>
+          item.type === "Labour" &&
+          item.labourActLabel === row.labourTypeLabel
+        );
+      } else if (row.type === "Composite") {
+        isDuplicate = targetArr.some(item =>
+          item.type === "Composite" &&
+          item.compositeValue === row.compositeValue
+        );
+      }
 
       if (!isDuplicate) {
         targetArr.push({
           id: Date.now() + Math.random(),
-          name: row.materialType,
-          specification: row.specification,
+          materilTypeId: row.materialType,
+          name: row.materialTypeLabel,
+          specificationId: row.specification,
+          specification: row.specificationLabel,
+          labourAct: row.labourType,
+          labourActLabel: row.labourTypeLabel,
+          compositeValue: row.compositeValue,
           type: row.type,
           location: "",
           qty: "",
           rate: "",
           wastage: "",
         });
-      } else {
-        // console.warn("Duplicate row skipped:", row);
       }
 
-      // console.log("modal row:",targetArr)
+      // ✅ Store both level IDs and targetArr in state
+      setLastCreatedLevelIds(levelIds);
+      setLastMaterialDetails([...targetArr]);
+
       return updated;
     });
+
     setShowAddModal(false);
   };
 
+
+
+  console.log("last ids:", lastCreatedLevelIds)
+  console.log("last material details:", lastMaterialDetails)
 
 
 
@@ -863,12 +1083,13 @@ console.log("modal rows:",modalRows)
           const factor = parseFloat(item.factor) || 0;
           const wastage = parseFloat(item.wastage) || 0;
           const qty = mainQty * factor;
-          const amount = qtyInclWastage * rate;
+          const qtyInclWastage = qty + (qty * wastage / 100);
+          const amount = qtyInclWastage * (item.rate);
           const costPerUnit = qty > 0 ? (amount / qty) : 0;
           return {
             ...item,
             qty,
-            qtyInclWastage: qty + (qty * wastage / 100),
+            qtyInclWastage,
             amount,
             costPerUnit
           };
@@ -1321,6 +1542,314 @@ console.log("modal rows:",modalRows)
     setSubProjectDetails(updatedDetails);
   };
 
+
+  const labourTypeOptions = [
+    { value: "skilled", label: "Skilled" },
+    { value: "unskilled", label: "Unskilled" },
+    { value: "supervisor", label: "Supervisor" },
+  ];
+
+  const [inventoryTypes2, setInventoryTypes2] = useState([]);  // State to hold the fetched data
+  const [selectedInventory2, setSelectedInventory2] = useState(null);  // State to hold selected inventory type
+
+  useEffect(() => {
+    axios.get(`${baseURL}pms/inventory_types.json?q[category_eq]=material&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+      .then(response => {
+        // Map the fetched data to the format required by react-select
+        const options = response.data.map(inventory => ({
+          value: inventory.id,
+          label: inventory.name
+        }));
+
+        setInventoryTypes2(options)
+      })
+      .catch(error => {
+        console.error('Error fetching inventory types:', error);
+      });
+  }, []);  // Empty dependency array to run only once on mount
+
+  // for generic specification
+  const [genericSpecifications, setGenericSpecifications] = useState([]); // State to hold the fetched generic specifications
+  const [selectedGenericSpecifications, setSelectedGenericSpecifications] = useState(null); // Holds the selected generic specifications for each material
+
+  // Fetch generic specifications for materials
+  console.log("inventory type 2:", selectedInventory2)
+  useEffect(() => {
+
+    if (selectedInventory2 || modalRows[0].materialType) {
+      axios
+        .get(
+          `${baseURL}pms/generic_infos.json?q[inventory_type_id_eq]=${modalRows[0].materialType}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+        )
+        .then((response) => {
+          const options = response.data.map((specification) => ({
+            value: specification.id,
+            label: specification.generic_info,
+          }));
+
+          setGenericSpecifications(options);
+        })
+        .catch((error) => {
+          console.error("Error fetching generic specifications:", error);
+        });
+    }
+
+  }, [selectedInventory2, baseURL, modalRows]); // Runs when materials or baseURL changes
+  const [labourActivities, setLabourActivities] = useState([]);
+  const [selectedLabourActivity, setSelectedLabourActivity] = useState(null);
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const response = await axios.get(
+          `https://marathon.lockated.com/labour_activities.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+
+        );
+        // Assuming the API returns an array of objects with { id, name }
+        const options = response.data.map(act => ({
+          value: act.id,
+          label: act.name
+        }));
+        setLabourActivities(options);
+      } catch (error) {
+        console.error("Error fetching labour activities:", error);
+      }
+    };
+
+    fetchActivities();
+  }, []);
+
+  const [unitOfMeasures, setUnitOfMeasures] = useState([]);
+  useEffect(() => {
+    axios
+      .get(
+        `${baseURL}unit_of_measures.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      )
+      .then((response) => {
+        // Mapping the response to the format required by react-select
+        const options = response.data.map((unit) => ({
+          value: unit.id,
+          label: unit.name,
+        }));
+        // console.log("unit options without materials:",options)
+        setUnitOfMeasures(options); // Save the formatted options to state
+      })
+      .catch((error) => {
+        console.error("Error fetching unit of measures:", error);
+      });
+  }, []);
+
+
+
+
+  // console.log("cat :",subProjectDetails.categories)
+
+  const mappedData = [];
+
+  subProjectDetails?.categories?.forEach(level1 => {
+    // Level 1 data
+    if (level1.material_type_details?.length) {
+      mappedData.push({
+        name: level1.items,
+        location: level1.location || "",
+        qty: level1.qty || "",
+        unit_of_measure_id: level1.uom || null,
+        level_one_id: level1.id || null,
+        level_two_id: null,
+        level_three_id: null,
+        level_four_id: null,
+        level_five_id: null,
+        // materials: level1.material_type_details
+
+        item_details: (level1.material_type_details || []).map(item => ({
+          type: item.type,
+          material_type_id: item.materilTypeId || null,
+          generic_info_id: item.specificationId || null,
+          labour_activity_id: item.labourAct || null,
+          name: item.compositeValue || null,
+          factor: item.factor || 0,
+          excl_wastage_qty: item.qty || 0,
+          incl_wastage_qty: item.qtyInclWastage || 0,
+          unit_of_measure_id: item.uom || null,
+          wastage: item.wastage || 0,
+          rate: item.rate || 0,
+          amount: item.amount || 0,
+          cost_per_unit: item.costPerUnit || 0
+        }))
+      });
+    }
+    // Level 2
+    level1.sub_categories_2?.forEach(level2 => {
+      if (level2.material_type_details?.length) {
+        mappedData.push({
+          name: level2.items,
+          location: level2.location || "",
+          qty: level2.qty || "",
+          unit_of_measure_id: level2.uom || null,
+          level_one_id: level1.id || null,
+          level_two_id: level2.id || null,
+          level_three_id: null,
+          level_four_id: null,
+          level_five_id: null,
+          item_details: (level2.material_type_details || []).map(item => ({
+            type: item.type,
+            material_type_id: item.materilTypeId || null,
+            generic_info_id: item.specificationId || null,
+            labour_activity_id: item.labourAct || null,
+            name: item.compositeValue || null,
+            factor: item.factor || 0,
+            excl_wastage_qty: item.qty || 0,
+            incl_wastage_qty: item.qtyInclWastage || 0,
+            unit_of_measure_id: item.uom || null,
+            wastage: item.wastage || 0,
+            rate: item.rate || 0,
+            amount: item.amount || 0,
+            cost_per_unit: item.costPerUnit || 0
+          }))
+        });
+      }
+
+      // Level 3
+      level2.sub_categories_3?.forEach(level3 => {
+        if (level3.material_type_details?.length) {
+          mappedData.push({
+            name: level3.items,
+            location: level3.location || "",
+            qty: level3.qty || "",
+            unit_of_measure_id: level3.uom || null,
+            level_one_id: level1.id || null,
+            level_two_id: level2.id || null,
+            level_three_id: level3.id || null,
+            level_four_id: null,
+            level_five_id: null,
+            item_details: (level3.material_type_details || []).map(item => ({
+              type: item.type,
+              material_type_id: item.materilTypeId || null,
+              generic_info_id: item.specificationId || null,
+              labour_activity_id: item.labourAct || null,
+              name: item.compositeValue || null,
+              factor: item.factor || 0,
+              excl_wastage_qty: item.qty || 0,
+              incl_wastage_qty: item.qtyInclWastage || 0,
+              unit_of_measure_id: item.uom || null,
+              wastage: item.wastage || 0,
+              rate: item.rate || 0,
+              amount: item.amount || 0,
+              cost_per_unit: item.costPerUnit || 0
+            }))
+          });
+        }
+
+        // Level 4
+        level3.sub_categories_4?.forEach(level4 => {
+          if (level4.material_type_details?.length) {
+            mappedData.push({
+              name: level4.items,
+              location: level4.location || "",
+              qty: level4.qty || "",
+              unit_of_measure_id: level4.uom || null,
+              level_one_id: level1.id || null,
+              level_two_id: level2.id || null,
+              level_three_id: level3.id || null,
+              level_four_id: level4.id || null,
+              level_five_id: null,
+              item_details: (level4.material_type_details || []).map(item => ({
+                type: item.type,
+                material_type_id: item.materilTypeId || null,
+                generic_info_id: item.specificationId || null,
+                labour_activity_id: item.labourAct || null,
+                name: item.compositeValue || null,
+                factor: item.factor || 0,
+                excl_wastage_qty: item.qty || 0,
+                incl_wastage_qty: item.qtyInclWastage || 0,
+                unit_of_measure_id: item.uom || null,
+                wastage: item.wastage || 0,
+                rate: item.rate || 0,
+                amount: item.amount || 0,
+                cost_per_unit: item.costPerUnit || 0
+              }))
+            });
+          }
+
+          // Level 5
+          level4.sub_categories_5?.forEach(level5 => {
+            if (level5.material_type_details?.length) {
+              mappedData.push({
+                name: level5.items,
+                location: level5.location || "",
+                qty: level5.qty || "",
+                unit_of_measure_id: level5.uom || null,
+                level_one_id: level1.id || null,
+                level_two_id: level2.id || null,
+                level_three_id: level3.id || null,
+                level_four_id: level4.id || null,
+                level_five_id: level5.id || null,
+                item_details: (level5.material_type_details || []).map(item => ({
+                  type: item.type,
+                  material_type_id: item.materilTypeId || null,
+                  generic_info_id: item.specificationId || null,
+                  labour_activity_id: item.labourAct || null,
+                  name: item.compositeValue || null,
+                  factor: item.factor || 0,
+                  excl_wastage_qty: item.qty || 0,
+                  incl_wastage_qty: item.qtyInclWastage || 0,
+                  unit_of_measure_id: item.uom || null,
+                  wastage: item.wastage || 0,
+                  rate: item.rate || 0,
+                  amount: item.amount || 0,
+                  cost_per_unit: item.costPerUnit || 0
+                }))
+              });
+            }
+
+
+          });
+        });
+      });
+    });
+  });
+
+
+
+  console.log("data paylod on**********************", mappedData);
+
+
+
+  const payload = {
+    company_id: selectedCompany?.value,
+    project_id: selectedProject?.value,
+    pms_site_id: selectedSite?.value,
+    // pms_wing_id: wingId,
+    estimation_items: mappedData
+  };
+  console.log("payload create budget****:", payload)
+
+
+  const handleSubmit = async () => {
+    try {
+      const payload = {
+        company_id: selectedCompany?.value,
+        project_id: selectedProject?.value,
+        pms_site_id: selectedSite?.value,
+        // pms_wing_id: wingId,
+        estimation_items: mappedData
+      };
+
+      const response = await axios.post(
+        "https://marathon.lockated.com/estimation_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+        payload,
+
+      );
+
+      alert("Estimation details submitted successfully!");
+
+      console.log("Success:", response.data);
+      // Optional: show toast or reset form
+    } catch (error) {
+      console.error("Error submitting estimation details:", error);
+      // Optional: show error message
+    }
+  };
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -1475,7 +2004,7 @@ console.log("modal rows:",modalRows)
                     </div>
                   </div>
 
-                   <div className="col-md-4 mt-2">
+                  <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label>Budget Type</label>
                       <input
@@ -1548,7 +2077,7 @@ console.log("modal rows:",modalRows)
                         <th className="text-start">Type</th>
                         <th className="text-start">Items</th>
                         <th className="text-start">Factor</th>
-                        <th className="text-start">UOM</th>
+                        <th className="text-start" style={{ width: "200px" }}>UOM</th>
                         {/* <th className="text-start">Area</th> */}
                         <th className="text-start">QTY Excl Wastage</th>
                         <th className="text-start">Wastage</th>
@@ -1671,7 +2200,18 @@ console.log("modal rows:",modalRows)
                                 />
                               </td>
                               <td></td>
-                              <td></td>
+                              <td>
+                                <SingleSelector
+                                  options={unitOfMeasures}
+                                  value={
+                                    unitOfMeasures.find(opt => opt.value === category.uom)
+                                  }
+                                  placeholder="Select UOM"
+                                  onChange={selectedOption =>
+                                    handleEditMainCategoryField(catIdx, "uom", selectedOption?.value || "")
+                                  }
+                                />
+                              </td>
                               {/* <td></td> */}
                               <td>
                                 <input
@@ -1695,7 +2235,7 @@ console.log("modal rows:",modalRows)
                                   // onClick={() => handleOpenAddModal(catIdx, null)}
                                   onClick={() => handleOpenAddModal(catIdx, null, category.id)}
                                 >
-                                  {console.log("cat id:", catIdx,category.id)}
+                                  {/* {console.log("cat id:", catIdx, category.id)} */}
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
@@ -1728,12 +2268,14 @@ console.log("modal rows:",modalRows)
                               category.material_type_details.map((item, itemIdx) => (
                                 <tr key={item.id} className="labour">
                                   <td></td>
-                                  <td>{catIdx + 1}.{itemIdx + 1}</td>
+                                  <td>
+                                    {/* {catIdx + 1}.{itemIdx + 1} */}
+                                  </td>
                                   <td></td>
                                   <td>{item.name}</td>
                                   <td></td>
                                   <td>{item.type}</td>
-                                  <td>{item.specification}</td>
+                                  <td>{item.specification || item.labourActLabel || item.compositeValue}</td>
                                   {/* Add other columns as needed */}
                                   <td>
                                     <input
@@ -1746,22 +2288,24 @@ console.log("modal rows:",modalRows)
                                     />
                                   </td>
                                   <td>
-                                    <select
-                                      value={item.uom || ""}
-                                      onChange={(e) =>
-                                        handleEditMaterial(catIdx, itemIdx, "uom", e.target.value)
+                                    <SingleSelector
+                                      options={unitOfMeasures}
+                                      value={
+                                        unitOfMeasures.find(opt => opt.value === item.uom)
                                       }
-                                      className="form-control"
-                                    >
-                                      <option value="">Select</option>
-                                      <option value="m">Meter</option>
-                                      <option value="cm">Centimeter</option>
-                                      <option value="mm">Millimeter</option>
-                                      <option value="ft">Feet</option>
-                                      <option value="in">Inch</option>
-                                      <option value="kg">Kilogram</option>
-                                      <option value="pcs">Pieces</option>
-                                    </select>
+                                      placeholder="Select UOM"
+                                      onChange={selectedOption =>
+                                        handleEditMaterial(catIdx, itemIdx, "uom", selectedOption?.value || "")
+                                      }
+                                    />
+
+                                    {/* <SingleSelector
+                                                              options={unitOfMeasures} // Providing the options to the select component
+                                                              onChange={handleUnitChange} // Setting the handler when an option is selected
+                                                              value={selectedUnit} // Setting the selected value
+                                                              placeholder={`Select UOM`} // Dynamic placeholder
+                                                              
+                                                            /> */}
                                   </td>
                                   {/* <td></td> */}
                                   <td>
@@ -1960,7 +2504,16 @@ console.log("modal rows:",modalRows)
                                     </td>
                                     <td></td>
                                     <td>
-
+                                      <SingleSelector
+                                        options={unitOfMeasures}
+                                        value={
+                                          unitOfMeasures.find(opt => opt.value === subCategory.uom)
+                                        }
+                                        placeholder="Select UOM"
+                                        onChange={selectedOption =>
+                                          handleEditSubCategory2Field(catIdx, subCatIdx, "uom", selectedOption?.value || "")
+                                        }
+                                      />
                                     </td>
                                     <td>
                                       <input
@@ -2002,7 +2555,9 @@ console.log("modal rows:",modalRows)
                                     subCategory.material_type_details.map((item, itemIdx) => (
                                       <tr key={item.id} className="labour">
                                         <td></td>
-                                        <td>{catIdx + 1}.{subCatIdx + 1}.{itemIdx + 1}</td>
+                                        <td>
+                                          {/* {catIdx + 1}.{subCatIdx + 1}.{itemIdx + 1} */}
+                                        </td>
                                         <td></td>
                                         <td>{item.name}</td>
                                         <td>{item.location}</td>
@@ -2021,22 +2576,16 @@ console.log("modal rows:",modalRows)
                                           />
                                         </td>
                                         <td>
-                                          <select
-                                            value={item.uom || ""}
-                                            onChange={(e) =>
-                                              handleEditSubCategory2Material(catIdx, subCatIdx, itemIdx, "uom", e.target.value)
+                                          <SingleSelector
+                                            options={unitOfMeasures}
+                                            value={
+                                              unitOfMeasures.find(opt => opt.value === item.uom)
                                             }
-                                            className="form-control"
-                                          >
-                                            <option value="">Select</option>
-                                            <option value="m">Meter</option>
-                                            <option value="cm">Centimeter</option>
-                                            <option value="mm">Millimeter</option>
-                                            <option value="ft">Feet</option>
-                                            <option value="in">Inch</option>
-                                            <option value="kg">Kilogram</option>
-                                            <option value="pcs">Pieces</option>
-                                          </select>
+                                            placeholder="Select UOM"
+                                            onChange={selectedOption =>
+                                              handleEditSubCategory2Material(catIdx, subCatIdx, itemIdx, "uom", selectedOption?.value || "")
+                                            }
+                                          />
                                         </td>
                                         <td>
                                           <input
@@ -2232,7 +2781,16 @@ console.log("modal rows:",modalRows)
 
                                             </td>
                                             <td>
-
+                                              <SingleSelector
+                                                options={unitOfMeasures}
+                                                value={
+                                                  unitOfMeasures.find(opt => opt.value === subCategory3.uom)
+                                                }
+                                                placeholder="Select UOM"
+                                                onChange={selectedOption =>
+                                                  handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "uom", selectedOption?.value || "")
+                                                }
+                                              />
                                             </td>
                                             <td>
                                               <input
@@ -2295,22 +2853,17 @@ console.log("modal rows:",modalRows)
                                                   />
                                                 </td>
                                                 <td>
-                                                  <select
-                                                    value={item.uom || ""}
-                                                    onChange={(e) =>
-                                                      handleEditSubCategory3Material(catIdx, subCatIdx, subCategory3Idx, itemIdx, "uom", e.target.value)
+
+                                                  <SingleSelector
+                                                    options={unitOfMeasures}
+                                                    value={
+                                                      unitOfMeasures.find(opt => opt.value === item.uom)
                                                     }
-                                                    className="form-control"
-                                                  >
-                                                    <option value="">Select</option>
-                                                    <option value="m">Meter</option>
-                                                    <option value="cm">Centimeter</option>
-                                                    <option value="mm">Millimeter</option>
-                                                    <option value="ft">Feet</option>
-                                                    <option value="in">Inch</option>
-                                                    <option value="kg">Kilogram</option>
-                                                    <option value="pcs">Pieces</option>
-                                                  </select>
+                                                    placeholder="Select UOM"
+                                                    onChange={selectedOption =>
+                                                      handleEditSubCategory3Material(catIdx, subCatIdx, subCategory3Idx, itemIdx, "uom", selectedOption?.value || "")
+                                                    }
+                                                  />
                                                 </td>
                                                 <td>
                                                   <input
@@ -2507,7 +3060,16 @@ console.log("modal rows:",modalRows)
 
                                                     </td>
                                                     <td>
-
+                                                      <SingleSelector
+                                                        options={unitOfMeasures}
+                                                        value={
+                                                          unitOfMeasures.find(opt => opt.value === subCategory4.uom)
+                                                        }
+                                                        placeholder="Select UOM"
+                                                        onChange={selectedOption =>
+                                                          handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "uom", selectedOption?.value || "")
+                                                        }
+                                                      />
                                                     </td>
                                                     <td>
                                                       <input
@@ -2524,7 +3086,7 @@ console.log("modal rows:",modalRows)
                                                     <td></td>
                                                     <td></td>
                                                     <td></td>
-                                                    <td></td>
+
                                                     <td>
                                                       <button
                                                         className="btn btn-link p-0"
@@ -2567,22 +3129,16 @@ console.log("modal rows:",modalRows)
                                                           />
                                                         </td>
                                                         <td>
-                                                          <select
-                                                            value={item.uom || ""}
-                                                            onChange={(e) =>
-                                                              handleEditSubCategory4Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "uom", e.target.value)
+                                                          <SingleSelector
+                                                            options={unitOfMeasures}
+                                                            value={
+                                                              unitOfMeasures.find(opt => opt.value === item.uom)
                                                             }
-                                                            className="form-control"
-                                                          >
-                                                            <option value="">Select</option>
-                                                            <option value="m">Meter</option>
-                                                            <option value="cm">Centimeter</option>
-                                                            <option value="mm">Millimeter</option>
-                                                            <option value="ft">Feet</option>
-                                                            <option value="in">Inch</option>
-                                                            <option value="kg">Kilogram</option>
-                                                            <option value="pcs">Pieces</option>
-                                                          </select>
+                                                            placeholder="Select UOM"
+                                                            onChange={selectedOption =>
+                                                              handleEditSubCategory4Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "uom", selectedOption?.value || "")
+                                                            }
+                                                          />
                                                         </td>
                                                         <td>
                                                           <input
@@ -2785,7 +3341,16 @@ console.log("modal rows:",modalRows)
 
                                                             </td>
                                                             <td>
-
+                                                              <SingleSelector
+                                                                options={unitOfMeasures}
+                                                                value={
+                                                                  unitOfMeasures.find(opt => opt.value === subCategory5.uom)
+                                                                }
+                                                                placeholder="Select UOM"
+                                                                onChange={selectedOption =>
+                                                                  handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "uom", selectedOption?.value || "")
+                                                                }
+                                                              />
                                                             </td>
                                                             <td>
                                                               <input
@@ -2832,93 +3397,88 @@ console.log("modal rows:",modalRows)
                                                                 <td>{item.name}</td>
                                                                 <td>{item.location}</td>
                                                                 <td>{item.type}</td>
-                                                                <td>{item.specification}</td>
+                                                                <td>{item.specification || item.labourActLabel}</td>
                                                                 {/* ...other cells... */}
                                                                 <td>
-                                                                   <input
-                                                            type="number"
-                                                            value={item.factor || ""}
-                                                            onChange={(e) =>
-                                                              handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx,subCategory5Idx, itemIdx, "factor", e.target.value)
-                                                            }
-                                                            className="form-control"
-                                                          />
+                                                                  <input
+                                                                    type="number"
+                                                                    value={item.factor || ""}
+                                                                    onChange={(e) =>
+                                                                      handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx, "factor", e.target.value)
+                                                                    }
+                                                                    className="form-control"
+                                                                  />
                                                                 </td>
                                                                 <td>
-                                                                  <select
-                                                            value={item.uom || ""}
-                                                            onChange={(e) =>
-                                                              handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx,subCategory5Idx, itemIdx, "uom", e.target.value)
-                                                            }
-                                                            className="form-control"
-                                                          >
-                                                            <option value="">Select</option>
-                                                            <option value="m">Meter</option>
-                                                            <option value="cm">Centimeter</option>
-                                                            <option value="mm">Millimeter</option>
-                                                            <option value="ft">Feet</option>
-                                                            <option value="in">Inch</option>
-                                                            <option value="kg">Kilogram</option>
-                                                            <option value="pcs">Pieces</option>
-                                                          </select>
-                                                                </td>
- <td>
-                                                          <input
-                                                            type="number"
-                                                            value={item.qty || ""}
-                                                            readOnly
-                                                            disabled
-                                                            className="form-control"
-                                                          />
-                                                        </td>
-                                                        <td>
-                                                          <input
-                                                            type="number"
-                                                            value={item.wastage || ""}
-                                                            onChange={(e) =>
-                                                              handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx,subCategory5Idx, itemIdx, "wastage", e.target.value)
-                                                            }
-                                                            className="form-control"
-                                                          />
-                                                        </td>
-                                                        <td>
-                                                          <input
-                                                            type="number"
-                                                            value={item.qtyInclWastage || ""}
-                                                            readOnly
-                                                            className="form-control"
-                                                            disabled
-                                                          />
-                                                        </td>
-                                                        <td>
-                                                          <input
-                                                            type="number"
-                                                            value={item.rate || ""}
-                                                            onChange={(e) =>
-                                                              handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx,subCategory5Idx, itemIdx, "rate", e.target.value)
-                                                            }
-                                                            className="form-control"
-                                                          />
-                                                        </td>
 
-                                                        <td>
-                                                          <input
-                                                            type="number"
-                                                            value={item.amount || ""}
-                                                            readOnly
-                                                            disabled
-                                                            className="form-control"
-                                                          />
-                                                        </td>
-                                                        <td>
-                                                          <input
-                                                            type="number"
-                                                            value={item.costPerUnit || ""}
-                                                            readOnly
-                                                            disabled
-                                                            className="form-control"
-                                                          />
-                                                        </td>
+                                                                  <SingleSelector
+                                                                    options={unitOfMeasures}
+                                                                    value={
+                                                                      unitOfMeasures.find(opt => opt.value === item.uom)
+                                                                    }
+                                                                    placeholder="Select UOM"
+                                                                    onChange={selectedOption =>
+                                                                      handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory4Idx, itemIdx, "uom", selectedOption?.value || "")
+                                                                    }
+                                                                  />
+                                                                </td>
+                                                                <td>
+                                                                  <input
+                                                                    type="number"
+                                                                    value={item.qty || ""}
+                                                                    readOnly
+                                                                    disabled
+                                                                    className="form-control"
+                                                                  />
+                                                                </td>
+                                                                <td>
+                                                                  <input
+                                                                    type="number"
+                                                                    value={item.wastage || ""}
+                                                                    onChange={(e) =>
+                                                                      handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx, "wastage", e.target.value)
+                                                                    }
+                                                                    className="form-control"
+                                                                  />
+                                                                </td>
+                                                                <td>
+                                                                  <input
+                                                                    type="number"
+                                                                    value={item.qtyInclWastage || ""}
+                                                                    readOnly
+                                                                    className="form-control"
+                                                                    disabled
+                                                                  />
+                                                                </td>
+                                                                <td>
+                                                                  <input
+                                                                    type="number"
+                                                                    value={item.rate || ""}
+                                                                    onChange={(e) =>
+                                                                      handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx, "rate", e.target.value)
+                                                                    }
+                                                                    className="form-control"
+                                                                  />
+                                                                </td>
+
+                                                                <td>
+                                                                  <input
+                                                                    type="number"
+                                                                    value={item.amount || ""}
+                                                                    readOnly
+                                                                    disabled
+                                                                    className="form-control"
+                                                                  />
+                                                                </td>
+                                                                <td>
+                                                                  <input
+                                                                    type="number"
+                                                                    value={item.costPerUnit || ""}
+                                                                    readOnly
+                                                                    disabled
+                                                                    className="form-control"
+                                                                  />
+                                                                </td>
                                                                 <td>
                                                                   <button
                                                                     className="btn btn-link p-0"
@@ -2972,7 +3532,7 @@ console.log("modal rows:",modalRows)
 
             <div className="row mt-5 mb-5 justify-content-center">
               <div className="col-md-2">
-                <button className="purple-btn2 w-100">Create</button>
+                <button className="purple-btn2 w-100"   onClick={handleSubmit}>Create</button>
               </div>
             </div>
 
@@ -2980,67 +3540,161 @@ console.log("modal rows:",modalRows)
         </div>
       </div>
 
-
-
-      <Modal show={showAddModal} onHide={() => setShowAddModal(false)}>
+      <Modal show={showAddModal} size="xl" onHide={() => setShowAddModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Add Material/Labour</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <div className="d-flex align-items-center mb-2">
-            <select
-              className="form-select me-2"
-              value={modalRows[0].materialType}
-              onChange={e => handleModalRowChange(0, "materialType", e.target.value)}
-            >
-              <option value="">Select Material Type</option>
-              {materialTypeOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-            <select
-              className="form-select me-2"
-              value={modalRows[0].specification}
-              onChange={e => handleModalRowChange(0, "specification", e.target.value)}
-            >
-              <option value="">Select Specification</option>
-              {specificationOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-            <div className="form-check form-check-inline me-2">
-              <input
-                className="form-check-input"
-                type="radio"
-                name="type-0"
-                value="Material"
-                checked={modalRows[0].type === "Material"}
-                onChange={e => handleModalRowChange(0, "type", "Material")}
-              />
-              <label className="form-check-label">Material</label>
+
+          {/* Row 1: Radio Buttons */}
+          <div className="row p-3">
+            <div className="d-flex align-items-center mb-2">
+              <div className="form-check form-check-inline me-2 col-md-2">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  name="type-0"
+                  value="Material"
+                  checked={modalRows[0].type === "Material"}
+                  onChange={() => handleModalRowChange(0, "type", "Material")}
+                />
+                <label className="form-check-label">Material</label>
+              </div>
+
+              <div className="form-check form-check-inline me-2 col-md-2">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  name="type-0"
+                  value="Labour"
+                  checked={modalRows[0].type === "Labour"}
+                  onChange={() => handleModalRowChange(0, "type", "Labour")}
+                />
+                <label className="form-check-label">Labour</label>
+              </div>
+
+              <div className="form-check form-check-inline me-2 col-md-2">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  name="type-0"
+                  value="Composite"
+                  checked={modalRows[0].type === "Composite"}
+                  onChange={() => handleModalRowChange(0, "type", "Composite")}
+                />
+                <label className="form-check-label">Composite</label>
+              </div>
             </div>
-            <div className="form-check form-check-inline me-2">
-              <input
-                className="form-check-input"
-                type="radio"
-                name="type-0"
-                value="Labour"
-                checked={modalRows[0].type === "Labour"}
-                onChange={e => handleModalRowChange(0, "type", "Labour")}
-              />
-              <label className="form-check-label">Labour</label>
-            </div>
+
+            {/* Row 2: Material Type & Specification (only for Material) */}
+
+            {modalRows[0].type === "Material" && (
+              <div className="d-flex align-items-center mb-2">
+                <div className="col-md-6 mt-3">
+                  <div className="form-group">
+                    <label>Material Type</label>
+
+
+                    <SingleSelector
+                      options={inventoryTypes2} // same data you had in select
+                      value={inventoryTypes2.find(
+                        option => option.value === modalRows[0].materialType
+                      )}
+                      placeholder="Select Material Type"
+                      onChange={selectedOption =>
+                        handleModalRowChange(0, "materialType", selectedOption || "")
+                      }
+                    />
+
+                  </div>
+                </div>
+                <div className="col-md-6 mt-3 ms-3 ">
+                  <div className="form-group">
+                    <label>Generic Specification</label>
+                    <SingleSelector
+                      options={Array.isArray(genericSpecifications) ? genericSpecifications : []}
+                      value={genericSpecifications.find((option) => option.value === modalRows[0].specification)} // Bind value to state
+                      placeholder={`Select Specification`} // Dynamic placeholder
+                      // onChange={(selectedOption) => handleSelectorChange("genericSpecification", selectedOption)}
+                      onChange={selectedOption => handleModalRowChange(0, "specification", selectedOption || "")}
+                    />
+                  </div>
+
+                </div>
+              </div>
+
+            )}
+
+
+
+            {/* Conditional Labour Type Select */}
+            {modalRows[0].type === "Labour" && (
+
+              <div className="col-md-6 mt-3">
+                <div className="form-group">
+                  <label>Labour Activity</label>
+                  <SingleSelector
+                    options={labourActivities}
+                    value={labourActivities.find(
+                      option => option.value === modalRows[0].labourType
+                    )}
+                    placeholder="Select Labour Activity"
+                    onChange={selectedOption =>
+                      handleModalRowChange(0, "labourType", selectedOption || "")
+                    }
+                  />
+                </div>
+              </div>
+
+            )}
+
+            {/* Conditional Composite Input */}
+            {modalRows[0].type === "Composite" && (
+              <div className="col-md-6 mt-3">
+                <div className="form-group">
+                  <label>Composite Value</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter composite value"
+                    value={modalRows[0].compositeValue || ""}
+                    onChange={e =>
+                      handleModalRowChange(0, "compositeValue", e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+            )}
+
           </div>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="primary" onClick={() => handleCreateRows()}>
+        <Modal.Footer className="d-flex justify-content-center">
+          <button
+            className="purple-btn2 me-4"
+            // onClick={() => {
+            //     console.log("Selected Date Range:", dateRange);
+            //     setShowDateModal(false); // Close modal
+            // }}
+            onClick={() => handleCreateRows()}
+          >
             Create
-          </Button>
-          <Button variant="secondary" onClick={() => setShowAddModal(false)}>
+          </button>
+          <button className="purple-btn1" onClick={() => setShowAddModal(false)}>
             Cancel
-          </Button>
+          </button>
+
+
         </Modal.Footer>
       </Modal>
+
+
+
+
+
+
+
+
+
 
 
     </>

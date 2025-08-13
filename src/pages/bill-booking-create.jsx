@@ -931,7 +931,7 @@ const BillBookingCreate = () => {
       try {
         // Always fetch bill entry options
         const billEntryResponse = await axios.get(
-          `${baseURL}bill_bookings/bill_entry_list?token=${token}`
+          `${baseURL}bill_bookings/filtered_bill_entry_list?token=${token}`
         );
 
         if (
@@ -2217,7 +2217,7 @@ const BillBookingCreate = () => {
 
     const debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
     const advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0;
-
+const creditAdjustment = parseFloat(calculateCreditNoteAdjustment()) || 0;
     const totalAdjustments = (-debitAdjustment) + advanceAdjustment;
 
     // if (debitAdjustment > totalAmount) {
@@ -2277,7 +2277,8 @@ const BillBookingCreate = () => {
       otherDed +
       otherAdd +
       debitAdjustment -
-      advanceAdjustment
+      advanceAdjustment +
+      creditAdjustment
     ).toFixed(2);
 
     return amountPayable;
@@ -2415,6 +2416,7 @@ const BillBookingCreate = () => {
       .toFixed(2);
   };
 
+  console.log("credit adjusted:", calculateCreditNoteAdjustment());
   const calculateDebitNoteAdjustment = () => {
     return selectedDebitNotes
       .reduce((total, note) => {
@@ -2423,6 +2425,9 @@ const BillBookingCreate = () => {
       .toFixed(2);
   };
   console.log("debit adjusted:", calculateDebitNoteAdjustment())
+
+
+
 
   // Update the validatePositiveNumber function
 
@@ -2490,6 +2495,56 @@ const BillBookingCreate = () => {
     setViewDocIndex(index);
     openviewDocumentModal();
   };
+
+//   useEffect(() => {
+//   if (selectedPO && Array.isArray(selectedPO.grn_materials)) {
+//     // Only include GRNs that are selectable (not fully certified)
+//     const preselected = selectedPO.grn_materials.filter(
+//       (grn) =>
+//         parseFloat(grn.certified_till_date || 0) <
+//         parseFloat(grn.all_inc_tax || 0)
+//     );
+//     setSelectedGRNs(preselected);
+//   }
+// }, [selectedPO]);
+
+useEffect(() => {
+  if (Array.isArray(pendingAdvances) && pendingAdvances.length > 0) {
+    // Only include advances that are not fully recovered
+    const eligibleNotes = pendingAdvances.filter(
+      (note) =>
+        parseFloat(note.advance_amount || 0) !==
+        parseFloat(note.recovered_amount || 0)
+    );
+    setSelectedAdvanceNotes(eligibleNotes);
+  }
+}, [pendingAdvances]);
+
+
+useEffect(() => {
+  if (Array.isArray(debitNotes) && debitNotes.length > 0) {
+    // Only include debit notes that are not fully recovered
+    const eligibleNotes = debitNotes.filter(
+      (note) =>
+        parseFloat(note.debit_note_amount || 0) !==
+        parseFloat(note.recovered_amount || 0)
+    );
+    setSelectedDebitNotes(eligibleNotes);
+  }
+}, [debitNotes]);
+
+useEffect(() => {
+  if (Array.isArray(creditNotes) && creditNotes.length > 0) {
+    // Only include credit notes that are not fully recovered
+    const eligibleNotes = creditNotes.filter(
+      (note) =>
+        parseFloat(note.credit_note_amount || 0) !==
+        parseFloat(note.recovery_till_date || 0)
+    );
+    setSelectedCreditNotes(eligibleNotes);
+  }
+}, [creditNotes]);
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -3550,6 +3605,19 @@ const BillBookingCreate = () => {
                       />
                     </div>
                   </div>
+                    <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Credit Note Adjustment</label>
+                      <input
+                        className="form-control"
+                        type="number"
+                        value={Math.abs(calculateCreditNoteAdjustment())}
+                        // value={calculateDebitNoteAdjustment()}
+                        disabled
+                        placeholder="Debit note adjustment amount"
+                      />
+                    </div>
+                  </div>
                   {/* <h1 className="text-end">
                     ₹ {Math.abs(calculateDebitNoteAdjustment())}
                   </h1> */}
@@ -3927,7 +3995,7 @@ const BillBookingCreate = () => {
                     <span>Select Advance Note</span>
                   </button>
                 </div>
-                <div className="tbl-container  mt-3">
+                <div className="tbl-container  mt-3" style={{maxHeight:"500px"}}>
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -4048,7 +4116,7 @@ const BillBookingCreate = () => {
                     <span>Select Debit Note</span>
                   </button>
                 </div>
-                <div className="tbl-container  mt-3">
+                <div className="tbl-container  mt-3" style={{maxHeight:"500px"}}>
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -4201,7 +4269,7 @@ const BillBookingCreate = () => {
                     <span>Select Credit Note</span>
                   </button>
                 </div>
-                <div className="tbl-container mt-3">
+                <div className="tbl-container mt-3" style={{maxHeight:"500px"}}>
                   <table className="w-100">
                     <thead>
                       <tr>
@@ -4220,7 +4288,7 @@ const BillBookingCreate = () => {
                           Outstanding Amount (Current Date)
                         </th>
                         <th className="text-start">Credit Note Reason Type</th>
-                        <th className="text-start">This Recovery</th>
+                        <th className="text-start" style={{ width: "200px" }}>This Recovery</th>
                       </tr>
                     </thead>
                    

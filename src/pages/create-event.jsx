@@ -973,7 +973,7 @@ export default function CreateEvent() {
                 <div className="col-md-4 col-sm-6 mt-0 mb-2">
                   <div className="form-group">
                     <label className="po-fontBold">
-                      Event Name <span style={{ color: "red" }}>*</span>
+                      Event Name
                     </label>
                   </div>
                   <input
@@ -1061,7 +1061,7 @@ export default function CreateEvent() {
                 {/* <div className="col-md-4 col-sm-6 mt-2">
                   <div className="form-group">
                     <label className="po-fontBold">
-                      Savings Summary<span style={{ color: "red" }}>*</span>
+                      Savings Summary
                     </label>
                   </div>
                   <input
@@ -1766,7 +1766,7 @@ export default function CreateEvent() {
                   <form className="p-2">
                     <div className="form-group mb-3">
                       <label className="po-fontBold">
-                        POC - Full Name <span style={{ color: "red" }}>*</span>{" "}
+                        POC - Full Name
                       </label>
                       <input
                         className="form-control"
@@ -1779,7 +1779,7 @@ export default function CreateEvent() {
                     </div>
                     <div className="form-group mb-3">
                       <label className="po-fontBold">
-                        Email <span style={{ color: "red" }}>*</span>
+                        Email
                       </label>
                       <input
                         className="form-control"
@@ -1792,7 +1792,7 @@ export default function CreateEvent() {
                     </div>
                     <div className="form-group mb-3">
                       <label className="po-fontBold">
-                        Phone Number <span style={{ color: "red" }}>*</span>
+                        Phone Number
                       </label>
                       <input
                         className="form-control"
@@ -1845,7 +1845,7 @@ export default function CreateEvent() {
                     </div>
                     <div className="form-group mb-3">
                       <label className="po-fontBold">
-                        Company <span style={{ color: "red" }}>*</span>
+                        Company
                       </label>
                       <SelectBox
                         options={companyList}
@@ -1863,7 +1863,7 @@ export default function CreateEvent() {
                     </div>
                     <div className="form-group mb-3">
                       <label className="po-fontBold">
-                        Organization <span style={{ color: "red" }}>*</span>
+                        Organization
                       </label>
                       <input
                         className="form-control"
@@ -1955,8 +1955,7 @@ export default function CreateEvent() {
                 <>
                   <div className="ant-col ant-form-item-label">
                     <label title="How do you want to measure savings?">
-                      How do you want to measure savings?{" "}
-                      <span style={{ color: "red" }}>*</span>
+                      How do you want to measure savings?
                     </label>
                   </div>
 
@@ -2071,9 +2070,8 @@ export default function CreateEvent() {
                             <div className="col-12 mt-4">
                               <div className="form-group">
                                 <label className="po-fontBold">
-                                  Enter Reference Amount for Gross Total{" "}
-                                  <span style={{ color: "red" }}>*</span>{" "}
-                                </label>{" "}
+                                  Enter Reference Amount for Gross Total
+                                </label>
                               </div>
                               <div className="d-flex justify-content-between align-items-center bg-light p-2 rounded-3">
                                 <div className="w-50">
