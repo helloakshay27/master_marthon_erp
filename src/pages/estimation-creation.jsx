@@ -9,6 +9,7 @@ import ExpandableTable from "../components/ExpandableTable";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 import {
   LayoutModal,
@@ -31,6 +32,7 @@ import { baseURL } from "../confi/apiDomain";
 
 const EstimationCreation = () => {
   // States to store data
+  const navigate = useNavigate(); // ✅ define navigate here
   const [companies, setCompanies] = useState([]);
   const [projects, setProjects] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState(null);
@@ -42,7 +44,7 @@ const EstimationCreation = () => {
 
   // Fetch company data on component mount
   useEffect(() => {
-    axios.get('https://marathon.lockated.com/pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414')
+    axios.get(`${baseURL}pms/company_setups.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
       .then(response => {
         setCompanies(response.data.companies);
       })
@@ -137,17 +139,20 @@ const EstimationCreation = () => {
   }));
 
   const [details, setDetails] = useState(null);
+  const [type, setType] = useState("project"); // Track the type
   // 🔹 Fetch sub-project details when project or site changes
   useEffect(() => {
     if (!selectedProject && !selectedSite) return;
 
     const fetchDetails = async () => {
       try {
+        const newType = selectedSite ? "sub_project" : "project";
+        setType(newType);
         const type = selectedSite ? "sub_project" : "project";
         const id = selectedSite ? selectedSite.value : selectedProject.value;
 
         const res = await axios.get(
-          `https://marathon.lockated.com/estimation_details/${id}/budget_details.json?type=${type}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          `${baseURL}estimation_details/${id}/budget_details.json?type=${type}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
 
         setDetails(res.data);
@@ -158,6 +163,9 @@ const EstimationCreation = () => {
 
     fetchDetails();
   }, [selectedProject, selectedSite]);
+
+  // 🔹 Dynamic title
+  const cardTitle = type === "sub_project" ? "Sub-Project Details" : "Project Details";
 
   // console.log("details selected:", details)
   const [subProjectDetails, setSubProjectDetails] = useState(
@@ -240,7 +248,7 @@ const EstimationCreation = () => {
   useEffect(() => {
     axios
       .get(
-        "https://marathon.lockated.com/work_categories/work_sub_categories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+        `${baseURL}work_categories/work_sub_categories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
 
       )
       .then((res) => {
@@ -338,7 +346,7 @@ const EstimationCreation = () => {
   const [modalCategoryIdx, setModalCategoryIdx] = useState(null);
   const [modalSubCategoryIdx, setModalSubCategoryIdx] = useState(null);
   const [modalRows, setModalRows] = useState([
-    { materialType: "", materialTypeLabel: "", specification: "", specificationLabel: "", labourType: "", labourTypeLabel: "", compositeValue: "", type: "Material" }
+    { materialType: "", materialTypeLabel: "", specification: "", specificationLabel: "", labourType: "", labourTypeLabel: "", compositeValue: "", rate: "", type: "Material" }
   ]);
 
   // Dummy options for dropdowns
@@ -413,26 +421,75 @@ const EstimationCreation = () => {
   // };
 
 
-  const handleModalRowChange = (idx, field, newValue) => {
-    const updatedRows = modalRows.map((row, i) => {
-      if (i === idx) {
-        // If object {value, label}, store value separately and label separately
-        if (newValue && typeof newValue === "object" && "value" in newValue) {
-          return {
-            ...row,
-            [field]: newValue.value,
-            [`${field}Label`]: newValue.label
-          };
-        }
-        return { ...row, [field]: newValue };
+  // const handleModalRowChange = (idx, field, newValue) => {
+  //   const updatedRows = modalRows.map((row, i) => {
+  //     if (i === idx) {
+  //       // If object {value, label}, store value separately and label separately
+  //       if (newValue && typeof newValue === "object" && "value" in newValue) {
+  //         return {
+  //           ...row,
+  //           [field]: newValue.value,
+  //           [`${field}Label`]: newValue.label
+  //         };
+  //       }
+  //       return { ...row, [field]: newValue };
+  //     }
+  //     return row;
+  //   });
+  //   setModalRows(updatedRows);
+  // };
+
+
+
+
+
+  const handleModalRowChange = async (idx, field, newValue) => {
+    const updatedRows = [...modalRows];
+
+    // If object {value, label}, split into value & label
+    if (newValue && typeof newValue === "object" && "value" in newValue) {
+      updatedRows[idx] = {
+        ...updatedRows[idx],
+        [field]: newValue.value,
+        [`${field}Label`]: newValue.label
+      };
+    } else {
+      updatedRows[idx] = { ...updatedRows[idx], [field]: newValue };
+    }
+
+    // Check if both Material Type & Specification are selected → fetch rate
+    const row = updatedRows[idx];
+    if (row.materialType && row.specification && row.type === "Material") {
+      try {
+        const res = await axios.get(
+          `${baseURL}estimation_details/get_material_rate.json`,
+          {
+            params: {
+              material_type_id: row.materialType,
+              generic_info: row.specificationLabel, // assuming label contains "GRADE" etc.
+              project_id: selectedProject?.value,
+              pms_site_id: selectedSite?.value,
+              pms_wing_id: "",
+              token: "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+            }
+          }
+        );
+
+        updatedRows[idx].rate = res.data?.rate || 0;
+      } catch (err) {
+        console.error("Error fetching material rate", err);
+        updatedRows[idx].rate = 0;
       }
-      return row;
-    });
+    }
+
     setModalRows(updatedRows);
   };
 
 
-  // console.log("modalRows before create:", modalRows);
+
+
+
+  console.log("modalRows before create:", modalRows);
 
   // On modal create, add rows to the correct category/sub-category
   // const handleCreateRows = () => {
@@ -489,7 +546,7 @@ const EstimationCreation = () => {
     setModalSubCategory4Idx(subCategory4Idx);
     setModalSubCategory5Idx(subCategory5Idx);
     // setModalRows([{ materialType: "", specification: "", type: "Material" }]);
-    setModalRows([{ materialType: "", materialTypeLabel: "", specification: "", specificationLabel: "", labourType: "", labourTypeLabel: "", compositeValue: "", type: "Material" }]);
+    setModalRows([{ materialType: "", materialTypeLabel: "", specification: "", specificationLabel: "", labourType: "", labourTypeLabel: "", compositeValue: "", rate: "", type: "Material" }]);
     setShowAddModal(true);
 
     setOpenCategoryId(subCatIdx === null ? categoryOrSubCatId : subProjectDetails.categories[catIdx].id);
@@ -992,7 +1049,7 @@ const EstimationCreation = () => {
           type: row.type,
           location: "",
           qty: "",
-          rate: "",
+          rate: row.rate,
           wastage: "",
         });
       }
@@ -1601,7 +1658,7 @@ const EstimationCreation = () => {
     const fetchActivities = async () => {
       try {
         const response = await axios.get(
-          `https://marathon.lockated.com/labour_activities.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+          `${baseURL}labour_activities.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
 
         );
         // Assuming the API returns an array of objects with { id, name }
@@ -1835,14 +1892,26 @@ const EstimationCreation = () => {
       };
 
       const response = await axios.post(
-        "https://marathon.lockated.com/estimation_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414",
+        `${baseURL}estimation_details.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
         payload,
 
       );
 
-      alert("Estimation details submitted successfully!");
+      // alert("Estimation details submitted successfully!");
 
-      console.log("Success:", response.data);
+      // console.log("Success:", response.data);
+      // navigate("/estimation-creation-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414");
+
+
+      if (response.status === 201) {
+        alert("Estimation details submitted successfully!");
+        console.log("Success:", response.data);
+        navigate(
+          "/estimation-creation-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
+        );
+      } else {
+        alert("Something went wrong. Please try again.");
+      }
       // Optional: show toast or reset form
     } catch (error) {
       console.error("Error submitting estimation details:", error);
@@ -1921,7 +1990,7 @@ const EstimationCreation = () => {
               </div>
             </div>
 
-            <CollapsibleCard title="Sub-Project Details">
+            <CollapsibleCard title={cardTitle}>
               <div className="card-body mt-0 pt-0">
                 <div className="row align-items-center">
                   {/* RERA Area */}
@@ -1986,7 +2055,7 @@ const EstimationCreation = () => {
                         className="form-control"
                         type="text"
                         placeholder="Nos"
-                        value="150 Nos"
+                        value={details?.data.number_of_saleable_unit || "-"}
                       />
                     </div>
                   </div>
@@ -2057,10 +2126,10 @@ const EstimationCreation = () => {
             {/* <pre>{JSON.stringify(subProjectDetails, null, 2)}</pre> */}
 
             {/* ______________________________________________________________________________________________________ */}
-            <div className="mx-3">
+            <div className="mx-3 mb-5 mt-3">
 
 
-              <div className="mx-3">
+              <div className="mx-3 ">
                 <div className="tbl-container mt-1" style={{
                   maxHeight: "750px",
                 }}>
@@ -2272,10 +2341,10 @@ const EstimationCreation = () => {
                                     {/* {catIdx + 1}.{itemIdx + 1} */}
                                   </td>
                                   <td></td>
-                                  <td>{item.name}</td>
+                                  <td></td>
                                   <td></td>
                                   <td>{item.type}</td>
-                                  <td>{item.specification || item.labourActLabel || item.compositeValue}</td>
+                                  <td>{item.name} {item.specification || item.labourActLabel || item.compositeValue}</td>
                                   {/* Add other columns as needed */}
                                   <td>
                                     <input
@@ -2346,6 +2415,7 @@ const EstimationCreation = () => {
                                         handleEditMaterial(catIdx, itemIdx, "rate", e.target.value)
                                       }
                                       className="form-control"
+                                      disabled={item.type === "Material"} // ✅ Disable if Material
                                     />
                                   </td>
                                   <td>
@@ -2559,10 +2629,10 @@ const EstimationCreation = () => {
                                           {/* {catIdx + 1}.{subCatIdx + 1}.{itemIdx + 1} */}
                                         </td>
                                         <td></td>
-                                        <td>{item.name}</td>
-                                        <td>{item.location}</td>
+                                        <td></td>
+                                        <td></td>
                                         <td>{item.type}</td>
-                                        <td>{item.specification}</td>
+                                        <td>{item.name} {item.specification || item.labourActLabel || item.compositeValue}</td>
                                         {/* ...other cells... */}
 
                                         <td>
@@ -2623,6 +2693,7 @@ const EstimationCreation = () => {
                                               handleEditSubCategory2Material(catIdx, subCatIdx, itemIdx, "rate", e.target.value)
                                             }
                                             className="form-control"
+                                            disabled={item.type === "Material"}
                                           />
                                         </td>
                                         <td>
@@ -2834,12 +2905,15 @@ const EstimationCreation = () => {
                                             subCategory3.material_type_details.map((item, itemIdx) => (
                                               <tr key={item.id} className="labour">
                                                 <td></td>
-                                                <td>{catIdx + 1}.{subCatIdx + 1}.{itemIdx + 1}</td>
-                                                <td>Material/Labour</td>
-                                                <td>{item.name}</td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
                                                 <td>{item.location}</td>
                                                 <td>{item.type}</td>
-                                                <td>{item.specification}</td>
+                                                <td>
+                                                  {/* {item.specification} */}
+                                                  {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                </td>
                                                 {/* ...other cells... */}
 
                                                 <td>
@@ -2901,6 +2975,7 @@ const EstimationCreation = () => {
                                                       handleEditSubCategory3Material(catIdx, subCatIdx, subCategory3Idx, itemIdx, "rate", e.target.value)
                                                     }
                                                     className="form-control"
+                                                    disabled={item.type === "Material"}
                                                   />
                                                 </td>
 
@@ -3111,12 +3186,15 @@ const EstimationCreation = () => {
                                                     subCategory4.material_type_details.map((item, itemIdx) => (
                                                       <tr key={item.id} className="labour">
                                                         <td></td>
-                                                        <td>{catIdx + 1}.{subCatIdx + 1}.{subCategory3Idx + 1}.{itemIdx + 1}</td>
-                                                        <td>Material/Labour</td>
-                                                        <td>{item.name}</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
                                                         <td>{item.location}</td>
                                                         <td>{item.type}</td>
-                                                        <td>{item.specification}</td>
+                                                        <td>
+                                                          {/* {item.specification} */}
+                                                          {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                        </td>
                                                         {/* ...other cells... */}
                                                         <td>
                                                           <input
@@ -3176,6 +3254,7 @@ const EstimationCreation = () => {
                                                               handleEditSubCategory4Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "rate", e.target.value)
                                                             }
                                                             className="form-control"
+                                                            disabled={item.type === "Material"}
                                                           />
                                                         </td>
 
@@ -3392,12 +3471,15 @@ const EstimationCreation = () => {
                                                             subCategory5.material_type_details.map((item, itemIdx) => (
                                                               <tr key={item.id} className="labour">
                                                                 <td></td>
-                                                                <td>{catIdx + 1}.{subCatIdx + 1}.{subCategory3Idx + 1}.{subCategory4Idx + 1}.{itemIdx + 1}</td>
                                                                 <td></td>
-                                                                <td>{item.name}</td>
+                                                                <td></td>
+                                                                <td></td>
                                                                 <td>{item.location}</td>
                                                                 <td>{item.type}</td>
-                                                                <td>{item.specification || item.labourActLabel}</td>
+                                                                <td>
+                                                                  {/* {item.specification || item.labourActLabel} */}
+                                                                  {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                                </td>
                                                                 {/* ...other cells... */}
                                                                 <td>
                                                                   <input
@@ -3458,6 +3540,7 @@ const EstimationCreation = () => {
                                                                       handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx, "rate", e.target.value)
                                                                     }
                                                                     className="form-control"
+                                                                    disabled={item.type === "Material"}
                                                                   />
                                                                 </td>
 
@@ -3530,13 +3613,25 @@ const EstimationCreation = () => {
                             <button className="purple-btn2">Export</button>
                         </div> */}
 
-            <div className="row mt-5 mb-5 justify-content-center">
-              <div className="col-md-2">
-                <button className="purple-btn2 w-100"   onClick={handleSubmit}>Create</button>
-              </div>
-            </div>
+
+
 
           </div>
+          <div className="row mt-5 mb-5 justify-content-center">
+            <div className="col-md-2">
+              <button className="purple-btn2 w-100 mt-2" onClick={handleSubmit}> Submit</button>
+            </div>
+            <div className="col-md-2">
+              <button
+                className="purple-btn1 w-100"
+                onClick={() => navigate("/estimation-creation-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414")}
+              // onClick={closeAdvanceNoteModal}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
 
