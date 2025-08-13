@@ -1652,7 +1652,7 @@ const toUTCStartTimeString = (dateTime) => {
                 <div className="col-md-4 col-sm-6 mt-0 mb-2">
                   <div className="form-group">
                     <label className="po-fontBold">
-                      Event Name <span style={{ color: "red" }}>*</span>
+                      Event Name
                     </label>
                   </div>
                   <input
@@ -1665,7 +1665,7 @@ const toUTCStartTimeString = (dateTime) => {
                 <div className="col-md-4 col-sm-6 mt-0 mb-2">
                   <div className="form-group">
                     <label className="po-fontBold">
-                      Event Number <span style={{ color: "red" }}>*</span>
+                      Event Number
                     </label>
                   </div>
                   <input
@@ -2556,31 +2556,31 @@ const toUTCStartTimeString = (dateTime) => {
                   <div className="row">
                     <div className="col-md-6">
                       <div className="form-group mb-3">
-                        <label className="po-fontBold">First Name <span style={{ color: 'red' }}>*</span></label>
+                        <label className="po-fontBold">First Name</label>
                         <input className="form-control" type="text" name="firstName" placeholder="Enter First Name" value={inviteVendorData.firstName} onChange={handleInviteVendorChange} required />
                       </div>
                     </div>
                     <div className="col-md-6">
                       <div className="form-group mb-3">
-                        <label className="po-fontBold">Last Name <span style={{ color: 'red' }}>*</span></label>
+                        <label className="po-fontBold">Last Name</label>
                         <input className="form-control" type="text" name="lastName" placeholder="Enter Last Name" value={inviteVendorData.lastName} onChange={handleInviteVendorChange} required />
                       </div>
                     </div>
                     <div className="col-md-6">
                       <div className="form-group mb-3">
-                        <label className="po-fontBold">Email <span style={{ color: 'red' }}>*</span></label>
+                        <label className="po-fontBold">Email</label>
                         <input className="form-control" type="email" name="email" placeholder="Enter Email Address" value={inviteVendorData.email} onChange={handleInviteVendorChange} required />
                       </div>
                     </div>
                     <div className="col-md-6">
                       <div className="form-group mb-3">
-                        <label className="po-fontBold">Phone Number <span style={{ color: 'red' }}>*</span></label>
+                        <label className="po-fontBold">Phone Number</label>
                         <input className="form-control" type="text" name="mobile" inputMode="numeric" pattern="[0-9]*" maxLength={10} onKeyDown={(e) => { const invalidChars = ['e', 'E', '+', '-', '.', ',']; if (invalidChars.includes(e.key) || (isNaN(Number(e.key)) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Tab')) { e.preventDefault(); } }} placeholder="Enter Phone Number" value={inviteVendorData.mobile} onChange={handleInviteVendorChange} required />
                       </div>
                     </div>
                     <div className="col-md-6">
                       <div className="form-group mb-3">
-                        <label className="po-fontBold">GSTIN Applicable <span style={{ color: 'red' }}>*</span></label>
+                        <label className="po-fontBold">GSTIN Applicable</label>
                         <select className="form-control" name="gstinApplicable" value={inviteVendorData.gstinApplicable} onChange={handleInviteVendorChange} required>
                           <option value="">Select</option>
                           <option value="yes">Yes</option>
@@ -2591,7 +2591,7 @@ const toUTCStartTimeString = (dateTime) => {
                     {inviteVendorData.gstinApplicable === 'yes' && (
                       <div className="col-md-6">
                         <div className="form-group mb-3">
-                          <label className="po-fontBold">GSTIN <span style={{ color: 'red' }}>*</span></label>
+                          <label className="po-fontBold">GSTIN</label>
                           <input className="form-control" type="text" name="gstNumber" placeholder="Enter GSTIN" value={inviteVendorData.gstNumber} onChange={handleInviteVendorChange} required />
                         </div>
                       </div>
@@ -2616,13 +2616,13 @@ const toUTCStartTimeString = (dateTime) => {
                     </div>
                     <div className="col-md-6">
                       <div className="form-group mb-3">
-                        <label className="po-fontBold">PAN No. <span style={{ color: 'red' }}>*</span></label>
+                        <label className="po-fontBold">PAN No.</label>
                         <input className="form-control" type="text" name="panNumber" placeholder="Enter PAN Number" value={inviteVendorData.panNumber} onChange={handleInviteVendorChange} required />
                       </div>
                     </div>
                     <div className="col-md-6">
                       <div className="form-group mb-3">
-                        <label className="po-fontBold">Department <span style={{ color: 'red' }}>*</span></label>
+                        <label className="po-fontBold">Department</label>
                         <SingleSelector options={departmentOptions} value={departmentOptions.find(opt => opt.value === inviteVendorData.department) || null} onChange={handleDepartmentChange} placeholder="Select Department" />
                       </div>
                     </div>

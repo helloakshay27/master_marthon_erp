@@ -686,8 +686,7 @@ const EventTypeModal = ({
               <>
                 <label htmlFor="Datepicker">
                   Extend closing time in last 1 min in case of rank / price
-                  changes in top selected bids.{" "}
-                  <span style={{ color: "red" }}>*</span>
+                  changes in top selected bids.
                 </label>
                 <div className="d-flex align-items-center gap-2">
                   <div
@@ -797,8 +796,7 @@ const EventTypeModal = ({
                 >
                   <div className="trigger-time">
                     <label>
-                      Trigger time extension on last{" "}
-                      <span style={{ color: "red" }}>*</span>
+                      Trigger time extension on last
                     </label>
                     <input
                       type="text"
@@ -836,7 +834,7 @@ const EventTypeModal = ({
                   </div>
                   <div className="extend-time">
                     <label>
-                      Extend time by <span style={{ color: "red" }}>*</span>
+                      Extend time by
                     </label>
                     <input
                       type="text"
