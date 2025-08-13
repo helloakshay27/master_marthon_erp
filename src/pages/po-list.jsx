@@ -16,9 +16,9 @@ import {
   MultiSelector,
 } from "../components";
 const PoList = () => {
-   const navigate = useNavigate();
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
+   const navigate = useNavigate();
   // Quick Filter states
   const [companies, setCompanies] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -41,7 +41,7 @@ const PoList = () => {
     total: 0,
     approved: 0,
     rejected: 0,
-    terminated: 0,
+    amended: 0, // Add this
     total_amount: 0,
   });
 
@@ -146,7 +146,7 @@ const PoList = () => {
       headerName: "PO No.",
       width: 140,
       sortable: true,
-        renderCell: (params) => (
+       renderCell: (params) => (
         <div
           style={{ 
             cursor: 'pointer',
@@ -158,7 +158,6 @@ const PoList = () => {
           {params.value}
         </div>
       )
-    
     },
     // ...existing code...
     { field: "poDate", headerName: "PO Date", width: 140, sortable: true },
@@ -243,12 +242,13 @@ const PoList = () => {
         }
 
         // Add status filter
-        if (statusFilter !== null) {
-          if (statusFilter === "pending") {
-            // Filter for pending status (total - approved - rejected - terminated)
-            // This will be handled by the API response filtering
-          } else {
-            url += `&q[list_status_in][]=${statusFilter}`;
+        if (statusFilter) {
+          if (statusFilter === "amended") {
+            url = `${baseURL}purchase_orders.json?token=${token}&filter=amended&q[po_type_eq]=ropo`;
+          } else if (statusFilter === "approved") {
+            url += `&q[status_eq]=approved`;
+          } else if (statusFilter === "rejected") {
+            url += `&q[status_eq]=rejected`;
           }
         }
 
@@ -305,7 +305,7 @@ const PoList = () => {
             total: 0,
             approved: 0,
             rejected: 0,
-            terminated: 0,
+            amended: 0,
             total_amount: 0,
           }
         );
@@ -919,92 +919,102 @@ display:none !important;
           <h5 className="mt-4">ROPO List</h5>
           <div className="material-boxes mt-3">
             <div className="container-fluid">
-              <div className="row justify-content-center">
-                <div className="col-md-2 text-center">
-                  <div
-                    className={`content-box tab-button ${
-                      statusFilter === null ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setStatusFilter(null);
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <h4 className="content-box-title fw-semibold">PO List</h4>
-                    <p className="content-box-sub">{summaryCards.total}</p>
-                  </div>
-                </div>
-                <div className="col-md-2 text-center">
-                  <div
-                    className={`content-box tab-button ${
-                      statusFilter === "pending" ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setStatusFilter("pending");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <h4 className="content-box-title fw-semibold">Pending</h4>
-                    <p className="content-box-sub">
-                      {summaryCards.total -
-                        summaryCards.approved -
-                        summaryCards.rejected -
-                        summaryCards.terminated}
-                    </p>
-                  </div>
-                </div>
-                <div className="col-md-2 text-center">
-                  <div
-                    className={`content-box tab-button ${
-                      statusFilter === "approved" ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setStatusFilter("approved");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <h4 className="content-box-title fw-semibold">Approved</h4>
-                    <p className="content-box-sub">{summaryCards.approved}</p>
-                  </div>
-                </div>
-                <div className="col-md-2 text-center">
-                  <div
-                    className={`content-box tab-button ${
-                      statusFilter === "rejected" ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setStatusFilter("rejected");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <h4 className="content-box-title fw-semibold">Rejected</h4>
-                    <p className="content-box-sub">{summaryCards.rejected}</p>
-                  </div>
-                </div>
-                <div className="col-md-2 text-center">
-                  <div
-                    className={`content-box tab-button ${
-                      statusFilter === "terminated" ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setStatusFilter("terminated");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <h4 className="content-box-title fw-semibold">
-                      Terminated
-                    </h4>
-                    <p className="content-box-sub">{summaryCards.terminated}</p>
-                  </div>
-                </div>
-                <div className="col-md-2 text-center">
-                  <div className="content-box">
-                    <h4 className="content-box-title fw-semibold">
-                      Amount value
-                    </h4>
-                    <p className="content-box-sub">
-                      ₹{summaryCards.total_amount}
-                    </p>
+              <div className="material-boxes mt-3">
+                <div className="container-fluid">
+                  <div className="row justify-content-center">
+                    <div className="col-md-2 text-center">
+                      <div
+                        className={`content-box tab-button ${
+                          statusFilter === null ? "active" : ""
+                        }`}
+                        onClick={() => {
+                          setStatusFilter(null);
+                          setCurrentPage(1);
+                        }}
+                      >
+                        <h4 className="content-box-title fw-semibold">
+                          PO List
+                        </h4>
+                        <p className="content-box-sub">{summaryCards.total}</p>
+                      </div>
+                    </div>
+                  
+                    <div className="col-md-2 text-center">
+                      <div
+                        className={`content-box tab-button ${
+                          statusFilter === "approved" ? "active" : ""
+                        }`}
+                        onClick={() => {
+                          setStatusFilter("approved");
+                          setCurrentPage(1);
+                        }}
+                      >
+                        <h4 className="content-box-title fw-semibold">
+                          Approved
+                        </h4>
+                        <p className="content-box-sub">
+                          {summaryCards.approved}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="col-md-2 text-center">
+                      <div
+                        className={`content-box tab-button ${
+                          statusFilter === "rejected" ? "active" : ""
+                        }`}
+                        onClick={() => {
+                          setStatusFilter("rejected");
+                          setCurrentPage(1);
+                        }}
+                      >
+                        <h4 className="content-box-title fw-semibold">
+                          Rejected
+                        </h4>
+                        <p className="content-box-sub">
+                          {summaryCards.rejected}
+                        </p>
+                      </div>
+                    </div>
+                    {/* <div className="col-md-2 text-center">
+        <div
+          className={`content-box tab-button ${statusFilter === "terminated" ? "active" : ""}`}
+          onClick={() => {
+            setStatusFilter("terminated");
+            setCurrentPage(1);
+          }}
+        >
+          <h4 className="content-box-title fw-semibold">Terminated</h4>
+          <p className="content-box-sub">{summaryCards.terminated}</p>
+        </div>
+      </div> */}
+                    <div className="col-md-2 text-center">
+                      <div
+                        className={`content-box tab-button ${
+                          statusFilter === "amended" ? "active" : ""
+                        }`}
+                        onClick={() => {
+                          setStatusFilter("amended");
+                          setCurrentPage(1);
+                        }}
+                      >
+                        <h4 className="content-box-title fw-semibold">
+                          Amended
+                        </h4>
+                        <p className="content-box-sub">
+                          {summaryCards.amended}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="col-md-2 text-center">
+                      <div className="content-box">
+                        <h4 className="content-box-title fw-semibold">
+                          Amount value
+                        </h4>
+                        <p className="content-box-sub">
+                          ₹{summaryCards.total_amount}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1252,7 +1262,7 @@ display:none !important;
                 </button>
                 <button
                   className="purple-btn2"
-                  onClick={() => navigate(`/po-create?token=${token}`)}
+                   onClick={() => navigate(`/po-create?token=${token}`)}
                 >
                   <span> + Add</span>
                 </button>

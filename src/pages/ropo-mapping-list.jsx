@@ -36,100 +36,153 @@ const [statusFilter, setStatusFilter] = useState(null);
 
 
 
+
   // Table data states
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
+    const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "-";
+
+      // Get day, month, and year (last two digits)
+      const day = date.getDate().toString().padStart(2, "0");
+      const month = (date.getMonth() + 1).toString().padStart(2, "0");
+      const year = date.getFullYear().toString().slice(); // Only last two digits
+
+      // Return in DD-MM-YY format
+      return `${day}-${month}-${year}`;
+    } catch (e) {
+      return "-";
+    }
+  };
+
 
 
 // Add new state for status counts
+// Update the status counts state
 const [statusCounts, setStatusCounts] = useState({
-  total: 0,
-  mapped: 0,
-  pending: 0
+  draft: 0,
+  approved: 0,
+  rejected: 0,
+  submitted: 0,
+  total: 0
 });
 
+// Update the status boxes JSX
+
+// Add searchKeyword state near other state declarations
+const [searchKeyword, setSearchKeyword] = useState("");
+const [searchInput, setSearchInput] = useState("");
+
+// Add search handler
+const handleSearch = () => {
+  // const value = event.target.value;
+  setSearchKeyword(searchInput);
+  setCurrentPage(1); // Reset to first page when searching
+};
+
+// Update the search input in your JSX
+
+// Update the fetchRopoData function
 const fetchRopoData = async () => {
   setLoading(true);
   try {
-    const response = await axios.get(
-      `${baseURL}ropo_mappings.json?token=${token}`,
-      {
-        params: {
-          company_id: selectedCompany?.value,
-          project_id: selectedProject?.value,
-          site_id: selectedSite?.value,
-            page: currentPage,
-          per_page: pageSize
-        }
-      }
-    );
-        if (statusFilter) {
-      params['q[list_status_in][]'] = statusFilter;
+    // Build base URL with token and pagination
+    let url = `${baseURL}ropo_mappings.json?token=${token}&page=${currentPage}&per_page=${pageSize}`;
+
+    // Add status filter
+    if (statusFilter) {
+      url += `&q[status_eq]=${statusFilter}`;
     }
 
+    // Add search if exists
+    if (searchKeyword) {
+      url += `&search=${searchKeyword}`;
+    }
 
-      const pagination = response.data?.pagination || {};
-    setTotalPages(pagination.total_pages || 1);
-    setTotalEntries(pagination.total_count || 0);
-    setCurrentPage(pagination.current_page || 1);
+    // Add other filters
+    if (selectedCompany?.value) {
+      url += `&q[project_company_id_eq]=${selectedCompany.value}`;
+    }
+    if (selectedProject?.value) {
+      url += `&q[project_id_eq]=${selectedProject.value}`;
+    }
+    if (selectedSite?.value) {
+      url += `&q[pms_site_id_eq]=${selectedSite.value}`;
+    }
 
-    // Extract status counts and update state
-    const counts = response.data?.status_counts || {};
-    setStatusCounts({
-      total: counts.total || 0,
-      mapped: counts.approved || 0, 
-      pending: counts.draft || 0
+    console.log("Fetching data from:", url);
+    const response = await axios.get(url);
+
+    // Update status counts from response
+    setStatusCounts(response.data.status_counts || {
+      draft: 0,
+      approved: 0,
+      rejected: 0,
+      submitted: 0,
+      total: 0
     });
 
-    // Get ROPO mappings array
+    // Transform response data for table
     const ropoMappings = response.data?.ropo_mappings || [];
-    
-    if (!Array.isArray(ropoMappings)) {
-      console.error("ROPO mappings is not an array:", ropoMappings);
-      setRows([]);
-      return;
-    }
-
-    const formatDate = (dateStr) => {
-  if (!dateStr) return "-";
-  const d = new Date(dateStr);
-  const day = String(d.getDate()).padStart(2, "0");
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const year = d.getFullYear();
-  return `${day}-${month}-${year}`;
-};
-    // Transform API data to match table columns
-    const transformedData = ropoMappings.map((item,index) => ({
+    const transformedData = ropoMappings.map((item, index) => ({
+      id: item.id,
       srNo: (currentPage - 1) * pageSize + index + 1,
       ropoNo: item.ropo_number,
-      ropoDate: formatDate(item.mapping_date), // Format date here
+      ropoDate: formatDate(item.mapping_date),
       status: item.status,
       project: item.project_name,
       subProject: item.pms_site_name,
       createdBy: item.created_by_name,
-       materialDescription: item.material_descriptions, // Add this
-      remarks: item.remarks
+      materialDescription: item.material_descriptions,
+      remarks: item.remarks,
+      morNo: item.mor_numbers,
+      supplier: item.supplier_organization_names,
+      createdBy: item.created_by_name
+
     }));
 
     setRows(transformedData);
+    setTotalPages(response.data.pagination?.total_pages || 1);
+    setTotalEntries(response.data.pagination?.total_count || 0);
+
   } catch (error) {
     console.error("Error fetching ROPO data:", error);
     setRows([]);
     setStatusCounts({
-      total: 0,
-      mapped: 0,
-      pending: 0
+      draft: 0,
+      approved: 0,
+      rejected: 0,
+      submitted: 0,
+      total: 0
     });
   } finally {
     setLoading(false);
   }
 };
 
-// Call fetchRopoData when filters change
+// Update useEffect to call fetchRopoData when dependencies change
 useEffect(() => {
   fetchRopoData();
-}, [currentPage, statusFilter]);
+}, [currentPage, pageSize, searchKeyword, selectedCompany, selectedProject, selectedSite, statusFilter, token]);
 
+// Add Go button handler
+const handleGoClick = () => {
+  setCurrentPage(1); // Reset to first page
+  fetchRopoData();
+};
+
+// Add Reset button handler
+const handleReset = () => {
+  setSelectedCompany(null);
+  setSelectedProject(null);
+  setSelectedSite(null);
+  setSearchKeyword("");
+  setStatusFilter(null);
+  setCurrentPage(1);
+};
 
 
 
@@ -147,16 +200,14 @@ useEffect(() => {
     ropoNo: true,
     ropoDate: true,
       materialDescription: true, // Add this line
-    materialType: true,
-    materialSubType: true,
-    material: true,
+   
     status: true,
     morNo: true,
     supplier: true,
     dueDate: true,
     overdue: true,
     stage: true,
-    dueAt: true,
+    createdBy: true,
   });
 
   // Table columns
@@ -196,9 +247,7 @@ const allColumns = [
     
   },
   { field: "material_descriptions", headerName: "Material Description", width: 150, sortable: true },
-  { field: "materialType", headerName: "Material Type", width: 150, sortable: true },
-  { field: "materialSubType", headerName: "Material Sub Type", width: 150, sortable: true },
-  { field: "material", headerName: "Material", width: 150, sortable: true },
+
   { 
     field: "status", 
     headerName: "Status", 
@@ -234,8 +283,8 @@ const allColumns = [
   },
   { field: "stage", headerName: "Stage", width: 120, sortable: true },
   { 
-    field: "dueAt", 
-    headerName: "Due At", 
+    field: "createdBy", 
+    headerName: "Created By", 
     width: 120,
     // valueFormatter: (params) => {
     //   if (!params.value) return '';
@@ -354,7 +403,7 @@ display:none !important;
           <h5 className="mt-4">ROPO Mapping List</h5>
           <div className="material-boxes mt-3">
             <div className="container-fluid">
-              <div className="row justify-content-center">
+           <div className="row justify-content-center">
   {/* Total */}
   <div className="col-md-2 text-center" style={{ opacity: 1 }}>
     <div
@@ -369,35 +418,62 @@ display:none !important;
     </div>
   </div>
 
-  {/* Mapped */}
+  {/* Draft/Pending */}
   <div className="col-md-2 text-center" style={{ opacity: 1 }}>
     <div
-      className={`content-box tab-button ${statusFilter === "mapped" ? "active" : ""}`}
+      className={`content-box tab-button ${statusFilter === "draft" ? "active" : ""}`}
       onClick={() => {
-        setStatusFilter("mapped");
-        setCurrentPage(1);
-      }}
-    >
-      <h4 className="content-box-title">Mapped</h4>
-      <p className="content-box-sub">{statusCounts.mapped}</p>
-    </div>
-  </div>
-
-  {/* Pending */}
-  <div className="col-md-2 text-center" style={{ opacity: 1 }}>
-    <div
-      className={`content-box tab-button ${statusFilter === "pending" ? "active" : ""}`}
-      onClick={() => {
-        setStatusFilter("pending");
+        setStatusFilter("draft");
         setCurrentPage(1);
       }}
     >
       <h4 className="content-box-title">Pending</h4>
-      <p className="content-box-sub">{statusCounts.pending}</p>
+      <p className="content-box-sub">{statusCounts.draft}</p>
+    </div>
+  </div>
+
+  {/* Approved/Mapped */}
+  <div className="col-md-2 text-center" style={{ opacity: 1 }}>
+    <div
+      className={`content-box tab-button ${statusFilter === "approved" ? "active" : ""}`}
+      onClick={() => {
+        setStatusFilter("approved");
+        setCurrentPage(1);
+      }}
+    >
+      <h4 className="content-box-title">Mapped</h4>
+      <p className="content-box-sub">{statusCounts.approved}</p>
+    </div>
+  </div>
+
+  {/* Submitted */}
+  <div className="col-md-2 text-center" style={{ opacity: 1 }}>
+    <div
+      className={`content-box tab-button ${statusFilter === "submitted" ? "active" : ""}`}
+      onClick={() => {
+        setStatusFilter("submitted");
+        setCurrentPage(1);
+      }}
+    >
+      <h4 className="content-box-title">Submitted</h4>
+      <p className="content-box-sub">{statusCounts.submitted}</p>
+    </div>
+  </div>
+
+  {/* Rejected */}
+  <div className="col-md-2 text-center" style={{ opacity: 1 }}>
+    <div
+      className={`content-box tab-button ${statusFilter === "rejected" ? "active" : ""}`}
+      onClick={() => {
+        setStatusFilter("rejected");
+        setCurrentPage(1);
+      }}
+    >
+      <h4 className="content-box-title">Rejected</h4>
+      <p className="content-box-sub">{statusCounts.rejected}</p>
     </div>
   </div>
 </div>
-
             </div>
           </div>
           <div className="card mt-3 pb-4">
@@ -485,13 +561,13 @@ display:none !important;
                                 <div className="col-md-3">
                                   <button
                                     className="purple-btn2 m-0"
-                                    // onClick={fetchRopoData}
+                                 onClick={handleGoClick}
                                   >
                                     Go
                                   </button>
                                   <button
                                     className="purple-btn2 ms-2"
-                                    // onClick={handleReset}
+                                    onClick={handleReset}
                                   >
                                     Reset
                                   </button>
@@ -590,34 +666,46 @@ display:none !important;
             <div className="d-flex mt-3 align-items-end px-3">
               <div className="col-md-6">
                 <form>
-                  <div className="input-group">
-                    <input
-                      type="search"
-                      id="searchInput"
-                      className="form-control tbl-search"
-                      placeholder="Type your keywords here"
-                    />
-                    <div className="input-group-append">
-                      <button type="button" className="btn btn-md btn-default">
-                        <svg
-                          width={16}
-                          height={16}
-                          viewBox="0 0 16 16"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
-                            fill="#8B0203"
-                          />
-                          <path
-                            d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
-                            fill="#8B0203"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
+                <div className="input-group">
+  <input
+    type="search"
+    id="searchInput"
+    className="form-control tbl-search"
+    placeholder="Type your keywords here"
+    value={searchInput}
+   onChange={(e) => setSearchInput(e.target.value)}
+    onKeyPress={(e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        fetchRopoData();
+      }
+    }}
+  />
+  <div className="input-group-append">
+    <button 
+      type="button" 
+      className="btn btn-md btn-default"
+      onClick={handleSearch}
+    >
+      <svg
+        width={16}
+        height={16}
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M7.66927 13.939C3.9026 13.939 0.835938 11.064 0.835938 7.53271C0.835938 4.00146 3.9026 1.12646 7.66927 1.12646C11.4359 1.12646 14.5026 4.00146 14.5026 7.53271C14.5026 11.064 11.4359 13.939 7.66927 13.939ZM7.66927 2.06396C4.44927 2.06396 1.83594 4.52021 1.83594 7.53271C1.83594 10.5452 4.44927 13.0015 7.66927 13.0015C10.8893 13.0015 13.5026 10.5452 13.5026 7.53271C13.5026 4.52021 10.8893 2.06396 7.66927 2.06396Z"
+          fill="#8B0203"
+        />
+        <path
+          d="M14.6676 14.5644C14.5409 14.5644 14.4143 14.5206 14.3143 14.4269L12.9809 13.1769C12.7876 12.9956 12.7876 12.6956 12.9809 12.5144C13.1743 12.3331 13.4943 12.3331 13.6876 12.5144L15.0209 13.7644C15.2143 13.9456 15.2143 14.2456 15.0209 14.4269C14.9209 14.5206 14.7943 14.5644 14.6676 14.5644Z"
+          fill="#8B0203"
+        />
+      </svg>
+    </button>
+  </div>
+</div>
                 </form>
               </div>
               <div className="col-md-6">

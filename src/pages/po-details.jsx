@@ -19,7 +19,7 @@ const PoDetails = () => {
   const token = urlParams.get("token");
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const openApprovalModal = () => setShowApprovalModal(true);
-const closeApprovalModal = () => setShowApprovalModal(false);
+  const closeApprovalModal = () => setShowApprovalModal(false);
 
   // Tax modal state variables
   const [showTaxModal, setShowTaxModal] = useState(false);
@@ -381,26 +381,24 @@ const closeApprovalModal = () => setShowApprovalModal(false);
 
     // Populate attachments
     if (poData.attachments && Array.isArray(poData.attachments)) {
-      const formattedAttachments = poData.attachments.map((att) => {
-        const originalDate = new Date(att.created_at || att.uploaded_at);
-        const localDate = new Date(
-          originalDate.getTime() - originalDate.getTimezoneOffset() * 60000
-        );
-        const uploadDate = localDate.toISOString().slice(0, 19);
-        return {
-          id: att.blob_id || att.id || Math.random(),
-          fileType: att.document_content_type || att.file_type || "",
-          fileName: att.file_name || "",
-          uploadDate,
-          fileUrl: att.url || "",
-          file: att.document_file_name || att.filename,
-          isExisting: true,
-          blob_id: att.blob_id,
-          doc_path: att.doc_path || "",
-        };
-      });
-      setAttachments(formattedAttachments);
-    }
+    const formattedAttachments = poData.attachments.map((att) => ({
+      id: att.id || Math.random(),
+      fileType: att.file_type || "",  
+      fileName: att.file_name || "",
+      uploadDate: att.uploaded_at || "",
+      fileUrl: att.url || "",
+      isExisting: true,
+      blob_id: att.blob_id,
+      byteSize: att.byte_size,
+      doc_path: att.url // Use url as doc_path for downloads
+    }));
+
+    console.log("Formatted attachments:", formattedAttachments);
+    setAttachments(formattedAttachments);
+  } else {
+    setAttachments([]); // Reset attachments if none in API response
+  }
+
 
     if (poData.material_details) {
       const formatted = poData.material_details.map((mat) => ({
@@ -2938,9 +2936,9 @@ const closeApprovalModal = () => setShowApprovalModal(false);
 
       console.log("Status update successful:", response.data);
       alert("Status updated successfully!");
-      // setTimeout(() => {
-      //   window.location.reload();
-      // }, 2000);
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     } catch (error) {
       console.error("Error updating status:", error);
       alert("Error updating status. Please try again.");
@@ -3211,7 +3209,7 @@ const closeApprovalModal = () => setShowApprovalModal(false);
                                 onClick={openApprovalModal}
                                 style={{
                                   backgroundColor:
-                                    purchaseOrderData?.status === "approved"
+                                    purchaseOrderData?.status === "Approved"
                                       ? "green"
                                       : "",
                                   border: "none",
@@ -3268,21 +3266,7 @@ const closeApprovalModal = () => setShowApprovalModal(false);
                                         <span className="me-3 text-dark">
                                           :
                                         </span>
-                                        {purchaseOrderData.po_date
-                                          ? (() => {
-                                              const d = new Date(
-                                                purchaseOrderData.po_date
-                                              );
-                                              const day = String(
-                                                d.getDate()
-                                              ).padStart(2, "0");
-                                              const month = String(
-                                                d.getMonth() + 1
-                                              ).padStart(2, "0");
-                                              const year = d.getFullYear();
-                                              return `${day}-${month}-${year}`;
-                                            })()
-                                          : "-"}
+                                        {purchaseOrderData.po_date}
                                       </label>
                                     </div>
                                   </div>
@@ -3295,21 +3279,7 @@ const closeApprovalModal = () => setShowApprovalModal(false);
                                         <span className="me-3 text-dark">
                                           :
                                         </span>
-                                        {purchaseOrderData.created_at
-                                          ? (() => {
-                                              const d = new Date(
-                                                purchaseOrderData.created_at
-                                              );
-                                              const day = String(
-                                                d.getDate()
-                                              ).padStart(2, "0");
-                                              const month = String(
-                                                d.getMonth() + 1
-                                              ).padStart(2, "0");
-                                              const year = d.getFullYear();
-                                              return `${day}-${month}-${year}`;
-                                            })()
-                                          : "-"}
+                                        {purchaseOrderData.created_at}
                                       </label>
                                     </div>
                                   </div>
@@ -4132,98 +4102,72 @@ Document */}
                 ></div>
               </div>
 
-              <div
-                className="tbl-container mb-4"
-                style={{ maxHeight: "500px" }}
-              >
-                <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th className="main2-th">File Type</th>
-                      <th className="main2-th">File Name </th>
-                      <th className="main2-th">Upload At</th>
-                      <th className="main2-th">Upload File</th>
-                      <th className="main2-th" style={{ width: 100 }}>
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {attachments.map((att, index) => (
-                      <tr key={att.id}>
-                        <td>
-                          <input
-                            className="form-control document_content_type"
-                            readOnly
-                            disabled
-                            value={att.fileType}
-                            placeholder="File Type"
-                          />
-                        </td>
-                        <td>
-                          <input
-                            className="form-control file_name"
-                            required
-                            value={att.fileName}
-                            onChange={(e) =>
-                              handleFileNameChange(att.id, e.target.value)
-                            }
-                          />
-                        </td>
-                        <td>
-                          <input
-                            className="form-control created_at"
-                            readOnly
-                            disabled
-                            type="datetime-local"
-                            step="1"
-                            value={att.uploadDate || ""}
-                          />
-                        </td>
-                        <td>
-                          {!att.isExisting && (
-                            <input
-                              type="file"
-                              className="form-control"
-                              required
-                              onChange={(e) => handleFileChange(e, att.id)}
-                            />
-                          )}
-                        </td>
-                        <td className="document">
-                          <div
-                            style={{ display: "flex", alignItems: "center" }}
-                          >
-                            <div className="attachment-placeholder">
-                              {att.isExisting && (
-                                <div className="file-box">
-                                  <div className="">
-                                    <a
-                                      href={att.doc_path}
-                                      download
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                    >
-                                      <DownloadIcon />
-                                    </a>
-                                    {console.log(
-                                      "Attachment path:",
-                                      att.doc_path
-                                    )}
-                                  </div>
-                                  <div className="file-name">
-                                    <span>{att.fileName}</span>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
+  <table className="w-100">
+    <thead>
+      <tr>
+        <th className="main2-th">File Type</th>
+        <th className="main2-th">File Name</th>
+        <th className="main2-th">Upload At</th>
+        <th className="main2-th">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {attachments.map((att, index) => (
+        <tr key={att.id}>
+          <td>
+            <input
+              className="form-control document_content_type"
+              readOnly
+              disabled
+              value={att.fileType}
+              placeholder="File Type"
+            />
+          </td>
+          <td>
+            <input
+              className="form-control file_name"
+              readOnly
+              disabled
+              value={att.fileName || att.file_name || ""}
+            />
+          </td>
+          <td>
+            <input
+              className="form-control created_at"
+              readOnly
+              disabled
+              value={att.uploadDate || att.uploaded_at || ""}
+            />
+          </td>
+          <td className="document">
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <div className="attachment-placeholder">
+                {att.isExisting && (
+                  <div className="file-box">
+                    <div className="">
+                      <a
+                        href={att.doc_path}
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <DownloadIcon />
+                      </a>
+                    </div>
+                    <div className="file-name">
+                      <span>{att.fileName || att.file_name}</span>
+                    </div>
+                  </div>
+                )}
               </div>
+            </div>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
 
               <div className="row w-100">
                 <div className="col-md-12">
@@ -4265,19 +4209,19 @@ Document */}
                       options={
                         purchaseOrderData?.status_list?.map((status) => ({
                           // value: status,
-                            value: status.toLowerCase(), // internal lowercase value
+                          value: status.toLowerCase(), // internal lowercase value
                           label: status,
                         })) || []
                       }
                       // value={selectedStatus}
-                       value={
-    selectedStatus
-      ? {
-          value: selectedStatus.value.toLowerCase(),
-          label: selectedStatus.label,
-        }
-      : null
-  }
+                      value={
+                        selectedStatus
+                          ? {
+                              value: selectedStatus.value.toLowerCase(),
+                              label: selectedStatus.label,
+                            }
+                          : null
+                      }
                       onChange={(selected) => setSelectedStatus(selected)}
                       placeholder="Select Status"
                       isClearable={false}
@@ -4325,7 +4269,25 @@ Document */}
                     </tr>
                   </thead>
                   <tbody>
-                    <tr></tr>
+                    {purchaseOrderData?.status_logs &&
+                    purchaseOrderData.status_logs.length > 0 ? (
+                      purchaseOrderData.status_logs.map((log, index) => (
+                        <tr key={log.id}>
+                          <td>{index + 1}</td>
+                          <td>{log.user || "-"}</td>
+                          <td>{log.date || "-"}</td>
+                          <td>{log.status || "-"}</td>
+                          <td>{log.po_remark || "-"}</td>
+                          <td>{log.po_comments || "-"}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="6" className="text-center">
+                          No audit log data available
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -4830,12 +4792,12 @@ Document */}
         </Modal.Body>
       </Modal>
 
-
-       <Modal size="lg" 
-
-        show={showApprovalModal} 
-  onHide={closeApprovalModal} 
-       centered>
+      <Modal
+        size="lg"
+        show={showApprovalModal}
+        onHide={closeApprovalModal}
+        centered
+      >
         <Modal.Header closeButton>
           <h5>Approval Log</h5>
         </Modal.Header>
@@ -5587,7 +5549,6 @@ Document */}
           </button> */}
         </Modal.Footer>
       </Modal>
-     
     </>
   );
 };
