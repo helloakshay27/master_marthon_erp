@@ -14,13 +14,13 @@ import { useParams } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link } from "react-router-dom";
-import {DownloadIcon} from "../components";
+import { DownloadIcon } from "../components";
 
 const BillBookingEdit = () => {
   const lastErrorType = useRef(null);
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
-   const { id } = useParams();
+  const { id } = useParams();
 
 
   const [actionDetails, setactionDetails] = useState(false);
@@ -478,7 +478,7 @@ const BillBookingEdit = () => {
     // },
   ]);
   const [taxTypes, setTaxTypes] = useState([]); // State to store tax types
-//   const { id } = useParams();
+  //   const { id } = useParams();
 
   // Fetch tax types from API
   useEffect(() => {
@@ -951,24 +951,24 @@ const BillBookingEdit = () => {
           );
 
           // If ID is available, find and set the matching entry
-          if (id) {
-            // First fetch specific bill entry details
-            const response = await axios.get(
-              `${baseURL}bill_entries/${id}?token=${token}`
-            );
+          // if (id) {
+          //   // First fetch specific bill entry details
+          //   const response = await axios.get(
+          //     `${baseURL}bill_entries/${id}?token=${token}`
+          //   );
 
-            // Find and set the matching bill entry option
-            const matchingEntry = billEntryResponse.data.be_list.find(
-              (item) => item.value === parseInt(id)
-            );
+          //   // Find and set the matching bill entry option
+          //   const matchingEntry = billEntryResponse.data.be_list.find(
+          //     (item) => item.value === parseInt(id)
+          //   );
 
-            if (matchingEntry) {
-              setSelectedBillEntry({
-                value: matchingEntry.value,
-                label: matchingEntry.name,
-              });
-            }
-          }
+          //   if (matchingEntry) {
+          //     setSelectedBillEntry({
+          //       value: matchingEntry.value,
+          //       label: matchingEntry.name,
+          //     });
+          //   }
+          // }
         }
       } catch (error) {
         console.error("Error fetching bill entries:", error);
@@ -979,7 +979,7 @@ const BillBookingEdit = () => {
 
     fetchAndSelectBillEntry();
   }, [id]);
-  
+
   // Rest of your component code...
 
   useEffect(() => {
@@ -1247,9 +1247,9 @@ const BillBookingEdit = () => {
                     type="checkbox"
                     checked={selectedGRNs.some((g) => g.id === grn.id)}
                     onChange={() => handleGRNCheckboxSelect(grn)}
-                    // disabled={
-                    //   parseFloat(grn.certified_till_date || 0) >= parseFloat(grn.all_inc_tax || 0)
-                    // }
+                  // disabled={
+                  //   parseFloat(grn.certified_till_date || 0) >= parseFloat(grn.all_inc_tax || 0)
+                  // }
                   />
                 </td>
                 <td className="text-start">{grn.grn_number || "-"}</td>
@@ -1512,61 +1512,61 @@ const BillBookingEdit = () => {
     id: charge.id,
     payable_amount: parseFloat(charge.payable_amount) || 0,
   }));
-//   console.log("charges Payload here:", chargesPayload)
-//   console.log("selected po:", selectedPO)
+  //   console.log("charges Payload here:", chargesPayload)
+  //   console.log("selected po:", selectedPO)
 
-//   console.log("supplier id*********", selectedPO?.supplier_id)
-//   console.log("company id*********", selectedPO?.company_id)
-//   console.log("project id*********", selectedPO?.project_id)
-//   console.log("site id*********", selectedPO?.site_id)
+  //   console.log("supplier id*********", selectedPO?.supplier_id)
+  //   console.log("company id*********", selectedPO?.company_id)
+  //   console.log("project id*********", selectedPO?.project_id)
+  //   console.log("site id*********", selectedPO?.site_id)
 
 
 
 
   //   edit preselected data set start
 
-const [details, setDetails] = useState(null); // State to store API data
-//   const [loading, setLoading] = useState(true); // State to handle loading
-//   const [error, setError] = useState(null); // State to handle errors
-//   const [selectedGRNs, setSelectedGRNs] = useState([]);
+  const [details, setDetails] = useState(null); // State to store API data
+  //   const [loading, setLoading] = useState(true); // State to handle loading
+  //   const [error, setError] = useState(null); // State to handle errors
+  //   const [selectedGRNs, setSelectedGRNs] = useState([]);
   const [status, setStatus] = useState(""); // Assuming boqDetails.status is initially available
-// Fetch data from the API
-  
+  // Fetch data from the API
+
   const fetchDetails = async () => {
     try {
       const response = await axios.get(
         `${baseURL}bill_bookings/${id}?page=1&per_page=10&token=${token}`
       );
       setDetails(response.data); // Update state with API data
-      console.log("get data detail res",response.data)
+      console.log("get data detail res", response.data)
       setStatus(response.data.status);
       setLoading(false);
 
-       // Set selected bill entry if editing
-    if (response.data.bill_entry_id && response.data.bill_entry) {
-      setSelectedBillEntry({
-        value: response.data.bill_entry_id,
-        label: response.data.bill_entry.bill_no || response.data.bill_entry.bill_id || "",
-      });
-    }
-    setSelectedEInvoice(
-  eInvoiceOptions.find((opt) =>
-    response.data.einvoice ? opt.value === "yes" : opt.value === "no"
-  )
-);
-    console.log("selectedE invoice:",selectedEInvoice)
-     setFormData((prev) => ({
-      ...prev,
-      typeOfCertificate: response.data.type_of_certificate || "",
-    }));
+      // Set selected bill entry if editing
+      if (response.data.bill_entry_id && response.data.bill_entry) {
+        setSelectedBillEntry({
+          value: response.data.bill_entry_id,
+          label: response.data.bill_entry.bill_no || response.data.bill_entry.bill_id || "",
+        });
+      }
+      setSelectedEInvoice(
+        eInvoiceOptions.find((opt) =>
+          response.data.einvoice ? opt.value === "yes" : opt.value === "no"
+        )
+      );
+      console.log("selectedE invoice:", selectedEInvoice)
+      setFormData((prev) => ({
+        ...prev,
+        typeOfCertificate: response.data.type_of_certificate || "",
+      }));
 
-     const formattedDocuments = response.data.attachments.map((att) => {
+      const formattedDocuments = response.data.attachments.map((att) => {
         const originalDate = new Date(att.created_at);
         const localDate = new Date(originalDate.getTime() - originalDate.getTimezoneOffset() * 60000);
         const uploadDate = localDate.toISOString().slice(0, 19); // include seconds (YYYY-MM-DDTHH:MM:SS)
 
         return {
-          id: att.id ,
+          id: att.id,
           fileType: att.content_type || "",
           uploadDate,
           blob_id: att.blob_id || null,
@@ -1597,102 +1597,124 @@ const [details, setDetails] = useState(null); // State to store API data
     // }
     // console.log("grn ids:",selectedGRNs)
 
-    
-
-//      if (details?.bill_purchase_orders?.length) {
-//     const preselected = details.bill_purchase_orders.flatMap((po) =>
-//       po.bill_grn_materials.map((grn) => ({
-//         ...grn,
-//         grn_number: grn.grn_material?.good_receive_note_id,
-//         certified_till_date: grn.grn_material?.billing_quantity,
-//         base_cost: grn.base_cost,
-//         net_taxes: grn.net_taxes,
-//         net_charges: grn.net_charges,
-//         discount_amount: grn.grn_material?.discount_amount,
-//         base_with_discount: grn.grn_material?.base_with_discount,
-//         discount_per: grn.grn_material?.discount_per || "-", // optional
-//         qty: grn.qty,
-//       }))
-//     );
-
-//     setSelectedGRN(preselected); // ✅ Set initial GRNs
-//   }
 
 
-   if (
-    details?.bill_purchase_orders &&
-    selectedPO &&
-    Array.isArray(selectedPO.grn_materials)
-  ) {
-    // Extract all GRN material IDs from API details
-    const grnMaterialIds = details.bill_purchase_orders.flatMap((order) =>
-      order.bill_grn_materials.map((material) => material.grn_material_id)
-    );
+    //      if (details?.bill_purchase_orders?.length) {
+    //     const preselected = details.bill_purchase_orders.flatMap((po) =>
+    //       po.bill_grn_materials.map((grn) => ({
+    //         ...grn,
+    //         grn_number: grn.grn_material?.good_receive_note_id,
+    //         certified_till_date: grn.grn_material?.billing_quantity,
+    //         base_cost: grn.base_cost,
+    //         net_taxes: grn.net_taxes,
+    //         net_charges: grn.net_charges,
+    //         discount_amount: grn.grn_material?.discount_amount,
+    //         base_with_discount: grn.grn_material?.base_with_discount,
+    //         discount_per: grn.grn_material?.discount_per || "-", // optional
+    //         qty: grn.qty,
+    //       }))
+    //     );
 
-    // Find the matching GRN objects from selectedPO.grn_materials
-    const preselectedGRNs = selectedPO.grn_materials.filter((grn) =>
-      grnMaterialIds.includes(grn.id)
-    );
-
-    setSelectedGRNs(preselectedGRNs);
-  }
-
-
-  if (details?.bill_advance_notes && Array.isArray(details.bill_advance_notes)) {
-    // Map API data to your table row format
-    const preselectedAdvanceNotes = details.bill_advance_notes.map((item) => {
-      const paid=item.recovered_amount_exclude
-      const note = item.advance_note || {};
-      return {
-        id: note.id,
-        po_number: note.po_number,
-        project_name: note.project_name,
-        advance_number: note.advance_number,
-        advance_amount: note.advance_amount,
-        status: note.status,
-        debit_note_for_advance: note.debit_note_for_advance,
-        recovered_amount: note.recovered_amount,
-        // Outstanding = advance_amount - recovered_amount
-        advance_outstanding_till_certificate_date: (parseFloat(note.advance_amount) || 0) - (parseFloat(note.recovered_amount) || 0),
-        advance_outstanding_till_current_date: (parseFloat(note.advance_amount) || 0) - (parseFloat(note.recovered_amount) || 0),
-        this_recovery: item.amount, // Use the amount from bill_advance_notes
-        certificate_number: note.certificate_number,
-        net_amount: note.net_amount,
-        paid:paid,
-      };
-    });
-    setSelectedAdvanceNotes(preselectedAdvanceNotes);
-  }
-
-   // Preselect debit notes from API
-  if (details?.bill_debit_notes && Array.isArray(details.bill_debit_notes)) {
-    const preselectedDebitNotes = details.bill_debit_notes.map((item) => {
-      const paid=item.recovered_amount_exclude
-      const note = item.debit_note || {};
-      return {
-        id: note.id,
-        debit_note_no: note.debit_note_no,
-        po_number: note.po_number,
-        project_name: note.project_name,
-        site_name: note.site_name,
-        status: note.status,
-        debit_note_amount: note.debit_note_amount,
-        recovered_amount: note.recovered_amount,
-        reason: note.reason,
-        this_recovery: item.amount, // Use the amount from bill_debit_notes
-        paid:paid,
-      };
-    });
-    setSelectedDebitNotes(preselectedDebitNotes);
-  }
+    //     setSelectedGRN(preselected); // ✅ Set initial GRNs
+    //   }
 
 
-  
-  }, [details,selectedPO]);
-//   edit preselected data set end
+    if (
+      details?.bill_purchase_orders &&
+      selectedPO &&
+      Array.isArray(selectedPO.grn_materials)
+    ) {
+      // Extract all GRN material IDs from API details
+      const grnMaterialIds = details.bill_purchase_orders.flatMap((order) =>
+        order.bill_grn_materials.map((material) => material.grn_material_id)
+      );
+
+      // Find the matching GRN objects from selectedPO.grn_materials
+      const preselectedGRNs = selectedPO.grn_materials.filter((grn) =>
+        grnMaterialIds.includes(grn.id)
+      );
+
+      setSelectedGRNs(preselectedGRNs);
+    }
 
 
-// console.log("selected grn:",selectedGRNs)
+    if (details?.bill_advance_notes && Array.isArray(details.bill_advance_notes)) {
+      // Map API data to your table row format
+      const preselectedAdvanceNotes = details.bill_advance_notes.map((item) => {
+        const paid = item.recovered_amount_exclude
+        const note = item.advance_note || {};
+        return {
+          id: note.id,
+          po_number: note.po_number,
+          project_name: note.project_name,
+          advance_number: note.advance_number,
+          advance_amount: note.advance_amount,
+          status: note.status,
+          debit_note_for_advance: note.debit_note_for_advance,
+          recovered_amount: note.recovered_amount,
+          // Outstanding = advance_amount - recovered_amount
+          advance_outstanding_till_certificate_date: (parseFloat(note.advance_amount) || 0) - (parseFloat(note.recovered_amount) || 0),
+          advance_outstanding_till_current_date: (parseFloat(note.advance_amount) || 0) - (parseFloat(note.recovered_amount) || 0),
+          this_recovery: item.amount, // Use the amount from bill_advance_notes
+          certificate_number: note.certificate_number,
+          net_amount: note.net_amount,
+          paid: paid,
+        };
+      });
+      setSelectedAdvanceNotes(preselectedAdvanceNotes);
+    }
+
+    // Preselect debit notes from API
+    if (details?.bill_debit_notes && Array.isArray(details.bill_debit_notes)) {
+      const preselectedDebitNotes = details.bill_debit_notes.map((item) => {
+        const paid = item.recovered_amount_exclude
+        const note = item.debit_note || {};
+        return {
+          id: note.id,
+          debit_note_no: note.debit_note_no,
+          po_number: note.po_number,
+          project_name: note.project_name,
+          site_name: note.site_name,
+          status: note.status,
+          debit_note_amount: note.debit_note_amount,
+          recovered_amount: note.recovered_amount,
+          reason: note.reason,
+          this_recovery: item.amount, // Use the amount from bill_debit_notes
+          paid: paid,
+        };
+      });
+      setSelectedDebitNotes(preselectedDebitNotes);
+    }
+
+
+    // Preselect credit notes from API
+    if (details?.bill_credit_notes && Array.isArray(details.bill_credit_notes)) {
+      const preselectedCreditNotes = details.bill_credit_notes.map((item) => {
+        const paid = item.recovered_amount_exclude;
+        const note = item.credit_note || {};
+        return {
+          id: note.id,
+          credit_note_no: note.credit_note_no,
+          po_number: note.po_number,
+          project_name: note.project_name,
+          site_name: note.site_name,
+          status: note.status,
+          credit_note_amount: note.credit_note_amount,
+          recovery_till_date: note.recovery_till_date,
+          reason_type: note.reason_type,
+          this_recovery: item.amount, // Use the amount from bill_credit_notes
+          paid: paid,
+        };
+      });
+      setSelectedCreditNotes(preselectedCreditNotes);
+    }
+
+
+  }, [details, selectedPO]);
+  //   edit preselected data set end
+
+
+  // console.log("selected grn:",selectedGRNs)
 
   const handleSubmit = async () => {
 
@@ -1927,31 +1949,31 @@ const [details, setDetails] = useState(null); // State to store API data
       //   draggable: true,
       // });
 
- if (error.response && error.response.status === 422) {
-    const errors = error.response.data?.errors;
-    const message = Array.isArray(errors) ? errors.join("\n") : "Validation failed.";
+      if (error.response && error.response.status === 422) {
+        const errors = error.response.data?.errors;
+        const message = Array.isArray(errors) ? errors.join("\n") : "Validation failed.";
 
-    toast.error(message, {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-  } else {
-    toast.error("Failed to create bill booking. Please try again.", {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-  }
+        toast.error(message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      } else {
+        toast.error("Failed to create bill booking. Please try again.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
 
 
-      
+
       setLoading(false);
     } finally {
       setLoading(false);
@@ -2280,17 +2302,17 @@ const [details, setDetails] = useState(null); // State to store API data
       if (formData.pms_supplier_id) {
         try {
           // Fetch Credit Notes
-          // const creditResponse = await axios.get(
-          //   `${baseURL}credit_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=${token}`
-          // );
-          // setCreditNotes(creditResponse.data.credit_notes || []);
+          const creditResponse = await axios.get(
+            `${baseURL}credit_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=${token}`
+          );
+          setCreditNotes(creditResponse.data.credit_notes || []);
 
           // Fetch Debit Notes
           const debitResponse = await axios.get(
             `${baseURL}debit_notes?q[pms_supplier_id_eq]=${formData.pms_supplier_id}&q[status_eq]=proceed&token=${token}`
           );
           setDebitNotes(debitResponse.data.debit_notes || []);
-        //   console.log("Supplier ID for debit notes:", formData.pms_supplier_id);
+          //   console.log("Supplier ID for debit notes:", formData.pms_supplier_id);
         } catch (error) {
           console.error("Error fetching credit or debit notes:", error);
           // setCreditNotes([]);
@@ -2398,22 +2420,23 @@ const [details, setDetails] = useState(null); // State to store API data
 
     let debitAdjustment = parseFloat(calculateDebitNoteAdjustment()) || 0;
     let advanceAdjustment = parseFloat(calculateTotalAdvanceRecovery()) || 0;
+    const creditAdjustment = parseFloat(calculateCreditNoteAdjustment()) || 0;
 
-     // Set to 0 if NaN or undefined
-  totalAmount = isNaN(totalAmount) ? 0 : totalAmount;
-  retentionAmount = isNaN(retentionAmount) ? 0 : retentionAmount;
-  otherDed = isNaN(otherDed) ? 0 : otherDed;
-  otherAdd = isNaN(otherAdd) ? 0 : otherAdd;
-  debitAdjustment = isNaN(debitAdjustment) ? 0 : debitAdjustment;
-  advanceAdjustment = isNaN(advanceAdjustment) ? 0 : advanceAdjustment;
-const totalAdjustments = (-debitAdjustment) + advanceAdjustment;
+    // Set to 0 if NaN or undefined
+    totalAmount = isNaN(totalAmount) ? 0 : totalAmount;
+    retentionAmount = isNaN(retentionAmount) ? 0 : retentionAmount;
+    otherDed = isNaN(otherDed) ? 0 : otherDed;
+    otherAdd = isNaN(otherAdd) ? 0 : otherAdd;
+    debitAdjustment = isNaN(debitAdjustment) ? 0 : debitAdjustment;
+    advanceAdjustment = isNaN(advanceAdjustment) ? 0 : advanceAdjustment;
+    const totalAdjustments = (-debitAdjustment) + advanceAdjustment;
 
-console.log("total amount:",totalAmount)
-console.log("debitAdjustment",debitAdjustment)
+    console.log("total amount:", totalAmount)
+    console.log("debitAdjustment", debitAdjustment)
 
-console.log("totalAmount:", totalAmount, typeof totalAmount);
-console.log("debitAdjustment:", debitAdjustment, typeof debitAdjustment);
-console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmount);
+    console.log("totalAmount:", totalAmount, typeof totalAmount);
+    console.log("debitAdjustment:", debitAdjustment, typeof debitAdjustment);
+    console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmount);
     // Only show a toast once per unique error
     // if ((-debitAdjustment) > totalAmount) {
     //   if (lastErrorType.current !== "debit") {
@@ -2444,7 +2467,8 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
       otherDed +
       otherAdd +
       debitAdjustment -
-      advanceAdjustment
+      advanceAdjustment +
+      creditAdjustment
     ).toFixed(2);
 
     return amountPayable;
@@ -2589,7 +2613,7 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
       }, 0)
       .toFixed(2);
   };
-//   console.log("debit adjusted:", calculateDebitNoteAdjustment())
+  //   console.log("debit adjusted:", calculateDebitNoteAdjustment())
 
   // Update the validatePositiveNumber function
 
@@ -2712,6 +2736,7 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
                           onChange={setSelectedBillEntry}
                           value={selectedBillEntry}
                           placeholder="Select Bill Entry"
+                          isDisabled={true}
                         />
                       </div>
                     </div>
@@ -3013,7 +3038,7 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
                         }}
                         min="0"
                       />
-                      {console.log("invoice:",formData.invoiceAmount)}
+                      {console.log("invoice:", formData.invoiceAmount)}
                     </div>
                   </div>
                   <div className="col-md-4 mt-3">
@@ -3236,7 +3261,7 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
                             <input
                               type="number"
                               className="form-control"
-                               value={row.payable_amount ?? row.paid_amount ?? ""}
+                              value={row.payable_amount ?? row.paid_amount ?? ""}
                               // value={row.payable_amount}
                               onChange={(e) => handleChange(index, "payable_amount", e.target.value)}
                             // onChange={(e) => {
@@ -3259,8 +3284,8 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
 
                           {/* Action */}
                           <td className="text-start">
-      {row.paid_amount ?? "-"}
-      </td>
+                            {row.paid_amount ?? "-"}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -3717,7 +3742,18 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
                   {/* <h1 className="text-end">
                     ₹ {Math.abs(calculateDebitNoteAdjustment())}
                   </h1> */}
-
+                  <div className="col-md-4 mt-2">
+                    <div className="form-group">
+                      <label>Credit Note Adjustment</label>
+                      <input
+                        className="form-control"
+                        type="number"
+                        value={calculateCreditNoteAdjustment()}
+                        disabled
+                        placeholder="Credit note adjustment amount"
+                      />
+                    </div>
+                  </div>
                   <div className="col-md-4 mt-2">
                     <div className="form-group">
                       <label> Amount Payable</label>
@@ -3916,18 +3952,7 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
                       />
                     </div>
                   </div>
-                  {/* <div className="col-md-4 mt-2">
-                    <div className="form-group">
-                      <label>Credit Note Adjustment</label>
-                      <input
-                        className="form-control"
-                        type="number"
-                        value={calculateCreditNoteAdjustment()}
-                        disabled
-                        placeholder="Credit note adjustment amount"
-                      />
-                    </div>
-                  </div> */}
+
 
                   {formData.typeOfCertificate === "Retention" && (
                     <>
@@ -4114,7 +4139,7 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
                         <th className="text-start">
                           Advance Outstanding till current Date (INR)
                         </th>
-                         <th className="text-start">
+                        <th className="text-start">
                           Paid Till Date (INR)
                         </th>
                         <th className="text-start" style={{ width: "200px" }}>
@@ -4388,10 +4413,10 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
                           Outstanding Amount (Current Date)
                         </th>
                         <th className="text-start">Credit Note Reason Type</th>
-                        <th className="text-start">This Recovery</th>
+                        <th className="text-start" style={{ width: "200px" }}>This Recovery</th>
                       </tr>
                     </thead>
-                   
+
                     <tbody>
                       {selectedCreditNotes.length > 0 ? (
                         selectedCreditNotes.map((note, index) => (
@@ -4456,8 +4481,8 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
                       )}
                     </tbody>
                   </table>
-                </div> 
-                 {/* <div className="d-flex justify-content-between mt-3 me-2">
+                </div>
+                {/* <div className="d-flex justify-content-between mt-3 me-2">
                 <h5 className=" ">Document Attachment</h5>
                 <div
                   className="card-tools d-flex"
@@ -4530,140 +4555,140 @@ console.log("(-debitAdjustment) > totalAmount:", (-debitAdjustment) > totalAmoun
                 </table>
               </div> */}
 
-               
 
-                  {/* document like mor start */}
-                                        <div className="d-flex justify-content-between mt-5 ">
-                                          <h5 className=" ">Document Attachment</h5>
-                                          <div
-                                            className="card-tools d-flex"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#attachModal"
-                                            // onClick={openattachModal}
-                                            onClick={handleAddRow}
-                                          >
-                                            <button
-                                              className="purple-btn2 mb-2 "
-                                              data-bs-toggle="modal"
-                                              data-bs-target="#attachModal"
-                                            >
-                                              <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width={20}
-                                                height={20}
-                                                fill="currentColor"
-                                                className="bi bi-plus"
-                                                viewBox="0 0 16 16"
-                                              >
-                                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                                              </svg>
-                                              <span>Add Attachments</span>
-                                            </button>
-                                          </div>
-                                        </div>
-                
-                                        <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
-                                          <table className="w-100">
-                                            <thead>
-                                              <tr>
-                                                <th className="main2-th">File Type</th>
-                                                <th className="main2-th" >File Name </th>
-                                                <th className="main2-th">Upload At</th>
-                                                <th className="main2-th">Upload File</th>
-                                                <th className="main2-th">
-                                                  Action
-                                                </th>
-                                              </tr>
-                                            </thead>
-                                            <tbody>
-                                              {attachments.map((att, index) => (
-                                                <tr key={att.id}>
-                                                  <td>
-                                                    <input
-                                                      className="form-control document_content_type"
-                                                      readOnly
-                                                      disabled
-                                                      value={att.fileType}
-                                                      placeholder="File Type"
-                                                    />
-                                                  </td>
-                                                  <td>
-                                                    <input
-                                                      className="form-control file_name"
-                                                      required
-                                                      value={att.fileName}
-                                                      onChange={(e) => handleFileNameChange(att.id, e.target.value)}
-                                                    />
-                                                  </td>
-                                                  <td>
-                                                    <input
-                                                      className="form-control created_at"
-                                                      readOnly
-                                                      disabled
-                                                      type="datetime-local"
-                                                      step="1"
-                                                      value={att.uploadDate || ""}
-                                                    />
-                                                  </td>
-                                                  <td>
-                                                    {!att.isExisting && (
-                                                      <input
-                                                        type="file"
-                                                        className="form-control"
-                                                        required
-                                                        onChange={(e) => handleFileChange(e, att.id)}
-                                                      />
-                                                    )}
-                                                  </td>
-                                                  <td className="document">
-                                                    <div style={{ display: "flex", alignItems: "center" }}>
-                                                      <div className="attachment-placeholder">
-                                                        {att.isExisting && (
-                                                          <div className="file-box">
-                                                            {console.log("att bolb id", att.blob_id)}
-                                                            <div className="">
-                                                              <a
-                                                                // href={`${baseURL}debit_notes/${id}/download?token=${token}&blob_id=${att.blob_id} rel="noopener noreferrer"`}
-                                                                href={
-                                                                  // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
-                                                                  `${baseURL}debit_notes/${id}/download?token=${token}&blob_id=${att.blob_id}`
-                                                                  // attachment.url
-                                                                }
-                                                                target="_blank"
-                                                                // rel="noopener noreferrer"
-                                                                download={att.file}
-                                                              >
-                                                                <DownloadIcon />
-                                                              </a>
-                
-                                                            </div>
-                                                            <div className="file-name">
-                                                              {/* <a href={`${baseURL}debit_notes/${id}/download?token=${token}&blob_id=${att.blob_id}`} download>
+
+                {/* document like mor start */}
+                <div className="d-flex justify-content-between mt-5 ">
+                  <h5 className=" ">Document Attachment</h5>
+                  <div
+                    className="card-tools d-flex"
+                    data-bs-toggle="modal"
+                    data-bs-target="#attachModal"
+                    // onClick={openattachModal}
+                    onClick={handleAddRow}
+                  >
+                    <button
+                      className="purple-btn2 mb-2 "
+                      data-bs-toggle="modal"
+                      data-bs-target="#attachModal"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width={20}
+                        height={20}
+                        fill="currentColor"
+                        className="bi bi-plus"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                      </svg>
+                      <span>Add Attachments</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th className="main2-th">File Type</th>
+                        <th className="main2-th" >File Name </th>
+                        <th className="main2-th">Upload At</th>
+                        <th className="main2-th">Upload File</th>
+                        <th className="main2-th">
+                          Action
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {attachments.map((att, index) => (
+                        <tr key={att.id}>
+                          <td>
+                            <input
+                              className="form-control document_content_type"
+                              readOnly
+                              disabled
+                              value={att.fileType}
+                              placeholder="File Type"
+                            />
+                          </td>
+                          <td>
+                            <input
+                              className="form-control file_name"
+                              required
+                              value={att.fileName}
+                              onChange={(e) => handleFileNameChange(att.id, e.target.value)}
+                            />
+                          </td>
+                          <td>
+                            <input
+                              className="form-control created_at"
+                              readOnly
+                              disabled
+                              type="datetime-local"
+                              step="1"
+                              value={att.uploadDate || ""}
+                            />
+                          </td>
+                          <td>
+                            {!att.isExisting && (
+                              <input
+                                type="file"
+                                className="form-control"
+                                required
+                                onChange={(e) => handleFileChange(e, att.id)}
+                              />
+                            )}
+                          </td>
+                          <td className="document">
+                            <div style={{ display: "flex", alignItems: "center" }}>
+                              <div className="attachment-placeholder">
+                                {att.isExisting && (
+                                  <div className="file-box">
+                                    {console.log("att bolb id", att.blob_id)}
+                                    <div className="">
+                                      <a
+                                        // href={`${baseURL}debit_notes/${id}/download?token=${token}&blob_id=${att.blob_id} rel="noopener noreferrer"`}
+                                        href={
+                                          // {`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                                          `${baseURL}debit_notes/${id}/download?token=${token}&blob_id=${att.blob_id}`
+                                          // attachment.url
+                                        }
+                                        target="_blank"
+                                        // rel="noopener noreferrer"
+                                        download={att.file}
+                                      >
+                                        <DownloadIcon />
+                                      </a>
+
+                                    </div>
+                                    <div className="file-name">
+                                      {/* <a href={`${baseURL}debit_notes/${id}/download?token=${token}&blob_id=${att.blob_id}`} download>
                                                                                           <span className="material-symbols-outlined">file_download</span>
                                                                                         </a> */}
-                                                              <span>{att.fileName}</span>
-                                                            </div>
-                
-                                                          </div>
-                                                        )}
-                                                      </div>
-                                                      <button
-                                                        type="button"
-                                                        className="btn btn-sm btn-link text-danger"
-                                                        onClick={() => handleRemove(att.id)}
-                                                      >
-                                                        <span className="material-symbols-outlined">cancel</span>
-                                                      </button>
-                                                    </div>
-                                                  </td>
-                                                </tr>
-                                              ))}
-                                            </tbody>
-                                          </table>
-                
-                
-                                        </div>
-                                        {/* document like mor end*/}
+                                      <span>{att.fileName}</span>
+                                    </div>
+
+                                  </div>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-link text-danger"
+                                onClick={() => handleRemove(att.id)}
+                              >
+                                <span className="material-symbols-outlined">cancel</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+
+                </div>
+                {/* document like mor end*/}
 
 
               </div>

@@ -1511,7 +1511,7 @@ const BillBookingDetails = () => {
                               {note.debit_note?.debit_note_amount - note.debit_note?.recovered_amount || "0"}
                             </td>
                             <td className="text-start">{note.debit_note.reason || "-"}</td>
-                            <td className="text-start">{note.debit_note?.recovered_amount || "0"}</td>
+                            <td className="text-start">{note.amount|| "0"}</td>
                           </tr>
                         ))
                       ) : (
@@ -1524,6 +1524,79 @@ const BillBookingDetails = () => {
                     </tbody>
                   </table>
                 </div>
+
+<div className="d-flex justify-content-between mt-3 me-2">
+  <h5 className="">Credit Note</h5>
+</div>
+<div className="tbl-container mx-1 mt-3">
+  <table className="w-100">
+    <thead>
+      <tr>
+        <th className="text-start">Credit Note No.</th>
+        <th className="text-start">PO No.</th>
+        <th className="text-start">Project</th>
+        <th className="text-start">Credit Note Amount</th>
+        <th className="text-start">
+          Credit Note Recovery Till Date
+        </th>
+        <th className="text-start">
+          Outstanding Amount (Certificate Date)
+        </th>
+        <th className="text-start">
+          Outstanding Amount (Current Date)
+        </th>
+        <th className="text-start">Credit Note Reason Type</th>
+        <th className="text-start">This Recovery</th>
+      </tr>
+    </thead>
+    <tbody>
+      {details?.bill_credit_notes &&
+      details.bill_credit_notes.length > 0 ? (
+        details.bill_credit_notes.map((note) => (
+          <tr key={note.id}>
+            <td className="text-start">
+              {note.credit_note?.credit_note_no || "-"}
+            </td>
+            <td className="text-start">
+              {note.credit_note?.po_number || "-"}
+            </td>
+            <td className="text-start">
+              {note.credit_note?.project_name || "-"}
+            </td>
+            <td className="text-start">
+              {note.credit_note?.credit_note_amount || "-"}
+            </td>
+            <td className="text-start">
+              {note.credit_note?.recovery_till_date || "0"}
+            </td>
+            <td className="text-start">
+              {note.credit_note?.credit_note_amount -
+                note.credit_note?.recovery_till_date || "0"}
+            </td>
+            <td className="text-start">
+              {note.credit_note?.credit_note_amount -
+                note.credit_note?.recovery_till_date || "0"}
+            </td>
+            <td className="text-start">
+              {note.credit_note?.reason_type || "-"}
+            </td>
+            <td className="text-start">
+              {note.amount|| "0"}
+            </td>
+          </tr>
+        ))
+      ) : (
+        <tr>
+          <td className="text-center" colSpan={10}>
+            No Credit Notes Found
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
+
+
 
                 <div className="d-flex justify-content-between mt-3 me-2">
                   <h5 className=" ">Document Attachment</h5>
