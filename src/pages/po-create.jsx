@@ -7,6 +7,7 @@ import SelectBox from "../components/base/Select/SelectBox";
 import { baseURL } from "../confi/apiDomain";
 import { useNavigate } from 'react-router-dom';
 
+
 const PoCreate = () => {
   // State variables for the modal
   const [showModal, setShowModal] = useState(false);
@@ -14,6 +15,7 @@ const PoCreate = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [apiMaterialInventoryIds, setApiMaterialInventoryIds] = useState();
    const navigate = useNavigate();
+   
 
   // Tax modal state variables
   const [showTaxModal, setShowTaxModal] = useState(false);

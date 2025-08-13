@@ -59,7 +59,10 @@ const [selectedStatus, setSelectedStatus] = useState('');
 const [isSubmitting, setIsSubmitting] = useState(false);
 
 const handleStatusUpdate = async () => {
-  
+  if (!selectedStatus) {
+    alert('Please select a status');
+    return;
+  }
 
   setIsSubmitting(true);
 
@@ -68,7 +71,7 @@ const handleStatusUpdate = async () => {
       `https://marathon.lockated.com/ropo_mappings/${id}/update_status.json?token=${token}`,
       {
         status_log: {
-        status: selectedStatus.value.toLowerCase(), // Access the value property before toLowerCase
+          status: selectedStatus.value.toLowerCase(),
           remarks: '',
           comments: '',
           admin_comment: ''
@@ -76,16 +79,21 @@ const handleStatusUpdate = async () => {
       }
     );
 
-    if (response.data.success) {
+    // Check if response status is 200 or if we have data
+    if (response.status === 200 || response.data) {
       alert('Status updated successfully');
-      // Reload the page
       window.location.reload();
     } else {
-      alert(response.data.message || 'Failed to update status');
+      throw new Error('Update failed');
     }
+
   } catch (error) {
     console.error('Error updating status:', error);
-    alert(error.response?.data?.message || 'Failed to update status');
+    alert(
+      error.response?.data?.message || 
+      error.message || 
+      'Failed to update status'
+    );
   } finally {
     setIsSubmitting(false);
   }

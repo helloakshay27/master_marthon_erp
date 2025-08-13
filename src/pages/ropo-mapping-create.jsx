@@ -400,7 +400,7 @@ const RopoMappingCreate = () => {
         }
       }
 
-      const apiUrl = `https://marathon.lockated.com//material_order_requests/material_details.json?${queryParams.toString()}`;
+      const apiUrl = `https://marathon.lockated.com//material_order_requests/material_details.json?${queryParams.toString()}&q[mor_type_eq]=ropo`;
       console.log("API URL with filters:", apiUrl);
 
       const response = await axios.get(apiUrl);
@@ -2214,7 +2214,9 @@ setPoModalApiData(
                                                               "N/A"}
                                                           </td>
                                         <td />
-                                                          <td />
+                                                          <td>
+          {poItem.rate_per_nos ? `₹${poItem.rate_per_nos}` : '-'}
+        </td>
                                                           <td />
                                                           <td />
                                                         </tr>
