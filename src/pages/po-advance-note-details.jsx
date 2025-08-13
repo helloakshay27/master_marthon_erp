@@ -1550,6 +1550,7 @@ const POAdvanceNoteDetails = () => {
                                       className="form-control"
                                       value={editableAdvanceNote.favoring_payee || ""}
                                       onChange={(e) => handleInputChange("favoring_payee", e.target.value)}
+                                      disabled
                                     />
                                   </div>
                                 </div>

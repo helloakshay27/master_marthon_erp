@@ -40,7 +40,8 @@ const RateDetails = () => {
     const openModal = () => setShowModal(true);
     const closeModal = () => setShowModal(false);
 
-    const fetchRateDetails = async (page,id) => {
+    console.log("current page:",currentPage)
+    const fetchRateDetails = async (page) => {
         setLoading(true);
         try {
             const response = await axios.get(
@@ -91,9 +92,9 @@ const RateDetails = () => {
         }
     };
     useEffect(() => {
-        fetchRateDetails(id);
+        fetchRateDetails(currentPage);
         setActiveTab("details");
-    }, [id]);
+    }, [currentPage,id]);
 
     const statusOptions = [
         // {
@@ -483,9 +484,9 @@ const RateDetails = () => {
                                                         </form>
                                                     </div>
                                                 </div>
-                                                <div className="mt-3 mb-5 ">
+                                                <div className="mt-3 mb-2 " style={{minHeight:"400px"}}>
                                                     {/* <h5 className="mb-3">Materials</h5> */}
-                                                    <div className="tbl-container  mt-1"  style={{minHeight:"400px"}}>
+                                                    <div className="tbl-container  mt-1"  >
                                                         <table className="w-100">
                                                             <thead>
                                                                 <tr>

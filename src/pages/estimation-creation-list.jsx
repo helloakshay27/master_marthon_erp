@@ -25,7 +25,7 @@ import { useNavigate } from "react-router-dom";
 
 
 
-const EstimationList = () => {
+const EstimationCreationList = () => {
     const urlParams = new URLSearchParams(location.search);
      const navigate = useNavigate();
     const token = urlParams.get("token");
@@ -362,14 +362,14 @@ const EstimationList = () => {
                                     </div>
 
                                     {/* Buttons & Filter Section */}
-                                    <div className="col-md-6">
-                                        <div className="d-flex justify-content-end align-items-center gap-3">
+                                    <div className="col-md-6  ">
+                                        <div className="d-flex justify-content-end align-items-center gap-3 ">
 
-                                            <button className="purple-btn2 me-2" onClick={() => setShowModal(true)}>Bulk Upload</button>
+                                            {/* <button className="purple-btn2 me-2" onClick={() => setShowModal(true)}>Bulk Upload</button> */}
 
 
                                             {/* Create BOQ Button */}
-                                            {/* <button className="purple-btn2 me-3"
+                                            <button className="purple-btn2 me-3"
                                                 onClick={handleClick}
                                                 >
                                                     <svg
@@ -383,7 +383,7 @@ const EstimationList = () => {
                                                         <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
                                                     </svg>
                                                     <span> Create</span>
-                                                </button> */}
+                                                </button>
                                         </div>
                                     </div>
                                 </div>
@@ -815,4 +815,4 @@ const EstimationList = () => {
     );
 };
 
-export default EstimationList;
+export default EstimationCreationList;

@@ -386,6 +386,11 @@ function Members() {
                   <Link to="/estimation-creation">Estimation creation</Link>
                 </li>
                 <li>
+                  <Link to="/estimation-creation-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
+                    Estimation creation List Page
+                  </Link>
+                </li>
+                <li>
                   <Link to="/estimation-list?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414">
                     Estimation List Page
                   </Link>
