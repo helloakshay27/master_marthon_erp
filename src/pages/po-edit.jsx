@@ -377,28 +377,7 @@ const PoEdit = () => {
       setMaterialTermConditions(formattedMaterialTermConditions);
     }
 
-    // Populate attachments
-    if (poData.attachments && Array.isArray(poData.attachments)) {
-      const formattedAttachments = poData.attachments.map((att) => {
-        const originalDate = new Date(att.created_at || att.uploaded_at);
-        const localDate = new Date(
-          originalDate.getTime() - originalDate.getTimezoneOffset() * 60000
-        );
-        const uploadDate = localDate.toISOString().slice(0, 19);
-        return {
-          id: att.blob_id || att.id || Math.random(),
-          fileType: att.document_content_type || att.file_type || "",
-          fileName: att.file_name || "",
-          uploadDate,
-          fileUrl: att.url || "",
-          file: att.document_file_name || att.filename,
-          isExisting: true,
-          blob_id: att.blob_id,
-          doc_path: att.doc_path || "",
-        };
-      });
-      setAttachments(formattedAttachments);
-    }
+   
 
     if (poData.material_details) {
       const formatted = poData.material_details.map((mat) => ({
@@ -415,7 +394,9 @@ const PoEdit = () => {
         material: mat, // for edit modal
       }));
       setTableData(formatted); // <-- THIS IS THE KEY LINE
+      console.log("Formatted material details:", formatted);
     }
+
 
     if (poData.rate_and_taxes) {
       setRateAndTaxes(
@@ -441,7 +422,59 @@ const PoEdit = () => {
         }))
       );
     }
+
+      if (poData.attachments && Array.isArray(poData.attachments)) {
+    console.log("Raw attachment data:", poData.attachments);
+    
+    const formattedAttachments = poData.attachments.map((att) => {
+      // Parse the uploaded_at date if it exists
+      let uploadDate = att.uploaded_at || new Date().toISOString().slice(0, 19);
+      
+      return {
+        id: att.id || att.blob_id || Math.random(),
+        fileType: att.file_type || att.document_content_type || "",
+        fileName: att.file_name || att.document_file_name || "Untitled",
+        uploadDate: uploadDate,
+        fileUrl: att.url || "",
+        doc_path: att.url || "", // Use url as doc_path
+        isExisting: true,
+        blob_id: att.blob_id,
+        // Keep original data for reference
+        originalData: att
+      };
+    });
+
+    console.log("Formatted attachments:", formattedAttachments);
+    setAttachments(formattedAttachments);
+  }
+    //  Populate attachments
+   
+
   };
+   // Populate attachments
+    // if (poData.attachments && Array.isArray(poData.attachments)) {
+    //   const formattedAttachments = poData.attachments.map((att) => {
+    //     const originalDate = new Date(att.created_at || att.uploaded_at);
+    //     const localDate = new Date(
+    //       originalDate.getTime() - originalDate.getTimezoneOffset() * 60000
+    //     );
+    //     const uploadDate = localDate.toISOString().slice(0, 19);
+    //     return {
+    //       id: att.blob_id || att.id || Math.random(),
+    //       fileType: att.document_content_type || att.file_type || "",
+    //       fileName: att.file_name || "",
+    //       uploadDate,
+    //       fileUrl: att.url || "",
+    //       file: att.document_file_name || att.filename,
+    //       isExisting: true,
+    //       blob_id: att.blob_id,
+    //       doc_path: att.doc_path || "",
+    //     };
+    //   });
+    //   setAttachments(formattedAttachments);
+    // }
+
+    
 
   // Fetch company data on component mount
   useEffect(() => {
@@ -4618,89 +4651,80 @@ Document */}
                       </th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {attachments.map((att, index) => (
-                      <tr key={att.id}>
-                        <td>
-                          <input
-                            className="form-control document_content_type"
-                            readOnly
-                            disabled
-                            value={att.fileType}
-                            placeholder="File Type"
-                          />
-                        </td>
-                        <td>
-                          <input
-                            className="form-control file_name"
-                            required
-                            value={att.fileName}
-                            onChange={(e) =>
-                              handleFileNameChange(att.id, e.target.value)
-                            }
-                          />
-                        </td>
-                        <td>
-                          <input
-                            className="form-control created_at"
-                            readOnly
-                            disabled
-                            type="datetime-local"
-                            step="1"
-                            value={att.uploadDate || ""}
-                          />
-                        </td>
-                        <td>
-                          {!att.isExisting && (
-                            <input
-                              type="file"
-                              className="form-control"
-                              required
-                              onChange={(e) => handleFileChange(e, att.id)}
-                            />
-                          )}
-                        </td>
-                        <td className="document">
-                          <div
-                            style={{ display: "flex", alignItems: "center" }}
-                          >
-                            <div className="attachment-placeholder">
-                              {att.isExisting && (
-                                <div className="file-box">
-                                  <div className="">
-                                    <a
-                                      href={att.doc_path}
-                                      download
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                    >
-                                      <DownloadIcon />
-                                    </a>
-                                    {console.log(
-                                      "Attachment path:",
-                                      att.doc_path
-                                    )}
-                                  </div>
-                                  <div className="file-name">
-                                    <span>{att.fileName}</span>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-link text-danger"
-                              onClick={() => handleRemove(att.id)}
-                            >
-                              <span className="material-symbols-outlined">
-                                cancel
-                              </span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
+   
+<tbody>
+  {attachments.map((att, index) => (
+    <tr key={att.id}>
+      <td>
+        <input
+          className="form-control document_content_type"
+          readOnly
+          disabled
+          value={att.fileType}
+          placeholder="File Type"
+        />
+      </td>
+      <td>
+        <input
+          className="form-control file_name"
+          required
+          value={att.fileName || 'Untitled'}
+          onChange={(e) => handleFileNameChange(att.id, e.target.value)}
+        />
+      </td>
+      <td>
+        <input
+          className="form-control created_at"
+          readOnly
+          disabled
+          type="datetime-local"
+          step="1"
+          value={att.uploadDate || ""}
+        />
+      </td>
+      <td>
+        {!att.isExisting && (
+          <input
+            type="file"
+            className="form-control"
+            required
+            onChange={(e) => handleFileChange(e, att.id)}
+          />
+        )}
+      </td>
+      <td className="document">
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <div className="attachment-placeholder">
+            {att.isExisting && att.doc_path && (
+              <div className="file-box">
+                <div className="">
+                  <a
+                    href={att.doc_path}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <DownloadIcon />
+                  </a>
+                </div>
+                <div className="file-name">
+                  <span>{att.fileName || 'Untitled'}</span>
+                </div>
+              </div>
+            )}
+          </div>
+          <button
+            type="button"
+            className="btn btn-sm btn-link text-danger"
+            onClick={() => handleRemove(att.id)}
+          >
+            <span className="material-symbols-outlined">cancel</span>
+          </button>
+        </div>
+      </td>
+    </tr>
+  ))}
+</tbody>
                 </table>
               </div>
 
