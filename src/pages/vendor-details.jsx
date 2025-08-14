@@ -917,7 +917,7 @@ const pageSize = 10; // Change as needed
             descriptionOfItem: item.inventory_name || "-",
             quantity: item.quantity || "-",
             quantityAvail: bidMaterial?.quantity_available || "" || "-", // Placeholder for user input
-            unit: item.uom_name || item.unit || item.uom_short_name || item.uom || "-",
+            unit: item.uom_name || item.uom_short_name || item.uom || "-",
             location: item.location || "-",
             rate: item.rate || "" || "-", // Placeholder if rate is not available
             section: item.material_type || "-",
@@ -1144,8 +1144,7 @@ const pageSize = 10; // Change as needed
 
     // Charges Data
     setChargesData(bid.charges_with_taxes || []);
-
-    // PreviousData (first bid materials)
+    
     const previousData = bid.bid_materials.map((material) => ({
       bidId: material.bid_id,
       eventMaterialId: material.event_material_id,
@@ -1163,8 +1162,7 @@ const pageSize = 10; // Change as needed
       total: material.total_amount,
       unit:
         material.event_material.uom_name ||
-        material.event_material.uom ||
-        material.event_material.unit,
+        material.event_material.uom_short_name,
       location: material.event_material.location,
       vendorRemark: material.vendor_remark,
       landedAmount: material.landed_amount,
@@ -1199,7 +1197,7 @@ const pageSize = 10; // Change as needed
               realisedDiscount: counterMaterial.realised_discount,
               gst: counterMaterial.gst,
               realisedGst: counterMaterial.realised_gst,
-              unit: material.unit,
+              unit: material.event_material.uom_short_name || material.event_material.uom_name,
               total: counterMaterial.total_amount,
               location: material.event_material.location,
               vendorRemark: counterMaterial.vendor_remark,

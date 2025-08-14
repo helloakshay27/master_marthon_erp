@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigation, useNavigate, useLocation } from "react-router-dom";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "../styles/event.css";
@@ -51,10 +51,40 @@ export default function ErpRfqDetailPriceTrends4h() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isCounter, setIsCounter] = useState(false);
+  const [activeTab, setActiveTab] = useState("response"); // Add active tab state
+  const purchasedOrdersTabRef = useRef(null); // Add ref for PurchasedOrdersTab
   const navigate = useNavigate();
   const location = useLocation();
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
+
+  // Function to switch to purchased orders tab
+  const switchToPurchasedOrdersTab = () => {
+    setActiveTab("purchasedOrders");
+    
+    // Use Bootstrap's tab API to switch to purchased orders tab
+    setTimeout(() => {
+      const purchasedOrdersTabButton = document.querySelector('#purchasedOrders-tab');
+      if (purchasedOrdersTabButton) {
+        // Use Bootstrap's Tab constructor to activate the tab
+        const bootstrap = window.bootstrap;
+        if (bootstrap && bootstrap.Tab) {
+          const tab = new bootstrap.Tab(purchasedOrdersTabButton);
+          tab.show();
+        } else {
+          // Fallback: trigger click event
+          purchasedOrdersTabButton.click();
+        }
+        
+        // Refresh purchase orders data after switching tabs
+        setTimeout(() => {
+          if (purchasedOrdersTabRef.current?.refreshData) {
+            purchasedOrdersTabRef.current.refreshData();
+          }
+        }, 200);
+      }
+    }, 100); // Small delay to ensure DOM is ready
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -477,9 +507,12 @@ export default function ErpRfqDetailPriceTrends4h() {
                 />
                 <ParticipantsTab id={eventId} />
                 <AnalyticsTab eventId={eventId} />
-                <AllocationTab isCounterOffer={isCounter} />
+                <AllocationTab 
+                  isCounterOffer={isCounter} 
+                  onSwitchToPurchasedOrders={switchToPurchasedOrdersTab}
+                />
                 <ParicipantsRemarksTab data={remarks} />
-                <PurchasedOrdersTab />
+                <PurchasedOrdersTab ref={purchasedOrdersTabRef} />
               </div>
             </div>
           </div>

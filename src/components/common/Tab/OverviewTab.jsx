@@ -16,6 +16,7 @@ import {
 } from "../../../constant/data";
 import DropdownCollapseIcon from "../Icon/DropdownCollapseIcon";
 import DownloadPdfButton from "../DownloadPdfButton"
+import FormatDate from "../../FormatDate";
 
 export default function OverviewTab({
   handleParticipants,
@@ -753,7 +754,7 @@ export default function OverviewTab({
                                                   (schedule, idx) => (
                                                     <tr key={idx}>
                                                       <td>
-                                                        {schedule.expected_date}
+                                                        <FormatDate timestamp={schedule.expected_date} />
                                                       </td>
                                                       <td>
                                                         {

@@ -208,7 +208,7 @@ const EventTypeModal = ({
           },
         },
         {
-          label: "Save Changes",
+          label: "Save",
           onClick: handleFormSubmit,
           props: {
             className: "purple-btn2",

@@ -20,7 +20,7 @@ import { baseURL } from "../../../confi/apiDomain";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import SelectBox from "../../base/Select/SelectBox";
 
-export default function AllocationTab({ isCounterOffer }) {
+export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrders }) {
   const [isVendor, setIsVendor] = useState(false);
   const [counterModal, setCounterModal] = useState(false);
   const [BidCounterData, setBidCounterData] = useState(null);
@@ -304,6 +304,14 @@ export default function AllocationTab({ isCounterOffer }) {
         );
 
         toast.success("Allocation removed successfully");
+        
+        // Switch to Purchased Orders tab after successful allocation removal
+        if (onSwitchToPurchasedOrders) {
+          setTimeout(() => {
+            onSwitchToPurchasedOrders();
+          }, 500); // Reduced wait time to 0.5 seconds
+        }
+        
         isUpdatingAllocation.current = false;
         return;
       }
@@ -441,6 +449,13 @@ export default function AllocationTab({ isCounterOffer }) {
       setDummyData(updatedDummyData);
 
       toast.success("Allocation updated successfully");
+      
+      // Switch to Purchased Orders tab after successful allocation update
+      if (onSwitchToPurchasedOrders) {
+        setTimeout(() => {
+          onSwitchToPurchasedOrders();
+        }, 500); // Reduced wait time to 0.5 seconds
+      }
     } catch (err) {
       console.error("Error updating allocation:", err);
       toast.error("Error updating allocation");
@@ -483,7 +498,14 @@ export default function AllocationTab({ isCounterOffer }) {
       );
       toast.success("PO created successfully");
 
-      // Navigate to PO tab and refresh PO data
+      // Switch to Purchased Orders tab after successful PO creation
+      if (onSwitchToPurchasedOrders) {
+        setTimeout(() => {
+          onSwitchToPurchasedOrders();
+        }, 500); // Reduced wait time to 0.5 seconds
+      }
+
+      // Navigate to PO tab and refresh PO data (keeping existing logic)
       if (typeof setActiveTab === 'function') {
         setActiveTab('po');
       }

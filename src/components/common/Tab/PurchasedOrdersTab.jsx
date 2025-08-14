@@ -1,33 +1,39 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useImperativeHandle, forwardRef } from "react";
 import { useParams } from "react-router-dom";
 import { baseURL } from "../../../confi/apiDomain";
 
-export default function PurchasedOrdersTab() {
+const PurchasedOrdersTab = forwardRef((props, ref) => {
     const [purchaseOrders, setPurchaseOrders] = useState([]);
     const [purchaseOrdersLoading, setPurchaseOrdersLoading] = useState(false);
     const [error, setError] = useState(null);
 
     const { eventId } = useParams();
 
-    useEffect(() => {
-        const fetchPurchaseOrders = async () => {
-            setPurchaseOrdersLoading(true);
-            const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
-            try {
-                const response = await axios.get(
-                    `${baseURL}rfq/events/${eventId}/purchase_orders?token=${token}`
-                );
-                console.log("Purchase Orders:", response.data);
-                setPurchaseOrders(response.data);
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setPurchaseOrdersLoading(false);
-            }
-        };
+    const fetchPurchaseOrders = async () => {
+        setPurchaseOrdersLoading(true);
+        setError(null);
+        const urlParams = new URLSearchParams(location.search);
+        const token = urlParams.get("token");
+        try {
+            const response = await axios.get(
+                `${baseURL}rfq/events/${eventId}/purchase_orders?token=${token}`
+            );
+            console.log("Purchase Orders:", response.data);
+            setPurchaseOrders(response.data);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setPurchaseOrdersLoading(false);
+        }
+    };
 
+    // Expose refresh function to parent component
+    useImperativeHandle(ref, () => ({
+        refreshData: fetchPurchaseOrders
+    }));
+
+    useEffect(() => {
         fetchPurchaseOrders();
     }, [eventId]);
 
@@ -58,9 +64,27 @@ export default function PurchasedOrdersTab() {
             aria-labelledby="purchasedOrders-tab"
             tabIndex={0}
         >
-            {purchaseOrders.length > 0 && (
-                <div className="mt-4">
-                    <h4>Purchased Orders</h4>
+            <div className="mt-4">
+                <h4>Purchased Orders</h4>
+                {purchaseOrdersLoading && (
+                    <div className="text-center">
+                        <div className="spinner-border" role="status">
+                            <span className="sr-only">Loading...</span>
+                        </div>
+                        <p>Loading purchase orders...</p>
+                    </div>
+                )}
+                {error && (
+                    <div className="alert alert-danger">
+                        Error loading purchase orders: {error}
+                    </div>
+                )}
+                {!purchaseOrdersLoading && !error && purchaseOrders.length === 0 && (
+                    <div className="alert alert-info">
+                        No purchase orders found.
+                    </div>
+                )}
+                {!purchaseOrdersLoading && !error && purchaseOrders.length > 0 && (
                     <table className="tbl-container">
                         <thead>
                             <tr>
@@ -94,8 +118,12 @@ export default function PurchasedOrdersTab() {
                             ))}
                         </tbody>
                     </table>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
-}
+});
+
+PurchasedOrdersTab.displayName = 'PurchasedOrdersTab';
+
+export default PurchasedOrdersTab;

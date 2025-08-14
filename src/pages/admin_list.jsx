@@ -93,6 +93,9 @@ export default function adminList() {
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
 
+  console.log("Token from URL params:", token, "location:", location, "urlParams:", urlParams);
+  
+
   const InfoTooltip = ({ content, anchorEl }) => {
   if (!anchorEl) return null;
 
@@ -1412,7 +1415,7 @@ const getTransformedRows = () => {
                           <div className="col-md-4">
                             <button
                               className="purple-btn2"
-                              onClick={() => navigate("/create-event")}
+                              onClick={() => navigate("/create-event?token=" + token)}
                             >
                               <span className="material-symbols-outlined align-text-top">
                                 add

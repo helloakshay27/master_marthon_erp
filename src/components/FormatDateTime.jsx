@@ -5,17 +5,21 @@ const FormatDateTime = ({ timestamp }) => {
 
   const date = new Date(timestamp);
 
-  const options = { year: "numeric", month: "long", day: "numeric" };
-  const datePart = date.toLocaleDateString("en-US", options);
+  // Format date as DD/MM/YYYY
+  const datePart = date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 
   let hours = date.getHours();
-  const ampm = hours >= 12 ? "p.m." : "a.m.";
+  const ampm = hours >= 12 ? "PM" : "AM";
   hours = hours % 12 || 12;
   const minutes = date.getMinutes().toString().padStart(2, "0");
 
   return (
     <div>
-      {`${datePart} at ${hours}:${minutes} ${ampm}`}
+      {`${datePart} ${hours}:${minutes} ${ampm}`}
     </div>
   );
 };

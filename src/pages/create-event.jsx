@@ -94,11 +94,11 @@ export default function CreateEvent() {
 
   const location = useLocation()
 
-
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
+  console.log("Token from URL params:", token, "location:", location, "urlParams:", urlParams);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
-      const token = urlParams.get("token");
     fetch(
       `${baseURL}/rfq/events/company_list?token=${token}` // Use the token from URL params
     )
@@ -1023,7 +1023,7 @@ export default function CreateEvent() {
                   <input
                     className="form-control"
                     onClick={handleEventScheduleModalShow}
-                    placeholder="Enter Event Schedule Details"
+                    placeholder="Select Event Schedule Details"
                     value={eventScheduleText}
                     readOnly
                   />

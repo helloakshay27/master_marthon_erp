@@ -104,6 +104,7 @@ export default function VendorListPage() {
   const handleModalShow = () => setShow(true);
 
   const handleReset = () => {
+    // Reset filters
     setFilters({
       created_by_id_in: "",
       event_type_detail_award_scheme_in: "",
@@ -113,16 +114,18 @@ export default function VendorListPage() {
       event_materials_pms_inventory_inventory_type_id_in: "",
       event_materials_id_in: "",
     });
-    setFilterOptions({
-      event_titles: [],
-      event_numbers: [],
-      statuses: [],
-      creaters: [],
-      material_name: [],
-      material_type: [],
-      locations: [],
-    });
+    
+    // Reset search query
+    setSearchQuery("");
+    
+    // Reset my event toggle
     setIsMyEvent(false);
+    
+    // Refetch filter options to restore the original state
+    fetchFilterOptions();
+    
+    // Refetch events with cleared filters
+    fetchEvents(1);
   };
 
   const preprocessOptions = (array, isKeyValuePair = false) => {

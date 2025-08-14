@@ -7,6 +7,7 @@ import axios from "axios";
 import DynamicModalBox from "../../base/Modal/DynamicModalBox";
 import { max, set } from "lodash";
 import DropdownCollapseIcon from "../Icon/DropdownCollapseIcon";
+import FormatDate from "../../FormatDate";
 
 export default function CreateRFQForm({
   data,
@@ -1786,7 +1787,9 @@ export default function CreateRFQForm({
                                         deliverySchedules.map(
                                           (schedule, index) => (
                                             <tr key={index}>
-                                              <td>{schedule.expected_date}</td>
+                                              <td>
+                                                <FormatDate timestamp={schedule.expected_date} />
+                                              </td>
                                               <td>
                                                 {schedule.expected_quantity}
                                               </td>
