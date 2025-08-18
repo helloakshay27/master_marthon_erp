@@ -33,10 +33,11 @@ import { baseURL } from "../confi/apiDomain";
 const EstimationCreationDetails = () => {
     // States to store data
     const navigate = useNavigate(); // ✅ define navigate here
-const { id } = useParams();
+    const { id } = useParams();
 
     // console.log("details selected:", details)
     const [subProjectDetails, setSubProjectDetails] = useState(null);
+    const [budgetType, setBudgetType] = useState("");
 
 
     useEffect(() => {
@@ -48,6 +49,7 @@ const { id } = useParams();
             .then((res) => {
                 console.log("responce cat:", res.data)
                 setSubProjectDetails(res.data); // store response
+                setBudgetType(res.data?.budget_type || "");
             })
             .catch((err) => {
                 console.error("Error fetching sub project details:", err);
@@ -236,6 +238,24 @@ const { id } = useParams();
                                         </label>
                                     </div>
                                 </div>
+                                <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
+                                    <div className="col-6">
+                                        <label>Budget Type</label>
+                                    </div>
+                                    <div className="col-6">
+                                        <label className="text">
+                                            <span className="me-3">
+                                                <span className="text-dark">:</span>
+                                            </span>
+                                            {/* {subProjectDetails?.budget_type || "-"} */}
+                                            {budgetType === "non_wbs"
+                                                ? "non wbs"
+                                                : budgetType
+                                                    ? budgetType
+                                                    : "-"}
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -257,175 +277,408 @@ const { id } = useParams();
                         {/* <pre>{JSON.stringify(subProjectDetails, null, 2)}</pre> */}
 
                         {/* ______________________________________________________________________________________________________ */}
-                        {/* {budgetType === "BOQ Sum Method/Bottom Up" && ( */}
-                        <div className="mx-3 mb-5 mt-3">
+                        {budgetType === "wbs" && (
+                            <div className="mx-3 mb-5 mt-3">
 
 
-                            <div className="mx-3 ">
-                                <div className="tbl-container mt-1" style={{
-                                    maxHeight: "750px",
-                                }}>
-                                    <table
-                                        className=""
-                                    >
-                                        <thead style={{ zIndex: "111 " }}>
-                                            <tr>
-                                                <th className="text-start">Expand</th>
-                                                <th className="text-start">Sr No.</th>
-                                                <th className="text-start" style={{ width: "250px" }}>Level</th>
-                                                <th className="text-start">Category</th>
-                                                <th className="text-start">Location</th>
-                                                <th className="text-start">Type</th>
-                                                <th className="text-start">Items</th>
-                                                <th className="text-start">Factor</th>
-                                                <th className="text-start" style={{ width: "200px" }}>UOM</th>
-                                                {/* <th className="text-start">Area</th> */}
-                                                <th className="text-start">QTY Excl Wastage</th>
-                                                <th className="text-start">Wastage</th>
-                                                <th className="text-start">QTY incl Waste</th>
-                                                <th className="text-start">Rate</th>
-                                                <th className="text-start">Amount</th>
-                                                <th className="text-start">Cost Per Unit</th>
+                                <div className="mx-3 ">
+                                    <div className="tbl-container mt-1" style={{
+                                        maxHeight: "750px",
+                                    }}>
+                                        <table
+                                            className=""
+                                        >
+                                            <thead style={{ zIndex: "111 " }}>
+                                                <tr>
+                                                    <th className="text-start">Expand</th>
+                                                    <th className="text-start">Sr No.</th>
+                                                    <th className="text-start" style={{ width: "250px" }}>Level</th>
+                                                    <th className="text-start">Category</th>
+                                                    <th className="text-start">Location</th>
+                                                    <th className="text-start">Type</th>
+                                                    <th className="text-start">Items</th>
+                                                    <th className="text-start">Factor</th>
+                                                    <th className="text-start" style={{ width: "200px" }}>UOM</th>
+                                                    {/* <th className="text-start">Area</th> */}
+                                                    <th className="text-start">QTY Excl Wastage</th>
+                                                    <th className="text-start">Wastage</th>
+                                                    <th className="text-start">QTY incl Waste</th>
+                                                    <th className="text-start">Rate</th>
+                                                    <th className="text-start">Amount</th>
+                                                    <th className="text-start">Cost Per Unit</th>
 
-                                            </tr>
-                                            <tr>
-                                                <th className="text-start"></th>
-                                                <th className="text-start"></th>
-                                                <th className="text-start"></th>
-                                                <th className="text-start"></th>
-                                                <th className="text-start"></th>
-                                                <th className="text-start"></th>
-                                                <th className="text-start"></th>
-                                                <th className="text-start">A</th>
-                                                <th className="text-start">B</th>
-                                                {/* <th className="text-start"></th> */}
-                                                <th className="text-start">C=C*A</th>
-                                                <th className="text-start">D</th>
-                                                <th className="text-start">E=C+C*D</th>
-                                                <th className="text-start">F</th>
-                                                <th className="text-start">G=E*F</th>
-                                                <th className="text-start">H=G/C</th>
+                                                </tr>
+                                                <tr>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start">A</th>
+                                                    <th className="text-start">B</th>
+                                                    {/* <th className="text-start"></th> */}
+                                                    <th className="text-start">C=C*A</th>
+                                                    <th className="text-start">D</th>
+                                                    <th className="text-start">E=C+C*D</th>
+                                                    <th className="text-start">F</th>
+                                                    <th className="text-start">G=E*F</th>
+                                                    <th className="text-start">H=G/C</th>
 
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {/* Conditional rendering for categories under sub-project start */}
-                                            {subProjectDetails &&
-                                                subProjectDetails.categories &&
-                                                subProjectDetails.categories.map((category, catIdx) => (
-                                                    <React.Fragment key={category.id}>
-                                                        <tr className="main-category">
-                                                            <td>
-                                                                <button
-                                                                    className="btn btn-link p-0"
-                                                                    onClick={() => toggleCategory(category.id)}
-                                                                    aria-label="Toggle category visibility"
-                                                                >
-                                                                    {openCategoryId === category.id ? (
-                                                                        <svg
-                                                                            xmlns="http://www.w3.org/2000/svg"
-                                                                            width="24"
-                                                                            height="24"
-                                                                            viewBox="0 0 24 24"
-                                                                            fill=" #e0e0e0"
-                                                                            stroke="black"
-                                                                            strokeWidth="1"
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                        >
-                                                                            {/* Square */}
-                                                                            <rect
-                                                                                x="3"
-                                                                                y="3"
-                                                                                width="18"
-                                                                                height="20"
-                                                                                rx="1"
-                                                                                ry="1"
-                                                                            />
-                                                                            {/* Minus Icon */}
-                                                                            <line x1="8" y1="12" x2="16" y2="12" />
-                                                                        </svg>
-                                                                    ) : (
-                                                                        <svg
-                                                                            xmlns="http://www.w3.org/2000/svg"
-                                                                            width="24"
-                                                                            height="24"
-                                                                            viewBox="0 0 24 24"
-                                                                            fill=" #e0e0e0"
-                                                                            stroke="black"
-                                                                            strokeWidth="1"
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                        >
-                                                                            {/* Square */}
-                                                                            <rect
-                                                                                x="3"
-                                                                                y="3"
-                                                                                width="18"
-                                                                                height="20"
-                                                                                rx="1"
-                                                                                ry="1"
-                                                                            />
-                                                                            {/* Plus Icon */}
-                                                                            <line x1="12" y1="8" x2="12" y2="16" />
-                                                                            <line x1="8" y1="12" x2="16" y2="12" />
-                                                                        </svg>
-                                                                    )}
-                                                                </button>
-                                                            </td>
-                                                            <td>{catIdx + 1}</td>
-                                                            <td> Main Category</td>
-                                                            <td>{category.name}</td>
-                                                            <td>
-                                                                {category.estimation_item.location || "-"}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {/* Conditional rendering for categories under sub-project start */}
+                                                {subProjectDetails &&
+                                                    subProjectDetails.categories &&
+                                                    subProjectDetails.categories.map((category, catIdx) => (
+                                                        <React.Fragment key={category.id}>
+                                                            <tr className="main-category">
+                                                                <td>
+                                                                    <button
+                                                                        className="btn btn-link p-0"
+                                                                        onClick={() => toggleCategory(category.id)}
+                                                                        aria-label="Toggle category visibility"
+                                                                    >
+                                                                        {openCategoryId === category.id ? (
+                                                                            <svg
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                width="24"
+                                                                                height="24"
+                                                                                viewBox="0 0 24 24"
+                                                                                fill=" #e0e0e0"
+                                                                                stroke="black"
+                                                                                strokeWidth="1"
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                            >
+                                                                                {/* Square */}
+                                                                                <rect
+                                                                                    x="3"
+                                                                                    y="3"
+                                                                                    width="18"
+                                                                                    height="20"
+                                                                                    rx="1"
+                                                                                    ry="1"
+                                                                                />
+                                                                                {/* Minus Icon */}
+                                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                                            </svg>
+                                                                        ) : (
+                                                                            <svg
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                width="24"
+                                                                                height="24"
+                                                                                viewBox="0 0 24 24"
+                                                                                fill=" #e0e0e0"
+                                                                                stroke="black"
+                                                                                strokeWidth="1"
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                            >
+                                                                                {/* Square */}
+                                                                                <rect
+                                                                                    x="3"
+                                                                                    y="3"
+                                                                                    width="18"
+                                                                                    height="20"
+                                                                                    rx="1"
+                                                                                    ry="1"
+                                                                                />
+                                                                                {/* Plus Icon */}
+                                                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                                            </svg>
+                                                                        )}
+                                                                    </button>
+                                                                </td>
+                                                                <td>{catIdx + 1}</td>
+                                                                <td> Main Category</td>
+                                                                <td>{category.name}</td>
+                                                                <td>
+                                                                    {category.estimation_item.location || "-"}
 
-                                                            </td>
-                                                            <td></td>
-                                                            <td>
-                                                                {category?.estimation_item.name || "-"}
+                                                                </td>
+                                                                <td></td>
+                                                                <td>
+                                                                    {category?.estimation_item.name || "-"}
 
-                                                            </td>
-                                                            <td></td>
-                                                            <td>
-                                                                {category.estimation_item.uom || "-"}
+                                                                </td>
+                                                                <td></td>
+                                                                <td>
+                                                                    {category.estimation_item.uom || "-"}
 
-                                                            </td>
-                                                            {/* <td></td> */}
-                                                            <td>
-                                                                {category.estimation_item.qty || "-"}
+                                                                </td>
+                                                                {/* <td></td> */}
+                                                                <td>
+                                                                    {category.estimation_item.qty || "-"}
 
-                                                            </td>
-                                                            <td></td>
-                                                            <td></td>
-                                                            <td></td>
-                                                            <td>
-                                                                {
-                                                                    (
-                                                                        // Sum direct material_type_details amounts for main category
-                                                                        (category.item_details
-                                                                            ? category.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
-                                                                            : 0
+                                                                </td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td>
+                                                                    {
+                                                                        (
+                                                                            // Sum direct material_type_details amounts for main category
+                                                                            (category.item_details
+                                                                                ? category.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                : 0
+                                                                            )
+                                                                            +
+                                                                            // Sum all sub-category 2 material_type_details amounts for main category
+                                                                            (category.sub_categories_2
+                                                                                ? category.sub_categories_2.reduce(
+                                                                                    (subSum2, subCat2) =>
+                                                                                        subSum2 +
+                                                                                        (
+                                                                                            // Sum direct item_details for level 2
+                                                                                            (subCat2.item_details
+                                                                                                ? subCat2.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                : 0
+                                                                                            )
+                                                                                            +
+                                                                                            // Sum all sub-category 3 material_type_details for level 2
+                                                                                            (subCat2.sub_categories_3
+                                                                                                ? subCat2.sub_categories_3.reduce(
+                                                                                                    (subSum3, subCat3) =>
+                                                                                                        subSum3 +
+                                                                                                        (
+                                                                                                            // Sum direct item_details for level 3
+                                                                                                            (subCat3.item_details
+                                                                                                                ? subCat3.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                : 0
+                                                                                                            )
+                                                                                                            +
+                                                                                                            // Sum all sub-category 4 material_type_details for level 3
+                                                                                                            (subCat3.sub_categories_4
+                                                                                                                ? subCat3.sub_categories_4.reduce(
+                                                                                                                    (subSum4, subCat4) =>
+                                                                                                                        subSum4 +
+                                                                                                                        (
+                                                                                                                            // Sum direct item_details for level 4
+                                                                                                                            (subCat4.item_details
+                                                                                                                                ? subCat4.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                : 0
+                                                                                                                            )
+                                                                                                                            +
+                                                                                                                            // Sum all sub-category 5 material_type_details for level 4
+                                                                                                                            (subCat4.sub_categories_5
+                                                                                                                                ? subCat4.sub_categories_5.reduce(
+                                                                                                                                    (subSum5, subCat5) =>
+                                                                                                                                        subSum5 +
+                                                                                                                                        (subCat5.item_details
+                                                                                                                                            ? subCat5.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                            : 0
+                                                                                                                                        ),
+                                                                                                                                    0
+                                                                                                                                )
+                                                                                                                                : 0
+                                                                                                                            )
+                                                                                                                        ),
+                                                                                                                    0
+                                                                                                                )
+                                                                                                                : 0
+                                                                                                            )
+                                                                                                        ),
+                                                                                                    0
+                                                                                                )
+                                                                                                : 0
+                                                                                            )
+                                                                                        ),
+                                                                                    0
+                                                                                )
+                                                                                : 0
+                                                                            )
                                                                         )
-                                                                        +
-                                                                        // Sum all sub-category 2 material_type_details amounts for main category
-                                                                        (category.sub_categories_2
-                                                                            ? category.sub_categories_2.reduce(
-                                                                                (subSum2, subCat2) =>
-                                                                                    subSum2 +
+                                                                    }
+                                                                </td>
+                                                                <td></td>
+
+
+                                                            </tr>
+
+
+                                                            {openCategoryId === category.id &&
+                                                                category.item_details &&
+                                                                category.item_details.map((item, itemIdx) => (
+                                                                    <tr key={item.id} className="labour">
+                                                                        <td></td>
+                                                                        <td>
+                                                                            {/* {catIdx + 1}.{itemIdx + 1} */}
+                                                                        </td>
+                                                                        <td></td>
+                                                                        <td></td>
+                                                                        <td></td>
+                                                                        <td>{item.type}</td>
+                                                                        <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
+                                                                        {/* Add other columns as needed */}
+                                                                        <td>
+                                                                            {item.factor || "0"}
+
+                                                                        </td>
+                                                                        <td>
+                                                                            {item.uom || "-"}
+                                                                        </td>
+                                                                        {/* <td></td> */}
+                                                                        <td>
+                                                                            {item.excl_wastage_qty || "0"}
+
+                                                                        </td>
+                                                                        <td>
+                                                                            {item.wastage || "0"}
+
+                                                                        </td>
+                                                                        <td>
+                                                                            {item.incl_wastage_qty || "0"}
+
+                                                                        </td>
+                                                                        <td>
+                                                                            {item.rate || "0"}
+
+                                                                        </td>
+                                                                        <td>
+                                                                            {item.amount || "0"}
+
+                                                                        </td>
+                                                                        <td>
+                                                                            {item.cost_per_unit || "0"}
+
+                                                                        </td>
+
+                                                                    </tr>
+                                                                ))
+                                                            }
+
+                                                            {/* sub level 2 start */}
+                                                            {openCategoryId === category.id &&
+                                                                category.sub_categories_2 &&
+                                                                category.sub_categories_2.length > 0 &&
+                                                                category.sub_categories_2.map((subCategory, subCatIdx) => (
+                                                                    <React.Fragment key={subCategory.id}>
+                                                                        <tr className="category-lvl2">
+                                                                            <td>
+                                                                                <button
+                                                                                    className="btn btn-link p-0"
+                                                                                    onClick={() =>
+                                                                                        toggleSubCategory2(subCategory.id)
+                                                                                    }
+                                                                                    aria-label="Toggle sub-category 2 visibility"
+                                                                                >
+                                                                                    {openSubCategory2Id ===
+                                                                                        subCategory.id ? (
+                                                                                        <svg
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            width="24"
+                                                                                            height="24"
+                                                                                            viewBox="0 0 24 24"
+                                                                                            fill=" #e0e0e0"
+                                                                                            stroke="black"
+                                                                                            strokeWidth="1"
+                                                                                            strokeLinecap="round"
+                                                                                            strokeLinejoin="round"
+                                                                                        >
+                                                                                            {/* Square */}
+                                                                                            <rect
+                                                                                                x="3"
+                                                                                                y="3"
+                                                                                                width="18"
+                                                                                                height="20"
+                                                                                                rx="1"
+                                                                                                ry="1"
+                                                                                            />
+                                                                                            {/* Minus Icon */}
+                                                                                            <line
+                                                                                                x1="8"
+                                                                                                y1="12"
+                                                                                                x2="16"
+                                                                                                y2="12"
+                                                                                            />
+                                                                                        </svg>
+                                                                                    ) : (
+                                                                                        <svg
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            width="24"
+                                                                                            height="24"
+                                                                                            viewBox="0 0 24 24"
+                                                                                            fill=" #e0e0e0"
+                                                                                            stroke="black"
+                                                                                            strokeWidth="1"
+                                                                                            strokeLinecap="round"
+                                                                                            strokeLinejoin="round"
+                                                                                        >
+                                                                                            {/* Square */}
+                                                                                            <rect
+                                                                                                x="3"
+                                                                                                y="3"
+                                                                                                width="18"
+                                                                                                height="20"
+                                                                                                rx="1"
+                                                                                                ry="1"
+                                                                                            />
+                                                                                            {/* Plus Icon */}
+                                                                                            <line
+                                                                                                x1="12"
+                                                                                                y1="8"
+                                                                                                x2="12"
+                                                                                                y2="16"
+                                                                                            />
+                                                                                            <line
+                                                                                                x1="8"
+                                                                                                y1="12"
+                                                                                                x2="16"
+                                                                                                y2="12"
+                                                                                            />
+                                                                                        </svg>
+                                                                                    )}
+                                                                                </button>
+                                                                            </td>
+
+                                                                            <td></td>
+                                                                            <td>Sub-Category Level 2</td>
+                                                                            <td>{subCategory.name}</td>
+                                                                            <td>
+                                                                                {subCategory.estimation_item.location || "-"}
+
+                                                                            </td>
+
+                                                                            <td>
+
+                                                                            </td>
+                                                                            <td>
+
+                                                                                {subCategory.estimation_item.name || "-"}
+                                                                            </td>
+                                                                            <td></td>
+                                                                            <td>
+                                                                                {subCategory.estimation_item.uom || "-"}
+                                                                            </td>
+                                                                            <td>
+                                                                                {subCategory.estimation_item.qty || "-"}
+
+                                                                            </td>
+                                                                            <td>
+
+                                                                            </td>
+                                                                            <td></td>
+                                                                            <td></td>
+                                                                            <td>
+                                                                                {
                                                                                     (
-                                                                                        // Sum direct item_details for level 2
-                                                                                        (subCat2.item_details
-                                                                                            ? subCat2.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                        // Sum direct material_type_details amounts for level 2
+                                                                                        (subCategory.item_details
+                                                                                            ? subCategory.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
                                                                                             : 0
                                                                                         )
                                                                                         +
-                                                                                        // Sum all sub-category 3 material_type_details for level 2
-                                                                                        (subCat2.sub_categories_3
-                                                                                            ? subCat2.sub_categories_3.reduce(
+                                                                                        // Sum all sub-category 3 material_type_details amounts for level 2
+                                                                                        (subCategory.sub_categories_3
+                                                                                            ? subCategory.sub_categories_3.reduce(
                                                                                                 (subSum3, subCat3) =>
                                                                                                     subSum3 +
                                                                                                     (
-                                                                                                        // Sum direct item_details for level 3
+                                                                                                        // Sum direct material_type_details for level 3
                                                                                                         (subCat3.item_details
                                                                                                             ? subCat3.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
                                                                                                             : 0
@@ -437,7 +690,7 @@ const { id } = useParams();
                                                                                                                 (subSum4, subCat4) =>
                                                                                                                     subSum4 +
                                                                                                                     (
-                                                                                                                        // Sum direct item_details for level 4
+                                                                                                                        // Sum direct material_type_details for level 4
                                                                                                                         (subCat4.item_details
                                                                                                                             ? subCat4.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
                                                                                                                             : 0
@@ -466,309 +719,76 @@ const { id } = useParams();
                                                                                             )
                                                                                             : 0
                                                                                         )
-                                                                                    ),
-                                                                                0
-                                                                            )
-                                                                            : 0
-                                                                        )
-                                                                    )
-                                                                }
-                                                            </td>
-                                                            <td></td>
-
-
-                                                        </tr>
-
-
-                                                        {openCategoryId === category.id &&
-                                                            category.item_details &&
-                                                            category.item_details.map((item, itemIdx) => (
-                                                                <tr key={item.id} className="labour">
-                                                                    <td></td>
-                                                                    <td>
-                                                                        {/* {catIdx + 1}.{itemIdx + 1} */}
-                                                                    </td>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td>{item.type}</td>
-                                                                    <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
-                                                                    {/* Add other columns as needed */}
-                                                                    <td>
-                                                                        {item.factor || "0"}
-
-                                                                    </td>
-                                                                    <td>
-                                                                        {item.uom || "-"}
-                                                                    </td>
-                                                                    {/* <td></td> */}
-                                                                    <td>
-                                                                        {item.excl_wastage_qty || "0"}
-
-                                                                    </td>
-                                                                    <td>
-                                                                        {item.wastage || "0"}
-
-                                                                    </td>
-                                                                    <td>
-                                                                        {item.incl_wastage_qty || "0"}
-
-                                                                    </td>
-                                                                    <td>
-                                                                        {item.rate || "0"}
-
-                                                                    </td>
-                                                                    <td>
-                                                                        {item.amount || "0"}
-
-                                                                    </td>
-                                                                    <td>
-                                                                        {item.cost_per_unit || "0"}
-
-                                                                    </td>
-
-                                                                </tr>
-                                                            ))
-                                                        }
-
-                                                        {/* sub level 2 start */}
-                                                        {openCategoryId === category.id &&
-                                                            category.sub_categories_2 &&
-                                                            category.sub_categories_2.length > 0 &&
-                                                            category.sub_categories_2.map((subCategory, subCatIdx) => (
-                                                                <React.Fragment key={subCategory.id}>
-                                                                    <tr className="category-lvl2">
-                                                                        <td>
-                                                                            <button
-                                                                                className="btn btn-link p-0"
-                                                                                onClick={() =>
-                                                                                    toggleSubCategory2(subCategory.id)
+                                                                                    )
                                                                                 }
-                                                                                aria-label="Toggle sub-category 2 visibility"
-                                                                            >
-                                                                                {openSubCategory2Id ===
-                                                                                    subCategory.id ? (
-                                                                                    <svg
-                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                        width="24"
-                                                                                        height="24"
-                                                                                        viewBox="0 0 24 24"
-                                                                                        fill=" #e0e0e0"
-                                                                                        stroke="black"
-                                                                                        strokeWidth="1"
-                                                                                        strokeLinecap="round"
-                                                                                        strokeLinejoin="round"
-                                                                                    >
-                                                                                        {/* Square */}
-                                                                                        <rect
-                                                                                            x="3"
-                                                                                            y="3"
-                                                                                            width="18"
-                                                                                            height="20"
-                                                                                            rx="1"
-                                                                                            ry="1"
-                                                                                        />
-                                                                                        {/* Minus Icon */}
-                                                                                        <line
-                                                                                            x1="8"
-                                                                                            y1="12"
-                                                                                            x2="16"
-                                                                                            y2="12"
-                                                                                        />
-                                                                                    </svg>
-                                                                                ) : (
-                                                                                    <svg
-                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                        width="24"
-                                                                                        height="24"
-                                                                                        viewBox="0 0 24 24"
-                                                                                        fill=" #e0e0e0"
-                                                                                        stroke="black"
-                                                                                        strokeWidth="1"
-                                                                                        strokeLinecap="round"
-                                                                                        strokeLinejoin="round"
-                                                                                    >
-                                                                                        {/* Square */}
-                                                                                        <rect
-                                                                                            x="3"
-                                                                                            y="3"
-                                                                                            width="18"
-                                                                                            height="20"
-                                                                                            rx="1"
-                                                                                            ry="1"
-                                                                                        />
-                                                                                        {/* Plus Icon */}
-                                                                                        <line
-                                                                                            x1="12"
-                                                                                            y1="8"
-                                                                                            x2="12"
-                                                                                            y2="16"
-                                                                                        />
-                                                                                        <line
-                                                                                            x1="8"
-                                                                                            y1="12"
-                                                                                            x2="16"
-                                                                                            y2="12"
-                                                                                        />
-                                                                                    </svg>
-                                                                                )}
-                                                                            </button>
-                                                                        </td>
-
-                                                                        <td></td>
-                                                                        <td>Sub-Category Level 2</td>
-                                                                        <td>{subCategory.name}</td>
-                                                                        <td>
-                                                                            {subCategory.estimation_item.location || "-"}
-
-                                                                        </td>
-
-                                                                        <td>
-
-                                                                        </td>
-                                                                        <td>
-
-                                                                            {subCategory.estimation_item.name || "-"}
-                                                                        </td>
-                                                                        <td></td>
-                                                                        <td>
-                                                                            {subCategory.estimation_item.uom || "-"}
-                                                                        </td>
-                                                                        <td>
-                                                                            {subCategory.estimation_item.qty || "-"}
-
-                                                                        </td>
-                                                                        <td>
-
-                                                                        </td>
-                                                                        <td></td>
-                                                                        <td></td>
-                                                                        <td>
-                                                                            {
-                                                                                (
-                                                                                    // Sum direct material_type_details amounts for level 2
-                                                                                    (subCategory.item_details
-                                                                                        ? subCategory.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
-                                                                                        : 0
-                                                                                    )
-                                                                                    +
-                                                                                    // Sum all sub-category 3 material_type_details amounts for level 2
-                                                                                    (subCategory.sub_categories_3
-                                                                                        ? subCategory.sub_categories_3.reduce(
-                                                                                            (subSum3, subCat3) =>
-                                                                                                subSum3 +
-                                                                                                (
-                                                                                                    // Sum direct material_type_details for level 3
-                                                                                                    (subCat3.item_details
-                                                                                                        ? subCat3.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
-                                                                                                        : 0
-                                                                                                    )
-                                                                                                    +
-                                                                                                    // Sum all sub-category 4 material_type_details for level 3
-                                                                                                    (subCat3.sub_categories_4
-                                                                                                        ? subCat3.sub_categories_4.reduce(
-                                                                                                            (subSum4, subCat4) =>
-                                                                                                                subSum4 +
-                                                                                                                (
-                                                                                                                    // Sum direct material_type_details for level 4
-                                                                                                                    (subCat4.item_details
-                                                                                                                        ? subCat4.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
-                                                                                                                        : 0
-                                                                                                                    )
-                                                                                                                    +
-                                                                                                                    // Sum all sub-category 5 material_type_details for level 4
-                                                                                                                    (subCat4.sub_categories_5
-                                                                                                                        ? subCat4.sub_categories_5.reduce(
-                                                                                                                            (subSum5, subCat5) =>
-                                                                                                                                subSum5 +
-                                                                                                                                (subCat5.item_details
-                                                                                                                                    ? subCat5.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
-                                                                                                                                    : 0
-                                                                                                                                ),
-                                                                                                                            0
-                                                                                                                        )
-                                                                                                                        : 0
-                                                                                                                    )
-                                                                                                                ),
-                                                                                                            0
-                                                                                                        )
-                                                                                                        : 0
-                                                                                                    )
-                                                                                                ),
-                                                                                            0
-                                                                                        )
-                                                                                        : 0
-                                                                                    )
-                                                                                )
-                                                                            }
-                                                                        </td>
-                                                                        <td></td>
+                                                                            </td>
+                                                                            <td></td>
 
 
-                                                                    </tr>
+                                                                        </tr>
 
-                                                                    {/* Render material_type_details rows for sub-category 2 */}
-                                                                    {openSubCategory2Id === subCategory.id &&
-                                                                        subCategory.item_details &&
-                                                                        subCategory.item_details.map((item, itemIdx) => (
-                                                                            <tr key={item.id} className="labour">
-                                                                                <td></td>
-                                                                                <td>
-                                                                                    {/* {catIdx + 1}.{itemIdx + 1} */}
-                                                                                </td>
-                                                                                <td></td>
-                                                                                <td></td>
-                                                                                <td></td>
-                                                                                <td>{item.type}</td>
-                                                                                <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
-                                                                                {/* Add other columns as needed */}
-                                                                                <td>
-                                                                                    {item.factor || "0"}
+                                                                        {/* Render material_type_details rows for sub-category 2 */}
+                                                                        {openSubCategory2Id === subCategory.id &&
+                                                                            subCategory.item_details &&
+                                                                            subCategory.item_details.map((item, itemIdx) => (
+                                                                                <tr key={item.id} className="labour">
+                                                                                    <td></td>
+                                                                                    <td>
+                                                                                        {/* {catIdx + 1}.{itemIdx + 1} */}
+                                                                                    </td>
+                                                                                    <td></td>
+                                                                                    <td></td>
+                                                                                    <td></td>
+                                                                                    <td>{item.type}</td>
+                                                                                    <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
+                                                                                    {/* Add other columns as needed */}
+                                                                                    <td>
+                                                                                        {item.factor || "0"}
 
-                                                                                </td>
-                                                                                <td>
-                                                                                    {item.uom || "-"}
-                                                                                </td>
-                                                                                {/* <td></td> */}
-                                                                                <td>
-                                                                                    {item.excl_wastage_qty || "0"}
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        {item.uom || "-"}
+                                                                                    </td>
+                                                                                    {/* <td></td> */}
+                                                                                    <td>
+                                                                                        {item.excl_wastage_qty || "0"}
 
-                                                                                </td>
-                                                                                <td>
-                                                                                    {item.wastage || "0"}
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        {item.wastage || "0"}
 
-                                                                                </td>
-                                                                                <td>
-                                                                                    {item.incl_wastage_qty || "0"}
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        {item.incl_wastage_qty || "0"}
 
-                                                                                </td>
-                                                                                <td>
-                                                                                    {item.rate || "0"}
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        {item.rate || "0"}
 
-                                                                                </td>
-                                                                                <td>
-                                                                                    {item.amount || "0"}
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        {item.amount || "0"}
 
-                                                                                </td>
-                                                                                <td>
-                                                                                    {item.cost_per_unit || "0"}
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        {item.cost_per_unit || "0"}
 
-                                                                                </td>
+                                                                                    </td>
 
-                                                                            </tr>
-                                                                        ))
-                                                                    }
-                                                                    {/* ...sub-category 3 rendering... */}
+                                                                                </tr>
+                                                                            ))
+                                                                        }
+                                                                        {/* ...sub-category 3 rendering... */}
 
-                                                                    {/* Render Sub-Category 3 for each Sub-Category 2 */}
-                                                                    {openSubCategory2Id === subCategory.id &&
-                                                                        subCategory.sub_categories_3 &&
-                                                                        subCategory.sub_categories_3.length > 0 &&
-                                                                        subCategory.sub_categories_3.map(
-                                                                            (subCategory3, subCategory3Idx) => (
-                                                                                <React.Fragment key={subCategory3.id}>
-                                                                                    <tr className="sub-category-lvl3">
-                                                                                        {/* {console.log("sub3", subCategory3)}
+                                                                        {/* Render Sub-Category 3 for each Sub-Category 2 */}
+                                                                        {openSubCategory2Id === subCategory.id &&
+                                                                            subCategory.sub_categories_3 &&
+                                                                            subCategory.sub_categories_3.length > 0 &&
+                                                                            subCategory.sub_categories_3.map(
+                                                                                (subCategory3, subCategory3Idx) => (
+                                                                                    <React.Fragment key={subCategory3.id}>
+                                                                                        <tr className="sub-category-lvl3">
+                                                                                            {/* {console.log("sub3", subCategory3)}
                                             {console.log(
                                               "sub4",
                                               subCategory3.sub_categories_4
@@ -777,638 +797,1780 @@ const { id } = useParams();
                                               "sub3id:",
                                               openSubCategory3Id
                                             )} */}
-                                                                                        <td>
-                                                                                            <button
-                                                                                                className="btn btn-link p-0"
-                                                                                                onClick={() =>
-                                                                                                    toggleSubCategory3(
-                                                                                                        subCategory3.id
+                                                                                            <td>
+                                                                                                <button
+                                                                                                    className="btn btn-link p-0"
+                                                                                                    onClick={() =>
+                                                                                                        toggleSubCategory3(
+                                                                                                            subCategory3.id
+                                                                                                        )
+                                                                                                    }
+                                                                                                    aria-label="Toggle sub-category 3 visibility"
+                                                                                                >
+                                                                                                    {openSubCategory3Id ===
+                                                                                                        subCategory3.id ? (
+                                                                                                        <svg
+                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                            width="24"
+                                                                                                            height="24"
+                                                                                                            viewBox="0 0 24 24"
+                                                                                                            fill=" #e0e0e0"
+                                                                                                            stroke="black"
+                                                                                                            strokeWidth="1"
+                                                                                                            strokeLinecap="round"
+                                                                                                            strokeLinejoin="round"
+                                                                                                        >
+                                                                                                            {/* Square */}
+                                                                                                            <rect
+                                                                                                                x="3"
+                                                                                                                y="3"
+                                                                                                                width="18"
+                                                                                                                height="20"
+                                                                                                                rx="1"
+                                                                                                                ry="1"
+                                                                                                            />
+                                                                                                            {/* Minus Icon */}
+                                                                                                            <line
+                                                                                                                x1="8"
+                                                                                                                y1="12"
+                                                                                                                x2="16"
+                                                                                                                y2="12"
+                                                                                                            />
+                                                                                                        </svg>
+                                                                                                    ) : (
+                                                                                                        <svg
+                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                            width="24"
+                                                                                                            height="24"
+                                                                                                            viewBox="0 0 24 24"
+                                                                                                            fill=" #e0e0e0"
+                                                                                                            stroke="black"
+                                                                                                            strokeWidth="1"
+                                                                                                            strokeLinecap="round"
+                                                                                                            strokeLinejoin="round"
+                                                                                                        >
+                                                                                                            {/* Square */}
+                                                                                                            <rect
+                                                                                                                x="3"
+                                                                                                                y="3"
+                                                                                                                width="18"
+                                                                                                                height="20"
+                                                                                                                rx="1"
+                                                                                                                ry="1"
+                                                                                                            />
+                                                                                                            {/* Plus Icon */}
+                                                                                                            <line
+                                                                                                                x1="12"
+                                                                                                                y1="8"
+                                                                                                                x2="12"
+                                                                                                                y2="16"
+                                                                                                            />
+                                                                                                            <line
+                                                                                                                x1="8"
+                                                                                                                y1="12"
+                                                                                                                x2="16"
+                                                                                                                y2="12"
+                                                                                                            />
+                                                                                                        </svg>
+                                                                                                    )}
+                                                                                                </button>
+                                                                                            </td>
+                                                                                            <td></td>
+                                                                                            <td>Sub-Category Level 3</td>
+                                                                                            <td>{subCategory3.name}</td>
+                                                                                            <td>
+                                                                                                {subCategory3.estimation_item.location || "-"}
+                                                                                            </td>
+                                                                                            <td>
+
+                                                                                            </td>
+                                                                                            <td>
+
+                                                                                                {subCategory.estimation_item.name || "-"}
+                                                                                            </td>
+                                                                                            <td>
+
+                                                                                            </td>
+
+                                                                                            <td>
+                                                                                                {subCategory.estimation_item.uom || "-"}
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                {subCategory.estimation_item.qty || "-"}
+
+                                                                                            </td>
+                                                                                            <td></td>
+                                                                                            <td></td>
+                                                                                            <td></td>
+                                                                                            <td>
+                                                                                                {
+                                                                                                    (
+                                                                                                        // Sum direct material_type_details amounts for level 3
+                                                                                                        (subCategory3.item_details
+                                                                                                            ? subCategory3.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                            : 0
+                                                                                                        )
+                                                                                                        +
+                                                                                                        // Sum all sub-category 4 material_type_details amounts for level 3
+                                                                                                        (subCategory3.sub_categories_4
+                                                                                                            ? subCategory3.sub_categories_4.reduce(
+                                                                                                                (subSum, subCat4) =>
+                                                                                                                    subSum +
+                                                                                                                    (
+                                                                                                                        // Sum direct material_type_details for level 4
+                                                                                                                        (subCat4.item_details
+                                                                                                                            ? subCat4.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                        +
+                                                                                                                        // Sum all sub-category 5 material_type_details for level 4
+                                                                                                                        (subCat4.sub_categories_5
+                                                                                                                            ? subCat4.sub_categories_5.reduce(
+                                                                                                                                (subSum5, subCat5) =>
+                                                                                                                                    subSum5 +
+                                                                                                                                    (subCat5.item_details
+                                                                                                                                        ? subCat5.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                        : 0
+                                                                                                                                    ),
+                                                                                                                                0
+                                                                                                                            )
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                    ),
+                                                                                                                0
+                                                                                                            )
+                                                                                                            : 0
+                                                                                                        )
                                                                                                     )
                                                                                                 }
-                                                                                                aria-label="Toggle sub-category 3 visibility"
-                                                                                            >
-                                                                                                {openSubCategory3Id ===
-                                                                                                    subCategory3.id ? (
-                                                                                                    <svg
-                                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                                        width="24"
-                                                                                                        height="24"
-                                                                                                        viewBox="0 0 24 24"
-                                                                                                        fill=" #e0e0e0"
-                                                                                                        stroke="black"
-                                                                                                        strokeWidth="1"
-                                                                                                        strokeLinecap="round"
-                                                                                                        strokeLinejoin="round"
+                                                                                            </td>
+                                                                                            <td></td>
+
+                                                                                        </tr>
+
+                                                                                        {/* Render material_type_details rows for sub-category 3 */}
+                                                                                        {openSubCategory3Id === subCategory3.id &&
+                                                                                            subCategory3.item_details &&
+                                                                                            subCategory3.item_details.map((item, itemIdx) => (
+                                                                                                <tr key={item.id} className="labour">
+                                                                                                    <td></td>
+                                                                                                    <td>
+                                                                                                        {/* {catIdx + 1}.{itemIdx + 1} */}
+                                                                                                    </td>
+                                                                                                    <td></td>
+                                                                                                    <td></td>
+                                                                                                    <td></td>
+                                                                                                    <td>{item.type}</td>
+                                                                                                    <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
+                                                                                                    {/* Add other columns as needed */}
+                                                                                                    <td>
+                                                                                                        {item.factor || "0"}
+
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        {item.uom || "-"}
+                                                                                                    </td>
+                                                                                                    {/* <td></td> */}
+                                                                                                    <td>
+                                                                                                        {item.excl_wastage_qty || "0"}
+
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        {item.wastage || "0"}
+
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        {item.incl_wastage_qty || "0"}
+
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        {item.rate || "0"}
+
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        {item.amount || "0"}
+
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        {item.cost_per_unit || "0"}
+
+                                                                                                    </td>
+
+                                                                                                </tr>
+                                                                                            ))
+                                                                                        }
+
+
+                                                                                        {/* Render Level 4 for each BOQ level 3 */}
+                                                                                        {openSubCategory3Id ===
+                                                                                            subCategory3.id &&
+                                                                                            subCategory3.sub_categories_4 &&
+                                                                                            subCategory3.sub_categories_4
+                                                                                                .length > 0 &&
+                                                                                            subCategory3.sub_categories_4.map(
+                                                                                                (subCategory4, subCategory4Idx) => (
+                                                                                                    <React.Fragment
+                                                                                                        key={subCategory4.id}
                                                                                                     >
-                                                                                                        {/* Square */}
-                                                                                                        <rect
-                                                                                                            x="3"
-                                                                                                            y="3"
-                                                                                                            width="18"
-                                                                                                            height="20"
-                                                                                                            rx="1"
-                                                                                                            ry="1"
-                                                                                                        />
-                                                                                                        {/* Minus Icon */}
-                                                                                                        <line
-                                                                                                            x1="8"
-                                                                                                            y1="12"
-                                                                                                            x2="16"
-                                                                                                            y2="12"
-                                                                                                        />
-                                                                                                    </svg>
-                                                                                                ) : (
-                                                                                                    <svg
-                                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                                        width="24"
-                                                                                                        height="24"
-                                                                                                        viewBox="0 0 24 24"
-                                                                                                        fill=" #e0e0e0"
-                                                                                                        stroke="black"
-                                                                                                        strokeWidth="1"
-                                                                                                        strokeLinecap="round"
-                                                                                                        strokeLinejoin="round"
-                                                                                                    >
-                                                                                                        {/* Square */}
-                                                                                                        <rect
-                                                                                                            x="3"
-                                                                                                            y="3"
-                                                                                                            width="18"
-                                                                                                            height="20"
-                                                                                                            rx="1"
-                                                                                                            ry="1"
-                                                                                                        />
-                                                                                                        {/* Plus Icon */}
-                                                                                                        <line
-                                                                                                            x1="12"
-                                                                                                            y1="8"
-                                                                                                            x2="12"
-                                                                                                            y2="16"
-                                                                                                        />
-                                                                                                        <line
-                                                                                                            x1="8"
-                                                                                                            y1="12"
-                                                                                                            x2="16"
-                                                                                                            y2="12"
-                                                                                                        />
-                                                                                                    </svg>
-                                                                                                )}
-                                                                                            </button>
-                                                                                        </td>
-                                                                                        <td></td>
-                                                                                        <td>Sub-Category Level 3</td>
-                                                                                        <td>{subCategory3.name}</td>
-                                                                                        <td>
-                                                                                            {subCategory3.estimation_item.location || "-"}
-                                                                                        </td>
-                                                                                        <td>
-
-                                                                                        </td>
-                                                                                        <td>
-
-                                                                                            {subCategory.estimation_item.name || "-"}
-                                                                                        </td>
-                                                                                        <td>
-
-                                                                                        </td>
-
-                                                                                        <td>
-                                                                                            {subCategory.estimation_item.uom || "-"}
-                                                                                        </td>
-                                                                                        <td>
-                                                                                            {subCategory.estimation_item.qty || "-"}
-
-                                                                                        </td>
-                                                                                        <td></td>
-                                                                                        <td></td>
-                                                                                        <td></td>
-                                                                                        <td>
-                                                                                            {
-                                                                                                (
-                                                                                                    // Sum direct material_type_details amounts for level 3
-                                                                                                    (subCategory3.item_details
-                                                                                                        ? subCategory3.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
-                                                                                                        : 0
-                                                                                                    )
-                                                                                                    +
-                                                                                                    // Sum all sub-category 4 material_type_details amounts for level 3
-                                                                                                    (subCategory3.sub_categories_4
-                                                                                                        ? subCategory3.sub_categories_4.reduce(
-                                                                                                            (subSum, subCat4) =>
-                                                                                                                subSum +
-                                                                                                                (
-                                                                                                                    // Sum direct material_type_details for level 4
-                                                                                                                    (subCat4.item_details
-                                                                                                                        ? subCat4.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
-                                                                                                                        : 0
-                                                                                                                    )
-                                                                                                                    +
-                                                                                                                    // Sum all sub-category 5 material_type_details for level 4
-                                                                                                                    (subCat4.sub_categories_5
-                                                                                                                        ? subCat4.sub_categories_5.reduce(
-                                                                                                                            (subSum5, subCat5) =>
-                                                                                                                                subSum5 +
-                                                                                                                                (subCat5.item_details
-                                                                                                                                    ? subCat5.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
-                                                                                                                                    : 0
-                                                                                                                                ),
-                                                                                                                            0
+                                                                                                        <tr className="sub-category-lvl4">
+                                                                                                            {/* {console.log("sub3",subCategory3)}
+                                                                            {console.log("sub4",subCategory3.sub_categories_4)}
+                                                                            {console.log("sub3id:", openSubCategory3Id)} */}
+                                                                                                            <td>
+                                                                                                                <button
+                                                                                                                    className="btn btn-link p-0"
+                                                                                                                    onClick={() =>
+                                                                                                                        toggleSubCategory4(
+                                                                                                                            subCategory4.id
                                                                                                                         )
-                                                                                                                        : 0
+                                                                                                                    }
+                                                                                                                    aria-label="Toggle sub-category 3 visibility"
+                                                                                                                >
+                                                                                                                    {openSubCategory4Id ===
+                                                                                                                        subCategory4.id ? (
+                                                                                                                        <svg
+                                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                                            width="24"
+                                                                                                                            height="24"
+                                                                                                                            viewBox="0 0 24 24"
+                                                                                                                            fill=" #e0e0e0"
+                                                                                                                            stroke="black"
+                                                                                                                            strokeWidth="1"
+                                                                                                                            strokeLinecap="round"
+                                                                                                                            strokeLinejoin="round"
+                                                                                                                        >
+                                                                                                                            {/* Square */}
+                                                                                                                            <rect
+                                                                                                                                x="3"
+                                                                                                                                y="3"
+                                                                                                                                width="18"
+                                                                                                                                height="20"
+                                                                                                                                rx="1"
+                                                                                                                                ry="1"
+                                                                                                                            />
+                                                                                                                            {/* Minus Icon */}
+                                                                                                                            <line
+                                                                                                                                x1="8"
+                                                                                                                                y1="12"
+                                                                                                                                x2="16"
+                                                                                                                                y2="12"
+                                                                                                                            />
+                                                                                                                        </svg>
+                                                                                                                    ) : (
+                                                                                                                        <svg
+                                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                                            width="24"
+                                                                                                                            height="24"
+                                                                                                                            viewBox="0 0 24 24"
+                                                                                                                            fill=" #e0e0e0"
+                                                                                                                            stroke="black"
+                                                                                                                            strokeWidth="1"
+                                                                                                                            strokeLinecap="round"
+                                                                                                                            strokeLinejoin="round"
+                                                                                                                        >
+                                                                                                                            {/* Square */}
+                                                                                                                            <rect
+                                                                                                                                x="3"
+                                                                                                                                y="3"
+                                                                                                                                width="18"
+                                                                                                                                height="20"
+                                                                                                                                rx="1"
+                                                                                                                                ry="1"
+                                                                                                                            />
+                                                                                                                            {/* Plus Icon */}
+                                                                                                                            <line
+                                                                                                                                x1="12"
+                                                                                                                                y1="8"
+                                                                                                                                x2="12"
+                                                                                                                                y2="16"
+                                                                                                                            />
+                                                                                                                            <line
+                                                                                                                                x1="8"
+                                                                                                                                y1="12"
+                                                                                                                                x2="16"
+                                                                                                                                y2="12"
+                                                                                                                            />
+                                                                                                                        </svg>
+                                                                                                                    )}
+                                                                                                                </button>
+                                                                                                            </td>
+                                                                                                            <td></td>
+                                                                                                            <td>
+                                                                                                                Sub-Category Level 4
+                                                                                                            </td>
+                                                                                                            <td>{subCategory4.name}</td>
+                                                                                                            <td>
+                                                                                                                {subCategory3.estimation_item.location || "-"}
+                                                                                                            </td>
+                                                                                                            <td>
+
+                                                                                                            </td>
+                                                                                                            <td>
+
+                                                                                                                {subCategory.estimation_item.name || "-"}
+                                                                                                            </td>
+                                                                                                            <td>
+
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                {subCategory.estimation_item.uom || "-"}
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                {subCategory.estimation_item.qty || "-"}
+                                                                                                            </td>
+                                                                                                            <td></td>
+                                                                                                            <td></td>
+                                                                                                            <td></td>
+                                                                                                            <td>
+                                                                                                                {
+                                                                                                                    (
+                                                                                                                        // Sum direct material_type_details amounts for level 4
+                                                                                                                        (subCategory4.item_details
+                                                                                                                            ? subCategory4.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                        +
+                                                                                                                        // Sum all sub-category 5 material_type_details amounts for level 4
+                                                                                                                        (subCategory4.sub_categories_5
+                                                                                                                            ? subCategory4.sub_categories_5.reduce(
+                                                                                                                                (subSum, subCat5) =>
+                                                                                                                                    subSum +
+                                                                                                                                    (subCat5.item_details
+                                                                                                                                        ? subCat5.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                        : 0
+                                                                                                                                    ),
+                                                                                                                                0
+                                                                                                                            )
+                                                                                                                            : 0
+                                                                                                                        )
                                                                                                                     )
-                                                                                                                ),
-                                                                                                            0
-                                                                                                        )
-                                                                                                        : 0
-                                                                                                    )
+                                                                                                                }
+                                                                                                            </td>
+                                                                                                            <td></td>
+
+
+                                                                                                        </tr>
+
+
+                                                                                                        {/* Render material_type_details rows for sub-category 3 */}
+                                                                                                        {openSubCategory4Id === subCategory4.id &&
+                                                                                                            subCategory4.item_details &&
+                                                                                                            subCategory4.item_details.map((item, itemIdx) => (
+                                                                                                                <tr key={item.id} className="labour">
+
+                                                                                                                    <td></td>
+                                                                                                                    <td>
+                                                                                                                        {/* {catIdx + 1}.{itemIdx + 1} */}
+                                                                                                                    </td>
+                                                                                                                    <td></td>
+                                                                                                                    <td></td>
+                                                                                                                    <td></td>
+                                                                                                                    <td>{item.type}</td>
+                                                                                                                    <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
+                                                                                                                    {/* Add other columns as needed */}
+                                                                                                                    <td>
+                                                                                                                        {item.factor || "0"}
+
+                                                                                                                    </td>
+                                                                                                                    <td>
+                                                                                                                        {item.uom || "-"}
+                                                                                                                    </td>
+                                                                                                                    {/* <td></td> */}
+                                                                                                                    <td>
+                                                                                                                        {item.excl_wastage_qty || "0"}
+
+                                                                                                                    </td>
+                                                                                                                    <td>
+                                                                                                                        {item.wastage || "0"}
+
+                                                                                                                    </td>
+                                                                                                                    <td>
+                                                                                                                        {item.incl_wastage_qty || "0"}
+
+                                                                                                                    </td>
+                                                                                                                    <td>
+                                                                                                                        {item.rate || "0"}
+
+                                                                                                                    </td>
+                                                                                                                    <td>
+                                                                                                                        {item.amount || "0"}
+
+                                                                                                                    </td>
+                                                                                                                    <td>
+                                                                                                                        {item.cost_per_unit || "0"}
+
+                                                                                                                    </td>
+
+
+
+
+
+
+
+
+                                                                                                                </tr>
+                                                                                                            ))
+                                                                                                        }
+
+                                                                                                        {/* Render Level 5 for each BOQ level 4*/}
+                                                                                                        {openSubCategory4Id ===
+                                                                                                            subCategory4.id &&
+                                                                                                            subCategory4.sub_categories_5 &&
+                                                                                                            subCategory4
+                                                                                                                .sub_categories_5.length >
+                                                                                                            0 &&
+                                                                                                            subCategory4.sub_categories_5.map(
+                                                                                                                (subCategory5, subCategory5Idx) => (
+                                                                                                                    <React.Fragment
+                                                                                                                        key={subCategory5.id}
+                                                                                                                    >
+                                                                                                                        <tr className="sub-category-lvl5">
+                                                                                                                            {console.log(
+                                                                                                                                "sub5",
+                                                                                                                                subCategory5
+                                                                                                                            )}
+                                                                                                                            {/* {console.log("sub4",subCategory3.sub_categories_4)}
+                                                                            {console.log("sub3id:", openSubCategory3Id)} */}
+                                                                                                                            <td>
+                                                                                                                                <button
+                                                                                                                                    className="btn btn-link p-0"
+                                                                                                                                    onClick={() =>
+                                                                                                                                        toggleSubCategory5(
+                                                                                                                                            subCategory5.id
+                                                                                                                                        )
+                                                                                                                                    }
+                                                                                                                                    aria-label="Toggle sub-category 3 visibility"
+                                                                                                                                >
+                                                                                                                                    {openSubCategory5Id ===
+                                                                                                                                        subCategory5.id ? (
+                                                                                                                                        <svg
+                                                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                                                            width="24"
+                                                                                                                                            height="24"
+                                                                                                                                            viewBox="0 0 24 24"
+                                                                                                                                            fill=" #e0e0e0"
+                                                                                                                                            stroke="black"
+                                                                                                                                            strokeWidth="1"
+                                                                                                                                            strokeLinecap="round"
+                                                                                                                                            strokeLinejoin="round"
+                                                                                                                                        >
+                                                                                                                                            {/* Square */}
+                                                                                                                                            <rect
+                                                                                                                                                x="3"
+                                                                                                                                                y="3"
+                                                                                                                                                width="18"
+                                                                                                                                                height="20"
+                                                                                                                                                rx="1"
+                                                                                                                                                ry="1"
+                                                                                                                                            />
+                                                                                                                                            {/* Minus Icon */}
+                                                                                                                                            <line
+                                                                                                                                                x1="8"
+                                                                                                                                                y1="12"
+                                                                                                                                                x2="16"
+                                                                                                                                                y2="12"
+                                                                                                                                            />
+                                                                                                                                        </svg>
+                                                                                                                                    ) : (
+                                                                                                                                        <svg
+                                                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                                                            width="24"
+                                                                                                                                            height="24"
+                                                                                                                                            viewBox="0 0 24 24"
+                                                                                                                                            fill=" #e0e0e0"
+                                                                                                                                            stroke="black"
+                                                                                                                                            strokeWidth="1"
+                                                                                                                                            strokeLinecap="round"
+                                                                                                                                            strokeLinejoin="round"
+                                                                                                                                        >
+                                                                                                                                            {/* Square */}
+                                                                                                                                            <rect
+                                                                                                                                                x="3"
+                                                                                                                                                y="3"
+                                                                                                                                                width="18"
+                                                                                                                                                height="20"
+                                                                                                                                                rx="1"
+                                                                                                                                                ry="1"
+                                                                                                                                            />
+                                                                                                                                            {/* Plus Icon */}
+                                                                                                                                            <line
+                                                                                                                                                x1="12"
+                                                                                                                                                y1="8"
+                                                                                                                                                x2="12"
+                                                                                                                                                y2="16"
+                                                                                                                                            />
+                                                                                                                                            <line
+                                                                                                                                                x1="8"
+                                                                                                                                                y1="12"
+                                                                                                                                                x2="16"
+                                                                                                                                                y2="12"
+                                                                                                                                            />
+                                                                                                                                        </svg>
+                                                                                                                                    )}
+                                                                                                                                </button>
+                                                                                                                            </td>
+                                                                                                                            <td></td>
+                                                                                                                            <td>
+                                                                                                                                Sub-Category Level 5
+                                                                                                                            </td>
+                                                                                                                            <td>{
+                                                                                                                                subCategory5.name
+                                                                                                                            }</td>
+                                                                                                                            <td>
+
+                                                                                                                                {subCategory3.estimation_item.location || "-"}
+                                                                                                                            </td>
+                                                                                                                            <td>
+
+                                                                                                                            </td>
+                                                                                                                            <td>
+                                                                                                                                {subCategory.estimation_item.name || "-"}
+                                                                                                                            </td>
+                                                                                                                            <td>
+
+                                                                                                                            </td>
+                                                                                                                            <td>
+                                                                                                                                {subCategory.estimation_item.uom || "-"}
+                                                                                                                            </td>
+                                                                                                                            <td>
+                                                                                                                                {subCategory.estimation_item.qty || "-"}
+                                                                                                                            </td>
+                                                                                                                            <td></td>
+                                                                                                                            <td></td>
+                                                                                                                            <td></td>
+                                                                                                                            <td>
+                                                                                                                                {
+                                                                                                                                    subCategory5.item_details
+                                                                                                                                        ? subCategory5.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                        : 0
+                                                                                                                                }
+                                                                                                                            </td>
+                                                                                                                            <td></td>
+
+
+                                                                                                                        </tr>
+
+
+                                                                                                                        {/* Render material_type_details rows for sub-category 3 */}
+                                                                                                                        {openSubCategory5Id === subCategory5.id &&
+                                                                                                                            subCategory5.item_details &&
+                                                                                                                            subCategory5.item_details.map((item, itemIdx) => (
+                                                                                                                                <tr key={item.id} className="labour">
+                                                                                                                                    <td></td>
+                                                                                                                                    <td>
+                                                                                                                                        {/* {catIdx + 1}.{itemIdx + 1} */}
+                                                                                                                                    </td>
+                                                                                                                                    <td></td>
+                                                                                                                                    <td></td>
+                                                                                                                                    <td></td>
+                                                                                                                                    <td>{item.type}</td>
+                                                                                                                                    <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
+                                                                                                                                    {/* Add other columns as needed */}
+                                                                                                                                    <td>
+                                                                                                                                        {item.factor || "0"}
+
+                                                                                                                                    </td>
+                                                                                                                                    <td>
+                                                                                                                                        {item.uom || "-"}
+                                                                                                                                    </td>
+                                                                                                                                    {/* <td></td> */}
+                                                                                                                                    <td>
+                                                                                                                                        {item.excl_wastage_qty || "0"}
+
+                                                                                                                                    </td>
+                                                                                                                                    <td>
+                                                                                                                                        {item.wastage || "0"}
+
+                                                                                                                                    </td>
+                                                                                                                                    <td>
+                                                                                                                                        {item.incl_wastage_qty || "0"}
+
+                                                                                                                                    </td>
+                                                                                                                                    <td>
+                                                                                                                                        {item.rate || "0"}
+
+                                                                                                                                    </td>
+                                                                                                                                    <td>
+                                                                                                                                        {item.amount || "0"}
+
+                                                                                                                                    </td>
+                                                                                                                                    <td>
+                                                                                                                                        {item.cost_per_unit || "0"}
+
+                                                                                                                                    </td>
+                                                                                                                                </tr>
+                                                                                                                            ))
+                                                                                                                        }
+
+
+
+                                                                                                                    </React.Fragment>
+                                                                                                                )
+                                                                                                            )}
+                                                                                                    </React.Fragment>
                                                                                                 )
-                                                                                            }
-                                                                                        </td>
-                                                                                        <td></td>
+                                                                                            )}
+                                                                                    </React.Fragment>
+                                                                                )
+                                                                            )}
 
-                                                                                    </tr>
+                                                                        {/* .. */}
+                                                                    </React.Fragment>
+                                                                ))}
+                                                            {/* sub level 2 end*/}
+                                                        </React.Fragment>
+                                                    ))}
+                                                {/* Conditional rendering for categories under sub-project  end*/}
 
-                                                                                    {/* Render material_type_details rows for sub-category 3 */}
-                                                                                    {openSubCategory3Id === subCategory3.id &&
-                                                                                        subCategory3.item_details &&
-                                                                                        subCategory3.item_details.map((item, itemIdx) => (
-                                                                                            <tr key={item.id} className="labour">
-                                                                                                <td></td>
-                                                                                                <td>
-                                                                                                    {/* {catIdx + 1}.{itemIdx + 1} */}
-                                                                                                </td>
-                                                                                                <td></td>
-                                                                                                <td></td>
-                                                                                                <td></td>
-                                                                                                <td>{item.type}</td>
-                                                                                                <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
-                                                                                                {/* Add other columns as needed */}
-                                                                                                <td>
+                                                {/* subProject end */}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        {/* ______________________________________________________________________________________________________ */}
+
+                        {budgetType === "non_wbs" && (
+                            <div className="mx-3 mb-5 mt-3">
+
+
+                                <div className="mx-3 ">
+                                    <div className="tbl-container mt-1" style={{
+                                        maxHeight: "750px",
+                                    }}>
+                                        <table
+                                            className="w-100"
+                                        >
+                                            <thead style={{ zIndex: "111 " }}>
+                                                <tr>
+                                                    <th className="text-start">Expand</th>
+                                                    <th className="text-start">Sr No.</th>
+                                                    <th className="text-start" style={{ width: "250px" }}>Level</th>
+                                                    <th className="text-start">Category</th>
+                                                    <th className="text-start">Location</th>
+                                                    <th className="text-start">Type</th>
+                                                    <th className="text-start">Items</th>
+                                                    {/* <th className="text-start">Factor</th> */}
+                                                    <th className="text-start" style={{ width: "200px" }}>UOM</th>
+                                                    {/* <th className="text-start">Area</th> */}
+                                                    <th className="text-start">QTY Excl Wastage</th>
+                                                    {/* <th className="text-start">Wastage</th> */}
+                                                    {/* <th className="text-start">QTY incl Waste</th> */}
+                                                    <th className="text-start">Rate</th>
+                                                    <th className="text-start">Amount</th>
+                                                    {/* <th className="text-start">Cost Per Unit</th> */}
+
+                                                </tr>
+                                                <tr>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    {/* <th className="text-start">A</th> */}
+                                                    <th className="text-start">A</th>
+                                                    {/* <th className="text-start"></th> */}
+                                                    <th className="text-start">B</th>
+                                                    {/* <th className="text-start">D</th> */}
+                                                    {/* <th className="text-start">E=C+C*D</th> */}
+                                                    <th className="text-start">C</th>
+                                                    <th className="text-start">D=B*C</th>
+                                                    {/* <th className="text-start">H=G/C</th> */}
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {/* Conditional rendering for categories under sub-project start */}
+                                                {subProjectDetails &&
+                                                    subProjectDetails.categories &&
+                                                    subProjectDetails.categories.map((category, catIdx) => (
+                                                        <React.Fragment key={category.id}>
+                                                            <tr className="main-category">
+                                                                <td>
+                                                                    <button
+                                                                        className="btn btn-link p-0"
+                                                                        onClick={() => toggleCategory(category.id)}
+                                                                        aria-label="Toggle category visibility"
+                                                                    >
+                                                                        {openCategoryId === category.id ? (
+                                                                            <svg
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                width="24"
+                                                                                height="24"
+                                                                                viewBox="0 0 24 24"
+                                                                                fill=" #e0e0e0"
+                                                                                stroke="black"
+                                                                                strokeWidth="1"
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                            >
+                                                                                {/* Square */}
+                                                                                <rect
+                                                                                    x="3"
+                                                                                    y="3"
+                                                                                    width="18"
+                                                                                    height="20"
+                                                                                    rx="1"
+                                                                                    ry="1"
+                                                                                />
+                                                                                {/* Minus Icon */}
+                                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                                            </svg>
+                                                                        ) : (
+                                                                            <svg
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                width="24"
+                                                                                height="24"
+                                                                                viewBox="0 0 24 24"
+                                                                                fill=" #e0e0e0"
+                                                                                stroke="black"
+                                                                                strokeWidth="1"
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                            >
+                                                                                {/* Square */}
+                                                                                <rect
+                                                                                    x="3"
+                                                                                    y="3"
+                                                                                    width="18"
+                                                                                    height="20"
+                                                                                    rx="1"
+                                                                                    ry="1"
+                                                                                />
+                                                                                {/* Plus Icon */}
+                                                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                                            </svg>
+                                                                        )}
+                                                                    </button>
+                                                                </td>
+                                                                <td>{catIdx + 1}</td>
+                                                                <td> Main Category</td>
+                                                                <td>{category.name}</td>
+                                                                <td>
+                                                                    {category.estimation_item.location || "-"}
+
+                                                                </td>
+                                                                <td></td>
+                                                                <td>
+                                                                    {category?.estimation_item.name || "-"}
+
+                                                                </td>
+
+                                                                <td>
+                                                                    {category.estimation_item.uom || "-"}
+
+                                                                </td>
+                                                                {/* <td></td> */}
+                                                                <td>
+                                                                    {category.estimation_item.qty || "-"}
+
+                                                                </td>
+
+                                                                <td></td>
+                                                                <td>
+                                                                    {
+                                                                        (
+                                                                            // Sum direct material_type_details amounts for main category
+                                                                            (category.item_details
+                                                                                ? category.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                : 0
+                                                                            )
+                                                                            +
+                                                                            // Sum all sub-category 2 material_type_details amounts for main category
+                                                                            (category.sub_categories_2
+                                                                                ? category.sub_categories_2.reduce(
+                                                                                    (subSum2, subCat2) =>
+                                                                                        subSum2 +
+                                                                                        (
+                                                                                            // Sum direct item_details for level 2
+                                                                                            (subCat2.item_details
+                                                                                                ? subCat2.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                : 0
+                                                                                            )
+                                                                                            +
+                                                                                            // Sum all sub-category 3 material_type_details for level 2
+                                                                                            (subCat2.sub_categories_3
+                                                                                                ? subCat2.sub_categories_3.reduce(
+                                                                                                    (subSum3, subCat3) =>
+                                                                                                        subSum3 +
+                                                                                                        (
+                                                                                                            // Sum direct item_details for level 3
+                                                                                                            (subCat3.item_details
+                                                                                                                ? subCat3.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                : 0
+                                                                                                            )
+                                                                                                            +
+                                                                                                            // Sum all sub-category 4 material_type_details for level 3
+                                                                                                            (subCat3.sub_categories_4
+                                                                                                                ? subCat3.sub_categories_4.reduce(
+                                                                                                                    (subSum4, subCat4) =>
+                                                                                                                        subSum4 +
+                                                                                                                        (
+                                                                                                                            // Sum direct item_details for level 4
+                                                                                                                            (subCat4.item_details
+                                                                                                                                ? subCat4.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                : 0
+                                                                                                                            )
+                                                                                                                            +
+                                                                                                                            // Sum all sub-category 5 material_type_details for level 4
+                                                                                                                            (subCat4.sub_categories_5
+                                                                                                                                ? subCat4.sub_categories_5.reduce(
+                                                                                                                                    (subSum5, subCat5) =>
+                                                                                                                                        subSum5 +
+                                                                                                                                        (subCat5.item_details
+                                                                                                                                            ? subCat5.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                            : 0
+                                                                                                                                        ),
+                                                                                                                                    0
+                                                                                                                                )
+                                                                                                                                : 0
+                                                                                                                            )
+                                                                                                                        ),
+                                                                                                                    0
+                                                                                                                )
+                                                                                                                : 0
+                                                                                                            )
+                                                                                                        ),
+                                                                                                    0
+                                                                                                )
+                                                                                                : 0
+                                                                                            )
+                                                                                        ),
+                                                                                    0
+                                                                                )
+                                                                                : 0
+                                                                            )
+                                                                        )
+                                                                    }
+                                                                </td>
+                                                                {/* <td></td> */}
+
+
+                                                            </tr>
+
+
+                                                            {openCategoryId === category.id &&
+                                                                category.item_details &&
+                                                                category.item_details.map((item, itemIdx) => (
+                                                                    <tr key={item.id} className="labour">
+                                                                        <td></td>
+                                                                        <td>
+                                                                            {/* {catIdx + 1}.{itemIdx + 1} */}
+                                                                        </td>
+                                                                        <td></td>
+                                                                        <td></td>
+                                                                        <td></td>
+                                                                        <td>{item.type}</td>
+                                                                        <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
+                                                                        {/* Add other columns as needed */}
+                                                                        {/* <td>
+                                                                        {item.factor || "0"}
+
+                                                                    </td> */}
+                                                                        <td>
+                                                                            {item.uom || "-"}
+                                                                        </td>
+                                                                        {/* <td></td> */}
+                                                                        <td>
+                                                                            {item.excl_wastage_qty || "0"}
+
+                                                                        </td>
+                                                                        {/* <td>
+                                                                        {item.wastage || "0"}
+
+                                                                    </td>
+                                                                    <td>
+                                                                        {item.incl_wastage_qty || "0"}
+
+                                                                    </td> */}
+                                                                        <td>
+                                                                            {item.rate || "0"}
+
+                                                                        </td>
+                                                                        <td>
+                                                                            {item.amount || "0"}
+
+                                                                        </td>
+                                                                        {/* <td>
+                                                                        {item.cost_per_unit || "0"}
+
+                                                                    </td> */}
+
+                                                                    </tr>
+                                                                ))
+                                                            }
+
+                                                            {/* sub level 2 start */}
+                                                            {openCategoryId === category.id &&
+                                                                category.sub_categories_2 &&
+                                                                category.sub_categories_2.length > 0 &&
+                                                                category.sub_categories_2.map((subCategory, subCatIdx) => (
+                                                                    <React.Fragment key={subCategory.id}>
+                                                                        <tr className="category-lvl2">
+                                                                            <td>
+                                                                                <button
+                                                                                    className="btn btn-link p-0"
+                                                                                    onClick={() =>
+                                                                                        toggleSubCategory2(subCategory.id)
+                                                                                    }
+                                                                                    aria-label="Toggle sub-category 2 visibility"
+                                                                                >
+                                                                                    {openSubCategory2Id ===
+                                                                                        subCategory.id ? (
+                                                                                        <svg
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            width="24"
+                                                                                            height="24"
+                                                                                            viewBox="0 0 24 24"
+                                                                                            fill=" #e0e0e0"
+                                                                                            stroke="black"
+                                                                                            strokeWidth="1"
+                                                                                            strokeLinecap="round"
+                                                                                            strokeLinejoin="round"
+                                                                                        >
+                                                                                            {/* Square */}
+                                                                                            <rect
+                                                                                                x="3"
+                                                                                                y="3"
+                                                                                                width="18"
+                                                                                                height="20"
+                                                                                                rx="1"
+                                                                                                ry="1"
+                                                                                            />
+                                                                                            {/* Minus Icon */}
+                                                                                            <line
+                                                                                                x1="8"
+                                                                                                y1="12"
+                                                                                                x2="16"
+                                                                                                y2="12"
+                                                                                            />
+                                                                                        </svg>
+                                                                                    ) : (
+                                                                                        <svg
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            width="24"
+                                                                                            height="24"
+                                                                                            viewBox="0 0 24 24"
+                                                                                            fill=" #e0e0e0"
+                                                                                            stroke="black"
+                                                                                            strokeWidth="1"
+                                                                                            strokeLinecap="round"
+                                                                                            strokeLinejoin="round"
+                                                                                        >
+                                                                                            {/* Square */}
+                                                                                            <rect
+                                                                                                x="3"
+                                                                                                y="3"
+                                                                                                width="18"
+                                                                                                height="20"
+                                                                                                rx="1"
+                                                                                                ry="1"
+                                                                                            />
+                                                                                            {/* Plus Icon */}
+                                                                                            <line
+                                                                                                x1="12"
+                                                                                                y1="8"
+                                                                                                x2="12"
+                                                                                                y2="16"
+                                                                                            />
+                                                                                            <line
+                                                                                                x1="8"
+                                                                                                y1="12"
+                                                                                                x2="16"
+                                                                                                y2="12"
+                                                                                            />
+                                                                                        </svg>
+                                                                                    )}
+                                                                                </button>
+                                                                            </td>
+
+                                                                            <td></td>
+                                                                            <td>Sub-Category Level 2</td>
+                                                                            <td>{subCategory.name}</td>
+                                                                            <td>
+                                                                                {subCategory.estimation_item.location || "-"}
+
+                                                                            </td>
+
+                                                                            <td>
+
+                                                                            </td>
+                                                                            <td>
+
+                                                                                {subCategory.estimation_item.name || "-"}
+                                                                            </td>
+                                                                            {/* <td></td> */}
+                                                                            <td>
+                                                                                {subCategory.estimation_item.uom || "-"}
+                                                                            </td>
+                                                                            <td>
+                                                                                {subCategory.estimation_item.qty || "-"}
+
+                                                                            </td>
+                                                                            <td>
+
+                                                                            </td>
+                                                                            {/* <td></td> */}
+                                                                            {/* <td></td> */}
+                                                                            <td>
+                                                                                {
+                                                                                    (
+                                                                                        // Sum direct material_type_details amounts for level 2
+                                                                                        (subCategory.item_details
+                                                                                            ? subCategory.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                            : 0
+                                                                                        )
+                                                                                        +
+                                                                                        // Sum all sub-category 3 material_type_details amounts for level 2
+                                                                                        (subCategory.sub_categories_3
+                                                                                            ? subCategory.sub_categories_3.reduce(
+                                                                                                (subSum3, subCat3) =>
+                                                                                                    subSum3 +
+                                                                                                    (
+                                                                                                        // Sum direct material_type_details for level 3
+                                                                                                        (subCat3.item_details
+                                                                                                            ? subCat3.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                            : 0
+                                                                                                        )
+                                                                                                        +
+                                                                                                        // Sum all sub-category 4 material_type_details for level 3
+                                                                                                        (subCat3.sub_categories_4
+                                                                                                            ? subCat3.sub_categories_4.reduce(
+                                                                                                                (subSum4, subCat4) =>
+                                                                                                                    subSum4 +
+                                                                                                                    (
+                                                                                                                        // Sum direct material_type_details for level 4
+                                                                                                                        (subCat4.item_details
+                                                                                                                            ? subCat4.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                        +
+                                                                                                                        // Sum all sub-category 5 material_type_details for level 4
+                                                                                                                        (subCat4.sub_categories_5
+                                                                                                                            ? subCat4.sub_categories_5.reduce(
+                                                                                                                                (subSum5, subCat5) =>
+                                                                                                                                    subSum5 +
+                                                                                                                                    (subCat5.item_details
+                                                                                                                                        ? subCat5.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                        : 0
+                                                                                                                                    ),
+                                                                                                                                0
+                                                                                                                            )
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                    ),
+                                                                                                                0
+                                                                                                            )
+                                                                                                            : 0
+                                                                                                        )
+                                                                                                    ),
+                                                                                                0
+                                                                                            )
+                                                                                            : 0
+                                                                                        )
+                                                                                    )
+                                                                                }
+                                                                            </td>
+                                                                            {/* <td></td> */}
+
+
+                                                                        </tr>
+
+                                                                        {/* Render material_type_details rows for sub-category 2 */}
+                                                                        {openSubCategory2Id === subCategory.id &&
+                                                                            subCategory.item_details &&
+                                                                            subCategory.item_details.map((item, itemIdx) => (
+                                                                                <tr key={item.id} className="labour">
+                                                                                    <td></td>
+                                                                                    <td>
+                                                                                        {/* {catIdx + 1}.{itemIdx + 1} */}
+                                                                                    </td>
+                                                                                    <td></td>
+                                                                                    <td></td>
+                                                                                    <td></td>
+                                                                                    <td>{item.type}</td>
+                                                                                    <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
+                                                                                    {/* Add other columns as needed */}
+                                                                                    {/* <td>
+                                                                                    {item.factor || "0"}
+
+                                                                                </td> */}
+                                                                                    <td>
+                                                                                        {item.uom || "-"}
+                                                                                    </td>
+                                                                                    {/* <td></td> */}
+                                                                                    <td>
+                                                                                        {item.excl_wastage_qty || "0"}
+
+                                                                                    </td>
+                                                                                    {/* <td>
+                                                                                    {item.wastage || "0"}
+
+                                                                                </td> */}
+                                                                                    {/* <td>
+                                                                                    {item.incl_wastage_qty || "0"}
+
+                                                                                </td> */}
+                                                                                    <td>
+                                                                                        {item.rate || "0"}
+
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        {item.amount || "0"}
+
+                                                                                    </td>
+                                                                                    {/* <td>
+                                                                                    {item.cost_per_unit || "0"}
+
+                                                                                </td> */}
+
+                                                                                </tr>
+                                                                            ))
+                                                                        }
+                                                                        {/* ...sub-category 3 rendering... */}
+
+                                                                        {/* Render Sub-Category 3 for each Sub-Category 2 */}
+                                                                        {openSubCategory2Id === subCategory.id &&
+                                                                            subCategory.sub_categories_3 &&
+                                                                            subCategory.sub_categories_3.length > 0 &&
+                                                                            subCategory.sub_categories_3.map(
+                                                                                (subCategory3, subCategory3Idx) => (
+                                                                                    <React.Fragment key={subCategory3.id}>
+                                                                                        <tr className="sub-category-lvl3">
+                                                                                            {/* {console.log("sub3", subCategory3)}
+                                            {console.log(
+                                              "sub4",
+                                              subCategory3.sub_categories_4
+                                            )}
+                                            {console.log(
+                                              "sub3id:",
+                                              openSubCategory3Id
+                                            )} */}
+                                                                                            <td>
+                                                                                                <button
+                                                                                                    className="btn btn-link p-0"
+                                                                                                    onClick={() =>
+                                                                                                        toggleSubCategory3(
+                                                                                                            subCategory3.id
+                                                                                                        )
+                                                                                                    }
+                                                                                                    aria-label="Toggle sub-category 3 visibility"
+                                                                                                >
+                                                                                                    {openSubCategory3Id ===
+                                                                                                        subCategory3.id ? (
+                                                                                                        <svg
+                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                            width="24"
+                                                                                                            height="24"
+                                                                                                            viewBox="0 0 24 24"
+                                                                                                            fill=" #e0e0e0"
+                                                                                                            stroke="black"
+                                                                                                            strokeWidth="1"
+                                                                                                            strokeLinecap="round"
+                                                                                                            strokeLinejoin="round"
+                                                                                                        >
+                                                                                                            {/* Square */}
+                                                                                                            <rect
+                                                                                                                x="3"
+                                                                                                                y="3"
+                                                                                                                width="18"
+                                                                                                                height="20"
+                                                                                                                rx="1"
+                                                                                                                ry="1"
+                                                                                                            />
+                                                                                                            {/* Minus Icon */}
+                                                                                                            <line
+                                                                                                                x1="8"
+                                                                                                                y1="12"
+                                                                                                                x2="16"
+                                                                                                                y2="12"
+                                                                                                            />
+                                                                                                        </svg>
+                                                                                                    ) : (
+                                                                                                        <svg
+                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                            width="24"
+                                                                                                            height="24"
+                                                                                                            viewBox="0 0 24 24"
+                                                                                                            fill=" #e0e0e0"
+                                                                                                            stroke="black"
+                                                                                                            strokeWidth="1"
+                                                                                                            strokeLinecap="round"
+                                                                                                            strokeLinejoin="round"
+                                                                                                        >
+                                                                                                            {/* Square */}
+                                                                                                            <rect
+                                                                                                                x="3"
+                                                                                                                y="3"
+                                                                                                                width="18"
+                                                                                                                height="20"
+                                                                                                                rx="1"
+                                                                                                                ry="1"
+                                                                                                            />
+                                                                                                            {/* Plus Icon */}
+                                                                                                            <line
+                                                                                                                x1="12"
+                                                                                                                y1="8"
+                                                                                                                x2="12"
+                                                                                                                y2="16"
+                                                                                                            />
+                                                                                                            <line
+                                                                                                                x1="8"
+                                                                                                                y1="12"
+                                                                                                                x2="16"
+                                                                                                                y2="12"
+                                                                                                            />
+                                                                                                        </svg>
+                                                                                                    )}
+                                                                                                </button>
+                                                                                            </td>
+                                                                                            <td></td>
+                                                                                            <td>Sub-Category Level 3</td>
+                                                                                            <td>{subCategory3.name}</td>
+                                                                                            <td>
+                                                                                                {subCategory3.estimation_item.location || "-"}
+                                                                                            </td>
+                                                                                            <td>
+
+                                                                                            </td>
+                                                                                            <td>
+
+                                                                                                {subCategory.estimation_item.name || "-"}
+                                                                                            </td>
+
+
+                                                                                            <td>
+                                                                                                {subCategory.estimation_item.uom || "-"}
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                {subCategory.estimation_item.qty || "-"}
+
+                                                                                            </td>
+                                                                                            {/* <td></td>
+                                                                                        <td></td> */}
+                                                                                            <td></td>
+                                                                                            <td>
+                                                                                                {
+                                                                                                    (
+                                                                                                        // Sum direct material_type_details amounts for level 3
+                                                                                                        (subCategory3.item_details
+                                                                                                            ? subCategory3.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                            : 0
+                                                                                                        )
+                                                                                                        +
+                                                                                                        // Sum all sub-category 4 material_type_details amounts for level 3
+                                                                                                        (subCategory3.sub_categories_4
+                                                                                                            ? subCategory3.sub_categories_4.reduce(
+                                                                                                                (subSum, subCat4) =>
+                                                                                                                    subSum +
+                                                                                                                    (
+                                                                                                                        // Sum direct material_type_details for level 4
+                                                                                                                        (subCat4.item_details
+                                                                                                                            ? subCat4.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                        +
+                                                                                                                        // Sum all sub-category 5 material_type_details for level 4
+                                                                                                                        (subCat4.sub_categories_5
+                                                                                                                            ? subCat4.sub_categories_5.reduce(
+                                                                                                                                (subSum5, subCat5) =>
+                                                                                                                                    subSum5 +
+                                                                                                                                    (subCat5.item_details
+                                                                                                                                        ? subCat5.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                        : 0
+                                                                                                                                    ),
+                                                                                                                                0
+                                                                                                                            )
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                    ),
+                                                                                                                0
+                                                                                                            )
+                                                                                                            : 0
+                                                                                                        )
+                                                                                                    )
+                                                                                                }
+                                                                                            </td>
+                                                                                            {/* <td></td> */}
+
+                                                                                        </tr>
+
+                                                                                        {/* Render material_type_details rows for sub-category 3 */}
+                                                                                        {openSubCategory3Id === subCategory3.id &&
+                                                                                            subCategory3.item_details &&
+                                                                                            subCategory3.item_details.map((item, itemIdx) => (
+                                                                                                <tr key={item.id} className="labour">
+                                                                                                    <td></td>
+                                                                                                    <td>
+                                                                                                        {/* {catIdx + 1}.{itemIdx + 1} */}
+                                                                                                    </td>
+                                                                                                    <td></td>
+                                                                                                    <td></td>
+                                                                                                    <td></td>
+                                                                                                    <td>{item.type}</td>
+                                                                                                    <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
+                                                                                                    {/* Add other columns as needed */}
+                                                                                                    {/* <td>
                                                                                                     {item.factor || "0"}
 
-                                                                                                </td>
-                                                                                                <td>
-                                                                                                    {item.uom || "-"}
-                                                                                                </td>
-                                                                                                {/* <td></td> */}
-                                                                                                <td>
-                                                                                                    {item.excl_wastage_qty || "0"}
+                                                                                                </td> */}
+                                                                                                    <td>
+                                                                                                        {item.uom || "-"}
+                                                                                                    </td>
+                                                                                                    {/* <td></td> */}
+                                                                                                    <td>
+                                                                                                        {item.excl_wastage_qty || "0"}
 
-                                                                                                </td>
-                                                                                                <td>
+                                                                                                    </td>
+                                                                                                    {/* <td>
                                                                                                     {item.wastage || "0"}
 
                                                                                                 </td>
                                                                                                 <td>
                                                                                                     {item.incl_wastage_qty || "0"}
 
-                                                                                                </td>
-                                                                                                <td>
-                                                                                                    {item.rate || "0"}
+                                                                                                </td> */}
+                                                                                                    <td>
+                                                                                                        {item.rate || "0"}
 
-                                                                                                </td>
-                                                                                                <td>
-                                                                                                    {item.amount || "0"}
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        {item.amount || "0"}
 
-                                                                                                </td>
-                                                                                                <td>
+                                                                                                    </td>
+                                                                                                    {/* <td>
                                                                                                     {item.cost_per_unit || "0"}
 
-                                                                                                </td>
+                                                                                                </td> */}
 
-                                                                                            </tr>
-                                                                                        ))
-                                                                                    }
+                                                                                                </tr>
+                                                                                            ))
+                                                                                        }
 
 
-                                                                                    {/* Render Level 4 for each BOQ level 3 */}
-                                                                                    {openSubCategory3Id ===
-                                                                                        subCategory3.id &&
-                                                                                        subCategory3.sub_categories_4 &&
-                                                                                        subCategory3.sub_categories_4
-                                                                                            .length > 0 &&
-                                                                                        subCategory3.sub_categories_4.map(
-                                                                                            (subCategory4, subCategory4Idx) => (
-                                                                                                <React.Fragment
-                                                                                                    key={subCategory4.id}
-                                                                                                >
-                                                                                                    <tr className="sub-category-lvl4">
-                                                                                                        {/* {console.log("sub3",subCategory3)}
+                                                                                        {/* Render Level 4 for each BOQ level 3 */}
+                                                                                        {openSubCategory3Id ===
+                                                                                            subCategory3.id &&
+                                                                                            subCategory3.sub_categories_4 &&
+                                                                                            subCategory3.sub_categories_4
+                                                                                                .length > 0 &&
+                                                                                            subCategory3.sub_categories_4.map(
+                                                                                                (subCategory4, subCategory4Idx) => (
+                                                                                                    <React.Fragment
+                                                                                                        key={subCategory4.id}
+                                                                                                    >
+                                                                                                        <tr className="sub-category-lvl4">
+                                                                                                            {/* {console.log("sub3",subCategory3)}
                                                                             {console.log("sub4",subCategory3.sub_categories_4)}
                                                                             {console.log("sub3id:", openSubCategory3Id)} */}
-                                                                                                        <td>
-                                                                                                            <button
-                                                                                                                className="btn btn-link p-0"
-                                                                                                                onClick={() =>
-                                                                                                                    toggleSubCategory4(
-                                                                                                                        subCategory4.id
+                                                                                                            <td>
+                                                                                                                <button
+                                                                                                                    className="btn btn-link p-0"
+                                                                                                                    onClick={() =>
+                                                                                                                        toggleSubCategory4(
+                                                                                                                            subCategory4.id
+                                                                                                                        )
+                                                                                                                    }
+                                                                                                                    aria-label="Toggle sub-category 3 visibility"
+                                                                                                                >
+                                                                                                                    {openSubCategory4Id ===
+                                                                                                                        subCategory4.id ? (
+                                                                                                                        <svg
+                                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                                            width="24"
+                                                                                                                            height="24"
+                                                                                                                            viewBox="0 0 24 24"
+                                                                                                                            fill=" #e0e0e0"
+                                                                                                                            stroke="black"
+                                                                                                                            strokeWidth="1"
+                                                                                                                            strokeLinecap="round"
+                                                                                                                            strokeLinejoin="round"
+                                                                                                                        >
+                                                                                                                            {/* Square */}
+                                                                                                                            <rect
+                                                                                                                                x="3"
+                                                                                                                                y="3"
+                                                                                                                                width="18"
+                                                                                                                                height="20"
+                                                                                                                                rx="1"
+                                                                                                                                ry="1"
+                                                                                                                            />
+                                                                                                                            {/* Minus Icon */}
+                                                                                                                            <line
+                                                                                                                                x1="8"
+                                                                                                                                y1="12"
+                                                                                                                                x2="16"
+                                                                                                                                y2="12"
+                                                                                                                            />
+                                                                                                                        </svg>
+                                                                                                                    ) : (
+                                                                                                                        <svg
+                                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                                            width="24"
+                                                                                                                            height="24"
+                                                                                                                            viewBox="0 0 24 24"
+                                                                                                                            fill=" #e0e0e0"
+                                                                                                                            stroke="black"
+                                                                                                                            strokeWidth="1"
+                                                                                                                            strokeLinecap="round"
+                                                                                                                            strokeLinejoin="round"
+                                                                                                                        >
+                                                                                                                            {/* Square */}
+                                                                                                                            <rect
+                                                                                                                                x="3"
+                                                                                                                                y="3"
+                                                                                                                                width="18"
+                                                                                                                                height="20"
+                                                                                                                                rx="1"
+                                                                                                                                ry="1"
+                                                                                                                            />
+                                                                                                                            {/* Plus Icon */}
+                                                                                                                            <line
+                                                                                                                                x1="12"
+                                                                                                                                y1="8"
+                                                                                                                                x2="12"
+                                                                                                                                y2="16"
+                                                                                                                            />
+                                                                                                                            <line
+                                                                                                                                x1="8"
+                                                                                                                                y1="12"
+                                                                                                                                x2="16"
+                                                                                                                                y2="12"
+                                                                                                                            />
+                                                                                                                        </svg>
+                                                                                                                    )}
+                                                                                                                </button>
+                                                                                                            </td>
+                                                                                                            <td></td>
+                                                                                                            <td>
+                                                                                                                Sub-Category Level 4
+                                                                                                            </td>
+                                                                                                            <td>{subCategory4.name}</td>
+                                                                                                            <td>
+                                                                                                                {subCategory3.estimation_item.location || "-"}
+                                                                                                            </td>
+                                                                                                            <td>
+
+                                                                                                            </td>
+                                                                                                            <td>
+
+                                                                                                                {subCategory.estimation_item.name || "-"}
+                                                                                                            </td>
+                                                                                                            {/* <td>
+
+                                                                                                        </td> */}
+                                                                                                            <td>
+                                                                                                                {subCategory.estimation_item.uom || "-"}
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                {subCategory.estimation_item.qty || "-"}
+                                                                                                            </td>
+                                                                                                            {/* <td></td>
+                                                                                                        <td></td> */}
+                                                                                                            <td></td>
+                                                                                                            <td>
+                                                                                                                {
+                                                                                                                    (
+                                                                                                                        // Sum direct material_type_details amounts for level 4
+                                                                                                                        (subCategory4.item_details
+                                                                                                                            ? subCategory4.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                        +
+                                                                                                                        // Sum all sub-category 5 material_type_details amounts for level 4
+                                                                                                                        (subCategory4.sub_categories_5
+                                                                                                                            ? subCategory4.sub_categories_5.reduce(
+                                                                                                                                (subSum, subCat5) =>
+                                                                                                                                    subSum +
+                                                                                                                                    (subCat5.item_details
+                                                                                                                                        ? subCat5.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                        : 0
+                                                                                                                                    ),
+                                                                                                                                0
+                                                                                                                            )
+                                                                                                                            : 0
+                                                                                                                        )
                                                                                                                     )
                                                                                                                 }
-                                                                                                                aria-label="Toggle sub-category 3 visibility"
-                                                                                                            >
-                                                                                                                {openSubCategory4Id ===
-                                                                                                                    subCategory4.id ? (
-                                                                                                                    <svg
-                                                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                                                        width="24"
-                                                                                                                        height="24"
-                                                                                                                        viewBox="0 0 24 24"
-                                                                                                                        fill=" #e0e0e0"
-                                                                                                                        stroke="black"
-                                                                                                                        strokeWidth="1"
-                                                                                                                        strokeLinecap="round"
-                                                                                                                        strokeLinejoin="round"
-                                                                                                                    >
-                                                                                                                        {/* Square */}
-                                                                                                                        <rect
-                                                                                                                            x="3"
-                                                                                                                            y="3"
-                                                                                                                            width="18"
-                                                                                                                            height="20"
-                                                                                                                            rx="1"
-                                                                                                                            ry="1"
-                                                                                                                        />
-                                                                                                                        {/* Minus Icon */}
-                                                                                                                        <line
-                                                                                                                            x1="8"
-                                                                                                                            y1="12"
-                                                                                                                            x2="16"
-                                                                                                                            y2="12"
-                                                                                                                        />
-                                                                                                                    </svg>
-                                                                                                                ) : (
-                                                                                                                    <svg
-                                                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                                                        width="24"
-                                                                                                                        height="24"
-                                                                                                                        viewBox="0 0 24 24"
-                                                                                                                        fill=" #e0e0e0"
-                                                                                                                        stroke="black"
-                                                                                                                        strokeWidth="1"
-                                                                                                                        strokeLinecap="round"
-                                                                                                                        strokeLinejoin="round"
-                                                                                                                    >
-                                                                                                                        {/* Square */}
-                                                                                                                        <rect
-                                                                                                                            x="3"
-                                                                                                                            y="3"
-                                                                                                                            width="18"
-                                                                                                                            height="20"
-                                                                                                                            rx="1"
-                                                                                                                            ry="1"
-                                                                                                                        />
-                                                                                                                        {/* Plus Icon */}
-                                                                                                                        <line
-                                                                                                                            x1="12"
-                                                                                                                            y1="8"
-                                                                                                                            x2="12"
-                                                                                                                            y2="16"
-                                                                                                                        />
-                                                                                                                        <line
-                                                                                                                            x1="8"
-                                                                                                                            y1="12"
-                                                                                                                            x2="16"
-                                                                                                                            y2="12"
-                                                                                                                        />
-                                                                                                                    </svg>
-                                                                                                                )}
-                                                                                                            </button>
-                                                                                                        </td>
-                                                                                                        <td></td>
-                                                                                                        <td>
-                                                                                                            Sub-Category Level 4
-                                                                                                        </td>
-                                                                                                        <td>{subCategory4.name}</td>
-                                                                                                        <td>
-                                                                                                            {subCategory3.estimation_item.location || "-"}
-                                                                                                        </td>
-                                                                                                        <td>
-
-                                                                                                        </td>
-                                                                                                        <td>
-
-                                                                                                            {subCategory.estimation_item.name || "-"}
-                                                                                                        </td>
-                                                                                                        <td>
-
-                                                                                                        </td>
-                                                                                                        <td>
-                                                                                                            {subCategory.estimation_item.uom || "-"}
-                                                                                                        </td>
-                                                                                                        <td>
-                                                                                                            {subCategory.estimation_item.qty || "-"}
-                                                                                                        </td>
-                                                                                                        <td></td>
-                                                                                                        <td></td>
-                                                                                                        <td></td>
-                                                                                                        <td>
-                                                                                                            {
-                                                                                                                (
-                                                                                                                    // Sum direct material_type_details amounts for level 4
-                                                                                                                    (subCategory4.item_details
-                                                                                                                        ? subCategory4.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
-                                                                                                                        : 0
-                                                                                                                    )
-                                                                                                                    +
-                                                                                                                    // Sum all sub-category 5 material_type_details amounts for level 4
-                                                                                                                    (subCategory4.sub_categories_5
-                                                                                                                        ? subCategory4.sub_categories_5.reduce(
-                                                                                                                            (subSum, subCat5) =>
-                                                                                                                                subSum +
-                                                                                                                                (subCat5.item_details
-                                                                                                                                    ? subCat5.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
-                                                                                                                                    : 0
-                                                                                                                                ),
-                                                                                                                            0
-                                                                                                                        )
-                                                                                                                        : 0
-                                                                                                                    )
-                                                                                                                )
-                                                                                                            }
-                                                                                                        </td>
-                                                                                                        <td></td>
+                                                                                                            </td>
+                                                                                                            {/* <td></td> */}
 
 
-                                                                                                    </tr>
+                                                                                                        </tr>
 
 
-                                                                                                    {/* Render material_type_details rows for sub-category 3 */}
-                                                                                                    {openSubCategory4Id === subCategory4.id &&
-                                                                                                        subCategory4.item_details &&
-                                                                                                        subCategory4.item_details.map((item, itemIdx) => (
-                                                                                                            <tr key={item.id} className="labour">
+                                                                                                        {/* Render material_type_details rows for sub-category 3 */}
+                                                                                                        {openSubCategory4Id === subCategory4.id &&
+                                                                                                            subCategory4.item_details &&
+                                                                                                            subCategory4.item_details.map((item, itemIdx) => (
+                                                                                                                <tr key={item.id} className="labour">
 
-                                                                                                                <td></td>
-                                                                                                                <td>
-                                                                                                                    {/* {catIdx + 1}.{itemIdx + 1} */}
-                                                                                                                </td>
-                                                                                                                <td></td>
-                                                                                                                <td></td>
-                                                                                                                <td></td>
-                                                                                                                <td>{item.type}</td>
-                                                                                                                <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
-                                                                                                                {/* Add other columns as needed */}
-                                                                                                                <td>
+                                                                                                                    <td></td>
+                                                                                                                    <td>
+                                                                                                                        {/* {catIdx + 1}.{itemIdx + 1} */}
+                                                                                                                    </td>
+                                                                                                                    <td></td>
+                                                                                                                    <td></td>
+                                                                                                                    <td></td>
+                                                                                                                    <td>{item.type}</td>
+                                                                                                                    <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
+                                                                                                                    {/* Add other columns as needed */}
+                                                                                                                    {/* <td>
                                                                                                                     {item.factor || "0"}
 
-                                                                                                                </td>
-                                                                                                                <td>
-                                                                                                                    {item.uom || "-"}
-                                                                                                                </td>
-                                                                                                                {/* <td></td> */}
-                                                                                                                <td>
-                                                                                                                    {item.excl_wastage_qty || "0"}
+                                                                                                                </td> */}
+                                                                                                                    <td>
+                                                                                                                        {item.uom || "-"}
+                                                                                                                    </td>
+                                                                                                                    {/* <td></td> */}
+                                                                                                                    <td>
+                                                                                                                        {item.excl_wastage_qty || "0"}
 
-                                                                                                                </td>
-                                                                                                                <td>
+                                                                                                                    </td>
+                                                                                                                    {/* <td>
                                                                                                                     {item.wastage || "0"}
 
                                                                                                                 </td>
                                                                                                                 <td>
                                                                                                                     {item.incl_wastage_qty || "0"}
 
-                                                                                                                </td>
-                                                                                                                <td>
-                                                                                                                    {item.rate || "0"}
+                                                                                                                </td> */}
+                                                                                                                    <td>
+                                                                                                                        {item.rate || "0"}
 
-                                                                                                                </td>
-                                                                                                                <td>
-                                                                                                                    {item.amount || "0"}
+                                                                                                                    </td>
+                                                                                                                    <td>
+                                                                                                                        {item.amount || "0"}
 
-                                                                                                                </td>
-                                                                                                                <td>
+                                                                                                                    </td>
+                                                                                                                    {/* <td>
                                                                                                                     {item.cost_per_unit || "0"}
 
-                                                                                                                </td>
+                                                                                                                </td> */}
 
 
+                                                                                                                </tr>
+                                                                                                            ))
+                                                                                                        }
 
-
-
-
-
-
-                                                                                                            </tr>
-                                                                                                        ))
-                                                                                                    }
-
-                                                                                                    {/* Render Level 5 for each BOQ level 4*/}
-                                                                                                    {openSubCategory4Id ===
-                                                                                                        subCategory4.id &&
-                                                                                                        subCategory4.sub_categories_5 &&
-                                                                                                        subCategory4
-                                                                                                            .sub_categories_5.length >
-                                                                                                        0 &&
-                                                                                                        subCategory4.sub_categories_5.map(
-                                                                                                            (subCategory5, subCategory5Idx) => (
-                                                                                                                <React.Fragment
-                                                                                                                    key={subCategory5.id}
-                                                                                                                >
-                                                                                                                    <tr className="sub-category-lvl5">
-                                                                                                                        {console.log(
-                                                                                                                            "sub5",
-                                                                                                                            subCategory5
-                                                                                                                        )}
-                                                                                                                        {/* {console.log("sub4",subCategory3.sub_categories_4)}
+                                                                                                        {/* Render Level 5 for each BOQ level 4*/}
+                                                                                                        {openSubCategory4Id ===
+                                                                                                            subCategory4.id &&
+                                                                                                            subCategory4.sub_categories_5 &&
+                                                                                                            subCategory4
+                                                                                                                .sub_categories_5.length >
+                                                                                                            0 &&
+                                                                                                            subCategory4.sub_categories_5.map(
+                                                                                                                (subCategory5, subCategory5Idx) => (
+                                                                                                                    <React.Fragment
+                                                                                                                        key={subCategory5.id}
+                                                                                                                    >
+                                                                                                                        <tr className="sub-category-lvl5">
+                                                                                                                            {console.log(
+                                                                                                                                "sub5",
+                                                                                                                                subCategory5
+                                                                                                                            )}
+                                                                                                                            {/* {console.log("sub4",subCategory3.sub_categories_4)}
                                                                             {console.log("sub3id:", openSubCategory3Id)} */}
-                                                                                                                        <td>
-                                                                                                                            <button
-                                                                                                                                className="btn btn-link p-0"
-                                                                                                                                onClick={() =>
-                                                                                                                                    toggleSubCategory5(
-                                                                                                                                        subCategory5.id
-                                                                                                                                    )
+                                                                                                                            <td>
+                                                                                                                                <button
+                                                                                                                                    className="btn btn-link p-0"
+                                                                                                                                    onClick={() =>
+                                                                                                                                        toggleSubCategory5(
+                                                                                                                                            subCategory5.id
+                                                                                                                                        )
+                                                                                                                                    }
+                                                                                                                                    aria-label="Toggle sub-category 3 visibility"
+                                                                                                                                >
+                                                                                                                                    {openSubCategory5Id ===
+                                                                                                                                        subCategory5.id ? (
+                                                                                                                                        <svg
+                                                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                                                            width="24"
+                                                                                                                                            height="24"
+                                                                                                                                            viewBox="0 0 24 24"
+                                                                                                                                            fill=" #e0e0e0"
+                                                                                                                                            stroke="black"
+                                                                                                                                            strokeWidth="1"
+                                                                                                                                            strokeLinecap="round"
+                                                                                                                                            strokeLinejoin="round"
+                                                                                                                                        >
+                                                                                                                                            {/* Square */}
+                                                                                                                                            <rect
+                                                                                                                                                x="3"
+                                                                                                                                                y="3"
+                                                                                                                                                width="18"
+                                                                                                                                                height="20"
+                                                                                                                                                rx="1"
+                                                                                                                                                ry="1"
+                                                                                                                                            />
+                                                                                                                                            {/* Minus Icon */}
+                                                                                                                                            <line
+                                                                                                                                                x1="8"
+                                                                                                                                                y1="12"
+                                                                                                                                                x2="16"
+                                                                                                                                                y2="12"
+                                                                                                                                            />
+                                                                                                                                        </svg>
+                                                                                                                                    ) : (
+                                                                                                                                        <svg
+                                                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                                                            width="24"
+                                                                                                                                            height="24"
+                                                                                                                                            viewBox="0 0 24 24"
+                                                                                                                                            fill=" #e0e0e0"
+                                                                                                                                            stroke="black"
+                                                                                                                                            strokeWidth="1"
+                                                                                                                                            strokeLinecap="round"
+                                                                                                                                            strokeLinejoin="round"
+                                                                                                                                        >
+                                                                                                                                            {/* Square */}
+                                                                                                                                            <rect
+                                                                                                                                                x="3"
+                                                                                                                                                y="3"
+                                                                                                                                                width="18"
+                                                                                                                                                height="20"
+                                                                                                                                                rx="1"
+                                                                                                                                                ry="1"
+                                                                                                                                            />
+                                                                                                                                            {/* Plus Icon */}
+                                                                                                                                            <line
+                                                                                                                                                x1="12"
+                                                                                                                                                y1="8"
+                                                                                                                                                x2="12"
+                                                                                                                                                y2="16"
+                                                                                                                                            />
+                                                                                                                                            <line
+                                                                                                                                                x1="8"
+                                                                                                                                                y1="12"
+                                                                                                                                                x2="16"
+                                                                                                                                                y2="12"
+                                                                                                                                            />
+                                                                                                                                        </svg>
+                                                                                                                                    )}
+                                                                                                                                </button>
+                                                                                                                            </td>
+                                                                                                                            <td></td>
+                                                                                                                            <td>
+                                                                                                                                Sub-Category Level 5
+                                                                                                                            </td>
+                                                                                                                            <td>{
+                                                                                                                                subCategory5.name
+                                                                                                                            }</td>
+                                                                                                                            <td>
+
+                                                                                                                                {subCategory3.estimation_item.location || "-"}
+                                                                                                                            </td>
+                                                                                                                            <td>
+
+                                                                                                                            </td>
+                                                                                                                            <td>
+                                                                                                                                {subCategory.estimation_item.name || "-"}
+                                                                                                                            </td>
+
+                                                                                                                            <td>
+                                                                                                                                {subCategory.estimation_item.uom || "-"}
+                                                                                                                            </td>
+                                                                                                                            <td>
+                                                                                                                                {subCategory.estimation_item.qty || "-"}
+                                                                                                                            </td>
+
+                                                                                                                            <td></td>
+                                                                                                                            <td>
+                                                                                                                                {
+                                                                                                                                    subCategory5.item_details
+                                                                                                                                        ? subCategory5.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                        : 0
                                                                                                                                 }
-                                                                                                                                aria-label="Toggle sub-category 3 visibility"
-                                                                                                                            >
-                                                                                                                                {openSubCategory5Id ===
-                                                                                                                                    subCategory5.id ? (
-                                                                                                                                    <svg
-                                                                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                                                                        width="24"
-                                                                                                                                        height="24"
-                                                                                                                                        viewBox="0 0 24 24"
-                                                                                                                                        fill=" #e0e0e0"
-                                                                                                                                        stroke="black"
-                                                                                                                                        strokeWidth="1"
-                                                                                                                                        strokeLinecap="round"
-                                                                                                                                        strokeLinejoin="round"
-                                                                                                                                    >
-                                                                                                                                        {/* Square */}
-                                                                                                                                        <rect
-                                                                                                                                            x="3"
-                                                                                                                                            y="3"
-                                                                                                                                            width="18"
-                                                                                                                                            height="20"
-                                                                                                                                            rx="1"
-                                                                                                                                            ry="1"
-                                                                                                                                        />
-                                                                                                                                        {/* Minus Icon */}
-                                                                                                                                        <line
-                                                                                                                                            x1="8"
-                                                                                                                                            y1="12"
-                                                                                                                                            x2="16"
-                                                                                                                                            y2="12"
-                                                                                                                                        />
-                                                                                                                                    </svg>
-                                                                                                                                ) : (
-                                                                                                                                    <svg
-                                                                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                                                                        width="24"
-                                                                                                                                        height="24"
-                                                                                                                                        viewBox="0 0 24 24"
-                                                                                                                                        fill=" #e0e0e0"
-                                                                                                                                        stroke="black"
-                                                                                                                                        strokeWidth="1"
-                                                                                                                                        strokeLinecap="round"
-                                                                                                                                        strokeLinejoin="round"
-                                                                                                                                    >
-                                                                                                                                        {/* Square */}
-                                                                                                                                        <rect
-                                                                                                                                            x="3"
-                                                                                                                                            y="3"
-                                                                                                                                            width="18"
-                                                                                                                                            height="20"
-                                                                                                                                            rx="1"
-                                                                                                                                            ry="1"
-                                                                                                                                        />
-                                                                                                                                        {/* Plus Icon */}
-                                                                                                                                        <line
-                                                                                                                                            x1="12"
-                                                                                                                                            y1="8"
-                                                                                                                                            x2="12"
-                                                                                                                                            y2="16"
-                                                                                                                                        />
-                                                                                                                                        <line
-                                                                                                                                            x1="8"
-                                                                                                                                            y1="12"
-                                                                                                                                            x2="16"
-                                                                                                                                            y2="12"
-                                                                                                                                        />
-                                                                                                                                    </svg>
-                                                                                                                                )}
-                                                                                                                            </button>
-                                                                                                                        </td>
-                                                                                                                        <td></td>
-                                                                                                                        <td>
-                                                                                                                            Sub-Category Level 5
-                                                                                                                        </td>
-                                                                                                                        <td>{
-                                                                                                                            subCategory5.name
-                                                                                                                        }</td>
-                                                                                                                        <td>
-
-                                                                                                                            {subCategory3.estimation_item.location || "-"}
-                                                                                                                        </td>
-                                                                                                                        <td>
-
-                                                                                                                        </td>
-                                                                                                                        <td>
-                                                                                                                            {subCategory.estimation_item.name || "-"}
-                                                                                                                        </td>
-                                                                                                                        <td>
-
-                                                                                                                        </td>
-                                                                                                                        <td>
-                                                                                                                            {subCategory.estimation_item.uom || "-"}
-                                                                                                                        </td>
-                                                                                                                        <td>
-                                                                                                                            {subCategory.estimation_item.qty || "-"}
-                                                                                                                        </td>
-                                                                                                                        <td></td>
-                                                                                                                        <td></td>
-                                                                                                                        <td></td>
-                                                                                                                        <td>
-                                                                                                                            {
-                                                                                                                                subCategory5.item_details
-                                                                                                                                    ? subCategory5.item_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
-                                                                                                                                    : 0
-                                                                                                                            }
-                                                                                                                        </td>
-                                                                                                                        <td></td>
+                                                                                                                            </td>
+                                                                                                                            {/* <td></td> */}
 
 
-                                                                                                                    </tr>
+                                                                                                                        </tr>
 
 
-                                                                                                                    {/* Render material_type_details rows for sub-category 3 */}
-                                                                                                                    {openSubCategory5Id === subCategory5.id &&
-                                                                                                                        subCategory5.item_details &&
-                                                                                                                        subCategory5.item_details.map((item, itemIdx) => (
-                                                                                                                            <tr key={item.id} className="labour">
-                                                                                                                                <td></td>
-                                                                                                                                <td>
-                                                                                                                                    {/* {catIdx + 1}.{itemIdx + 1} */}
-                                                                                                                                </td>
-                                                                                                                                <td></td>
-                                                                                                                                <td></td>
-                                                                                                                                <td></td>
-                                                                                                                                <td>{item.type}</td>
-                                                                                                                                <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
-                                                                                                                                {/* Add other columns as needed */}
-                                                                                                                                <td>
+                                                                                                                        {/* Render material_type_details rows for sub-category 3 */}
+                                                                                                                        {openSubCategory5Id === subCategory5.id &&
+                                                                                                                            subCategory5.item_details &&
+                                                                                                                            subCategory5.item_details.map((item, itemIdx) => (
+                                                                                                                                <tr key={item.id} className="labour">
+                                                                                                                                    <td></td>
+                                                                                                                                    <td>
+                                                                                                                                        {/* {catIdx + 1}.{itemIdx + 1} */}
+                                                                                                                                    </td>
+                                                                                                                                    <td></td>
+                                                                                                                                    <td></td>
+                                                                                                                                    <td></td>
+                                                                                                                                    <td>{item.type}</td>
+                                                                                                                                    <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
+                                                                                                                                    {/* Add other columns as needed */}
+                                                                                                                                    {/* <td>
                                                                                                                                     {item.factor || "0"}
 
-                                                                                                                                </td>
-                                                                                                                                <td>
-                                                                                                                                    {item.uom || "-"}
-                                                                                                                                </td>
-                                                                                                                                {/* <td></td> */}
-                                                                                                                                <td>
-                                                                                                                                    {item.excl_wastage_qty || "0"}
+                                                                                                                                </td> */}
+                                                                                                                                    <td>
+                                                                                                                                        {item.uom || "-"}
+                                                                                                                                    </td>
+                                                                                                                                    {/* <td></td> */}
+                                                                                                                                    <td>
+                                                                                                                                        {item.excl_wastage_qty || "0"}
 
-                                                                                                                                </td>
-                                                                                                                                <td>
+                                                                                                                                    </td>
+                                                                                                                                    {/* <td>
                                                                                                                                     {item.wastage || "0"}
 
                                                                                                                                 </td>
                                                                                                                                 <td>
                                                                                                                                     {item.incl_wastage_qty || "0"}
 
-                                                                                                                                </td>
-                                                                                                                                <td>
-                                                                                                                                    {item.rate || "0"}
+                                                                                                                                </td> */}
+                                                                                                                                    <td>
+                                                                                                                                        {item.rate || "0"}
 
-                                                                                                                                </td>
-                                                                                                                                <td>
-                                                                                                                                    {item.amount || "0"}
+                                                                                                                                    </td>
+                                                                                                                                    <td>
+                                                                                                                                        {item.amount || "0"}
 
-                                                                                                                                </td>
-                                                                                                                                <td>
+                                                                                                                                    </td>
+                                                                                                                                    {/* <td>
                                                                                                                                     {item.cost_per_unit || "0"}
 
-                                                                                                                                </td>
-                                                                                                                            </tr>
-                                                                                                                        ))
-                                                                                                                    }
+                                                                                                                                </td> */}
+                                                                                                                                </tr>
+                                                                                                                            ))
+                                                                                                                        }
 
 
 
-                                                                                                                </React.Fragment>
-                                                                                                            )
-                                                                                                        )}
-                                                                                                </React.Fragment>
-                                                                                            )
-                                                                                        )}
-                                                                                </React.Fragment>
-                                                                            )
-                                                                        )}
+                                                                                                                    </React.Fragment>
+                                                                                                                )
+                                                                                                            )}
+                                                                                                    </React.Fragment>
+                                                                                                )
+                                                                                            )}
+                                                                                    </React.Fragment>
+                                                                                )
+                                                                            )}
 
-                                                                    {/* .. */}
-                                                                </React.Fragment>
-                                                            ))}
-                                                        {/* sub level 2 end*/}
-                                                    </React.Fragment>
-                                                ))}
-                                            {/* Conditional rendering for categories under sub-project  end*/}
+                                                                        {/* .. */}
+                                                                    </React.Fragment>
+                                                                ))}
+                                                            {/* sub level 2 end*/}
+                                                        </React.Fragment>
+                                                    ))}
+                                                {/* Conditional rendering for categories under sub-project  end*/}
 
-                                            {/* subProject end */}
-                                        </tbody>
-                                    </table>
+                                                {/* subProject end */}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        {/* )} */}
+                        )}
 
 
 

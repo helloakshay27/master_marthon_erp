@@ -18,15 +18,22 @@ import EstimationQuickFilter from "../components/EstimationQuickFilter";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import CollapsibleCard from "../components/base/Card/CollapsibleCards";
+import { useNavigate } from "react-router-dom";
+import { baseURL } from "../confi/apiDomain";
 
 const EstimationApprovolList = () => {
-  const [settingShow, setSettingShow] = useState(false);
-  const handleSettingClose = () => setSettingShow(false);
-  const [show, setShow] = useState(false);
-  const handleClose = () => setShow(false);
+  const urlParams = new URLSearchParams(location.search);
+  const navigate = useNavigate();
+  const token = urlParams.get("token");
+  const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
+    const [activeTab, setActiveTab] = useState("total"); // State to track the active tab
 
-  const handleSettingModalShow = () => setSettingShow(true);
-  const handleModalShow = () => setShow(true);
+  const [showModal, setShowModal] = useState(false);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchText, setSearchText] = useState("");
+  const [data, setData] = useState(null); // To store the API response
+  const [loading, setLoading] = useState(true); // To manage the loading state
+  const [error, setError] = useState(null); // To store any error that occurs during fetching
 
   // States to store data
   const [companies, setCompanies] = useState([]);
@@ -133,8 +140,71 @@ const EstimationApprovolList = () => {
     value: company.id,
     label: company.company_name
   }));
+  // Fetch company data on component mount
+  useEffect(() => {
+    axios.get(`${baseURL}estimation_details.json?token=${token}`)
+      .then(response => {
+        // setCompanies(response.data.companies);
+        setData(response.data);  // Set the data from the API to state
+        setLoading(false);  // Update the loading state
+      })
+      .catch(error => {
+        console.error('Error fetching company data:', error);
+        setLoading(false);
+      });
+  }, []);
+
+  const fetchFilteredData = async () => {
+    const companyId = selectedCompany?.value || "";
+    const projectId = selectedProject?.value || "";
+    const siteId = selectedSite?.value || "";
+    const wingId = selectedWing?.value || ""
+    try {
+      const response = await axios.get(
+        `${baseURL}estimation_details.json?q[id_eq]=${companyId}&q[projects_id_eq]=${projectId}&q[pms_sites_id_eq]=${siteId}&q[pms_wings_id_eq]=${wingId}&token=${token}`
+      );
+      // setCompanies(response.data.companies);
+      setData(response.data);
+      // setData(response.data);
+    } catch (error) {
+      console.error("Error fetching filtered data:", error);
+    }
+  };
 
 
+  const handleReset = async () => {
+    setSelectedCompany(null);
+    setSelectedProject(null);
+    setSelectedSite(null);
+    setSelectedWing(null)
+    try {
+      const response = await axios.get(
+        `${baseURL}estimation_details.json?token=${token}`
+      );
+      // setCompanies(response.data.companies);
+      setData(response.data); // or setData(response.data) as per your structure
+      // Optionally, reset filter states here as well
+    } catch (error) {
+      console.error("Error fetching initial data:", error);
+    }
+  };
+
+
+  //card filter
+  const fetchFilteredData2 = (status) => {
+    const url = `${baseURL}estimation_detailsjson?token=${token}${status ? `&q[status_eq]=${status}` : ""
+      }`;
+
+    axios
+      .get(url)
+      .then((response) => {
+        setData(response.data);
+        // setMeta(response.data.meta);
+      })
+      .catch((error) => {
+        console.error("Error fetching filtered data:", error);
+      });
+  };
   return (
     <>
       <div className="website-content overflow-auto">
@@ -143,9 +213,9 @@ const EstimationApprovolList = () => {
             <a href="">Home &gt; Engineering &gt; Estimation &gt; Approvals</a>
           </a>
           {/* <h5 className="mt-3">RFQ &amp; Auction Events</h5> */}
-          <div className="material-boxes mt-3">
+          {/* <div className="material-boxes mt-3">
             <div className="container-fluid">
-              <div className="row justify-content-between">
+              <div className="row justify-content-between mt-5">
                 <div className="col-md-2 text-center" style={{ opacity: 1 }}>
                   <div className="content-box">
                     <h4 className="content-box-title">Total</h4>
@@ -184,35 +254,123 @@ const EstimationApprovolList = () => {
                 </div>
               </div>
             </div>
+          </div> */}
+
+<div className="material-boxes mt-4">
+            <div className="container-fluid">
+              <div className="row separteinto6 justify-content-center">
+                <div className="col-md-2 text-center">
+                  <div
+                    // className="content-box tab-button active"
+                    data-tab="total"
+                    className={`content-box tab-button ${activeTab === "total" ? "active" : ""
+                      }`}
+                    onClick={() => {
+                      setActiveTab("total");
+                      fetchFilteredData2("");
+                    }} // Fetch all data (no status filter)
+                  >
+                    <h4 className="content-box-title fw-semibold">Total</h4>
+                    <p className="content-box-sub">{data?.total_count || 0}</p>
+                  </div>
+                </div>
+                <div className="col-md-2 text-center">
+                  <div
+                    // className="content-box tab-button"
+                    data-tab="draft"
+                    className={`content-box tab-button ${activeTab === "draft" ? "active" : ""
+                      }`}
+                    onClick={() => {
+                      setActiveTab("draft");
+                      fetchFilteredData2("draft");
+                    }}
+                  >
+                    <h4 className="content-box-title fw-semibold">
+                      Draft
+                    </h4>
+                    <p className="content-box-sub">{data?.draft_count || 0}</p>
+                  </div>
+                </div>
+                <div className="col-md-2 text-center">
+                  <div
+                    // className="content-box tab-button"
+                    data-tab="pending_to_approve"
+                    className={`content-box tab-button ${activeTab === "pending_to_approve" ? "active" : ""
+                      }`}
+                    onClick={() => {
+                      setActiveTab("pending_to_approve");
+                      fetchFilteredData2("pending_to_approve");
+                    }}
+                  >
+                    <h4 className="content-box-title fw-semibold" title="Received for Verification">
+                      Pending to Approval
+                    </h4>
+                    <p className="content-box-sub">
+                      {data?.pending_to_approval_count || 0}
+                    </p>
+                  </div>
+                </div>
+                <div className="col-md-2 text-center">
+                  <div
+                    // className="content-box tab-button"
+                    data-tab="self-overdue"
+                    className={`content-box tab-button ${activeTab === "approved" ? "active" : ""
+                      }`}
+                    onClick={() => {
+                      setActiveTab("approved");
+                      fetchFilteredData2("approved");
+                    }}
+                  >
+                    <h4 className="content-box-title fw-semibold">Approved</h4>
+                    <p className="content-box-sub">{data?.approved_count || 0}</p>
+                  </div>
+                </div>
+
+                 <div className="col-md-2 text-center">
+                  <div
+                    // className="content-box tab-button"
+                    data-tab="self-overdue"
+                    className={`content-box tab-button ${activeTab === "rejected" ? "active" : ""
+                      }`}
+                    onClick={() => {
+                      setActiveTab("rejected");
+                      fetchFilteredData2("rejected");
+                    }}
+                  >
+                    <h4 className="content-box-title fw-semibold">Reject</h4>
+                    <p className="content-box-sub">{data?.rejected_count || 0}</p>
+                  </div>
+                </div>
+                 <div className="col-md-2 text-center">
+                  <div
+                    // className="content-box tab-button"
+                    data-tab="self-overdue"
+                    className={`content-box tab-button ${activeTab === "updated" ? "active" : ""
+                      }`}
+                    onClick={() => {
+                      setActiveTab("updated");
+                      fetchFilteredData2("updated");
+                    }}
+                  >
+                    <h4 className="content-box-title fw-semibold">Updated</h4>
+                    <p className="content-box-sub">{data?.updated_count || 0}</p>
+                  </div>
+                </div>
+                
+              </div>
+            </div>
           </div>
-          <div className="card mt-3 pb-3">
+
+
+
+
+
+
+          <div className="card mt-5 pb-3">
             {/* <QuickFilter /> */}
             {/* <EstimationQuickFilter/> */}
 
             <CollapsibleCard title="Quick Filter">
-              {/* <div className="card-body pt-0 mt-0">
-                <div className="row my-2 align-items-end">
-                  {["Company", "Project", "Sub-Project", "Wings"].map((label, idx) => (
-                    <div className="col-md-2" key={idx}>
-                      <div className="form-group">
-                        <label>{label}</label>
-                        <select className="form-control form-select" style={{ width: "100%" }}>
-                          <option selected="selected">Alabama</option>
-                          <option>Alaska</option>
-                          <option>California</option>
-                          <option>Delaware</option>
-                          <option>Tennessee</option>
-                          <option>Texas</option>
-                          <option>Washington</option>
-                        </select>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="col-md-2">
-                    <button className="purple-btn2 m-0">Go</button>
-                  </div>
-                </div>
-              </div> */}
               <div className="card-body">
                 <div className="row my-2 align-items-end">
                   {/* Company Dropdown */}
@@ -272,7 +430,8 @@ const EstimationApprovolList = () => {
                   <div className="col-md-2">
                     <button
                       className="purple-btn2 m-0"
-                      onClick={() => console.log("Selected Values:", values)} // Log selected values on button click
+                      onClick={fetchFilteredData}
+                    // onClick={() => console.log("Selected Values:", values)} // Log selected values on button click
                     >
                       Go
                     </button>
@@ -280,36 +439,11 @@ const EstimationApprovolList = () => {
                 </div>
 
               </div>
-              {/* <div className="card-body pt-0 mt-0">
-                    <div className="row my-2 align-items-end">
-                        {["Company", "Project", "Sub-Project", "Wings"].map((label, idx) => (
-                            <div className="col-md-2" key={idx}>
-                                <div className="form-group">
-                                    <label>{label}</label>
-                                    <SingleSelector
-                                        options={options}
-                                        value={values[label]} // Pass current value
-                                        onChange={(selectedOption) => handleChange(label, selectedOption)} // Update state on change
-                                        placeholder={`Select ${label}`} // Dynamic placeholder
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                        <div className="col-md-2">
-                            <button
-                                className="purple-btn2 m-0"
-                                onClick={() => console.log("Selected Values:", values)} // Log selected values on button click
-                            >
-                                Go
-                            </button>
-                        </div>
-                    </div>
-                </div> */}
             </CollapsibleCard>
 
             {/* bulk Action */}
-            <BulkAction />
-            <div className="d-flex mt-3 align-items-end px-3">
+            {/* <BulkAction /> */}
+            <div className="d-flex mt-3 align-items-end px-3 mt-4">
               <div className="col-md-6">
                 <form>
                   <div className="input-group">
@@ -334,108 +468,250 @@ const EstimationApprovolList = () => {
                   </div>
                 </form>
               </div>
-              <div className="col-md-6">
-                <div className="row justify-content-end">
-                  <div className="col-md-5">
-                    <div className="row justify-content-end px-3">
-                      <div className="col-md-3">
-                        {/* <button
-                          className="btn btn-md"
-                          onClick={handleModalShow}
-                        >
-                          <FilterIcon />
-                        </button> */}
-                      </div>
-                      <div className="col-md-3">
-                        {/* <button type="submit" className="btn btn-md">
-                          <StarIcon />
-                        </button> */}
-                      </div>
-                      <div className="col-md-3">
-                        {/* <button
-                          id="downloadButton"
-                          type="submit"
-                          className="btn btn-md"
-                        >
-                          <DownloadIcon />
-                        </button> */}
-                      </div>
-                      <div className="col-md-3">
-                        {/* <button
-                          type="submit"
-                          className="btn btn-md"
-                          onClick={handleSettingModalShow}
-                        >
-                          <SettingIcon
-                            color={"#8B0203"}
-                            style={{ width: "25px", height: "25px" }}
-                          />
-                        </button> */}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-md-4"></div>
+
+            </div>
+
+            <div className="mx-2 mb-5 mt-3">
+              <div className="mx-2">
+                <div className="tbl-container  mt-3" style={{ maxHeight: "500px" }}>
+                  <table className="w-100">
+                    <thead>
+                      <tr>
+                        <th className="text-start">Sr.No.</th>
+                        <th className="text-start">Certifying Company</th>
+                        <th className="text-start">Project</th>
+                        <th className="text-start">Sub-Project</th>
+                        <th className="text-start">Wing</th>
+                        <th className="text-start">Location</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+
+
+
+
+                      {data?.companies?.map((company, companyIndex) =>
+                        company.projects.map((project, projectIndex) =>
+                          project.pms_sites.map((site, siteIndex) =>
+                            site.pms_wings.length > 0
+                              ? site.pms_wings.map((wing, wingIndex) => (
+                                <tr key={`${companyIndex}-${projectIndex}-${siteIndex}-${wingIndex}`}>
+                                  {/* Sr.No. */}
+                                  {wingIndex === 0 && siteIndex === 0 && projectIndex === 0 ? (
+                                    <td className="text-start">{companyIndex + 1}</td>
+                                  ) : (
+                                    <td className="text-start"></td>
+                                  )}
+                                  {/* Company Name */}
+                                  {wingIndex === 0 && siteIndex === 0 && projectIndex === 0 ? (
+                                    <td className="text-start">{company.company_name}</td>
+                                  ) : (
+                                    <td className="text-start"></td>
+                                  )}
+                                  {/* Project Name */}
+                                  {wingIndex === 0 && siteIndex === 0 ? (
+                                    <td className="text-start">
+                                      {project.budget_id ? (
+                                        <a href={`/estimation-creation-details/${project.budget_id}?token=${token}`}
+                                          title={project.budget_status ? `Status: ${project.budget_status}` : ""}
+                                          style={{
+                                            cursor: project.budget_status ? "pointer" : "default",
+                                            // textDecoration: "underline",
+                                            // color: "#8b0203",
+                                            position: "relative"
+                                          }}
+                                        >
+                                          <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                            {project.name}
+                                            {/* {console.log("token inn:",token)} */}
+                                          </span>
+                                        </a>
+                                      ) : (
+                                        <span
+                                          title={project.budget_status ? `Status: ${project.budget_status}` : ""}
+                                          style={{
+                                            cursor: project.budget_status ? "pointer" : "default",
+                                            // textDecoration: "underline",
+                                            // color: "#8b0203",
+                                            position: "relative"
+                                          }}
+                                        >{project.name}</span>
+                                      )}
+                                      {/* <a href={`/details-rate/${project.rate_id}`}>
+                                                                            <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                                {project.name}
+                                                                            </span>
+                                                                        </a> */}
+                                    </td>
+                                  ) : (
+                                    <td className="text-start"></td>
+                                  )}
+                                  {/* Sub-Project Name */}
+                                  {wingIndex === 0 ? (
+                                    <td className="text-start">
+                                      {site.budget_id ? (
+                                        <a href={`/estimation-creation-details/${site.budget_id}?token=${token}`}
+                                          title={site.budget_status ? `Status: ${site.budget_status}` : ""}
+                                          style={{
+                                            cursor: site.status ? "pointer" : "default",
+                                            // textDecoration: "underline",
+                                            // color: "#8b0203",
+                                            position: "relative"
+                                          }}
+                                        >
+                                          <span style={{ color: "#8b0203", textDecoration: "underline" }}
+
+                                          >
+                                            {site.name}
+                                          </span>
+                                        </a>
+                                      ) : (
+                                        <span
+                                          title={site.budget_status ? `Status: ${site.budget_status}` : ""}
+                                          style={{
+                                            cursor: site.status ? "pointer" : "default",
+                                            // textDecoration: "underline",
+                                            // color: "#8b0203",
+                                            position: "relative"
+                                          }}
+                                        >{site.name}</span>
+                                      )}
+
+                                    </td>
+                                  ) : (
+                                    <td className="text-start"></td>
+                                  )}
+                                  {/* Wing Name */}
+                                  <td className="text-start">
+                                    {/* {wing.name} */}
+                                    {wing.budget_id ? (
+                                      // <a href={`/details-rate/${wing.budget_id}?token=${token}`}
+                                      //     title={wing.status ? `Status: ${wing.status}` : ""}
+                                      //     style={{
+                                      //         cursor: wing.status ? "pointer" : "default",
+                                      //         // textDecoration: "underline",
+                                      //         // color: "#8b0203",
+                                      //         position: "relative"
+                                      //     }}
+                                      // >
+                                      <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                        {wing.name}
+                                      </span>
+                                      // </a>
+                                    ) : (
+                                      <span
+                                        title={wing.budget_status ? `Status: ${wing.budget_status}` : ""}
+                                        style={{
+                                          cursor: wing.status ? "pointer" : "default",
+                                          // textDecoration: "underline",
+                                          // color: "#8b0203",
+                                          position: "relative"
+                                        }}
+                                      >{wing.name}</span>
+                                    )}
+                                  </td>
+                                  {/* Location */}
+                                  {/* <td className="text-start"></td> */}
+                                </tr>
+                              ))
+                              : (
+                                <tr key={`${companyIndex}-${projectIndex}-${siteIndex}`}>
+                                  {/* Sr.No. */}
+                                  {siteIndex === 0 && projectIndex === 0 ? (
+                                    <td className="text-start">{companyIndex + 1}</td>
+                                  ) : (
+                                    <td className="text-start"></td>
+                                  )}
+                                  {/* Company Name */}
+                                  {siteIndex === 0 && projectIndex === 0 ? (
+                                    <td className="text-start">{company.company_name}</td>
+                                  ) : (
+                                    <td className="text-start"></td>
+                                  )}
+                                  {/* Project Name */}
+                                  {siteIndex === 0 ? (
+                                    <td className="text-start">
+                                      {project.budget_id ? (
+                                        <a href={`/estimation-creation-details/${project.budget_id}?token=${token}`}
+                                          title={project.budget_status ? `Status: ${project.budget_status}` : ""}
+                                          style={{
+                                            cursor: project.status ? "pointer" : "default",
+                                            // textDecoration: "underline",
+                                            // color: "#8b0203",
+                                            position: "relative"
+                                          }}>
+                                          <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                            {project.name}
+                                          </span>
+                                        </a>
+                                      ) : (
+                                        <span
+                                          title={project.budget_status ? `Status: ${project.status}` : ""}
+                                          style={{
+                                            cursor: project.budget_status ? "pointer" : "default",
+                                            // textDecoration: "underline",
+                                            // color: "#8b0203",
+                                            position: "relative"
+                                          }}
+                                        >{project.name}</span>
+                                      )}
+                                      {/* <a href={`/details-rate/${project.rate_id}`}>
+                                                                            <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                                                                {project.name}
+                                                                            </span>
+                                                                        </a> */}
+                                    </td>
+                                  ) : (
+                                    <td className="text-start"></td>
+                                  )}
+                                  {/* Sub-Project Name */}
+                                  <td className="text-start">
+                                    {site.budget_id ? (
+                                      <a href={`/estimation-creation-details/${site.budget_id}?token=${token}`}
+                                        title={site.budget_status ? `Status: ${site.budget_status}` : ""}
+                                        style={{
+                                          cursor: site.status ? "pointer" : "default",
+                                          // textDecoration: "underline",
+                                          // color: "#8b0203",
+                                          position: "relative"
+                                        }}>
+                                        <span style={{ color: "#8b0203", textDecoration: "underline" }}>
+                                          {site.name}
+                                        </span>
+                                      </a>
+                                    ) : (
+                                      <span
+                                        title={site.budget_status ? `Status: ${site.budget_status}` : ""}
+                                        style={{
+                                          cursor: site.status ? "pointer" : "default",
+                                          // textDecoration: "underline",
+                                          // color: "#8b0203",
+                                          position: "relative"
+                                        }}>{site.name}</span>
+                                    )}
+
+                                  </td>
+                                  {/* Wing Name */}
+                                  <td className="text-start"></td>
+                                  {/* Location */}
+                                  {/* <td className="text-start"></td> */}
+                                </tr>
+                              )
+                          )
+                        )
+                      )}
+
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
-            <div className="">
-              <div className="tbl-container mx-3">
-                <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th><input type="checkbox" name="" id="" className="ms-2" /></th>
-                      <th>Certifying Company</th>
-                      <th>Project</th>
-                      <th>Sub-Project</th>
-                      <th>Wing</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td><input type="checkbox" name="" id="" /></td>
-                      <td>Marathon Next-Gen Realty Limited</td>
-                      <td>Admin -MNRL</td>
-                      <td>Shreeram ceramics</td>
-                      <td>Wing A</td>
-                      <td>STR 1</td>
-                    </tr>
-                    <tr>
-                      <td><input type="checkbox" name="" id="" /></td>
-                      <td>Marathon Next-Gen Realty Limited</td>
-                      <td>Admin -MNRL</td>
-                      <td>Shreeram ceramics</td>
-                      <td>Wing A</td>
-                      <td>STR 1</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div className="row mt-3  px-3">
-              {/* <div className="col-md-3">
-                <div className="form-group">
-                  <label htmlFor="">Rows Per Page</label>
-                  <select
-                    className="form-control form-select per_page"
-                    style={{ width: "100%" }}
-                  >
-                    <option value={10} selected>
-                      10 Rows
-                    </option>
-                    <option value={20}>20 Rows</option>
-                    <option value={50}>50 Rows</option>
-                    <option value={100}>100 Rows</option>
-                  </select>
-                </div>
-              </div> */}
-            </div>
+
           </div>
         </div>
       </div>
 
-      <FilterModal show={show} handleClose={handleClose} />
-      <LayoutModal show={settingShow} onHide={handleSettingClose} />
+
     </>
   );
 }

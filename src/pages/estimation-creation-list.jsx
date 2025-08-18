@@ -227,6 +227,41 @@ const EstimationCreationList = () => {
     navigate("/estimation-creation"); // Navigate to create page
   };
     console.log("data:", data)
+
+     const fetchFilteredData = async () => {
+            const companyId = selectedCompany?.value || "";
+            const projectId = selectedProject?.value || "";
+            const siteId = selectedSite?.value || "";
+            const wingId = selectedWing?.value || ""
+            try {
+                const response = await axios.get(
+                    `${baseURL}estimation_details.json?q[id_eq]=${companyId}&q[projects_id_eq]=${projectId}&q[pms_sites_id_eq]=${siteId}&q[pms_wings_id_eq]=${wingId}&token=${token}`
+                );
+                setCompanies(response.data.companies);
+                setData(response.data); 
+                // setData(response.data);
+            } catch (error) {
+                console.error("Error fetching filtered data:", error);
+            }
+        };
+    
+    
+        const handleReset = async () => {
+            setSelectedCompany(null);
+            setSelectedProject(null);
+            setSelectedSite(null);
+            setSelectedWing(null)
+            try {
+                const response = await axios.get(
+                    `${baseURL}estimation_details.json?token=${token}`
+                );
+                setCompanies(response.data.companies);
+                setData(response.data); // or setData(response.data) as per your structure
+                // Optionally, reset filter states here as well
+            } catch (error) {
+                console.error("Error fetching initial data:", error);
+            }
+        };
     return (
         <>
 
@@ -299,7 +334,8 @@ const EstimationCreationList = () => {
                                     <div className="col-md-2">
                                         <button
                                             className="purple-btn2 m-0"
-                                            onClick={() => console.log("Selected Values:", values)} // Log selected values on button click
+                                             onClick={fetchFilteredData}
+                                            // onClick={() => console.log("Selected Values:", values)} // Log selected values on button click
                                         >
                                             Go
                                         </button>
@@ -482,9 +518,9 @@ const EstimationCreationList = () => {
                                                                         <td className="text-start">
                                                                             {project.budget_id ? (
                                                                                 <a href={`/estimation-creation-details/${project.budget_id}?token=${token}`}
-                                                                                    title={project.status ? `Status: ${project.status}` : ""}
+                                                                                    title={project.budget_status ? `Status: ${project.budget_status}` : ""}
                                                                                     style={{
-                                                                                        cursor: project.status ? "pointer" : "default",
+                                                                                        cursor: project.budget_status ? "pointer" : "default",
                                                                                         // textDecoration: "underline",
                                                                                         // color: "#8b0203",
                                                                                         position: "relative"
@@ -497,9 +533,9 @@ const EstimationCreationList = () => {
                                                                                 </a>
                                                                             ) : (
                                                                                 <span
-                                                                                    title={project.status ? `Status: ${project.status}` : ""}
+                                                                                    title={project.budget_status ? `Status: ${project.budget_status}` : ""}
                                                                                     style={{
-                                                                                        cursor: project.status ? "pointer" : "default",
+                                                                                        cursor: project.budget_status ? "pointer" : "default",
                                                                                         // textDecoration: "underline",
                                                                                         // color: "#8b0203",
                                                                                         position: "relative"
@@ -520,7 +556,7 @@ const EstimationCreationList = () => {
                                                                         <td className="text-start">
                                                                             {site.budget_id ? (
                                                                                 <a href={`/estimation-creation-details/${site.budget_id}?token=${token}`}
-                                                                                    title={site.status ? `Status: ${site.status}` : ""}
+                                                                                    title={site.budget_status ? `Status: ${site.budget_status}` : ""}
                                                                                     style={{
                                                                                         cursor: site.status ? "pointer" : "default",
                                                                                         // textDecoration: "underline",
@@ -536,7 +572,7 @@ const EstimationCreationList = () => {
                                                                                 </a>
                                                                             ) : (
                                                                                 <span
-                                                                                    title={site.status ? `Status: ${site.status}` : ""}
+                                                                                    title={site.budget_status ? `Status: ${site.budget_status}` : ""}
                                                                                     style={{
                                                                                         cursor: site.status ? "pointer" : "default",
                                                                                         // textDecoration: "underline",
@@ -569,7 +605,7 @@ const EstimationCreationList = () => {
                                                                             // </a>
                                                                         ) : (
                                                                             <span
-                                                                                title={wing.status ? `Status: ${wing.status}` : ""}
+                                                                                title={wing.budget_status ? `Status: ${wing.budget_status}` : ""}
                                                                                 style={{
                                                                                     cursor: wing.status ? "pointer" : "default",
                                                                                     // textDecoration: "underline",
@@ -602,7 +638,7 @@ const EstimationCreationList = () => {
                                                                         <td className="text-start">
                                                                             {project.budget_id ? (
                                                                                 <a href={`/estimation-creation-details/${project.budget_id}?token=${token}`}
-                                                                                    title={project.status ? `Status: ${project.status}` : ""}
+                                                                                    title={project.budget_status ? `Status: ${project.budget_status}` : ""}
                                                                                     style={{
                                                                                         cursor: project.status ? "pointer" : "default",
                                                                                         // textDecoration: "underline",
@@ -615,9 +651,9 @@ const EstimationCreationList = () => {
                                                                                 </a>
                                                                             ) : (
                                                                                 <span
-                                                                                    title={project.status ? `Status: ${project.status}` : ""}
+                                                                                    title={project.budget_status ? `Status: ${project.status}` : ""}
                                                                                     style={{
-                                                                                        cursor: project.status ? "pointer" : "default",
+                                                                                        cursor: project.budget_status ? "pointer" : "default",
                                                                                         // textDecoration: "underline",
                                                                                         // color: "#8b0203",
                                                                                         position: "relative"
@@ -637,7 +673,7 @@ const EstimationCreationList = () => {
                                                                     <td className="text-start">
                                                                         {site.budget_id ? (
                                                                             <a href={`/estimation-creation-details/${site.budget_id}?token=${token}`}
-                                                                                title={site.status ? `Status: ${site.status}` : ""}
+                                                                                title={site.budget_status ? `Status: ${site.budget_status}` : ""}
                                                                                 style={{
                                                                                     cursor: site.status ? "pointer" : "default",
                                                                                     // textDecoration: "underline",
@@ -650,7 +686,7 @@ const EstimationCreationList = () => {
                                                                             </a>
                                                                         ) : (
                                                                             <span
-                                                                                title={site.status ? `Status: ${site.status}` : ""}
+                                                                                title={site.budget_status ? `Status: ${site.budget_status}` : ""}
                                                                                 style={{
                                                                                     cursor: site.status ? "pointer" : "default",
                                                                                     // textDecoration: "underline",

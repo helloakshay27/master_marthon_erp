@@ -261,6 +261,10 @@ function App() {
           <Route path="/estimation-creation-list" element={<EstimationCreationList />} />
            <Route path="/estimation-creation-test" element={<EstimationCreationTest />} />
             <Route path="/estimation-creation-details/:id" element={<EstimationCreationDetails />} />
+              <Route
+              path="/estimation-approvol-list"
+              element={<EstimationApprovolList />}
+            />
           <Route
             path="/estimation-details-project/:id"
             element={<EstimationDetailsProject />}
@@ -337,6 +341,7 @@ function App() {
               path="/boq-approval-details"
               element={<BOQApprovalDetails />}
             />
+          
 
             <Route
               path="/estimation-details-wings"
@@ -352,10 +357,7 @@ function App() {
               element={<EstimationApprovalDetails />}
             />
 
-            <Route
-              path="/estimation-approvol-list"
-              element={<EstimationApprovolList />}
-            />
+            
             <Route
               path="/bill-booking-details"
               element={<BillBookingDetails />}
@@ -435,10 +437,7 @@ function App() {
               path="/estimation-details-project"
               element={<EstimationDetailsProject />}
             />
-            <Route
-              path="/estimation-approvol-list"
-              element={<EstimationApprovolList />}
-            />
+           
             <Route
               path="/bill-booking-details/:id"
               element={<BillBookingDetails />}
