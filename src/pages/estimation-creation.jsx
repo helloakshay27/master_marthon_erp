@@ -140,33 +140,78 @@ const EstimationCreation = () => {
 
   const [details, setDetails] = useState(null);
   const [type, setType] = useState("project"); // Track the type
+  const [budgetType, setBudgetType] = useState(""); // ✅ new state
+
   // 🔹 Fetch sub-project details when project or site changes
+  // useEffect(() => {
+  //   if (!selectedProject && !selectedSite) return;
+
+  //   const fetchDetails = async () => {
+  //     try {
+  //       const newType = selectedSite ? "sub_project" : "project";
+  //       setType(newType);
+  //       const type = selectedSite ? "sub_project" : "project";
+  //       const id = selectedSite ? selectedSite.value : selectedProject.value;
+
+  //       const res = await axios.get(
+  //         `${baseURL}estimation_details/${id}/budget_details.json?type=${type}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+  //       );
+
+  //       setDetails(res.data);
+  //       setBudgetType(res.data?.data?.budget_type || ""); // ✅ save budget_type
+  //     } catch (err) {
+  //       console.error("Error fetching sub-project details", err);
+  //     }
+  //   };
+
+  //   fetchDetails();
+  // }, [selectedProject, selectedSite]);
+
+
   useEffect(() => {
     if (!selectedProject && !selectedSite) return;
 
     const fetchDetails = async () => {
       try {
-        const newType = selectedSite ? "sub_project" : "project";
-        setType(newType);
-        const type = selectedSite ? "sub_project" : "project";
-        const id = selectedSite ? selectedSite.value : selectedProject.value;
+        let type;
+        if (selectedWing) {
+          type = "wing";
+        } else if (selectedSite) {
+          type = "sub_project";
+        } else {
+          type = "project";
+        }
+        setType(type);
+
+        const id = selectedWing
+          ? selectedWing.value
+          : selectedSite
+            ? selectedSite.value
+            : selectedProject.value;
 
         const res = await axios.get(
           `${baseURL}estimation_details/${id}/budget_details.json?type=${type}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
         );
 
         setDetails(res.data);
+        setBudgetType(res.data?.data?.budget_type || "");
       } catch (err) {
         console.error("Error fetching sub-project details", err);
       }
     };
 
     fetchDetails();
-  }, [selectedProject, selectedSite]);
+  }, [selectedProject, selectedSite, selectedWing]);
 
+  console.log("budget type:", budgetType)
   // 🔹 Dynamic title
-  const cardTitle = type === "sub_project" ? "Sub-Project Details" : "Project Details";
-
+  // const cardTitle = type === "sub_project" ? "Sub-Project Details" : "Project Details";
+  const cardTitle =
+    type === "wing"
+      ? "Wing Details"
+      : type === "sub_project"
+        ? "Sub-Project Details"
+        : "Project Details";
   // console.log("details selected:", details)
   const [subProjectDetails, setSubProjectDetails] = useState(
     {}
@@ -346,7 +391,7 @@ const EstimationCreation = () => {
   const [modalCategoryIdx, setModalCategoryIdx] = useState(null);
   const [modalSubCategoryIdx, setModalSubCategoryIdx] = useState(null);
   const [modalRows, setModalRows] = useState([
-    { materialType: "", materialTypeLabel: "", specification: "", specificationLabel: "", labourType: "", labourTypeLabel: "", compositeValue: "", rate: "", type: "Material" }
+    { materialType: "", materialTypeLabel: "", specification: "", specificationLabel: "", labourType: "", labourTypeLabel: "", compositeValue: "", rate: "", type: "material" }
   ]);
 
   // Dummy options for dropdowns
@@ -459,17 +504,17 @@ const EstimationCreation = () => {
 
     // Check if both Material Type & Specification are selected → fetch rate
     const row = updatedRows[idx];
-    if (row.materialType && row.specification && row.type === "Material") {
+    if (row.materialType && row.type === "material") {
       try {
         const res = await axios.get(
           `${baseURL}estimation_details/get_material_rate.json`,
           {
             params: {
               material_type_id: row.materialType,
-              generic_info: row.specificationLabel, // assuming label contains "GRADE" etc.
-              project_id: selectedProject?.value,
-              pms_site_id: selectedSite?.value,
-              pms_wing_id: "",
+              generic_info: row.specificationLabel || null, // assuming label contains "GRADE" etc.
+              project_id: selectedProject?.value || null,
+              pms_site_id: selectedSite?.value || null,
+              pms_wing_id: selectedWing?.value || null,
               token: "bfa5004e7b0175622be8f7e69b37d01290b737f82e078414"
             }
           }
@@ -546,7 +591,7 @@ const EstimationCreation = () => {
     setModalSubCategory4Idx(subCategory4Idx);
     setModalSubCategory5Idx(subCategory5Idx);
     // setModalRows([{ materialType: "", specification: "", type: "Material" }]);
-    setModalRows([{ materialType: "", materialTypeLabel: "", specification: "", specificationLabel: "", labourType: "", labourTypeLabel: "", compositeValue: "", rate: "", type: "Material" }]);
+    setModalRows([{ materialType: "", materialTypeLabel: "", specification: "", specificationLabel: "", labourType: "", labourTypeLabel: "", compositeValue: "", rate: "", type: "material" }]);
     setShowAddModal(true);
 
     setOpenCategoryId(subCatIdx === null ? categoryOrSubCatId : subProjectDetails.categories[catIdx].id);
@@ -927,7 +972,57 @@ const EstimationCreation = () => {
   //   setShowAddModal(false);
   // };
 
+  // const [activeAddLevel, setActiveAddLevel] = useState({
+  //   level: null, // "main", "sub2", "sub3", "sub4", "sub5"
+  //   indices: {}  // {catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx}
+  // });
 
+  const [activeAddLevel, setActiveAddLevel] = useState({});
+
+  function getCurrentLevel({
+    modalCategoryIdx,
+    modalSubCategoryIdx,
+    modalSubCategory3Idx,
+    modalSubCategory4Idx,
+    modalSubCategory5Idx
+  }) {
+    if (
+      modalCategoryIdx !== null &&
+      modalSubCategoryIdx === null &&
+      modalSubCategory3Idx === null &&
+      modalSubCategory4Idx === null &&
+      modalSubCategory5Idx === null
+    ) return "main";
+    if (
+      modalCategoryIdx !== null &&
+      modalSubCategoryIdx !== null &&
+      modalSubCategory3Idx === null &&
+      modalSubCategory4Idx === null &&
+      modalSubCategory5Idx === null
+    ) return "sub2";
+    if (
+      modalCategoryIdx !== null &&
+      modalSubCategoryIdx !== null &&
+      modalSubCategory3Idx !== null &&
+      modalSubCategory4Idx === null &&
+      modalSubCategory5Idx === null
+    ) return "sub3";
+    if (
+      modalCategoryIdx !== null &&
+      modalSubCategoryIdx !== null &&
+      modalSubCategory3Idx !== null &&
+      modalSubCategory4Idx !== null &&
+      modalSubCategory5Idx === null
+    ) return "sub4";
+    if (
+      modalCategoryIdx !== null &&
+      modalSubCategoryIdx !== null &&
+      modalSubCategory3Idx !== null &&
+      modalSubCategory4Idx !== null &&
+      modalSubCategory5Idx !== null
+    ) return "sub5";
+    return null;
+  }
 
   const handleCreateRows = (
     subCategory3Idx = modalSubCategory3Idx,
@@ -1014,24 +1109,34 @@ const EstimationCreation = () => {
 
       if (!targetArr) return prev;
 
+      if (targetArr.length === 0) {
+        setActiveAddLevel(prev => {
+          const updated = { ...prev };
+          delete updated[modalCategoryIdx];
+          return updated;
+        });
+      }
+
+
+
       const row = modalRows[0];
 
       // Duplicate check
       let isDuplicate = false;
-      if (row.type === "Material") {
+      if (row.type === "material") {
         isDuplicate = targetArr.some(item =>
-          item.type === "Material" &&
+          item.type === "material" &&
           item.name === row.materialTypeLabel &&
           item.specification === row.specificationLabel
         );
-      } else if (row.type === "Labour") {
+      } else if (row.type === "labour") {
         isDuplicate = targetArr.some(item =>
-          item.type === "Labour" &&
+          item.type === "labour" &&
           item.labourActLabel === row.labourTypeLabel
         );
-      } else if (row.type === "Composite") {
+      } else if (row.type === "composite") {
         isDuplicate = targetArr.some(item =>
-          item.type === "Composite" &&
+          item.type === "composite" &&
           item.compositeValue === row.compositeValue
         );
       }
@@ -1060,6 +1165,34 @@ const EstimationCreation = () => {
 
       return updated;
     });
+
+
+    // ...inside handleCreateRows, after adding a row...
+    const currentLevel = getCurrentLevel({
+      modalCategoryIdx,
+      modalSubCategoryIdx,
+      modalSubCategory3Idx,
+      modalSubCategory4Idx,
+      modalSubCategory5Idx
+    });
+
+
+    setActiveAddLevel(prev => ({
+      ...prev,
+      [modalCategoryIdx]: {
+        level: currentLevel,
+        indices: {
+          catIdx: modalCategoryIdx,
+          subCatIdx: modalSubCategoryIdx,
+          subCategory3Idx: modalSubCategory3Idx,
+          subCategory4Idx: modalSubCategory4Idx,
+          subCategory5Idx: modalSubCategory5Idx
+        }
+      }
+    }));
+
+
+
 
     setShowAddModal(false);
   };
@@ -1120,6 +1253,8 @@ const EstimationCreation = () => {
       updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].material_type_details.splice(itemIdx, 1);
       return updated;
     });
+
+
   };
 
 
@@ -1600,12 +1735,104 @@ const EstimationCreation = () => {
   };
 
 
-  const labourTypeOptions = [
-    { value: "skilled", label: "Skilled" },
-    { value: "unskilled", label: "Unskilled" },
-    { value: "supervisor", label: "Supervisor" },
-  ];
+  const handleEditMaterial2 = (catIdx, itemIdx, field, value) => {
+    const updatedDetails = { ...subProjectDetails };
+    updatedDetails.categories = [...updatedDetails.categories];
 
+    const materials = [...updatedDetails.categories[catIdx].material_type_details];
+    const material = { ...materials[itemIdx] };
+
+    material[field] = value;
+
+    // Always recalculate amount when qty or rate changes
+    const qty = parseFloat(material.qty) || 0;
+    const rate = parseFloat(material.rate) || 0;
+    material.amount = qty * rate;
+
+    materials[itemIdx] = material;
+    updatedDetails.categories[catIdx].material_type_details = materials;
+
+    setSubProjectDetails(updatedDetails);
+  };
+  // Sub-Category 2
+  const handleEditMaterial2SubCat2 = (catIdx, subCatIdx, itemIdx, field, value) => {
+    const updatedDetails = { ...subProjectDetails };
+    updatedDetails.categories = [...updatedDetails.categories];
+
+    const materials = [...updatedDetails.categories[catIdx].sub_categories_2[subCatIdx].material_type_details];
+    const material = { ...materials[itemIdx] };
+
+    material[field] = value;
+
+    const qty = parseFloat(material.qty) || 0;
+    const rate = parseFloat(material.rate) || 0;
+    material.amount = qty * rate;
+
+    materials[itemIdx] = material;
+    updatedDetails.categories[catIdx].sub_categories_2[subCatIdx].material_type_details = materials;
+
+    setSubProjectDetails(updatedDetails);
+  };
+
+  // Sub-Category 3
+  const handleEditMaterial2SubCat3 = (catIdx, subCatIdx, subCat3Idx, itemIdx, field, value) => {
+    const updatedDetails = { ...subProjectDetails };
+    updatedDetails.categories = [...updatedDetails.categories];
+
+    const materials = [...updatedDetails.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCat3Idx].material_type_details];
+    const material = { ...materials[itemIdx] };
+
+    material[field] = value;
+
+    const qty = parseFloat(material.qty) || 0;
+    const rate = parseFloat(material.rate) || 0;
+    material.amount = qty * rate;
+
+    materials[itemIdx] = material;
+    updatedDetails.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCat3Idx].material_type_details = materials;
+
+    setSubProjectDetails(updatedDetails);
+  };
+
+  // Sub-Category 4
+  const handleEditMaterial2SubCat4 = (catIdx, subCatIdx, subCat3Idx, subCat4Idx, itemIdx, field, value) => {
+    const updatedDetails = { ...subProjectDetails };
+    updatedDetails.categories = [...updatedDetails.categories];
+
+    const materials = [...updatedDetails.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCat3Idx].sub_categories_4[subCat4Idx].material_type_details];
+    const material = { ...materials[itemIdx] };
+
+    material[field] = value;
+
+    const qty = parseFloat(material.qty) || 0;
+    const rate = parseFloat(material.rate) || 0;
+    material.amount = qty * rate;
+
+    materials[itemIdx] = material;
+    updatedDetails.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCat3Idx].sub_categories_4[subCat4Idx].material_type_details = materials;
+
+    setSubProjectDetails(updatedDetails);
+  };
+
+  // Sub-Category 5
+  const handleEditMaterial2SubCat5 = (catIdx, subCatIdx, subCat3Idx, subCat4Idx, subCat5Idx, itemIdx, field, value) => {
+    const updatedDetails = { ...subProjectDetails };
+    updatedDetails.categories = [...updatedDetails.categories];
+
+    const materials = [...updatedDetails.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCat3Idx].sub_categories_4[subCat4Idx].sub_categories_5[subCat5Idx].material_type_details];
+    const material = { ...materials[itemIdx] };
+
+    material[field] = value;
+
+    const qty = parseFloat(material.qty) || 0;
+    const rate = parseFloat(material.rate) || 0;
+    material.amount = qty * rate;
+
+    materials[itemIdx] = material;
+    updatedDetails.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCat3Idx].sub_categories_4[subCat4Idx].sub_categories_5[subCat5Idx].material_type_details = materials;
+
+    setSubProjectDetails(updatedDetails);
+  };
   const [inventoryTypes2, setInventoryTypes2] = useState([]);  // State to hold the fetched data
   const [selectedInventory2, setSelectedInventory2] = useState(null);  // State to hold selected inventory type
 
@@ -1662,10 +1889,11 @@ const EstimationCreation = () => {
 
         );
         // Assuming the API returns an array of objects with { id, name }
-        const options = response.data.map(act => ({
+        const options = response.data.labour_activities.map(act => ({
           value: act.id,
           label: act.name
         }));
+        console.log("options cat:***********************", options)
         setLabourActivities(options);
       } catch (error) {
         console.error("Error fetching labour activities:", error);
@@ -1919,6 +2147,8 @@ const EstimationCreation = () => {
     }
   };
 
+
+
   return (
     <>
       <div className="website-content overflow-auto">
@@ -1934,7 +2164,7 @@ const EstimationCreation = () => {
               <div className="card-body">
                 <div className="row">
                   {/* Company Dropdown */}
-                  <div className="col-md-4">
+                  <div className="col-md-3">
                     <div className="form-group">
                       <label>
                         Company <span>*</span>
@@ -1949,7 +2179,7 @@ const EstimationCreation = () => {
                   </div>
 
                   {/* Project Dropdown */}
-                  <div className="col-md-4">
+                  <div className="col-md-3">
                     <div className="form-group">
                       <label>Project</label>
                       <SingleSelector
@@ -1962,7 +2192,7 @@ const EstimationCreation = () => {
                   </div>
 
                   {/* Sub-Project Dropdown */}
-                  <div className="col-md-4">
+                  <div className="col-md-3">
                     <div className="form-group">
                       <label>Sub-Project</label>
                       <SingleSelector
@@ -1975,17 +2205,17 @@ const EstimationCreation = () => {
                   </div>
 
                   {/* Wings Dropdown */}
-                  {/* <div className="col-md-3">
-                                        <div className="form-group">
-                                            <label>Wings</label>
-                                            <SingleSelector
-                                                options={wingsOptions}
-                                                value={selectedWing}
-                                                onChange={handleWingChange}
-                                                placeholder={`Select Wing`} // Dynamic placeholder
-                                            />
-                                        </div>
-                                    </div> */}
+                  <div className="col-md-3">
+                    <div className="form-group">
+                      <label>Wings</label>
+                      <SingleSelector
+                        options={wingsOptions}
+                        value={selectedWing}
+                        onChange={handleWingChange}
+                        placeholder={`Select Wing`} // Dynamic placeholder
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2126,6 +2356,7 @@ const EstimationCreation = () => {
             {/* <pre>{JSON.stringify(subProjectDetails, null, 2)}</pre> */}
 
             {/* ______________________________________________________________________________________________________ */}
+            {budgetType === "BOQ Sum Method/Bottom Up" && (
             <div className="mx-3 mb-5 mt-3">
 
 
@@ -2295,7 +2526,82 @@ const EstimationCreation = () => {
                               <td></td>
                               <td></td>
                               <td></td>
-                              <td></td>
+                              <td>
+                                {
+                                  (
+                                    // Sum direct material_type_details amounts for main category
+                                    (category.material_type_details
+                                      ? category.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                      : 0
+                                    )
+                                    +
+                                    // Sum all sub-category 2 material_type_details amounts for main category
+                                    (category.sub_categories_2
+                                      ? category.sub_categories_2.reduce(
+                                        (subSum2, subCat2) =>
+                                          subSum2 +
+                                          (
+                                            // Sum direct material_type_details for level 2
+                                            (subCat2.material_type_details
+                                              ? subCat2.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                              : 0
+                                            )
+                                            +
+                                            // Sum all sub-category 3 material_type_details for level 2
+                                            (subCat2.sub_categories_3
+                                              ? subCat2.sub_categories_3.reduce(
+                                                (subSum3, subCat3) =>
+                                                  subSum3 +
+                                                  (
+                                                    // Sum direct material_type_details for level 3
+                                                    (subCat3.material_type_details
+                                                      ? subCat3.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                      : 0
+                                                    )
+                                                    +
+                                                    // Sum all sub-category 4 material_type_details for level 3
+                                                    (subCat3.sub_categories_4
+                                                      ? subCat3.sub_categories_4.reduce(
+                                                        (subSum4, subCat4) =>
+                                                          subSum4 +
+                                                          (
+                                                            // Sum direct material_type_details for level 4
+                                                            (subCat4.material_type_details
+                                                              ? subCat4.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                              : 0
+                                                            )
+                                                            +
+                                                            // Sum all sub-category 5 material_type_details for level 4
+                                                            (subCat4.sub_categories_5
+                                                              ? subCat4.sub_categories_5.reduce(
+                                                                (subSum5, subCat5) =>
+                                                                  subSum5 +
+                                                                  (subCat5.material_type_details
+                                                                    ? subCat5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                    : 0
+                                                                  ),
+                                                                0
+                                                              )
+                                                              : 0
+                                                            )
+                                                          ),
+                                                        0
+                                                      )
+                                                      : 0
+                                                    )
+                                                  ),
+                                                0
+                                              )
+                                              : 0
+                                            )
+                                          ),
+                                        0
+                                      )
+                                      : 0
+                                    )
+                                  )
+                                }
+                              </td>
                               <td></td>
                               <td>
                                 <button
@@ -2303,6 +2609,8 @@ const EstimationCreation = () => {
                                   // onClick={() => handleOpenAddModal(catIdx, 0)}
                                   // onClick={() => handleOpenAddModal(catIdx, null)}
                                   onClick={() => handleOpenAddModal(catIdx, null, category.id)}
+                                  disabled={activeAddLevel[catIdx]?.level && activeAddLevel[catIdx]?.level !== "main"}
+                                // disabled={activeAddLevel.level && activeAddLevel.level !== "main"}
                                 >
                                   {/* {console.log("cat id:", catIdx, category.id)} */}
                                   <svg
@@ -2600,12 +2908,75 @@ const EstimationCreation = () => {
                                     </td>
                                     <td></td>
                                     <td></td>
-                                    <td></td>
+                                    <td>
+
+
+
+                                      {
+                                        (
+                                          // Sum direct material_type_details amounts for level 2
+                                          (subCategory.material_type_details
+                                            ? subCategory.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                            : 0
+                                          )
+                                          +
+                                          // Sum all sub-category 3 material_type_details amounts for level 2
+                                          (subCategory.sub_categories_3
+                                            ? subCategory.sub_categories_3.reduce(
+                                              (subSum3, subCat3) =>
+                                                subSum3 +
+                                                (
+                                                  // Sum direct material_type_details for level 3
+                                                  (subCat3.material_type_details
+                                                    ? subCat3.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                    : 0
+                                                  )
+                                                  +
+                                                  // Sum all sub-category 4 material_type_details for level 3
+                                                  (subCat3.sub_categories_4
+                                                    ? subCat3.sub_categories_4.reduce(
+                                                      (subSum4, subCat4) =>
+                                                        subSum4 +
+                                                        (
+                                                          // Sum direct material_type_details for level 4
+                                                          (subCat4.material_type_details
+                                                            ? subCat4.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                            : 0
+                                                          )
+                                                          +
+                                                          // Sum all sub-category 5 material_type_details for level 4
+                                                          (subCat4.sub_categories_5
+                                                            ? subCat4.sub_categories_5.reduce(
+                                                              (subSum5, subCat5) =>
+                                                                subSum5 +
+                                                                (subCat5.material_type_details
+                                                                  ? subCat5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                  : 0
+                                                                ),
+                                                              0
+                                                            )
+                                                            : 0
+                                                          )
+                                                        ),
+                                                      0
+                                                    )
+                                                    : 0
+                                                  )
+                                                ),
+                                              0
+                                            )
+                                            : 0
+                                          )
+                                        )
+                                      }
+                                    </td>
                                     <td></td>
                                     <td>
                                       <button
                                         className="btn btn-link p-0"
                                         onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory.id)}
+                                        disabled={activeAddLevel[catIdx]?.level && activeAddLevel[catIdx]?.level !== "sub2"}
+                                        // disabled={activeAddLevel.level && activeAddLevel.level !== "sub2"}
                                         aria-label="Add row to sub-category 2"
                                       >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -2693,7 +3064,7 @@ const EstimationCreation = () => {
                                               handleEditSubCategory2Material(catIdx, subCatIdx, itemIdx, "rate", e.target.value)
                                             }
                                             className="form-control"
-                                            disabled={item.type === "Material"}
+                                          // disabled={item.type === "Material"}
                                           />
                                         </td>
                                         <td>
@@ -2876,7 +3247,48 @@ const EstimationCreation = () => {
                                             <td></td>
                                             <td></td>
                                             <td></td>
-                                            <td></td>
+                                            <td>
+                                              {
+                                                (
+                                                  // Sum direct material_type_details amounts for level 3
+                                                  (subCategory3.material_type_details
+                                                    ? subCategory3.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                    : 0
+                                                  )
+                                                  +
+                                                  // Sum all sub-category 4 material_type_details amounts for level 3
+                                                  (subCategory3.sub_categories_4
+                                                    ? subCategory3.sub_categories_4.reduce(
+                                                      (subSum, subCat4) =>
+                                                        subSum +
+                                                        (
+                                                          // Sum direct material_type_details for level 4
+                                                          (subCat4.material_type_details
+                                                            ? subCat4.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                            : 0
+                                                          )
+                                                          +
+                                                          // Sum all sub-category 5 material_type_details for level 4
+                                                          (subCat4.sub_categories_5
+                                                            ? subCat4.sub_categories_5.reduce(
+                                                              (subSum5, subCat5) =>
+                                                                subSum5 +
+                                                                (subCat5.material_type_details
+                                                                  ? subCat5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                  : 0
+                                                                ),
+                                                              0
+                                                            )
+                                                            : 0
+                                                          )
+                                                        ),
+                                                      0
+                                                    )
+                                                    : 0
+                                                  )
+                                                )
+                                              }
+                                            </td>
                                             <td></td>
                                             <td>
 
@@ -2884,6 +3296,7 @@ const EstimationCreation = () => {
                                               <button
                                                 className="btn btn-link p-0"
                                                 onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3Idx)}
+                                                disabled={activeAddLevel[catIdx]?.level && activeAddLevel[catIdx]?.level !== "sub3"}
                                                 // onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3, subCategory3.name, subCatIdx)}
                                                 aria-label="Add row to sub-category 3"
                                               >
@@ -3159,13 +3572,38 @@ const EstimationCreation = () => {
                                                     <td></td>
                                                     <td></td>
                                                     <td></td>
-                                                    <td></td>
+                                                    <td>
+                                                      {
+                                                        (
+                                                          // Sum direct material_type_details amounts for level 4
+                                                          (subCategory4.material_type_details
+                                                            ? subCategory4.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                            : 0
+                                                          )
+                                                          +
+                                                          // Sum all sub-category 5 material_type_details amounts for level 4
+                                                          (subCategory4.sub_categories_5
+                                                            ? subCategory4.sub_categories_5.reduce(
+                                                              (subSum, subCat5) =>
+                                                                subSum +
+                                                                (subCat5.material_type_details
+                                                                  ? subCat5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                  : 0
+                                                                ),
+                                                              0
+                                                            )
+                                                            : 0
+                                                          )
+                                                        )
+                                                      }
+                                                    </td>
                                                     <td></td>
 
                                                     <td>
                                                       <button
                                                         className="btn btn-link p-0"
                                                         onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3Idx, subCategory4Idx)}
+                                                        disabled={activeAddLevel[catIdx]?.level && activeAddLevel[catIdx]?.level !== "sub4"}
                                                         // onClick={() => handleOpenAddModal(catIdx, subCatIdx,subCategory3Idx, subCategory4Idx, subCategory4.id)}
                                                         aria-label="Add row to sub-category 2"
                                                       >
@@ -3444,12 +3882,19 @@ const EstimationCreation = () => {
                                                             <td></td>
                                                             <td></td>
                                                             <td></td>
-                                                            <td></td>
+                                                            <td>
+                                                              {
+                                                                subCategory5.material_type_details
+                                                                  ? subCategory5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                  : 0
+                                                              }
+                                                            </td>
                                                             <td></td>
                                                             <td>
                                                               <button
                                                                 className="btn btn-link p-0"
                                                                 onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3Idx, subCategory4Idx, subCategory5Idx)}
+                                                                disabled={activeAddLevel[catIdx]?.level && activeAddLevel[catIdx]?.level !== "sub5"}
                                                                 // onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5.id,subCategory5Idx)}
                                                                 aria-label="Add row to sub-category 2"
                                                               >
@@ -3604,7 +4049,1565 @@ const EstimationCreation = () => {
                 </div>
               </div>
             </div>
+        )} 
 
+
+ {/* ********************************************************************************************* */}
+
+            {budgetType === "Allocation Method/Top Down" && (
+           
+            <div className="mx-3 mb-5 mt-3">
+
+
+              <div className="mx-3 ">
+                <div className="tbl-container mt-1" style={{
+                  maxHeight: "750px",
+                }}>
+                  <table
+                    className=""
+                  >
+                    <thead style={{ zIndex: "111 " }}>
+                      <tr>
+                        <th className="text-start">Expand</th>
+                        <th className="text-start">Sr No.</th>
+                        <th className="text-start">Level</th>
+                        <th className="text-start">Category</th>
+                        <th className="text-start">Location</th>
+                        <th className="text-start">Type</th>
+                        <th className="text-start">Items</th>
+                        {/* <th className="text-start">Factor</th> */}
+                        <th className="text-start" style={{ width: "200px" }}>UOM</th>
+                        {/* <th className="text-start">Area</th> */}
+                        <th className="text-start">QTY Excl Wastage</th>
+                        {/* <th className="text-start">Wastage</th> */}
+                        {/* <th className="text-start">QTY incl Waste</th> */}
+                        <th className="text-start">Rate</th>
+                        <th className="text-start">Amount</th>
+                        {/* <th className="text-start">Cost Per Unit</th> */}
+                        <th className="text-start" style={{ width: "12px" }}>
+                          Action
+                        </th>
+                      </tr>
+                      <tr>
+                        <th className="text-start"></th>
+                        <th className="text-start"></th>
+                        <th className="text-start"></th>
+                        <th className="text-start"></th>
+                        <th className="text-start"></th>
+                        <th className="text-start"></th>
+                        <th className="text-start"></th>
+                        {/* <th className="text-start"></th> */}
+                        <th className="text-start">A</th>
+                        {/* <th className="text-start"></th> */}
+                        <th className="text-start">B</th>
+                        {/* <th className="text-start">D</th> */}
+                        {/* <th className="text-start">E=C+C*D</th> */}
+                        <th className="text-start">C</th>
+                        <th className="text-start">D=B*C</th>
+                        {/* <th className="text-start">H=G/C</th> */}
+                        <th className="text-start">
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* Conditional rendering for categories under sub-project start */}
+                      {subProjectDetails &&
+                        subProjectDetails.categories &&
+                        subProjectDetails.categories.map((category, catIdx) => (
+                          <React.Fragment key={category.id}>
+                            <tr className="main-category">
+                              <td>
+                                <button
+                                  className="btn btn-link p-0"
+                                  onClick={() => toggleCategory(category.id)}
+                                  aria-label="Toggle category visibility"
+                                >
+                                  {openCategoryId === category.id ? (
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="24"
+                                      height="24"
+                                      viewBox="0 0 24 24"
+                                      fill=" #e0e0e0"
+                                      stroke="black"
+                                      strokeWidth="1"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      {/* Square */}
+                                      <rect
+                                        x="3"
+                                        y="3"
+                                        width="18"
+                                        height="20"
+                                        rx="1"
+                                        ry="1"
+                                      />
+                                      {/* Minus Icon */}
+                                      <line x1="8" y1="12" x2="16" y2="12" />
+                                    </svg>
+                                  ) : (
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="24"
+                                      height="24"
+                                      viewBox="0 0 24 24"
+                                      fill=" #e0e0e0"
+                                      stroke="black"
+                                      strokeWidth="1"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      {/* Square */}
+                                      <rect
+                                        x="3"
+                                        y="3"
+                                        width="18"
+                                        height="20"
+                                        rx="1"
+                                        ry="1"
+                                      />
+                                      {/* Plus Icon */}
+                                      <line x1="12" y1="8" x2="12" y2="16" />
+                                      <line x1="8" y1="12" x2="16" y2="12" />
+                                    </svg>
+                                  )}
+                                </button>
+                              </td>
+                              <td>{catIdx + 1}</td>
+                              <td> Main Category</td>
+                              <td>{category.name}</td>
+                              <td>
+                                <input
+                                  type="text"
+                                  value={category.location || ""}
+                                  onChange={(e) =>
+                                    handleEditMainCategoryField(catIdx, "location", e.target.value)
+                                  }
+                                  className="form-control"
+                                />
+                              </td>
+                              <td></td>
+                              <td>
+                                <input
+                                  type="text"
+                                  value={category.items || ""}
+                                  onChange={(e) =>
+                                    handleEditMainCategoryField(catIdx, "items", e.target.value)
+                                  }
+                                  className="form-control"
+                                />
+                              </td>
+                              {/* <td></td> */}
+                              <td>
+                                <SingleSelector
+                                  options={unitOfMeasures}
+                                  value={
+                                    unitOfMeasures.find(opt => opt.value === category.uom)
+                                  }
+                                  placeholder="Select UOM"
+                                  onChange={selectedOption =>
+                                    handleEditMainCategoryField(catIdx, "uom", selectedOption?.value || "")
+                                  }
+                                />
+                              </td>
+                              {/* <td></td> */}
+                              <td>
+                                {/* <input
+                                  type="number"
+                                  value={category.qty || ""}
+                                  onChange={(e) =>
+                                    handleEditMainCategoryField(catIdx, "qty", e.target.value)
+                                  }
+                                  className="form-control"
+                                /> */}
+                              </td>
+                              {/* <td></td>
+                              <td></td> */}
+                              <td></td>
+                              <td>
+                                {
+                                  (
+                                    // Sum direct material_type_details amounts for main category
+                                    (category.material_type_details
+                                      ? category.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                      : 0
+                                    )
+                                    +
+                                    // Sum all sub-category 2 material_type_details amounts for main category
+                                    (category.sub_categories_2
+                                      ? category.sub_categories_2.reduce(
+                                        (subSum2, subCat2) =>
+                                          subSum2 +
+                                          (
+                                            // Sum direct material_type_details for level 2
+                                            (subCat2.material_type_details
+                                              ? subCat2.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                              : 0
+                                            )
+                                            +
+                                            // Sum all sub-category 3 material_type_details for level 2
+                                            (subCat2.sub_categories_3
+                                              ? subCat2.sub_categories_3.reduce(
+                                                (subSum3, subCat3) =>
+                                                  subSum3 +
+                                                  (
+                                                    // Sum direct material_type_details for level 3
+                                                    (subCat3.material_type_details
+                                                      ? subCat3.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                      : 0
+                                                    )
+                                                    +
+                                                    // Sum all sub-category 4 material_type_details for level 3
+                                                    (subCat3.sub_categories_4
+                                                      ? subCat3.sub_categories_4.reduce(
+                                                        (subSum4, subCat4) =>
+                                                          subSum4 +
+                                                          (
+                                                            // Sum direct material_type_details for level 4
+                                                            (subCat4.material_type_details
+                                                              ? subCat4.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                              : 0
+                                                            )
+                                                            +
+                                                            // Sum all sub-category 5 material_type_details for level 4
+                                                            (subCat4.sub_categories_5
+                                                              ? subCat4.sub_categories_5.reduce(
+                                                                (subSum5, subCat5) =>
+                                                                  subSum5 +
+                                                                  (subCat5.material_type_details
+                                                                    ? subCat5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                    : 0
+                                                                  ),
+                                                                0
+                                                              )
+                                                              : 0
+                                                            )
+                                                          ),
+                                                        0
+                                                      )
+                                                      : 0
+                                                    )
+                                                  ),
+                                                0
+                                              )
+                                              : 0
+                                            )
+                                          ),
+                                        0
+                                      )
+                                      : 0
+                                    )
+                                  )
+                                }
+                              </td>
+                              {/* <td></td> */}
+                              <td>
+                                <button
+                                  className="btn btn-link p-0"
+                                  // onClick={() => handleOpenAddModal(catIdx, 0)}
+                                  // onClick={() => handleOpenAddModal(catIdx, null)}
+                                  onClick={() => handleOpenAddModal(catIdx, null, category.id)}
+                                  disabled={activeAddLevel[catIdx]?.level && activeAddLevel[catIdx]?.level !== "main"}
+                                // disabled={activeAddLevel.level && activeAddLevel.level !== "main"}
+                                >
+                                  {/* {console.log("cat id:", catIdx, category.id)} */}
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="48"
+                                    viewBox="0 0 24 48"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                  >
+                                    {/* <!-- Plus Icon (Top) --> */}
+                                    <line x1="12" y1="10" x2="12" y2="18" />
+                                    <line x1="8" y1="14" x2="16" y2="14" />
+
+                                    {/* <!-- Minus Icon (Bottom) -->
+                            <line x1="8" y1="34" x2="16" y2="34" /> */}
+                                  </svg>
+
+
+
+                                </button>
+                              </td>
+
+                            </tr>
+
+
+                            {openCategoryId === category.id &&
+                              category.material_type_details &&
+                              category.material_type_details.map((item, itemIdx) => (
+                                <tr key={item.id} className="labour">
+                                  <td></td>
+                                  <td>
+                                    {/* {catIdx + 1}.{itemIdx + 1} */}
+                                  </td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td>{item.type}</td>
+                                  <td>{item.name} {item.specification || item.labourActLabel || item.compositeValue}</td>
+                                  {/* Add other columns as needed */}
+
+                                  <td>
+                                    <SingleSelector
+                                      options={unitOfMeasures}
+                                      value={
+                                        unitOfMeasures.find(opt => opt.value === item.uom)
+                                      }
+                                      placeholder="Select UOM"
+                                      onChange={selectedOption =>
+                                        handleEditMaterial2(catIdx, itemIdx, "uom", selectedOption?.value || "")
+                                      }
+                                    />
+
+
+                                  </td>
+                                  {/* <td></td> */}
+                                  <td>
+                                    {/* <input
+                                      type="number"
+                                      value={item.qty || ""}
+                                      readOnly
+                                      disabled
+                                      className="form-control"
+                                    /> */}
+                                    <input
+                                      type="number"
+                                      value={item.qty || ""}
+                                      onChange={e =>
+                                        handleEditMaterial2(catIdx, itemIdx, "qty", e.target.value)
+                                      }
+                                      className="form-control"
+                                    />
+                                  </td>
+
+                                  <td>
+                                    <input
+                                      type="number"
+                                      value={item.rate || ""}
+                                      onChange={(e) =>
+                                        handleEditMaterial2(catIdx, itemIdx, "rate", e.target.value)
+                                      }
+                                      className="form-control"
+                                      disabled={item.type === "Material"} // ✅ Disable if Material
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="number"
+                                      value={item.amount || ""}
+                                      readOnly
+                                      disabled
+                                      className="form-control"
+                                    />
+
+
+                                  </td>
+
+                                  <td>
+                                    <button
+                                      className="btn btn-link p-0"
+                                      onClick={() => handleRemoveMainCategoryRow(catIdx, itemIdx)}
+                                    >
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="24"
+                                        height="48"
+                                        viewBox="0 0 24 48"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                      >
+
+                                        {/* <!-- Minus Icon (Bottom) --> */}
+                                        <line x1="8" y1="34" x2="16" y2="34" />
+                                      </svg>
+
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))
+                            }
+
+                            {/* sub level 2 start */}
+                            {openCategoryId === category.id &&
+                              category.sub_categories_2 &&
+                              category.sub_categories_2.length > 0 &&
+                              category.sub_categories_2.map((subCategory, subCatIdx) => (
+                                <React.Fragment key={subCategory.id}>
+                                  <tr className="category-lvl2">
+                                    <td>
+                                      <button
+                                        className="btn btn-link p-0"
+                                        onClick={() =>
+                                          toggleSubCategory2(subCategory.id)
+                                        }
+                                        aria-label="Toggle sub-category 2 visibility"
+                                      >
+                                        {openSubCategory2Id ===
+                                          subCategory.id ? (
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            fill=" #e0e0e0"
+                                            stroke="black"
+                                            strokeWidth="1"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          >
+                                            {/* Square */}
+                                            <rect
+                                              x="3"
+                                              y="3"
+                                              width="18"
+                                              height="20"
+                                              rx="1"
+                                              ry="1"
+                                            />
+                                            {/* Minus Icon */}
+                                            <line
+                                              x1="8"
+                                              y1="12"
+                                              x2="16"
+                                              y2="12"
+                                            />
+                                          </svg>
+                                        ) : (
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            fill=" #e0e0e0"
+                                            stroke="black"
+                                            strokeWidth="1"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          >
+                                            {/* Square */}
+                                            <rect
+                                              x="3"
+                                              y="3"
+                                              width="18"
+                                              height="20"
+                                              rx="1"
+                                              ry="1"
+                                            />
+                                            {/* Plus Icon */}
+                                            <line
+                                              x1="12"
+                                              y1="8"
+                                              x2="12"
+                                              y2="16"
+                                            />
+                                            <line
+                                              x1="8"
+                                              y1="12"
+                                              x2="16"
+                                              y2="12"
+                                            />
+                                          </svg>
+                                        )}
+                                      </button>
+                                    </td>
+
+                                    <td></td>
+                                    <td>Sub-Category Level 2</td>
+                                    <td>{subCategory.name}</td>
+                                    <td>
+
+                                      <input
+                                        type="text"
+                                        value={subCategory.location || ""}
+                                        onChange={(e) => handleEditSubCategory2Field(catIdx, subCatIdx, "location", e.target.value)}
+                                        className="form-control"
+                                      />
+
+                                    </td>
+
+                                    <td>
+
+                                    </td>
+                                    <td>
+                                      <input
+                                        type="text"
+                                        value={subCategory.items || ""}
+                                        onChange={(e) => handleEditSubCategory2Field(catIdx, subCatIdx, "items", e.target.value)}
+                                        className="form-control"
+                                      />
+                                    </td>
+                                    {/* <td></td> */}
+                                    <td>
+                                      <SingleSelector
+                                        options={unitOfMeasures}
+                                        value={
+                                          unitOfMeasures.find(opt => opt.value === subCategory.uom)
+                                        }
+                                        placeholder="Select UOM"
+                                        onChange={selectedOption =>
+                                          handleEditSubCategory2Field(catIdx, subCatIdx, "uom", selectedOption?.value || "")
+                                        }
+                                      />
+                                    </td>
+                                    <td>
+                                      {/* <input
+                                        type="number"
+                                        value={subCategory.qty || ""}
+                                        onChange={(e) =>
+                                          handleEditSubCategory2Field(catIdx, subCatIdx, "qty", e.target.value)
+                                        }
+                                        className="form-control"
+                                      /> */}
+                                    </td>
+                                    {/* <td>
+
+                                    </td>
+                                    <td></td> */}
+                                    <td></td>
+                                    <td>
+
+
+
+                                      {
+                                        (
+                                          // Sum direct material_type_details amounts for level 2
+                                          (subCategory.material_type_details
+                                            ? subCategory.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                            : 0
+                                          )
+                                          +
+                                          // Sum all sub-category 3 material_type_details amounts for level 2
+                                          (subCategory.sub_categories_3
+                                            ? subCategory.sub_categories_3.reduce(
+                                              (subSum3, subCat3) =>
+                                                subSum3 +
+                                                (
+                                                  // Sum direct material_type_details for level 3
+                                                  (subCat3.material_type_details
+                                                    ? subCat3.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                    : 0
+                                                  )
+                                                  +
+                                                  // Sum all sub-category 4 material_type_details for level 3
+                                                  (subCat3.sub_categories_4
+                                                    ? subCat3.sub_categories_4.reduce(
+                                                      (subSum4, subCat4) =>
+                                                        subSum4 +
+                                                        (
+                                                          // Sum direct material_type_details for level 4
+                                                          (subCat4.material_type_details
+                                                            ? subCat4.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                            : 0
+                                                          )
+                                                          +
+                                                          // Sum all sub-category 5 material_type_details for level 4
+                                                          (subCat4.sub_categories_5
+                                                            ? subCat4.sub_categories_5.reduce(
+                                                              (subSum5, subCat5) =>
+                                                                subSum5 +
+                                                                (subCat5.material_type_details
+                                                                  ? subCat5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                  : 0
+                                                                ),
+                                                              0
+                                                            )
+                                                            : 0
+                                                          )
+                                                        ),
+                                                      0
+                                                    )
+                                                    : 0
+                                                  )
+                                                ),
+                                              0
+                                            )
+                                            : 0
+                                          )
+                                        )
+                                      }
+                                    </td>
+                                    {/* <td></td> */}
+                                    <td>
+                                      <button
+                                        className="btn btn-link p-0"
+                                        onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory.id)}
+                                        disabled={activeAddLevel[catIdx]?.level && activeAddLevel[catIdx]?.level !== "sub2"}
+                                        // disabled={activeAddLevel.level && activeAddLevel.level !== "sub2"}
+                                        aria-label="Add row to sub-category 2"
+                                      >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                          <line x1="12" y1="10" x2="12" y2="18" />
+                                          <line x1="8" y1="14" x2="16" y2="14" />
+                                          {/* <line x1="8" y1="34" x2="16" y2="34" /> */}
+                                        </svg>
+                                      </button>
+
+                                    </td>
+
+                                  </tr>
+
+                                  {/* Render material_type_details rows for sub-category 2 */}
+                                  {openSubCategory2Id === subCategory.id &&
+                                    subCategory.material_type_details &&
+                                    subCategory.material_type_details.map((item, itemIdx) => (
+                                      <tr key={item.id} className="labour">
+                                        <td></td>
+                                        <td>
+                                          {/* {catIdx + 1}.{subCatIdx + 1}.{itemIdx + 1} */}
+                                        </td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>{item.type}</td>
+                                        <td>{item.name} {item.specification || item.labourActLabel || item.compositeValue}</td>
+                                        {/* ...other cells... */}
+
+
+                                        <td>
+                                          <SingleSelector
+                                            options={unitOfMeasures}
+                                            value={
+                                              unitOfMeasures.find(opt => opt.value === item.uom)
+                                            }
+                                            placeholder="Select UOM"
+                                            onChange={selectedOption =>
+                                              handleEditMaterial2SubCat2(catIdx, subCatIdx, itemIdx, "uom", selectedOption?.value || "")
+                                            }
+                                          />
+                                        </td>
+                                        <td>
+                                          {/* <input
+                                            type="number"
+                                            value={item.qty || ""}
+                                            readOnly
+                                            disabled
+                                            className="form-control"
+                                          /> */}
+                                          <input
+                                            type="number"
+                                            value={item.qty || ""}
+                                            onChange={e =>
+                                              handleEditMaterial2SubCat2(catIdx, subCatIdx, itemIdx, "qty", e.target.value)
+                                            }
+                                            className="form-control"
+                                          />
+                                        </td>
+
+                                        <td>
+                                          <input
+                                            type="number"
+                                            value={item.rate || ""}
+                                            onChange={(e) =>
+                                              handleEditMaterial2SubCat2(catIdx, subCatIdx, itemIdx, "rate", e.target.value)
+                                            }
+                                            className="form-control"
+                                          // disabled={item.type === "Material"}
+                                          />
+                                        </td>
+                                        <td>
+                                          <input
+                                            type="number"
+                                            value={item.amount || ""}
+                                            readOnly
+                                            disabled
+                                            className="form-control"
+                                          />
+                                        </td>
+
+                                        <td>
+                                          <button
+                                            className="btn btn-link p-0"
+                                            onClick={() => handleRemoveSubCategory2Row(catIdx, subCatIdx, itemIdx)}
+                                            aria-label="Remove row from sub-category 2"
+                                          >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                              {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                              <line x1="5" y1="8" x2="11" y2="8" />
+                                            </svg>
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))
+                                  }
+                                  {/* ...sub-category 3 rendering... */}
+
+                                  {/* Render Sub-Category 3 for each Sub-Category 2 */}
+                                  {openSubCategory2Id === subCategory.id &&
+                                    subCategory.sub_categories_3 &&
+                                    subCategory.sub_categories_3.length > 0 &&
+                                    subCategory.sub_categories_3.map(
+                                      (subCategory3, subCategory3Idx) => (
+                                        <React.Fragment key={subCategory3.id}>
+                                          <tr className="sub-category-lvl3">
+                                            {/* {console.log("sub3", subCategory3)}
+                                            {console.log(
+                                              "sub4",
+                                              subCategory3.sub_categories_4
+                                            )}
+                                            {console.log(
+                                              "sub3id:",
+                                              openSubCategory3Id
+                                            )} */}
+                                            <td>
+                                              <button
+                                                className="btn btn-link p-0"
+                                                onClick={() =>
+                                                  toggleSubCategory3(
+                                                    subCategory3.id
+                                                  )
+                                                }
+                                                aria-label="Toggle sub-category 3 visibility"
+                                              >
+                                                {openSubCategory3Id ===
+                                                  subCategory3.id ? (
+                                                  <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="24"
+                                                    height="24"
+                                                    viewBox="0 0 24 24"
+                                                    fill=" #e0e0e0"
+                                                    stroke="black"
+                                                    strokeWidth="1"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                  >
+                                                    {/* Square */}
+                                                    <rect
+                                                      x="3"
+                                                      y="3"
+                                                      width="18"
+                                                      height="20"
+                                                      rx="1"
+                                                      ry="1"
+                                                    />
+                                                    {/* Minus Icon */}
+                                                    <line
+                                                      x1="8"
+                                                      y1="12"
+                                                      x2="16"
+                                                      y2="12"
+                                                    />
+                                                  </svg>
+                                                ) : (
+                                                  <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="24"
+                                                    height="24"
+                                                    viewBox="0 0 24 24"
+                                                    fill=" #e0e0e0"
+                                                    stroke="black"
+                                                    strokeWidth="1"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                  >
+                                                    {/* Square */}
+                                                    <rect
+                                                      x="3"
+                                                      y="3"
+                                                      width="18"
+                                                      height="20"
+                                                      rx="1"
+                                                      ry="1"
+                                                    />
+                                                    {/* Plus Icon */}
+                                                    <line
+                                                      x1="12"
+                                                      y1="8"
+                                                      x2="12"
+                                                      y2="16"
+                                                    />
+                                                    <line
+                                                      x1="8"
+                                                      y1="12"
+                                                      x2="16"
+                                                      y2="12"
+                                                    />
+                                                  </svg>
+                                                )}
+                                              </button>
+                                            </td>
+                                            <td></td>
+                                            <td>Sub-Category Level 3</td>
+                                            <td>{subCategory3.name}</td>
+                                            <td>
+                                              <input
+                                                type="text"
+                                                value={subCategory3.location || ""}
+                                                onChange={(e) => handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "location", e.target.value)}
+                                                className="form-control"
+                                              />
+                                            </td>
+                                            <td>
+
+                                            </td>
+                                            <td>
+                                              <input
+                                                type="text"
+                                                value={subCategory3.items || ""}
+                                                onChange={(e) => handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "items", e.target.value)}
+                                                className="form-control"
+                                              />
+                                            </td>
+                                            {/* <td>
+
+                                            </td> */}
+                                            <td>
+                                              <SingleSelector
+                                                options={unitOfMeasures}
+                                                value={
+                                                  unitOfMeasures.find(opt => opt.value === subCategory3.uom)
+                                                }
+                                                placeholder="Select UOM"
+                                                onChange={selectedOption =>
+                                                  handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "uom", selectedOption?.value || "")
+                                                }
+                                              />
+                                            </td>
+                                            <td>
+                                              {/* <input
+                                                type="number"
+                                                value={subCategory3.qty || ""}
+                                                onChange={(e) =>
+                                                  handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "qty", e.target.value)
+                                                }
+                                                className="form-control"
+                                              /> */}
+                                            </td>
+                                            {/* <td></td>
+                                            <td></td> */}
+                                            <td></td>
+                                            <td>
+                                              {
+                                                (
+                                                  // Sum direct material_type_details amounts for level 3
+                                                  (subCategory3.material_type_details
+                                                    ? subCategory3.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                    : 0
+                                                  )
+                                                  +
+                                                  // Sum all sub-category 4 material_type_details amounts for level 3
+                                                  (subCategory3.sub_categories_4
+                                                    ? subCategory3.sub_categories_4.reduce(
+                                                      (subSum, subCat4) =>
+                                                        subSum +
+                                                        (
+                                                          // Sum direct material_type_details for level 4
+                                                          (subCat4.material_type_details
+                                                            ? subCat4.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                            : 0
+                                                          )
+                                                          +
+                                                          // Sum all sub-category 5 material_type_details for level 4
+                                                          (subCat4.sub_categories_5
+                                                            ? subCat4.sub_categories_5.reduce(
+                                                              (subSum5, subCat5) =>
+                                                                subSum5 +
+                                                                (subCat5.material_type_details
+                                                                  ? subCat5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                  : 0
+                                                                ),
+                                                              0
+                                                            )
+                                                            : 0
+                                                          )
+                                                        ),
+                                                      0
+                                                    )
+                                                    : 0
+                                                  )
+                                                )
+                                              }
+                                            </td>
+                                            {/* <td></td> */}
+                                            <td>
+
+
+                                              <button
+                                                className="btn btn-link p-0"
+                                                onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3Idx)}
+                                                disabled={activeAddLevel[catIdx]?.level && activeAddLevel[catIdx]?.level !== "sub3"}
+                                                // onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3, subCategory3.name, subCatIdx)}
+                                                aria-label="Add row to sub-category 3"
+                                              >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                  <line x1="12" y1="10" x2="12" y2="18" />
+                                                  <line x1="8" y1="14" x2="16" y2="14" />
+                                                  {/* <line x1="8" y1="34" x2="16" y2="34" /> */}
+                                                </svg>
+                                              </button>
+
+                                            </td>
+
+
+                                          </tr>
+
+                                          {/* Render material_type_details rows for sub-category 3 */}
+                                          {openSubCategory3Id === subCategory3.id &&
+                                            subCategory3.material_type_details &&
+                                            subCategory3.material_type_details.map((item, itemIdx) => (
+                                              <tr key={item.id} className="labour">
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td>{item.location}</td>
+                                                <td>{item.type}</td>
+                                                <td>
+                                                  {/* {item.specification} */}
+                                                  {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                </td>
+                                                {/* ...other cells... */}
+
+
+                                                <td>
+
+                                                  <SingleSelector
+                                                    options={unitOfMeasures}
+                                                    value={
+                                                      unitOfMeasures.find(opt => opt.value === item.uom)
+                                                    }
+                                                    placeholder="Select UOM"
+                                                    onChange={selectedOption =>
+                                                      handleEditMaterial2SubCat3(catIdx, subCatIdx, subCategory3Idx, itemIdx, "uom", selectedOption?.value || "")
+                                                    }
+                                                  />
+                                                </td>
+                                                <td>
+                                                  {/* <input
+                                                    type="number"
+                                                    value={item.qty || ""}
+                                                    readOnly
+                                                    disabled
+                                                    className="form-control"
+                                                  /> */}
+                                                  <input
+                                                    type="number"
+                                                    value={item.qty || ""}
+                                                    onChange={e =>
+                                                      handleEditMaterial2SubCat3(catIdx, subCatIdx, subCategory3Idx, itemIdx, "qty", e.target.value)
+                                                    }
+                                                    className="form-control"
+                                                  />
+                                                </td>
+
+
+                                                <td>
+                                                  <input
+                                                    type="number"
+                                                    value={item.rate || ""}
+                                                    onChange={(e) =>
+                                                      handleEditMaterial2SubCat3(catIdx, subCatIdx, subCategory3Idx, itemIdx, "rate", e.target.value)
+                                                    }
+                                                    className="form-control"
+                                                    disabled={item.type === "Material"}
+                                                  />
+                                                </td>
+
+                                                <td>
+                                                  <input
+                                                    type="number"
+                                                    value={item.amount || ""}
+                                                    readOnly
+                                                    disabled
+                                                    className="form-control"
+                                                  />
+                                                </td>
+
+                                                <td>
+                                                  <button
+                                                    className="btn btn-link p-0"
+                                                    onClick={() => handleRemoveSubCategory3Row(catIdx, subCatIdx, subCategory3Idx, itemIdx)}
+                                                    aria-label="Remove row from sub-category 3"
+                                                  >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                      {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                      <line x1="5" y1="8" x2="11" y2="8" />
+                                                    </svg>
+                                                  </button>
+                                                </td>
+                                              </tr>
+                                            ))
+                                          }
+
+
+                                          {/* Render Level 4 for each BOQ level 3 */}
+                                          {openSubCategory3Id ===
+                                            subCategory3.id &&
+                                            subCategory3.sub_categories_4 &&
+                                            subCategory3.sub_categories_4
+                                              .length > 0 &&
+                                            subCategory3.sub_categories_4.map(
+                                              (subCategory4, subCategory4Idx) => (
+                                                <React.Fragment
+                                                  key={subCategory4.id}
+                                                >
+                                                  <tr className="sub-category-lvl4">
+                                                    {/* {console.log("sub3",subCategory3)}
+                                                                            {console.log("sub4",subCategory3.sub_categories_4)}
+                                                                            {console.log("sub3id:", openSubCategory3Id)} */}
+                                                    <td>
+                                                      <button
+                                                        className="btn btn-link p-0"
+                                                        onClick={() =>
+                                                          toggleSubCategory4(
+                                                            subCategory4.id
+                                                          )
+                                                        }
+                                                        aria-label="Toggle sub-category 3 visibility"
+                                                      >
+                                                        {openSubCategory4Id ===
+                                                          subCategory4.id ? (
+                                                          <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="24"
+                                                            height="24"
+                                                            viewBox="0 0 24 24"
+                                                            fill=" #e0e0e0"
+                                                            stroke="black"
+                                                            strokeWidth="1"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                          >
+                                                            {/* Square */}
+                                                            <rect
+                                                              x="3"
+                                                              y="3"
+                                                              width="18"
+                                                              height="20"
+                                                              rx="1"
+                                                              ry="1"
+                                                            />
+                                                            {/* Minus Icon */}
+                                                            <line
+                                                              x1="8"
+                                                              y1="12"
+                                                              x2="16"
+                                                              y2="12"
+                                                            />
+                                                          </svg>
+                                                        ) : (
+                                                          <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="24"
+                                                            height="24"
+                                                            viewBox="0 0 24 24"
+                                                            fill=" #e0e0e0"
+                                                            stroke="black"
+                                                            strokeWidth="1"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                          >
+                                                            {/* Square */}
+                                                            <rect
+                                                              x="3"
+                                                              y="3"
+                                                              width="18"
+                                                              height="20"
+                                                              rx="1"
+                                                              ry="1"
+                                                            />
+                                                            {/* Plus Icon */}
+                                                            <line
+                                                              x1="12"
+                                                              y1="8"
+                                                              x2="12"
+                                                              y2="16"
+                                                            />
+                                                            <line
+                                                              x1="8"
+                                                              y1="12"
+                                                              x2="16"
+                                                              y2="12"
+                                                            />
+                                                          </svg>
+                                                        )}
+                                                      </button>
+                                                    </td>
+                                                    <td></td>
+                                                    <td>
+                                                      Sub-Category Level 4
+                                                    </td>
+                                                    <td>{subCategory4.name}</td>
+                                                    <td>
+                                                      <input
+                                                        type="text"
+                                                        value={subCategory4.location || ""}
+                                                        onChange={(e) => handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "location", e.target.value)}
+                                                        className="form-control"
+                                                      />
+                                                    </td>
+                                                    <td>
+
+                                                    </td>
+                                                    <td>
+                                                      <input
+                                                        type="text"
+                                                        value={subCategory4.items || ""}
+                                                        onChange={(e) => handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "items", e.target.value)}
+                                                        className="form-control"
+                                                      />
+                                                    </td>
+
+                                                    <td>
+                                                      <SingleSelector
+                                                        options={unitOfMeasures}
+                                                        value={
+                                                          unitOfMeasures.find(opt => opt.value === subCategory4.uom)
+                                                        }
+                                                        placeholder="Select UOM"
+                                                        onChange={selectedOption =>
+                                                          handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "uom", selectedOption?.value || "")
+                                                        }
+                                                      />
+                                                    </td>
+                                                    <td>
+                                                      {/* <input
+                                                        type="number"
+                                                        value={subCategory4.qty || ""}
+                                                        onChange={(e) =>
+                                                          handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "qty", e.target.value)
+                                                        }
+                                                        className="form-control"
+                                                      /> */}
+                                                    </td>
+
+                                                    <td></td>
+                                                    <td>
+                                                      {
+                                                        (
+                                                          // Sum direct material_type_details amounts for level 4
+                                                          (subCategory4.material_type_details
+                                                            ? subCategory4.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                            : 0
+                                                          )
+                                                          +
+                                                          // Sum all sub-category 5 material_type_details amounts for level 4
+                                                          (subCategory4.sub_categories_5
+                                                            ? subCategory4.sub_categories_5.reduce(
+                                                              (subSum, subCat5) =>
+                                                                subSum +
+                                                                (subCat5.material_type_details
+                                                                  ? subCat5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                  : 0
+                                                                ),
+                                                              0
+                                                            )
+                                                            : 0
+                                                          )
+                                                        )
+                                                      }
+                                                    </td>
+                                                    {/* <td></td> */}
+
+                                                    <td>
+                                                      <button
+                                                        className="btn btn-link p-0"
+                                                        onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3Idx, subCategory4Idx)}
+                                                        disabled={activeAddLevel[catIdx]?.level && activeAddLevel[catIdx]?.level !== "sub4"}
+                                                        // onClick={() => handleOpenAddModal(catIdx, subCatIdx,subCategory3Idx, subCategory4Idx, subCategory4.id)}
+                                                        aria-label="Add row to sub-category 2"
+                                                      >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                          <line x1="12" y1="10" x2="12" y2="18" />
+                                                          <line x1="8" y1="14" x2="16" y2="14" />
+                                                          {/* <line x1="8" y1="34" x2="16" y2="34" /> */}
+                                                        </svg>
+                                                      </button>
+                                                    </td>
+
+                                                  </tr>
+
+
+                                                  {/* Render material_type_details rows for sub-category 3 */}
+                                                  {openSubCategory4Id === subCategory4.id &&
+                                                    subCategory4.material_type_details &&
+                                                    subCategory4.material_type_details.map((item, itemIdx) => (
+                                                      <tr key={item.id} className="labour">
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>{item.location}</td>
+                                                        <td>{item.type}</td>
+                                                        <td>
+                                                          {/* {item.specification} */}
+                                                          {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                        </td>
+                                                        {/* ...other cells... */}
+
+                                                        <td>
+                                                          <SingleSelector
+                                                            options={unitOfMeasures}
+                                                            value={
+                                                              unitOfMeasures.find(opt => opt.value === item.uom)
+                                                            }
+                                                            placeholder="Select UOM"
+                                                            onChange={selectedOption =>
+                                                              handleEditMaterial2SubCat4(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "uom", selectedOption?.value || "")
+                                                            }
+                                                          />
+                                                        </td>
+                                                        <td>
+                                                          {/* <input
+                                                            type="number"
+                                                            value={item.qty || ""}
+                                                            readOnly
+                                                            disabled
+                                                            className="form-control"
+                                                          /> */}
+                                                          <input
+                                                            type="number"
+                                                            value={item.qty || ""}
+                                                            onChange={e =>
+                                                              handleEditMaterial2SubCat4(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "qty", e.target.value)
+                                                            }
+                                                            className="form-control"
+                                                          />
+                                                        </td>
+
+                                                        <td>
+                                                          <input
+                                                            type="number"
+                                                            value={item.rate || ""}
+                                                            onChange={(e) =>
+                                                              handleEditMaterial2SubCat4(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "rate", e.target.value)
+                                                            }
+                                                            className="form-control"
+                                                            disabled={item.type === "Material"}
+                                                          />
+                                                        </td>
+
+                                                        <td>
+                                                          <input
+                                                            type="number"
+                                                            value={item.amount || ""}
+                                                            readOnly
+                                                            disabled
+                                                            className="form-control"
+                                                          />
+                                                        </td>
+
+
+                                                        <td>
+                                                          <button
+                                                            className="btn btn-link p-0"
+                                                            onClick={() => handleRemoveSubCategory3Row(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx)}
+                                                            aria-label="Remove row from sub-category 3"
+                                                          >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                              {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                              <line x1="5" y1="8" x2="11" y2="8" />
+                                                            </svg>
+                                                          </button>
+                                                        </td>
+                                                      </tr>
+                                                    ))
+                                                  }
+
+                                                  {/* Render Level 5 for each BOQ level 4*/}
+                                                  {openSubCategory4Id ===
+                                                    subCategory4.id &&
+                                                    subCategory4.sub_categories_5 &&
+                                                    subCategory4
+                                                      .sub_categories_5.length >
+                                                    0 &&
+                                                    subCategory4.sub_categories_5.map(
+                                                      (subCategory5, subCategory5Idx) => (
+                                                        <React.Fragment
+                                                          key={subCategory5.id}
+                                                        >
+                                                          <tr className="sub-category-lvl5">
+                                                            {console.log(
+                                                              "sub5",
+                                                              subCategory5
+                                                            )}
+                                                            {/* {console.log("sub4",subCategory3.sub_categories_4)}
+                                                                            {console.log("sub3id:", openSubCategory3Id)} */}
+                                                            <td>
+                                                              <button
+                                                                className="btn btn-link p-0"
+                                                                onClick={() =>
+                                                                  toggleSubCategory5(
+                                                                    subCategory5.id
+                                                                  )
+                                                                }
+                                                                aria-label="Toggle sub-category 3 visibility"
+                                                              >
+                                                                {openSubCategory5Id ===
+                                                                  subCategory5.id ? (
+                                                                  <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    width="24"
+                                                                    height="24"
+                                                                    viewBox="0 0 24 24"
+                                                                    fill=" #e0e0e0"
+                                                                    stroke="black"
+                                                                    strokeWidth="1"
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                  >
+                                                                    {/* Square */}
+                                                                    <rect
+                                                                      x="3"
+                                                                      y="3"
+                                                                      width="18"
+                                                                      height="20"
+                                                                      rx="1"
+                                                                      ry="1"
+                                                                    />
+                                                                    {/* Minus Icon */}
+                                                                    <line
+                                                                      x1="8"
+                                                                      y1="12"
+                                                                      x2="16"
+                                                                      y2="12"
+                                                                    />
+                                                                  </svg>
+                                                                ) : (
+                                                                  <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    width="24"
+                                                                    height="24"
+                                                                    viewBox="0 0 24 24"
+                                                                    fill=" #e0e0e0"
+                                                                    stroke="black"
+                                                                    strokeWidth="1"
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                  >
+                                                                    {/* Square */}
+                                                                    <rect
+                                                                      x="3"
+                                                                      y="3"
+                                                                      width="18"
+                                                                      height="20"
+                                                                      rx="1"
+                                                                      ry="1"
+                                                                    />
+                                                                    {/* Plus Icon */}
+                                                                    <line
+                                                                      x1="12"
+                                                                      y1="8"
+                                                                      x2="12"
+                                                                      y2="16"
+                                                                    />
+                                                                    <line
+                                                                      x1="8"
+                                                                      y1="12"
+                                                                      x2="16"
+                                                                      y2="12"
+                                                                    />
+                                                                  </svg>
+                                                                )}
+                                                              </button>
+                                                            </td>
+                                                            <td></td>
+                                                            <td>
+                                                              Sub-Category Level 5
+                                                            </td>
+                                                            <td>{
+                                                              subCategory5.name
+                                                            }</td>
+                                                            <td>
+                                                              <input
+                                                                type="text"
+                                                                value={subCategory5.location || ""}
+                                                                onChange={(e) => handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "location", e.target.value)}
+                                                                className="form-control"
+                                                              />
+                                                            </td>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+                                                              <input
+                                                                type="text"
+                                                                value={subCategory5.items || ""}
+                                                                onChange={(e) => handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "items", e.target.value)}
+                                                                className="form-control"
+                                                              />
+                                                            </td>
+                                                            {/* <td>
+
+                                                            </td> */}
+                                                            <td>
+                                                              <SingleSelector
+                                                                options={unitOfMeasures}
+                                                                value={
+                                                                  unitOfMeasures.find(opt => opt.value === subCategory5.uom)
+                                                                }
+                                                                placeholder="Select UOM"
+                                                                onChange={selectedOption =>
+                                                                  handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "uom", selectedOption?.value || "")
+                                                                }
+                                                              />
+                                                            </td>
+                                                            <td>
+                                                              {/* <input
+                                                                type="number"
+                                                                value={subCategory5.qty || ""}
+                                                                onChange={(e) =>
+                                                                  handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "qty", e.target.value)
+                                                                }
+                                                                className="form-control"
+                                                              /> */}
+                                                            </td>
+                                                            {/* <td></td>
+                                                            <td></td> */}
+                                                            <td></td>
+                                                            <td>
+                                                              {
+                                                                subCategory5.material_type_details
+                                                                  ? subCategory5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                  : 0
+                                                              }
+                                                            </td>
+                                                            {/* <td></td> */}
+                                                            <td>
+                                                              <button
+                                                                className="btn btn-link p-0"
+                                                                onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3Idx, subCategory4Idx, subCategory5Idx)}
+                                                                disabled={activeAddLevel[catIdx]?.level && activeAddLevel[catIdx]?.level !== "sub5"}
+                                                                // onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5.id,subCategory5Idx)}
+                                                                aria-label="Add row to sub-category 2"
+                                                              >
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                  <line x1="12" y1="10" x2="12" y2="18" />
+                                                                  <line x1="8" y1="14" x2="16" y2="14" />
+                                                                  {/* <line x1="8" y1="34" x2="16" y2="34" /> */}
+                                                                </svg>
+                                                              </button>
+
+                                                            </td>
+
+                                                          </tr>
+
+
+                                                          {/* Render material_type_details rows for sub-category 3 */}
+                                                          {openSubCategory5Id === subCategory5.id &&
+                                                            subCategory5.material_type_details &&
+                                                            subCategory5.material_type_details.map((item, itemIdx) => (
+                                                              <tr key={item.id} className="labour">
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td>{item.location}</td>
+                                                                <td>{item.type}</td>
+                                                                <td>
+                                                                  {/* {item.specification || item.labourActLabel} */}
+                                                                  {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                                </td>
+                                                                {/* ...other cells... */}
+
+                                                                <td>
+
+                                                                  <SingleSelector
+                                                                    options={unitOfMeasures}
+                                                                    value={
+                                                                      unitOfMeasures.find(opt => opt.value === item.uom)
+                                                                    }
+                                                                    placeholder="Select UOM"
+                                                                    onChange={selectedOption =>
+                                                                      handleEditMaterial2SubCat5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory4Idx, itemIdx, "uom", selectedOption?.value || "")
+                                                                    }
+                                                                  />
+                                                                </td>
+                                                                <td>
+                                                                  {/* <input
+                                                                    type="number"
+                                                                    value={item.qty || ""}
+                                                                    readOnly
+                                                                    disabled
+                                                                    className="form-control"
+                                                                  /> */}
+                                                                  <input
+                                                                    type="number"
+                                                                    value={item.qty || ""}
+                                                                    onChange={e =>
+                                                                      handleEditMaterial2SubCat5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory4Idx, itemIdx, "qty", e.target.value)
+                                                                    }
+                                                                    className="form-control"
+                                                                  />
+                                                                </td>
+
+                                                                <td>
+                                                                  <input
+                                                                    type="number"
+                                                                    value={item.rate || ""}
+                                                                    onChange={(e) =>
+                                                                      handleEditMaterial2SubCat5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx, "rate", e.target.value)
+                                                                    }
+                                                                    className="form-control"
+                                                                    disabled={item.type === "Material"}
+                                                                  />
+                                                                </td>
+
+                                                                <td>
+                                                                  <input
+                                                                    type="number"
+                                                                    value={item.amount || ""}
+                                                                    readOnly
+                                                                    disabled
+                                                                    className="form-control"
+                                                                  />
+                                                                </td>
+
+                                                                <td>
+                                                                  <button
+                                                                    className="btn btn-link p-0"
+                                                                    onClick={() => handleRemoveSubCategory3Row(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx)}
+                                                                    aria-label="Remove row from sub-category 3"
+                                                                  >
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                      {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                      <line x1="5" y1="8" x2="11" y2="8" />
+                                                                    </svg>
+                                                                  </button>
+                                                                </td>
+                                                              </tr>
+                                                            ))
+                                                          }
+
+
+
+                                                        </React.Fragment>
+                                                      )
+                                                    )}
+                                                </React.Fragment>
+                                              )
+                                            )}
+                                        </React.Fragment>
+                                      )
+                                    )}
+
+                                  {/* .. */}
+                                </React.Fragment>
+                              ))}
+                            {/* sub level 2 end*/}
+                          </React.Fragment>
+                        ))}
+                      {/* Conditional rendering for categories under sub-project  end*/}
+
+                      {/* subProject end */}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+             )} 
+
+            {console.log("budget type:", typeof budgetType, budgetType)}
             {/* <div className="d-flex justify-content-end mx-3">
                             <button className="purple-btn2">Bulk Upload</button>
                             <button className="purple-btn2">Download Template</button>
@@ -3649,9 +5652,9 @@ const EstimationCreation = () => {
                   className="form-check-input"
                   type="radio"
                   name="type-0"
-                  value="Material"
-                  checked={modalRows[0].type === "Material"}
-                  onChange={() => handleModalRowChange(0, "type", "Material")}
+                  value="material"
+                  checked={modalRows[0].type === "material"}
+                  onChange={() => handleModalRowChange(0, "type", "material")}
                 />
                 <label className="form-check-label">Material</label>
               </div>
@@ -3661,9 +5664,9 @@ const EstimationCreation = () => {
                   className="form-check-input"
                   type="radio"
                   name="type-0"
-                  value="Labour"
-                  checked={modalRows[0].type === "Labour"}
-                  onChange={() => handleModalRowChange(0, "type", "Labour")}
+                  value="labour"
+                  checked={modalRows[0].type === "labour"}
+                  onChange={() => handleModalRowChange(0, "type", "labour")}
                 />
                 <label className="form-check-label">Labour</label>
               </div>
@@ -3673,9 +5676,9 @@ const EstimationCreation = () => {
                   className="form-check-input"
                   type="radio"
                   name="type-0"
-                  value="Composite"
-                  checked={modalRows[0].type === "Composite"}
-                  onChange={() => handleModalRowChange(0, "type", "Composite")}
+                  value="composite"
+                  checked={modalRows[0].type === "composite"}
+                  onChange={() => handleModalRowChange(0, "type", "composite")}
                 />
                 <label className="form-check-label">Composite</label>
               </div>
@@ -3683,7 +5686,7 @@ const EstimationCreation = () => {
 
             {/* Row 2: Material Type & Specification (only for Material) */}
 
-            {modalRows[0].type === "Material" && (
+            {modalRows[0].type === "material" && (
               <div className="d-flex align-items-center mb-2">
                 <div className="col-md-6 mt-3">
                   <div className="form-group">
@@ -3723,7 +5726,7 @@ const EstimationCreation = () => {
 
 
             {/* Conditional Labour Type Select */}
-            {modalRows[0].type === "Labour" && (
+            {modalRows[0].type === "labour" && (
 
               <div className="col-md-6 mt-3">
                 <div className="form-group">
@@ -3738,13 +5741,14 @@ const EstimationCreation = () => {
                       handleModalRowChange(0, "labourType", selectedOption || "")
                     }
                   />
+                  {console.log("cat:", labourActivities)}
                 </div>
               </div>
 
             )}
 
             {/* Conditional Composite Input */}
-            {modalRows[0].type === "Composite" && (
+            {modalRows[0].type === "composite" && (
               <div className="col-md-6 mt-3">
                 <div className="form-group">
                   <label>Composite Value</label>

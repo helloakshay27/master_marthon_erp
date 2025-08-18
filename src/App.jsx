@@ -129,6 +129,8 @@ import AddMor from "./pages/add-mor";
 import AddPo from "./pages/add-po";
 import RopoMappingDetail from "./pages/ropo-mapping-detail";
 import EstimationCreationList from "./pages/estimation-creation-list";
+import EstimationCreationTest from "./pages/estimation-creation-test";
+import EstimationCreationDetails from "./pages/estimation-creation-details";
 
 function App() {
   return (
@@ -257,6 +259,8 @@ function App() {
           {/* estimation */}
           <Route path="/estimation-list" element={<EstimationList />} />
           <Route path="/estimation-creation-list" element={<EstimationCreationList />} />
+           <Route path="/estimation-creation-test" element={<EstimationCreationTest />} />
+            <Route path="/estimation-creation-details/:id" element={<EstimationCreationDetails />} />
           <Route
             path="/estimation-details-project/:id"
             element={<EstimationDetailsProject />}

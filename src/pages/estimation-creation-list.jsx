@@ -481,7 +481,7 @@ const EstimationCreationList = () => {
                                                                     {wingIndex === 0 && siteIndex === 0 ? (
                                                                         <td className="text-start">
                                                                             {project.budget_id ? (
-                                                                                <a href={`/estimation-details-project/${project.budget_id}?token=${token}`}
+                                                                                <a href={`/estimation-creation-details/${project.budget_id}?token=${token}`}
                                                                                     title={project.status ? `Status: ${project.status}` : ""}
                                                                                     style={{
                                                                                         cursor: project.status ? "pointer" : "default",
@@ -519,7 +519,7 @@ const EstimationCreationList = () => {
                                                                     {wingIndex === 0 ? (
                                                                         <td className="text-start">
                                                                             {site.budget_id ? (
-                                                                                <a href={`/estimation-details-sub-project/${site.budget_id}?token=${token}`}
+                                                                                <a href={`/estimation-creation-details/${site.budget_id}?token=${token}`}
                                                                                     title={site.status ? `Status: ${site.status}` : ""}
                                                                                     style={{
                                                                                         cursor: site.status ? "pointer" : "default",
@@ -601,7 +601,7 @@ const EstimationCreationList = () => {
                                                                     {siteIndex === 0 ? (
                                                                         <td className="text-start">
                                                                             {project.budget_id ? (
-                                                                                <a href={`/estimation-details-project/${project.budget_id}?token=${token}`}
+                                                                                <a href={`/estimation-creation-details/${project.budget_id}?token=${token}`}
                                                                                     title={project.status ? `Status: ${project.status}` : ""}
                                                                                     style={{
                                                                                         cursor: project.status ? "pointer" : "default",
@@ -636,7 +636,7 @@ const EstimationCreationList = () => {
                                                                     {/* Sub-Project Name */}
                                                                     <td className="text-start">
                                                                         {site.budget_id ? (
-                                                                            <a href={`/estimation-details-sub-project/${site.budget_id}?token=${token}`}
+                                                                            <a href={`/estimation-creation-details/${site.budget_id}?token=${token}`}
                                                                                 title={site.status ? `Status: ${site.status}` : ""}
                                                                                 style={{
                                                                                     cursor: site.status ? "pointer" : "default",
