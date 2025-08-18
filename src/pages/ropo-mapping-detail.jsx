@@ -267,7 +267,7 @@ const handleStatusUpdate = async () => {
                                     <td>{item.order_qty || "-"}</td>
                                     <td>{item.uom_name || "-"}</td>
                                     <td>{item.required_quantity || "-"}</td>
-                                    <td>{item.rate || "-"}</td>
+                                    <td>{item.rate_per_nos || "-"}</td>
                                     <td>{item.material_cost || "-"}</td>
                                     <td>{item.grn_qty || "-"}</td>
                                   </tr>

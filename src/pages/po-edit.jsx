@@ -131,6 +131,38 @@ const PoEdit = () => {
   const [materialDetails, setMaterialDetails] = useState([]);
   const [rateAndTaxes, setRateAndTaxes] = useState([]);
 
+// For different format options:
+const formatDateTime = (dateString) => {
+  if (!dateString) return '';
+  
+  try {
+    const date = new Date(dateString);
+    // Different format examples:
+    
+    // American style: MM/DD/YYYY, HH:MM AM/PM
+    return date.toLocaleString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+    
+    // 24-hour format: DD/MM/YYYY, HH:MM
+    return date.toLocaleString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return dateString;
+  }
+};
   // Fetch purchase order data on component mount
   useEffect(() => {
     const fetchPurchaseOrderData = async () => {
@@ -427,8 +459,10 @@ const PoEdit = () => {
     console.log("Raw attachment data:", poData.attachments);
     
     const formattedAttachments = poData.attachments.map((att) => {
-      // Parse the uploaded_at date if it exists
-      let uploadDate = att.uploaded_at || new Date().toISOString().slice(0, 19);
+      // Use helper to convert API date "13/08/2025,  5:43 PM" to datetime-local format
+      const uploadDate = att.uploaded_at
+        ? formatToLocalDateTimeInput(att.uploaded_at)
+        : getLocalDateTime();
       
       return {
         id: att.id || att.blob_id || Math.random(),
@@ -1853,6 +1887,54 @@ const PoEdit = () => {
     return localDate.toISOString().slice(0, 19); // "YYYY-MM-DDTHH:MM"
   };
 
+  // Convert dates like "13/08/2025,  5:43 PM" or ISO strings to
+  // input[type="datetime-local"] format: YYYY-MM-DDTHH:MM:SS
+  const formatToLocalDateTimeInput = (input) => {
+    if (!input) return "";
+
+    const toInputDateTimeLocal = (date) => {
+      const pad = (n) => String(n).padStart(2, "0");
+      const yyyy = date.getFullYear();
+      const mm = pad(date.getMonth() + 1);
+      const dd = pad(date.getDate());
+      const hh = pad(date.getHours());
+      const mi = pad(date.getMinutes());
+      const ss = pad(date.getSeconds());
+      return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}`;
+    };
+
+    // If ISO-like, let Date parse
+    if (input.includes("T") || /^\d{4}-\d{2}-\d{2}/.test(input)) {
+      const d = new Date(input);
+      if (!isNaN(d.getTime())) return toInputDateTimeLocal(d);
+    }
+
+    try {
+      // Expect format dd/mm/yyyy, hh:mm AM/PM (with possible extra spaces)
+      const [datePartRaw = "", timePartFullRaw = ""] = input.split(",");
+      const datePart = datePartRaw.trim();
+      const timeFull = timePartFullRaw.trim().replace(/\s+/g, " ");
+
+      const [dd, mm, yyyy] = datePart.split("/").map((s) => s.trim());
+      if (!dd || !mm || !yyyy) return "";
+
+      const [timePart = "", ampmRaw = ""] = timeFull.split(" ");
+      const [hhStr = "0", minStr = "0", ssStr = "0"] = timePart.split(":");
+      let hour = parseInt(hhStr, 10);
+      const minute = parseInt(minStr, 10) || 0;
+      const second = parseInt(ssStr, 10) || 0;
+      const ampm = ampmRaw.toUpperCase();
+
+      if (ampm === "PM" && hour < 12) hour += 12;
+      if (ampm === "AM" && hour === 12) hour = 0;
+
+      const pad = (n) => String(n).padStart(2, "0");
+      return `${yyyy}-${pad(parseInt(mm, 10))}-${pad(parseInt(dd, 10))}T${pad(hour)}:${pad(minute)}:${pad(second)}`;
+    } catch (e) {
+      return "";
+    }
+  };
+
   const handleAddRow = () => {
     setAttachments((prev) => [
       ...prev,
@@ -2234,6 +2316,18 @@ const PoEdit = () => {
     );
   };
   // ...existing code...
+    const calculateNetCostForTaxes = (baseCost, additionTaxes, deductionTaxes) => {
+    const additionTotal = (additionTaxes || []).reduce((sum, tax) => {
+      return sum + (parseFloat(tax.amount) || 0);
+    }, 0);
+
+    const deductionTotal = (deductionTaxes || []).reduce((sum, tax) => {
+      return sum + (parseFloat(tax.amount) || 0);
+    }, 0);
+
+    // Formula: Net Cost = Base Cost + Addition Taxes - Deduction Taxes
+    return baseCost + additionTotal - deductionTotal;
+  };
 
   // Handle taxes modal functions
   const handleOpenTaxesModal = (itemId, itemType = "charge") => {
@@ -2257,11 +2351,18 @@ const PoEdit = () => {
       netCost: baseCost.toFixed(2),
     };
 
+       const initialNetCost = calculateNetCostForTaxes(
+      baseCost,
+      savedTaxes.additionTaxes,
+      savedTaxes.deductionTaxes
+    );
+
     setChargeTaxes({
       additionTaxes: savedTaxes.additionTaxes || [],
       deductionTaxes: savedTaxes.deductionTaxes || [],
       baseCost: baseCost,
-      netCost: savedTaxes.netCost || baseCost.toFixed(2),
+      // netCost: savedTaxes.netCost || baseCost.toFixed(2),
+        netCost: initialNetCost.toFixed(2),
     });
     setShowTaxesModal(true);
   };
@@ -2342,16 +2443,21 @@ const PoEdit = () => {
           return tax;
         });
 
-        // Calculate net cost
-        const additionTotal = updatedAdditionTaxes.reduce((sum, tax) => {
-          return sum + (parseFloat(tax.amount) || 0);
-        }, 0);
+        // // Calculate net cost
+        // const additionTotal = updatedAdditionTaxes.reduce((sum, tax) => {
+        //   return sum + (parseFloat(tax.amount) || 0);
+        // }, 0);
 
-        const deductionTotal = prev.deductionTaxes.reduce((sum, tax) => {
-          return sum + (parseFloat(tax.amount) || 0);
-        }, 0);
+        // const deductionTotal = prev.deductionTaxes.reduce((sum, tax) => {
+        //   return sum + (parseFloat(tax.amount) || 0);
+        // }, 0);
 
-        const netCost = chargeTaxes.baseCost + additionTotal - deductionTotal;
+        // const netCost = chargeTaxes.baseCost + additionTotal - deductionTotal;
+          const netCost = calculateNetCostForTaxes(
+          chargeTaxes.baseCost,
+          updatedAdditionTaxes,
+          prev.deductionTaxes
+        );
 
         return {
           ...prev,
@@ -2392,15 +2498,20 @@ const PoEdit = () => {
         });
 
         // Calculate net cost
-        const additionTotal = prev.additionTaxes.reduce((sum, tax) => {
-          return sum + (parseFloat(tax.amount) || 0);
-        }, 0);
+        // const additionTotal = prev.additionTaxes.reduce((sum, tax) => {
+        //   return sum + (parseFloat(tax.amount) || 0);
+        // }, 0);
 
-        const deductionTotal = updatedDeductionTaxes.reduce((sum, tax) => {
-          return sum + (parseFloat(tax.amount) || 0);
-        }, 0);
+        // const deductionTotal = updatedDeductionTaxes.reduce((sum, tax) => {
+        //   return sum + (parseFloat(tax.amount) || 0);
+        // }, 0);
 
-        const netCost = chargeTaxes.baseCost + additionTotal - deductionTotal;
+        // const netCost = chargeTaxes.baseCost + additionTotal - deductionTotal;
+         const netCost = calculateNetCostForTaxes(
+          chargeTaxes.baseCost,
+          prev.additionTaxes,
+          updatedDeductionTaxes
+        );
 
         return {
           ...prev,

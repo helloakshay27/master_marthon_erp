@@ -2184,6 +2184,20 @@ const PoDetails = () => {
   };
   // ...existing code...
 
+  // Helper function to calculate net cost for charges and other costs
+  const calculateNetCostForTaxes = (baseCost, additionTaxes, deductionTaxes) => {
+    const additionTotal = (additionTaxes || []).reduce((sum, tax) => {
+      return sum + (parseFloat(tax.amount) || 0);
+    }, 0);
+
+    const deductionTotal = (deductionTaxes || []).reduce((sum, tax) => {
+      return sum + (parseFloat(tax.amount) || 0);
+    }, 0);
+
+    // Formula: Net Cost = Base Cost + Addition Taxes - Deduction Taxes
+    return baseCost + additionTotal - deductionTotal;
+  };
+
   // Handle taxes modal functions
   const handleOpenTaxesModal = (itemId, itemType = "charge") => {
     console.log("opneddd");
@@ -2206,11 +2220,18 @@ const PoDetails = () => {
       netCost: baseCost.toFixed(2),
     };
 
+    // Calculate initial net cost based on saved taxes
+    const initialNetCost = calculateNetCostForTaxes(
+      baseCost,
+      savedTaxes.additionTaxes,
+      savedTaxes.deductionTaxes
+    );
+
     setChargeTaxes({
       additionTaxes: savedTaxes.additionTaxes || [],
       deductionTaxes: savedTaxes.deductionTaxes || [],
       baseCost: baseCost,
-      netCost: savedTaxes.netCost || baseCost.toFixed(2),
+      netCost: initialNetCost.toFixed(2),
     });
     setShowTaxesModal(true);
   };
@@ -2291,16 +2312,12 @@ const PoDetails = () => {
           return tax;
         });
 
-        // Calculate net cost
-        const additionTotal = updatedAdditionTaxes.reduce((sum, tax) => {
-          return sum + (parseFloat(tax.amount) || 0);
-        }, 0);
-
-        const deductionTotal = prev.deductionTaxes.reduce((sum, tax) => {
-          return sum + (parseFloat(tax.amount) || 0);
-        }, 0);
-
-        const netCost = chargeTaxes.baseCost + additionTotal - deductionTotal;
+        // Calculate net cost using helper function
+        const netCost = calculateNetCostForTaxes(
+          chargeTaxes.baseCost,
+          updatedAdditionTaxes,
+          prev.deductionTaxes
+        );
 
         return {
           ...prev,
@@ -2340,16 +2357,12 @@ const PoDetails = () => {
           return tax;
         });
 
-        // Calculate net cost
-        const additionTotal = prev.additionTaxes.reduce((sum, tax) => {
-          return sum + (parseFloat(tax.amount) || 0);
-        }, 0);
-
-        const deductionTotal = updatedDeductionTaxes.reduce((sum, tax) => {
-          return sum + (parseFloat(tax.amount) || 0);
-        }, 0);
-
-        const netCost = chargeTaxes.baseCost + additionTotal - deductionTotal;
+        // Calculate net cost using helper function
+        const netCost = calculateNetCostForTaxes(
+          chargeTaxes.baseCost,
+          prev.additionTaxes,
+          updatedDeductionTaxes
+        );
 
         return {
           ...prev,
@@ -3415,8 +3428,8 @@ const PoDetails = () => {
                                           (mat, idx) => (
                                             <tr key={mat.id || idx}>
                                               <td>{idx + 1}</td>
-                                              <td>{mat.project_name}</td>
-                                              <td>{mat.sub_project_name}</td>
+                                              <td>{mat.project}</td>
+                                              <td>{mat.sub_project}</td>
                                               {/* <td>
                                               <a
                                                 style={{
@@ -5510,21 +5523,22 @@ Document */}
                             </td>
                           </tr>
                         ))}
-                      <tr>
-                        <td>Net Cost</td>
-                        <td></td>
-                        <td></td>
-                        <td className="text-center">
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={taxRateData[tableId]?.netCost || ""}
-                            readOnly
-                            disabled={true}
-                          />
-                        </td>
-                        <td></td>
-                      </tr>
+                                      <tr>
+                  <td>Net Cost</td>
+                  <td></td>
+                  <td></td>
+                  <td className="text-center">
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={taxRateData[tableId]?.netCost || ""}
+                      readOnly
+                      disabled={true}
+                    />
+                  
+                  </td>
+                  <td></td>
+                </tr>
                     </tbody>
                   </table>
                 </div>
