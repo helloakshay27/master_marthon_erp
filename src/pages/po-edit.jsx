@@ -964,7 +964,7 @@ const formatDateTime = (dateString) => {
                 resource_id: tax.resource_id,
                 tax_category_id: tax.tax_category_id,
                 taxChargeType:
-                  taxOptions.find((option) => option.id === tax.resource_id)
+                  taxOptions.find((option) => option.id === tax.tax_category_id)
                     ?.value || tax.resource_type,
                 taxType: tax.resource_type, // Set taxType based on API response
                 taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
@@ -979,7 +979,7 @@ const formatDateTime = (dateString) => {
                 tax_category_id: tax.tax_category_id,
                 taxChargeType:
                   deductionTaxOptions.find(
-                    (option) => option.id === tax.resource_id
+                    (option) => option.id === tax.tax_category_id
                   )?.value || tax.resource_type,
                 taxType: tax.resource_type, // Set taxType based on API response
                 taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
@@ -1322,7 +1322,44 @@ const formatDateTime = (dateString) => {
 
   const handleSaveTaxChanges = async () => {
     if (tableId !== null) {
-      const currentData = taxRateData[tableId];
+      // Ensure percentageId is set for percentage-based taxes before saving
+      const resolvePercentageIds = (data) => {
+        if (!data) return data;
+        const updateList = (list) =>
+          (list || []).map((taxItem) => {
+            // If percentageId missing but percentage value present, resolve from cached percentages
+            if (
+              (!taxItem.percentageId || taxItem.percentageId === null) &&
+              taxItem.taxChargePerUom &&
+              typeof taxItem.taxChargePerUom === "string" &&
+              taxItem.taxChargePerUom.includes("%")
+            ) {
+              const numeric = parseFloat(
+                taxItem.taxChargePerUom.replace("%", "")
+              );
+              const available = materialTaxPercentages[taxItem.id] || [];
+              const match = available.find(
+                (p) => parseFloat(p.percentage) === numeric
+              );
+              if (match && match.id) {
+                return { ...taxItem, percentageId: match.id };
+              }
+            }
+            return taxItem;
+          });
+
+        return {
+          ...data,
+          addition_bid_material_tax_details: updateList(
+            data.addition_bid_material_tax_details
+          ),
+          deduction_bid_material_tax_details: updateList(
+            data.deduction_bid_material_tax_details
+          ),
+        };
+      };
+
+      const currentData = resolvePercentageIds(taxRateData[tableId]);
       if (!currentData) {
         console.error("No data available for saving");
         return;
@@ -1456,7 +1493,7 @@ const formatDateTime = (dateString) => {
                   id: tax.id,
                   resource_id: tax.resource_id,
                   taxChargeType:
-                    taxOptions.find((option) => option.id === tax.resource_id)
+                    taxOptions.find((option) => option.id === tax.tax_category_id)
                       ?.value || "",
                   taxType: tax.resource_type,
                   taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
@@ -1469,7 +1506,7 @@ const formatDateTime = (dateString) => {
                   resource_id: tax.resource_id,
                   taxChargeType:
                     deductionTaxOptions.find(
-                      (option) => option.id === tax.resource_id
+                      (option) => option.id === tax.tax_category_id
                     )?.value || "",
                   taxType: tax.resource_type,
                   taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
@@ -5594,171 +5631,109 @@ Document */}
                         .map((item, rowIndex) => (
                           <tr key={`${rowIndex}-${item.id}`}>
                             <td>
-                              {taxOptions && taxOptions.length > 0 ? (
-                                <SelectBox
-                                  options={taxOptions}
-                                  defaultValue={
-                                    item.taxChargeType ||
-                                    taxOptions.find(
-                                      (option) => option.id === item.resource_id
-                                    )?.value ||
-                                    taxOptions.find(
-                                      (option) =>
-                                        option.value === item.taxChargeType
-                                    )?.value ||
-                                    ""
+                              <select
+                                className="form-control"
+                                value={
+                                  item.taxChargeType ||
+                                  taxOptions.find(
+                                    (option) => option.id === item.tax_category_id
+                                  )?.value ||
+                                  ""
+                                }
+                                onChange={(e) => {
+                                  const selectedValue = e.target.value;
+                                  const selectedOption = taxOptions.find(
+                                    (option) => option.value === selectedValue
+                                  );
+                                  const selectedTaxType =
+                                    selectedOption?.value || selectedValue;
+
+                                  handleTaxChargeChange(
+                                    tableId,
+                                    item.id,
+                                    "taxChargeType",
+                                    selectedTaxType,
+                                    "addition"
+                                  );
+
+                                  if (selectedOption?.id) {
+                                    handleTaxCategoryChange(
+                                      tableId,
+                                      selectedOption.id,
+                                      item.id
+                                    );
                                   }
-                                  onChange={(value) => {
-                                    const selectedOption = taxOptions.find(
-                                      (option) => option.value === value
-                                    );
-                                    const selectedTaxType =
-                                      selectedOption?.value || value;
-
-                                    // Update tax charge type
-                                    handleTaxChargeChange(
-                                      tableId,
-                                      item.id,
-                                      "taxChargeType",
-                                      selectedTaxType,
-                                      "addition"
-                                    );
-
-                                    // Fetch tax percentages for the selected category
-                                    if (selectedOption?.id) {
-                                      handleTaxCategoryChange(
-                                        tableId,
-                                        selectedOption.id,
-                                        item.id
-                                      );
+                                }}
+                              >
+                                <option value="">Select Tax</option>
+                                {taxOptions.map((opt) => (
+                                  <option
+                                    key={opt.id}
+                                    value={opt.value}
+                                    disabled={
+                                      (() => {
+                                        const current =
+                                          item.taxChargeType ||
+                                          taxOptions.find((o) => o.id === item.tax_category_id)?.value ||
+                                          "";
+                                        const disabledSet = (
+                                          taxRateData[tableId]?.addition_bid_material_tax_details?.reduce(
+                                            (acc, detail) => {
+                                              if (detail._destroy || detail.id === item.id) return acc;
+                                              const matchedOption = taxOptions.find(
+                                                (o) => o.id === detail.resource_id
+                                              );
+                                              const t = detail.taxChargeType;
+                                              if (t === "CGST") acc.push("CGST", "IGST");
+                                              if (t === "SGST") acc.push("SGST", "IGST");
+                                              if (t === "IGST") acc.push("CGST", "SGST");
+                                              if (t) acc.push(t);
+                                              else if (matchedOption?.value) acc.push(matchedOption.value);
+                                              return acc;
+                                            },
+                                            []
+                                          ) || []
+                                        ).filter((v, i, self) => self.indexOf(v) === i);
+                                        return disabledSet.includes(opt.value) && opt.value !== current;
+                                      })()
                                     }
-                                  }}
-                                  className="custom-select"
-                                  disabledOptions={(
-                                    taxRateData[
-                                      tableId
-                                    ]?.addition_bid_material_tax_details?.reduce(
-                                      (acc, item) => {
-                                        const matchedOption = taxOptions.find(
-                                          (option) =>
-                                            option.id === item.resource_id
-                                        );
-                                        const taxType = item.taxChargeType;
-                                        if (taxType === "CGST") {
-                                          acc.push("CGST", "IGST");
-                                        }
-                                        if (taxType === "SGST") {
-                                          acc.push("SGST", "IGST");
-                                        }
-                                        if (taxType === "IGST") {
-                                          acc.push("CGST", "SGST");
-                                        }
-                                        if (taxType) {
-                                          acc.push(taxType);
-                                        } else if (matchedOption?.value) {
-                                          acc.push(matchedOption.value);
-                                        }
-                                        return acc;
-                                      },
-                                      []
-                                    ) || []
-                                  ).filter(
-                                    (value, index, self) =>
-                                      self.indexOf(value) === index
-                                  )}
-                                />
-                              ) : (
-                                <select
-                                  className="form-control"
-                                  value={item.taxChargeType || ""}
-                                  onChange={(e) => {
-                                    const selectedValue = e.target.value;
-                                    handleTaxChargeChange(
-                                      tableId,
-                                      item.id,
-                                      "taxChargeType",
-                                      selectedValue,
-                                      "addition"
-                                    );
-
-                                    // Find the tax category ID for the selected value
-                                    const selectedOption = taxOptions.find(
-                                      (option) => option.value === selectedValue
-                                    );
-                                    if (selectedOption?.id) {
-                                      handleTaxCategoryChange(
-                                        tableId,
-                                        selectedOption.id
-                                      );
-                                    }
-                                  }}
-                                >
-                                  <option value="">Select Tax</option>
-                                  <option value="CGST">CGST</option>
-                                  <option value="SGST">SGST</option>
-                                  <option value="IGST">IGST</option>
-                                  <option value="Handling Charges">
-                                    Handling Charges
+                                  >
+                                    {opt.label}
                                   </option>
-                                  <option value="Other charges">
-                                    Other charges
-                                  </option>
-                                  <option value="Freight">Freight</option>
-                                </select>
-                              )}
+                                ))}
+                              </select>
                             </td>
 
                             <td>
-                              <SelectBox
-                                options={(() => {
-                                  // Use material-specific tax percentages from API for this specific tax item
-                                  const percentages =
-                                    materialTaxPercentages[item.id] || [];
-                                  if (percentages.length > 0) {
-                                    return percentages.map((percent) => ({
-                                      label: `${percent.percentage}%`,
-                                      value: `${percent.percentage}%`,
-                                    }));
-                                  }
-
-                                  // If no percentages from API, return empty array (no options)
-                                  return [];
-                                })()}
-                                defaultValue={
+                              <select
+                                className="form-control"
+                                value={
                                   item?.taxChargePerUom ||
                                   (() => {
-                                    const foundPercentage = (
-                                      materialTaxPercentages[item.id] || []
-                                    ).find(
-                                      (option) =>
-                                        option.id === item.tax_category_id
+                                    const found = (materialTaxPercentages[item.id] || []).find(
+                                      (p) => p.id === item.tax_category_id
                                     );
-                                    return foundPercentage
-                                      ? `${foundPercentage.percentage}%`
-                                      : "";
-                                  })() ||
-                                  ""
+                                    return found ? `${found.percentage}%` : "";
+                                  })() || ""
                                 }
                                 onChange={(e) =>
                                   handleTaxChargeChange(
                                     tableId,
                                     item.id,
                                     "taxChargePerUom",
-                                    e,
+                                    e.target.value,
                                     "addition"
                                   )
                                 }
-                                disabled={
-                                  (materialTaxPercentages[item.id] || [])
-                                    .length === 0
-                                }
-                                placeholder={
-                                  (materialTaxPercentages[item.id] || [])
-                                    .length === 0
-                                    ? "No percentages available"
-                                    : "Select percentage"
-                                }
-                              />
+                                disabled={(materialTaxPercentages[item.id] || []).length === 0}
+                              >
+                                <option value="">{(materialTaxPercentages[item.id] || []).length === 0 ? "No percentages available" : "Select percentage"}</option>
+                                {(materialTaxPercentages[item.id] || []).map((percent) => (
+                                  <option key={percent.id} value={`${percent.percentage}%`}>
+                                    {percent.percentage}%
+                                  </option>
+                                ))}
+                              </select>
                             </td>
 
                             <td className="text-center">
@@ -5866,20 +5841,17 @@ Document */}
                         .map((item) => (
                           <tr key={item.id}>
                             <td>
-                              <SelectBox
-                                options={deductionTaxOptions || []}
-                                defaultValue={
+                              <select
+                                className="form-control"
+                                value={
                                   item.taxChargeType ||
                                   deductionTaxOptions.find(
-                                    (option) => option.id == item.resource_id
-                                  )?.value ||
-                                  deductionTaxOptions.find(
-                                    (option) =>
-                                      option.value === item.taxChargeType
+                                    (option) => option.id == item.tax_category_id
                                   )?.value ||
                                   ""
                                 }
-                                onChange={(value) => {
+                                onChange={(e) => {
+                                  const value = e.target.value;
                                   handleTaxChargeChange(
                                     tableId,
                                     item.id,
@@ -5888,11 +5860,9 @@ Document */}
                                     "deduction"
                                   );
 
-                                  // Fetch tax percentages for the selected category
-                                  const selectedOption =
-                                    deductionTaxOptions.find(
-                                      (option) => option.value === value
-                                    );
+                                  const selectedOption = deductionTaxOptions.find(
+                                    (option) => option.value === value
+                                  );
                                   if (selectedOption?.id) {
                                     handleTaxCategoryChange(
                                       tableId,
@@ -5901,64 +5871,51 @@ Document */}
                                     );
                                   }
                                 }}
-                                disabledOptions={taxRateData[
-                                  tableId
-                                ]?.deduction_bid_material_tax_details?.map(
-                                  (item) => item.taxChargeType
-                                )}
-                              />
+                              >
+                                <option value="">Select Tax & Charges</option>
+                                {deductionTaxOptions
+                                  .filter((opt) => opt.value)
+                                  .map((opt) => (
+                                    <option key={opt.id} value={opt.value} disabled={
+                                      (taxRateData[tableId]?.deduction_bid_material_tax_details || [])
+                                        .map((d) => d.taxChargeType)
+                                        .includes(opt.value) && opt.value !== item.taxChargeType
+                                    }>
+                                      {opt.label}
+                                    </option>
+                                  ))}
+                              </select>
                             </td>
                             <td>
-                              <SelectBox
-                                options={(() => {
-                                  // Use material-specific tax percentages from API for this specific tax item
-                                  const percentages =
-                                    materialTaxPercentages[item.id] || [];
-                                  if (percentages.length > 0) {
-                                    return percentages.map((percent) => ({
-                                      label: `${percent.percentage}%`,
-                                      value: `${percent.percentage}%`,
-                                    }));
-                                  }
-
-                                  // If no percentages from API, return empty array (no options)
-                                  return [];
-                                })()}
-                                defaultValue={
+                              <select
+                                className="form-control"
+                                value={
                                   item?.taxChargePerUom ||
                                   (() => {
-                                    const foundPercentage = (
-                                      materialTaxPercentages[item.id] || []
-                                    ).find(
-                                      (option) =>
-                                        option.id === item.tax_category_id
+                                    const found = (materialTaxPercentages[item.id] || []).find(
+                                      (p) => p.id === item.tax_category_id
                                     );
-                                    return foundPercentage
-                                      ? `${foundPercentage.percentage}%`
-                                      : "";
-                                  })() ||
-                                  ""
+                                    return found ? `${found.percentage}%` : "";
+                                  })() || ""
                                 }
                                 onChange={(e) =>
                                   handleTaxChargeChange(
                                     tableId,
                                     item.id,
                                     "taxChargePerUom",
-                                    e,
+                                    e.target.value,
                                     "deduction"
                                   )
                                 }
-                                disabled={
-                                  (materialTaxPercentages[item.id] || [])
-                                    .length === 0
-                                }
-                                placeholder={
-                                  (materialTaxPercentages[item.id] || [])
-                                    .length === 0
-                                    ? "No percentages available"
-                                    : "Select percentage"
-                                }
-                              />
+                                disabled={(materialTaxPercentages[item.id] || []).length === 0}
+                              >
+                                <option value="">{(materialTaxPercentages[item.id] || []).length === 0 ? "No percentages available" : "Select percentage"}</option>
+                                {(materialTaxPercentages[item.id] || []).map((percent) => (
+                                  <option key={percent.id} value={`${percent.percentage}%`}>
+                                    {percent.percentage}%
+                                  </option>
+                                ))}
+                              </select>
                             </td>
                             <td className="text-center">
                               <input

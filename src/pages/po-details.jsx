@@ -5523,22 +5523,22 @@ Document */}
                             </td>
                           </tr>
                         ))}
-                                      <tr>
-                  <td>Net Cost</td>
-                  <td></td>
-                  <td></td>
-                  <td className="text-center">
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={taxRateData[tableId]?.netCost || ""}
-                      readOnly
-                      disabled={true}
-                    />
+                      <tr>
+                        <td>Net Cost</td>
+                        <td></td>
+                        <td></td>
+                        <td className="text-center">
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={taxRateData[tableId]?.netCost || ""}
+                            readOnly
+                            disabled={true}
+                          />
                   
-                  </td>
-                  <td></td>
-                </tr>
+                        </td>
+                        <td></td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>
