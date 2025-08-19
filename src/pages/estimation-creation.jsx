@@ -2734,8 +2734,9 @@ const EstimationCreation = () => {
                                           handleEditMaterial(catIdx, itemIdx, "rate", e.target.value)
                                         }
                                         className="form-control"
-                                        disabled={item.type === "Material"} // ✅ Disable if Material
+                                        disabled={item.type === "material"} // ✅ Disable if Material
                                       />
+                                      {console.log("item type***********:", item.type)}
                                     </td>
                                     <td>
                                       <input
@@ -3075,7 +3076,7 @@ const EstimationCreation = () => {
                                                 handleEditSubCategory2Material(catIdx, subCatIdx, itemIdx, "rate", e.target.value)
                                               }
                                               className="form-control"
-                                            // disabled={item.type === "Material"}
+                                            disabled={item.type === "material"}
                                             />
                                           </td>
                                           <td>
@@ -3399,7 +3400,7 @@ const EstimationCreation = () => {
                                                         handleEditSubCategory3Material(catIdx, subCatIdx, subCategory3Idx, itemIdx, "rate", e.target.value)
                                                       }
                                                       className="form-control"
-                                                      disabled={item.type === "Material"}
+                                                      disabled={item.type === "material"}
                                                     />
                                                   </td>
 
@@ -3703,7 +3704,7 @@ const EstimationCreation = () => {
                                                                 handleEditSubCategory4Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "rate", e.target.value)
                                                               }
                                                               className="form-control"
-                                                              disabled={item.type === "Material"}
+                                                              disabled={item.type === "material"}
                                                             />
                                                           </td>
 
@@ -3996,7 +3997,7 @@ const EstimationCreation = () => {
                                                                         handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx, "rate", e.target.value)
                                                                       }
                                                                       className="form-control"
-                                                                      disabled={item.type === "Material"}
+                                                                      disabled={item.type === "material"}
                                                                     />
                                                                   </td>
 
@@ -4406,7 +4407,7 @@ const EstimationCreation = () => {
                                           handleEditMaterial2(catIdx, itemIdx, "rate", e.target.value)
                                         }
                                         className="form-control"
-                                        disabled={item.type === "Material"} // ✅ Disable if Material
+                                        disabled={item.type === "material"} // ✅ Disable if Material
                                       />
                                     </td>
                                     <td>
@@ -4722,7 +4723,7 @@ const EstimationCreation = () => {
                                                 handleEditMaterial2SubCat2(catIdx, subCatIdx, itemIdx, "rate", e.target.value)
                                               }
                                               className="form-control"
-                                            // disabled={item.type === "Material"}
+                                            disabled={item.type === "material"}
                                             />
                                           </td>
                                           <td>
@@ -5020,7 +5021,7 @@ const EstimationCreation = () => {
                                                         handleEditMaterial2SubCat3(catIdx, subCatIdx, subCategory3Idx, itemIdx, "rate", e.target.value)
                                                       }
                                                       className="form-control"
-                                                      disabled={item.type === "Material"}
+                                                      disabled={item.type === "material"}
                                                     />
                                                   </td>
 
@@ -5294,7 +5295,7 @@ const EstimationCreation = () => {
                                                                 handleEditMaterial2SubCat4(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "rate", e.target.value)
                                                               }
                                                               className="form-control"
-                                                              disabled={item.type === "Material"}
+                                                              disabled={item.type === "material"}
                                                             />
                                                           </td>
 
@@ -5560,7 +5561,7 @@ const EstimationCreation = () => {
                                                                         handleEditMaterial2SubCat5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx, "rate", e.target.value)
                                                                       }
                                                                       className="form-control"
-                                                                      disabled={item.type === "Material"}
+                                                                      disabled={item.type === "material"}
                                                                     />
                                                                   </td>
 
