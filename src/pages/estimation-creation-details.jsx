@@ -34,27 +34,34 @@ const EstimationCreationDetails = () => {
     // States to store data
     const navigate = useNavigate(); // ✅ define navigate here
     const { id } = useParams();
+    const [showModal, setShowModal] = useState(false);
+     const openModal = () => setShowModal(true);
+    const closeModal = () => setShowModal(false);
 
     // console.log("details selected:", details)
     const [subProjectDetails, setSubProjectDetails] = useState(null);
     const [budgetType, setBudgetType] = useState("");
+    const [status, setStatus] = useState('');
 
 
+    const fetchSubProjectDetails = async () => {
+    try {
+      const res = await axios.get(
+        `${baseURL}estimation_details/${id}/budget_info.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+      );
+      console.log("response cat:", res.data);
+      setSubProjectDetails(res.data);
+      setBudgetType(res.data?.budget_type || "");
+      setStatus(res.data?.selected_status || "");
+    } catch (err) {
+      console.error("Error fetching sub project details:", err);
+    }
+  };
     useEffect(() => {
-        axios
-            .get(
-                `${baseURL}estimation_details/${id}/budget_info.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+        fetchSubProjectDetails();
+    }, [id]);
 
-            )
-            .then((res) => {
-                console.log("responce cat:", res.data)
-                setSubProjectDetails(res.data); // store response
-                setBudgetType(res.data?.budget_type || "");
-            })
-            .catch((err) => {
-                console.error("Error fetching sub project details:", err);
-            });
-    }, [id]); // runs once on mount
+           
 
 
     const [openCategoryId, setOpenCategoryId] = useState(null); // Track which category is open
@@ -135,7 +142,7 @@ const EstimationCreationDetails = () => {
     const toggleSubCategory5 = (id) => {
         setOpenSubCategory5Id(openSubCategory5Id === id ? null : id);
     };
-    const [status, setStatus] = useState('');
+    // const [status, setStatus] = useState('');
     const [remark, setRemark] = useState('');
 
     const statusOptions = [
@@ -162,6 +169,60 @@ const EstimationCreationDetails = () => {
         setRemark(e.target.value);
     };
 
+const payload = {
+        status_log: {
+            status: status,
+            remarks: remark
+        }
+    };
+
+    console.log("detail status change", payload);
+    const handleSubmit = async () => {
+        // Prepare the payload for the API
+        const payload = {
+            status_log: {
+                status: status,
+                remarks: remark
+            }
+        };
+
+        console.log("detail status change", payload);
+        // setLoading2(true);
+
+        try {
+            const response = await axios.patch(
+                `${baseURL}estimation_details/${id}/update_status.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+                payload,  // The request body containing status and remarks
+                {
+                    headers: {
+                        'Content-Type': 'application/json', // Set the content type header
+                    },
+                }
+
+            );
+            await fetchSubProjectDetails(id);
+
+
+            if (response.status === 200) {
+                console.log('Status updated successfully:', response.data);
+                setRemark("")
+                // setLoading2(false);
+                alert('Status updated successfully');
+                // Handle success (e.g., update the UI, reset fields, etc.)
+                // toast.success("Status updated successfully!");
+            } else {
+                console.log('Error updating status:', response.data);
+                // toast.error("Failed to update status.");
+                // Handle error (e.g., show an error message)
+            }
+        } catch (error) {
+            console.error('Request failed:', error);
+            // Handle network or other errors (e.g., show an error message)
+        } finally {
+            // setLoading2(false);
+        }
+    };
+
     return (
         <>
             <div className="website-content overflow-auto">
@@ -170,6 +231,23 @@ const EstimationCreationDetails = () => {
                         <a href="">Home &gt; Engineering &gt; Estimation &gt; Budget</a>
                     </a>
                     <div className="card mt-3 pb-3 ">
+{subProjectDetails?.approval_logs?.length > 0 && (
+                                <div className="row mt-4 justify-content-end">
+                                    <div className="col-md-2 nav-item">
+                                        <button
+                                            className="purple-btn2"
+                                            onClick={openModal}
+                                            style={{
+                                                backgroundColor:
+                                                    subProjectDetails?.selected_status=== "Approved" ? "green" : "",
+                                                border: "none",
+                                            }}
+                                        >
+                                            <span>Approval Logs</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
 
                         <div className="details_page mt-5 mb-5 mx-3">
                             <div className="row px-3">
@@ -2623,9 +2701,9 @@ const EstimationCreationDetails = () => {
                         </div>
 
                     </div>
-                    <div className="row mt-5 mb-5 justify-content-center">
+                    <div className="row mt-5 mb-4 justify-content-end">
                         <div className="col-md-2">
-                            <button className="purple-btn2 w-100 mt-2" > Submit</button>
+                            <button className="purple-btn2 w-100 mt-2" onClick={handleSubmit}> Submit</button>
                         </div>
                         <div className="col-md-2">
                             <button
@@ -2637,9 +2715,157 @@ const EstimationCreationDetails = () => {
                             </button>
                         </div>
                     </div>
-
+<div className="row mt-2 w-100">
+                            <div className="col-12 " >
+                                <h5>Audit Log</h5>
+                                <div className="mx-0" >
+                                    <div className="tbl-container mt-1" style={{ maxHeight: "450px" }} >
+                                        <table className="w-100"  >
+                                            <thead>
+                                                <tr>
+                                                    <th>Sr.No.</th>
+                                                    <th>Created By</th>
+                                                    <th>Created At</th>
+                                                    <th>Status</th>
+                                                    <th>Remark</th>
+                                                    {/* <th>Comment</th> */}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {(subProjectDetails?.audit_logs || [])
+                                                    .slice(0, 10)
+                                                    .map((log, index) => (
+                                                        <tr key={log.id}>
+                                                            <td className="text-start">{index + 1}</td>
+                                                            <td className="text-start">{log.user}</td>
+                                                            <td className="text-start">
+                                                                {log.date}
+                                                            </td>
+                                                            <td className="text-start">
+                                                                {log.status
+                                                                    ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                                                    : ""}
+                                                            </td>
+                                                            <td className="text-start">{log.remarks || ""}</td>
+                                                            {/* <td className="text-start">{log.comments || ""}</td> */}
+                                                        </tr>
+                                                    ))}
+                                            </tbody>
+                                        </table>
+                                        {/* Show "Show More" link if more than 10 records */}
+                                        {subProjectDetails?.status_logs?.length > 10 && (
+                                            <div className="mt-2 text-start">
+                                                <span
+                                                    className="boq-id-link"
+                                                    style={{ fontWeight: "bold", cursor: "pointer" }}
+                                                //   onClick={() => setShowAuditModal(true)}
+                                                >
+                                                    Show More
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                 </div>
             </div>
+
+{/* Modal start */}
+            <Modal size="xl" show={showModal} onHide={closeModal} centered>
+                <Modal.Header closeButton>
+                    <h5>Approval Log</h5>
+                </Modal.Header>
+                <Modal.Body>
+
+                    <div className="row mt-2 px-2">
+                        <div className="col-12">
+                            <div className="tbl-container me-2 mt-3">
+                                {/* Check if approval_logs is empty or undefined */}
+                                {!subProjectDetails?.approval_logs ||
+                                    subProjectDetails?.approval_logs.length === 0 ? (
+                                    // Display a message if no logs are available
+                                    <div className="text-center py-4">
+                                        <p className="text-muted">
+                                            No approval logs available.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    // Render the table if logs are available
+                                    <table className="w-100" style={{ width: "100%" }}>
+                                        <thead>
+                                            <tr>
+                                                <th style={{ width: "66px !important" }}>
+                                                    Sr.No.
+                                                </th>
+                                                <th>Approval Level</th>
+                                                <th>Approved By</th>
+                                                <th>Date</th>
+                                                <th>Status</th>
+                                                <th>Remark</th>
+                                                <th>Users</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {subProjectDetails?.approval_logs.map((log, id) => (
+                                                <tr key={id}>
+                                                    <td className="text-start">{id + 1}</td>
+                                                    <td className="text-start">{log.approval_level}</td>
+                                                    <td className="text-start">{log.approved_by}</td>
+                                                    <td className="text-start">{log.date}</td>
+                                                    <td className="text-start">
+                                                        <span
+                                                            className="px-2 py-1 rounded text-white"
+                                                            style={{
+                                                                backgroundColor:
+                                                                    log.status === "Pending"
+                                                                        ? "red"
+                                                                        : "green",
+                                                            }}
+                                                        >
+                                                            {log.status}
+                                                        </span>
+                                                    </td>
+
+                                                    <td className="text-start">
+                                                        <p>{log.remark || "-"}</p>
+                                                    </td>
+                                                    <td className="text-start">{log.users}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+
+                    {/* <div>
+                       
+                        <img src="#" className="img-thumbnail" alt="Document 1" />
+                        <img src="#" className="img-thumbnail" alt="Document 2" />
+                      </div> */}
+
+                    {/* Documents Table */}
+                    {/* <div className="tbl-container mx-3 mt-1">
+                        <table className="w-100">
+                          <thead>
+                            <tr>
+                              <th>Documents</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>
+                                <img src="#" className="img-fluid" alt="Document Preview" />
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div> */}
+                </Modal.Body>
+            </Modal>
 
         </>
     );

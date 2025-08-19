@@ -10,19 +10,6 @@ import CollapsibleCard from "../components/base/Card/CollapsibleCards";
 import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
-import {
-    LayoutModal,
-    FilterModal,
-    BulkAction,
-    DownloadIcon,
-    FilterIcon,
-    QuickFilter,
-    SearchIcon,
-    SettingIcon,
-    StarIcon,
-    Table,
-} from "../components"
 import { estimationListColumns, estimationListData } from "../constant/data";
 import { auditLogColumns, auditLogData } from "../constant/data";
 import { baseURL } from "../confi/apiDomain";
@@ -167,7 +154,7 @@ const EstimationCreationTest = () => {
         fetchDetails();
     }, [selectedProject, selectedSite]);
 
-    console.log("budget type:", budgetType)
+    // console.log("budget type:", budgetType)
     // 🔹 Dynamic title
     const cardTitle = type === "sub_project" ? "Sub-Project Details" : "Project Details";
 
@@ -368,88 +355,6 @@ const EstimationCreationTest = () => {
         // Add more as needed
     ];
 
-    // Open modal for a specific category/sub-category
-    // const handleOpenAddModal = (catIdx, subCatIdx) => {
-    //   setModalCategoryIdx(catIdx);
-    //   setModalSubCategoryIdx(subCatIdx);
-    //   setModalRows([{ materialType: "", specification: "", type: "Material" }]);
-    //   setShowAddModal(true);
-    // };
-
-    // Open modal for a specific category/sub-category
-    // const handleOpenAddModal = (catIdx, subCatIdx, categoryId) => {
-    //   setModalCategoryIdx(catIdx);
-    //   setModalSubCategoryIdx(subCatIdx);
-    //   setModalRows([{ materialType: "", specification: "", type: "Material" }]);
-    //   setShowAddModal(true);
-    //   setOpenCategoryId(categoryId); // <-- Expand category by default
-    // };
-
-    //   const handleOpenAddModal = (catIdx, subCatIdx, categoryOrSubCatId) => {
-    //   setModalCategoryIdx(catIdx);
-    //   setModalSubCategoryIdx(subCatIdx);
-    //   setModalRows([{ materialType: "", specification: "", type: "Material" }]);
-    //   setShowAddModal(true);
-    //   setOpenCategoryId(subCatIdx === null ? categoryOrSubCatId : subProjectDetails.categories[catIdx].id); // Always expand main category
-    //   if (subCatIdx !== null) {
-    //     setOpenSubCategory2Id(categoryOrSubCatId); // Expand sub-category 2 automatically
-    //   }
-    // };
-
-    // const handleOpenAddModal = (catIdx, subCatIdx, categoryOrSubCatId, subCategory3Id,subCategory4Id,
-    // subCategory5Id) => {
-    //   setModalCategoryIdx(catIdx);
-    //   setModalSubCategoryIdx(subCatIdx);
-    //   setModalRows([{ materialType: "", specification: "", type: "Material" }]);
-    //   setShowAddModal(true);
-    //   setOpenCategoryId(subCatIdx === null ? categoryOrSubCatId : subProjectDetails.categories[catIdx].id); // Always expand main category
-    //   if (subCatIdx !== null) {
-    //     setOpenSubCategory2Id(categoryOrSubCatId); // Expand sub-category 2 automatically
-    //   }
-    //   if (subCategory3Id) {
-    //     setOpenSubCategory3Id(subCategory3Id); // Expand sub-category 3 automatically
-    //   }
-
-    //    if (subCategory4Id) {
-    //   setOpenSubCategory4Id(subCategory4Id); // Expand sub-category 4 automatically
-    // }
-    // if (subCategory5Id) {
-    //   setOpenSubCategory5Id(subCategory5Id); // Expand sub-category 5 automatically
-    // }
-    // };
-
-
-    // Handle modal input change
-    // const handleModalRowChange = (idx, field, value) => {
-    //   const updatedRows = modalRows.map((row, i) =>
-    //     i === idx ? { ...row, [field]: value } : row
-    //   );
-    //   setModalRows(updatedRows);
-    // };
-
-
-    // const handleModalRowChange = (idx, field, newValue) => {
-    //   const updatedRows = modalRows.map((row, i) => {
-    //     if (i === idx) {
-    //       // If object {value, label}, store value separately and label separately
-    //       if (newValue && typeof newValue === "object" && "value" in newValue) {
-    //         return {
-    //           ...row,
-    //           [field]: newValue.value,
-    //           [`${field}Label`]: newValue.label
-    //         };
-    //       }
-    //       return { ...row, [field]: newValue };
-    //     }
-    //     return row;
-    //   });
-    //   setModalRows(updatedRows);
-    // };
-
-
-
-
-
     const handleModalRowChange = async (idx, field, newValue) => {
         const updatedRows = [...modalRows];
 
@@ -493,35 +398,6 @@ const EstimationCreationTest = () => {
     };
 
 
-
-
-
-    console.log("modalRows before create:", modalRows);
-
-    // On modal create, add rows to the correct category/sub-category
-    // const handleCreateRows = () => {
-    //   setSubProjectDetails(prev => {
-    //     const updated = { ...prev };
-    //     // const targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].material_type_details;
-    //     const targetArr = modalSubCategoryIdx === null
-    //       ? updated.categories[modalCategoryIdx].material_type_details
-    //       : updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].material_type_details;
-    //     modalRows.forEach(row => {
-    //       targetArr.push({
-    //         id: Date.now() + Math.random(),
-    //         name: row.materialType,
-    //         specification: row.specification,
-    //         type: row.type,
-    //         location: "",
-    //         qty: "",
-    //         rate: "",
-    //         wastage: "",
-    //       });
-    //     });
-    //     return { ...updated };
-    //   });
-    //   setShowAddModal(false);
-    // };
     const [modalSubCategory3Idx, setModalSubCategory3Idx] = useState(null);
     const [modalSubCategory4Idx, setModalSubCategory4Idx] = useState(null);
     const [modalSubCategory5Idx, setModalSubCategory5Idx] = useState(null);
@@ -587,199 +463,6 @@ const EstimationCreationTest = () => {
 
     // console.log("modal rows:", modalRows)
 
-
-    // const handleOpenAddModal = (
-    //   catIdx,
-    //   subCatIdx,
-    //   categoryOrSubCatId,
-    //   subCategory3Idx = null,
-    //   subCategory4Idx = null,
-    //   subCategory5Idx = null
-    // ) => {
-    //   setModalCategoryIdx(catIdx);
-    //   setModalSubCategoryIdx(subCatIdx);
-    //   setModalSubCategory3Idx(subCategory3Idx);
-    //   setModalSubCategory4Idx(subCategory4Idx);
-    //   setModalSubCategory5Idx(subCategory5Idx);
-    //   setModalRows([{ materialType: "", specification: "", type: "Material" }]);
-    //   setShowAddModal(true);
-
-    //   setOpenCategoryId(subCatIdx === null ? categoryOrSubCatId : subProjectDetails.categories[catIdx].id);
-    //   if (subCatIdx !== null) setOpenSubCategory2Id(categoryOrSubCatId);
-
-    //   if (subCategory3Idx !== null) {
-    //     const subCat3 = subProjectDetails.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx];
-    //     if (subCat3) {
-    //       setOpenSubCategory3Id(subCat3.id); // ensure it's set before modal
-    //     }
-    //   }
-
-    //   if (subCategory4Idx !== null) {
-    //     const subCat4 = subProjectDetails.categories[catIdx]
-    //       .sub_categories_2[subCatIdx]
-    //       .sub_categories_3[subCategory3Idx]?.sub_categories_4[subCategory4Idx];
-    //     if (subCat4) setOpenSubCategory4Id(subCat4.id);
-    //   }
-
-    //   if (subCategory5Idx !== null) {
-    //     const subCat5 = subProjectDetails.categories[catIdx]
-    //       .sub_categories_2[subCatIdx]
-    //       .sub_categories_3[subCategory3Idx]
-    //       ?.sub_categories_4[subCategory4Idx]?.sub_categories_5[subCategory5Idx];
-    //     if (subCat5) setOpenSubCategory5Id(subCat5.id);
-    //   }
-    // };
-
-
-
-
-    // console.log("modal rows:",modalRows)
-
-    //   const handleCreateRows = (
-    //   subCategory3Idx = null,
-    //   subCategory4Idx = null,
-    //   subCategory5Idx = null
-    // ) => {
-    //   setSubProjectDetails(prev => {
-    //     const updated = { ...prev };
-    //     let targetArr;
-
-    //     if (
-    //       modalSubCategoryIdx === null &&
-    //       subCategory3Idx === null &&
-    //       subCategory4Idx === null &&
-    //       subCategory5Idx === null
-    //     ) {
-    //       // Main category
-    //       targetArr = updated.categories[modalCategoryIdx].material_type_details;
-    //     } else if (
-    //       modalSubCategoryIdx !== null &&
-    //       subCategory3Idx === null &&
-    //       subCategory4Idx === null &&
-    //       subCategory5Idx === null
-    //     ) {
-    //       // Sub-category 2
-    //       targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].material_type_details;
-    //     } else if (
-    //       modalSubCategoryIdx !== null &&
-    //       subCategory3Idx !== null &&
-    //       subCategory4Idx === null &&
-    //       subCategory5Idx === null
-    //     ) {
-    //       // Sub-category 3
-    //       targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx].material_type_details;
-    //     } else if (
-    //       modalSubCategoryIdx !== null &&
-    //       subCategory3Idx !== null &&
-    //       subCategory4Idx !== null &&
-    //       subCategory5Idx === null
-    //     ) {
-    //       // Sub-category 4
-    //       targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].material_type_details;
-    //     } else if (
-    //       modalSubCategoryIdx !== null &&
-    //       subCategory3Idx !== null &&
-    //       subCategory4Idx !== null &&
-    //       subCategory5Idx !== null
-    //     ) {
-    //       // Sub-category 5
-    //       targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].sub_categories_5[subCategory5Idx].material_type_details;
-    //     }
-
-    //     modalRows.forEach(row => {
-    //       targetArr.push({
-    //         id: Date.now() + Math.random(),
-    //         name: row.materialType,
-    //         specification: row.specification,
-    //         type: row.type,
-    //         location: "",
-    //         qty: "",
-    //         rate: "",
-    //         wastage: "",
-    //       });
-    //     });
-    //     return updated;
-    //   });
-    //   setShowAddModal(false);
-    // };
-
-
-    // const handleCreateRows = (
-    //   subCategory3Idx = modalSubCategory3Idx,
-    //   subCategory4Idx = modalSubCategory4Idx,
-    //   subCategory5Idx = modalSubCategory5Idx
-    // ) => {
-    //   setSubProjectDetails(prev => {
-    //     const updated = { ...prev };
-    //     let targetArr;
-
-    //     try {
-    //       if (
-    //         modalSubCategoryIdx === null &&
-    //         subCategory3Idx === null &&
-    //         subCategory4Idx === null &&
-    //         subCategory5Idx === null
-    //       ) {
-    //         // Main category
-    //         targetArr = updated.categories[modalCategoryIdx].material_type_details;
-    //       } else if (
-    //         modalSubCategoryIdx !== null &&
-    //         subCategory3Idx === null &&
-    //         subCategory4Idx === null &&
-    //         subCategory5Idx === null
-    //       ) {
-    //         // Sub-category 2
-    //         targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].material_type_details;
-    //       } else if (
-    //         modalSubCategoryIdx !== null &&
-    //         subCategory3Idx !== null &&
-    //         subCategory4Idx === null &&
-    //         subCategory5Idx === null
-    //       ) {
-    //         // Sub-category 3
-    //         targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx]?.material_type_details;
-    //       } else if (
-    //         modalSubCategoryIdx !== null &&
-    //         subCategory3Idx !== null &&
-    //         subCategory4Idx !== null &&
-    //         subCategory5Idx === null
-    //       ) {
-    //         // Sub-category 4
-    //         targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx]?.sub_categories_4[subCategory4Idx]?.material_type_details;
-    //       } else if (
-    //         modalSubCategoryIdx !== null &&
-    //         subCategory3Idx !== null &&
-    //         subCategory4Idx !== null &&
-    //         subCategory5Idx !== null
-    //       ) {
-    //         // Sub-category 5
-    //         targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx]?.sub_categories_4[subCategory4Idx]?.sub_categories_5[subCategory5Idx]?.material_type_details;
-    //       }
-    //     } catch (e) {
-    //       targetArr = undefined;
-    //     }
-
-    //     if (!targetArr) return prev; // Prevent error if path is invalid
-
-    //     modalRows.forEach(row => {
-    //       targetArr.push({
-    //         id: Date.now() + Math.random(),
-    //         name: row.materialType,
-    //         specification: row.specification,
-    //         type: row.type,
-    //         location: "",
-    //         qty: "",
-    //         rate: "",
-    //         wastage: "",
-    //       });
-    //     });
-    //     return updated;
-    //   });
-    //   setShowAddModal(false);
-    // };
-
-
-
     const [lastCreatedLevelIds, setLastCreatedLevelIds] = useState({
         level_one_id: null,
         level_two_id: null,
@@ -789,151 +472,6 @@ const EstimationCreationTest = () => {
     });
 
     const [lastMaterialDetails, setLastMaterialDetails] = useState([]);
-    // const handleCreateRows = (
-    //   subCategory3Idx = modalSubCategory3Idx,
-    //   subCategory4Idx = modalSubCategory4Idx,
-    //   subCategory5Idx = modalSubCategory5Idx
-    // ) => {
-    //   setSubProjectDetails(prev => {
-    //     const updated = { ...prev };
-    //     // const targetArr = getTargetArrayFromPath(updated, somePath); // however you fetch it
-    //     let targetArr;
-
-    //     if (
-    //       modalSubCategoryIdx === null &&
-    //       subCategory3Idx === null &&
-    //       subCategory4Idx === null &&
-    //       subCategory5Idx === null
-    //     ) {
-    //       // Main category
-    //       targetArr = updated.categories[modalCategoryIdx].material_type_details;
-    //     } else if (
-    //       modalSubCategoryIdx !== null &&
-    //       subCategory3Idx === null &&
-    //       subCategory4Idx === null &&
-    //       subCategory5Idx === null
-    //     ) {
-    //       // Sub-category 2
-    //       targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].material_type_details;
-    //     } else if (
-    //       modalSubCategoryIdx !== null &&
-    //       subCategory3Idx !== null &&
-    //       subCategory4Idx === null &&
-    //       subCategory5Idx === null
-    //     ) {
-    //       // Sub-category 3
-    //       targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx]?.material_type_details;
-    //     } else if (
-    //       modalSubCategoryIdx !== null &&
-    //       subCategory3Idx !== null &&
-    //       subCategory4Idx !== null &&
-    //       subCategory5Idx === null
-    //     ) {
-    //       // Sub-category 4
-    //       targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx]?.sub_categories_4[subCategory4Idx]?.material_type_details;
-    //     } else if (
-    //       modalSubCategoryIdx !== null &&
-    //       subCategory3Idx !== null &&
-    //       subCategory4Idx !== null &&
-    //       subCategory5Idx !== null
-    //     ) {
-    //       // Sub-category 5
-    //       targetArr = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx]?.sub_categories_4[subCategory4Idx]?.sub_categories_5[subCategory5Idx]?.material_type_details;
-    //     }
-
-    //     if (!targetArr) return prev; // Prevent error if path is invalid
-
-    //     const row = modalRows[0];
-    //     // // modalRows.forEach(row => {
-    //     // targetArr.push({
-    //     //   id: Date.now() + Math.random(),
-    //     //   name: row.materialType,
-    //     //   specification: row.specification,
-    //     //   type: row.type,
-    //     //   location: "",
-    //     //   qty: "",
-    //     //   rate: "",
-    //     //   wastage: "",
-    //     // });
-    //     // });
-
-
-    //     // Check if a row with same materialType, specification, and type exists
-    //     // const isDuplicate = targetArr.some(item =>
-    //     //   item.name === row.materialTypeLabel &&
-    //     //   item.specification === row.specificationLabel &&
-    //     //   item.type === row.type
-    //     // );
-
-    //     // if (!isDuplicate) {
-    //     //   targetArr.push({
-    //     //     id: Date.now() + Math.random(),
-    //     //     materilTypeId: row.materialType,
-    //     //     name: row.materialTypeLabel,
-    //     //     specificationId: row.specification,
-    //     //     specification: row.specificationLabel,
-    //     //     labourAct: row.labourAct,
-    //     //     labourActLabel:row.labourActLabel,
-    //     //     type: row.type,
-    //     //     location: "",
-    //     //     qty: "",
-    //     //     rate: "",
-    //     //     wastage: "",
-    //     //   });
-    //     // } else {
-    //     //   // console.warn("Duplicate row skipped:", row);
-    //     // }
-
-
-    //     let isDuplicate = false;
-
-    //     if (row.type === "Material") {
-    //       // Duplicate check for Material rows
-    //       isDuplicate = targetArr.some(item =>
-    //         item.type === "Material" &&
-    //         item.name === row.materialTypeLabel &&
-    //         item.specification === row.specificationLabel
-    //       );
-    //     } else if (row.type === "Labour") {
-    //       // Duplicate check for Labour rows
-    //       isDuplicate = targetArr.some(item =>
-    //         item.type === "Labour" &&
-    //         item.labourActLabel === row.labourTypeLabel
-    //       );
-    //     } else if (row.type === "Composite") {
-    //       // Duplicate check for Labour rows
-    //       isDuplicate = targetArr.some(item =>
-    //         item.type === "Composite" &&
-    //         item.compositeValue === row.compositeValue
-    //       );
-    //     }
-
-    //     if (!isDuplicate) {
-    //       targetArr.push({
-    //         id: Date.now() + Math.random(),
-    //         materilTypeId: row.materialType,
-    //         name: row.materialTypeLabel,
-    //         specificationId: row.specification,
-    //         specification: row.specificationLabel,
-    //         labourAct: row.labourType,
-    //         labourActLabel: row.labourTypeLabel,
-    //         compositeValue: row.compositeValue,
-    //         type: row.type,
-    //         location: "",
-    //         qty: "",
-    //         rate: "",
-    //         wastage: "",
-    //       });
-    //     } else {
-    //       console.warn("Duplicate row skipped:", row);
-    //     }
-
-    //     // console.log("modal row:",targetArr)
-    //     return updated;
-    //   });
-    //   setShowAddModal(false);
-    // };
-
 
 
     const handleCreateRows = (
@@ -1073,18 +611,9 @@ const EstimationCreationTest = () => {
 
 
 
-    console.log("last ids:", lastCreatedLevelIds)
-    console.log("last material details:", lastMaterialDetails)
+    // console.log("last ids:", lastCreatedLevelIds)
+    // console.log("last material details:", lastMaterialDetails)
 
-
-
-    // const handleRemoveMainCategoryRow = (catIdx, itemIdx) => {
-    //   setSubProjectDetails(prev => {
-    //     const updated = { ...prev };
-    //     updated.categories[catIdx].material_type_details.splice(itemIdx, 1);
-    //     return { ...updated };
-    //   });
-    // };
 
     const handleRemoveMainCategoryRow = (catIdx, itemIdx) => {
         setSubProjectDetails(prev => {
@@ -1637,7 +1166,7 @@ const EstimationCreationTest = () => {
     const [selectedGenericSpecifications, setSelectedGenericSpecifications] = useState(null); // Holds the selected generic specifications for each material
 
     // Fetch generic specifications for materials
-    console.log("inventory type 2:", selectedInventory2)
+    // console.log("inventory type 2:", selectedInventory2)
     useEffect(() => {
 
         if (selectedInventory2 || modalRows[0].materialType) {
@@ -1875,7 +1404,7 @@ const EstimationCreationTest = () => {
 
 
 
-    console.log("data paylod on**********************", mappedData);
+    // console.log("data paylod on**********************", mappedData);
 
 
 
@@ -1886,7 +1415,7 @@ const EstimationCreationTest = () => {
         // pms_wing_id: wingId,
         estimation_items: mappedData
     };
-    console.log("payload create budget****:", payload)
+    // console.log("payload create budget****:", payload)
 
 
     const handleSubmit = async () => {
@@ -1927,6 +1456,57 @@ const EstimationCreationTest = () => {
         }
     };
 
+const handleMainCategorySelect = (catIdx, selectedOption) => {
+//   setSubProjectDetails(prev => {
+//     const updated = { ...prev };
+//     const updatedCategories = [...updated.categories];
+//     updatedCategories[catIdx] = {
+//       ...updatedCategories[catIdx],
+//       id: selectedOption.value,
+//       name: selectedOption.label
+//       // You can also reset sub_categories_2 or other fields here if needed
+//     };
+//     updated.categories = updatedCategories;
+//     return updated;
+//   });
+
+
+    // Find sub-categories for the selected main category
+//   const subCategoryOptions =
+//     selectedOption?.sub_categories_2?.map(subCat => ({
+//       value: subCat.id,
+//       label: subCat.name,
+//       work_sub_categories: subCat.sub_categories_2 // for deeper levels
+//     })) || [];
+
+    const subCategoryOptions =
+  selectedOption?.sub_categories_2?.map(subCat => ({
+    value: subCat.id,
+    label: subCat.name,
+    work_sub_categories: subCat.sub_categories_3 || [] // for deeper levels
+  })) || [];
+
+    setSubProjectDetails(prev => {
+    const updated = { ...prev };
+    const updatedCategories = [...updated.categories];
+    updatedCategories[catIdx] = {
+      ...updatedCategories[catIdx],
+      id: selectedOption.value,
+      name: selectedOption.label,
+      selectedSubCategory: null, // reset selection
+      subCategoryOptions,        // store options for this main category
+      selectedSubCategoryLevel3: null,
+      subCategoryLevel3Options: [],
+      selectedSubCategoryLevel4: null,
+      subCategoryLevel4Options: [],
+      selectedSubCategoryLevel5: null,
+      subCategoryLevel5Options: []
+    };
+    updated.categories = updatedCategories;
+    return updated;
+  });
+
+};
 
     const handleAddMainCategory = () => {
         const newCategory = {
@@ -1947,23 +1527,209 @@ const EstimationCreationTest = () => {
         }));
     };
 
+//     const handleSubCategorySelect = (catIdx, selectedOption) => {
+//   // Find sub-subcategories for the selected sub-category
+//   const subCategoryLevel3Options =
+//     selectedOption?.work_sub_categories?.map(subCat => ({
+//       value: subCat.id,
+//       label: subCat.name,
+//       work_sub_categories: subCat.work_sub_categories // for deeper levels
+//     })) || [];
 
-    const [mainCategoryOptions, setMainCategoryOptions] = useState([]);
+//   setSubProjectDetails(prev => {
+//     const updated = { ...prev };
+//     const updatedCategories = [...updated.categories];
+//     updatedCategories[catIdx] = {
+//       ...updatedCategories[catIdx],
+//       selectedSubCategory: selectedOption,
+//       subCategoryLevel3Options,
+//       selectedSubCategoryLevel3: null,
+//       subCategoryLevel4Options: [],
+//       selectedSubCategoryLevel4: null,
+//       subCategoryLevel5Options: [],
+//       selectedSubCategoryLevel5: null
+//     };
+//     updated.categories = updatedCategories;
+//     return updated;
+//   });
+// };
 
-    useEffect(() => {
-        fetch("https://marathon.lockated.com/work_categories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414")
-            .then(res => res.json())
-            .then(data => {
-                // Convert API data to your selector format
-                const formatted = data.map(cat => ({
-                    value: cat.id,
-                    label: cat.name
-                }));
-                setMainCategoryOptions(formatted);
+const handleSubCategorySelect = (catIdx, selectedOption) => {
+  // Find sub-subcategories for the selected sub-category
+  const subCategoryLevel3Options =
+    selectedOption?.work_sub_categories?.map(subCat => ({
+      value: subCat.id,
+      label: subCat.name,
+      work_sub_categories: subCat.work_sub_categories // for deeper levels
+    })) || [];
+
+  setSubProjectDetails(prev => {
+    const updated = { ...prev };
+    const updatedCategories = [...updated.categories];
+
+    // Find the last sub-category 2 (the one just added or being edited)
+    const subCategories2 = updatedCategories[catIdx].sub_categories_2;
+    if (subCategories2 && subCategories2.length > 0) {
+      const lastIdx = subCategories2.length - 1;
+      subCategories2[lastIdx] = {
+        ...subCategories2[lastIdx],
+        id: selectedOption.value,
+        name: selectedOption.label,
+        selectedSubCategory: selectedOption,
+        subCategoryLevel3Options,
+        selectedSubCategoryLevel3: null,
+        subCategoryLevel4Options: [],
+        selectedSubCategoryLevel4: null,
+        subCategoryLevel5Options: [],
+        selectedSubCategoryLevel5: null
+      };
+    }
+
+    updatedCategories[catIdx].sub_categories_2 = subCategories2;
+    updated.categories = updatedCategories;
+    return updated;
+  });
+};
+
+
+    // main category and sub level2
+    
+      const [workCategories, setWorkCategories] = useState([]); // To store work categories fetched from the API
+      const [selectedCategory, setSelectedCategory] = useState(null); // To store the selected work category
+      const [selectedSubCategory, setSelectedSubCategory] = useState(null); // To store the selected work subcategory
+      const [subCategoryOptions, setSubCategoryOptions] = useState([]); // To store subcategories for the selected category
+      const [subCategoryLevel3Options, setSubCategoryLevel3Options] = useState([]);
+      const [subCategoryLevel4Options, setSubCategoryLevel4Options] = useState([]); // Sub-category level 4 options
+      const [subCategoryLevel5Options, setSubCategoryLevel5Options] = useState([]); // Sub-category level 5 options
+      const [selectedSubCategoryLevel3, setSelectedSubCategoryLevel3] =
+        useState(null); // State for selected subcategory level 3
+      const [selectedSubCategoryLevel4, setSelectedSubCategoryLevel4] =
+        useState(null); // State for selected subcategory level 4
+      const [selectedSubCategoryLevel5, setSelectedSubCategoryLevel5] =
+        useState(null); // State for selected subcategory level 5
+    
+      // Fetching work categories on component mount
+      useEffect(() => {
+        axios
+          .get(
+            `${baseURL}work_categories/work_sub_categories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          ) // Replace with your API endpoint
+          .then((response) => {
+            setWorkCategories(response.data.categories); // Save the categories to state
+            // console.log("work cat:", response.data.work_categories)
+          })
+          .catch((error) => {
+            console.error("Error fetching work categories:", error);
+          });
+      }, []);
+    
+      // Handler for selecting a work category
+      const handleCategoryChange = (selectedOption) => {
+        setSelectedCategory(selectedOption);
+        setSelectedSubCategory(null); // Clear subcategory selection when the category changes
+        setSubCategoryOptions([]); // Reset subcategories list
+        setSubCategoryLevel3Options([]); // Clear sub-subcategory options
+        setSubCategoryLevel4Options([]); // Clear level 4 options
+        setSubCategoryLevel5Options([]); // Clear level 5 options
+        setSelectedSubCategoryLevel3(null);
+        setSelectedSubCategoryLevel4(null);
+        setSelectedSubCategoryLevel5(null);
+    
+        // If there are subcategories for this category, update the subcategory options
+        if (selectedOption && selectedOption.work_sub_categories.length > 0) {
+          setSubCategoryOptions(
+            selectedOption.work_sub_categories.map((subCategory) => ({
+              value: subCategory.id,
+              label: subCategory.name,
+            }))
+          );
+        }
+      };
+    
+      // Handler for selecting a work subcategory
+      const handleSubCategoryChange = (selectedOption) => {
+        setSelectedSubCategory(selectedOption);
+        setSubCategoryLevel3Options([]); // Clear sub-subcategory options on subcategory change
+        setSubCategoryLevel4Options([]); // Clear subcategory level 4 options
+        setSubCategoryLevel5Options([]); // Clear subcategory level 5 options
+        setSelectedSubCategoryLevel3(null);
+        setSelectedSubCategoryLevel4(null);
+        setSelectedSubCategoryLevel5(null);
+    
+        // Fetch sub-subcategories using the selected subcategory ID-- level3
+        axios
+          .get(
+            `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+          )
+          .then((response) => {
+            const subSubCategories = response.data.work_sub_categories || [];
+            setSubCategoryLevel3Options(
+              subSubCategories.map((subSubCategory) => ({
+                value: subSubCategory.id,
+                label: subSubCategory.name,
+              }))
+            );
+          })
+          .catch((error) => {
+            console.error("Error fetching sub-subcategories:", error);
+          });
+      };
+    
+      // Handler for selecting a level 3 subcategory
+      const handleLevel3Change = (selectedOption) => {
+        setSelectedSubCategoryLevel3(selectedOption);
+        setSubCategoryLevel4Options([]); // Clear subcategory level 4 options
+        setSubCategoryLevel5Options([]); // Clear subcategory level 5 options
+    
+        // Fetch level 4 subcategories using the selected level 3 subcategory ID
+        if (selectedOption && selectedOption.value) {
+          axios
+            .get(
+              `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            )
+            .then((response) => {
+              const subSubCategories = response.data.work_sub_categories || [];
+              setSubCategoryLevel4Options(
+                subSubCategories.map((subSubCategory) => ({
+                  value: subSubCategory.id,
+                  label: subSubCategory.name,
+                }))
+              );
             })
-            .catch(err => console.error("Error fetching main categories:", err));
-    }, []);
-
+            .catch((error) => {
+              console.error("Error fetching level 4 subcategories:", error);
+            });
+        }
+      };
+    
+      // Handler for selecting a level 4 subcategory
+      const handleLevel4Change = (selectedOption) => {
+        setSelectedSubCategoryLevel4(selectedOption);
+        setSubCategoryLevel5Options([]); // Clear level 5 options
+    
+        // Fetch level 5 subcategories using the selected level 4 subcategory ID
+        if (selectedOption && selectedOption.value) {
+          axios
+            .get(
+              `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            )
+            .then((response) => {
+              const subSubCategories = response.data.work_sub_categories || [];
+              setSubCategoryLevel5Options(
+                subSubCategories.map((subSubCategory) => ({
+                  value: subSubCategory.id,
+                  label: subSubCategory.name,
+                }))
+              );
+            })
+            .catch((error) => {
+              console.error("Error fetching level 5 subcategories:", error);
+            });
+        }
+      };
+        const handleLevel5Change = (selectedOption) =>
+    setSelectedSubCategoryLevel5(selectedOption);
+    
 
     const handleEditMainCategoryField2 = (catIdx, field, value) => {
         const updatedCategories = [...(subProjectDetails.categories || [])];
@@ -1985,32 +1751,134 @@ const EstimationCreationTest = () => {
     };
 
 
+    
+
     const handleAddSubCategory = (catIdx) => {
-  const newSubCat = {
-    id: Date.now(), // temp unique ID
-    name: "",
-    budget: "",
-    material_type_details: [],
-    sub_categories_3: []
-  };
+        console.log("Add sub-category called for index:", catIdx); // Debug log
+        const newSubCat = {
+            id: Date.now(), // temp unique ID
+            name: "",
+            budget: "",
+            material_type_details: [],
+            sub_categories_3: []
+        };
 
-  setSubProjectDetails(prev => {
-    const updated = { ...prev };
-    const updatedCategories = [...(updated.categories || [])];
+        setSubProjectDetails(prev => {
+            const updated = { ...prev };
+            const updatedCategories = [...(updated.categories || [])];
 
-    // Ensure sub_categories_2 exists as an array
-    if (!Array.isArray(updatedCategories[catIdx].sub_categories_2)) {
-      updatedCategories[catIdx].sub_categories_2 = [];
-    }
+            // Ensure sub_categories_2 exists as an array
+            if (!Array.isArray(updatedCategories[catIdx].sub_categories_2)) {
+                updatedCategories[catIdx].sub_categories_2 = [];
+            }
 
-    updatedCategories[catIdx].sub_categories_2.push(newSubCat);
+            updatedCategories[catIdx].sub_categories_2.push(newSubCat);
 
-    updated.categories = updatedCategories;
-    return updated;
-  });
+            updated.categories = updatedCategories;
+            return updated;
+        });
+    };
+    const handleRemoveSubCategory2 = (catIdx, subCatIdx) => {
+        setSubProjectDetails(prev => {
+            const updated = { ...prev };
+            updated.categories = [...updated.categories];
+            updated.categories[catIdx].sub_categories_2 = [
+                ...updated.categories[catIdx].sub_categories_2
+            ];
+            updated.categories[catIdx].sub_categories_2.splice(subCatIdx, 1);
+            return updated;
+        });
+    };
+
+    const handleAddSubCategory3 = (catIdx, subCatIdx) => {
+        const newSubCat3 = {
+            id: Date.now(), // temp unique ID
+            name: "",
+            budget: "",
+            material_type_details: [],
+            sub_categories_4: []
+        };
+
+        setSubProjectDetails(prev => {
+            const updated = { ...prev };
+            const updatedCategories = [...(updated.categories || [])];
+
+            // Ensure sub_categories_3 exists as an array
+            if (!Array.isArray(updatedCategories[catIdx].sub_categories_2[subCatIdx].sub_categories_3)) {
+                updatedCategories[catIdx].sub_categories_2[subCatIdx].sub_categories_3 = [];
+            }
+
+            updatedCategories[catIdx].sub_categories_2[subCatIdx].sub_categories_3.push(newSubCat3);
+
+            updated.categories = updatedCategories;
+            return updated;
+        });
+    };
+
+    const handleAddSubCategory4 = (catIdx, subCatIdx, subCategory3Idx) => {
+        const newSubCat4 = {
+            id: Date.now(), // temp unique ID
+            name: "",
+            budget: "",
+            material_type_details: [],
+            sub_categories_5: []
+        };
+
+        setSubProjectDetails(prev => {
+            const updated = { ...prev };
+            const updatedCategories = [...(updated.categories || [])];
+
+            // Safety: Ensure sub_categories_4 exists as an array
+            if (!Array.isArray(updatedCategories[catIdx]
+                .sub_categories_2[subCatIdx]
+                .sub_categories_3[subCategory3Idx]
+                .sub_categories_4)) {
+                updatedCategories[catIdx]
+                    .sub_categories_2[subCatIdx]
+                    .sub_categories_3[subCategory3Idx]
+                    .sub_categories_4 = [];
+            }
+
+            updatedCategories[catIdx]
+                .sub_categories_2[subCatIdx]
+                .sub_categories_3[subCategory3Idx]
+                .sub_categories_4.push(newSubCat4);
+
+            updated.categories = updatedCategories;
+            return updated;
+        });
+    };
+     
+const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4Idx) => {
+    const newSubCat5 = {
+        id: Date.now(), // temp unique ID
+        name: "",
+        budget: "",
+        material_type_details: []
+    };
+
+    setSubProjectDetails(prev => {
+        const updated = { ...prev };
+        const updatedCategories = [...(updated.categories || [])];
+
+        // Safety: Ensure sub_categories_5 exists as an array
+        const subCat4 = updatedCategories[catIdx]
+            ?.sub_categories_2?.[subCatIdx]
+            ?.sub_categories_3?.[subCategory3Idx]
+            ?.sub_categories_4?.[subCategory4Idx];
+
+        if (!subCat4) return prev;
+
+        if (!Array.isArray(subCat4.sub_categories_5)) {
+            subCat4.sub_categories_5 = [];
+        }
+
+        subCat4.sub_categories_5.push(newSubCat5);
+
+        updated.categories = updatedCategories;
+        return updated;
+    });
 };
-
-
     return (
         <>
             <div className="website-content overflow-auto">
@@ -2285,65 +2153,42 @@ const EstimationCreationTest = () => {
                                                     <React.Fragment key={category.id}>
                                                         <tr className="main-category">
                                                             <td>
-                                                             
+                                                                <button
+                                                                    className="btn btn-link p-0"
+                                                                    onClick={() => toggleCategory(category.id)}
+                                                                    title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                >
+                                                                    {openCategoryId === category.id ? (
+                                                                        // Minus icon (collapse)
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                        </svg>
+                                                                    ) : (
+                                                                        // Plus icon (expand)
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                        </svg>
+                                                                    )}
+                                                                </button>
+                                                                {/* Add Sub Category button, only when expanded */}
+                                                                {openCategoryId === category.id && (
+                                                                    <button
+                                                                        className="btn btn-link p-0 ms-2"
+                                                                        onClick={() => handleAddSubCategory(catIdx)}
+                                                                        title="Add Sub Category"
+                                                                    >
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                        </svg>
+                                                                    </button>
+                                                                )}
 
 
 
-  <button
-  className="btn btn-link p-0"
-  onClick={() => {
-    if (openCategoryId === category.id) {
-      // Already expanded → add subcategory
-      handleAddSubCategory(catIdx);
-    } else {
-      // Not expanded → expand
-      toggleCategory(category.id);
-    }
-  }}
-  title={openCategoryId === category.id ? "Add Sub Category" : "Expand Category"}
->
-  {openCategoryId === category.id ? (
-    // Show "Add" icon when expanded
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="12" y1="8" x2="12" y2="16" />
-      <line x1="8" y1="12" x2="16" y2="12" />
-    </svg>
-  ) : (
-    // Show "Expand" icon when collapsed
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill=" #e0e0e0"
-      stroke="black"
-      strokeWidth="1"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect
-        x="3"
-        y="3"
-        width="18"
-        height="20"
-        rx="1"
-        ry="1"
-      />
-      <line x1="12" y1="8" x2="12" y2="16" />
-      <line x1="8" y1="12" x2="16" y2="12" />
-    </svg>
-  )}
-</button>
 
                                                             </td>
                                                             <td>{catIdx + 1}</td>
@@ -2351,14 +2196,32 @@ const EstimationCreationTest = () => {
                                                             <td>
                                                                 {/* {category.name} */}
 
-                                                                <SingleSelector
-                                                                    options={mainCategoryOptions}
-                                                                    value={mainCategoryOptions.find(opt => opt.value === category.id)}
+                                                                {/* <SingleSelector
+                                                                    options={workCategories?.map((category) => ({
+                                                                                            value: category.id,
+                                                                                            label: category.name,
+                                                                                            work_sub_categories: category.work_sub_categories, // Include subcategories in the category option
+                                                                                          }))}
+                                                                    // value={mainCategoryOptions.find(opt => opt.value === category.id)}
+                                                                     value={selectedCategory}
                                                                     placeholder="Select Main Category"
-                                                                    onChange={selectedOption =>
-                                                                        handleEditMainCategoryField2(catIdx, "id", selectedOption?.value || "")
-                                                                    }
-                                                                />
+                                                                    // onChange={selectedOption =>
+
+                                                                    //     handleEditMainCategoryField2(catIdx, "id", selectedOption?.value || "")
+                                                                    // }
+                                                                     onChange={handleCategoryChange}
+                                                                /> */}
+<SingleSelector
+  options={workCategories.map(cat => ({
+    value: cat.id,
+    label: cat.name,
+    work_sub_categories: cat.work_sub_categories
+  }))}
+  value={workCategories.find(opt => opt.id === category.id) ? { value: category.id, label: category.name } : null}
+  onChange={selectedOption => handleMainCategorySelect(catIdx, selectedOption)}
+  placeholder="Select Main Category"
+/>
+                                                                
                                                             </td>
                                                             <td>
                                                                 <input
@@ -2586,83 +2449,85 @@ const EstimationCreationTest = () => {
                                                                         <td>
                                                                             <button
                                                                                 className="btn btn-link p-0"
-                                                                                onClick={() =>
-                                                                                    toggleSubCategory2(subCategory.id)
-                                                                                }
-                                                                                aria-label="Toggle sub-category 2 visibility"
+                                                                                onClick={() => toggleSubCategory2(subCategory.id)}
+                                                                                title={openCategoryId === category.id ? "Collapse" : "Expand"}
                                                                             >
                                                                                 {openSubCategory2Id ===
                                                                                     subCategory.id ? (
-                                                                                    <svg
-                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                        width="24"
-                                                                                        height="24"
-                                                                                        viewBox="0 0 24 24"
-                                                                                        fill=" #e0e0e0"
-                                                                                        stroke="black"
-                                                                                        strokeWidth="1"
-                                                                                        strokeLinecap="round"
-                                                                                        strokeLinejoin="round"
-                                                                                    >
-                                                                                        {/* Square */}
-                                                                                        <rect
-                                                                                            x="3"
-                                                                                            y="3"
-                                                                                            width="18"
-                                                                                            height="20"
-                                                                                            rx="1"
-                                                                                            ry="1"
-                                                                                        />
-                                                                                        {/* Minus Icon */}
-                                                                                        <line
-                                                                                            x1="8"
-                                                                                            y1="12"
-                                                                                            x2="16"
-                                                                                            y2="12"
-                                                                                        />
+                                                                                    // Minus icon (collapse)
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                        <line x1="8" y1="12" x2="16" y2="12" />
                                                                                     </svg>
                                                                                 ) : (
-                                                                                    <svg
-                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                        width="24"
-                                                                                        height="24"
-                                                                                        viewBox="0 0 24 24"
-                                                                                        fill=" #e0e0e0"
-                                                                                        stroke="black"
-                                                                                        strokeWidth="1"
-                                                                                        strokeLinecap="round"
-                                                                                        strokeLinejoin="round"
-                                                                                    >
-                                                                                        {/* Square */}
-                                                                                        <rect
-                                                                                            x="3"
-                                                                                            y="3"
-                                                                                            width="18"
-                                                                                            height="20"
-                                                                                            rx="1"
-                                                                                            ry="1"
-                                                                                        />
-                                                                                        {/* Plus Icon */}
-                                                                                        <line
-                                                                                            x1="12"
-                                                                                            y1="8"
-                                                                                            x2="12"
-                                                                                            y2="16"
-                                                                                        />
-                                                                                        <line
-                                                                                            x1="8"
-                                                                                            y1="12"
-                                                                                            x2="16"
-                                                                                            y2="12"
-                                                                                        />
+                                                                                    // Plus icon (expand)
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                        <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                        <line x1="8" y1="12" x2="16" y2="12" />
                                                                                     </svg>
                                                                                 )}
+                                                                            </button>
+                                                                            {/* Add Sub Category button, only when expanded */}
+                                                                            {openSubCategory2Id ===
+                                                                                subCategory.id && (
+                                                                                    <button
+                                                                                        className="btn btn-link p-0 ms-2"
+                                                                                        onClick={() => handleAddSubCategory3(catIdx, subCatIdx)}
+                                                                                        title="Add Sub Category"
+                                                                                    >
+                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                        </svg>
+                                                                                    </button>
+                                                                                )}
+
+
+
+
+                                                                            <button
+                                                                                className="btn btn-link p-0"
+                                                                                onClick={() => handleRemoveSubCategory2(catIdx, subCatIdx)}
+                                                                                aria-label="Remove sub-category 2"
+                                                                            >
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                    <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                </svg>
                                                                             </button>
                                                                         </td>
 
                                                                         <td></td>
                                                                         <td>Sub-Category Level 2</td>
-                                                                        <td>{subCategory.name}</td>
+                                                                        <td>
+                                                                            {/* <SingleSelector
+                                                                                options={subCategoryOptions}
+                                                                                value={subCategoryOptions.find(opt => opt.value === selectedSubCategory?.value)}
+                                                                                placeholder="Select Sub Category"
+                                                                                onChange={selectedOption => setSelectedSubCategory(selectedOption)}
+                                                                            /> */}
+                                                                             {/* <SingleSelector
+                                                                                                      options={subCategoryOptions}
+                                                                                                      onChange={handleSubCategoryChange}
+                                                                                                      value={selectedSubCategory}
+                                                                                                      placeholder={`Select Sub-category lvl 2`} // Dynamic placeholder
+                                                                                                    /> */}
+
+
+                                                                                                    {/* <SingleSelector
+  options={category.subCategoryOptions || []}
+  value={category.selectedSubCategory}
+  onChange={selectedOption => handleSubCategorySelect(catIdx, selectedOption)}
+  placeholder="Select Sub-category lvl 2"
+/> */}
+
+<SingleSelector
+  options={category.subCategoryOptions || []}
+  value={subCategory.selectedSubCategory}
+  onChange={selectedOption => handleSubCategorySelect(catIdx, subCatIdx, selectedOption)}
+  placeholder="Select Sub-category lvl 2"
+/>
+                                                                        </td>
                                                                         <td>
 
                                                                             <input
@@ -2862,86 +2727,56 @@ const EstimationCreationTest = () => {
                                               openSubCategory3Id
                                             )} */}
                                                                                         <td>
-                                                                                            <button
-                                                                                                className="btn btn-link p-0"
-                                                                                                onClick={() =>
-                                                                                                    toggleSubCategory3(
-                                                                                                        subCategory3.id
-                                                                                                    )
-                                                                                                }
-                                                                                                aria-label="Toggle sub-category 3 visibility"
-                                                                                            >
-                                                                                                {openSubCategory3Id ===
-                                                                                                    subCategory3.id ? (
-                                                                                                    <svg
-                                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                                        width="24"
-                                                                                                        height="24"
-                                                                                                        viewBox="0 0 24 24"
-                                                                                                        fill=" #e0e0e0"
-                                                                                                        stroke="black"
-                                                                                                        strokeWidth="1"
-                                                                                                        strokeLinecap="round"
-                                                                                                        strokeLinejoin="round"
-                                                                                                    >
-                                                                                                        {/* Square */}
-                                                                                                        <rect
-                                                                                                            x="3"
-                                                                                                            y="3"
-                                                                                                            width="18"
-                                                                                                            height="20"
-                                                                                                            rx="1"
-                                                                                                            ry="1"
-                                                                                                        />
-                                                                                                        {/* Minus Icon */}
-                                                                                                        <line
-                                                                                                            x1="8"
-                                                                                                            y1="12"
-                                                                                                            x2="16"
-                                                                                                            y2="12"
-                                                                                                        />
-                                                                                                    </svg>
-                                                                                                ) : (
-                                                                                                    <svg
-                                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                                        width="24"
-                                                                                                        height="24"
-                                                                                                        viewBox="0 0 24 24"
-                                                                                                        fill=" #e0e0e0"
-                                                                                                        stroke="black"
-                                                                                                        strokeWidth="1"
-                                                                                                        strokeLinecap="round"
-                                                                                                        strokeLinejoin="round"
-                                                                                                    >
-                                                                                                        {/* Square */}
-                                                                                                        <rect
-                                                                                                            x="3"
-                                                                                                            y="3"
-                                                                                                            width="18"
-                                                                                                            height="20"
-                                                                                                            rx="1"
-                                                                                                            ry="1"
-                                                                                                        />
-                                                                                                        {/* Plus Icon */}
-                                                                                                        <line
-                                                                                                            x1="12"
-                                                                                                            y1="8"
-                                                                                                            x2="12"
-                                                                                                            y2="16"
-                                                                                                        />
-                                                                                                        <line
-                                                                                                            x1="8"
-                                                                                                            y1="12"
-                                                                                                            x2="16"
-                                                                                                            y2="12"
-                                                                                                        />
-                                                                                                    </svg>
-                                                                                                )}
-                                                                                            </button>
+                                                                                        
+
+
+
+                                                                                             <button
+                                                                                className="btn btn-link p-0"
+                                                                                onClick={() => toggleSubCategory3(subCategory3.id)}
+                                                                                title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                            >
+                                                                                {openSubCategory3Id ===
+                                                                                    subCategory3.id ? (
+                                                                                    // Minus icon (collapse)
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                        <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                    </svg>
+                                                                                ) : (
+                                                                                    // Plus icon (expand)
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                        <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                        <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                    </svg>
+                                                                                )}
+                                                                            </button>
+                                                                            {/* Add Sub Category button, only when expanded */}
+                                                                            {openSubCategory3Id ===
+                                                                                subCategory3.id && (
+                                                                                    <button
+                                                                                        className="btn btn-link p-0 ms-2"
+                                                                                        onClick={() => handleAddSubCategory4(catIdx, subCatIdx, subCategory3Idx)}
+                                                                                        title="Add Sub Category"
+                                                                                    >
+                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                        </svg>
+                                                                                    </button>
+                                                                                )}
                                                                                         </td>
                                                                                         <td></td>
                                                                                         <td>Sub-Category Level 3</td>
-                                                                                        <td>{subCategory3.name}</td>
+                                                                                        <td>
+                                                                                                                    <SingleSelector
+                                                                                                                      options={subCategoryLevel3Options}
+                                                                                                                      onChange={handleLevel3Change}
+                                                                                                                      value={selectedSubCategoryLevel3}
+                                                                                                                      placeholder={`Select Sub-category lvl 3`} // Dynamic placeholder
+                                                                                                                    />
+                                                                                        </td>
                                                                                         <td>
                                                                                             <input
                                                                                                 type="text"
@@ -3143,88 +2978,57 @@ const EstimationCreationTest = () => {
                                                                             {console.log("sub4",subCategory3.sub_categories_4)}
                                                                             {console.log("sub3id:", openSubCategory3Id)} */}
                                                                                                         <td>
-                                                                                                            <button
-                                                                                                                className="btn btn-link p-0"
-                                                                                                                onClick={() =>
-                                                                                                                    toggleSubCategory4(
-                                                                                                                        subCategory4.id
-                                                                                                                    )
-                                                                                                                }
-                                                                                                                aria-label="Toggle sub-category 3 visibility"
-                                                                                                            >
-                                                                                                                {openSubCategory4Id ===
-                                                                                                                    subCategory4.id ? (
-                                                                                                                    <svg
-                                                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                                                        width="24"
-                                                                                                                        height="24"
-                                                                                                                        viewBox="0 0 24 24"
-                                                                                                                        fill=" #e0e0e0"
-                                                                                                                        stroke="black"
-                                                                                                                        strokeWidth="1"
-                                                                                                                        strokeLinecap="round"
-                                                                                                                        strokeLinejoin="round"
-                                                                                                                    >
-                                                                                                                        {/* Square */}
-                                                                                                                        <rect
-                                                                                                                            x="3"
-                                                                                                                            y="3"
-                                                                                                                            width="18"
-                                                                                                                            height="20"
-                                                                                                                            rx="1"
-                                                                                                                            ry="1"
-                                                                                                                        />
-                                                                                                                        {/* Minus Icon */}
-                                                                                                                        <line
-                                                                                                                            x1="8"
-                                                                                                                            y1="12"
-                                                                                                                            x2="16"
-                                                                                                                            y2="12"
-                                                                                                                        />
-                                                                                                                    </svg>
-                                                                                                                ) : (
-                                                                                                                    <svg
-                                                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                                                        width="24"
-                                                                                                                        height="24"
-                                                                                                                        viewBox="0 0 24 24"
-                                                                                                                        fill=" #e0e0e0"
-                                                                                                                        stroke="black"
-                                                                                                                        strokeWidth="1"
-                                                                                                                        strokeLinecap="round"
-                                                                                                                        strokeLinejoin="round"
-                                                                                                                    >
-                                                                                                                        {/* Square */}
-                                                                                                                        <rect
-                                                                                                                            x="3"
-                                                                                                                            y="3"
-                                                                                                                            width="18"
-                                                                                                                            height="20"
-                                                                                                                            rx="1"
-                                                                                                                            ry="1"
-                                                                                                                        />
-                                                                                                                        {/* Plus Icon */}
-                                                                                                                        <line
-                                                                                                                            x1="12"
-                                                                                                                            y1="8"
-                                                                                                                            x2="12"
-                                                                                                                            y2="16"
-                                                                                                                        />
-                                                                                                                        <line
-                                                                                                                            x1="8"
-                                                                                                                            y1="12"
-                                                                                                                            x2="16"
-                                                                                                                            y2="12"
-                                                                                                                        />
-                                                                                                                    </svg>
-                                                                                                                )}
-                                                                                                            </button>
+                                                                                                           
+
+
+                                                                                                               <button
+                                                                                className="btn btn-link p-0"
+                                                                                onClick={() => toggleSubCategory4(subCategory4.id)}
+                                                                                title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                            >
+                                                                                {openSubCategory4Id ===
+                                                                                    subCategory4.id ? (
+                                                                                    // Minus icon (collapse)
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                        <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                    </svg>
+                                                                                ) : (
+                                                                                    // Plus icon (expand)
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                        <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                        <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                    </svg>
+                                                                                )}
+                                                                            </button>
+                                                                            {/* Add Sub Category button, only when expanded */}
+                                                                            {openSubCategory4Id ===
+                                                                                subCategory4.id && (
+                                                                                    <button
+                                                                                        className="btn btn-link p-0 ms-2"
+                                                                                        onClick={() => handleAddSubCategory5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx)}
+                                                                                        title="Add Sub Category"
+                                                                                    >
+                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                        </svg>
+                                                                                    </button>
+                                                                                )}
                                                                                                         </td>
                                                                                                         <td></td>
                                                                                                         <td>
                                                                                                             Sub-Category Level 4
                                                                                                         </td>
-                                                                                                        <td>{subCategory4.name}</td>
+                                                                                                        <td>
+                                                                                                            <SingleSelector
+                                                                                                                                      options={subCategoryLevel4Options}
+                                                                                                                                      onChange={handleLevel4Change}
+                                                                                                                                      value={selectedSubCategoryLevel4}
+                                                                                                                                      placeholder={`Select Sub-category lvl 4`} // Dynamic placeholder
+                                                                                                                                    />
+                                                                                                        </td>
                                                                                                         <td>
                                                                                                             <input
                                                                                                                 type="text"
@@ -3507,9 +3311,14 @@ const EstimationCreationTest = () => {
                                                                                                                         <td>
                                                                                                                             Sub-Category Level 5
                                                                                                                         </td>
-                                                                                                                        <td>{
-                                                                                                                            subCategory5.name
-                                                                                                                        }</td>
+                                                                                                                        <td>
+                                                                                                                         <SingleSelector
+                                                                                                                                                  options={subCategoryLevel5Options}
+                                                                                                                                                  onChange={handleLevel5Change}
+                                                                                                                                                  value={selectedSubCategoryLevel5}
+                                                                                                                                                  placeholder={`Select Sub-category lvl 5`} // Dynamic placeholder
+                                                                                                                                                />
+                                                                                                                        </td>
                                                                                                                         <td>
                                                                                                                             <input
                                                                                                                                 type="text"

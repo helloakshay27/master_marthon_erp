@@ -26,7 +26,7 @@ const EstimationApprovolList = () => {
   const navigate = useNavigate();
   const token = urlParams.get("token");
   const [selectedValue, setSelectedValue] = useState(""); // Holds the selected value
-    const [activeTab, setActiveTab] = useState("total"); // State to track the active tab
+  const [activeTab, setActiveTab] = useState("total"); // State to track the active tab
 
   const [showModal, setShowModal] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -256,7 +256,7 @@ const EstimationApprovolList = () => {
             </div>
           </div> */}
 
-<div className="material-boxes mt-4">
+          <div className="material-boxes mt-4">
             <div className="container-fluid">
               <div className="row separteinto6 justify-content-center">
                 <div className="col-md-2 text-center">
@@ -326,7 +326,7 @@ const EstimationApprovolList = () => {
                   </div>
                 </div>
 
-                 <div className="col-md-2 text-center">
+                <div className="col-md-2 text-center">
                   <div
                     // className="content-box tab-button"
                     data-tab="self-overdue"
@@ -341,7 +341,7 @@ const EstimationApprovolList = () => {
                     <p className="content-box-sub">{data?.rejected_count || 0}</p>
                   </div>
                 </div>
-                 <div className="col-md-2 text-center">
+                <div className="col-md-2 text-center">
                   <div
                     // className="content-box tab-button"
                     data-tab="self-overdue"
@@ -356,7 +356,7 @@ const EstimationApprovolList = () => {
                     <p className="content-box-sub">{data?.updated_count || 0}</p>
                   </div>
                 </div>
-                
+
               </div>
             </div>
           </div>
