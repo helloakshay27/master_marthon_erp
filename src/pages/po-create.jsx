@@ -249,6 +249,41 @@ const PoCreate = () => {
       return;
     }
 
+    // Prevent duplicate combination (Type, Sub-Type, Material, UOM, Brand, Colour, Specification)
+    const toStr = (v) => (v === undefined || v === null ? "" : String(v));
+    const isDuplicateMaterial = tableData
+      .filter((row) => !row._destroy)
+      .some((row, index) => {
+        // Exclude the row being edited from duplicate check
+        if (editRowIndex !== null && index === editRowIndex) return false;
+        return (
+          toStr(row.materialType) === toStr(formData.materialType) &&
+          toStr(row.materialSubType) === toStr(formData.materialSubType) &&
+          toStr(row.material) === toStr(formData.material) &&
+          toStr(row.uom) === toStr(formData.uom) &&
+          toStr(row.brand) === toStr(formData.brand) &&
+          toStr(row.colour) === toStr(formData.colour) &&
+          toStr(row.genericSpecification) === toStr(formData.genericSpecification)
+        );
+      });
+
+    if (isDuplicateMaterial) {
+      const duplicateMsg =
+        "Duplicate material entry with same Type, Sub-Type, Material, UOM, Brand, Colour and Specification is not allowed.";
+      setFieldErrors((prev) => ({
+        ...prev,
+        // materialType: duplicateMsg,
+        // materialSubType: duplicateMsg,
+        // material: duplicateMsg,
+        // uom: duplicateMsg,
+        // brand: duplicateMsg,
+        // colour: duplicateMsg,
+        // genericSpecification: duplicateMsg,
+      }));
+      alert(duplicateMsg);
+      return;
+    }
+
     // Add to table data or update existing
     const newRow = {
       id: editRowIndex !== null ? tableData[editRowIndex].id : Date.now(),
@@ -370,16 +405,16 @@ const PoCreate = () => {
     }
 
     // Check for duplicate materials
-    const materialIds = activeRows.map((row) => row.material);
-    const hasDuplicate = materialIds.some(
-      (id, idx) => id && materialIds.indexOf(id) !== idx
-    );
-    if (hasDuplicate) {
-      alert(
-        "Duplicate materials are not allowed. Please ensure each material is unique."
-      );
-      return;
-    }
+    // const materialIds = activeRows.map((row) => row.material);
+    // const hasDuplicate = materialIds.some(
+    //   (id, idx) => id && materialIds.indexOf(id) !== idx
+    // );
+    // if (hasDuplicate) {
+    //   alert(
+    //     "Duplicate materials are not allowed. Please ensure each material is unique."
+    //   );
+    //   return;
+    // }
 
     // Check if any row is missing a material
     const missingMaterial = activeRows.some((row) => !row.material);
@@ -392,17 +427,18 @@ const PoCreate = () => {
 
     setIsSubmitting(true);
 
-    // Prepare materials array for API
-    const materials = tableData.map((row) => ({
-      id: row.id, // Include ID for existing records
-      pms_inventory_id: row.material,
-      unit_of_measure_id: row.uom,
-      pms_inventory_sub_type_id: row.materialSubType,
-      pms_generic_info_id: row.genericSpecification || null,
-      pms_colour_id: row.colour || null,
-      pms_brand_id: row.brand || null,
-      _destroy: row._destroy || false, // Include destroy flag
-    }));
+    // Prepare materials array for API (exclude deleted rows)
+    const materials = tableData
+      .filter((row) => !row._destroy)
+      .map((row) => ({
+        id: row.id, // Include ID for existing records (local or server)
+        pms_inventory_id: row.material,
+        unit_of_measure_id: row.uom,
+        pms_inventory_sub_type_id: row.materialSubType,
+        pms_generic_info_id: row.genericSpecification || null,
+        pms_colour_id: row.colour || null,
+        pms_brand_id: row.brand || null,
+      }));
 
     const payload = {
       company_id: selectedCompany.value,
@@ -505,7 +541,7 @@ const PoCreate = () => {
                 resource_id: tax.resource_id,
                 tax_category_id: tax.tax_category_id,
                 taxChargeType:
-                  taxOptions.find((option) => option.id === tax.resource_id)
+                  taxOptions.find((option) => option.id === tax.tax_category_id)
                     ?.value || tax.resource_type,
                 taxType: tax.resource_type, // Set taxType based on API response
                 taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
@@ -520,7 +556,7 @@ const PoCreate = () => {
                 tax_category_id: tax.tax_category_id,
                 taxChargeType:
                   deductionTaxOptions.find(
-                    (option) => option.id === tax.resource_id
+                    (option) => option.id === tax.tax_category_id
                   )?.value || tax.resource_type,
                 taxType: tax.resource_type, // Set taxType based on API response
                 taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
@@ -1071,7 +1107,7 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
                   id: tax.id,
                   resource_id: tax.resource_id,
                   taxChargeType:
-                    taxOptions.find((option) => option.id === tax.resource_id)
+                    taxOptions.find((option) => option.id === tax.tax_category_id)
                       ?.value || "",
                   taxType: tax.resource_type,
                   taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
@@ -1084,7 +1120,7 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
                   resource_id: tax.resource_id,
                   taxChargeType:
                     deductionTaxOptions.find(
-                      (option) => option.id === tax.resource_id
+                      (option) => option.id === tax.tax_category_id
                     )?.value || "",
                   taxType: tax.resource_type,
                   taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
@@ -4401,6 +4437,11 @@ Document */}
                       )
                     }
                   />
+                  {fieldErrors.genericSpecification && (
+                    <span className="text-danger">
+                      {fieldErrors.genericSpecification}
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="col-md-4 mt-3">
@@ -4416,6 +4457,9 @@ Document */}
                       handleSelectorChange("colour", selectedOption)
                     }
                   />
+                  {fieldErrors.colour && (
+                    <span className="text-danger">{fieldErrors.colour}</span>
+                  )}
                 </div>
               </div>
               <div className="col-md-4 mt-3">
@@ -4431,6 +4475,9 @@ Document */}
                       handleSelectorChange("brand", selectedOption)
                     }
                   />
+                  {fieldErrors.brand && (
+                    <span className="text-danger">{fieldErrors.brand}</span>
+                  )}
                 </div>
               </div>
 
@@ -4683,89 +4730,99 @@ Document */}
                         .map((item, rowIndex) => (
                           <tr key={`${rowIndex}-${item.id}`}>
                             <td>
-                              <SingleSelector
-                                options={taxOptions.map((o) => ({ value: o.value, label: o.label, id: o.id }))}
+                              <select
+                                className="form-control"
                                 value={
-                                  taxOptions
-                                    .map((o) => ({ value: o.value, label: o.label, id: o.id }))
-                                    .find(
-                                      (opt) =>
-                                        opt.value === item.taxChargeType ||
-                                        opt.id === item.tax_category_id
-                                    ) || null
+                                  item.taxChargeType ||
+                                  (taxOptions.find((option) => option.id === item.tax_category_id)?.value || "")
                                 }
-                                onChange={(selectedOption) => {
-                                  const selectedValue = selectedOption?.value || "";
-                                  const selectedId = selectedOption?.id;
+                                onChange={(e) => {
+                                  const selectedValue = e.target.value;
+                                  const selectedOption = taxOptions.find(
+                                    (option) => option.value === selectedValue
+                                  );
                                   handleTaxChargeChange(
                                     tableId,
                                     item.id,
                                     "taxChargeType",
-                                    selectedValue,
+                                    selectedOption?.value || selectedValue,
                                     "addition"
                                   );
-                                  if (selectedId) {
-                                    handleTaxCategoryChange(tableId, selectedId, item.id);
+                                  if (selectedOption?.id) {
+                                    handleTaxCategoryChange(
+                                      tableId,
+                                      selectedOption.id,
+                                      item.id
+                                    );
                                   }
                                 }}
-                                isClearable={false}
-                              />
+                              >
+                                <option value="">Select Tax</option>
+                                {taxOptions.map((opt) => (
+                                  <option
+                                    key={opt.id}
+                                    value={opt.value}
+                                    disabled={(() => {
+                                      const current =
+                                        item.taxChargeType ||
+                                        taxOptions.find((o) => o.id === item.tax_category_id)?.value || "";
+                                      const disabledSet = (
+                                        taxRateData[tableId]?.addition_bid_material_tax_details?.reduce(
+                                          (acc, detail) => {
+                                            if (detail._destroy || detail.id === item.id) return acc;
+                                            const t = detail.taxChargeType;
+                                            if (t === "CGST") acc.push("CGST", "IGST");
+                                            if (t === "SGST") acc.push("SGST", "IGST");
+                                            if (t === "IGST") acc.push("CGST", "SGST");
+                                            if (t) acc.push(t);
+                                            return acc;
+                                          },
+                                          []
+                                        ) || []
+                                      ).filter((v, i, self) => self.indexOf(v) === i);
+                                      return disabledSet.includes(opt.value) && opt.value !== current;
+                                    })()}
+                                  >
+                                    {opt.label}
+                                  </option>
+                                ))}
+                              </select>
                             </td>
 
                             <td>
-                              <SingleSelector
-                                options={(() => {
-                                  // Use material-specific tax percentages from API for this specific tax item
-                                  const percentages =
-                                    materialTaxPercentages[item.id] || [];
-                                  if (percentages.length > 0) {
-                                    return percentages.map((percent) => ({
-                                      label: `${percent.percentage}%`,
-                                      value: `${percent.percentage}%`,
-                                      id: percent.id,
-                                    }));
-                                  }
-
-                                  // If no percentages from API, return empty array (no options)
-                                  return [];
-                                })()}
-                                value={{
-                                  value:
-                                    item?.taxChargePerUom ||
-                                    (() => {
-                                      const foundPercentage = (
-                                        materialTaxPercentages[item.id] || []
-                                      ).find(
-                                        (option) => option.id === item.tax_category_id
-                                      );
-                                      return foundPercentage
-                                        ? `${foundPercentage.percentage}%`
-                                        : "";
-                                    })() || "",
-                                  label:
-                                    item?.taxChargePerUom ||
-                                    (() => {
-                                      const foundPercentage = (
-                                        materialTaxPercentages[item.id] || []
-                                      ).find(
-                                        (option) => option.id === item.tax_category_id
-                                      );
-                                      return foundPercentage
-                                        ? `${foundPercentage.percentage}%`
-                                        : "";
-                                    })() || "",
-                                }}
-                                onChange={(selected) =>
+                              <select
+                                className="form-control"
+                                value={
+                                  item?.taxChargePerUom ||
+                                  (() => {
+                                    const found = (materialTaxPercentages[item.id] || []).find(
+                                      (p) => p.id === item.tax_category_id
+                                    );
+                                    return found ? `${found.percentage}%` : "";
+                                  })() || ""
+                                }
+                                onChange={(e) =>
                                   handleTaxChargeChange(
                                     tableId,
                                     item.id,
                                     "taxChargePerUom",
-                                    selected?.value || "",
+                                    e.target.value,
                                     "addition"
                                   )
                                 }
-                                isClearable={false}
-                              />
+                                disabled={(materialTaxPercentages[item.id] || []).length === 0}
+                              >
+                                <option value="">{
+                                  (materialTaxPercentages[item.id] || []).length === 0
+                                    ? "No percentages available"
+                                    : "Select percentage"
+                                }</option>
+                                {(materialTaxPercentages[item.id] || []).map((percent) => (
+                                  <option key={percent.id} value={`${percent.percentage}%`}>
+                                    {percent.percentage}%
+                                  </option>
+                                ))}
+                              </select>
                             </td>
 
                             <td className="text-center">

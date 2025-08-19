@@ -649,6 +649,69 @@ const formatDateTime = (dateString) => {
       return;
     }
 
+    // Prevent duplicate combination (Type, Sub-Type, Material, UOM, Brand, Colour, Specification)
+    const toStr = (v) => (v === undefined || v === null ? "" : String(v));
+    const getRowKeyValues = (row) => ({
+      materialType: toStr(row.materialType ?? row.material?.pms_inventory_type_id),
+      materialSubType: toStr(
+        row.materialSubType ?? row.material?.pms_inventory_sub_type_id
+      ),
+      material: toStr(
+        typeof row.material === "object"
+          ? row.material?.pms_inventory_id
+          : row.material
+      ),
+      uom: toStr(row.uom ?? row.material?.uom_id),
+      brand: toStr(row.brand ?? row.material?.pms_brand_id),
+      colour: toStr(row.colour ?? row.material?.pms_colour_id),
+      genericSpecification: toStr(
+        row.genericSpecification ?? row.material?.pms_generic_info_id
+      ),
+    });
+
+    const newKey = {
+      materialType: toStr(formData.materialType),
+      materialSubType: toStr(formData.materialSubType),
+      material: toStr(formData.material),
+      uom: toStr(formData.uom),
+      brand: toStr(formData.brand),
+      colour: toStr(formData.colour),
+      genericSpecification: toStr(formData.genericSpecification),
+    };
+
+    const isDuplicate = tableData
+      .filter((row) => !row._destroy)
+      .some((row, index) => {
+        if (editRowIndex !== null && index === editRowIndex) return false;
+        const key = getRowKeyValues(row);
+        return (
+          key.materialType === newKey.materialType &&
+          key.materialSubType === newKey.materialSubType &&
+          key.material === newKey.material &&
+          key.uom === newKey.uom &&
+          key.brand === newKey.brand &&
+          key.colour === newKey.colour &&
+          key.genericSpecification === newKey.genericSpecification
+        );
+      });
+
+    if (isDuplicate) {
+      const duplicateMsg =
+        "Duplicate material entry with same Type, Sub-Type, Material, UOM, Brand, Colour and Specification is not allowed.";
+      setFieldErrors((prev) => ({
+        ...prev,
+        // materialType: duplicateMsg,
+        // materialSubType: duplicateMsg,
+        // material: duplicateMsg,
+        // uom: duplicateMsg,
+        // brand: duplicateMsg,
+        // colour: duplicateMsg,
+        // genericSpecification: duplicateMsg,
+      }));
+      alert(duplicateMsg);
+      return;
+    }
+
     // Add to table data or update existing
     const newRow = {
       id: editRowIndex !== null ? tableData[editRowIndex].id : Date.now(),
