@@ -3222,7 +3222,7 @@ const PoDetails = () => {
                                 onClick={openApprovalModal}
                                 style={{
                                   backgroundColor:
-                                    purchaseOrderData?.status === "Approved"
+                                    purchaseOrderData?.selected_status === "Approved"
                                       ? "green"
                                       : "",
                                   border: "none",

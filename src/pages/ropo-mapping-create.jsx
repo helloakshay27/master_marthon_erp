@@ -350,6 +350,7 @@ const RopoMappingCreate = () => {
       }));
     }
   };
+  
 
   const fetchMaterialDetails = async (useFilters = true) => {
     setLoadingMaterialDetails(true);
@@ -358,6 +359,7 @@ const RopoMappingCreate = () => {
       queryParams.append("token", token);
 
       if (useFilters) {
+        // Always include project and site filters from main form if selected
         if (selectedProject) {
           queryParams.append("q[project_id_in][]", selectedProject.value);
         }
@@ -402,6 +404,9 @@ const RopoMappingCreate = () => {
 
       const apiUrl = `https://marathon.lockated.com//material_order_requests/material_details.json?${queryParams.toString()}&q[mor_type_eq]=ropo`;
       console.log("API URL with filters:", apiUrl);
+      console.log("Selected Project:", selectedProject);
+      console.log("Selected Site:", selectedSite);
+      console.log("Query Params:", queryParams.toString());
 
       const response = await axios.get(apiUrl);
 
@@ -660,6 +665,7 @@ const RopoMappingCreate = () => {
   };
 
   const handleMorSearch = () => {
+    // Always include main form filters when searching
     fetchMaterialDetails(true);
   };
 
@@ -686,7 +692,8 @@ const RopoMappingCreate = () => {
     setSelectedInventoryMaterialTypes2(null);
     setMaterialDetailsData([]);
     setSelectedMaterialItems([]);
-    fetchMaterialDetails(false);
+    // Reset but still include project/site filters from main form
+    fetchMaterialDetails(true);
   };
 
   // Get showing entries text
@@ -1137,13 +1144,79 @@ const RopoMappingCreate = () => {
     return summary;
   };
 
+  // Add near other state declarations at the top
+const [remainingQuantities, setRemainingQuantities] = useState({});
   // Handle ordered quantity change
-  const handleOrderedQuantityChange = (poId, materialId, value) => {
-    setOrderedQuantities((prev) => ({
-      ...prev,
-      [`${poId}-${materialId}`]: value,
-    }));
-  };
+  // const handleOrderedQuantityChange = (poId, materialId, value) => {
+  //   setOrderedQuantities((prev) => ({
+  //     ...prev,
+  //     [`${poId}-${materialId}`]: value,
+  //   }));
+  // };
+
+  // Replace or add the handleOrderedQuantityChange function
+const handleOrderedQuantityChange = (poId, materialId, value) => {
+  const numValue = parseFloat(value) || 0;
+  
+  // Find the material in morData
+  const material = morData.find(mor => 
+    mor.mor_inventories.some(inv => inv.id === materialId)
+  )?.mor_inventories.find(inv => inv.id === materialId);
+
+  if (!material) {
+    console.error('Material not found');
+    return;
+  }
+
+  // Get initial pending quantity
+  const initialPendingQty = material.pending_qty !== null && material.pending_qty !== undefined 
+    ? parseFloat(material.pending_qty)
+    : (parseFloat(material.required_quantity || 0) - parseFloat(material.prev_order_qty || 0));
+
+  // Calculate total ordered quantity for this material across all POs except current one
+  const totalOrderedQty = Object.entries(orderedQuantities)
+    .filter(([key]) => {
+      const [orderPoId, orderMaterialId] = key.split('-');
+      return orderMaterialId === materialId.toString() && orderPoId !== poId.toString();
+    })
+    .reduce((sum, [_, qty]) => sum + (parseFloat(qty) || 0), 0);
+
+  // Calculate available quantity
+  const availableQty = initialPendingQty - totalOrderedQty;
+
+  if (numValue > availableQty) {
+    alert(`Order quantity cannot exceed pending quantity (${availableQty.toFixed(2)})`);
+    return;
+  }
+
+  // Update ordered quantities
+  setOrderedQuantities(prev => ({
+    ...prev,
+    [`${poId}-${materialId}`]: value
+  }));
+
+  // Update remaining quantities
+  const newRemainingQty = initialPendingQty - (totalOrderedQty + numValue);
+  setRemainingQuantities(prev => ({
+    ...prev,
+    [materialId]: newRemainingQty.toFixed(2)
+  }));
+};
+
+// Add this useEffect after other useEffects
+useEffect(() => {
+  if (morData.length > 0) {
+    const initial = {};
+    morData.forEach(mor => {
+      mor.mor_inventories.forEach(inv => {
+        initial[inv.id] = inv.pending_qty !== null && inv.pending_qty !== undefined
+          ? parseFloat(inv.pending_qty)
+          : (parseFloat(inv.required_quantity || 0) - parseFloat(inv.prev_order_qty || 0));
+      });
+    });
+    setRemainingQuantities(initial);
+  }
+}, [morData]);
 
   // Handle final ROPO mapping submit
   const handleRopoMappingSubmit = async () => {
@@ -1498,9 +1571,20 @@ setPoModalApiData(
   useEffect(() => {
     if (addMORModal) {
       setSelectedMaterialItems([]);
-      fetchMaterialDetails(false);
+      // Always fetch with filters to include project/site from main form
+      fetchMaterialDetails(true);
     }
   }, [addMORModal]);
+
+  // Auto-refresh MOR data when main form project/site changes
+  useEffect(() => {
+    if (addMORModal) {
+      // Only auto-refresh if modal is open and we have project/site selected
+      if (selectedProject || selectedSite) {
+        fetchMaterialDetails(true);
+      }
+    }
+  }, [selectedProject, selectedSite]);
 
   // After addPOModal state
   useEffect(() => {
@@ -1733,13 +1817,13 @@ setPoModalApiData(
                                 </div>
                                 <div className="col-md-4">
                                   <div className="form-group">
-                                    <label>Sub-project</label>
+                                    <label>Sub-Project</label>
                                     <SingleSelector
                                       options={siteOptions}
                                       value={selectedSite}
                                       onChange={handleSiteChange}
                                       placeholder="Select Sub-project"
-                                      isDisabled={!selectedProject}
+                                      // isDisabled={!selectedProject}
                                     />
                                   </div>
                                 </div>
@@ -1961,12 +2045,19 @@ setPoModalApiData(
                                       </td>
                                             </td>
                                             <td>
-                                              {mor.mor_inventories.reduce(
+                                              {/* {mor.mor_inventories.reduce(
                                                 (sum, inv) =>
                                                   sum +
                                                   (inv.required_quantity || 0),
                                                 0
-                                              )}
+                                              )} */}
+                                                {mor.mor_inventories.reduce((sum, inv) => {
+            // Use pending_qty from API if available, otherwise calculate
+            const pendingQty = inv.pending_qty !== null && inv.pending_qty !== undefined 
+              ? parseFloat(inv.pending_qty)
+              : (parseFloat(inv.required_quantity || 0) - parseFloat(inv.prev_order_qty || 0));
+            return sum + pendingQty;
+          }, 0).toFixed(2)}
                                             </td>
                                       <td />
                                       <td />
@@ -2112,10 +2203,16 @@ setPoModalApiData(
                                                           "N/A"}
                                                       </small> */}
                                                     </td>
-                                                    <td>
-                                                      {inventory.required_quantity ||
-                                                        0}
-                                                    </td>
+                                                  
+<td>
+  {(remainingQuantities[inventory.id] !== undefined 
+    ? parseFloat(remainingQuantities[inventory.id])
+    : (inventory.pending_qty !== null && inventory.pending_qty !== undefined
+      ? parseFloat(inventory.pending_qty)
+      : (parseFloat(inventory.required_quantity || 0) - parseFloat(inventory.prev_order_qty || 0))
+    )).toFixed(2)}
+</td>
+                                                    
                                                     <td>
                                                       {inventory.prev_order_qty ||
                                                         0}
@@ -2187,28 +2284,26 @@ setPoModalApiData(
                                                             {poItem.required_quantity ||
                                                               0}
                                         </td>
-                                                          <td>
-                                                            <input
-                                                              type="number"
-                                                              className="form-control form-control-sm"
-                                                              value={
-                                                                orderedQuantities[
-                                                                  `${poItem.purchase_order_id}-${poItem.mor_inventory_id}`
-                                                                ] || ""
-                                                              }
-                                                              onChange={(e) =>
-                                                                handleOrderedQuantityChange(
-                                                                  poItem.purchase_order_id,
-                                                                  poItem.mor_inventory_id,
-                                                                  e.target.value
-                                                                )
-                                                              }
-                                                              placeholder="Enter qty"
-                                                              style={{
-                                                                width: "80px",
-                                                              }}
-                                                            />
-                                                          </td>
+                                                          
+<td>
+  <input
+    type="number"
+    className="form-control form-control-sm"
+    value={orderedQuantities[`${poItem.purchase_order_id}-${poItem.mor_inventory_id}`] || ""}
+    onChange={(e) => handleOrderedQuantityChange(
+      poItem.purchase_order_id,
+      poItem.mor_inventory_id,
+      e.target.value
+    )}
+    min="0"
+    max={remainingQuantities[poItem.mor_inventory_id] || 
+      (poItem.pending_qty !== null && poItem.pending_qty !== undefined
+        ? parseFloat(poItem.pending_qty)
+        : (parseFloat(poItem.required_quantity || 0) - parseFloat(poItem.prev_order_qty || 0)))}
+    placeholder="Enter qty"
+    style={{ width: "80px" }}
+  />
+</td>
                                                           <td>
                                                             {poItem.uom_name ||
                                                               "N/A"}
@@ -2314,85 +2409,26 @@ setPoModalApiData(
                           </div>
                         </section>
                         <section className="ms-4 me-4 mb-3">
-                          <div className="d-flex justify-content-end align-items-center gap-3">
-                            <p className="pe-2 pt-1">Status</p>
-                            <div className="dropdown">
-                              <button
-                                className="purple-btn2 dropdown-toggle"
-                                type="button"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                              >
-                                {status.charAt(0).toUpperCase() +
-                                  status.slice(1)}
-                              </button>
-                              <ul className="dropdown-menu">
-                                <li>
-                                  <a
-                                    className={`dropdown-item ${
-                                      status === "draft" ? "active" : ""
-                                    }`}
-                                    href="#"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      setStatus("draft");
-                                    }}
-                                  >
-                                    Draft
-                                  </a>
-                                </li>
-                                <li>
-                                  <a
-                                    className={`dropdown-item ${
-                                      status === "submitted" ? "active" : ""
-                                    }`}
-                                    href="#"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      setStatus("submitted");
-                                    }}
-                                  >
-                                    Submitted
-                                  </a>
-                                </li>
-                                <li>
-                                  <a
-                                    className={`dropdown-item ${
-                                      status === "approved" ? "active" : ""
-                                    }`}
-                                    href="#"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      setStatus("approved");
-                                    }}
-                                  >
-                                    Approved
-                                  </a>
-                                </li>
-                                <li>
-                                  <a
-                                    className={`dropdown-item ${
-                                      status === "rejected" ? "active" : ""
-                                    }`}
-                                    href="#"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      setStatus("rejected");
-                                    }}
-                                  >
-                                    Rejected
-                                  </a>
-                                </li>
-                              </ul>
-                            </div>
-                          </div>
+ <div className="row mt-4 justify-content-end align-items-center ms-2">
+                <div className="col-md-3">
+                  <div className="form-group d-flex gap-3 align-items-center mx-3">
+                    <label style={{ fontSize: "0.95rem", color: "black" }}>
+                      Status
+                    </label>
+                    <SingleSelector
+                      options={[{ value: "draft", label: "Draft" }]}
+                      value={{ value: "draft", label: "Draft" }}
+                      placeholder="Select Status"
+                      isClearable={false}
+                      isDisabled={true}
+                      classNamePrefix="react-select"
+                    />
+                  </div>
+                </div>
+              </div>
                           <div className="row mt-2 justify-content-end">
-                            <div className="col-md-2">
-                              <button className="purple-btn2 w-100">
-                                Print
-                              </button>
-                            </div>
-                            <div className="col-md-2">
+                           
+                            <div className="col-md-2 mt-2">
                               <button
                                 className="purple-btn2 w-100"
                                 onClick={handleRopoMappingSubmit}
@@ -2527,7 +2563,7 @@ setPoModalApiData(
                       value={selectedProject}
                       onChange={handleProjectChange}
                       placeholder="Select Project"
-                      isDisabled={!selectedCompany}
+                      // isDisabled={!selectedCompany}
                     />
                   </div>
                 </div>
@@ -2658,6 +2694,19 @@ setPoModalApiData(
                   Reset
                 </button>
               </div>
+              
+              {/* Show current filters from main form */}
+              {(selectedProject || selectedSite) && (
+                <div className="alert alert-info mt-2">
+                  <strong>Active Filters from Main Form:</strong>
+                  {selectedProject && (
+                    <span className="ms-2">Project: {selectedProject.label}</span>
+                  )}
+                  {selectedSite && (
+                    <span className="ms-2">Sub-Project: {selectedSite.label}</span>
+                  )}
+                </div>
+              )}
 
               <div className="tbl-container me-2 mt-3">
                 {loadingMaterialDetails ? (
