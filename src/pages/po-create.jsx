@@ -15,6 +15,8 @@ const PoCreate = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [apiMaterialInventoryIds, setApiMaterialInventoryIds] = useState();
    const navigate = useNavigate();
+   const urlParams = new URLSearchParams(location.search);
+   const token = urlParams.get("token");
    
 
   // Tax modal state variables
@@ -69,6 +71,7 @@ const PoCreate = () => {
   // Supplier state
   const [suppliers, setSuppliers] = useState([]);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const [vendorGstin, setVendorGstin] = useState("");
 
   // Loading state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -134,6 +137,28 @@ const PoCreate = () => {
       });
   }, []);
 
+  // Fetch Vendor GSTIN when supplier changes
+  useEffect(() => {
+    const fetchVendorGstin = async () => {
+      try {
+        if (selectedSupplier?.value) {
+          const supplierId = selectedSupplier.value;
+          const res = await axios.get(
+            `${baseURL}pms/suppliers/${supplierId}/gstin.json?token=${token}`
+          );
+          // API returns { supplier_id, gstin }
+          setVendorGstin(res.data?.gstin || "");
+        } else {
+          setVendorGstin("");
+        }
+      } catch (e) {
+        console.error("Failed to fetch Vendor GSTIN:", e);
+        setVendorGstin("");
+      }
+    };
+    fetchVendorGstin();
+  }, [selectedSupplier, token]);
+
   // Handle company selection
   const handleCompanyChange = (selectedOption) => {
     setSelectedCompany(selectedOption); // Set selected company
@@ -161,6 +186,7 @@ const PoCreate = () => {
   // Handle supplier selection
   const handleSupplierChange = (selectedOption) => {
     setSelectedSupplier(selectedOption);
+    setVendorGstin("");
   };
   // Map companies to options for the dropdown
   const companyOptions = companies.map((company) => ({
@@ -193,8 +219,7 @@ const PoCreate = () => {
   const [selectedInventoryBrands, setSelectedInventoryBrands] = useState(null);
 
   // Get token from URL
-  const urlParams = new URLSearchParams(location.search);
-  const token = urlParams.get("token");
+
 
   // Table data state
   const [tableData, setTableData] = useState([]);
@@ -2192,17 +2217,27 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
       const payload = {
         purchase_order: {
           status: "draft",
-          credit_period: parseInt(termsFormData.creditPeriod) || 0,
-          po_validity_period: parseInt(termsFormData.poValidityPeriod) || 0,
-          advance_reminder_duration:
-            parseInt(termsFormData.advanceReminderDuration) || 0,
-          payment_terms: termsFormData.paymentTerms || "",
-          payment_remarks: termsFormData.paymentRemarks || "",
-          supplier_advance: 0,
-          survice_certificate_advance: 0,
-          total_value: 0,
-          total_discount: 0,
-          po_date: getLocalDateTime().split("T")[0], // Current date
+          // credit_period: parseInt(termsFormData.creditPeriod) || 0,
+          // po_validity_period: parseInt(termsFormData.poValidityPeriod) || 0,
+          // advance_reminder_duration:
+          //   parseInt(termsFormData.advanceReminderDuration) || 0,
+          // payment_terms: termsFormData.paymentTerms || "",
+          // payment_remarks: termsFormData.paymentRemarks || "",
+          // supplier_advance: 0,
+          // survice_certificate_advance: 0,
+          // total_value: 0,
+          // total_discount: 0,
+          // po_date: getLocalDateTime().split("T")[0], // Current date
+          credit_period: termsFormData.creditPeriod ? parseInt(termsFormData.creditPeriod) : null,
+po_validity_period: termsFormData.poValidityPeriod ? parseInt(termsFormData.poValidityPeriod) : null,
+advance_reminder_duration: termsFormData.advanceReminderDuration ? parseInt(termsFormData.advanceReminderDuration) : null,
+payment_terms: termsFormData.paymentTerms || null,
+payment_remarks: termsFormData.paymentRemarks || null,
+supplier_advance: null,
+survice_certificate_advance: null, 
+total_value: null,
+total_discount: null,
+po_date: getLocalDateTime().split("T")[0], // Current date
           company_id: selectedCompany?.value,
           po_type: "ropo",
           supplier_id: selectedSupplier?.value,
@@ -2681,7 +2716,9 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
                                     <input
                                       className="form-control"
                                       type="text"
-                                      placeholder="Site"
+                                      value={vendorGstin}
+                                      // placeholder="GSTIN"
+                                      readOnly
                                       disabled
                                     />
                                   </div>
@@ -2694,7 +2731,7 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
                                     <input
                                       className="form-control"
                                       type="text"
-                                      placeholder="Site"
+                                      // placeholder="Site"
                                       disabled
                                     />
                                   </div>
@@ -2710,9 +2747,9 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
                                 Material Details
                               </h5>
 
-                              <div>
+                              <div className="me-4">
                                 <button
-                                  className="purple-btn2  ms-3"
+                                  className="purple-btn2 "
                                   onClick={() => {
                                     setFieldErrors({});
                                     setShowModal(true);

@@ -79,6 +79,7 @@ const PoEdit = () => {
   // Loading state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUpdatingOrder, setIsUpdatingOrder] = useState(false);
+    const [vendorGstin, setVendorGstin] = useState("");
 
   // Terms and conditions form state
   const [termsFormData, setTermsFormData] = useState({
@@ -510,6 +511,26 @@ const formatDateTime = (dateString) => {
 
     
 
+     useEffect(() => {
+        const fetchVendorGstin = async () => {
+          try {
+            if (selectedSupplier?.value) {
+              const supplierId = selectedSupplier.value;
+              const res = await axios.get(
+                `${baseURL}pms/suppliers/${supplierId}/gstin.json?token=${token}`
+              );
+              // API returns { supplier_id, gstin }
+              setVendorGstin(res.data?.gstin || "");
+            } else {
+              setVendorGstin("");
+            }
+          } catch (e) {
+            console.error("Failed to fetch Vendor GSTIN:", e);
+            setVendorGstin("");
+          }
+        };
+        fetchVendorGstin();
+      }, [selectedSupplier, token]);
   // Fetch company data on component mount
   useEffect(() => {
     axios
@@ -3523,7 +3544,8 @@ const formatDateTime = (dateString) => {
                                     <input
                                       className="form-control"
                                       type="text"
-                                      placeholder="Site"
+                                      // placeholder="Site"
+                                         value={vendorGstin}
                                       disabled
                                     />
                                   </div>
@@ -3536,7 +3558,7 @@ const formatDateTime = (dateString) => {
                                     <input
                                       className="form-control"
                                       type="text"
-                                      placeholder="Site"
+                                      // placeholder="Site"
                                       disabled
                                     />
                                   </div>

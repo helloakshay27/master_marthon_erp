@@ -3331,7 +3331,7 @@ const PoDetails = () => {
                                         <span className="me-3 text-dark">
                                           :
                                         </span>
-                                        {purchaseOrderData.total_discount}
+                                        {purchaseOrderData.total_discount ?? "-"}
                                       </label>
                                     </div>
                                   </div>
@@ -3958,7 +3958,7 @@ const PoDetails = () => {
                                     <div className="col-6">
                                       <label className="text">
                                         <span className="me-3">:-</span>
-                                        {purchaseOrderData.total_discount}
+                                        {purchaseOrderData.total_discount  ?? "-"}
                                       </label>
                                     </div>
                                   </div>
