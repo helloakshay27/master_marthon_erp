@@ -224,7 +224,7 @@ const EstimationCreationList = () => {
 
 
     const handleClick = () => {
-    navigate("/estimation-creation"); // Navigate to create page
+    navigate("/estimation-creation-test"); // Navigate to create page
   };
     console.log("data:", data)
 

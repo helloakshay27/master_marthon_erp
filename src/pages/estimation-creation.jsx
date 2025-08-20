@@ -2317,7 +2317,7 @@ const EstimationCreation = () => {
                         disabled
                         className="form-control"
                         type="text"
-                        placeholder="Floors"
+                        placeholder=""
                         value={
                           details?.data.budget_type === "non_wbs"
                             ? "non wbs"

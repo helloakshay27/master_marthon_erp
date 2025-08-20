@@ -130,33 +130,76 @@ const EstimationCreationTest = () => {
     const [budgetType, setBudgetType] = useState(""); // ✅ new state
 
     // 🔹 Fetch sub-project details when project or site changes
+    // useEffect(() => {
+    //     if (!selectedProject && !selectedSite) return;
+
+    //     const fetchDetails = async () => {
+    //         try {
+    //             const newType = selectedSite ? "sub_project" : "project";
+    //             setType(newType);
+    //             const type = selectedSite ? "sub_project" : "project";
+    //             const id = selectedSite ? selectedSite.value : selectedProject.value;
+
+    //             const res = await axios.get(
+    //                 `${baseURL}estimation_details/${id}/budget_details.json?type=${type}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    //             );
+
+    //             setDetails(res.data);
+    //             setBudgetType(res.data?.data?.budget_type || ""); // ✅ save budget_type
+    //         } catch (err) {
+    //             console.error("Error fetching sub-project details", err);
+    //         }
+    //     };
+
+    //     fetchDetails();
+    // }, [selectedProject, selectedSite]);
+
     useEffect(() => {
         if (!selectedProject && !selectedSite) return;
 
         const fetchDetails = async () => {
             try {
-                const newType = selectedSite ? "sub_project" : "project";
-                setType(newType);
-                const type = selectedSite ? "sub_project" : "project";
-                const id = selectedSite ? selectedSite.value : selectedProject.value;
+                let type;
+                if (selectedWing) {
+                    type = "wing";
+                } else if (selectedSite) {
+                    type = "sub_project";
+                } else {
+                    type = "project";
+                }
+                setType(type);
+
+                const id = selectedWing
+                    ? selectedWing.value
+                    : selectedSite
+                        ? selectedSite.value
+                        : selectedProject.value;
 
                 const res = await axios.get(
                     `${baseURL}estimation_details/${id}/budget_details.json?type=${type}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
                 );
 
                 setDetails(res.data);
-                setBudgetType(res.data?.data?.budget_type || ""); // ✅ save budget_type
+                setBudgetType(res.data?.data?.budget_type || "");
             } catch (err) {
                 console.error("Error fetching sub-project details", err);
             }
         };
 
         fetchDetails();
-    }, [selectedProject, selectedSite]);
+    }, [selectedProject, selectedSite, selectedWing]);
+
 
     // console.log("budget type:", budgetType)
     // 🔹 Dynamic title
-    const cardTitle = type === "sub_project" ? "Sub-Project Details" : "Project Details";
+    // const cardTitle = type === "sub_project" ? "Sub-Project Details" : "Project Details";
+
+    const cardTitle =
+        type === "wing"
+            ? "Wing Details"
+            : type === "sub_project"
+                ? "Sub-Project Details"
+                : "Project Details";
 
     // console.log("details selected:", details)
     const [subProjectDetails, setSubProjectDetails] = useState(
@@ -246,7 +289,7 @@ const EstimationCreationTest = () => {
 
             )
             .then((res) => {
-                console.log("responce cat:", res.data)
+                // console.log("responce cat:", res.data)
                 // setSubProjectDetails(res.data); // store response
             })
             .catch((err) => {
@@ -340,7 +383,7 @@ const EstimationCreationTest = () => {
     const [modalCategoryIdx, setModalCategoryIdx] = useState(null);
     const [modalSubCategoryIdx, setModalSubCategoryIdx] = useState(null);
     const [modalRows, setModalRows] = useState([
-        { materialType: "", materialTypeLabel: "", specification: "", specificationLabel: "", labourType: "", labourTypeLabel: "", compositeValue: "", rate: "", type: "Material" }
+        { materialType: "", materialTypeLabel: "", specification: "", specificationLabel: "", labourType: "", labourTypeLabel: "", compositeValue: "", rate: "", type: "material" }
     ]);
 
     // Dummy options for dropdowns
@@ -371,7 +414,7 @@ const EstimationCreationTest = () => {
 
         // Check if both Material Type & Specification are selected → fetch rate
         const row = updatedRows[idx];
-        if (row.materialType && row.specification && row.type === "Material") {
+        if (row.materialType && row.type === "material") {
             try {
                 const res = await axios.get(
                     `${baseURL}estimation_details/get_material_rate.json`,
@@ -429,7 +472,7 @@ const EstimationCreationTest = () => {
         setModalSubCategory4Idx(subCategory4Idx);
         setModalSubCategory5Idx(subCategory5Idx);
         // setModalRows([{ materialType: "", specification: "", type: "Material" }]);
-        setModalRows([{ materialType: "", materialTypeLabel: "", specification: "", specificationLabel: "", labourType: "", labourTypeLabel: "", compositeValue: "", rate: "", type: "Material" }]);
+        setModalRows([{ materialType: "", materialTypeLabel: "", specification: "", specificationLabel: "", labourType: "", labourTypeLabel: "", compositeValue: "", rate: "", type: "material" }]);
         setShowAddModal(true);
 
         setOpenCategoryId(subCatIdx === null ? categoryOrSubCatId : subProjectDetails.categories[catIdx].id);
@@ -563,20 +606,20 @@ const EstimationCreationTest = () => {
 
             // Duplicate check
             let isDuplicate = false;
-            if (row.type === "Material") {
+            if (row.type === "material") {
                 isDuplicate = targetArr.some(item =>
-                    item.type === "Material" &&
+                    item.type === "material" &&
                     item.name === row.materialTypeLabel &&
                     item.specification === row.specificationLabel
                 );
-            } else if (row.type === "Labour") {
+            } else if (row.type === "labour") {
                 isDuplicate = targetArr.some(item =>
-                    item.type === "Labour" &&
+                    item.type === "labour" &&
                     item.labourActLabel === row.labourTypeLabel
                 );
-            } else if (row.type === "Composite") {
+            } else if (row.type === "composite") {
                 isDuplicate = targetArr.some(item =>
-                    item.type === "Composite" &&
+                    item.type === "composite" &&
                     item.compositeValue === row.compositeValue
                 );
             }
@@ -654,6 +697,45 @@ const EstimationCreationTest = () => {
             updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].material_type_details =
                 [...updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].material_type_details];
             updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].material_type_details.splice(itemIdx, 1);
+            return updated;
+        });
+    };
+
+    const handleRemoveSubCategory4Row = (catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx) => {
+        setSubProjectDetails(prev => {
+            const updated = { ...prev };
+            updated.categories = [...updated.categories];
+            updated.categories[catIdx].sub_categories_2 = [...updated.categories[catIdx].sub_categories_2];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3 = [
+                ...updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3
+            ];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4 = [
+                ...updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4
+            ];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].material_type_details =
+                [...updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].material_type_details];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].material_type_details.splice(itemIdx, 1);
+            return updated;
+        });
+    };
+
+    const handleRemoveSubCategory5Row = (catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx) => {
+        setSubProjectDetails(prev => {
+            const updated = { ...prev };
+            updated.categories = [...updated.categories];
+            updated.categories[catIdx].sub_categories_2 = [...updated.categories[catIdx].sub_categories_2];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3 = [
+                ...updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3
+            ];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4 = [
+                ...updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4
+            ];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].sub_categories_5 = [
+                ...updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].sub_categories_5
+            ];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].sub_categories_5[subCategory5Idx].material_type_details =
+                [...updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].sub_categories_5[subCategory5Idx].material_type_details];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].sub_categories_5[subCategory5Idx].material_type_details.splice(itemIdx, 1);
             return updated;
         });
     };
@@ -1136,6 +1218,105 @@ const EstimationCreationTest = () => {
     };
 
 
+    const handleEditMaterial2 = (catIdx, itemIdx, field, value) => {
+        const updatedDetails = { ...subProjectDetails };
+        updatedDetails.categories = [...updatedDetails.categories];
+
+        const materials = [...updatedDetails.categories[catIdx].material_type_details];
+        const material = { ...materials[itemIdx] };
+
+        material[field] = value;
+
+        // Always recalculate amount when qty or rate changes
+        const qty = parseFloat(material.qty) || 0;
+        const rate = parseFloat(material.rate) || 0;
+        material.amount = qty * rate;
+
+        materials[itemIdx] = material;
+        updatedDetails.categories[catIdx].material_type_details = materials;
+
+        setSubProjectDetails(updatedDetails);
+    };
+    // Sub-Category 2
+    const handleEditMaterial2SubCat2 = (catIdx, subCatIdx, itemIdx, field, value) => {
+        const updatedDetails = { ...subProjectDetails };
+        updatedDetails.categories = [...updatedDetails.categories];
+
+        const materials = [...updatedDetails.categories[catIdx].sub_categories_2[subCatIdx].material_type_details];
+        const material = { ...materials[itemIdx] };
+
+        material[field] = value;
+
+        const qty = parseFloat(material.qty) || 0;
+        const rate = parseFloat(material.rate) || 0;
+        material.amount = qty * rate;
+
+        materials[itemIdx] = material;
+        updatedDetails.categories[catIdx].sub_categories_2[subCatIdx].material_type_details = materials;
+
+        setSubProjectDetails(updatedDetails);
+    };
+
+    // Sub-Category 3
+    const handleEditMaterial2SubCat3 = (catIdx, subCatIdx, subCat3Idx, itemIdx, field, value) => {
+        const updatedDetails = { ...subProjectDetails };
+        updatedDetails.categories = [...updatedDetails.categories];
+
+        const materials = [...updatedDetails.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCat3Idx].material_type_details];
+        const material = { ...materials[itemIdx] };
+
+        material[field] = value;
+
+        const qty = parseFloat(material.qty) || 0;
+        const rate = parseFloat(material.rate) || 0;
+        material.amount = qty * rate;
+
+        materials[itemIdx] = material;
+        updatedDetails.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCat3Idx].material_type_details = materials;
+
+        setSubProjectDetails(updatedDetails);
+    };
+
+    // Sub-Category 4
+    const handleEditMaterial2SubCat4 = (catIdx, subCatIdx, subCat3Idx, subCat4Idx, itemIdx, field, value) => {
+        const updatedDetails = { ...subProjectDetails };
+        updatedDetails.categories = [...updatedDetails.categories];
+
+        const materials = [...updatedDetails.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCat3Idx].sub_categories_4[subCat4Idx].material_type_details];
+        const material = { ...materials[itemIdx] };
+
+        material[field] = value;
+
+        const qty = parseFloat(material.qty) || 0;
+        const rate = parseFloat(material.rate) || 0;
+        material.amount = qty * rate;
+
+        materials[itemIdx] = material;
+        updatedDetails.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCat3Idx].sub_categories_4[subCat4Idx].material_type_details = materials;
+
+        setSubProjectDetails(updatedDetails);
+    };
+
+    // Sub-Category 5
+    const handleEditMaterial2SubCat5 = (catIdx, subCatIdx, subCat3Idx, subCat4Idx, subCat5Idx, itemIdx, field, value) => {
+        const updatedDetails = { ...subProjectDetails };
+        updatedDetails.categories = [...updatedDetails.categories];
+
+        const materials = [...updatedDetails.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCat3Idx].sub_categories_4[subCat4Idx].sub_categories_5[subCat5Idx].material_type_details];
+        const material = { ...materials[itemIdx] };
+
+        material[field] = value;
+
+        const qty = parseFloat(material.qty) || 0;
+        const rate = parseFloat(material.rate) || 0;
+        material.amount = qty * rate;
+
+        materials[itemIdx] = material;
+        updatedDetails.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCat3Idx].sub_categories_4[subCat4Idx].sub_categories_5[subCat5Idx].material_type_details = materials;
+
+        setSubProjectDetails(updatedDetails);
+    };
+
     const labourTypeOptions = [
         { value: "skilled", label: "Skilled" },
         { value: "unskilled", label: "Unskilled" },
@@ -1202,7 +1383,7 @@ const EstimationCreationTest = () => {
                     value: act.id,
                     label: act.name
                 }));
-                console.log("options cat:***********************", options)
+                // console.log("options cat:***********************", options)
                 setLabourActivities(options);
             } catch (error) {
                 console.error("Error fetching labour activities:", error);
@@ -1404,7 +1585,7 @@ const EstimationCreationTest = () => {
 
 
 
-    // console.log("data paylod on**********************", mappedData);
+    console.log("data paylod on**********************", mappedData);
 
 
 
@@ -1456,57 +1637,120 @@ const EstimationCreationTest = () => {
         }
     };
 
-const handleMainCategorySelect = (catIdx, selectedOption) => {
-//   setSubProjectDetails(prev => {
-//     const updated = { ...prev };
-//     const updatedCategories = [...updated.categories];
-//     updatedCategories[catIdx] = {
-//       ...updatedCategories[catIdx],
-//       id: selectedOption.value,
-//       name: selectedOption.label
-//       // You can also reset sub_categories_2 or other fields here if needed
-//     };
-//     updated.categories = updatedCategories;
-//     return updated;
-//   });
 
+    // main category and sub level2
 
-    // Find sub-categories for the selected main category
-//   const subCategoryOptions =
-//     selectedOption?.sub_categories_2?.map(subCat => ({
-//       value: subCat.id,
-//       label: subCat.name,
-//       work_sub_categories: subCat.sub_categories_2 // for deeper levels
-//     })) || [];
+    const [workCategories, setWorkCategories] = useState([]); // To store work categories fetched from the API
+    const [selectedCategory, setSelectedCategory] = useState(null); // To store the selected work category
+    const [selectedSubCategory, setSelectedSubCategory] = useState(null); // To store the selected work subcategory
+    const [subCategoryOptions, setSubCategoryOptions] = useState([]); // To store subcategories for the selected category
+    const [subCategoryLevel3Options, setSubCategoryLevel3Options] = useState([]);
+    const [subCategoryLevel4Options, setSubCategoryLevel4Options] = useState([]); // Sub-category level 4 options
+    const [subCategoryLevel5Options, setSubCategoryLevel5Options] = useState([]); // Sub-category level 5 options
+    const [selectedSubCategoryLevel3, setSelectedSubCategoryLevel3] =
+        useState(null); // State for selected subcategory level 3
+    const [selectedSubCategoryLevel4, setSelectedSubCategoryLevel4] =
+        useState(null); // State for selected subcategory level 4
+    const [selectedSubCategoryLevel5, setSelectedSubCategoryLevel5] =
+        useState(null); // State for selected subcategory level 5
 
-    const subCategoryOptions =
-  selectedOption?.sub_categories_2?.map(subCat => ({
-    value: subCat.id,
-    label: subCat.name,
-    work_sub_categories: subCat.sub_categories_3 || [] // for deeper levels
-  })) || [];
+    // Fetching work categories on component mount
+    useEffect(() => {
+        axios
+            .get(
+                `${baseURL}work_categories/work_sub_categories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            ) // Replace with your API endpoint
+            .then((response) => {
+                setWorkCategories(response.data.categories); // Save the categories to state
+                // console.log("work cat:", response.data.work_categories)
+            })
+            .catch((error) => {
+                console.error("Error fetching work categories:", error);
+            });
+    }, []);
 
-    setSubProjectDetails(prev => {
-    const updated = { ...prev };
-    const updatedCategories = [...updated.categories];
-    updatedCategories[catIdx] = {
-      ...updatedCategories[catIdx],
-      id: selectedOption.value,
-      name: selectedOption.label,
-      selectedSubCategory: null, // reset selection
-      subCategoryOptions,        // store options for this main category
-      selectedSubCategoryLevel3: null,
-      subCategoryLevel3Options: [],
-      selectedSubCategoryLevel4: null,
-      subCategoryLevel4Options: [],
-      selectedSubCategoryLevel5: null,
-      subCategoryLevel5Options: []
+    // Handler for selecting a work category
+    const handleCategoryChange = (selectedOption) => {
+        setSelectedCategory(selectedOption);
+        setSelectedSubCategory(null); // Clear subcategory selection when the category changes
+        setSubCategoryOptions([]); // Reset subcategories list
+        setSubCategoryLevel3Options([]); // Clear sub-subcategory options
+        setSubCategoryLevel4Options([]); // Clear level 4 options
+        setSubCategoryLevel5Options([]); // Clear level 5 options
+        setSelectedSubCategoryLevel3(null);
+        setSelectedSubCategoryLevel4(null);
+        setSelectedSubCategoryLevel5(null);
+
+        // If there are subcategories for this category, update the subcategory options
+        if (selectedOption && selectedOption.work_sub_categories.length > 0) {
+            setSubCategoryOptions(
+                selectedOption.work_sub_categories.map((subCategory) => ({
+                    value: subCategory.id,
+                    label: subCategory.name,
+                }))
+            );
+        }
     };
-    updated.categories = updatedCategories;
-    return updated;
-  });
 
-};
+    const handleMainCategorySelect = (catIdx, selectedOption) => {
+        //   setSubProjectDetails(prev => {
+        //     const updated = { ...prev };
+        //     const updatedCategories = [...updated.categories];
+        //     updatedCategories[catIdx] = {
+        //       ...updatedCategories[catIdx],
+        //       id: selectedOption.value,
+        //       name: selectedOption.label
+        //       // You can also reset sub_categories_2 or other fields here if needed
+        //     };
+        //     updated.categories = updatedCategories;
+        //     return updated;
+        //   });
+
+
+        // Find sub-categories for the selected main category
+        //   const subCategoryOptions =
+        //     selectedOption?.sub_categories_2?.map(subCat => ({
+        //       value: subCat.id,
+        //       label: subCat.name,
+        //       work_sub_categories: subCat.sub_categories_2 // for deeper levels
+        //     })) || [];
+
+        // console.log("selectedOption.sub_categories_2:", selectedOption);
+        //     const subCategoryOptions =
+        //   selectedOption?.sub_categories_2?.map(subCat => ({
+        //     value: subCat.id,
+        //     label: subCat.name,
+        //     work_sub_categories: subCat.sub_categories_3 || [] // for deeper levels
+        //   })) || [];
+
+        const subCategoryOptions =
+            selectedOption?.sub_categories_2?.map(subCat => ({
+                value: subCat.id,
+                label: subCat.name,
+                sub_categories_3: subCat.sub_categories_3 // pass for next level
+            })) || [];
+
+        setSubProjectDetails(prev => {
+            const updated = { ...prev };
+            const updatedCategories = [...updated.categories];
+            updatedCategories[catIdx] = {
+                ...updatedCategories[catIdx],
+                id: selectedOption.value,
+                name: selectedOption.label,
+                selectedSubCategory: null, // reset selection
+                subCategoryOptions,        // store options for this main category
+                //   selectedSubCategoryLevel3: null,
+                //   subCategoryLevel3Options: [],
+                //   selectedSubCategoryLevel4: null,
+                //   subCategoryLevel4Options: [],
+                //   selectedSubCategoryLevel5: null,
+                //   subCategoryLevel5Options: []
+            };
+            updated.categories = updatedCategories;
+            return updated;
+        });
+
+    };
 
     const handleAddMainCategory = () => {
         const newCategory = {
@@ -1527,127 +1771,163 @@ const handleMainCategorySelect = (catIdx, selectedOption) => {
         }));
     };
 
-//     const handleSubCategorySelect = (catIdx, selectedOption) => {
-//   // Find sub-subcategories for the selected sub-category
-//   const subCategoryLevel3Options =
-//     selectedOption?.work_sub_categories?.map(subCat => ({
-//       value: subCat.id,
-//       label: subCat.name,
-//       work_sub_categories: subCat.work_sub_categories // for deeper levels
-//     })) || [];
+    //     const handleSubCategorySelect = (catIdx, selectedOption) => {
+    //   // Find sub-subcategories for the selected sub-category
+    //   const subCategoryLevel3Options =
+    //     selectedOption?.work_sub_categories?.map(subCat => ({
+    //       value: subCat.id,
+    //       label: subCat.name,
+    //       work_sub_categories: subCat.work_sub_categories // for deeper levels
+    //     })) || [];
 
-//   setSubProjectDetails(prev => {
-//     const updated = { ...prev };
-//     const updatedCategories = [...updated.categories];
-//     updatedCategories[catIdx] = {
-//       ...updatedCategories[catIdx],
-//       selectedSubCategory: selectedOption,
-//       subCategoryLevel3Options,
-//       selectedSubCategoryLevel3: null,
-//       subCategoryLevel4Options: [],
-//       selectedSubCategoryLevel4: null,
-//       subCategoryLevel5Options: [],
-//       selectedSubCategoryLevel5: null
-//     };
-//     updated.categories = updatedCategories;
-//     return updated;
-//   });
-// };
+    //   setSubProjectDetails(prev => {
+    //     const updated = { ...prev };
+    //     const updatedCategories = [...updated.categories];
+    //     updatedCategories[catIdx] = {
+    //       ...updatedCategories[catIdx],
+    //       selectedSubCategory: selectedOption,
+    //       subCategoryLevel3Options,
+    //       selectedSubCategoryLevel3: null,
+    //       subCategoryLevel4Options: [],
+    //       selectedSubCategoryLevel4: null,
+    //       subCategoryLevel5Options: [],
+    //       selectedSubCategoryLevel5: null
+    //     };
+    //     updated.categories = updatedCategories;
+    //     return updated;
+    //   });
+    // };
 
-const handleSubCategorySelect = (catIdx, selectedOption) => {
-  // Find sub-subcategories for the selected sub-category
-  const subCategoryLevel3Options =
-    selectedOption?.work_sub_categories?.map(subCat => ({
-      value: subCat.id,
-      label: subCat.name,
-      work_sub_categories: subCat.work_sub_categories // for deeper levels
-    })) || [];
+    const handleSubCategorySelect = (catIdx, subCatIdx, selectedOption) => {
+        // console.log("selected option sub 2:",selectedOption)
+        // Find sub-subcategories for the selected sub-category
+        const subCategoryLevel3Options =
+            selectedOption?.sub_categories_3?.map(subCat => ({
+                value: subCat.id,
+                label: subCat.name,
+                sub_categories_4: subCat.sub_categories_4 // for deeper levels
+            })) || [];
 
-  setSubProjectDetails(prev => {
-    const updated = { ...prev };
-    const updatedCategories = [...updated.categories];
+        setSubProjectDetails(prev => {
+            const updated = { ...prev };
+            const updatedCategories = [...updated.categories];
 
-    // Find the last sub-category 2 (the one just added or being edited)
-    const subCategories2 = updatedCategories[catIdx].sub_categories_2;
-    if (subCategories2 && subCategories2.length > 0) {
-      const lastIdx = subCategories2.length - 1;
-      subCategories2[lastIdx] = {
-        ...subCategories2[lastIdx],
-        id: selectedOption.value,
-        name: selectedOption.label,
-        selectedSubCategory: selectedOption,
-        subCategoryLevel3Options,
-        selectedSubCategoryLevel3: null,
-        subCategoryLevel4Options: [],
-        selectedSubCategoryLevel4: null,
-        subCategoryLevel5Options: [],
-        selectedSubCategoryLevel5: null
-      };
-    }
+            // Find the last sub-category 2 (the one just added or being edited)
+            const subCategories2 = updatedCategories[catIdx].sub_categories_2;
+            if (subCategories2 && subCategories2.length > 0) {
+                const lastIdx = subCategories2.length - 1;
+                subCategories2[lastIdx] = {
+                    ...subCategories2[lastIdx],
+                    id: selectedOption.value,
+                    name: selectedOption.label,
+                    selectedSubCategory: selectedOption,
+                    subCategoryLevel3Options,
+                    selectedSubCategoryLevel3: null,
+                    // subCategoryLevel4Options: [],
+                    // selectedSubCategoryLevel4: null,
+                    // subCategoryLevel5Options: [],
+                    // selectedSubCategoryLevel5: null
+                };
+            }
 
-    updatedCategories[catIdx].sub_categories_2 = subCategories2;
-    updated.categories = updatedCategories;
-    return updated;
-  });
-};
+            updatedCategories[catIdx].sub_categories_2 = subCategories2;
+            updated.categories = updatedCategories;
+            return updated;
+        });
+    };
+
+    // 3. Select Sub-Category Level 3
+    const handleLevel3Change = (catIdx, subCatIdx, subCategory3Idx, selectedOption) => {
+        const subCategoryLevel4Options =
+            selectedOption?.sub_categories_4?.map(subCat4 => ({
+                value: subCat4.id,
+                label: subCat4.name,
+                sub_categories_5: subCat4.sub_categories_5
+            })) || [];
+        setSubProjectDetails(prev => {
+            const updated = { ...prev };
+            const updatedCategories = [...updated.categories];
+            const subCategories3 = updatedCategories[catIdx].sub_categories_2[subCatIdx].sub_categories_3;
+            if (subCategories3 && subCategories3[subCategory3Idx]) {
+                subCategories3[subCategory3Idx] = {
+                    ...subCategories3[subCategory3Idx],
+                    id: selectedOption.value,
+                    name: selectedOption.label,
+                    selectedSubCategoryLevel3: selectedOption,
+                    subCategoryLevel4Options,
+                    selectedSubCategoryLevel4: null
+                };
+            }
+            updatedCategories[catIdx].sub_categories_2[subCatIdx].sub_categories_3 = subCategories3;
+            updated.categories = updatedCategories;
+            return updated;
+        });
+    };
+
+    const handleLevel4Change = (catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, selectedOption) => {
+        const subCategoryLevel5Options =
+            selectedOption?.sub_categories_5?.map(subCat5 => ({
+                value: subCat5.id,
+                label: subCat5.name
+            })) || [];
+        setSubProjectDetails(prev => {
+            const updated = { ...prev };
+            const updatedCategories = [...updated.categories];
+            const subCategories4 = updatedCategories[catIdx]
+                .sub_categories_2[subCatIdx]
+                .sub_categories_3[subCategory3Idx]
+                .sub_categories_4;
+            if (subCategories4 && subCategories4[subCategory4Idx]) {
+                subCategories4[subCategory4Idx] = {
+                    ...subCategories4[subCategory4Idx],
+                    id: selectedOption.value,
+                    name: selectedOption.label,
+                    selectedSubCategoryLevel4: selectedOption,
+                    subCategoryLevel5Options,
+                    selectedSubCategoryLevel5: null
+                };
+            }
+            updatedCategories[catIdx]
+                .sub_categories_2[subCatIdx]
+                .sub_categories_3[subCategory3Idx]
+                .sub_categories_4 = subCategories4;
+            updated.categories = updatedCategories;
+            return updated;
+        });
+    };
+
+    const handleLevel5Change = (catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, selectedOption) => {
+        setSubProjectDetails(prev => {
+            const updated = { ...prev };
+            const updatedCategories = [...updated.categories];
+            const subCategories5 = updatedCategories[catIdx]
+                .sub_categories_2[subCatIdx]
+                .sub_categories_3[subCategory3Idx]
+                .sub_categories_4[subCategory4Idx]
+                .sub_categories_5;
+            if (subCategories5 && subCategories5[subCategory5Idx]) {
+                subCategories5[subCategory5Idx] = {
+                    ...subCategories5[subCategory5Idx],
+                    id: selectedOption.value,
+                    name: selectedOption.label,
+                    selectedSubCategoryLevel5: selectedOption
+                };
+            }
+            updatedCategories[catIdx]
+                .sub_categories_2[subCatIdx]
+                .sub_categories_3[subCategory3Idx]
+                .sub_categories_4[subCategory4Idx]
+                .sub_categories_5 = subCategories5;
+            updated.categories = updatedCategories;
+            return updated;
+        });
+    };
 
 
-    // main category and sub level2
-    
-      const [workCategories, setWorkCategories] = useState([]); // To store work categories fetched from the API
-      const [selectedCategory, setSelectedCategory] = useState(null); // To store the selected work category
-      const [selectedSubCategory, setSelectedSubCategory] = useState(null); // To store the selected work subcategory
-      const [subCategoryOptions, setSubCategoryOptions] = useState([]); // To store subcategories for the selected category
-      const [subCategoryLevel3Options, setSubCategoryLevel3Options] = useState([]);
-      const [subCategoryLevel4Options, setSubCategoryLevel4Options] = useState([]); // Sub-category level 4 options
-      const [subCategoryLevel5Options, setSubCategoryLevel5Options] = useState([]); // Sub-category level 5 options
-      const [selectedSubCategoryLevel3, setSelectedSubCategoryLevel3] =
-        useState(null); // State for selected subcategory level 3
-      const [selectedSubCategoryLevel4, setSelectedSubCategoryLevel4] =
-        useState(null); // State for selected subcategory level 4
-      const [selectedSubCategoryLevel5, setSelectedSubCategoryLevel5] =
-        useState(null); // State for selected subcategory level 5
-    
-      // Fetching work categories on component mount
-      useEffect(() => {
-        axios
-          .get(
-            `${baseURL}work_categories/work_sub_categories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-          ) // Replace with your API endpoint
-          .then((response) => {
-            setWorkCategories(response.data.categories); // Save the categories to state
-            // console.log("work cat:", response.data.work_categories)
-          })
-          .catch((error) => {
-            console.error("Error fetching work categories:", error);
-          });
-      }, []);
-    
-      // Handler for selecting a work category
-      const handleCategoryChange = (selectedOption) => {
-        setSelectedCategory(selectedOption);
-        setSelectedSubCategory(null); // Clear subcategory selection when the category changes
-        setSubCategoryOptions([]); // Reset subcategories list
-        setSubCategoryLevel3Options([]); // Clear sub-subcategory options
-        setSubCategoryLevel4Options([]); // Clear level 4 options
-        setSubCategoryLevel5Options([]); // Clear level 5 options
-        setSelectedSubCategoryLevel3(null);
-        setSelectedSubCategoryLevel4(null);
-        setSelectedSubCategoryLevel5(null);
-    
-        // If there are subcategories for this category, update the subcategory options
-        if (selectedOption && selectedOption.work_sub_categories.length > 0) {
-          setSubCategoryOptions(
-            selectedOption.work_sub_categories.map((subCategory) => ({
-              value: subCategory.id,
-              label: subCategory.name,
-            }))
-          );
-        }
-      };
-    
-      // Handler for selecting a work subcategory
-      const handleSubCategoryChange = (selectedOption) => {
+
+
+    // Handler for selecting a work subcategory
+    const handleSubCategoryChange = (selectedOption) => {
         setSelectedSubCategory(selectedOption);
         setSubCategoryLevel3Options([]); // Clear sub-subcategory options on subcategory change
         setSubCategoryLevel4Options([]); // Clear subcategory level 4 options
@@ -1655,81 +1935,81 @@ const handleSubCategorySelect = (catIdx, selectedOption) => {
         setSelectedSubCategoryLevel3(null);
         setSelectedSubCategoryLevel4(null);
         setSelectedSubCategoryLevel5(null);
-    
+
         // Fetch sub-subcategories using the selected subcategory ID-- level3
         axios
-          .get(
-            `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-          )
-          .then((response) => {
-            const subSubCategories = response.data.work_sub_categories || [];
-            setSubCategoryLevel3Options(
-              subSubCategories.map((subSubCategory) => ({
-                value: subSubCategory.id,
-                label: subSubCategory.name,
-              }))
-            );
-          })
-          .catch((error) => {
-            console.error("Error fetching sub-subcategories:", error);
-          });
-      };
-    
-      // Handler for selecting a level 3 subcategory
-      const handleLevel3Change = (selectedOption) => {
-        setSelectedSubCategoryLevel3(selectedOption);
-        setSubCategoryLevel4Options([]); // Clear subcategory level 4 options
-        setSubCategoryLevel5Options([]); // Clear subcategory level 5 options
-    
-        // Fetch level 4 subcategories using the selected level 3 subcategory ID
-        if (selectedOption && selectedOption.value) {
-          axios
             .get(
-              `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+                `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
             )
             .then((response) => {
-              const subSubCategories = response.data.work_sub_categories || [];
-              setSubCategoryLevel4Options(
-                subSubCategories.map((subSubCategory) => ({
-                  value: subSubCategory.id,
-                  label: subSubCategory.name,
-                }))
-              );
+                const subSubCategories = response.data.work_sub_categories || [];
+                setSubCategoryLevel3Options(
+                    subSubCategories.map((subSubCategory) => ({
+                        value: subSubCategory.id,
+                        label: subSubCategory.name,
+                    }))
+                );
             })
             .catch((error) => {
-              console.error("Error fetching level 4 subcategories:", error);
+                console.error("Error fetching sub-subcategories:", error);
             });
-        }
-      };
-    
-      // Handler for selecting a level 4 subcategory
-      const handleLevel4Change = (selectedOption) => {
-        setSelectedSubCategoryLevel4(selectedOption);
-        setSubCategoryLevel5Options([]); // Clear level 5 options
-    
-        // Fetch level 5 subcategories using the selected level 4 subcategory ID
-        if (selectedOption && selectedOption.value) {
-          axios
-            .get(
-              `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-            )
-            .then((response) => {
-              const subSubCategories = response.data.work_sub_categories || [];
-              setSubCategoryLevel5Options(
-                subSubCategories.map((subSubCategory) => ({
-                  value: subSubCategory.id,
-                  label: subSubCategory.name,
-                }))
-              );
-            })
-            .catch((error) => {
-              console.error("Error fetching level 5 subcategories:", error);
-            });
-        }
-      };
-        const handleLevel5Change = (selectedOption) =>
-    setSelectedSubCategoryLevel5(selectedOption);
-    
+    };
+
+    // Handler for selecting a level 3 subcategory
+    //   const handleLevel3Change = (selectedOption) => {
+    //     setSelectedSubCategoryLevel3(selectedOption);
+    //     setSubCategoryLevel4Options([]); // Clear subcategory level 4 options
+    //     setSubCategoryLevel5Options([]); // Clear subcategory level 5 options
+
+    //     // Fetch level 4 subcategories using the selected level 3 subcategory ID
+    //     if (selectedOption && selectedOption.value) {
+    //       axios
+    //         .get(
+    //           `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    //         )
+    //         .then((response) => {
+    //           const subSubCategories = response.data.work_sub_categories || [];
+    //           setSubCategoryLevel4Options(
+    //             subSubCategories.map((subSubCategory) => ({
+    //               value: subSubCategory.id,
+    //               label: subSubCategory.name,
+    //             }))
+    //           );
+    //         })
+    //         .catch((error) => {
+    //           console.error("Error fetching level 4 subcategories:", error);
+    //         });
+    //     }
+    //   };
+
+    // Handler for selecting a level 4 subcategory
+    //   const handleLevel4Change = (selectedOption) => {
+    //     setSelectedSubCategoryLevel4(selectedOption);
+    //     setSubCategoryLevel5Options([]); // Clear level 5 options
+
+    //     // Fetch level 5 subcategories using the selected level 4 subcategory ID
+    //     if (selectedOption && selectedOption.value) {
+    //       axios
+    //         .get(
+    //           `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    //         )
+    //         .then((response) => {
+    //           const subSubCategories = response.data.work_sub_categories || [];
+    //           setSubCategoryLevel5Options(
+    //             subSubCategories.map((subSubCategory) => ({
+    //               value: subSubCategory.id,
+    //               label: subSubCategory.name,
+    //             }))
+    //           );
+    //         })
+    //         .catch((error) => {
+    //           console.error("Error fetching level 5 subcategories:", error);
+    //         });
+    //     }
+    //   };
+    //     const handleLevel5Change = (selectedOption) =>
+    // setSelectedSubCategoryLevel5(selectedOption);
+
 
     const handleEditMainCategoryField2 = (catIdx, field, value) => {
         const updatedCategories = [...(subProjectDetails.categories || [])];
@@ -1751,10 +2031,10 @@ const handleSubCategorySelect = (catIdx, selectedOption) => {
     };
 
 
-    
+
 
     const handleAddSubCategory = (catIdx) => {
-        console.log("Add sub-category called for index:", catIdx); // Debug log
+        // console.log("Add sub-category called for index:", catIdx); // Debug log
         const newSubCat = {
             id: Date.now(), // temp unique ID
             name: "",
@@ -1788,7 +2068,70 @@ const handleSubCategorySelect = (catIdx, selectedOption) => {
             updated.categories[catIdx].sub_categories_2.splice(subCatIdx, 1);
             return updated;
         });
+
     };
+
+    // Remove Main Category (Level 1)
+    const handleRemoveMainCategory = (catIdx) => {
+        setSubProjectDetails(prev => {
+            const updated = { ...prev };
+            updated.categories = [...updated.categories];
+            updated.categories.splice(catIdx, 1);
+            return updated;
+        });
+    };
+
+    // Remove Sub-Category 3 (Level 3)
+    const handleRemoveSubCategory3 = (catIdx, subCatIdx, subCategory3Idx) => {
+        setSubProjectDetails(prev => {
+            const updated = { ...prev };
+            updated.categories = [...updated.categories];
+            updated.categories[catIdx].sub_categories_2 = [...updated.categories[catIdx].sub_categories_2];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3 = [
+                ...updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3
+            ];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3.splice(subCategory3Idx, 1);
+            return updated;
+        });
+    };
+
+    // Remove Sub-Category 4 (Level 4)
+    const handleRemoveSubCategory4 = (catIdx, subCatIdx, subCategory3Idx, subCategory4Idx) => {
+        setSubProjectDetails(prev => {
+            const updated = { ...prev };
+            updated.categories = [...updated.categories];
+            updated.categories[catIdx].sub_categories_2 = [...updated.categories[catIdx].sub_categories_2];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3 = [
+                ...updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3
+            ];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4 = [
+                ...updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4
+            ];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4.splice(subCategory4Idx, 1);
+            return updated;
+        });
+    };
+
+    // Remove Sub-Category 5 (Level 5)
+    const handleRemoveSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx) => {
+        setSubProjectDetails(prev => {
+            const updated = { ...prev };
+            updated.categories = [...updated.categories];
+            updated.categories[catIdx].sub_categories_2 = [...updated.categories[catIdx].sub_categories_2];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3 = [
+                ...updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3
+            ];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4 = [
+                ...updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4
+            ];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].sub_categories_5 = [
+                ...updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].sub_categories_5
+            ];
+            updated.categories[catIdx].sub_categories_2[subCatIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].sub_categories_5.splice(subCategory5Idx, 1);
+            return updated;
+        });
+    };
+
 
     const handleAddSubCategory3 = (catIdx, subCatIdx) => {
         const newSubCat3 = {
@@ -1848,37 +2191,435 @@ const handleSubCategorySelect = (catIdx, selectedOption) => {
             return updated;
         });
     };
-     
-const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4Idx) => {
-    const newSubCat5 = {
-        id: Date.now(), // temp unique ID
-        name: "",
-        budget: "",
-        material_type_details: []
+
+    const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4Idx) => {
+        const newSubCat5 = {
+            id: Date.now(), // temp unique ID
+            name: "",
+            budget: "",
+            material_type_details: []
+        };
+
+        setSubProjectDetails(prev => {
+            const updated = { ...prev };
+            const updatedCategories = [...(updated.categories || [])];
+
+            // Safety: Ensure sub_categories_5 exists as an array
+            const subCat4 = updatedCategories[catIdx]
+                ?.sub_categories_2?.[subCatIdx]
+                ?.sub_categories_3?.[subCategory3Idx]
+                ?.sub_categories_4?.[subCategory4Idx];
+
+            if (!subCat4) return prev;
+
+            if (!Array.isArray(subCat4.sub_categories_5)) {
+                subCat4.sub_categories_5 = [];
+            }
+
+            subCat4.sub_categories_5.push(newSubCat5);
+
+            updated.categories = updatedCategories;
+            return updated;
+        });
     };
 
-    setSubProjectDetails(prev => {
-        const updated = { ...prev };
-        const updatedCategories = [...(updated.categories || [])];
+    // function isOtherLevelFrozen(category, currentLevel, currentIdxs) {
+    //   // Check if any other level (except current) has material_type_details.length > 0
+    //   // currentLevel: "main", "sub2", "sub3", "sub4", "sub5"
+    //   // currentIdxs: {catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx}
+    //   if (currentLevel === "main") {
+    //     // If any sub2, sub3, sub4, sub5 has material_type_details, freeze main
+    //     return (
+    //       category.sub_categories_2?.some(sub2 =>
+    //         sub2.material_type_details?.length > 0 ||
+    //         sub2.sub_categories_3?.some(sub3 =>
+    //           sub3.material_type_details?.length > 0 ||
+    //           sub3.sub_categories_4?.some(sub4 =>
+    //             sub4.material_type_details?.length > 0 ||
+    //             sub4.sub_categories_5?.some(sub5 =>
+    //               sub5.material_type_details?.length > 0
+    //             )
+    //           )
+    //         )
+    //       )
+    //     );
+    //   }
+    //   if (currentLevel === "sub2") {
+    //     return (
+    //       category.material_type_details?.length > 0 ||
+    //       category.sub_categories_2?.some((sub2, idx) =>
+    //         idx !== currentIdxs.subCatIdx &&
+    //         (
+    //           sub2.material_type_details?.length > 0 ||
+    //           sub2.sub_categories_3?.some(sub3 =>
+    //             sub3.material_type_details?.length > 0 ||
+    //             sub3.sub_categories_4?.some(sub4 =>
+    //               sub4.material_type_details?.length > 0 ||
+    //               sub4.sub_categories_5?.some(sub5 =>
+    //                 sub5.material_type_details?.length > 0
+    //               )
+    //             )
+    //           )
+    //         )
+    //       )
+    //     );
+    //   }
 
-        // Safety: Ensure sub_categories_5 exists as an array
-        const subCat4 = updatedCategories[catIdx]
-            ?.sub_categories_2?.[subCatIdx]
-            ?.sub_categories_3?.[subCategory3Idx]
-            ?.sub_categories_4?.[subCategory4Idx];
+    //   // Level 3 (sub3)
+    //   if (currentLevel === "sub3") {
+    //     const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
+    //     if (!sub2) return false;
+    //     return (
+    //       sub2.material_type_details?.length > 0 ||
+    //       sub2.sub_categories_3?.some((sub3, idx) =>
+    //         idx !== currentIdxs.subCategory3Idx &&
+    //         (
+    //           sub3.material_type_details?.length > 0 ||
+    //           sub3.sub_categories_4?.some(sub4 =>
+    //             sub4.material_type_details?.length > 0 ||
+    //             sub4.sub_categories_5?.some(sub5 =>
+    //               sub5.material_type_details?.length > 0
+    //             )
+    //           )
+    //         )
+    //       )
+    //     );
+    //   }
 
-        if (!subCat4) return prev;
+    //   // Level 4 (sub4)
+    //   if (currentLevel === "sub4") {
+    //     const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
+    //     const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
+    //     if (!sub3) return false;
+    //     return (
+    //       sub3.material_type_details?.length > 0 ||
+    //       sub3.sub_categories_4?.some((sub4, idx) =>
+    //         idx !== currentIdxs.subCategory4Idx &&
+    //         (
+    //           sub4.material_type_details?.length > 0 ||
+    //           sub4.sub_categories_5?.some(sub5 =>
+    //             sub5.material_type_details?.length > 0
+    //           )
+    //         )
+    //       )
+    //     );
+    //   }
 
-        if (!Array.isArray(subCat4.sub_categories_5)) {
-            subCat4.sub_categories_5 = [];
+    //   // Level 5 (sub5)
+    //   if (currentLevel === "sub5") {
+    //     const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
+    //     const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
+    //     const sub4 = sub3?.sub_categories_4?.[currentIdxs.subCategory4Idx];
+    //     if (!sub4) return false;
+    //     return (
+    //       sub4.material_type_details?.length > 0 ||
+    //       sub4.sub_categories_5?.some((sub5, idx) =>
+    //         idx !== currentIdxs.subCategory5Idx &&
+    //         sub5.material_type_details?.length > 0
+    //       )
+    //     );
+    //   }
+
+    //   return false;
+
+    // }
+
+
+    // function isOtherLevelFrozen(category, currentLevel, currentIdxs) {
+    //     // currentLevel: "main", "sub2", "sub3", "sub4", "sub5"
+    //     // currentIdxs: {catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx}
+
+    //     // Level 1 (main)
+    //     if (currentLevel === "main") {
+    //         return (
+    //             category.sub_categories_2?.some(sub2 =>
+    //                 sub2.material_type_details?.length > 0 ||
+    //                 sub2.sub_categories_3?.some(sub3 =>
+    //                     sub3.material_type_details?.length > 0 ||
+    //                     sub3.sub_categories_4?.some(sub4 =>
+    //                         sub4.material_type_details?.length > 0 ||
+    //                         sub4.sub_categories_5?.some(sub5 =>
+    //                             sub5.material_type_details?.length > 0
+    //                         )
+    //                     )
+    //                 )
+    //             )
+    //         );
+    //     }
+
+    //     // Level 2 (sub2)
+    //     // if (currentLevel === "sub2") {
+    //     //     // Check siblings and parent
+    //     //     const siblingsHaveMaterial = category.sub_categories_2?.some((sub2, idx) =>
+    //     //         idx !== currentIdxs.subCatIdx &&
+    //     //         (
+    //     //             sub2.material_type_details?.length > 0 ||
+    //     //             sub2.sub_categories_3?.some(sub3 =>
+    //     //                 sub3.material_type_details?.length > 0 ||
+    //     //                 sub3.sub_categories_4?.some(sub4 =>
+    //     //                     sub4.material_type_details?.length > 0 ||
+    //     //                     sub4.sub_categories_5?.some(sub5 =>
+    //     //                         sub5.material_type_details?.length > 0
+    //     //                     )
+    //     //                 )
+    //     //             )
+    //     //         )
+    //     //     );
+    //     //     // Check parent
+    //     //     const parentHasMaterial = category.material_type_details?.length > 0;
+    //     //     // Check children
+    //     //     const childrenHaveMaterial = category.sub_categories_2?.[currentIdxs.subCatIdx]?.sub_categories_3?.some(sub3 =>
+    //     //         sub3.material_type_details?.length > 0 ||
+    //     //         sub3.sub_categories_4?.some(sub4 =>
+    //     //             sub4.material_type_details?.length > 0 ||
+    //     //             sub4.sub_categories_5?.some(sub5 =>
+    //     //                 sub5.material_type_details?.length > 0
+    //     //             )
+    //     //         )
+    //     //     );
+    //     //     return siblingsHaveMaterial || parentHasMaterial || childrenHaveMaterial;
+    //     // }
+
+
+    //      // Level 2 (sub2)
+    // if (currentLevel === "sub2") {
+    //     // Only freeze if current sub-category 2 or its children have material details
+    //     const currentSubCat2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
+    //     if (!currentSubCat2) return false;
+
+    //     const hasMaterial =
+    //         currentSubCat2.material_type_details?.length > 0 ||
+    //         currentSubCat2.sub_categories_3?.some(sub3 =>
+    //             sub3.material_type_details?.length > 0 ||
+    //             sub3.sub_categories_4?.some(sub4 =>
+    //                 sub4.material_type_details?.length > 0 ||
+    //                 sub4.sub_categories_5?.some(sub5 =>
+    //                     sub5.material_type_details?.length > 0
+    //                 )
+    //             )
+    //         );
+
+    //     // Optionally, also freeze if parent (main category) has material details
+    //     const parentHasMaterial = category.material_type_details?.length > 0;
+
+    //     return hasMaterial || parentHasMaterial;
+    // }
+
+    //       // Level 3 (sub3)
+    // if (currentLevel === "sub3") {
+    //     const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
+    //     if (!sub2) return false;
+    //     const currentSubCat3 = sub2.sub_categories_3?.[currentIdxs.subCategory3Idx];
+    //     if (!currentSubCat3) return false;
+
+    //     const hasMaterial =
+    //         currentSubCat3.material_type_details?.length > 0 ||
+    //         currentSubCat3.sub_categories_4?.some(sub4 =>
+    //             sub4.material_type_details?.length > 0 ||
+    //             sub4.sub_categories_5?.some(sub5 =>
+    //                 sub5.material_type_details?.length > 0
+    //             )
+    //         );
+
+    //     // Optionally, also freeze if parent (sub2) has material details
+    //     const parentHasMaterial = sub2.material_type_details?.length > 0;
+
+    //     return hasMaterial || parentHasMaterial;
+    // }
+
+    // // Level 4 (sub4)
+    // if (currentLevel === "sub4") {
+    //     const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
+    //     const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
+    //     if (!sub3) return false;
+    //     const currentSubCat4 = sub3.sub_categories_4?.[currentIdxs.subCategory4Idx];
+    //     if (!currentSubCat4) return false;
+
+    //     const hasMaterial =
+    //         currentSubCat4.material_type_details?.length > 0 ||
+    //         currentSubCat4.sub_categories_5?.some(sub5 =>
+    //             sub5.material_type_details?.length > 0
+    //         );
+
+    //     // Optionally, also freeze if parent (sub3) has material details
+    //     const parentHasMaterial = sub3.material_type_details?.length > 0;
+
+    //     return hasMaterial || parentHasMaterial;
+    // }
+
+    // // Level 5 (sub5)
+    // if (currentLevel === "sub5") {
+    //     const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
+    //     const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
+    //     const sub4 = sub3?.sub_categories_4?.[currentIdxs.subCategory4Idx];
+    //     if (!sub4) return false;
+    //     const currentSubCat5 = sub4.sub_categories_5?.[currentIdxs.subCategory5Idx];
+    //     if (!currentSubCat5) return false;
+
+    //     const hasMaterial = currentSubCat5.material_type_details?.length > 0;
+
+    //     // Optionally, also freeze if parent (sub4) has material details
+    //     const parentHasMaterial = sub4.material_type_details?.length > 0;
+
+    //     return hasMaterial || parentHasMaterial;
+    // }
+
+    // return false;
+    // }
+
+    // function isOtherLevelFrozen(category, currentLevel, currentIdxs) {
+    //     // Level 1 (main)
+    //     if (currentLevel === "main") {
+    //         // Freeze if any sub2, sub3, sub4, sub5 has material_type_details
+    //         return (
+    //             category.sub_categories_2?.some(sub2 =>
+    //                 sub2.material_type_details?.length > 0 ||
+    //                 sub2.sub_categories_3?.some(sub3 =>
+    //                     sub3.material_type_details?.length > 0 ||
+    //                     sub3.sub_categories_4?.some(sub4 =>
+    //                         sub4.material_type_details?.length > 0 ||
+    //                         sub4.sub_categories_5?.some(sub5 =>
+    //                             sub5.material_type_details?.length > 0
+    //                         )
+    //                     )
+    //                 )
+    //             )
+    //         );
+    //     }
+
+    //     // Level 2 (sub2)
+    //     if (currentLevel === "sub2") {
+    //         // Freeze if any other sub2 (not current) or parent has material details
+    //         const siblingsHaveMaterial = category.sub_categories_2?.some((sub2, idx) =>
+    //             idx !== currentIdxs.subCatIdx &&
+    //             (
+    //                 sub2.material_type_details?.length > 0 ||
+    //                 sub2.sub_categories_3?.some(sub3 =>
+    //                     sub3.material_type_details?.length > 0 ||
+    //                     sub3.sub_categories_4?.some(sub4 =>
+    //                         sub4.material_type_details?.length > 0 ||
+    //                         sub4.sub_categories_5?.some(sub5 =>
+    //                             sub5.material_type_details?.length > 0
+    //                         )
+    //                     )
+    //                 )
+    //             )
+    //         );
+    //         const parentHasMaterial = category.material_type_details?.length > 0;
+    //         return siblingsHaveMaterial || parentHasMaterial;
+    //     }
+
+    //     // Level 3 (sub3)
+    //     if (currentLevel === "sub3") {
+    //         const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
+    //         if (!sub2) return false;
+    //         const siblingsHaveMaterial = sub2.sub_categories_3?.some((sub3, idx) =>
+    //             idx !== currentIdxs.subCategory3Idx &&
+    //             (
+    //                 sub3.material_type_details?.length > 0 ||
+    //                 sub3.sub_categories_4?.some(sub4 =>
+    //                     sub4.material_type_details?.length > 0 ||
+    //                     sub4.sub_categories_5?.some(sub5 =>
+    //                         sub5.material_type_details?.length > 0
+    //                     )
+    //                 )
+    //             )
+    //         );
+    //         const parentHasMaterial = sub2.material_type_details?.length > 0;
+    //         return siblingsHaveMaterial || parentHasMaterial;
+    //     }
+
+    //     // Level 4 (sub4)
+    //     if (currentLevel === "sub4") {
+    //         const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
+    //         const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
+    //         if (!sub3) return false;
+    //         const siblingsHaveMaterial = sub3.sub_categories_4?.some((sub4, idx) =>
+    //             idx !== currentIdxs.subCategory4Idx &&
+    //             (
+    //                 sub4.material_type_details?.length > 0 ||
+    //                 sub4.sub_categories_5?.some(sub5 =>
+    //                     sub5.material_type_details?.length > 0
+    //                 )
+    //             )
+    //         );
+    //         const parentHasMaterial = sub3.material_type_details?.length > 0;
+    //         return siblingsHaveMaterial || parentHasMaterial;
+    //     }
+
+    //     // Level 5 (sub5)
+    //     if (currentLevel === "sub5") {
+    //         const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
+    //         const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
+    //         const sub4 = sub3?.sub_categories_4?.[currentIdxs.subCategory4Idx];
+    //         if (!sub4) return false;
+    //         const siblingsHaveMaterial = sub4.sub_categories_5?.some((sub5, idx) =>
+    //             idx !== currentIdxs.subCategory5Idx &&
+    //             sub5.material_type_details?.length > 0
+    //         );
+    //         const parentHasMaterial = sub4.material_type_details?.length > 0;
+    //         return siblingsHaveMaterial || parentHasMaterial;
+    //     }
+
+    //     return false;
+    // }
+
+    function isOtherLevelFrozen(category, currentLevel, currentIdxs) {
+        // Level 1 (main)
+        if (currentLevel === "main") {
+            // Freeze if any sub2, sub3, sub4, sub5 has material_type_details
+            return (
+                category.sub_categories_2?.some(sub2 =>
+                    sub2.material_type_details?.length > 0 ||
+                    sub2.sub_categories_3?.some(sub3 =>
+                        sub3.material_type_details?.length > 0 ||
+                        sub3.sub_categories_4?.some(sub4 =>
+                            sub4.material_type_details?.length > 0 ||
+                            sub4.sub_categories_5?.some(sub5 =>
+                                sub5.material_type_details?.length > 0
+                            )
+                        )
+                    )
+                )
+            );
         }
 
-        subCat4.sub_categories_5.push(newSubCat5);
+        // Level 2 (sub2)
+        if (currentLevel === "sub2") {
+            // Only freeze if parent has material details
+            return category.material_type_details?.length > 0;
+        }
 
-        updated.categories = updatedCategories;
-        return updated;
-    });
-};
+        // Level 3 (sub3)
+        if (currentLevel === "sub3") {
+            const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
+            if (!sub2) return false;
+            // Only freeze if parent (sub2) has material details
+            return sub2.material_type_details?.length > 0;
+        }
+
+        // Level 4 (sub4)
+        if (currentLevel === "sub4") {
+            const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
+            const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
+            if (!sub3) return false;
+            // Only freeze if parent (sub3) has material details
+            return sub3.material_type_details?.length > 0;
+        }
+
+        // Level 5 (sub5)
+        if (currentLevel === "sub5") {
+            const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
+            const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
+            const sub4 = sub3?.sub_categories_4?.[currentIdxs.subCategory4Idx];
+            if (!sub4) return false;
+            // Only freeze if parent (sub4) has material details
+            return sub4.material_type_details?.length > 0;
+        }
+
+        return false;
+    }
+
     return (
         <>
             <div className="website-content overflow-auto">
@@ -1894,7 +2635,7 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
                             <div className="card-body">
                                 <div className="row">
                                     {/* Company Dropdown */}
-                                    <div className="col-md-4">
+                                    <div className="col-md-3">
                                         <div className="form-group">
                                             <label>
                                                 Company <span>*</span>
@@ -1909,7 +2650,7 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
                                     </div>
 
                                     {/* Project Dropdown */}
-                                    <div className="col-md-4">
+                                    <div className="col-md-3">
                                         <div className="form-group">
                                             <label>Project</label>
                                             <SingleSelector
@@ -1922,7 +2663,7 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
                                     </div>
 
                                     {/* Sub-Project Dropdown */}
-                                    <div className="col-md-4">
+                                    <div className="col-md-3">
                                         <div className="form-group">
                                             <label>Sub-Project</label>
                                             <SingleSelector
@@ -1935,9 +2676,9 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
                                     </div>
 
                                     {/* Wings Dropdown */}
-                                    {/* <div className="col-md-3">
+                                    <div className="col-md-3">
                                         <div className="form-group">
-                                            <label>Wings</label>
+                                            <label>Wing</label>
                                             <SingleSelector
                                                 options={wingsOptions}
                                                 value={selectedWing}
@@ -1945,7 +2686,7 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
                                                 placeholder={`Select Wing`} // Dynamic placeholder
                                             />
                                         </div>
-                                    </div> */}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2040,8 +2781,13 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
                                                 disabled
                                                 className="form-control"
                                                 type="text"
-                                                placeholder="Floors"
-                                                value={details?.data.budget_type || "-"}
+                                                placeholder=""
+                                                // value={details?.data.budget_type || "-"}
+                                                value={
+                                                    details?.data.budget_type === "non_wbs"
+                                                        ? "non wbs"
+                                                        : details?.data.budget_type || "-"
+                                                }
                                             />
                                         </div>
                                     </div>
@@ -2083,120 +2829,141 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
                         </div>
 
 
-                        <pre>{JSON.stringify(subProjectDetails, null, 2)}</pre>
+                        {/* <pre>{JSON.stringify(subProjectDetails, null, 2)}</pre> */}
 
                         {/* ______________________________________________________________________________________________________ */}
-                        {/* {budgetType === "BOQ Sum Method/Bottom Up" && ( */}
-                        <div className="mx-3 mb-5 mt-3">
-                            <button
-                                className="btn btn-primary mb-2"
-                                onClick={handleAddMainCategory}
-                            >
-                                + Add Main Category
-                            </button>
+                        {budgetType === "wbs" && (
+                            <div className="mx-3 mb-5 mt-3">
+                                {/* <button
+                                    className="btn btn-primary mb-2"
+                                    onClick={handleAddMainCategory}
+                                >
+                                    + Add Main Category
+                                </button> */}
 
-                            <div className="mx-3 ">
-                                <div className="tbl-container mt-1" style={{
-                                    maxHeight: "750px",
-                                }}>
-                                    <table
-                                        className=""
+                                <div className="d-flex justify-content-end">
+                                    <button
+                                        className="purple-btn2 me-3 mb-3"
+                                        onClick={handleAddMainCategory}
                                     >
-                                        <thead style={{ zIndex: "111 " }}>
-                                            <tr>
-                                                <th className="text-start">Expand</th>
-                                                <th className="text-start">Sr No.</th>
-                                                <th className="text-start">Level</th>
-                                                <th className="text-start">Category</th>
-                                                <th className="text-start">Location</th>
-                                                <th className="text-start">Type</th>
-                                                <th className="text-start">Items</th>
-                                                <th className="text-start">Factor</th>
-                                                <th className="text-start" style={{ width: "200px" }}>UOM</th>
-                                                {/* <th className="text-start">Area</th> */}
-                                                <th className="text-start">QTY Excl Wastage</th>
-                                                <th className="text-start">Wastage</th>
-                                                <th className="text-start">QTY incl Waste</th>
-                                                <th className="text-start">Rate</th>
-                                                <th className="text-start">Amount</th>
-                                                <th className="text-start">Cost Per Unit</th>
-                                                <th className="text-start" style={{ width: "12px" }}>
-                                                    Action
-                                                </th>
-                                            </tr>
-                                            <tr>
-                                                <th className="text-start"></th>
-                                                <th className="text-start"></th>
-                                                <th className="text-start"></th>
-                                                <th className="text-start"></th>
-                                                <th className="text-start"></th>
-                                                <th className="text-start"></th>
-                                                <th className="text-start"></th>
-                                                <th className="text-start">A</th>
-                                                <th className="text-start">B</th>
-                                                {/* <th className="text-start"></th> */}
-                                                <th className="text-start">C=C*A</th>
-                                                <th className="text-start">D</th>
-                                                <th className="text-start">E=C+C*D</th>
-                                                <th className="text-start">F</th>
-                                                <th className="text-start">G=E*F</th>
-                                                <th className="text-start">H=G/C</th>
-                                                <th className="text-start">
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {/* Conditional rendering for categories under sub-project start */}
-                                            {subProjectDetails &&
-                                                subProjectDetails.categories &&
-                                                subProjectDetails.categories.map((category, catIdx) => (
-                                                    <React.Fragment key={category.id}>
-                                                        <tr className="main-category">
-                                                            <td>
-                                                                <button
-                                                                    className="btn btn-link p-0"
-                                                                    onClick={() => toggleCategory(category.id)}
-                                                                    title={openCategoryId === category.id ? "Collapse" : "Expand"}
-                                                                >
-                                                                    {openCategoryId === category.id ? (
-                                                                        // Minus icon (collapse)
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                                            <line x1="8" y1="12" x2="16" y2="12" />
-                                                                        </svg>
-                                                                    ) : (
-                                                                        // Plus icon (expand)
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                                            <line x1="12" y1="8" x2="12" y2="16" />
-                                                                            <line x1="8" y1="12" x2="16" y2="12" />
-                                                                        </svg>
-                                                                    )}
-                                                                </button>
-                                                                {/* Add Sub Category button, only when expanded */}
-                                                                {openCategoryId === category.id && (
-                                                                    <button
-                                                                        className="btn btn-link p-0 ms-2"
-                                                                        onClick={() => handleAddSubCategory(catIdx)}
-                                                                        title="Add Sub Category"
-                                                                    >
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                            <line x1="12" y1="8" x2="12" y2="16" />
-                                                                            <line x1="8" y1="12" x2="16" y2="12" />
-                                                                        </svg>
-                                                                    </button>
-                                                                )}
+                                        + Add Main Category
+                                    </button>
+                                </div>
+
+                                <div className="mx-3 ">
+                                    <div className="tbl-container mt-1 " style={{
+                                        maxHeight: "750px",
+                                    }}>
+                                        <table
+                                            className=""
+                                        >
+                                            <thead style={{ zIndex: "111 " }}>
+                                                <tr>
+                                                    <th className="text-start">Expand</th>
+                                                    <th className="text-start">Sr No.</th>
+                                                    <th className="text-start">Level</th>
+                                                    <th className="text-start">Category</th>
+                                                    <th className="text-start">Location</th>
+                                                    <th className="text-start">Type</th>
+                                                    <th className="text-start">Items</th>
+                                                    <th className="text-start">Factor</th>
+                                                    <th className="text-start" style={{ width: "200px" }}>UOM</th>
+                                                    {/* <th className="text-start">Area</th> */}
+                                                    <th className="text-start">QTY Excl Wastage</th>
+                                                    <th className="text-start">Wastage</th>
+                                                    <th className="text-start">QTY incl Waste</th>
+                                                    <th className="text-start">Rate</th>
+                                                    <th className="text-start">Amount</th>
+                                                    <th className="text-start">Cost Per Unit</th>
+                                                    <th className="text-start" style={{ width: "12px" }}>
+                                                        Action
+                                                    </th>
+                                                </tr>
+                                                <tr>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start">A</th>
+                                                    <th className="text-start">B</th>
+                                                    {/* <th className="text-start"></th> */}
+                                                    <th className="text-start">C=C*A</th>
+                                                    <th className="text-start">D</th>
+                                                    <th className="text-start">E=C+C*D</th>
+                                                    <th className="text-start">F</th>
+                                                    <th className="text-start">G=E*F</th>
+                                                    <th className="text-start">H=G/C</th>
+                                                    <th className="text-start">
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {/* Conditional rendering for categories under sub-project start */}
+                                                {subProjectDetails &&
+                                                    subProjectDetails.categories &&
+                                                    subProjectDetails.categories.map((category, catIdx) => (
+                                                        <React.Fragment key={category.id}>
+                                                            <tr className="main-category">
+                                                                <td>
+                                                                    <>
+                                                                        <button
+                                                                            className="btn btn-link p-0"
+                                                                            onClick={() => toggleCategory(category.id)}
+                                                                            title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                        >
+                                                                            {openCategoryId === category.id ? (
+                                                                                // Minus icon (collapse)
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                    <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                </svg>
+                                                                            ) : (
+                                                                                // Plus icon (expand)
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                    <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                    <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                </svg>
+                                                                            )}
+                                                                        </button>
+                                                                        {/* Add Sub Category button, only when expanded */}
+                                                                        {openCategoryId === category.id && (
+                                                                            <button
+                                                                                className="btn btn-link p-0 ms-2"
+                                                                                onClick={() => handleAddSubCategory(catIdx)}
+                                                                                title="Add Sub Category"
+                                                                            >
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                    <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                    <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                </svg>
+                                                                            </button>
+                                                                        )}
 
 
 
 
-                                                            </td>
-                                                            <td>{catIdx + 1}</td>
-                                                            <td> Main Category</td>
-                                                            <td>
-                                                                {/* {category.name} */}
+                                                                        <button
+                                                                            className="btn btn-link p-0"
+                                                                            onClick={() => handleRemoveMainCategory(catIdx)}
+                                                                            aria-label="Remove main category"
+                                                                        >
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                <line x1="5" y1="8" x2="11" y2="8" />
+                                                                            </svg>
+                                                                        </button>
+                                                                    </>
 
-                                                                {/* <SingleSelector
+                                                                </td>
+                                                                <td>{catIdx + 1}</td>
+                                                                <td> Main Category</td>
+                                                                <td>
+                                                                    {/* {category.name} */}
+
+                                                                    {/* <SingleSelector
                                                                     options={workCategories?.map((category) => ({
                                                                                             value: category.id,
                                                                                             label: category.name,
@@ -2211,302 +2978,378 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
                                                                     // }
                                                                      onChange={handleCategoryChange}
                                                                 /> */}
-<SingleSelector
-  options={workCategories.map(cat => ({
-    value: cat.id,
-    label: cat.name,
-    work_sub_categories: cat.work_sub_categories
-  }))}
-  value={workCategories.find(opt => opt.id === category.id) ? { value: category.id, label: category.name } : null}
-  onChange={selectedOption => handleMainCategorySelect(catIdx, selectedOption)}
-  placeholder="Select Main Category"
-/>
-                                                                
-                                                            </td>
-                                                            <td>
-                                                                <input
-                                                                    type="text"
-                                                                    value={category.location || ""}
-                                                                    onChange={(e) =>
-                                                                        handleEditMainCategoryField(catIdx, "location", e.target.value)
+                                                                    <SingleSelector
+                                                                        options={workCategories.map(cat => ({
+                                                                            value: cat.id,
+                                                                            label: cat.name,
+                                                                            sub_categories_2: cat.sub_categories_2
+                                                                        }))}
+                                                                        value={workCategories.find(opt => opt.id === category.id) ? { value: category.id, label: category.name } : null}
+                                                                        onChange={selectedOption => handleMainCategorySelect(catIdx, selectedOption)}
+                                                                        placeholder="Select Main Category"
+                                                                    />
+
+                                                                </td>
+                                                                <td>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={category.location || ""}
+                                                                        onChange={(e) =>
+                                                                            handleEditMainCategoryField(catIdx, "location", e.target.value)
+                                                                        }
+                                                                        className="form-control"
+                                                                    />
+                                                                </td>
+                                                                <td></td>
+                                                                <td>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={category.items || ""}
+                                                                        onChange={(e) =>
+                                                                            handleEditMainCategoryField(catIdx, "items", e.target.value)
+                                                                        }
+                                                                        className="form-control"
+                                                                    />
+                                                                </td>
+                                                                <td></td>
+                                                                <td>
+                                                                    <SingleSelector
+                                                                        options={unitOfMeasures}
+                                                                        value={
+                                                                            unitOfMeasures.find(opt => opt.value === category.uom)
+                                                                        }
+                                                                        placeholder="Select UOM"
+                                                                        onChange={selectedOption =>
+                                                                            handleEditMainCategoryField(catIdx, "uom", selectedOption?.value || "")
+                                                                        }
+                                                                    />
+                                                                </td>
+                                                                {/* <td></td> */}
+                                                                <td>
+                                                                    <input
+                                                                        type="number"
+                                                                        value={category.qty || ""}
+                                                                        onChange={(e) =>
+                                                                            handleEditMainCategoryField(catIdx, "qty", e.target.value)
+                                                                        }
+                                                                        className="form-control"
+                                                                    />
+                                                                </td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td></td>
+                                                                <td>
+                                                                    {
+                                                                        (
+                                                                            // Sum direct material_type_details amounts for main category
+                                                                            (category.material_type_details
+                                                                                ? category.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                : 0
+                                                                            )
+                                                                            +
+                                                                            // Sum all sub-category 2 material_type_details amounts for main category
+                                                                            (category.sub_categories_2
+                                                                                ? category.sub_categories_2.reduce(
+                                                                                    (subSum2, subCat2) =>
+                                                                                        subSum2 +
+                                                                                        (
+                                                                                            // Sum direct material_type_details for level 2
+                                                                                            (subCat2.material_type_details
+                                                                                                ? subCat2.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                : 0
+                                                                                            )
+                                                                                            +
+                                                                                            // Sum all sub-category 3 material_type_details for level 2
+                                                                                            (subCat2.sub_categories_3
+                                                                                                ? subCat2.sub_categories_3.reduce(
+                                                                                                    (subSum3, subCat3) =>
+                                                                                                        subSum3 +
+                                                                                                        (
+                                                                                                            // Sum direct material_type_details for level 3
+                                                                                                            (subCat3.material_type_details
+                                                                                                                ? subCat3.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                : 0
+                                                                                                            )
+                                                                                                            +
+                                                                                                            // Sum all sub-category 4 material_type_details for level 3
+                                                                                                            (subCat3.sub_categories_4
+                                                                                                                ? subCat3.sub_categories_4.reduce(
+                                                                                                                    (subSum4, subCat4) =>
+                                                                                                                        subSum4 +
+                                                                                                                        (
+                                                                                                                            // Sum direct material_type_details for level 4
+                                                                                                                            (subCat4.material_type_details
+                                                                                                                                ? subCat4.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                : 0
+                                                                                                                            )
+                                                                                                                            +
+                                                                                                                            // Sum all sub-category 5 material_type_details for level 4
+                                                                                                                            (subCat4.sub_categories_5
+                                                                                                                                ? subCat4.sub_categories_5.reduce(
+                                                                                                                                    (subSum5, subCat5) =>
+                                                                                                                                        subSum5 +
+                                                                                                                                        (subCat5.material_type_details
+                                                                                                                                            ? subCat5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                            : 0
+                                                                                                                                        ),
+                                                                                                                                    0
+                                                                                                                                )
+                                                                                                                                : 0
+                                                                                                                            )
+                                                                                                                        ),
+                                                                                                                    0
+                                                                                                                )
+                                                                                                                : 0
+                                                                                                            )
+                                                                                                        ),
+                                                                                                    0
+                                                                                                )
+                                                                                                : 0
+                                                                                            )
+                                                                                        ),
+                                                                                    0
+                                                                                )
+                                                                                : 0
+                                                                            )
+                                                                        )
                                                                     }
-                                                                    className="form-control"
-                                                                />
-                                                            </td>
-                                                            <td></td>
-                                                            <td>
-                                                                <input
-                                                                    type="text"
-                                                                    value={category.items || ""}
-                                                                    onChange={(e) =>
-                                                                        handleEditMainCategoryField(catIdx, "items", e.target.value)
-                                                                    }
-                                                                    className="form-control"
-                                                                />
-                                                            </td>
-                                                            <td></td>
-                                                            <td>
-                                                                <SingleSelector
-                                                                    options={unitOfMeasures}
-                                                                    value={
-                                                                        unitOfMeasures.find(opt => opt.value === category.uom)
-                                                                    }
-                                                                    placeholder="Select UOM"
-                                                                    onChange={selectedOption =>
-                                                                        handleEditMainCategoryField(catIdx, "uom", selectedOption?.value || "")
-                                                                    }
-                                                                />
-                                                            </td>
-                                                            {/* <td></td> */}
-                                                            <td>
-                                                                <input
-                                                                    type="number"
-                                                                    value={category.qty || ""}
-                                                                    onChange={(e) =>
-                                                                        handleEditMainCategoryField(catIdx, "qty", e.target.value)
-                                                                    }
-                                                                    className="form-control"
-                                                                />
-                                                            </td>
-                                                            <td></td>
-                                                            <td></td>
-                                                            <td></td>
-                                                            <td></td>
-                                                            <td></td>
-                                                            <td>
-                                                                <button
-                                                                    className="btn btn-link p-0"
-                                                                    // onClick={() => handleOpenAddModal(catIdx, 0)}
-                                                                    // onClick={() => handleOpenAddModal(catIdx, null)}
-                                                                    onClick={() => handleOpenAddModal(catIdx, null, category.id)}
-                                                                >
-                                                                    {/* {console.log("cat id:", catIdx, category.id)} */}
-                                                                    <svg
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        width="24"
-                                                                        height="48"
-                                                                        viewBox="0 0 24 48"
-                                                                        fill="none"
-                                                                        stroke="currentColor"
-                                                                        stroke-width="2"
-                                                                        stroke-linecap="round"
-                                                                        stroke-linejoin="round"
+                                                                </td>
+                                                                <td></td>
+                                                                <td>
+                                                                    <button
+                                                                        className="btn btn-link p-0"
+                                                                        // onClick={() => handleOpenAddModal(catIdx, 0)}
+                                                                        // onClick={() => handleOpenAddModal(catIdx, null)}
+                                                                        onClick={() => handleOpenAddModal(catIdx, null, category.id)}
+                                                                        disabled={isOtherLevelFrozen(category, "main", { catIdx })}
                                                                     >
-                                                                        {/* <!-- Plus Icon (Top) --> */}
-                                                                        <line x1="12" y1="10" x2="12" y2="18" />
-                                                                        <line x1="8" y1="14" x2="16" y2="14" />
+                                                                        {/* {console.log("cat id:", catIdx, category.id)} */}
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            width="24"
+                                                                            height="48"
+                                                                            viewBox="0 0 24 48"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            stroke-width="2"
+                                                                            stroke-linecap="round"
+                                                                            stroke-linejoin="round"
+                                                                        >
+                                                                            {/* <!-- Plus Icon (Top) --> */}
+                                                                            <line x1="12" y1="10" x2="12" y2="18" />
+                                                                            <line x1="8" y1="14" x2="16" y2="14" />
 
-                                                                        {/* <!-- Minus Icon (Bottom) -->
+                                                                            {/* <!-- Minus Icon (Bottom) -->
                             <line x1="8" y1="34" x2="16" y2="34" /> */}
-                                                                    </svg>
+                                                                        </svg>
 
 
 
-                                                                </button>
-                                                            </td>
+                                                                    </button>
+                                                                </td>
 
-                                                        </tr>
+                                                            </tr>
 
 
-                                                        {openCategoryId === category.id &&
-                                                            category.material_type_details &&
-                                                            category.material_type_details.map((item, itemIdx) => (
-                                                                <tr key={item.id} className="labour">
-                                                                    <td></td>
-                                                                    <td>
-                                                                        {/* {catIdx + 1}.{itemIdx + 1} */}
-                                                                    </td>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td></td>
-                                                                    <td>{item.type}</td>
-                                                                    <td>{item.name} {item.specification || item.labourActLabel || item.compositeValue}</td>
-                                                                    {/* Add other columns as needed */}
-                                                                    <td>
-                                                                        <input
-                                                                            type="number"
-                                                                            value={item.factor || ""}
-                                                                            onChange={(e) =>
-                                                                                handleEditMaterial(catIdx, itemIdx, "factor", e.target.value)
-                                                                            }
-                                                                            className="form-control"
-                                                                        />
-                                                                    </td>
-                                                                    <td>
-                                                                        <SingleSelector
-                                                                            options={unitOfMeasures}
-                                                                            value={
-                                                                                unitOfMeasures.find(opt => opt.value === item.uom)
-                                                                            }
-                                                                            placeholder="Select UOM"
-                                                                            onChange={selectedOption =>
-                                                                                handleEditMaterial(catIdx, itemIdx, "uom", selectedOption?.value || "")
-                                                                            }
-                                                                        />
+                                                            {openCategoryId === category.id &&
+                                                                category.material_type_details &&
+                                                                category.material_type_details.map((item, itemIdx) => (
+                                                                    <tr key={item.id} className="labour">
+                                                                        <td></td>
+                                                                        <td>
+                                                                            {/* {catIdx + 1}.{itemIdx + 1} */}
+                                                                        </td>
+                                                                        <td></td>
+                                                                        <td></td>
+                                                                        <td></td>
+                                                                        <td>{item.type}</td>
+                                                                        <td>{item.name} {item.specification || item.labourActLabel || item.compositeValue}</td>
+                                                                        {/* Add other columns as needed */}
+                                                                        <td>
+                                                                            <input
+                                                                                type="number"
+                                                                                value={item.factor || ""}
+                                                                                onChange={(e) =>
+                                                                                    handleEditMaterial(catIdx, itemIdx, "factor", e.target.value)
+                                                                                }
+                                                                                className="form-control"
+                                                                            />
+                                                                        </td>
+                                                                        <td>
+                                                                            <SingleSelector
+                                                                                options={unitOfMeasures}
+                                                                                value={
+                                                                                    unitOfMeasures.find(opt => opt.value === item.uom)
+                                                                                }
+                                                                                placeholder="Select UOM"
+                                                                                onChange={selectedOption =>
+                                                                                    handleEditMaterial(catIdx, itemIdx, "uom", selectedOption?.value || "")
+                                                                                }
+                                                                            />
 
-                                                                        {/* <SingleSelector
+                                                                            {/* <SingleSelector
                                                               options={unitOfMeasures} // Providing the options to the select component
                                                               onChange={handleUnitChange} // Setting the handler when an option is selected
                                                               value={selectedUnit} // Setting the selected value
                                                               placeholder={`Select UOM`} // Dynamic placeholder
                                                               
                                                             /> */}
-                                                                    </td>
-                                                                    {/* <td></td> */}
-                                                                    <td>
+                                                                        </td>
+                                                                        {/* <td></td> */}
+                                                                        <td>
 
 
-                                                                        <input
-                                                                            type="number"
-                                                                            value={item.qty || ""}
-                                                                            readOnly
-                                                                            disabled
-                                                                            className="form-control"
-                                                                        />
-                                                                    </td>
-                                                                    <td>
-                                                                        <input
-                                                                            type="number"
-                                                                            value={item.wastage || ""}
-                                                                            onChange={(e) =>
-                                                                                handleEditMaterial(catIdx, itemIdx, "wastage", e.target.value)
-                                                                            }
-                                                                            className="form-control"
-                                                                        />
-                                                                    </td>
-                                                                    <td>
-                                                                        <input
-                                                                            type="number"
-                                                                            value={item.qtyInclWastage || ""}
-                                                                            readOnly
-                                                                            className="form-control"
-                                                                            disabled
-                                                                        />
-                                                                    </td>
-                                                                    <td>
-                                                                        <input
-                                                                            type="number"
-                                                                            value={item.rate || ""}
-                                                                            onChange={(e) =>
-                                                                                handleEditMaterial(catIdx, itemIdx, "rate", e.target.value)
-                                                                            }
-                                                                            className="form-control"
-                                                                            disabled={item.type === "Material"} // ✅ Disable if Material
-                                                                        />
-                                                                    </td>
-                                                                    <td>
-                                                                        <input
-                                                                            type="number"
-                                                                            value={item.amount || ""}
-                                                                            readOnly
-                                                                            disabled
-                                                                            className="form-control"
-                                                                        />
-                                                                    </td>
-                                                                    <td>
-                                                                        <input
-                                                                            type="number"
-                                                                            value={item.costPerUnit || ""}
-                                                                            readOnly
-                                                                            disabled
-                                                                            className="form-control"
-                                                                        />
-                                                                    </td>
-                                                                    <td>
-                                                                        <button
-                                                                            className="btn btn-link p-0"
-                                                                            onClick={() => handleRemoveMainCategoryRow(catIdx, itemIdx)}
-                                                                        >
-                                                                            <svg
-                                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                                width="24"
-                                                                                height="48"
-                                                                                viewBox="0 0 24 48"
-                                                                                fill="none"
-                                                                                stroke="currentColor"
-                                                                                stroke-width="2"
-                                                                                stroke-linecap="round"
-                                                                                stroke-linejoin="round"
-                                                                            >
-
-                                                                                {/* <!-- Minus Icon (Bottom) --> */}
-                                                                                <line x1="8" y1="34" x2="16" y2="34" />
-                                                                            </svg>
-
-                                                                        </button>
-                                                                    </td>
-                                                                </tr>
-                                                            ))
-                                                        }
-
-                                                        {/* sub level 2 start */}
-                                                        {openCategoryId === category.id &&
-                                                            category.sub_categories_2 &&
-                                                            category.sub_categories_2.length > 0 &&
-                                                            category.sub_categories_2.map((subCategory, subCatIdx) => (
-                                                                <React.Fragment key={subCategory.id}>
-                                                                    <tr className="category-lvl2">
+                                                                            <input
+                                                                                type="number"
+                                                                                value={item.qty || ""}
+                                                                                readOnly
+                                                                                disabled
+                                                                                className="form-control"
+                                                                            />
+                                                                        </td>
+                                                                        <td>
+                                                                            <input
+                                                                                type="number"
+                                                                                value={item.wastage || ""}
+                                                                                onChange={(e) =>
+                                                                                    handleEditMaterial(catIdx, itemIdx, "wastage", e.target.value)
+                                                                                }
+                                                                                className="form-control"
+                                                                            />
+                                                                        </td>
+                                                                        <td>
+                                                                            <input
+                                                                                type="number"
+                                                                                value={item.qtyInclWastage || ""}
+                                                                                readOnly
+                                                                                className="form-control"
+                                                                                disabled
+                                                                            />
+                                                                        </td>
+                                                                        <td>
+                                                                            <input
+                                                                                type="number"
+                                                                                value={item.rate || 0}
+                                                                                onChange={(e) =>
+                                                                                    handleEditMaterial(catIdx, itemIdx, "rate", e.target.value)
+                                                                                }
+                                                                                className="form-control"
+                                                                                disabled={item.type === "material"} // ✅ Disable if Material
+                                                                            />
+                                                                        </td>
+                                                                        <td>
+                                                                            <input
+                                                                                type="number"
+                                                                                value={item.amount || ""}
+                                                                                readOnly
+                                                                                disabled
+                                                                                className="form-control"
+                                                                            />
+                                                                        </td>
+                                                                        <td>
+                                                                            <input
+                                                                                type="number"
+                                                                                value={item.costPerUnit || ""}
+                                                                                readOnly
+                                                                                disabled
+                                                                                className="form-control"
+                                                                            />
+                                                                        </td>
                                                                         <td>
                                                                             <button
                                                                                 className="btn btn-link p-0"
-                                                                                onClick={() => toggleSubCategory2(subCategory.id)}
-                                                                                title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                                onClick={() => handleRemoveMainCategoryRow(catIdx, itemIdx)}
                                                                             >
-                                                                                {openSubCategory2Id ===
-                                                                                    subCategory.id ? (
-                                                                                    // Minus icon (collapse)
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                                                        <line x1="8" y1="12" x2="16" y2="12" />
-                                                                                    </svg>
-                                                                                ) : (
-                                                                                    // Plus icon (expand)
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                                                        <line x1="12" y1="8" x2="12" y2="16" />
-                                                                                        <line x1="8" y1="12" x2="16" y2="12" />
-                                                                                    </svg>
-                                                                                )}
+                                                                                <svg
+                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                    width="24"
+                                                                                    height="48"
+                                                                                    viewBox="0 0 24 48"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    stroke-width="2"
+                                                                                    stroke-linecap="round"
+                                                                                    stroke-linejoin="round"
+                                                                                >
+
+                                                                                    {/* <!-- Minus Icon (Bottom) --> */}
+                                                                                    <line x1="8" y1="34" x2="16" y2="34" />
+                                                                                </svg>
+
                                                                             </button>
-                                                                            {/* Add Sub Category button, only when expanded */}
-                                                                            {openSubCategory2Id ===
-                                                                                subCategory.id && (
-                                                                                    <button
-                                                                                        className="btn btn-link p-0 ms-2"
-                                                                                        onClick={() => handleAddSubCategory3(catIdx, subCatIdx)}
-                                                                                        title="Add Sub Category"
-                                                                                    >
-                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                        </td>
+                                                                    </tr>
+                                                                ))
+                                                            }
+
+                                                            {/* sub level 2 start */}
+                                                            {openCategoryId === category.id &&
+                                                                category.sub_categories_2 &&
+                                                                category.sub_categories_2.length > 0 &&
+                                                                category.sub_categories_2.map((subCategory, subCatIdx) => (
+                                                                    <React.Fragment key={subCategory.id}>
+                                                                        <tr className="category-lvl2">
+                                                                            <td>
+                                                                                <button
+                                                                                    className="btn btn-link p-0"
+                                                                                    onClick={() => toggleSubCategory2(subCategory.id)}
+                                                                                    title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                                >
+                                                                                    {openSubCategory2Id ===
+                                                                                        subCategory.id ? (
+                                                                                        // Minus icon (collapse)
+                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                        </svg>
+                                                                                    ) : (
+                                                                                        // Plus icon (expand)
+                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
                                                                                             <line x1="12" y1="8" x2="12" y2="16" />
                                                                                             <line x1="8" y1="12" x2="16" y2="12" />
                                                                                         </svg>
-                                                                                    </button>
-                                                                                )}
+                                                                                    )}
+                                                                                </button>
+                                                                                {/* Add Sub Category button, only when expanded */}
+                                                                                {openSubCategory2Id ===
+                                                                                    subCategory.id && (
+                                                                                        <button
+                                                                                            className="btn btn-link p-0 ms-2"
+                                                                                            onClick={() => handleAddSubCategory3(catIdx, subCatIdx)}
+                                                                                            title="Add Sub Category"
+                                                                                        >
+                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                            </svg>
+                                                                                        </button>
+                                                                                    )}
 
 
 
 
-                                                                            <button
-                                                                                className="btn btn-link p-0"
-                                                                                onClick={() => handleRemoveSubCategory2(catIdx, subCatIdx)}
-                                                                                aria-label="Remove sub-category 2"
-                                                                            >
-                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                    <line x1="5" y1="8" x2="11" y2="8" />
-                                                                                </svg>
-                                                                            </button>
-                                                                        </td>
+                                                                                <button
+                                                                                    className="btn btn-link p-0"
+                                                                                    onClick={() => handleRemoveSubCategory2(catIdx, subCatIdx)}
+                                                                                    aria-label="Remove sub-category 2"
+                                                                                >
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                        <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                    </svg>
+                                                                                </button>
+                                                                            </td>
 
-                                                                        <td></td>
-                                                                        <td>Sub-Category Level 2</td>
-                                                                        <td>
-                                                                            {/* <SingleSelector
+                                                                            <td></td>
+                                                                            <td>Sub-Category Level 2</td>
+                                                                            <td>
+                                                                                {/* <SingleSelector
                                                                                 options={subCategoryOptions}
                                                                                 value={subCategoryOptions.find(opt => opt.value === selectedSubCategory?.value)}
                                                                                 placeholder="Select Sub Category"
                                                                                 onChange={selectedOption => setSelectedSubCategory(selectedOption)}
                                                                             /> */}
-                                                                             {/* <SingleSelector
+                                                                                {/* <SingleSelector
                                                                                                       options={subCategoryOptions}
                                                                                                       onChange={handleSubCategoryChange}
                                                                                                       value={selectedSubCategory}
@@ -2514,210 +3357,286 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
                                                                                                     /> */}
 
 
-                                                                                                    {/* <SingleSelector
+                                                                                {/* <SingleSelector
   options={category.subCategoryOptions || []}
   value={category.selectedSubCategory}
   onChange={selectedOption => handleSubCategorySelect(catIdx, selectedOption)}
   placeholder="Select Sub-category lvl 2"
 /> */}
 
-<SingleSelector
+                                                                                {/* <SingleSelector
   options={category.subCategoryOptions || []}
   value={subCategory.selectedSubCategory}
   onChange={selectedOption => handleSubCategorySelect(catIdx, subCatIdx, selectedOption)}
   placeholder="Select Sub-category lvl 2"
-/>
-                                                                        </td>
-                                                                        <td>
+/> */}
 
-                                                                            <input
-                                                                                type="text"
-                                                                                value={subCategory.location || ""}
-                                                                                onChange={(e) => handleEditSubCategory2Field(catIdx, subCatIdx, "location", e.target.value)}
-                                                                                className="form-control"
-                                                                            />
+                                                                                <SingleSelector
+                                                                                    options={
+                                                                                        (category.subCategoryOptions || []).map(subCat => ({
+                                                                                            value: subCat.value,
+                                                                                            label: subCat.label,
+                                                                                            sub_categories_3: subCat.sub_categories_3 // pass for next level
+                                                                                        }))
+                                                                                    }
+                                                                                    value={
+                                                                                        subCategory.id
+                                                                                            ? { value: subCategory.id, label: subCategory.name }
+                                                                                            : null
+                                                                                    }
+                                                                                    onChange={selectedOption => handleSubCategorySelect(catIdx, subCatIdx, selectedOption)}
+                                                                                    placeholder="Select Sub-category lvl 2"
+                                                                                />
+                                                                            </td>
+                                                                            <td>
 
-                                                                        </td>
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={subCategory.location || ""}
+                                                                                    onChange={(e) => handleEditSubCategory2Field(catIdx, subCatIdx, "location", e.target.value)}
+                                                                                    className="form-control"
+                                                                                />
 
-                                                                        <td>
+                                                                            </td>
 
-                                                                        </td>
-                                                                        <td>
-                                                                            <input
-                                                                                type="text"
-                                                                                value={subCategory.items || ""}
-                                                                                onChange={(e) => handleEditSubCategory2Field(catIdx, subCatIdx, "items", e.target.value)}
-                                                                                className="form-control"
-                                                                            />
-                                                                        </td>
-                                                                        <td></td>
-                                                                        <td>
-                                                                            <SingleSelector
-                                                                                options={unitOfMeasures}
-                                                                                value={
-                                                                                    unitOfMeasures.find(opt => opt.value === subCategory.uom)
+                                                                            <td>
+
+                                                                            </td>
+                                                                            <td>
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={subCategory.items || ""}
+                                                                                    onChange={(e) => handleEditSubCategory2Field(catIdx, subCatIdx, "items", e.target.value)}
+                                                                                    className="form-control"
+                                                                                />
+                                                                            </td>
+                                                                            <td></td>
+                                                                            <td>
+                                                                                <SingleSelector
+                                                                                    options={unitOfMeasures}
+                                                                                    value={
+                                                                                        unitOfMeasures.find(opt => opt.value === subCategory.uom)
+                                                                                    }
+                                                                                    placeholder="Select UOM"
+                                                                                    onChange={selectedOption =>
+                                                                                        handleEditSubCategory2Field(catIdx, subCatIdx, "uom", selectedOption?.value || "")
+                                                                                    }
+                                                                                />
+                                                                            </td>
+                                                                            <td>
+                                                                                <input
+                                                                                    type="number"
+                                                                                    value={subCategory.qty || ""}
+                                                                                    onChange={(e) =>
+                                                                                        handleEditSubCategory2Field(catIdx, subCatIdx, "qty", e.target.value)
+                                                                                    }
+                                                                                    className="form-control"
+                                                                                />
+                                                                            </td>
+                                                                            <td>
+
+                                                                            </td>
+                                                                            <td></td>
+                                                                            <td></td>
+                                                                            <td>
+                                                                                {
+                                                                                    (
+                                                                                        // Sum direct material_type_details amounts for level 2
+                                                                                        (subCategory.material_type_details
+                                                                                            ? subCategory.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                            : 0
+                                                                                        )
+                                                                                        +
+                                                                                        // Sum all sub-category 3 material_type_details amounts for level 2
+                                                                                        (subCategory.sub_categories_3
+                                                                                            ? subCategory.sub_categories_3.reduce(
+                                                                                                (subSum3, subCat3) =>
+                                                                                                    subSum3 +
+                                                                                                    (
+                                                                                                        // Sum direct material_type_details for level 3
+                                                                                                        (subCat3.material_type_details
+                                                                                                            ? subCat3.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                            : 0
+                                                                                                        )
+                                                                                                        +
+                                                                                                        // Sum all sub-category 4 material_type_details for level 3
+                                                                                                        (subCat3.sub_categories_4
+                                                                                                            ? subCat3.sub_categories_4.reduce(
+                                                                                                                (subSum4, subCat4) =>
+                                                                                                                    subSum4 +
+                                                                                                                    (
+                                                                                                                        // Sum direct material_type_details for level 4
+                                                                                                                        (subCat4.material_type_details
+                                                                                                                            ? subCat4.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                        +
+                                                                                                                        // Sum all sub-category 5 material_type_details for level 4
+                                                                                                                        (subCat4.sub_categories_5
+                                                                                                                            ? subCat4.sub_categories_5.reduce(
+                                                                                                                                (subSum5, subCat5) =>
+                                                                                                                                    subSum5 +
+                                                                                                                                    (subCat5.material_type_details
+                                                                                                                                        ? subCat5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                        : 0
+                                                                                                                                    ),
+                                                                                                                                0
+                                                                                                                            )
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                    ),
+                                                                                                                0
+                                                                                                            )
+                                                                                                            : 0
+                                                                                                        )
+                                                                                                    ),
+                                                                                                0
+                                                                                            )
+                                                                                            : 0
+                                                                                        )
+                                                                                    )
                                                                                 }
-                                                                                placeholder="Select UOM"
-                                                                                onChange={selectedOption =>
-                                                                                    handleEditSubCategory2Field(catIdx, subCatIdx, "uom", selectedOption?.value || "")
-                                                                                }
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <input
-                                                                                type="number"
-                                                                                value={subCategory.qty || ""}
-                                                                                onChange={(e) =>
-                                                                                    handleEditSubCategory2Field(catIdx, subCatIdx, "qty", e.target.value)
-                                                                                }
-                                                                                className="form-control"
-                                                                            />
-                                                                        </td>
-                                                                        <td>
+                                                                            </td>
+                                                                            <td></td>
+                                                                            <td>
+                                                                                <button
+                                                                                    className="btn btn-link p-0"
+                                                                                    onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory.id)}
+                                                                                    aria-label="Add row to sub-category 2"
+                                                                                    disabled={isOtherLevelFrozen(category, "sub2", { catIdx, subCatIdx })}
+                                                                                >
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                        <line x1="12" y1="10" x2="12" y2="18" />
+                                                                                        <line x1="8" y1="14" x2="16" y2="14" />
+                                                                                        {/* <line x1="8" y1="34" x2="16" y2="34" /> */}
+                                                                                    </svg>
+                                                                                </button>
 
-                                                                        </td>
-                                                                        <td></td>
-                                                                        <td></td>
-                                                                        <td></td>
-                                                                        <td></td>
-                                                                        <td>
-                                                                            <button
-                                                                                className="btn btn-link p-0"
-                                                                                onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory.id)}
-                                                                                aria-label="Add row to sub-category 2"
-                                                                            >
-                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                    <line x1="12" y1="10" x2="12" y2="18" />
-                                                                                    <line x1="8" y1="14" x2="16" y2="14" />
-                                                                                    {/* <line x1="8" y1="34" x2="16" y2="34" /> */}
-                                                                                </svg>
-                                                                            </button>
+                                                                            </td>
 
-                                                                        </td>
+                                                                        </tr>
 
-                                                                    </tr>
+                                                                        {/* Render material_type_details rows for sub-category 2 */}
+                                                                        {openSubCategory2Id === subCategory.id &&
+                                                                            subCategory.material_type_details &&
+                                                                            subCategory.material_type_details.map((item, itemIdx) => (
+                                                                                <tr key={item.id} className="labour">
+                                                                                    <td></td>
+                                                                                    <td>
+                                                                                        {/* {catIdx + 1}.{subCatIdx + 1}.{itemIdx + 1} */}
+                                                                                    </td>
+                                                                                    <td></td>
+                                                                                    <td></td>
+                                                                                    <td></td>
+                                                                                    <td>{item.type}</td>
+                                                                                    <td>{item.name} {item.specification || item.labourActLabel || item.compositeValue}</td>
+                                                                                    {/* ...other cells... */}
 
-                                                                    {/* Render material_type_details rows for sub-category 2 */}
-                                                                    {openSubCategory2Id === subCategory.id &&
-                                                                        subCategory.material_type_details &&
-                                                                        subCategory.material_type_details.map((item, itemIdx) => (
-                                                                            <tr key={item.id} className="labour">
-                                                                                <td></td>
-                                                                                <td>
-                                                                                    {/* {catIdx + 1}.{subCatIdx + 1}.{itemIdx + 1} */}
-                                                                                </td>
-                                                                                <td></td>
-                                                                                <td></td>
-                                                                                <td></td>
-                                                                                <td>{item.type}</td>
-                                                                                <td>{item.name} {item.specification || item.labourActLabel || item.compositeValue}</td>
-                                                                                {/* ...other cells... */}
+                                                                                    <td>
+                                                                                        <input
+                                                                                            type="number"
+                                                                                            value={item.factor || ""}
+                                                                                            onChange={(e) =>
+                                                                                                handleEditSubCategory2Material(catIdx, subCatIdx, itemIdx, "factor", e.target.value)
+                                                                                            }
+                                                                                            className="form-control"
+                                                                                        />
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <SingleSelector
+                                                                                            options={unitOfMeasures}
+                                                                                            value={
+                                                                                                unitOfMeasures.find(opt => opt.value === item.uom)
+                                                                                            }
+                                                                                            placeholder="Select UOM"
+                                                                                            onChange={selectedOption =>
+                                                                                                handleEditSubCategory2Material(catIdx, subCatIdx, itemIdx, "uom", selectedOption?.value || "")
+                                                                                            }
+                                                                                        />
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <input
+                                                                                            type="number"
+                                                                                            value={item.qty || ""}
+                                                                                            readOnly
+                                                                                            disabled
+                                                                                            className="form-control"
+                                                                                        />
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <input
+                                                                                            type="number"
+                                                                                            value={item.wastage || ""}
+                                                                                            onChange={(e) =>
+                                                                                                handleEditSubCategory2Material(catIdx, subCatIdx, itemIdx, "wastage", e.target.value)
+                                                                                            }
+                                                                                            className="form-control"
+                                                                                        />
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <input
+                                                                                            type="number"
+                                                                                            value={item.qtyInclWastage || ""}
+                                                                                            readOnly
+                                                                                            className="form-control"
+                                                                                            disabled
+                                                                                        />
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <input
+                                                                                            type="number"
+                                                                                            value={item.rate || 0}
+                                                                                            onChange={(e) =>
+                                                                                                handleEditSubCategory2Material(catIdx, subCatIdx, itemIdx, "rate", e.target.value)
+                                                                                            }
+                                                                                            className="form-control"
+                                                                                        disabled={item.type === "material"}
+                                                                                        />
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <input
+                                                                                            type="number"
+                                                                                            value={item.amount || ""}
+                                                                                            readOnly
+                                                                                            disabled
+                                                                                            className="form-control"
+                                                                                        />
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <input
+                                                                                            type="number"
+                                                                                            value={item.costPerUnit || ""}
+                                                                                            readOnly
+                                                                                            disabled
+                                                                                            className="form-control"
+                                                                                        />
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <button
+                                                                                            className="btn btn-link p-0"
+                                                                                            onClick={() => handleRemoveSubCategory2Row(catIdx, subCatIdx, itemIdx)}
+                                                                                            aria-label="Remove row from sub-category 2"
+                                                                                        >
+                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                                                <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                            </svg>
+                                                                                        </button>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            ))
+                                                                        }
+                                                                        {/* ...sub-category 3 rendering... */}
 
-                                                                                <td>
-                                                                                    <input
-                                                                                        type="number"
-                                                                                        value={item.factor || ""}
-                                                                                        onChange={(e) =>
-                                                                                            handleEditSubCategory2Material(catIdx, subCatIdx, itemIdx, "factor", e.target.value)
-                                                                                        }
-                                                                                        className="form-control"
-                                                                                    />
-                                                                                </td>
-                                                                                <td>
-                                                                                    <SingleSelector
-                                                                                        options={unitOfMeasures}
-                                                                                        value={
-                                                                                            unitOfMeasures.find(opt => opt.value === item.uom)
-                                                                                        }
-                                                                                        placeholder="Select UOM"
-                                                                                        onChange={selectedOption =>
-                                                                                            handleEditSubCategory2Material(catIdx, subCatIdx, itemIdx, "uom", selectedOption?.value || "")
-                                                                                        }
-                                                                                    />
-                                                                                </td>
-                                                                                <td>
-                                                                                    <input
-                                                                                        type="number"
-                                                                                        value={item.qty || ""}
-                                                                                        readOnly
-                                                                                        disabled
-                                                                                        className="form-control"
-                                                                                    />
-                                                                                </td>
-                                                                                <td>
-                                                                                    <input
-                                                                                        type="number"
-                                                                                        value={item.wastage || ""}
-                                                                                        onChange={(e) =>
-                                                                                            handleEditSubCategory2Material(catIdx, subCatIdx, itemIdx, "wastage", e.target.value)
-                                                                                        }
-                                                                                        className="form-control"
-                                                                                    />
-                                                                                </td>
-                                                                                <td>
-                                                                                    <input
-                                                                                        type="number"
-                                                                                        value={item.qtyInclWastage || ""}
-                                                                                        readOnly
-                                                                                        className="form-control"
-                                                                                        disabled
-                                                                                    />
-                                                                                </td>
-                                                                                <td>
-                                                                                    <input
-                                                                                        type="number"
-                                                                                        value={item.rate || ""}
-                                                                                        onChange={(e) =>
-                                                                                            handleEditSubCategory2Material(catIdx, subCatIdx, itemIdx, "rate", e.target.value)
-                                                                                        }
-                                                                                        className="form-control"
-                                                                                    // disabled={item.type === "Material"}
-                                                                                    />
-                                                                                </td>
-                                                                                <td>
-                                                                                    <input
-                                                                                        type="number"
-                                                                                        value={item.amount || ""}
-                                                                                        readOnly
-                                                                                        disabled
-                                                                                        className="form-control"
-                                                                                    />
-                                                                                </td>
-                                                                                <td>
-                                                                                    <input
-                                                                                        type="number"
-                                                                                        value={item.costPerUnit || ""}
-                                                                                        readOnly
-                                                                                        disabled
-                                                                                        className="form-control"
-                                                                                    />
-                                                                                </td>
-                                                                                <td>
-                                                                                    <button
-                                                                                        className="btn btn-link p-0"
-                                                                                        onClick={() => handleRemoveSubCategory2Row(catIdx, subCatIdx, itemIdx)}
-                                                                                        aria-label="Remove row from sub-category 2"
-                                                                                    >
-                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                            {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
-                                                                                            <line x1="5" y1="8" x2="11" y2="8" />
-                                                                                        </svg>
-                                                                                    </button>
-                                                                                </td>
-                                                                            </tr>
-                                                                        ))
-                                                                    }
-                                                                    {/* ...sub-category 3 rendering... */}
-
-                                                                    {/* Render Sub-Category 3 for each Sub-Category 2 */}
-                                                                    {openSubCategory2Id === subCategory.id &&
-                                                                        subCategory.sub_categories_3 &&
-                                                                        subCategory.sub_categories_3.length > 0 &&
-                                                                        subCategory.sub_categories_3.map(
-                                                                            (subCategory3, subCategory3Idx) => (
-                                                                                <React.Fragment key={subCategory3.id}>
-                                                                                    <tr className="sub-category-lvl3">
-                                                                                        {/* {console.log("sub3", subCategory3)}
+                                                                        {/* Render Sub-Category 3 for each Sub-Category 2 */}
+                                                                        {openSubCategory2Id === subCategory.id &&
+                                                                            subCategory.sub_categories_3 &&
+                                                                            subCategory.sub_categories_3.length > 0 &&
+                                                                            subCategory.sub_categories_3.map(
+                                                                                (subCategory3, subCategory3Idx) => (
+                                                                                    <React.Fragment key={subCategory3.id}>
+                                                                                        <tr className="sub-category-lvl3">
+                                                                                            {/* {console.log("sub3", subCategory3)}
                                             {console.log(
                                               "sub4",
                                               subCategory3.sub_categories_4
@@ -2726,820 +3645,2588 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
                                               "sub3id:",
                                               openSubCategory3Id
                                             )} */}
-                                                                                        <td>
-                                                                                        
+                                                                                            <td>
 
 
 
-                                                                                             <button
-                                                                                className="btn btn-link p-0"
-                                                                                onClick={() => toggleSubCategory3(subCategory3.id)}
-                                                                                title={openCategoryId === category.id ? "Collapse" : "Expand"}
-                                                                            >
-                                                                                {openSubCategory3Id ===
-                                                                                    subCategory3.id ? (
-                                                                                    // Minus icon (collapse)
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                                                        <line x1="8" y1="12" x2="16" y2="12" />
-                                                                                    </svg>
-                                                                                ) : (
-                                                                                    // Plus icon (expand)
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                                                        <line x1="12" y1="8" x2="12" y2="16" />
-                                                                                        <line x1="8" y1="12" x2="16" y2="12" />
-                                                                                    </svg>
-                                                                                )}
-                                                                            </button>
-                                                                            {/* Add Sub Category button, only when expanded */}
-                                                                            {openSubCategory3Id ===
-                                                                                subCategory3.id && (
-                                                                                    <button
-                                                                                        className="btn btn-link p-0 ms-2"
-                                                                                        onClick={() => handleAddSubCategory4(catIdx, subCatIdx, subCategory3Idx)}
-                                                                                        title="Add Sub Category"
-                                                                                    >
-                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                            <line x1="12" y1="8" x2="12" y2="16" />
-                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
-                                                                                        </svg>
-                                                                                    </button>
-                                                                                )}
-                                                                                        </td>
-                                                                                        <td></td>
-                                                                                        <td>Sub-Category Level 3</td>
-                                                                                        <td>
-                                                                                                                    <SingleSelector
+
+                                                                                                <button
+                                                                                                    className="btn btn-link p-0"
+                                                                                                    onClick={() => toggleSubCategory3(subCategory3.id)}
+                                                                                                    title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                                                >
+                                                                                                    {openSubCategory3Id ===
+                                                                                                        subCategory3.id ? (
+                                                                                                        // Minus icon (collapse)
+                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                                        </svg>
+                                                                                                    ) : (
+                                                                                                        // Plus icon (expand)
+                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                                        </svg>
+                                                                                                    )}
+                                                                                                </button>
+                                                                                                {/* Add Sub Category button, only when expanded */}
+                                                                                                {openSubCategory3Id ===
+                                                                                                    subCategory3.id && (
+                                                                                                        <button
+                                                                                                            className="btn btn-link p-0 ms-2"
+                                                                                                            onClick={() => handleAddSubCategory4(catIdx, subCatIdx, subCategory3Idx)}
+                                                                                                            title="Add Sub Category"
+                                                                                                        >
+                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                                            </svg>
+                                                                                                        </button>
+                                                                                                    )}
+
+                                                                                                <button
+                                                                                                    className="btn btn-link p-0"
+                                                                                                    onClick={() => handleRemoveSubCategory3(catIdx, subCatIdx, subCategory3Idx)}
+                                                                                                    aria-label="Remove sub-category 3"
+                                                                                                >
+                                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                        <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                    </svg>
+                                                                                                </button>
+                                                                                            </td>
+                                                                                            <td></td>
+                                                                                            <td>Sub-Category Level 3</td>
+                                                                                            <td>
+                                                                                                {/* <SingleSelector
                                                                                                                       options={subCategoryLevel3Options}
                                                                                                                       onChange={handleLevel3Change}
                                                                                                                       value={selectedSubCategoryLevel3}
                                                                                                                       placeholder={`Select Sub-category lvl 3`} // Dynamic placeholder
-                                                                                                                    />
-                                                                                        </td>
-                                                                                        <td>
-                                                                                            <input
-                                                                                                type="text"
-                                                                                                value={subCategory3.location || ""}
-                                                                                                onChange={(e) => handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "location", e.target.value)}
-                                                                                                className="form-control"
-                                                                                            />
-                                                                                        </td>
-                                                                                        <td>
+                                                                                                                    /> */}
 
-                                                                                        </td>
-                                                                                        <td>
-                                                                                            <input
-                                                                                                type="text"
-                                                                                                value={subCategory3.items || ""}
-                                                                                                onChange={(e) => handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "items", e.target.value)}
-                                                                                                className="form-control"
-                                                                                            />
-                                                                                        </td>
-                                                                                        <td>
+                                                                                                <SingleSelector
+                                                                                                    options={
+                                                                                                        (subCategory.subCategoryLevel3Options || []).map(subCat3 => ({
+                                                                                                            value: subCat3.value,
+                                                                                                            label: subCat3.label,
+                                                                                                            sub_categories_4: subCat3.sub_categories_4 // pass for next level
+                                                                                                        }))
+                                                                                                    }
+                                                                                                    value={
+                                                                                                        subCategory3.id
+                                                                                                            ? { value: subCategory3.id, label: subCategory3.name }
+                                                                                                            : null
+                                                                                                    }
+                                                                                                    onChange={selectedOption => handleLevel3Change(catIdx, subCatIdx, subCategory3Idx, selectedOption)}
+                                                                                                    placeholder="Select Sub-category lvl 3"
+                                                                                                />
+                                                                                                {console.log("sub level 3 options:", subCategory.subCategoryLevel3Options)}
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <input
+                                                                                                    type="text"
+                                                                                                    value={subCategory3.location || ""}
+                                                                                                    onChange={(e) => handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "location", e.target.value)}
+                                                                                                    className="form-control"
+                                                                                                />
+                                                                                            </td>
+                                                                                            <td>
 
-                                                                                        </td>
-                                                                                        <td>
-                                                                                            <SingleSelector
-                                                                                                options={unitOfMeasures}
-                                                                                                value={
-                                                                                                    unitOfMeasures.find(opt => opt.value === subCategory3.uom)
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <input
+                                                                                                    type="text"
+                                                                                                    value={subCategory3.items || ""}
+                                                                                                    onChange={(e) => handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "items", e.target.value)}
+                                                                                                    className="form-control"
+                                                                                                />
+                                                                                            </td>
+                                                                                            <td>
+
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <SingleSelector
+                                                                                                    options={unitOfMeasures}
+                                                                                                    value={
+                                                                                                        unitOfMeasures.find(opt => opt.value === subCategory3.uom)
+                                                                                                    }
+                                                                                                    placeholder="Select UOM"
+                                                                                                    onChange={selectedOption =>
+                                                                                                        handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "uom", selectedOption?.value || "")
+                                                                                                    }
+                                                                                                />
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <input
+                                                                                                    type="number"
+                                                                                                    value={subCategory3.qty || ""}
+                                                                                                    onChange={(e) =>
+                                                                                                        handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "qty", e.target.value)
+                                                                                                    }
+                                                                                                    className="form-control"
+                                                                                                />
+                                                                                            </td>
+                                                                                            <td></td>
+                                                                                            <td></td>
+                                                                                            <td></td>
+                                                                                            <td>
+                                                                                                {
+                                                                                                    (
+                                                                                                        // Sum direct material_type_details amounts for level 3
+                                                                                                        (subCategory3.material_type_details
+                                                                                                            ? subCategory3.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                            : 0
+                                                                                                        )
+                                                                                                        +
+                                                                                                        // Sum all sub-category 4 material_type_details amounts for level 3
+                                                                                                        (subCategory3.sub_categories_4
+                                                                                                            ? subCategory3.sub_categories_4.reduce(
+                                                                                                                (subSum, subCat4) =>
+                                                                                                                    subSum +
+                                                                                                                    (
+                                                                                                                        // Sum direct material_type_details for level 4
+                                                                                                                        (subCat4.material_type_details
+                                                                                                                            ? subCat4.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                        +
+                                                                                                                        // Sum all sub-category 5 material_type_details for level 4
+                                                                                                                        (subCat4.sub_categories_5
+                                                                                                                            ? subCat4.sub_categories_5.reduce(
+                                                                                                                                (subSum5, subCat5) =>
+                                                                                                                                    subSum5 +
+                                                                                                                                    (subCat5.material_type_details
+                                                                                                                                        ? subCat5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                        : 0
+                                                                                                                                    ),
+                                                                                                                                0
+                                                                                                                            )
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                    ),
+                                                                                                                0
+                                                                                                            )
+                                                                                                            : 0
+                                                                                                        )
+                                                                                                    )
                                                                                                 }
-                                                                                                placeholder="Select UOM"
-                                                                                                onChange={selectedOption =>
-                                                                                                    handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "uom", selectedOption?.value || "")
-                                                                                                }
-                                                                                            />
-                                                                                        </td>
-                                                                                        <td>
-                                                                                            <input
+                                                                                            </td>
+                                                                                            <td></td>
+                                                                                            <td>
+
+
+                                                                                                <button
+                                                                                                    className="btn btn-link p-0"
+                                                                                                    onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3Idx)}
+                                                                                                    // onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3, subCategory3.name, subCatIdx)}
+                                                                                                    aria-label="Add row to sub-category 3"
+                                                                                                    disabled={isOtherLevelFrozen(category, "sub3", { catIdx, subCatIdx, subCategory3Idx })}
+                                                                                                >
+                                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                        <line x1="12" y1="10" x2="12" y2="18" />
+                                                                                                        <line x1="8" y1="14" x2="16" y2="14" />
+                                                                                                        {/* <line x1="8" y1="34" x2="16" y2="34" /> */}
+                                                                                                    </svg>
+                                                                                                </button>
+
+                                                                                            </td>
+
+
+                                                                                        </tr>
+
+                                                                                        {/* Render material_type_details rows for sub-category 3 */}
+                                                                                        {openSubCategory3Id === subCategory3.id &&
+                                                                                            subCategory3.material_type_details &&
+                                                                                            subCategory3.material_type_details.map((item, itemIdx) => (
+                                                                                                <tr key={item.id} className="labour">
+                                                                                                    <td></td>
+                                                                                                    <td></td>
+                                                                                                    <td></td>
+                                                                                                    <td></td>
+                                                                                                    <td>{item.location}</td>
+                                                                                                    <td>{item.type}</td>
+                                                                                                    <td>
+                                                                                                        {/* {item.specification} */}
+                                                                                                        {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                                                                    </td>
+                                                                                                    {/* ...other cells... */}
+
+                                                                                                    <td>
+                                                                                                        <input
+                                                                                                            type="number"
+                                                                                                            value={item.factor || ""}
+                                                                                                            onChange={(e) =>
+                                                                                                                handleEditSubCategory3Material(catIdx, subCatIdx, subCategory3Idx, itemIdx, "factor", e.target.value)
+                                                                                                            }
+                                                                                                            className="form-control"
+                                                                                                        />
+                                                                                                    </td>
+                                                                                                    <td>
+
+                                                                                                        <SingleSelector
+                                                                                                            options={unitOfMeasures}
+                                                                                                            value={
+                                                                                                                unitOfMeasures.find(opt => opt.value === item.uom)
+                                                                                                            }
+                                                                                                            placeholder="Select UOM"
+                                                                                                            onChange={selectedOption =>
+                                                                                                                handleEditSubCategory3Material(catIdx, subCatIdx, subCategory3Idx, itemIdx, "uom", selectedOption?.value || "")
+                                                                                                            }
+                                                                                                        />
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        <input
+                                                                                                            type="number"
+                                                                                                            value={item.qty || ""}
+                                                                                                            readOnly
+                                                                                                            disabled
+                                                                                                            className="form-control"
+                                                                                                        />
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        <input
+                                                                                                            type="number"
+                                                                                                            value={item.wastage || ""}
+                                                                                                            onChange={(e) =>
+                                                                                                                handleEditSubCategory3Material(catIdx, subCatIdx, subCategory3Idx, itemIdx, "wastage", e.target.value)
+                                                                                                            }
+                                                                                                            className="form-control"
+                                                                                                        />
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        <input
+                                                                                                            type="number"
+                                                                                                            value={item.qtyInclWastage || ""}
+                                                                                                            readOnly
+                                                                                                            className="form-control"
+                                                                                                            disabled
+                                                                                                        />
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        <input
+                                                                                                            type="number"
+                                                                                                            value={item.rate || 0}
+                                                                                                            onChange={(e) =>
+                                                                                                                handleEditSubCategory3Material(catIdx, subCatIdx, subCategory3Idx, itemIdx, "rate", e.target.value)
+                                                                                                            }
+                                                                                                            className="form-control"
+                                                                                                            disabled={item.type === "material"}
+                                                                                                        />
+                                                                                                    </td>
+
+                                                                                                    <td>
+                                                                                                        <input
+                                                                                                            type="number"
+                                                                                                            value={item.amount || ""}
+                                                                                                            readOnly
+                                                                                                            disabled
+                                                                                                            className="form-control"
+                                                                                                        />
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        <input
+                                                                                                            type="number"
+                                                                                                            value={item.costPerUnit || ""}
+                                                                                                            readOnly
+                                                                                                            disabled
+                                                                                                            className="form-control"
+                                                                                                        />
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        <button
+                                                                                                            className="btn btn-link p-0"
+                                                                                                            onClick={() => handleRemoveSubCategory3Row(catIdx, subCatIdx, subCategory3Idx, itemIdx)}
+                                                                                                            aria-label="Remove row from sub-category 3"
+                                                                                                        >
+                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                                                                <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                            </svg>
+                                                                                                        </button>
+                                                                                                    </td>
+                                                                                                </tr>
+                                                                                            ))
+                                                                                        }
+
+
+                                                                                        {/* Render Level 4 for each BOQ level 3 */}
+                                                                                        {openSubCategory3Id ===
+                                                                                            subCategory3.id &&
+                                                                                            subCategory3.sub_categories_4 &&
+                                                                                            subCategory3.sub_categories_4
+                                                                                                .length > 0 &&
+                                                                                            subCategory3.sub_categories_4.map(
+                                                                                                (subCategory4, subCategory4Idx) => (
+                                                                                                    <React.Fragment
+                                                                                                        key={subCategory4.id}
+                                                                                                    >
+                                                                                                        <tr className="sub-category-lvl4">
+                                                                                                            {/* {console.log("sub3",subCategory3)}
+                                                                            {console.log("sub4",subCategory3.sub_categories_4)}
+                                                                            {console.log("sub3id:", openSubCategory3Id)} */}
+                                                                                                            <td>
+
+
+
+                                                                                                                <button
+                                                                                                                    className="btn btn-link p-0"
+                                                                                                                    onClick={() => toggleSubCategory4(subCategory4.id)}
+                                                                                                                    title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                                                                >
+                                                                                                                    {openSubCategory4Id ===
+                                                                                                                        subCategory4.id ? (
+                                                                                                                        // Minus icon (collapse)
+                                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                                                        </svg>
+                                                                                                                    ) : (
+                                                                                                                        // Plus icon (expand)
+                                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                                                        </svg>
+                                                                                                                    )}
+                                                                                                                </button>
+                                                                                                                {/* Add Sub Category button, only when expanded */}
+                                                                                                                {openSubCategory4Id ===
+                                                                                                                    subCategory4.id && (
+                                                                                                                        <button
+                                                                                                                            className="btn btn-link p-0 ms-2"
+                                                                                                                            onClick={() => handleAddSubCategory5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx)}
+                                                                                                                            title="Add Sub Category"
+                                                                                                                        >
+                                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                                                            </svg>
+                                                                                                                        </button>
+                                                                                                                    )}
+
+                                                                                                                <button
+                                                                                                                    className="btn btn-link p-0"
+                                                                                                                    onClick={() => handleRemoveSubCategory4(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx)}
+                                                                                                                    aria-label="Remove sub-category 4"
+                                                                                                                >
+                                                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                        <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                                    </svg>
+                                                                                                                </button>
+                                                                                                            </td>
+                                                                                                            <td></td>
+                                                                                                            <td>
+                                                                                                                Sub-Category Level 4
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                {/* <SingleSelector
+                                                                                                                                      options={subCategoryLevel4Options}
+                                                                                                                                      onChange={handleLevel4Change}
+                                                                                                                                      value={selectedSubCategoryLevel4}
+                                                                                                                                      placeholder={`Select Sub-category lvl 4`} // Dynamic placeholder
+                                                                                                                                    /> */}
+
+                                                                                                                <SingleSelector
+                                                                                                                    options={
+                                                                                                                        (subCategory3.subCategoryLevel4Options || []).map(subCat4 => ({
+                                                                                                                            value: subCat4.value,
+                                                                                                                            label: subCat4.label,
+                                                                                                                            sub_categories_5: subCat4.sub_categories_5 // pass for next level
+                                                                                                                        }))
+                                                                                                                    }
+                                                                                                                    value={
+                                                                                                                        subCategory4.id
+                                                                                                                            ? { value: subCategory4.id, label: subCategory4.name }
+                                                                                                                            : null
+                                                                                                                    }
+                                                                                                                    onChange={selectedOption => handleLevel4Change(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, selectedOption)}
+                                                                                                                    placeholder="Select Sub-category lvl 4"
+                                                                                                                />
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                <input
+                                                                                                                    type="text"
+                                                                                                                    value={subCategory4.location || ""}
+                                                                                                                    onChange={(e) => handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "location", e.target.value)}
+                                                                                                                    className="form-control"
+                                                                                                                />
+                                                                                                            </td>
+                                                                                                            <td>
+
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                <input
+                                                                                                                    type="text"
+                                                                                                                    value={subCategory4.items || ""}
+                                                                                                                    onChange={(e) => handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "items", e.target.value)}
+                                                                                                                    className="form-control"
+                                                                                                                />
+                                                                                                            </td>
+                                                                                                            <td>
+
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                <SingleSelector
+                                                                                                                    options={unitOfMeasures}
+                                                                                                                    value={
+                                                                                                                        unitOfMeasures.find(opt => opt.value === subCategory4.uom)
+                                                                                                                    }
+                                                                                                                    placeholder="Select UOM"
+                                                                                                                    onChange={selectedOption =>
+                                                                                                                        handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "uom", selectedOption?.value || "")
+                                                                                                                    }
+                                                                                                                />
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                <input
+                                                                                                                    type="number"
+                                                                                                                    value={subCategory4.qty || ""}
+                                                                                                                    onChange={(e) =>
+                                                                                                                        handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "qty", e.target.value)
+                                                                                                                    }
+                                                                                                                    className="form-control"
+                                                                                                                />
+                                                                                                            </td>
+                                                                                                            <td></td>
+                                                                                                            <td></td>
+                                                                                                            <td></td>
+                                                                                                            <td>
+                                                                                                                {
+                                                                                                                    (
+                                                                                                                        // Sum direct material_type_details amounts for level 4
+                                                                                                                        (subCategory4.material_type_details
+                                                                                                                            ? subCategory4.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                        +
+                                                                                                                        // Sum all sub-category 5 material_type_details amounts for level 4
+                                                                                                                        (subCategory4.sub_categories_5
+                                                                                                                            ? subCategory4.sub_categories_5.reduce(
+                                                                                                                                (subSum, subCat5) =>
+                                                                                                                                    subSum +
+                                                                                                                                    (subCat5.material_type_details
+                                                                                                                                        ? subCat5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                        : 0
+                                                                                                                                    ),
+                                                                                                                                0
+                                                                                                                            )
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                    )
+                                                                                                                }
+                                                                                                            </td>
+                                                                                                            <td></td>
+
+                                                                                                            <td>
+                                                                                                                <button
+                                                                                                                    className="btn btn-link p-0"
+                                                                                                                    onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3Idx, subCategory4Idx)}
+                                                                                                                    // onClick={() => handleOpenAddModal(catIdx, subCatIdx,subCategory3Idx, subCategory4Idx, subCategory4.id)}
+                                                                                                                    aria-label="Add row to sub-category 2"
+                                                                                                                    disabled={isOtherLevelFrozen(category, "sub4", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx })}
+                                                                                                                >
+                                                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                        <line x1="12" y1="10" x2="12" y2="18" />
+                                                                                                                        <line x1="8" y1="14" x2="16" y2="14" />
+                                                                                                                        {/* <line x1="8" y1="34" x2="16" y2="34" /> */}
+                                                                                                                    </svg>
+                                                                                                                </button>
+                                                                                                            </td>
+
+                                                                                                        </tr>
+
+
+                                                                                                        {/* Render material_type_details rows for sub-category 3 */}
+                                                                                                        {openSubCategory4Id === subCategory4.id &&
+                                                                                                            subCategory4.material_type_details &&
+                                                                                                            subCategory4.material_type_details.map((item, itemIdx) => (
+                                                                                                                <tr key={item.id} className="labour">
+                                                                                                                    <td></td>
+                                                                                                                    <td></td>
+                                                                                                                    <td></td>
+                                                                                                                    <td></td>
+                                                                                                                    <td>{item.location}</td>
+                                                                                                                    <td>{item.type}</td>
+                                                                                                                    <td>
+                                                                                                                        {/* {item.specification} */}
+                                                                                                                        {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                                                                                    </td>
+                                                                                                                    {/* ...other cells... */}
+                                                                                                                    <td>
+                                                                                                                        <input
+                                                                                                                            type="number"
+                                                                                                                            value={item.factor || ""}
+                                                                                                                            onChange={(e) =>
+                                                                                                                                handleEditSubCategory4Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "factor", e.target.value)
+                                                                                                                            }
+                                                                                                                            className="form-control"
+                                                                                                                        />
+                                                                                                                    </td>
+                                                                                                                    <td>
+                                                                                                                        <SingleSelector
+                                                                                                                            options={unitOfMeasures}
+                                                                                                                            value={
+                                                                                                                                unitOfMeasures.find(opt => opt.value === item.uom)
+                                                                                                                            }
+                                                                                                                            placeholder="Select UOM"
+                                                                                                                            onChange={selectedOption =>
+                                                                                                                                handleEditSubCategory4Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "uom", selectedOption?.value || "")
+                                                                                                                            }
+                                                                                                                        />
+                                                                                                                    </td>
+                                                                                                                    <td>
+                                                                                                                        <input
+                                                                                                                            type="number"
+                                                                                                                            value={item.qty || ""}
+                                                                                                                            readOnly
+                                                                                                                            disabled
+                                                                                                                            className="form-control"
+                                                                                                                        />
+                                                                                                                    </td>
+                                                                                                                    <td>
+                                                                                                                        <input
+                                                                                                                            type="number"
+                                                                                                                            value={item.wastage || ""}
+                                                                                                                            onChange={(e) =>
+                                                                                                                                handleEditSubCategory4Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "wastage", e.target.value)
+                                                                                                                            }
+                                                                                                                            className="form-control"
+                                                                                                                        />
+                                                                                                                    </td>
+                                                                                                                    <td>
+                                                                                                                        <input
+                                                                                                                            type="number"
+                                                                                                                            value={item.qtyInclWastage || ""}
+                                                                                                                            readOnly
+                                                                                                                            className="form-control"
+                                                                                                                            disabled
+                                                                                                                        />
+                                                                                                                    </td>
+                                                                                                                    <td>
+                                                                                                                        <input
+                                                                                                                            type="number"
+                                                                                                                            value={item.rate || 0}
+                                                                                                                            onChange={(e) =>
+                                                                                                                                handleEditSubCategory4Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "rate", e.target.value)
+                                                                                                                            }
+                                                                                                                            className="form-control"
+                                                                                                                            disabled={item.type === "material"}
+                                                                                                                        />
+                                                                                                                    </td>
+
+                                                                                                                    <td>
+                                                                                                                        <input
+                                                                                                                            type="number"
+                                                                                                                            value={item.amount || ""}
+                                                                                                                            readOnly
+                                                                                                                            disabled
+                                                                                                                            className="form-control"
+                                                                                                                        />
+                                                                                                                    </td>
+                                                                                                                    <td>
+                                                                                                                        <input
+                                                                                                                            type="number"
+                                                                                                                            value={item.costPerUnit || ""}
+                                                                                                                            readOnly
+                                                                                                                            disabled
+                                                                                                                            className="form-control"
+                                                                                                                        />
+                                                                                                                    </td>
+
+                                                                                                                    <td>
+                                                                                                                        <button
+                                                                                                                            className="btn btn-link p-0"
+                                                                                                                            onClick={() => handleRemoveSubCategory4Row(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx)}
+                                                                                                                            aria-label="Remove row from sub-category 4"
+                                                                                                                        >
+                                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                                {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                                                                                <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                                            </svg>
+                                                                                                                        </button>
+                                                                                                                    </td>
+                                                                                                                </tr>
+                                                                                                            ))
+                                                                                                        }
+
+                                                                                                        {/* Render Level 5 for each BOQ level 4*/}
+                                                                                                        {openSubCategory4Id ===
+                                                                                                            subCategory4.id &&
+                                                                                                            subCategory4.sub_categories_5 &&
+                                                                                                            subCategory4
+                                                                                                                .sub_categories_5.length >
+                                                                                                            0 &&
+                                                                                                            subCategory4.sub_categories_5.map(
+                                                                                                                (subCategory5, subCategory5Idx) => (
+                                                                                                                    <React.Fragment
+                                                                                                                        key={subCategory5.id}
+                                                                                                                    >
+                                                                                                                        <tr className="sub-category-lvl5">
+                                                                                                                            {console.log(
+                                                                                                                                "sub5",
+                                                                                                                                subCategory5
+                                                                                                                            )}
+                                                                                                                            {/* {console.log("sub4",subCategory3.sub_categories_4)}
+                                                                            {console.log("sub3id:", openSubCategory3Id)} */}
+                                                                                                                            <td>
+                                                                                                                                <button
+                                                                                                                                    className="btn btn-link p-0"
+                                                                                                                                    onClick={() =>
+                                                                                                                                        toggleSubCategory5(
+                                                                                                                                            subCategory5.id
+                                                                                                                                        )
+                                                                                                                                    }
+                                                                                                                                    aria-label="Toggle sub-category 3 visibility"
+                                                                                                                                >
+                                                                                                                                    {openSubCategory5Id ===
+                                                                                                                                        subCategory5.id ? (
+                                                                                                                                        <svg
+                                                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                                                            width="24"
+                                                                                                                                            height="24"
+                                                                                                                                            viewBox="0 0 24 24"
+                                                                                                                                            fill=" #e0e0e0"
+                                                                                                                                            stroke="black"
+                                                                                                                                            strokeWidth="1"
+                                                                                                                                            strokeLinecap="round"
+                                                                                                                                            strokeLinejoin="round"
+                                                                                                                                        >
+                                                                                                                                            {/* Square */}
+                                                                                                                                            <rect
+                                                                                                                                                x="3"
+                                                                                                                                                y="3"
+                                                                                                                                                width="18"
+                                                                                                                                                height="20"
+                                                                                                                                                rx="1"
+                                                                                                                                                ry="1"
+                                                                                                                                            />
+                                                                                                                                            {/* Minus Icon */}
+                                                                                                                                            <line
+                                                                                                                                                x1="8"
+                                                                                                                                                y1="12"
+                                                                                                                                                x2="16"
+                                                                                                                                                y2="12"
+                                                                                                                                            />
+                                                                                                                                        </svg>
+                                                                                                                                    ) : (
+                                                                                                                                        <svg
+                                                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                                                            width="24"
+                                                                                                                                            height="24"
+                                                                                                                                            viewBox="0 0 24 24"
+                                                                                                                                            fill=" #e0e0e0"
+                                                                                                                                            stroke="black"
+                                                                                                                                            strokeWidth="1"
+                                                                                                                                            strokeLinecap="round"
+                                                                                                                                            strokeLinejoin="round"
+                                                                                                                                        >
+                                                                                                                                            {/* Square */}
+                                                                                                                                            <rect
+                                                                                                                                                x="3"
+                                                                                                                                                y="3"
+                                                                                                                                                width="18"
+                                                                                                                                                height="20"
+                                                                                                                                                rx="1"
+                                                                                                                                                ry="1"
+                                                                                                                                            />
+                                                                                                                                            {/* Plus Icon */}
+                                                                                                                                            <line
+                                                                                                                                                x1="12"
+                                                                                                                                                y1="8"
+                                                                                                                                                x2="12"
+                                                                                                                                                y2="16"
+                                                                                                                                            />
+                                                                                                                                            <line
+                                                                                                                                                x1="8"
+                                                                                                                                                y1="12"
+                                                                                                                                                x2="16"
+                                                                                                                                                y2="12"
+                                                                                                                                            />
+                                                                                                                                        </svg>
+                                                                                                                                    )}
+                                                                                                                                </button>
+                                                                                                                                <button
+                                                                                                                                    className="btn btn-link p-0"
+                                                                                                                                    onClick={() => handleRemoveSubCategory5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx)}
+                                                                                                                                    aria-label="Remove sub-category 5"
+                                                                                                                                >
+                                                                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                                        <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                                                    </svg>
+                                                                                                                                </button>
+                                                                                                                            </td>
+                                                                                                                            <td></td>
+                                                                                                                            <td>
+                                                                                                                                Sub-Category Level 5
+                                                                                                                            </td>
+                                                                                                                            <td>
+                                                                                                                                {/* <SingleSelector
+                                                                                                                                                  options={subCategoryLevel5Options}
+                                                                                                                                                  onChange={handleLevel5Change}
+                                                                                                                                                  value={selectedSubCategoryLevel5}
+                                                                                                                                                  placeholder={`Select Sub-category lvl 5`} // Dynamic placeholder
+                                                                                                                                                /> */}
+
+                                                                                                                                <SingleSelector
+                                                                                                                                    options={
+                                                                                                                                        (subCategory4.subCategoryLevel5Options || []).map(subCat5 => ({
+                                                                                                                                            value: subCat5.value,
+                                                                                                                                            label: subCat5.label
+                                                                                                                                        }))
+                                                                                                                                    }
+                                                                                                                                    value={
+                                                                                                                                        subCategory5.id
+                                                                                                                                            ? { value: subCategory5.id, label: subCategory5.name }
+                                                                                                                                            : null
+                                                                                                                                    }
+                                                                                                                                    onChange={selectedOption =>
+                                                                                                                                        handleLevel5Change(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, selectedOption)
+                                                                                                                                    }
+                                                                                                                                    placeholder="Select Sub-category lvl 5"
+                                                                                                                                />
+                                                                                                                            </td>
+                                                                                                                            <td>
+                                                                                                                                <input
+                                                                                                                                    type="text"
+                                                                                                                                    value={subCategory5.location || ""}
+                                                                                                                                    onChange={(e) => handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "location", e.target.value)}
+                                                                                                                                    className="form-control"
+                                                                                                                                />
+                                                                                                                            </td>
+                                                                                                                            <td>
+
+                                                                                                                            </td>
+                                                                                                                            <td>
+                                                                                                                                <input
+                                                                                                                                    type="text"
+                                                                                                                                    value={subCategory5.items || ""}
+                                                                                                                                    onChange={(e) => handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "items", e.target.value)}
+                                                                                                                                    className="form-control"
+                                                                                                                                />
+                                                                                                                            </td>
+                                                                                                                            <td>
+
+                                                                                                                            </td>
+                                                                                                                            <td>
+                                                                                                                                <SingleSelector
+                                                                                                                                    options={unitOfMeasures}
+                                                                                                                                    value={
+                                                                                                                                        unitOfMeasures.find(opt => opt.value === subCategory5.uom)
+                                                                                                                                    }
+                                                                                                                                    placeholder="Select UOM"
+                                                                                                                                    onChange={selectedOption =>
+                                                                                                                                        handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "uom", selectedOption?.value || "")
+                                                                                                                                    }
+                                                                                                                                />
+                                                                                                                            </td>
+                                                                                                                            <td>
+                                                                                                                                <input
+                                                                                                                                    type="number"
+                                                                                                                                    value={subCategory5.qty || ""}
+                                                                                                                                    onChange={(e) =>
+                                                                                                                                        handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "qty", e.target.value)
+                                                                                                                                    }
+                                                                                                                                    className="form-control"
+                                                                                                                                />
+                                                                                                                            </td>
+                                                                                                                            <td></td>
+                                                                                                                            <td></td>
+                                                                                                                            <td></td>
+                                                                                                                            <td>
+                                                                                                                                {
+                                                                                                                                    subCategory5.material_type_details
+                                                                                                                                        ? subCategory5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                        : 0
+                                                                                                                                }
+                                                                                                                            </td>
+                                                                                                                            <td></td>
+                                                                                                                            <td>
+                                                                                                                                <button
+                                                                                                                                    className="btn btn-link p-0"
+                                                                                                                                    onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3Idx, subCategory4Idx, subCategory5Idx)}
+                                                                                                                                    // onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5.id,subCategory5Idx)}
+                                                                                                                                    aria-label="Add row to sub-category 2"
+                                                                                                                                    disabled={isOtherLevelFrozen(category, "sub5", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx })}
+                                                                                                                                >
+                                                                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                                        <line x1="12" y1="10" x2="12" y2="18" />
+                                                                                                                                        <line x1="8" y1="14" x2="16" y2="14" />
+                                                                                                                                        {/* <line x1="8" y1="34" x2="16" y2="34" /> */}
+                                                                                                                                    </svg>
+                                                                                                                                </button>
+
+                                                                                                                            </td>
+
+                                                                                                                        </tr>
+
+
+                                                                                                                        {/* Render material_type_details rows for sub-category 3 */}
+                                                                                                                        {openSubCategory5Id === subCategory5.id &&
+                                                                                                                            subCategory5.material_type_details &&
+                                                                                                                            subCategory5.material_type_details.map((item, itemIdx) => (
+                                                                                                                                <tr key={item.id} className="labour">
+                                                                                                                                    <td></td>
+                                                                                                                                    <td></td>
+                                                                                                                                    <td></td>
+                                                                                                                                    <td></td>
+                                                                                                                                    <td>{item.location}</td>
+                                                                                                                                    <td>{item.type}</td>
+                                                                                                                                    <td>
+                                                                                                                                        {/* {item.specification || item.labourActLabel} */}
+                                                                                                                                        {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                                                                                                    </td>
+                                                                                                                                    {/* ...other cells... */}
+                                                                                                                                    <td>
+                                                                                                                                        <input
+                                                                                                                                            type="number"
+                                                                                                                                            value={item.factor || ""}
+                                                                                                                                            onChange={(e) =>
+                                                                                                                                                handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx, "factor", e.target.value)
+                                                                                                                                            }
+                                                                                                                                            className="form-control"
+                                                                                                                                        />
+                                                                                                                                    </td>
+                                                                                                                                    <td>
+
+                                                                                                                                        <SingleSelector
+                                                                                                                                            options={unitOfMeasures}
+                                                                                                                                            value={
+                                                                                                                                                unitOfMeasures.find(opt => opt.value === item.uom)
+                                                                                                                                            }
+                                                                                                                                            placeholder="Select UOM"
+                                                                                                                                            onChange={selectedOption =>
+                                                                                                                                                handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory4Idx, itemIdx, "uom", selectedOption?.value || "")
+                                                                                                                                            }
+                                                                                                                                        />
+                                                                                                                                    </td>
+                                                                                                                                    <td>
+                                                                                                                                        <input
+                                                                                                                                            type="number"
+                                                                                                                                            value={item.qty || ""}
+                                                                                                                                            readOnly
+                                                                                                                                            disabled
+                                                                                                                                            className="form-control"
+                                                                                                                                        />
+                                                                                                                                    </td>
+                                                                                                                                    <td>
+                                                                                                                                        <input
+                                                                                                                                            type="number"
+                                                                                                                                            value={item.wastage || ""}
+                                                                                                                                            onChange={(e) =>
+                                                                                                                                                handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx, "wastage", e.target.value)
+                                                                                                                                            }
+                                                                                                                                            className="form-control"
+                                                                                                                                        />
+                                                                                                                                    </td>
+                                                                                                                                    <td>
+                                                                                                                                        <input
+                                                                                                                                            type="number"
+                                                                                                                                            value={item.qtyInclWastage || ""}
+                                                                                                                                            readOnly
+                                                                                                                                            className="form-control"
+                                                                                                                                            disabled
+                                                                                                                                        />
+                                                                                                                                    </td>
+                                                                                                                                    <td>
+                                                                                                                                        <input
+                                                                                                                                            type="number"
+                                                                                                                                            value={item.rate || 0}
+                                                                                                                                            onChange={(e) =>
+                                                                                                                                                handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx, "rate", e.target.value)
+                                                                                                                                            }
+                                                                                                                                            className="form-control"
+                                                                                                                                            disabled={item.type === "material"}
+                                                                                                                                        />
+                                                                                                                                    </td>
+
+                                                                                                                                    <td>
+                                                                                                                                        <input
+                                                                                                                                            type="number"
+                                                                                                                                            value={item.amount || ""}
+                                                                                                                                            readOnly
+                                                                                                                                            disabled
+                                                                                                                                            className="form-control"
+                                                                                                                                        />
+                                                                                                                                    </td>
+                                                                                                                                    <td>
+                                                                                                                                        <input
+                                                                                                                                            type="number"
+                                                                                                                                            value={item.costPerUnit || ""}
+                                                                                                                                            readOnly
+                                                                                                                                            disabled
+                                                                                                                                            className="form-control"
+                                                                                                                                        />
+                                                                                                                                    </td>
+                                                                                                                                    <td>
+                                                                                                                                        <button
+                                                                                                                                            className="btn btn-link p-0"
+                                                                                                                                            onClick={() => handleRemoveSubCategory5Row(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx)}
+                                                                                                                                            aria-label="Remove row from sub-category 5"
+                                                                                                                                        >
+                                                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                                                {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                                                                                                <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                                                            </svg>
+                                                                                                                                        </button>
+                                                                                                                                    </td>
+                                                                                                                                </tr>
+                                                                                                                            ))
+                                                                                                                        }
+
+
+
+                                                                                                                    </React.Fragment>
+                                                                                                                )
+                                                                                                            )}
+                                                                                                    </React.Fragment>
+                                                                                                )
+                                                                                            )}
+                                                                                    </React.Fragment>
+                                                                                )
+                                                                            )}
+
+                                                                        {/* .. */}
+                                                                    </React.Fragment>
+                                                                ))}
+                                                            {/* sub level 2 end*/}
+                                                        </React.Fragment>
+                                                    ))}
+                                                {/* Conditional rendering for categories under sub-project  end*/}
+
+                                                {/* subProject end */}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ************************************************************************************* */}
+
+                        {budgetType === "non_wbs" && (
+                            <div className="mx-3 mb-5 mt-3">
+                                {/* <button
+                                    className="btn btn-primary mb-2"
+                                    onClick={handleAddMainCategory}
+                                >
+                                    + Add Main Category
+                                </button> */}
+
+                                <div className="d-flex justify-content-end">
+                                    <button
+                                        className="purple-btn2 me-3 mb-3"
+                                        onClick={handleAddMainCategory}
+                                    >
+                                        + Add Main Category
+                                    </button>
+                                </div>
+
+                                <div className="mx-3 ">
+                                    <div className="tbl-container mt-1" style={{
+                                        maxHeight: "750px",
+                                    }}>
+                                        <table
+                                            className=""
+                                        >
+                                            <thead style={{ zIndex: "111 " }}>
+                                                <tr>
+                                                    <th className="text-start">Expand</th>
+                                                    <th className="text-start">Sr No.</th>
+                                                    <th className="text-start">Level</th>
+                                                    <th className="text-start">Category</th>
+                                                    <th className="text-start">Location</th>
+                                                    <th className="text-start">Type</th>
+                                                    <th className="text-start">Items</th>
+                                                    {/* <th className="text-start">Factor</th> */}
+                                                    <th className="text-start" style={{ width: "200px" }}>UOM</th>
+                                                    {/* <th className="text-start">Area</th> */}
+                                                    <th className="text-start">QTY Excl Wastage</th>
+                                                    {/* <th className="text-start">Wastage</th> */}
+                                                    {/* <th className="text-start">QTY incl Waste</th> */}
+                                                    <th className="text-start">Rate</th>
+                                                    <th className="text-start">Amount</th>
+                                                    {/* <th className="text-start">Cost Per Unit</th> */}
+                                                    <th className="text-start" style={{ width: "12px" }}>
+                                                        Action
+                                                    </th>
+                                                </tr>
+                                                <tr>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    <th className="text-start"></th>
+                                                    {/* <th className="text-start">A</th> */}
+                                                    <th className="text-start">A</th>
+                                                    {/* <th className="text-start"></th> */}
+                                                    <th className="text-start">B</th>
+                                                    {/* <th className="text-start">D</th> */}
+                                                    {/* <th className="text-start">E=C+C*D</th> */}
+                                                    <th className="text-start">C</th>
+                                                    <th className="text-start">D=B*C</th>
+                                                    {/* <th className="text-start">H=G/C</th> */}
+                                                    <th className="text-start">
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {/* Conditional rendering for categories under sub-project start */}
+                                                {subProjectDetails &&
+                                                    subProjectDetails.categories &&
+                                                    subProjectDetails.categories.map((category, catIdx) => (
+                                                        <React.Fragment key={category.id}>
+                                                            <tr className="main-category">
+                                                                <td>
+                                                                    <>
+                                                                        <button
+                                                                            className="btn btn-link p-0"
+                                                                            onClick={() => toggleCategory(category.id)}
+                                                                            title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                        >
+                                                                            {openCategoryId === category.id ? (
+                                                                                // Minus icon (collapse)
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                    <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                </svg>
+                                                                            ) : (
+                                                                                // Plus icon (expand)
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                    <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                    <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                </svg>
+                                                                            )}
+                                                                        </button>
+                                                                        {/* Add Sub Category button, only when expanded */}
+                                                                        {openCategoryId === category.id && (
+                                                                            <button
+                                                                                className="btn btn-link p-0 ms-2"
+                                                                                onClick={() => handleAddSubCategory(catIdx)}
+                                                                                title="Add Sub Category"
+                                                                            >
+                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                    <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                    <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                </svg>
+                                                                            </button>
+                                                                        )}
+
+
+
+
+                                                                        <button
+                                                                            className="btn btn-link p-0"
+                                                                            onClick={() => handleRemoveMainCategory(catIdx)}
+                                                                            aria-label="Remove main category"
+                                                                        >
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                <line x1="5" y1="8" x2="11" y2="8" />
+                                                                            </svg>
+                                                                        </button>
+                                                                    </>
+
+                                                                </td>
+                                                                <td>{catIdx + 1}</td>
+                                                                <td> Main Category</td>
+                                                                <td>
+                                                                    {/* {category.name} */}
+
+                                                                    {/* <SingleSelector
+                                                                    options={workCategories?.map((category) => ({
+                                                                                            value: category.id,
+                                                                                            label: category.name,
+                                                                                            work_sub_categories: category.work_sub_categories, // Include subcategories in the category option
+                                                                                          }))}
+                                                                    // value={mainCategoryOptions.find(opt => opt.value === category.id)}
+                                                                     value={selectedCategory}
+                                                                    placeholder="Select Main Category"
+                                                                    // onChange={selectedOption =>
+
+                                                                    //     handleEditMainCategoryField2(catIdx, "id", selectedOption?.value || "")
+                                                                    // }
+                                                                     onChange={handleCategoryChange}
+                                                                /> */}
+                                                                    <SingleSelector
+                                                                        options={workCategories.map(cat => ({
+                                                                            value: cat.id,
+                                                                            label: cat.name,
+                                                                            sub_categories_2: cat.sub_categories_2
+                                                                        }))}
+                                                                        value={workCategories.find(opt => opt.id === category.id) ? { value: category.id, label: category.name } : null}
+                                                                        onChange={selectedOption => handleMainCategorySelect(catIdx, selectedOption)}
+                                                                        placeholder="Select Main Category"
+                                                                    />
+
+                                                                </td>
+                                                                <td>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={category.location || ""}
+                                                                        onChange={(e) =>
+                                                                            handleEditMainCategoryField(catIdx, "location", e.target.value)
+                                                                        }
+                                                                        className="form-control"
+                                                                        // disabled={isOtherLevelFrozen(category, "main", { catIdx })}
+                                                                    />
+                                                                </td>
+                                                                <td></td>
+                                                                <td>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={category.items || ""}
+                                                                        onChange={(e) =>
+                                                                            handleEditMainCategoryField(catIdx, "items", e.target.value)
+                                                                        }
+                                                                        className="form-control"
+                                                                        // disabled={isOtherLevelFrozen(category, "main", { catIdx })}
+                                                                    />
+                                                                </td>
+                                                                {/* <td></td> */}
+                                                                <td>
+                                                                    <SingleSelector
+                                                                        options={unitOfMeasures}
+                                                                        value={
+                                                                            unitOfMeasures.find(opt => opt.value === category.uom)
+                                                                        }
+                                                                        placeholder="Select UOM"
+                                                                        onChange={selectedOption =>
+                                                                            handleEditMainCategoryField(catIdx, "uom", selectedOption?.value || "")
+                                                                        }
+                                                                        // disabled={isOtherLevelFrozen(category, "main", { catIdx })}
+                                                                    />
+                                                                </td>
+                                                                {/* <td></td> */}
+                                                                <td>
+                                                                    {/* <input
+                                                                    type="number"
+                                                                    value={category.qty || ""}
+                                                                    onChange={(e) =>
+                                                                        handleEditMainCategoryField(catIdx, "qty", e.target.value)
+                                                                    }
+                                                                    className="form-control"
+                                                                /> */}
+                                                                </td>
+                                                                <td></td>
+                                                                {/* <td></td>
+                                                            <td></td> */}
+                                                                <td>
+                                                                    {
+                                                                        (
+                                                                            // Sum direct material_type_details amounts for main category
+                                                                            (category.material_type_details
+                                                                                ? category.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                : 0
+                                                                            )
+                                                                            +
+                                                                            // Sum all sub-category 2 material_type_details amounts for main category
+                                                                            (category.sub_categories_2
+                                                                                ? category.sub_categories_2.reduce(
+                                                                                    (subSum2, subCat2) =>
+                                                                                        subSum2 +
+                                                                                        (
+                                                                                            // Sum direct material_type_details for level 2
+                                                                                            (subCat2.material_type_details
+                                                                                                ? subCat2.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                : 0
+                                                                                            )
+                                                                                            +
+                                                                                            // Sum all sub-category 3 material_type_details for level 2
+                                                                                            (subCat2.sub_categories_3
+                                                                                                ? subCat2.sub_categories_3.reduce(
+                                                                                                    (subSum3, subCat3) =>
+                                                                                                        subSum3 +
+                                                                                                        (
+                                                                                                            // Sum direct material_type_details for level 3
+                                                                                                            (subCat3.material_type_details
+                                                                                                                ? subCat3.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                : 0
+                                                                                                            )
+                                                                                                            +
+                                                                                                            // Sum all sub-category 4 material_type_details for level 3
+                                                                                                            (subCat3.sub_categories_4
+                                                                                                                ? subCat3.sub_categories_4.reduce(
+                                                                                                                    (subSum4, subCat4) =>
+                                                                                                                        subSum4 +
+                                                                                                                        (
+                                                                                                                            // Sum direct material_type_details for level 4
+                                                                                                                            (subCat4.material_type_details
+                                                                                                                                ? subCat4.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                : 0
+                                                                                                                            )
+                                                                                                                            +
+                                                                                                                            // Sum all sub-category 5 material_type_details for level 4
+                                                                                                                            (subCat4.sub_categories_5
+                                                                                                                                ? subCat4.sub_categories_5.reduce(
+                                                                                                                                    (subSum5, subCat5) =>
+                                                                                                                                        subSum5 +
+                                                                                                                                        (subCat5.material_type_details
+                                                                                                                                            ? subCat5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                            : 0
+                                                                                                                                        ),
+                                                                                                                                    0
+                                                                                                                                )
+                                                                                                                                : 0
+                                                                                                                            )
+                                                                                                                        ),
+                                                                                                                    0
+                                                                                                                )
+                                                                                                                : 0
+                                                                                                            )
+                                                                                                        ),
+                                                                                                    0
+                                                                                                )
+                                                                                                : 0
+                                                                                            )
+                                                                                        ),
+                                                                                    0
+                                                                                )
+                                                                                : 0
+                                                                            )
+                                                                        )
+                                                                    }
+                                                                </td>
+                                                                {/* <td></td> */}
+                                                                <td>
+                                                                    <button
+                                                                        className="btn btn-link p-0"
+                                                                        // onClick={() => handleOpenAddModal(catIdx, 0)}
+                                                                        // onClick={() => handleOpenAddModal(catIdx, null)}
+                                                                        onClick={() => handleOpenAddModal(catIdx, null, category.id)}
+                                                                        disabled={isOtherLevelFrozen(category, "main", { catIdx })}
+                                                                    >
+                                                                        {/* {console.log("cat id:", catIdx, category.id)} */}
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            width="24"
+                                                                            height="48"
+                                                                            viewBox="0 0 24 48"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            stroke-width="2"
+                                                                            stroke-linecap="round"
+                                                                            stroke-linejoin="round"
+                                                                        >
+                                                                            {/* <!-- Plus Icon (Top) --> */}
+                                                                            <line x1="12" y1="10" x2="12" y2="18" />
+                                                                            <line x1="8" y1="14" x2="16" y2="14" />
+
+                                                                            {/* <!-- Minus Icon (Bottom) -->
+                            <line x1="8" y1="34" x2="16" y2="34" /> */}
+                                                                        </svg>
+
+
+
+                                                                    </button>
+                                                                </td>
+
+                                                            </tr>
+
+
+                                                            {openCategoryId === category.id &&
+                                                                category.material_type_details &&
+                                                                category.material_type_details.map((item, itemIdx) => (
+                                                                    <tr key={item.id} className="labour">
+                                                                        <td></td>
+                                                                        <td>
+                                                                            {/* {catIdx + 1}.{itemIdx + 1} */}
+                                                                        </td>
+                                                                        <td></td>
+                                                                        <td></td>
+                                                                        <td></td>
+                                                                        <td>{item.type}</td>
+                                                                        <td>{item.name} {item.specification || item.labourActLabel || item.compositeValue}</td>
+                                                                        {/* Add other columns as needed */}
+
+                                                                        <td>
+                                                                            <SingleSelector
+                                                                                options={unitOfMeasures}
+                                                                                value={
+                                                                                    unitOfMeasures.find(opt => opt.value === item.uom)
+                                                                                }
+                                                                                placeholder="Select UOM"
+                                                                                onChange={selectedOption =>
+                                                                                    handleEditMaterial2(catIdx, itemIdx, "uom", selectedOption?.value || "")
+                                                                                }
+                                                                            />
+
+                                                                            {/* <SingleSelector
+                                                              options={unitOfMeasures} // Providing the options to the select component
+                                                              onChange={handleUnitChange} // Setting the handler when an option is selected
+                                                              value={selectedUnit} // Setting the selected value
+                                                              placeholder={`Select UOM`} // Dynamic placeholder
+                                                              
+                                                            /> */}
+                                                                        </td>
+                                                                        {/* <td></td> */}
+                                                                        <td>
+
+
+
+                                                                            <input
+                                                                                type="number"
+                                                                                value={item.qty || ""}
+                                                                                onChange={e =>
+                                                                                    handleEditMaterial2(catIdx, itemIdx, "qty", e.target.value)
+                                                                                }
+                                                                                className="form-control"
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <input
+                                                                                type="number"
+                                                                                value={item.rate || 0}
+                                                                                onChange={(e) =>
+                                                                                    handleEditMaterial2(catIdx, itemIdx, "rate", e.target.value)
+                                                                                }
+                                                                                className="form-control"
+                                                                                disabled={item.type === "material"} // ✅ Disable if Material
+                                                                            />
+                                                                        </td>
+                                                                        <td>
+                                                                            <input
+                                                                                type="number"
+                                                                                value={item.amount || ""}
+                                                                                readOnly
+                                                                                disabled
+                                                                                className="form-control"
+                                                                            />
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <button
+                                                                                className="btn btn-link p-0"
+                                                                                onClick={() => handleRemoveMainCategoryRow(catIdx, itemIdx)}
+                                                                            >
+                                                                                <svg
+                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                    width="24"
+                                                                                    height="48"
+                                                                                    viewBox="0 0 24 48"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    stroke-width="2"
+                                                                                    stroke-linecap="round"
+                                                                                    stroke-linejoin="round"
+                                                                                >
+
+                                                                                    {/* <!-- Minus Icon (Bottom) --> */}
+                                                                                    <line x1="8" y1="34" x2="16" y2="34" />
+                                                                                </svg>
+
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))
+                                                            }
+
+                                                            {/* sub level 2 start */}
+                                                            {openCategoryId === category.id &&
+                                                                category.sub_categories_2 &&
+                                                                category.sub_categories_2.length > 0 &&
+                                                                category.sub_categories_2.map((subCategory, subCatIdx) => (
+                                                                    <React.Fragment key={subCategory.id}>
+                                                                        <tr className="category-lvl2">
+                                                                            <td>
+                                                                                <button
+                                                                                    className="btn btn-link p-0"
+                                                                                    onClick={() => toggleSubCategory2(subCategory.id)}
+                                                                                    title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                                >
+                                                                                    {openSubCategory2Id ===
+                                                                                        subCategory.id ? (
+                                                                                        // Minus icon (collapse)
+                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                        </svg>
+                                                                                    ) : (
+                                                                                        // Plus icon (expand)
+                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                        </svg>
+                                                                                    )}
+                                                                                </button>
+                                                                                {/* Add Sub Category button, only when expanded */}
+                                                                                {openSubCategory2Id ===
+                                                                                    subCategory.id && (
+                                                                                        <button
+                                                                                            className="btn btn-link p-0 ms-2"
+                                                                                            onClick={() => handleAddSubCategory3(catIdx, subCatIdx)}
+                                                                                            title="Add Sub Category"
+                                                                                        >
+                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                            </svg>
+                                                                                        </button>
+                                                                                    )}
+
+
+
+
+                                                                                <button
+                                                                                    className="btn btn-link p-0"
+                                                                                    onClick={() => handleRemoveSubCategory2(catIdx, subCatIdx)}
+                                                                                    aria-label="Remove sub-category 2"
+                                                                                >
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                        <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                    </svg>
+                                                                                </button>
+                                                                            </td>
+
+                                                                            <td></td>
+                                                                            <td>Sub-Category Level 2</td>
+                                                                            <td>
+                                                                                {/* <SingleSelector
+                                                                                options={subCategoryOptions}
+                                                                                value={subCategoryOptions.find(opt => opt.value === selectedSubCategory?.value)}
+                                                                                placeholder="Select Sub Category"
+                                                                                onChange={selectedOption => setSelectedSubCategory(selectedOption)}
+                                                                            /> */}
+                                                                                {/* <SingleSelector
+                                                                                                      options={subCategoryOptions}
+                                                                                                      onChange={handleSubCategoryChange}
+                                                                                                      value={selectedSubCategory}
+                                                                                                      placeholder={`Select Sub-category lvl 2`} // Dynamic placeholder
+                                                                                                    /> */}
+
+
+                                                                                {/* <SingleSelector
+  options={category.subCategoryOptions || []}
+  value={category.selectedSubCategory}
+  onChange={selectedOption => handleSubCategorySelect(catIdx, selectedOption)}
+  placeholder="Select Sub-category lvl 2"
+/> */}
+
+                                                                                {/* <SingleSelector
+  options={category.subCategoryOptions || []}
+  value={subCategory.selectedSubCategory}
+  onChange={selectedOption => handleSubCategorySelect(catIdx, subCatIdx, selectedOption)}
+  placeholder="Select Sub-category lvl 2"
+/> */}
+
+                                                                                <SingleSelector
+                                                                                    options={
+                                                                                        (category.subCategoryOptions || []).map(subCat => ({
+                                                                                            value: subCat.value,
+                                                                                            label: subCat.label,
+                                                                                            sub_categories_3: subCat.sub_categories_3 // pass for next level
+                                                                                        }))
+                                                                                    }
+                                                                                    value={
+                                                                                        subCategory.id
+                                                                                            ? { value: subCategory.id, label: subCategory.name }
+                                                                                            : null
+                                                                                    }
+                                                                                    onChange={selectedOption => handleSubCategorySelect(catIdx, subCatIdx, selectedOption)}
+                                                                                    placeholder="Select Sub-category lvl 2"
+                                                                                />
+                                                                            </td>
+                                                                            <td>
+
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={subCategory.location || ""}
+                                                                                    onChange={(e) => handleEditSubCategory2Field(catIdx, subCatIdx, "location", e.target.value)}
+                                                                                    className="form-control"
+                                                                                />
+
+                                                                            </td>
+
+                                                                            <td>
+
+                                                                            </td>
+                                                                            <td>
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={subCategory.items || ""}
+                                                                                    onChange={(e) => handleEditSubCategory2Field(catIdx, subCatIdx, "items", e.target.value)}
+                                                                                    className="form-control"
+                                                                                />
+                                                                            </td>
+
+                                                                            <td>
+                                                                                <SingleSelector
+                                                                                    options={unitOfMeasures}
+                                                                                    value={
+                                                                                        unitOfMeasures.find(opt => opt.value === subCategory.uom)
+                                                                                    }
+                                                                                    placeholder="Select UOM"
+                                                                                    onChange={selectedOption =>
+                                                                                        handleEditSubCategory2Field(catIdx, subCatIdx, "uom", selectedOption?.value || "")
+                                                                                    }
+                                                                                />
+                                                                            </td>
+                                                                            <td>
+                                                                                {/* <input
+                                                                                type="number"
+                                                                                value={subCategory.qty || ""}
+                                                                                onChange={(e) =>
+                                                                                    handleEditSubCategory2Field(catIdx, subCatIdx, "qty", e.target.value)
+                                                                                }
+                                                                                className="form-control"
+                                                                            /> */}
+                                                                            </td>
+                                                                            <td>
+
+                                                                            </td>
+
+                                                                            <td>
+                                                                                {
+                                                                                    (
+                                                                                        // Sum direct material_type_details amounts for level 2
+                                                                                        (subCategory.material_type_details
+                                                                                            ? subCategory.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                            : 0
+                                                                                        )
+                                                                                        +
+                                                                                        // Sum all sub-category 3 material_type_details amounts for level 2
+                                                                                        (subCategory.sub_categories_3
+                                                                                            ? subCategory.sub_categories_3.reduce(
+                                                                                                (subSum3, subCat3) =>
+                                                                                                    subSum3 +
+                                                                                                    (
+                                                                                                        // Sum direct material_type_details for level 3
+                                                                                                        (subCat3.material_type_details
+                                                                                                            ? subCat3.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                            : 0
+                                                                                                        )
+                                                                                                        +
+                                                                                                        // Sum all sub-category 4 material_type_details for level 3
+                                                                                                        (subCat3.sub_categories_4
+                                                                                                            ? subCat3.sub_categories_4.reduce(
+                                                                                                                (subSum4, subCat4) =>
+                                                                                                                    subSum4 +
+                                                                                                                    (
+                                                                                                                        // Sum direct material_type_details for level 4
+                                                                                                                        (subCat4.material_type_details
+                                                                                                                            ? subCat4.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                        +
+                                                                                                                        // Sum all sub-category 5 material_type_details for level 4
+                                                                                                                        (subCat4.sub_categories_5
+                                                                                                                            ? subCat4.sub_categories_5.reduce(
+                                                                                                                                (subSum5, subCat5) =>
+                                                                                                                                    subSum5 +
+                                                                                                                                    (subCat5.material_type_details
+                                                                                                                                        ? subCat5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                        : 0
+                                                                                                                                    ),
+                                                                                                                                0
+                                                                                                                            )
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                    ),
+                                                                                                                0
+                                                                                                            )
+                                                                                                            : 0
+                                                                                                        )
+                                                                                                    ),
+                                                                                                0
+                                                                                            )
+                                                                                            : 0
+                                                                                        )
+                                                                                    )
+                                                                                }
+                                                                            </td>
+
+                                                                            <td>
+                                                                                <button
+                                                                                    className="btn btn-link p-0"
+                                                                                    onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory.id)}
+                                                                                    aria-label="Add row to sub-category 2"
+                                                                                    disabled={isOtherLevelFrozen(category, "sub2", { catIdx, subCatIdx })}
+                                                                                >
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                        <line x1="12" y1="10" x2="12" y2="18" />
+                                                                                        <line x1="8" y1="14" x2="16" y2="14" />
+                                                                                        {/* <line x1="8" y1="34" x2="16" y2="34" /> */}
+                                                                                    </svg>
+                                                                                </button>
+
+                                                                            </td>
+
+                                                                        </tr>
+
+                                                                        {/* Render material_type_details rows for sub-category 2 */}
+                                                                        {openSubCategory2Id === subCategory.id &&
+                                                                            subCategory.material_type_details &&
+                                                                            subCategory.material_type_details.map((item, itemIdx) => (
+                                                                                <tr key={item.id} className="labour">
+                                                                                    <td></td>
+                                                                                    <td>
+                                                                                        {/* {catIdx + 1}.{subCatIdx + 1}.{itemIdx + 1} */}
+                                                                                    </td>
+                                                                                    <td></td>
+                                                                                    <td></td>
+                                                                                    <td></td>
+                                                                                    <td>{item.type}</td>
+                                                                                    <td>{item.name} {item.specification || item.labourActLabel || item.compositeValue}</td>
+                                                                                    {/* ...other cells... */}
+
+
+                                                                                    <td>
+                                                                                        <SingleSelector
+                                                                                            options={unitOfMeasures}
+                                                                                            value={
+                                                                                                unitOfMeasures.find(opt => opt.value === item.uom)
+                                                                                            }
+                                                                                            placeholder="Select UOM"
+                                                                                            onChange={selectedOption =>
+                                                                                                handleEditMaterial2SubCat2(catIdx, subCatIdx, itemIdx, "uom", selectedOption?.value || "")
+                                                                                            }
+                                                                                        />
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        {/* <input
+                                                                                        type="number"
+                                                                                        value={item.qty || ""}
+                                                                                        readOnly
+                                                                                        disabled
+                                                                                        className="form-control"
+                                                                                    /> */}
+                                                                                        <input
+                                                                                            type="number"
+                                                                                            value={item.qty || ""}
+                                                                                            onChange={e =>
+                                                                                                handleEditMaterial2SubCat2(catIdx, subCatIdx, itemIdx, "qty", e.target.value)
+                                                                                            }
+                                                                                            className="form-control"
+                                                                                        />
+                                                                                    </td>
+
+                                                                                    <td>
+                                                                                        <input
+                                                                                            type="number"
+                                                                                            value={item.rate || 0}
+                                                                                            onChange={(e) =>
+                                                                                                handleEditMaterial2SubCat2(catIdx, subCatIdx, itemIdx, "rate", e.target.value)
+                                                                                            }
+                                                                                            className="form-control"
+                                                                                        disabled={item.type === "material"}
+                                                                                        />
+                                                                                    </td>
+                                                                                    <td>
+                                                                                        <input
+                                                                                            type="number"
+                                                                                            value={item.amount || ""}
+                                                                                            readOnly
+                                                                                            disabled
+                                                                                            className="form-control"
+                                                                                        />
+                                                                                    </td>
+
+                                                                                    <td>
+                                                                                        <button
+                                                                                            className="btn btn-link p-0"
+                                                                                            onClick={() => handleRemoveSubCategory2Row(catIdx, subCatIdx, itemIdx)}
+                                                                                            aria-label="Remove row from sub-category 2"
+                                                                                        >
+                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                                                <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                            </svg>
+                                                                                        </button>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            ))
+                                                                        }
+                                                                        {/* ...sub-category 3 rendering... */}
+
+                                                                        {/* Render Sub-Category 3 for each Sub-Category 2 */}
+                                                                        {openSubCategory2Id === subCategory.id &&
+                                                                            subCategory.sub_categories_3 &&
+                                                                            subCategory.sub_categories_3.length > 0 &&
+                                                                            subCategory.sub_categories_3.map(
+                                                                                (subCategory3, subCategory3Idx) => (
+                                                                                    <React.Fragment key={subCategory3.id}>
+                                                                                        <tr className="sub-category-lvl3">
+                                                                                            {/* {console.log("sub3", subCategory3)}
+                                            {console.log(
+                                              "sub4",
+                                              subCategory3.sub_categories_4
+                                            )}
+                                            {console.log(
+                                              "sub3id:",
+                                              openSubCategory3Id
+                                            )} */}
+                                                                                            <td>
+
+
+
+
+                                                                                                <button
+                                                                                                    className="btn btn-link p-0"
+                                                                                                    onClick={() => toggleSubCategory3(subCategory3.id)}
+                                                                                                    title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                                                >
+                                                                                                    {openSubCategory3Id ===
+                                                                                                        subCategory3.id ? (
+                                                                                                        // Minus icon (collapse)
+                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                                        </svg>
+                                                                                                    ) : (
+                                                                                                        // Plus icon (expand)
+                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                                        </svg>
+                                                                                                    )}
+                                                                                                </button>
+                                                                                                {/* Add Sub Category button, only when expanded */}
+                                                                                                {openSubCategory3Id ===
+                                                                                                    subCategory3.id && (
+                                                                                                        <button
+                                                                                                            className="btn btn-link p-0 ms-2"
+                                                                                                            onClick={() => handleAddSubCategory4(catIdx, subCatIdx, subCategory3Idx)}
+                                                                                                            title="Add Sub Category"
+                                                                                                        >
+                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                                            </svg>
+                                                                                                        </button>
+                                                                                                    )}
+
+                                                                                                <button
+                                                                                                    className="btn btn-link p-0"
+                                                                                                    onClick={() => handleRemoveSubCategory3(catIdx, subCatIdx, subCategory3Idx)}
+                                                                                                    aria-label="Remove sub-category 3"
+                                                                                                >
+                                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                        <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                    </svg>
+                                                                                                </button>
+                                                                                            </td>
+                                                                                            <td></td>
+                                                                                            <td>Sub-Category Level 3</td>
+                                                                                            <td>
+                                                                                                {/* <SingleSelector
+                                                                                                                      options={subCategoryLevel3Options}
+                                                                                                                      onChange={handleLevel3Change}
+                                                                                                                      value={selectedSubCategoryLevel3}
+                                                                                                                      placeholder={`Select Sub-category lvl 3`} // Dynamic placeholder
+                                                                                                                    /> */}
+
+                                                                                                <SingleSelector
+                                                                                                    options={
+                                                                                                        (subCategory.subCategoryLevel3Options || []).map(subCat3 => ({
+                                                                                                            value: subCat3.value,
+                                                                                                            label: subCat3.label,
+                                                                                                            sub_categories_4: subCat3.sub_categories_4 // pass for next level
+                                                                                                        }))
+                                                                                                    }
+                                                                                                    value={
+                                                                                                        subCategory3.id
+                                                                                                            ? { value: subCategory3.id, label: subCategory3.name }
+                                                                                                            : null
+                                                                                                    }
+                                                                                                    onChange={selectedOption => handleLevel3Change(catIdx, subCatIdx, subCategory3Idx, selectedOption)}
+                                                                                                    placeholder="Select Sub-category lvl 3"
+                                                                                                />
+                                                                                                {console.log("sub level 3 options:", subCategory.subCategoryLevel3Options)}
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <input
+                                                                                                    type="text"
+                                                                                                    value={subCategory3.location || ""}
+                                                                                                    onChange={(e) => handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "location", e.target.value)}
+                                                                                                    className="form-control"
+                                                                                                />
+                                                                                            </td>
+                                                                                            <td>
+
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <input
+                                                                                                    type="text"
+                                                                                                    value={subCategory3.items || ""}
+                                                                                                    onChange={(e) => handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "items", e.target.value)}
+                                                                                                    className="form-control"
+                                                                                                />
+                                                                                            </td>
+
+                                                                                            <td>
+                                                                                                <SingleSelector
+                                                                                                    options={unitOfMeasures}
+                                                                                                    value={
+                                                                                                        unitOfMeasures.find(opt => opt.value === subCategory3.uom)
+                                                                                                    }
+                                                                                                    placeholder="Select UOM"
+                                                                                                    onChange={selectedOption =>
+                                                                                                        handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "uom", selectedOption?.value || "")
+                                                                                                    }
+                                                                                                />
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                {/* <input
                                                                                                 type="number"
                                                                                                 value={subCategory3.qty || ""}
                                                                                                 onChange={(e) =>
                                                                                                     handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "qty", e.target.value)
                                                                                                 }
                                                                                                 className="form-control"
-                                                                                            />
-                                                                                        </td>
-                                                                                        <td></td>
-                                                                                        <td></td>
-                                                                                        <td></td>
-                                                                                        <td></td>
-                                                                                        <td></td>
-                                                                                        <td>
+                                                                                            /> */}
+                                                                                            </td>
+                                                                                            <td></td>
+
+                                                                                            <td>
+                                                                                                {
+                                                                                                    (
+                                                                                                        // Sum direct material_type_details amounts for level 3
+                                                                                                        (subCategory3.material_type_details
+                                                                                                            ? subCategory3.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                            : 0
+                                                                                                        )
+                                                                                                        +
+                                                                                                        // Sum all sub-category 4 material_type_details amounts for level 3
+                                                                                                        (subCategory3.sub_categories_4
+                                                                                                            ? subCategory3.sub_categories_4.reduce(
+                                                                                                                (subSum, subCat4) =>
+                                                                                                                    subSum +
+                                                                                                                    (
+                                                                                                                        // Sum direct material_type_details for level 4
+                                                                                                                        (subCat4.material_type_details
+                                                                                                                            ? subCat4.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                        +
+                                                                                                                        // Sum all sub-category 5 material_type_details for level 4
+                                                                                                                        (subCat4.sub_categories_5
+                                                                                                                            ? subCat4.sub_categories_5.reduce(
+                                                                                                                                (subSum5, subCat5) =>
+                                                                                                                                    subSum5 +
+                                                                                                                                    (subCat5.material_type_details
+                                                                                                                                        ? subCat5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                        : 0
+                                                                                                                                    ),
+                                                                                                                                0
+                                                                                                                            )
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                    ),
+                                                                                                                0
+                                                                                                            )
+                                                                                                            : 0
+                                                                                                        )
+                                                                                                    )
+                                                                                                }
+                                                                                            </td>
+
+                                                                                            <td>
 
 
-                                                                                            <button
-                                                                                                className="btn btn-link p-0"
-                                                                                                onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3Idx)}
-                                                                                                // onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3, subCategory3.name, subCatIdx)}
-                                                                                                aria-label="Add row to sub-category 3"
-                                                                                            >
-                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                                    <line x1="12" y1="10" x2="12" y2="18" />
-                                                                                                    <line x1="8" y1="14" x2="16" y2="14" />
-                                                                                                    {/* <line x1="8" y1="34" x2="16" y2="34" /> */}
-                                                                                                </svg>
-                                                                                            </button>
+                                                                                                <button
+                                                                                                    className="btn btn-link p-0"
+                                                                                                    onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3Idx)}
+                                                                                                    // onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3, subCategory3.name, subCatIdx)}
+                                                                                                    aria-label="Add row to sub-category 3"
+                                                                                                    disabled={isOtherLevelFrozen(category, "sub3", { catIdx, subCatIdx, subCategory3Idx })}
+                                                                                                >
+                                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                        <line x1="12" y1="10" x2="12" y2="18" />
+                                                                                                        <line x1="8" y1="14" x2="16" y2="14" />
+                                                                                                        {/* <line x1="8" y1="34" x2="16" y2="34" /> */}
+                                                                                                    </svg>
+                                                                                                </button>
 
-                                                                                        </td>
+                                                                                            </td>
 
 
-                                                                                    </tr>
+                                                                                        </tr>
 
-                                                                                    {/* Render material_type_details rows for sub-category 3 */}
-                                                                                    {openSubCategory3Id === subCategory3.id &&
-                                                                                        subCategory3.material_type_details &&
-                                                                                        subCategory3.material_type_details.map((item, itemIdx) => (
-                                                                                            <tr key={item.id} className="labour">
-                                                                                                <td></td>
-                                                                                                <td></td>
-                                                                                                <td></td>
-                                                                                                <td></td>
-                                                                                                <td>{item.location}</td>
-                                                                                                <td>{item.type}</td>
-                                                                                                <td>
-                                                                                                    {/* {item.specification} */}
-                                                                                                    {item.name} {item.specification || item.labourActLabel || item.compositeValue}
-                                                                                                </td>
-                                                                                                {/* ...other cells... */}
+                                                                                        {/* Render material_type_details rows for sub-category 3 */}
+                                                                                        {openSubCategory3Id === subCategory3.id &&
+                                                                                            subCategory3.material_type_details &&
+                                                                                            subCategory3.material_type_details.map((item, itemIdx) => (
+                                                                                                <tr key={item.id} className="labour">
+                                                                                                    <td></td>
+                                                                                                    <td></td>
+                                                                                                    <td></td>
+                                                                                                    <td></td>
+                                                                                                    <td>{item.location}</td>
+                                                                                                    <td>{item.type}</td>
+                                                                                                    <td>
+                                                                                                        {/* {item.specification} */}
+                                                                                                        {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                                                                    </td>
+                                                                                                    {/* ...other cells... */}
 
-                                                                                                <td>
-                                                                                                    <input
-                                                                                                        type="number"
-                                                                                                        value={item.factor || ""}
-                                                                                                        onChange={(e) =>
-                                                                                                            handleEditSubCategory3Material(catIdx, subCatIdx, subCategory3Idx, itemIdx, "factor", e.target.value)
-                                                                                                        }
-                                                                                                        className="form-control"
-                                                                                                    />
-                                                                                                </td>
-                                                                                                <td>
 
-                                                                                                    <SingleSelector
-                                                                                                        options={unitOfMeasures}
-                                                                                                        value={
-                                                                                                            unitOfMeasures.find(opt => opt.value === item.uom)
-                                                                                                        }
-                                                                                                        placeholder="Select UOM"
-                                                                                                        onChange={selectedOption =>
-                                                                                                            handleEditSubCategory3Material(catIdx, subCatIdx, subCategory3Idx, itemIdx, "uom", selectedOption?.value || "")
-                                                                                                        }
-                                                                                                    />
-                                                                                                </td>
-                                                                                                <td>
-                                                                                                    <input
+                                                                                                    <td>
+
+                                                                                                        <SingleSelector
+                                                                                                            options={unitOfMeasures}
+                                                                                                            value={
+                                                                                                                unitOfMeasures.find(opt => opt.value === item.uom)
+                                                                                                            }
+                                                                                                            placeholder="Select UOM"
+                                                                                                            onChange={selectedOption =>
+                                                                                                                handleEditMaterial2SubCat3(catIdx, subCatIdx, subCategory3Idx, itemIdx, "uom", selectedOption?.value || "")
+                                                                                                            }
+                                                                                                        />
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        {/* <input
                                                                                                         type="number"
                                                                                                         value={item.qty || ""}
                                                                                                         readOnly
                                                                                                         disabled
                                                                                                         className="form-control"
-                                                                                                    />
-                                                                                                </td>
-                                                                                                <td>
-                                                                                                    <input
-                                                                                                        type="number"
-                                                                                                        value={item.wastage || ""}
-                                                                                                        onChange={(e) =>
-                                                                                                            handleEditSubCategory3Material(catIdx, subCatIdx, subCategory3Idx, itemIdx, "wastage", e.target.value)
-                                                                                                        }
-                                                                                                        className="form-control"
-                                                                                                    />
-                                                                                                </td>
-                                                                                                <td>
-                                                                                                    <input
-                                                                                                        type="number"
-                                                                                                        value={item.qtyInclWastage || ""}
-                                                                                                        readOnly
-                                                                                                        className="form-control"
-                                                                                                        disabled
-                                                                                                    />
-                                                                                                </td>
-                                                                                                <td>
-                                                                                                    <input
-                                                                                                        type="number"
-                                                                                                        value={item.rate || ""}
-                                                                                                        onChange={(e) =>
-                                                                                                            handleEditSubCategory3Material(catIdx, subCatIdx, subCategory3Idx, itemIdx, "rate", e.target.value)
-                                                                                                        }
-                                                                                                        className="form-control"
-                                                                                                        disabled={item.type === "Material"}
-                                                                                                    />
-                                                                                                </td>
+                                                                                                    /> */}
+                                                                                                        <input
+                                                                                                            type="number"
+                                                                                                            value={item.qty || ""}
+                                                                                                            onChange={e =>
+                                                                                                                handleEditMaterial2SubCat3(catIdx, subCatIdx, subCategory3Idx, itemIdx, "qty", e.target.value)
+                                                                                                            }
+                                                                                                            className="form-control"
+                                                                                                        />
+                                                                                                    </td>
 
-                                                                                                <td>
-                                                                                                    <input
-                                                                                                        type="number"
-                                                                                                        value={item.amount || ""}
-                                                                                                        readOnly
-                                                                                                        disabled
-                                                                                                        className="form-control"
-                                                                                                    />
-                                                                                                </td>
-                                                                                                <td>
-                                                                                                    <input
-                                                                                                        type="number"
-                                                                                                        value={item.costPerUnit || ""}
-                                                                                                        readOnly
-                                                                                                        disabled
-                                                                                                        className="form-control"
-                                                                                                    />
-                                                                                                </td>
-                                                                                                <td>
-                                                                                                    <button
-                                                                                                        className="btn btn-link p-0"
-                                                                                                        onClick={() => handleRemoveSubCategory3Row(catIdx, subCatIdx, subCategory3Idx, itemIdx)}
-                                                                                                        aria-label="Remove row from sub-category 3"
+                                                                                                    <td>
+                                                                                                        <input
+                                                                                                            type="number"
+                                                                                                            value={item.rate || 0}
+                                                                                                            onChange={(e) =>
+                                                                                                                handleEditMaterial2SubCat3(catIdx, subCatIdx, subCategory3Idx, itemIdx, "rate", e.target.value)
+                                                                                                            }
+                                                                                                            className="form-control"
+                                                                                                            disabled={item.type === "material"}
+                                                                                                        />
+                                                                                                    </td>
+
+                                                                                                    <td>
+                                                                                                        <input
+                                                                                                            type="number"
+                                                                                                            value={item.amount || ""}
+                                                                                                            readOnly
+                                                                                                            disabled
+                                                                                                            className="form-control"
+                                                                                                        />
+                                                                                                    </td>
+
+                                                                                                    <td>
+                                                                                                        <button
+                                                                                                            className="btn btn-link p-0"
+                                                                                                            onClick={() => handleRemoveSubCategory3Row(catIdx, subCatIdx, subCategory3Idx, itemIdx)}
+                                                                                                            aria-label="Remove row from sub-category 3"
+                                                                                                        >
+                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                                                                <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                            </svg>
+                                                                                                        </button>
+                                                                                                    </td>
+                                                                                                </tr>
+                                                                                            ))
+                                                                                        }
+
+
+                                                                                        {/* Render Level 4 for each BOQ level 3 */}
+                                                                                        {openSubCategory3Id ===
+                                                                                            subCategory3.id &&
+                                                                                            subCategory3.sub_categories_4 &&
+                                                                                            subCategory3.sub_categories_4
+                                                                                                .length > 0 &&
+                                                                                            subCategory3.sub_categories_4.map(
+                                                                                                (subCategory4, subCategory4Idx) => (
+                                                                                                    <React.Fragment
+                                                                                                        key={subCategory4.id}
                                                                                                     >
-                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                                            {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
-                                                                                                            <line x1="5" y1="8" x2="11" y2="8" />
-                                                                                                        </svg>
-                                                                                                    </button>
-                                                                                                </td>
-                                                                                            </tr>
-                                                                                        ))
-                                                                                    }
-
-
-                                                                                    {/* Render Level 4 for each BOQ level 3 */}
-                                                                                    {openSubCategory3Id ===
-                                                                                        subCategory3.id &&
-                                                                                        subCategory3.sub_categories_4 &&
-                                                                                        subCategory3.sub_categories_4
-                                                                                            .length > 0 &&
-                                                                                        subCategory3.sub_categories_4.map(
-                                                                                            (subCategory4, subCategory4Idx) => (
-                                                                                                <React.Fragment
-                                                                                                    key={subCategory4.id}
-                                                                                                >
-                                                                                                    <tr className="sub-category-lvl4">
-                                                                                                        {/* {console.log("sub3",subCategory3)}
+                                                                                                        <tr className="sub-category-lvl4">
+                                                                                                            {/* {console.log("sub3",subCategory3)}
                                                                             {console.log("sub4",subCategory3.sub_categories_4)}
                                                                             {console.log("sub3id:", openSubCategory3Id)} */}
-                                                                                                        <td>
-                                                                                                           
+                                                                                                            <td>
 
 
-                                                                                                               <button
-                                                                                className="btn btn-link p-0"
-                                                                                onClick={() => toggleSubCategory4(subCategory4.id)}
-                                                                                title={openCategoryId === category.id ? "Collapse" : "Expand"}
-                                                                            >
-                                                                                {openSubCategory4Id ===
-                                                                                    subCategory4.id ? (
-                                                                                    // Minus icon (collapse)
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                                                        <line x1="8" y1="12" x2="16" y2="12" />
-                                                                                    </svg>
-                                                                                ) : (
-                                                                                    // Plus icon (expand)
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                                                                        <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                                                        <line x1="12" y1="8" x2="12" y2="16" />
-                                                                                        <line x1="8" y1="12" x2="16" y2="12" />
-                                                                                    </svg>
-                                                                                )}
-                                                                            </button>
-                                                                            {/* Add Sub Category button, only when expanded */}
-                                                                            {openSubCategory4Id ===
-                                                                                subCategory4.id && (
-                                                                                    <button
-                                                                                        className="btn btn-link p-0 ms-2"
-                                                                                        onClick={() => handleAddSubCategory5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx)}
-                                                                                        title="Add Sub Category"
-                                                                                    >
-                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                            <line x1="12" y1="8" x2="12" y2="16" />
-                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
-                                                                                        </svg>
-                                                                                    </button>
-                                                                                )}
-                                                                                                        </td>
-                                                                                                        <td></td>
-                                                                                                        <td>
-                                                                                                            Sub-Category Level 4
-                                                                                                        </td>
-                                                                                                        <td>
-                                                                                                            <SingleSelector
+
+                                                                                                                <button
+                                                                                                                    className="btn btn-link p-0"
+                                                                                                                    onClick={() => toggleSubCategory4(subCategory4.id)}
+                                                                                                                    title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                                                                >
+                                                                                                                    {openSubCategory4Id ===
+                                                                                                                        subCategory4.id ? (
+                                                                                                                        // Minus icon (collapse)
+                                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                                                        </svg>
+                                                                                                                    ) : (
+                                                                                                                        // Plus icon (expand)
+                                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                            <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                                                        </svg>
+                                                                                                                    )}
+                                                                                                                </button>
+                                                                                                                {/* Add Sub Category button, only when expanded */}
+                                                                                                                {openSubCategory4Id ===
+                                                                                                                    subCategory4.id && (
+                                                                                                                        <button
+                                                                                                                            className="btn btn-link p-0 ms-2"
+                                                                                                                            onClick={() => handleAddSubCategory5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx)}
+                                                                                                                            title="Add Sub Category"
+                                                                                                                        >
+                                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                                                                                            </svg>
+                                                                                                                        </button>
+                                                                                                                    )}
+
+                                                                                                                <button
+                                                                                                                    className="btn btn-link p-0"
+                                                                                                                    onClick={() => handleRemoveSubCategory4(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx)}
+                                                                                                                    aria-label="Remove sub-category 4"
+                                                                                                                >
+                                                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                        <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                                    </svg>
+                                                                                                                </button>
+                                                                                                            </td>
+                                                                                                            <td></td>
+                                                                                                            <td>
+                                                                                                                Sub-Category Level 4
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                {/* <SingleSelector
                                                                                                                                       options={subCategoryLevel4Options}
                                                                                                                                       onChange={handleLevel4Change}
                                                                                                                                       value={selectedSubCategoryLevel4}
                                                                                                                                       placeholder={`Select Sub-category lvl 4`} // Dynamic placeholder
-                                                                                                                                    />
-                                                                                                        </td>
-                                                                                                        <td>
-                                                                                                            <input
-                                                                                                                type="text"
-                                                                                                                value={subCategory4.location || ""}
-                                                                                                                onChange={(e) => handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "location", e.target.value)}
-                                                                                                                className="form-control"
-                                                                                                            />
-                                                                                                        </td>
-                                                                                                        <td>
+                                                                                                                                    /> */}
 
-                                                                                                        </td>
-                                                                                                        <td>
-                                                                                                            <input
-                                                                                                                type="text"
-                                                                                                                value={subCategory4.items || ""}
-                                                                                                                onChange={(e) => handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "items", e.target.value)}
-                                                                                                                className="form-control"
-                                                                                                            />
-                                                                                                        </td>
-                                                                                                        <td>
+                                                                                                                <SingleSelector
+                                                                                                                    options={
+                                                                                                                        (subCategory3.subCategoryLevel4Options || []).map(subCat4 => ({
+                                                                                                                            value: subCat4.value,
+                                                                                                                            label: subCat4.label,
+                                                                                                                            sub_categories_5: subCat4.sub_categories_5 // pass for next level
+                                                                                                                        }))
+                                                                                                                    }
+                                                                                                                    value={
+                                                                                                                        subCategory4.id
+                                                                                                                            ? { value: subCategory4.id, label: subCategory4.name }
+                                                                                                                            : null
+                                                                                                                    }
+                                                                                                                    onChange={selectedOption => handleLevel4Change(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, selectedOption)}
+                                                                                                                    placeholder="Select Sub-category lvl 4"
+                                                                                                                />
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                <input
+                                                                                                                    type="text"
+                                                                                                                    value={subCategory4.location || ""}
+                                                                                                                    onChange={(e) => handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "location", e.target.value)}
+                                                                                                                    className="form-control"
+                                                                                                                />
+                                                                                                            </td>
+                                                                                                            <td>
 
-                                                                                                        </td>
-                                                                                                        <td>
-                                                                                                            <SingleSelector
-                                                                                                                options={unitOfMeasures}
-                                                                                                                value={
-                                                                                                                    unitOfMeasures.find(opt => opt.value === subCategory4.uom)
-                                                                                                                }
-                                                                                                                placeholder="Select UOM"
-                                                                                                                onChange={selectedOption =>
-                                                                                                                    handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "uom", selectedOption?.value || "")
-                                                                                                                }
-                                                                                                            />
-                                                                                                        </td>
-                                                                                                        <td>
-                                                                                                            <input
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                <input
+                                                                                                                    type="text"
+                                                                                                                    value={subCategory4.items || ""}
+                                                                                                                    onChange={(e) => handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "items", e.target.value)}
+                                                                                                                    className="form-control"
+                                                                                                                />
+                                                                                                            </td>
+
+                                                                                                            <td>
+                                                                                                                <SingleSelector
+                                                                                                                    options={unitOfMeasures}
+                                                                                                                    value={
+                                                                                                                        unitOfMeasures.find(opt => opt.value === subCategory4.uom)
+                                                                                                                    }
+                                                                                                                    placeholder="Select UOM"
+                                                                                                                    onChange={selectedOption =>
+                                                                                                                        handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "uom", selectedOption?.value || "")
+                                                                                                                    }
+                                                                                                                />
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                {/* <input
                                                                                                                 type="number"
                                                                                                                 value={subCategory4.qty || ""}
                                                                                                                 onChange={(e) =>
                                                                                                                     handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "qty", e.target.value)
                                                                                                                 }
                                                                                                                 className="form-control"
-                                                                                                            />
-                                                                                                        </td>
-                                                                                                        <td></td>
-                                                                                                        <td></td>
-                                                                                                        <td></td>
-                                                                                                        <td></td>
-                                                                                                        <td></td>
+                                                                                                            /> */}
+                                                                                                            </td>
 
-                                                                                                        <td>
-                                                                                                            <button
-                                                                                                                className="btn btn-link p-0"
-                                                                                                                onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3Idx, subCategory4Idx)}
-                                                                                                                // onClick={() => handleOpenAddModal(catIdx, subCatIdx,subCategory3Idx, subCategory4Idx, subCategory4.id)}
-                                                                                                                aria-label="Add row to sub-category 2"
-                                                                                                            >
-                                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                                                    <line x1="12" y1="10" x2="12" y2="18" />
-                                                                                                                    <line x1="8" y1="14" x2="16" y2="14" />
-                                                                                                                    {/* <line x1="8" y1="34" x2="16" y2="34" /> */}
-                                                                                                                </svg>
-                                                                                                            </button>
-                                                                                                        </td>
+                                                                                                            <td></td>
+                                                                                                            <td>
+                                                                                                                {
+                                                                                                                    (
+                                                                                                                        // Sum direct material_type_details amounts for level 4
+                                                                                                                        (subCategory4.material_type_details
+                                                                                                                            ? subCategory4.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                        +
+                                                                                                                        // Sum all sub-category 5 material_type_details amounts for level 4
+                                                                                                                        (subCategory4.sub_categories_5
+                                                                                                                            ? subCategory4.sub_categories_5.reduce(
+                                                                                                                                (subSum, subCat5) =>
+                                                                                                                                    subSum +
+                                                                                                                                    (subCat5.material_type_details
+                                                                                                                                        ? subCat5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                        : 0
+                                                                                                                                    ),
+                                                                                                                                0
+                                                                                                                            )
+                                                                                                                            : 0
+                                                                                                                        )
+                                                                                                                    )
+                                                                                                                }
+                                                                                                            </td>
 
-                                                                                                    </tr>
+
+                                                                                                            <td>
+                                                                                                                <button
+                                                                                                                    className="btn btn-link p-0"
+                                                                                                                    onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3Idx, subCategory4Idx)}
+                                                                                                                    // onClick={() => handleOpenAddModal(catIdx, subCatIdx,subCategory3Idx, subCategory4Idx, subCategory4.id)}
+                                                                                                                    aria-label="Add row to sub-category 2"
+                                                                                                                    disabled={isOtherLevelFrozen(category, "sub4", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx })}
+                                                                                                                >
+                                                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                        <line x1="12" y1="10" x2="12" y2="18" />
+                                                                                                                        <line x1="8" y1="14" x2="16" y2="14" />
+                                                                                                                        {/* <line x1="8" y1="34" x2="16" y2="34" /> */}
+                                                                                                                    </svg>
+                                                                                                                </button>
+                                                                                                            </td>
+
+                                                                                                        </tr>
 
 
-                                                                                                    {/* Render material_type_details rows for sub-category 3 */}
-                                                                                                    {openSubCategory4Id === subCategory4.id &&
-                                                                                                        subCategory4.material_type_details &&
-                                                                                                        subCategory4.material_type_details.map((item, itemIdx) => (
-                                                                                                            <tr key={item.id} className="labour">
-                                                                                                                <td></td>
-                                                                                                                <td></td>
-                                                                                                                <td></td>
-                                                                                                                <td></td>
-                                                                                                                <td>{item.location}</td>
-                                                                                                                <td>{item.type}</td>
-                                                                                                                <td>
-                                                                                                                    {/* {item.specification} */}
-                                                                                                                    {item.name} {item.specification || item.labourActLabel || item.compositeValue}
-                                                                                                                </td>
-                                                                                                                {/* ...other cells... */}
-                                                                                                                <td>
-                                                                                                                    <input
-                                                                                                                        type="number"
-                                                                                                                        value={item.factor || ""}
-                                                                                                                        onChange={(e) =>
-                                                                                                                            handleEditSubCategory4Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "factor", e.target.value)
-                                                                                                                        }
-                                                                                                                        className="form-control"
-                                                                                                                    />
-                                                                                                                </td>
-                                                                                                                <td>
-                                                                                                                    <SingleSelector
-                                                                                                                        options={unitOfMeasures}
-                                                                                                                        value={
-                                                                                                                            unitOfMeasures.find(opt => opt.value === item.uom)
-                                                                                                                        }
-                                                                                                                        placeholder="Select UOM"
-                                                                                                                        onChange={selectedOption =>
-                                                                                                                            handleEditSubCategory4Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "uom", selectedOption?.value || "")
-                                                                                                                        }
-                                                                                                                    />
-                                                                                                                </td>
-                                                                                                                <td>
-                                                                                                                    <input
+                                                                                                        {/* Render material_type_details rows for sub-category 3 */}
+                                                                                                        {openSubCategory4Id === subCategory4.id &&
+                                                                                                            subCategory4.material_type_details &&
+                                                                                                            subCategory4.material_type_details.map((item, itemIdx) => (
+                                                                                                                <tr key={item.id} className="labour">
+                                                                                                                    <td></td>
+                                                                                                                    <td></td>
+                                                                                                                    <td></td>
+                                                                                                                    <td></td>
+                                                                                                                    <td>{item.location}</td>
+                                                                                                                    <td>{item.type}</td>
+                                                                                                                    <td>
+                                                                                                                        {/* {item.specification} */}
+                                                                                                                        {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                                                                                    </td>
+                                                                                                                    {/* ...other cells... */}
+
+                                                                                                                    <td>
+                                                                                                                        <SingleSelector
+                                                                                                                            options={unitOfMeasures}
+                                                                                                                            value={
+                                                                                                                                unitOfMeasures.find(opt => opt.value === item.uom)
+                                                                                                                            }
+                                                                                                                            placeholder="Select UOM"
+                                                                                                                            onChange={selectedOption =>
+                                                                                                                                handleEditMaterial2SubCat4(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "uom", selectedOption?.value || "")
+                                                                                                                            }
+                                                                                                                        />
+                                                                                                                    </td>
+                                                                                                                    <td>
+                                                                                                                        {/* <input
                                                                                                                         type="number"
                                                                                                                         value={item.qty || ""}
                                                                                                                         readOnly
                                                                                                                         disabled
                                                                                                                         className="form-control"
-                                                                                                                    />
-                                                                                                                </td>
-                                                                                                                <td>
-                                                                                                                    <input
-                                                                                                                        type="number"
-                                                                                                                        value={item.wastage || ""}
-                                                                                                                        onChange={(e) =>
-                                                                                                                            handleEditSubCategory4Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "wastage", e.target.value)
-                                                                                                                        }
-                                                                                                                        className="form-control"
-                                                                                                                    />
-                                                                                                                </td>
-                                                                                                                <td>
-                                                                                                                    <input
-                                                                                                                        type="number"
-                                                                                                                        value={item.qtyInclWastage || ""}
-                                                                                                                        readOnly
-                                                                                                                        className="form-control"
-                                                                                                                        disabled
-                                                                                                                    />
-                                                                                                                </td>
-                                                                                                                <td>
-                                                                                                                    <input
-                                                                                                                        type="number"
-                                                                                                                        value={item.rate || ""}
-                                                                                                                        onChange={(e) =>
-                                                                                                                            handleEditSubCategory4Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "rate", e.target.value)
-                                                                                                                        }
-                                                                                                                        className="form-control"
-                                                                                                                        disabled={item.type === "Material"}
-                                                                                                                    />
-                                                                                                                </td>
+                                                                                                                    /> */}
+                                                                                                                        <input
+                                                                                                                            type="number"
+                                                                                                                            value={item.qty || ""}
+                                                                                                                            onChange={e =>
+                                                                                                                                handleEditMaterial2SubCat4(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "qty", e.target.value)
+                                                                                                                            }
+                                                                                                                            className="form-control"
+                                                                                                                        />
+                                                                                                                    </td>
 
-                                                                                                                <td>
-                                                                                                                    <input
-                                                                                                                        type="number"
-                                                                                                                        value={item.amount || ""}
-                                                                                                                        readOnly
-                                                                                                                        disabled
-                                                                                                                        className="form-control"
-                                                                                                                    />
-                                                                                                                </td>
-                                                                                                                <td>
-                                                                                                                    <input
-                                                                                                                        type="number"
-                                                                                                                        value={item.costPerUnit || ""}
-                                                                                                                        readOnly
-                                                                                                                        disabled
-                                                                                                                        className="form-control"
-                                                                                                                    />
-                                                                                                                </td>
+                                                                                                                    <td>
+                                                                                                                        <input
+                                                                                                                            type="number"
+                                                                                                                            value={item.rate || "0"}
+                                                                                                                            onChange={(e) =>
+                                                                                                                                handleEditMaterial2SubCat4(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "rate", e.target.value)
+                                                                                                                            }
+                                                                                                                            className="form-control"
+                                                                                                                            disabled={item.type === "material"}
+                                                                                                                        />
+                                                                                                                    </td>
 
-                                                                                                                <td>
-                                                                                                                    <button
-                                                                                                                        className="btn btn-link p-0"
-                                                                                                                        onClick={() => handleRemoveSubCategory3Row(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx)}
-                                                                                                                        aria-label="Remove row from sub-category 3"
+                                                                                                                    <td>
+                                                                                                                        <input
+                                                                                                                            type="number"
+                                                                                                                            value={item.amount || ""}
+                                                                                                                            readOnly
+                                                                                                                            disabled
+                                                                                                                            className="form-control"
+                                                                                                                        />
+                                                                                                                    </td>
+
+
+                                                                                                                    <td>
+                                                                                                                        <button
+                                                                                                                            className="btn btn-link p-0"
+                                                                                                                            onClick={() => handleRemoveSubCategory4Row(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx)}
+                                                                                                                            aria-label="Remove row from sub-category 4"
+                                                                                                                        >
+                                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                                {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                                                                                <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                                            </svg>
+                                                                                                                        </button>
+                                                                                                                    </td>
+                                                                                                                </tr>
+                                                                                                            ))
+                                                                                                        }
+
+                                                                                                        {/* Render Level 5 for each BOQ level 4*/}
+                                                                                                        {openSubCategory4Id ===
+                                                                                                            subCategory4.id &&
+                                                                                                            subCategory4.sub_categories_5 &&
+                                                                                                            subCategory4
+                                                                                                                .sub_categories_5.length >
+                                                                                                            0 &&
+                                                                                                            subCategory4.sub_categories_5.map(
+                                                                                                                (subCategory5, subCategory5Idx) => (
+                                                                                                                    <React.Fragment
+                                                                                                                        key={subCategory5.id}
                                                                                                                     >
-                                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                                                            {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
-                                                                                                                            <line x1="5" y1="8" x2="11" y2="8" />
-                                                                                                                        </svg>
-                                                                                                                    </button>
-                                                                                                                </td>
-                                                                                                            </tr>
-                                                                                                        ))
-                                                                                                    }
-
-                                                                                                    {/* Render Level 5 for each BOQ level 4*/}
-                                                                                                    {openSubCategory4Id ===
-                                                                                                        subCategory4.id &&
-                                                                                                        subCategory4.sub_categories_5 &&
-                                                                                                        subCategory4
-                                                                                                            .sub_categories_5.length >
-                                                                                                        0 &&
-                                                                                                        subCategory4.sub_categories_5.map(
-                                                                                                            (subCategory5, subCategory5Idx) => (
-                                                                                                                <React.Fragment
-                                                                                                                    key={subCategory5.id}
-                                                                                                                >
-                                                                                                                    <tr className="sub-category-lvl5">
-                                                                                                                        {console.log(
-                                                                                                                            "sub5",
-                                                                                                                            subCategory5
-                                                                                                                        )}
-                                                                                                                        {/* {console.log("sub4",subCategory3.sub_categories_4)}
+                                                                                                                        <tr className="sub-category-lvl5">
+                                                                                                                            {console.log(
+                                                                                                                                "sub5",
+                                                                                                                                subCategory5
+                                                                                                                            )}
+                                                                                                                            {/* {console.log("sub4",subCategory3.sub_categories_4)}
                                                                             {console.log("sub3id:", openSubCategory3Id)} */}
-                                                                                                                        <td>
-                                                                                                                            <button
-                                                                                                                                className="btn btn-link p-0"
-                                                                                                                                onClick={() =>
-                                                                                                                                    toggleSubCategory5(
-                                                                                                                                        subCategory5.id
-                                                                                                                                    )
-                                                                                                                                }
-                                                                                                                                aria-label="Toggle sub-category 3 visibility"
-                                                                                                                            >
-                                                                                                                                {openSubCategory5Id ===
-                                                                                                                                    subCategory5.id ? (
-                                                                                                                                    <svg
-                                                                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                                                                        width="24"
-                                                                                                                                        height="24"
-                                                                                                                                        viewBox="0 0 24 24"
-                                                                                                                                        fill=" #e0e0e0"
-                                                                                                                                        stroke="black"
-                                                                                                                                        strokeWidth="1"
-                                                                                                                                        strokeLinecap="round"
-                                                                                                                                        strokeLinejoin="round"
-                                                                                                                                    >
-                                                                                                                                        {/* Square */}
-                                                                                                                                        <rect
-                                                                                                                                            x="3"
-                                                                                                                                            y="3"
-                                                                                                                                            width="18"
-                                                                                                                                            height="20"
-                                                                                                                                            rx="1"
-                                                                                                                                            ry="1"
-                                                                                                                                        />
-                                                                                                                                        {/* Minus Icon */}
-                                                                                                                                        <line
-                                                                                                                                            x1="8"
-                                                                                                                                            y1="12"
-                                                                                                                                            x2="16"
-                                                                                                                                            y2="12"
-                                                                                                                                        />
+                                                                                                                            <td>
+                                                                                                                                <button
+                                                                                                                                    className="btn btn-link p-0"
+                                                                                                                                    onClick={() =>
+                                                                                                                                        toggleSubCategory5(
+                                                                                                                                            subCategory5.id
+                                                                                                                                        )
+                                                                                                                                    }
+                                                                                                                                    aria-label="Toggle sub-category 3 visibility"
+                                                                                                                                >
+                                                                                                                                    {openSubCategory5Id ===
+                                                                                                                                        subCategory5.id ? (
+                                                                                                                                        <svg
+                                                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                                                            width="24"
+                                                                                                                                            height="24"
+                                                                                                                                            viewBox="0 0 24 24"
+                                                                                                                                            fill=" #e0e0e0"
+                                                                                                                                            stroke="black"
+                                                                                                                                            strokeWidth="1"
+                                                                                                                                            strokeLinecap="round"
+                                                                                                                                            strokeLinejoin="round"
+                                                                                                                                        >
+                                                                                                                                            {/* Square */}
+                                                                                                                                            <rect
+                                                                                                                                                x="3"
+                                                                                                                                                y="3"
+                                                                                                                                                width="18"
+                                                                                                                                                height="20"
+                                                                                                                                                rx="1"
+                                                                                                                                                ry="1"
+                                                                                                                                            />
+                                                                                                                                            {/* Minus Icon */}
+                                                                                                                                            <line
+                                                                                                                                                x1="8"
+                                                                                                                                                y1="12"
+                                                                                                                                                x2="16"
+                                                                                                                                                y2="12"
+                                                                                                                                            />
+                                                                                                                                        </svg>
+                                                                                                                                    ) : (
+                                                                                                                                        <svg
+                                                                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                                                                            width="24"
+                                                                                                                                            height="24"
+                                                                                                                                            viewBox="0 0 24 24"
+                                                                                                                                            fill=" #e0e0e0"
+                                                                                                                                            stroke="black"
+                                                                                                                                            strokeWidth="1"
+                                                                                                                                            strokeLinecap="round"
+                                                                                                                                            strokeLinejoin="round"
+                                                                                                                                        >
+                                                                                                                                            {/* Square */}
+                                                                                                                                            <rect
+                                                                                                                                                x="3"
+                                                                                                                                                y="3"
+                                                                                                                                                width="18"
+                                                                                                                                                height="20"
+                                                                                                                                                rx="1"
+                                                                                                                                                ry="1"
+                                                                                                                                            />
+                                                                                                                                            {/* Plus Icon */}
+                                                                                                                                            <line
+                                                                                                                                                x1="12"
+                                                                                                                                                y1="8"
+                                                                                                                                                x2="12"
+                                                                                                                                                y2="16"
+                                                                                                                                            />
+                                                                                                                                            <line
+                                                                                                                                                x1="8"
+                                                                                                                                                y1="12"
+                                                                                                                                                x2="16"
+                                                                                                                                                y2="12"
+                                                                                                                                            />
+                                                                                                                                        </svg>
+                                                                                                                                    )}
+                                                                                                                                </button>
+                                                                                                                                <button
+                                                                                                                                    className="btn btn-link p-0"
+                                                                                                                                    onClick={() => handleRemoveSubCategory5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx)}
+                                                                                                                                    aria-label="Remove sub-category 5"
+                                                                                                                                >
+                                                                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                                        <line x1="5" y1="8" x2="11" y2="8" />
                                                                                                                                     </svg>
-                                                                                                                                ) : (
-                                                                                                                                    <svg
-                                                                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                                                                        width="24"
-                                                                                                                                        height="24"
-                                                                                                                                        viewBox="0 0 24 24"
-                                                                                                                                        fill=" #e0e0e0"
-                                                                                                                                        stroke="black"
-                                                                                                                                        strokeWidth="1"
-                                                                                                                                        strokeLinecap="round"
-                                                                                                                                        strokeLinejoin="round"
-                                                                                                                                    >
-                                                                                                                                        {/* Square */}
-                                                                                                                                        <rect
-                                                                                                                                            x="3"
-                                                                                                                                            y="3"
-                                                                                                                                            width="18"
-                                                                                                                                            height="20"
-                                                                                                                                            rx="1"
-                                                                                                                                            ry="1"
-                                                                                                                                        />
-                                                                                                                                        {/* Plus Icon */}
-                                                                                                                                        <line
-                                                                                                                                            x1="12"
-                                                                                                                                            y1="8"
-                                                                                                                                            x2="12"
-                                                                                                                                            y2="16"
-                                                                                                                                        />
-                                                                                                                                        <line
-                                                                                                                                            x1="8"
-                                                                                                                                            y1="12"
-                                                                                                                                            x2="16"
-                                                                                                                                            y2="12"
-                                                                                                                                        />
-                                                                                                                                    </svg>
-                                                                                                                                )}
-                                                                                                                            </button>
-                                                                                                                        </td>
-                                                                                                                        <td></td>
-                                                                                                                        <td>
-                                                                                                                            Sub-Category Level 5
-                                                                                                                        </td>
-                                                                                                                        <td>
-                                                                                                                         <SingleSelector
+                                                                                                                                </button>
+                                                                                                                            </td>
+                                                                                                                            <td></td>
+                                                                                                                            <td>
+                                                                                                                                Sub-Category Level 5
+                                                                                                                            </td>
+                                                                                                                            <td>
+                                                                                                                                {/* <SingleSelector
                                                                                                                                                   options={subCategoryLevel5Options}
                                                                                                                                                   onChange={handleLevel5Change}
                                                                                                                                                   value={selectedSubCategoryLevel5}
                                                                                                                                                   placeholder={`Select Sub-category lvl 5`} // Dynamic placeholder
-                                                                                                                                                />
-                                                                                                                        </td>
-                                                                                                                        <td>
-                                                                                                                            <input
-                                                                                                                                type="text"
-                                                                                                                                value={subCategory5.location || ""}
-                                                                                                                                onChange={(e) => handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "location", e.target.value)}
-                                                                                                                                className="form-control"
-                                                                                                                            />
-                                                                                                                        </td>
-                                                                                                                        <td>
+                                                                                                                                                /> */}
 
-                                                                                                                        </td>
-                                                                                                                        <td>
-                                                                                                                            <input
-                                                                                                                                type="text"
-                                                                                                                                value={subCategory5.items || ""}
-                                                                                                                                onChange={(e) => handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "items", e.target.value)}
-                                                                                                                                className="form-control"
-                                                                                                                            />
-                                                                                                                        </td>
-                                                                                                                        <td>
+                                                                                                                                <SingleSelector
+                                                                                                                                    options={
+                                                                                                                                        (subCategory4.subCategoryLevel5Options || []).map(subCat5 => ({
+                                                                                                                                            value: subCat5.value,
+                                                                                                                                            label: subCat5.label
+                                                                                                                                        }))
+                                                                                                                                    }
+                                                                                                                                    value={
+                                                                                                                                        subCategory5.id
+                                                                                                                                            ? { value: subCategory5.id, label: subCategory5.name }
+                                                                                                                                            : null
+                                                                                                                                    }
+                                                                                                                                    onChange={selectedOption =>
+                                                                                                                                        handleLevel5Change(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, selectedOption)
+                                                                                                                                    }
+                                                                                                                                    placeholder="Select Sub-category lvl 5"
+                                                                                                                                />
+                                                                                                                            </td>
+                                                                                                                            <td>
+                                                                                                                                <input
+                                                                                                                                    type="text"
+                                                                                                                                    value={subCategory5.location || ""}
+                                                                                                                                    onChange={(e) => handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "location", e.target.value)}
+                                                                                                                                    className="form-control"
+                                                                                                                                />
+                                                                                                                            </td>
+                                                                                                                            <td>
 
-                                                                                                                        </td>
-                                                                                                                        <td>
-                                                                                                                            <SingleSelector
-                                                                                                                                options={unitOfMeasures}
-                                                                                                                                value={
-                                                                                                                                    unitOfMeasures.find(opt => opt.value === subCategory5.uom)
-                                                                                                                                }
-                                                                                                                                placeholder="Select UOM"
-                                                                                                                                onChange={selectedOption =>
-                                                                                                                                    handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "uom", selectedOption?.value || "")
-                                                                                                                                }
-                                                                                                                            />
-                                                                                                                        </td>
-                                                                                                                        <td>
-                                                                                                                            <input
+                                                                                                                            </td>
+                                                                                                                            <td>
+                                                                                                                                <input
+                                                                                                                                    type="text"
+                                                                                                                                    value={subCategory5.items || ""}
+                                                                                                                                    onChange={(e) => handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "items", e.target.value)}
+                                                                                                                                    className="form-control"
+                                                                                                                                />
+                                                                                                                            </td>
+
+                                                                                                                            <td>
+                                                                                                                                <SingleSelector
+                                                                                                                                    options={unitOfMeasures}
+                                                                                                                                    value={
+                                                                                                                                        unitOfMeasures.find(opt => opt.value === subCategory5.uom)
+                                                                                                                                    }
+                                                                                                                                    placeholder="Select UOM"
+                                                                                                                                    onChange={selectedOption =>
+                                                                                                                                        handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "uom", selectedOption?.value || "")
+                                                                                                                                    }
+                                                                                                                                />
+                                                                                                                            </td>
+                                                                                                                            <td>
+                                                                                                                                {/* <input
                                                                                                                                 type="number"
                                                                                                                                 value={subCategory5.qty || ""}
                                                                                                                                 onChange={(e) =>
                                                                                                                                     handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "qty", e.target.value)
                                                                                                                                 }
                                                                                                                                 className="form-control"
-                                                                                                                            />
-                                                                                                                        </td>
-                                                                                                                        <td></td>
-                                                                                                                        <td></td>
-                                                                                                                        <td></td>
-                                                                                                                        <td></td>
-                                                                                                                        <td></td>
-                                                                                                                        <td>
-                                                                                                                            <button
-                                                                                                                                className="btn btn-link p-0"
-                                                                                                                                onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3Idx, subCategory4Idx, subCategory5Idx)}
-                                                                                                                                // onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5.id,subCategory5Idx)}
-                                                                                                                                aria-label="Add row to sub-category 2"
-                                                                                                                            >
-                                                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                                                                    <line x1="12" y1="10" x2="12" y2="18" />
-                                                                                                                                    <line x1="8" y1="14" x2="16" y2="14" />
-                                                                                                                                    {/* <line x1="8" y1="34" x2="16" y2="34" /> */}
-                                                                                                                                </svg>
-                                                                                                                            </button>
+                                                                                                                            /> */}
+                                                                                                                            </td>
 
-                                                                                                                        </td>
+                                                                                                                            <td></td>
+                                                                                                                            <td>
+                                                                                                                                {
+                                                                                                                                    subCategory5.material_type_details
+                                                                                                                                        ? subCategory5.material_type_details.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                                                                                                                                        : 0
+                                                                                                                                }
+                                                                                                                            </td>
 
-                                                                                                                    </tr>
+                                                                                                                            <td>
+                                                                                                                                <button
+                                                                                                                                    className="btn btn-link p-0"
+                                                                                                                                    onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3.id, subCategory3Idx, subCategory4Idx, subCategory5Idx)}
+                                                                                                                                    // onClick={() => handleOpenAddModal(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5.id,subCategory5Idx)}
+                                                                                                                                    aria-label="Add row to sub-category 2"
+                                                                                                                                    disabled={isOtherLevelFrozen(category, "sub5", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx })}
+                                                                                                                                >
+                                                                                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="48" viewBox="0 0 24 48" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                                        <line x1="12" y1="10" x2="12" y2="18" />
+                                                                                                                                        <line x1="8" y1="14" x2="16" y2="14" />
+                                                                                                                                        {/* <line x1="8" y1="34" x2="16" y2="34" /> */}
+                                                                                                                                    </svg>
+                                                                                                                                </button>
+
+                                                                                                                            </td>
+
+                                                                                                                        </tr>
 
 
-                                                                                                                    {/* Render material_type_details rows for sub-category 3 */}
-                                                                                                                    {openSubCategory5Id === subCategory5.id &&
-                                                                                                                        subCategory5.material_type_details &&
-                                                                                                                        subCategory5.material_type_details.map((item, itemIdx) => (
-                                                                                                                            <tr key={item.id} className="labour">
-                                                                                                                                <td></td>
-                                                                                                                                <td></td>
-                                                                                                                                <td></td>
-                                                                                                                                <td></td>
-                                                                                                                                <td>{item.location}</td>
-                                                                                                                                <td>{item.type}</td>
-                                                                                                                                <td>
-                                                                                                                                    {/* {item.specification || item.labourActLabel} */}
-                                                                                                                                    {item.name} {item.specification || item.labourActLabel || item.compositeValue}
-                                                                                                                                </td>
-                                                                                                                                {/* ...other cells... */}
-                                                                                                                                <td>
-                                                                                                                                    <input
-                                                                                                                                        type="number"
-                                                                                                                                        value={item.factor || ""}
-                                                                                                                                        onChange={(e) =>
-                                                                                                                                            handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx, "factor", e.target.value)
-                                                                                                                                        }
-                                                                                                                                        className="form-control"
-                                                                                                                                    />
-                                                                                                                                </td>
-                                                                                                                                <td>
+                                                                                                                        {/* Render material_type_details rows for sub-category 3 */}
+                                                                                                                        {openSubCategory5Id === subCategory5.id &&
+                                                                                                                            subCategory5.material_type_details &&
+                                                                                                                            subCategory5.material_type_details.map((item, itemIdx) => (
+                                                                                                                                <tr key={item.id} className="labour">
+                                                                                                                                    <td></td>
+                                                                                                                                    <td></td>
+                                                                                                                                    <td></td>
+                                                                                                                                    <td></td>
+                                                                                                                                    <td>{item.location}</td>
+                                                                                                                                    <td>{item.type}</td>
+                                                                                                                                    <td>
+                                                                                                                                        {/* {item.specification || item.labourActLabel} */}
+                                                                                                                                        {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                                                                                                    </td>
+                                                                                                                                    {/* ...other cells... */}
 
-                                                                                                                                    <SingleSelector
-                                                                                                                                        options={unitOfMeasures}
-                                                                                                                                        value={
-                                                                                                                                            unitOfMeasures.find(opt => opt.value === item.uom)
-                                                                                                                                        }
-                                                                                                                                        placeholder="Select UOM"
-                                                                                                                                        onChange={selectedOption =>
-                                                                                                                                            handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory4Idx, itemIdx, "uom", selectedOption?.value || "")
-                                                                                                                                        }
-                                                                                                                                    />
-                                                                                                                                </td>
-                                                                                                                                <td>
-                                                                                                                                    <input
+                                                                                                                                    <td>
+
+                                                                                                                                        <SingleSelector
+                                                                                                                                            options={unitOfMeasures}
+                                                                                                                                            value={
+                                                                                                                                                unitOfMeasures.find(opt => opt.value === item.uom)
+                                                                                                                                            }
+                                                                                                                                            placeholder="Select UOM"
+                                                                                                                                            onChange={selectedOption =>
+                                                                                                                                                handleEditMaterial2SubCat5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory4Idx, itemIdx, "uom", selectedOption?.value || "")
+                                                                                                                                            }
+                                                                                                                                        />
+                                                                                                                                    </td>
+                                                                                                                                    <td>
+                                                                                                                                        {/* <input
                                                                                                                                         type="number"
                                                                                                                                         value={item.qty || ""}
                                                                                                                                         readOnly
                                                                                                                                         disabled
                                                                                                                                         className="form-control"
-                                                                                                                                    />
-                                                                                                                                </td>
-                                                                                                                                <td>
-                                                                                                                                    <input
-                                                                                                                                        type="number"
-                                                                                                                                        value={item.wastage || ""}
-                                                                                                                                        onChange={(e) =>
-                                                                                                                                            handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx, "wastage", e.target.value)
-                                                                                                                                        }
-                                                                                                                                        className="form-control"
-                                                                                                                                    />
-                                                                                                                                </td>
-                                                                                                                                <td>
-                                                                                                                                    <input
-                                                                                                                                        type="number"
-                                                                                                                                        value={item.qtyInclWastage || ""}
-                                                                                                                                        readOnly
-                                                                                                                                        className="form-control"
-                                                                                                                                        disabled
-                                                                                                                                    />
-                                                                                                                                </td>
-                                                                                                                                <td>
-                                                                                                                                    <input
-                                                                                                                                        type="number"
-                                                                                                                                        value={item.rate || ""}
-                                                                                                                                        onChange={(e) =>
-                                                                                                                                            handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx, "rate", e.target.value)
-                                                                                                                                        }
-                                                                                                                                        className="form-control"
-                                                                                                                                        disabled={item.type === "Material"}
-                                                                                                                                    />
-                                                                                                                                </td>
+                                                                                                                                    /> */}
+                                                                                                                                        <input
+                                                                                                                                            type="number"
+                                                                                                                                            value={item.qty || ""}
+                                                                                                                                            onChange={e =>
+                                                                                                                                                handleEditMaterial2SubCat5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory4Idx, itemIdx, "qty", e.target.value)
+                                                                                                                                            }
+                                                                                                                                            className="form-control"
+                                                                                                                                        />
+                                                                                                                                    </td>
 
-                                                                                                                                <td>
-                                                                                                                                    <input
-                                                                                                                                        type="number"
-                                                                                                                                        value={item.amount || ""}
-                                                                                                                                        readOnly
-                                                                                                                                        disabled
-                                                                                                                                        className="form-control"
-                                                                                                                                    />
-                                                                                                                                </td>
-                                                                                                                                <td>
-                                                                                                                                    <input
-                                                                                                                                        type="number"
-                                                                                                                                        value={item.costPerUnit || ""}
-                                                                                                                                        readOnly
-                                                                                                                                        disabled
-                                                                                                                                        className="form-control"
-                                                                                                                                    />
-                                                                                                                                </td>
-                                                                                                                                <td>
-                                                                                                                                    <button
-                                                                                                                                        className="btn btn-link p-0"
-                                                                                                                                        onClick={() => handleRemoveSubCategory3Row(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx)}
-                                                                                                                                        aria-label="Remove row from sub-category 3"
-                                                                                                                                    >
-                                                                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                                                                            {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
-                                                                                                                                            <line x1="5" y1="8" x2="11" y2="8" />
-                                                                                                                                        </svg>
-                                                                                                                                    </button>
-                                                                                                                                </td>
-                                                                                                                            </tr>
-                                                                                                                        ))
-                                                                                                                    }
+                                                                                                                                    <td>
+                                                                                                                                        <input
+                                                                                                                                            type="number"
+                                                                                                                                            value={item.rate || 0}
+                                                                                                                                            onChange={(e) =>
+                                                                                                                                                handleEditMaterial2SubCat5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx, "rate", e.target.value)
+                                                                                                                                            }
+                                                                                                                                            className="form-control"
+                                                                                                                                            disabled={item.type === "material"}
+                                                                                                                                        />
+                                                                                                                                    </td>
+
+                                                                                                                                    <td>
+                                                                                                                                        <input
+                                                                                                                                            type="number"
+                                                                                                                                            value={item.amount || ""}
+                                                                                                                                            readOnly
+                                                                                                                                            disabled
+                                                                                                                                            className="form-control"
+                                                                                                                                        />
+                                                                                                                                    </td>
+
+                                                                                                                                    <td>
+                                                                                                                                        <button
+                                                                                                                                            className="btn btn-link p-0"
+                                                                                                                                            onClick={() => handleRemoveSubCategory5Row(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx)}
+                                                                                                                                            aria-label="Remove row from sub-category 5"
+                                                                                                                                        >
+                                                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                                                                                {/* <rect x="3" y="3" width="10" height="10" rx="1" ry="1" /> */}
+                                                                                                                                                <line x1="5" y1="8" x2="11" y2="8" />
+                                                                                                                                            </svg>
+                                                                                                                                        </button>
+                                                                                                                                    </td>
+                                                                                                                                </tr>
+                                                                                                                            ))
+                                                                                                                        }
 
 
 
-                                                                                                                </React.Fragment>
-                                                                                                            )
-                                                                                                        )}
-                                                                                                </React.Fragment>
-                                                                                            )
-                                                                                        )}
-                                                                                </React.Fragment>
-                                                                            )
-                                                                        )}
+                                                                                                                    </React.Fragment>
+                                                                                                                )
+                                                                                                            )}
+                                                                                                    </React.Fragment>
+                                                                                                )
+                                                                                            )}
+                                                                                    </React.Fragment>
+                                                                                )
+                                                                            )}
 
-                                                                    {/* .. */}
-                                                                </React.Fragment>
-                                                            ))}
-                                                        {/* sub level 2 end*/}
-                                                    </React.Fragment>
-                                                ))}
-                                            {/* Conditional rendering for categories under sub-project  end*/}
+                                                                        {/* .. */}
+                                                                    </React.Fragment>
+                                                                ))}
+                                                            {/* sub level 2 end*/}
+                                                        </React.Fragment>
+                                                    ))}
+                                                {/* Conditional rendering for categories under sub-project  end*/}
 
-                                            {/* subProject end */}
-                                        </tbody>
-                                    </table>
+                                                {/* subProject end */}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        {/* )} */}
-
-
-
-                        {/* {console.log("budget type:", typeof budgetType,budgetType)} */}
-                        {/* <div className="d-flex justify-content-end mx-3">
-                            <button className="purple-btn2">Bulk Upload</button>
-                            <button className="purple-btn2">Download Template</button>
-                            <button className="purple-btn2">Save</button>
-                            <button className="purple-btn2">Import</button>
-                            <button className="purple-btn2">Export</button>
-                        </div> */}
-
-
+                        )}
 
 
                     </div>
@@ -3575,9 +6262,9 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
                                     className="form-check-input"
                                     type="radio"
                                     name="type-0"
-                                    value="Material"
-                                    checked={modalRows[0].type === "Material"}
-                                    onChange={() => handleModalRowChange(0, "type", "Material")}
+                                    value="material"
+                                    checked={modalRows[0].type === "material"}
+                                    onChange={() => handleModalRowChange(0, "type", "material")}
                                 />
                                 <label className="form-check-label">Material</label>
                             </div>
@@ -3587,9 +6274,9 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
                                     className="form-check-input"
                                     type="radio"
                                     name="type-0"
-                                    value="Labour"
-                                    checked={modalRows[0].type === "Labour"}
-                                    onChange={() => handleModalRowChange(0, "type", "Labour")}
+                                    value="labour"
+                                    checked={modalRows[0].type === "labour"}
+                                    onChange={() => handleModalRowChange(0, "type", "labour")}
                                 />
                                 <label className="form-check-label">Labour</label>
                             </div>
@@ -3599,9 +6286,9 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
                                     className="form-check-input"
                                     type="radio"
                                     name="type-0"
-                                    value="Composite"
-                                    checked={modalRows[0].type === "Composite"}
-                                    onChange={() => handleModalRowChange(0, "type", "Composite")}
+                                    value="composite"
+                                    checked={modalRows[0].type === "composite"}
+                                    onChange={() => handleModalRowChange(0, "type", "composite")}
                                 />
                                 <label className="form-check-label">Composite</label>
                             </div>
@@ -3609,9 +6296,9 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
 
                         {/* Row 2: Material Type & Specification (only for Material) */}
 
-                        {modalRows[0].type === "Material" && (
+                        {modalRows[0].type === "material" && (
                             <div className="d-flex align-items-center mb-2">
-                                <div className="col-md-6 mt-3">
+                                <div className="col-md-4 mt-3">
                                     <div className="form-group">
                                         <label>Material Type</label>
 
@@ -3629,7 +6316,7 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
 
                                     </div>
                                 </div>
-                                <div className="col-md-6 mt-3 ms-3 ">
+                                <div className="col-md-4 mt-3 ms-3 ">
                                     <div className="form-group">
                                         <label>Generic Specification</label>
                                         <SingleSelector
@@ -3649,9 +6336,9 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
 
 
                         {/* Conditional Labour Type Select */}
-                        {modalRows[0].type === "Labour" && (
+                        {modalRows[0].type === "labour" && (
 
-                            <div className="col-md-6 mt-3">
+                            <div className="col-md-4 mt-3">
                                 <div className="form-group">
                                     <label>Labour Activity</label>
                                     <SingleSelector
@@ -3671,8 +6358,8 @@ const handleAddSubCategory5 = (catIdx, subCatIdx, subCategory3Idx, subCategory4I
                         )}
 
                         {/* Conditional Composite Input */}
-                        {modalRows[0].type === "Composite" && (
-                            <div className="col-md-6 mt-3">
+                        {modalRows[0].type === "composite" && (
+                            <div className="col-md-4 mt-3">
                                 <div className="form-group">
                                     <label>Composite Value</label>
                                     <input
