@@ -35,7 +35,7 @@ const EstimationCreationDetails = () => {
     const navigate = useNavigate(); // ✅ define navigate here
     const { id } = useParams();
     const [showModal, setShowModal] = useState(false);
-     const openModal = () => setShowModal(true);
+    const openModal = () => setShowModal(true);
     const closeModal = () => setShowModal(false);
 
     // console.log("details selected:", details)
@@ -45,23 +45,23 @@ const EstimationCreationDetails = () => {
 
 
     const fetchSubProjectDetails = async () => {
-    try {
-      const res = await axios.get(
-        `${baseURL}estimation_details/${id}/budget_info.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-      );
-      console.log("response cat:", res.data);
-      setSubProjectDetails(res.data);
-      setBudgetType(res.data?.budget_type || "");
-      setStatus(res.data?.selected_status || "");
-    } catch (err) {
-      console.error("Error fetching sub project details:", err);
-    }
-  };
+        try {
+            const res = await axios.get(
+                `${baseURL}estimation_details/${id}/budget_info.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            );
+            console.log("response cat:", res.data);
+            setSubProjectDetails(res.data);
+            setBudgetType(res.data?.budget_type || "");
+            setStatus(res.data?.selected_status || "");
+        } catch (err) {
+            console.error("Error fetching sub project details:", err);
+        }
+    };
     useEffect(() => {
         fetchSubProjectDetails();
     }, [id]);
 
-           
+
 
 
     const [openCategoryId, setOpenCategoryId] = useState(null); // Track which category is open
@@ -169,7 +169,7 @@ const EstimationCreationDetails = () => {
         setRemark(e.target.value);
     };
 
-const payload = {
+    const payload = {
         status_log: {
             status: status,
             remarks: remark
@@ -231,23 +231,23 @@ const payload = {
                         <a href="">Home &gt; Engineering &gt; Estimation &gt; Budget</a>
                     </a>
                     <div className="card mt-3 pb-3 ">
-{subProjectDetails?.approval_logs?.length > 0 && (
-                                <div className="row mt-4 justify-content-end">
-                                    <div className="col-md-2 nav-item">
-                                        <button
-                                            className="purple-btn2"
-                                            onClick={openModal}
-                                            style={{
-                                                backgroundColor:
-                                                    subProjectDetails?.selected_status=== "Approved" ? "green" : "",
-                                                border: "none",
-                                            }}
-                                        >
-                                            <span>Approval Logs</span>
-                                        </button>
-                                    </div>
+                        {subProjectDetails?.approval_logs?.length > 0 && (
+                            <div className="row mt-4 justify-content-end">
+                                <div className="col-md-2 nav-item">
+                                    <button
+                                        className="purple-btn2"
+                                        onClick={openModal}
+                                        style={{
+                                            backgroundColor:
+                                                subProjectDetails?.selected_status === "Approved" ? "green" : "",
+                                            border: "none",
+                                        }}
+                                    >
+                                        <span>Approval Logs</span>
+                                    </button>
                                 </div>
-                            )}
+                            </div>
+                        )}
 
                         <div className="details_page mt-5 mb-5 mx-3">
                             <div className="row px-3">
@@ -326,11 +326,19 @@ const payload = {
                                                 <span className="text-dark">:</span>
                                             </span>
                                             {/* {subProjectDetails?.budget_type || "-"} */}
-                                            {budgetType === "non_wbs"
+                                            {/* {budgetType === "non_wbs"
                                                 ? "non wbs"
                                                 : budgetType
                                                     ? budgetType
-                                                    : "-"}
+                                                    : "-"} */}
+
+                                            {budgetType === "non_wbs"
+                                                ? "Non WBS"
+                                                : budgetType === "wbs"
+                                                    ? "WBS"
+                                                    : budgetType
+                                                        ? budgetType
+                                                        : "-"}
                                         </label>
                                     </div>
                                 </div>
@@ -2715,63 +2723,63 @@ const payload = {
                             </button>
                         </div>
                     </div>
-<div className="row mt-2 w-100">
-                            <div className="col-12 " >
-                                <h5>Audit Log</h5>
-                                <div className="mx-0" >
-                                    <div className="tbl-container mt-1" style={{ maxHeight: "450px" }} >
-                                        <table className="w-100"  >
-                                            <thead>
-                                                <tr>
-                                                    <th>Sr.No.</th>
-                                                    <th>Created By</th>
-                                                    <th>Created At</th>
-                                                    <th>Status</th>
-                                                    <th>Remark</th>
-                                                    {/* <th>Comment</th> */}
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {(subProjectDetails?.audit_logs || [])
-                                                    .slice(0, 10)
-                                                    .map((log, index) => (
-                                                        <tr key={log.id}>
-                                                            <td className="text-start">{index + 1}</td>
-                                                            <td className="text-start">{log.user}</td>
-                                                            <td className="text-start">
-                                                                {log.date}
-                                                            </td>
-                                                            <td className="text-start">
-                                                                {log.status
-                                                                    ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
-                                                                    : ""}
-                                                            </td>
-                                                            <td className="text-start">{log.remarks || ""}</td>
-                                                            {/* <td className="text-start">{log.comments || ""}</td> */}
-                                                        </tr>
-                                                    ))}
-                                            </tbody>
-                                        </table>
-                                        {/* Show "Show More" link if more than 10 records */}
-                                        {subProjectDetails?.status_logs?.length > 10 && (
-                                            <div className="mt-2 text-start">
-                                                <span
-                                                    className="boq-id-link"
-                                                    style={{ fontWeight: "bold", cursor: "pointer" }}
-                                                //   onClick={() => setShowAuditModal(true)}
-                                                >
-                                                    Show More
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
+                    <div className="row mt-2 w-100">
+                        <div className="col-12 " >
+                            <h5>Audit Log</h5>
+                            <div className="mx-0" >
+                                <div className="tbl-container mt-1" style={{ maxHeight: "450px" }} >
+                                    <table className="w-100"  >
+                                        <thead>
+                                            <tr>
+                                                <th>Sr.No.</th>
+                                                <th>Created By</th>
+                                                <th>Created At</th>
+                                                <th>Status</th>
+                                                <th>Remark</th>
+                                                {/* <th>Comment</th> */}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {(subProjectDetails?.audit_logs || [])
+                                                .slice(0, 10)
+                                                .map((log, index) => (
+                                                    <tr key={log.id}>
+                                                        <td className="text-start">{index + 1}</td>
+                                                        <td className="text-start">{log.user}</td>
+                                                        <td className="text-start">
+                                                            {log.date}
+                                                        </td>
+                                                        <td className="text-start">
+                                                            {log.status
+                                                                ? log.status.charAt(0).toUpperCase() + log.status.slice(1)
+                                                                : ""}
+                                                        </td>
+                                                        <td className="text-start">{log.remarks || ""}</td>
+                                                        {/* <td className="text-start">{log.comments || ""}</td> */}
+                                                    </tr>
+                                                ))}
+                                        </tbody>
+                                    </table>
+                                    {/* Show "Show More" link if more than 10 records */}
+                                    {subProjectDetails?.status_logs?.length > 10 && (
+                                        <div className="mt-2 text-start">
+                                            <span
+                                                className="boq-id-link"
+                                                style={{ fontWeight: "bold", cursor: "pointer" }}
+                                            //   onClick={() => setShowAuditModal(true)}
+                                            >
+                                                Show More
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
+                    </div>
                 </div>
             </div>
 
-{/* Modal start */}
+            {/* Modal start */}
             <Modal size="xl" show={showModal} onHide={closeModal} centered>
                 <Modal.Header closeButton>
                     <h5>Approval Log</h5>

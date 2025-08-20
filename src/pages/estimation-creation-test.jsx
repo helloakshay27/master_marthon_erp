@@ -2564,6 +2564,63 @@ const EstimationCreationTest = () => {
     //     return false;
     // }
 
+    // function isOtherLevelFrozen(category, currentLevel, currentIdxs) {
+    //     // Level 1 (main)
+    //     if (currentLevel === "main") {
+    //         // Freeze if any sub2, sub3, sub4, sub5 has material_type_details
+    //         return (
+    //             category.sub_categories_2?.some(sub2 =>
+    //                 sub2.material_type_details?.length > 0 ||
+    //                 sub2.sub_categories_3?.some(sub3 =>
+    //                     sub3.material_type_details?.length > 0 ||
+    //                     sub3.sub_categories_4?.some(sub4 =>
+    //                         sub4.material_type_details?.length > 0 ||
+    //                         sub4.sub_categories_5?.some(sub5 =>
+    //                             sub5.material_type_details?.length > 0
+    //                         )
+    //                     )
+    //                 )
+    //             )
+    //         );
+    //     }
+
+    //     // Level 2 (sub2)
+    //     if (currentLevel === "sub2") {
+    //         // Only freeze if parent has material details
+    //         return category.material_type_details?.length > 0;
+    //     }
+
+    //     // Level 3 (sub3)
+    //     if (currentLevel === "sub3") {
+    //         const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
+    //         if (!sub2) return false;
+    //         // Only freeze if parent (sub2) has material details
+    //         return sub2.material_type_details?.length > 0;
+    //     }
+
+    //     // Level 4 (sub4)
+    //     if (currentLevel === "sub4") {
+    //         const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
+    //         const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
+    //         if (!sub3) return false;
+    //         // Only freeze if parent (sub3) has material details
+    //         return sub3.material_type_details?.length > 0;
+    //     }
+
+    //     // Level 5 (sub5)
+    //     if (currentLevel === "sub5") {
+    //         const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
+    //         const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
+    //         const sub4 = sub3?.sub_categories_4?.[currentIdxs.subCategory4Idx];
+    //         if (!sub4) return false;
+    //         // Only freeze if parent (sub4) has material details
+    //         return sub4.material_type_details?.length > 0;
+    //     }
+
+    //     return false;
+    // }
+
+
     function isOtherLevelFrozen(category, currentLevel, currentIdxs) {
         // Level 1 (main)
         if (currentLevel === "main") {
@@ -2586,25 +2643,55 @@ const EstimationCreationTest = () => {
 
         // Level 2 (sub2)
         if (currentLevel === "sub2") {
-            // Only freeze if parent has material details
-            return category.material_type_details?.length > 0;
+            // Freeze if main, sub3, sub4, sub5 have material details
+            return (
+                category.material_type_details?.length > 0 ||
+                category.sub_categories_2?.[currentIdxs.subCatIdx]?.sub_categories_3?.some(sub3 =>
+                    sub3.material_type_details?.length > 0 ||
+                    sub3.sub_categories_4?.some(sub4 =>
+                        sub4.material_type_details?.length > 0 ||
+                        sub4.sub_categories_5?.some(sub5 =>
+                            sub5.material_type_details?.length > 0
+                        )
+                    )
+                )
+            );
         }
 
         // Level 3 (sub3)
         if (currentLevel === "sub3") {
             const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
             if (!sub2) return false;
-            // Only freeze if parent (sub2) has material details
-            return sub2.material_type_details?.length > 0;
+            const sub3 = sub2.sub_categories_3?.[currentIdxs.subCategory3Idx];
+            if (!sub3) return false;
+            // Freeze if main, sub2, sub4, sub5 have material details
+            return (
+                category.material_type_details?.length > 0 ||
+                sub2.material_type_details?.length > 0 ||
+                sub3.sub_categories_4?.some(sub4 =>
+                    sub4.material_type_details?.length > 0 ||
+                    sub4.sub_categories_5?.some(sub5 =>
+                        sub5.material_type_details?.length > 0
+                    )
+                )
+            );
         }
 
         // Level 4 (sub4)
         if (currentLevel === "sub4") {
             const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
             const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
-            if (!sub3) return false;
-            // Only freeze if parent (sub3) has material details
-            return sub3.material_type_details?.length > 0;
+            const sub4 = sub3?.sub_categories_4?.[currentIdxs.subCategory4Idx];
+            if (!sub4) return false;
+            // Freeze if main, sub2, sub3, sub5 have material details
+            return (
+                category.material_type_details?.length > 0 ||
+                sub2.material_type_details?.length > 0 ||
+                sub3.material_type_details?.length > 0 ||
+                sub4.sub_categories_5?.some(sub5 =>
+                    sub5.material_type_details?.length > 0
+                )
+            );
         }
 
         // Level 5 (sub5)
@@ -2612,14 +2699,19 @@ const EstimationCreationTest = () => {
             const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
             const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
             const sub4 = sub3?.sub_categories_4?.[currentIdxs.subCategory4Idx];
-            if (!sub4) return false;
-            // Only freeze if parent (sub4) has material details
-            return sub4.material_type_details?.length > 0;
+            const sub5 = sub4?.sub_categories_5?.[currentIdxs.subCategory5Idx];
+            if (!sub5) return false;
+            // Freeze if main, sub2, sub3, sub4 have material details
+            return (
+                category.material_type_details?.length > 0 ||
+                sub2.material_type_details?.length > 0 ||
+                sub3.material_type_details?.length > 0 ||
+                sub4.material_type_details?.length > 0
+            );
         }
 
         return false;
     }
-
     return (
         <>
             <div className="website-content overflow-auto">
@@ -2783,10 +2875,18 @@ const EstimationCreationTest = () => {
                                                 type="text"
                                                 placeholder=""
                                                 // value={details?.data.budget_type || "-"}
+                                                // value={
+                                                //     details?.data.budget_type === "non_wbs"
+                                                //         ? "Non WBS"
+                                                //         : details?.data.budget_type || "-"
+                                                // }
+
                                                 value={
                                                     details?.data.budget_type === "non_wbs"
-                                                        ? "non wbs"
-                                                        : details?.data.budget_type || "-"
+                                                        ? "Non WBS"
+                                                        : details?.data.budget_type === "wbs"
+                                                            ? "WBS"
+                                                            : details?.data.budget_type || "-"
                                                 }
                                             />
                                         </div>
@@ -3590,7 +3690,7 @@ const EstimationCreationTest = () => {
                                                                                                 handleEditSubCategory2Material(catIdx, subCatIdx, itemIdx, "rate", e.target.value)
                                                                                             }
                                                                                             className="form-control"
-                                                                                        disabled={item.type === "material"}
+                                                                                            disabled={item.type === "material"}
                                                                                         />
                                                                                     </td>
                                                                                     <td>
@@ -4771,7 +4871,7 @@ const EstimationCreationTest = () => {
                                                                             handleEditMainCategoryField(catIdx, "location", e.target.value)
                                                                         }
                                                                         className="form-control"
-                                                                        // disabled={isOtherLevelFrozen(category, "main", { catIdx })}
+                                                                    // disabled={isOtherLevelFrozen(category, "main", { catIdx })}
                                                                     />
                                                                 </td>
                                                                 <td></td>
@@ -4783,7 +4883,7 @@ const EstimationCreationTest = () => {
                                                                             handleEditMainCategoryField(catIdx, "items", e.target.value)
                                                                         }
                                                                         className="form-control"
-                                                                        // disabled={isOtherLevelFrozen(category, "main", { catIdx })}
+                                                                    // disabled={isOtherLevelFrozen(category, "main", { catIdx })}
                                                                     />
                                                                 </td>
                                                                 {/* <td></td> */}
@@ -4797,7 +4897,7 @@ const EstimationCreationTest = () => {
                                                                         onChange={selectedOption =>
                                                                             handleEditMainCategoryField(catIdx, "uom", selectedOption?.value || "")
                                                                         }
-                                                                        // disabled={isOtherLevelFrozen(category, "main", { catIdx })}
+                                                                    // disabled={isOtherLevelFrozen(category, "main", { catIdx })}
                                                                     />
                                                                 </td>
                                                                 {/* <td></td> */}
@@ -5313,7 +5413,7 @@ const EstimationCreationTest = () => {
                                                                                                 handleEditMaterial2SubCat2(catIdx, subCatIdx, itemIdx, "rate", e.target.value)
                                                                                             }
                                                                                             className="form-control"
-                                                                                        disabled={item.type === "material"}
+                                                                                            disabled={item.type === "material"}
                                                                                         />
                                                                                     </td>
                                                                                     <td>
