@@ -28,6 +28,8 @@ const EstimationCreationTest = () => {
     const [selectedWing, setSelectedWing] = useState(null);
     const [siteOptions, setSiteOptions] = useState([]);
     const [wingsOptions, setWingsOptions] = useState([]);
+    const handleAddModalRow = () => setModalRows([...modalRows, {/* default row object */ }]);
+    const handleRemoveModalRow = idx => setModalRows(modalRows.filter((_, i) => i !== idx));
 
     // Fetch company data on component mount
     useEffect(() => {
@@ -430,10 +432,12 @@ const EstimationCreationTest = () => {
                     }
                 );
 
-                updatedRows[idx].rate = res.data?.rate || 0;
+                // updatedRows[idx].rate = res.data?.rate || 0;
+                updatedRows[idx].rate = budgetType === "wbs" ? (res.data?.rate || 0) : "";
             } catch (err) {
                 console.error("Error fetching material rate", err);
-                updatedRows[idx].rate = 0;
+                // updatedRows[idx].rate = 0;
+                updatedRows[idx].rate = budgetType === "wbs" ? 0 : "";
             }
         }
 
@@ -515,6 +519,142 @@ const EstimationCreationTest = () => {
     });
 
     const [lastMaterialDetails, setLastMaterialDetails] = useState([]);
+
+
+    // const handleCreateRows = (
+    //     subCategory3Idx = modalSubCategory3Idx,
+    //     subCategory4Idx = modalSubCategory4Idx,
+    //     subCategory5Idx = modalSubCategory5Idx
+    // ) => {
+    //     setSubProjectDetails(prev => {
+    //         const updated = { ...prev };
+    //         let targetArr;
+    //         let levelIds = {
+    //             level_one_id: null,
+    //             level_two_id: null,
+    //             level_three_id: null,
+    //             level_four_id: null,
+    //             level_five_id: null,
+    //         };
+
+    //         // 🛠 Level ID mapping
+    //         if (
+    //             modalSubCategoryIdx === null &&
+    //             subCategory3Idx === null &&
+    //             subCategory4Idx === null &&
+    //             subCategory5Idx === null
+    //         ) {
+    //             const category = updated.categories[modalCategoryIdx];
+    //             targetArr = category.material_type_details;
+    //             levelIds.level_one_id = category.id;
+    //         } else if (
+    //             modalSubCategoryIdx !== null &&
+    //             subCategory3Idx === null &&
+    //             subCategory4Idx === null &&
+    //             subCategory5Idx === null
+    //         ) {
+    //             const subCat2 = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx];
+    //             targetArr = subCat2.material_type_details;
+    //             levelIds.level_one_id = updated.categories[modalCategoryIdx].id;
+    //             levelIds.level_two_id = subCat2.id;
+    //         } else if (
+    //             modalSubCategoryIdx !== null &&
+    //             subCategory3Idx !== null &&
+    //             subCategory4Idx === null &&
+    //             subCategory5Idx === null
+    //         ) {
+    //             const subCat3 = updated.categories[modalCategoryIdx]
+    //                 .sub_categories_2[modalSubCategoryIdx]
+    //                 .sub_categories_3[subCategory3Idx];
+    //             targetArr = subCat3.material_type_details;
+    //             levelIds.level_one_id = updated.categories[modalCategoryIdx].id;
+    //             levelIds.level_two_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].id;
+    //             levelIds.level_three_id = subCat3.id;
+    //         } else if (
+    //             modalSubCategoryIdx !== null &&
+    //             subCategory3Idx !== null &&
+    //             subCategory4Idx !== null &&
+    //             subCategory5Idx === null
+    //         ) {
+    //             const subCat4 = updated.categories[modalCategoryIdx]
+    //                 .sub_categories_2[modalSubCategoryIdx]
+    //                 .sub_categories_3[subCategory3Idx]
+    //                 .sub_categories_4[subCategory4Idx];
+    //             targetArr = subCat4.material_type_details;
+    //             levelIds.level_one_id = updated.categories[modalCategoryIdx].id;
+    //             levelIds.level_two_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].id;
+    //             levelIds.level_three_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx].id;
+    //             levelIds.level_four_id = subCat4.id;
+    //         } else if (
+    //             modalSubCategoryIdx !== null &&
+    //             subCategory3Idx !== null &&
+    //             subCategory4Idx !== null &&
+    //             subCategory5Idx !== null
+    //         ) {
+    //             const subCat5 = updated.categories[modalCategoryIdx]
+    //                 .sub_categories_2[modalSubCategoryIdx]
+    //                 .sub_categories_3[subCategory3Idx]
+    //                 .sub_categories_4[subCategory4Idx]
+    //                 .sub_categories_5[subCategory5Idx];
+    //             targetArr = subCat5.material_type_details;
+    //             levelIds.level_one_id = updated.categories[modalCategoryIdx].id;
+    //             levelIds.level_two_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].id;
+    //             levelIds.level_three_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx].id;
+    //             levelIds.level_four_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].id;
+    //             levelIds.level_five_id = subCat5.id;
+    //         }
+
+    //         if (!targetArr) return prev;
+
+    //         const row = modalRows[0];
+
+    //         // Duplicate check
+    //         let isDuplicate = false;
+    //         if (row.type === "material") {
+    //             isDuplicate = targetArr.some(item =>
+    //                 item.type === "material" &&
+    //                 item.name === row.materialTypeLabel &&
+    //                 item.specification === row.specificationLabel
+    //             );
+    //         } else if (row.type === "labour") {
+    //             isDuplicate = targetArr.some(item =>
+    //                 item.type === "labour" &&
+    //                 item.labourActLabel === row.labourTypeLabel
+    //             );
+    //         } else if (row.type === "composite") {
+    //             isDuplicate = targetArr.some(item =>
+    //                 item.type === "composite" &&
+    //                 item.compositeValue === row.compositeValue
+    //             );
+    //         }
+
+    //         if (!isDuplicate) {
+    //             targetArr.push({
+    //                 id: Date.now() + Math.random(),
+    //                 materilTypeId: row.materialType,
+    //                 name: row.materialTypeLabel,
+    //                 specificationId: row.specification,
+    //                 specification: row.specificationLabel,
+    //                 labourAct: row.labourType,
+    //                 labourActLabel: row.labourTypeLabel,
+    //                 compositeValue: row.compositeValue,
+    //                 type: row.type,
+    //                 location: "",
+    //                 qty: "",
+    //                 rate: row.rate,
+    //                 wastage: "",
+    //             });
+    //         }
+
+    //         // ✅ Store both level IDs and targetArr in state
+    //         setLastCreatedLevelIds(levelIds);
+    //         setLastMaterialDetails([...targetArr]);
+
+    //         return updated;
+    //     });
+
+    //     setShowAddModal(false);
+    // };
 
 
     const handleCreateRows = (
@@ -602,45 +742,46 @@ const EstimationCreationTest = () => {
 
             if (!targetArr) return prev;
 
-            const row = modalRows[0];
+            // Loop through all modalRows
+            modalRows.forEach(row => {
+                // Duplicate check
+                let isDuplicate = false;
+                if (row.type === "material") {
+                    isDuplicate = targetArr.some(item =>
+                        item.type === "material" &&
+                        item.name === row.materialTypeLabel &&
+                        item.specification === row.specificationLabel
+                    );
+                } else if (row.type === "labour") {
+                    isDuplicate = targetArr.some(item =>
+                        item.type === "labour" &&
+                        item.labourActLabel === row.labourTypeLabel
+                    );
+                } else if (row.type === "composite") {
+                    isDuplicate = targetArr.some(item =>
+                        item.type === "composite" &&
+                        item.compositeValue === row.compositeValue
+                    );
+                }
 
-            // Duplicate check
-            let isDuplicate = false;
-            if (row.type === "material") {
-                isDuplicate = targetArr.some(item =>
-                    item.type === "material" &&
-                    item.name === row.materialTypeLabel &&
-                    item.specification === row.specificationLabel
-                );
-            } else if (row.type === "labour") {
-                isDuplicate = targetArr.some(item =>
-                    item.type === "labour" &&
-                    item.labourActLabel === row.labourTypeLabel
-                );
-            } else if (row.type === "composite") {
-                isDuplicate = targetArr.some(item =>
-                    item.type === "composite" &&
-                    item.compositeValue === row.compositeValue
-                );
-            }
-
-            if (!isDuplicate) {
-                targetArr.push({
-                    id: Date.now() + Math.random(),
-                    materilTypeId: row.materialType,
-                    name: row.materialTypeLabel,
-                    specificationId: row.specification,
-                    specification: row.specificationLabel,
-                    labourAct: row.labourType,
-                    labourActLabel: row.labourTypeLabel,
-                    compositeValue: row.compositeValue,
-                    type: row.type,
-                    location: "",
-                    qty: "",
-                    rate: row.rate,
-                    wastage: "",
-                });
-            }
+                if (!isDuplicate) {
+                    targetArr.push({
+                        id: Date.now() + Math.random(),
+                        materilTypeId: row.materialType,
+                        name: row.materialTypeLabel,
+                        specificationId: row.specification,
+                        specification: row.specificationLabel,
+                        labourAct: row.labourType,
+                        labourActLabel: row.labourTypeLabel,
+                        compositeValue: row.compositeValue,
+                        type: row.type,
+                        location: "",
+                        qty: "",
+                        rate: row.rate,
+                        wastage: "",
+                    });
+                }
+            });
 
             // ✅ Store both level IDs and targetArr in state
             setLastCreatedLevelIds(levelIds);
@@ -651,7 +792,6 @@ const EstimationCreationTest = () => {
 
         setShowAddModal(false);
     };
-
 
 
     // console.log("last ids:", lastCreatedLevelIds)
@@ -1345,30 +1485,57 @@ const EstimationCreationTest = () => {
     // for generic specification
     const [genericSpecifications, setGenericSpecifications] = useState([]); // State to hold the fetched generic specifications
     const [selectedGenericSpecifications, setSelectedGenericSpecifications] = useState(null); // Holds the selected generic specifications for each material
+    const [genericSpecificationsByRow, setGenericSpecificationsByRow] = useState([]); // Array of arrays
 
     // Fetch generic specifications for materials
     // console.log("inventory type 2:", selectedInventory2)
+    // useEffect(() => {
+
+    //     if (selectedInventory2 || modalRows[0].materialType) {
+    //         axios
+    //             .get(
+    //                 `${baseURL}pms/generic_infos.json?q[inventory_type_id_eq]=${modalRows[0].materialType}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+    //             )
+    //             .then((response) => {
+    //                 const options = response.data.map((specification) => ({
+    //                     value: specification.id,
+    //                     label: specification.generic_info,
+    //                 }));
+
+    //                 setGenericSpecifications(options);
+    //             })
+    //             .catch((error) => {
+    //                 console.error("Error fetching generic specifications:", error);
+    //             });
+    //     }
+
+    // }, [selectedInventory2, baseURL, modalRows]); // Runs when materials or baseURL changes
+
     useEffect(() => {
+        // For each modal row, fetch generic specifications if materialType is set
+        const fetchAllSpecs = async () => {
+            const promises = modalRows.map(row => {
+                if (row.materialType) {
+                    return axios
+                        .get(`${baseURL}pms/generic_infos.json?q[inventory_type_id_eq]=${row.materialType}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`)
+                        .then(response =>
+                            response.data.map(specification => ({
+                                value: specification.id,
+                                label: specification.generic_info,
+                            }))
+                        )
+                        .catch(() => []);
+                }
+                return Promise.resolve([]);
+            });
 
-        if (selectedInventory2 || modalRows[0].materialType) {
-            axios
-                .get(
-                    `${baseURL}pms/generic_infos.json?q[inventory_type_id_eq]=${modalRows[0].materialType}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-                )
-                .then((response) => {
-                    const options = response.data.map((specification) => ({
-                        value: specification.id,
-                        label: specification.generic_info,
-                    }));
+            const allSpecs = await Promise.all(promises);
+            setGenericSpecificationsByRow(allSpecs);
+        };
 
-                    setGenericSpecifications(options);
-                })
-                .catch((error) => {
-                    console.error("Error fetching generic specifications:", error);
-                });
-        }
+        fetchAllSpecs();
+    }, [modalRows, baseURL]);
 
-    }, [selectedInventory2, baseURL, modalRows]); // Runs when materials or baseURL changes
     const [labourActivities, setLabourActivities] = useState([]);
     const [selectedLabourActivity, setSelectedLabourActivity] = useState(null);
     useEffect(() => {
@@ -2951,36 +3118,39 @@ const EstimationCreationTest = () => {
                                 </div>
 
                                 <div className="mx-3 ">
-                                    <div className="tbl-container mt-1 " style={{
-                                        maxHeight: "750px",
-                                    }}>
+                                    <div className="tbl-container mt-1 "
+                                        style={{
+                                            maxHeight: "500px",
+                                        }}
+                                    >
                                         <table
-                                            className=""
+                                            // className=""
+                                            className={subProjectDetails && subProjectDetails.categories && subProjectDetails.categories.length > 0 ? "" : "w-100"}
                                         >
                                             <thead style={{ zIndex: "111 " }}>
                                                 <tr>
-                                                    <th className="text-start">Expand</th>
+                                                    {/* <th className="text-start">Expand</th> */}
                                                     <th className="text-start">Sr No.</th>
                                                     <th className="text-start">Level</th>
                                                     <th className="text-start">Category</th>
                                                     <th className="text-start">Location</th>
                                                     <th className="text-start">Type</th>
                                                     <th className="text-start">Items</th>
-                                                    <th className="text-start">Factor</th>
-                                                    <th className="text-start" style={{ width: "200px" }}>UOM</th>
+                                                    <th className="text-start" style={{ width: "120px" }}>Factor</th>
+                                                    <th className="text-start">UOM</th>
                                                     {/* <th className="text-start">Area</th> */}
-                                                    <th className="text-start">QTY Excl Wastage</th>
-                                                    <th className="text-start">Wastage</th>
-                                                    <th className="text-start">QTY incl Waste</th>
-                                                    <th className="text-start">Rate</th>
+                                                    <th className="text-start" style={{ width: "140px" }}>QTY Excl Wastage</th>
+                                                    <th className="text-start" style={{ width: "120px" }}>Wastage</th>
+                                                    <th className="text-start" style={{ width: "150px" }}>QTY incl Wastage</th>
+                                                    <th className="text-start" style={{ width: "140px" }}>Rate</th>
                                                     <th className="text-start">Amount</th>
-                                                    <th className="text-start">Cost Per Unit</th>
+                                                    <th className="text-start" style={{ width: "150px" }}>Cost Per Unit</th>
                                                     <th className="text-start" style={{ width: "12px" }}>
                                                         Action
                                                     </th>
                                                 </tr>
                                                 <tr>
-                                                    <th className="text-start"></th>
+                                                    {/* <th className="text-start"></th> */}
                                                     <th className="text-start"></th>
                                                     <th className="text-start"></th>
                                                     <th className="text-start"></th>
@@ -3002,64 +3172,71 @@ const EstimationCreationTest = () => {
                                             </thead>
                                             <tbody>
                                                 {/* Conditional rendering for categories under sub-project start */}
-                                                {subProjectDetails &&
-                                                    subProjectDetails.categories &&
+
+                                                {subProjectDetails && subProjectDetails.categories && subProjectDetails.categories.length > 0 ? (
                                                     subProjectDetails.categories.map((category, catIdx) => (
+                                                        // {subProjectDetails &&
+                                                        //     subProjectDetails.categories &&
+                                                        //     subProjectDetails.categories.map((category, catIdx) => (
                                                         <React.Fragment key={category.id}>
                                                             <tr className="main-category">
+                                                                {/* <td>
+                                                                  
+
+                                                                </td> */}
+                                                                <td>{catIdx + 1}</td>
                                                                 <td>
-                                                                    <>
-                                                                        <button
-                                                                            className="btn btn-link p-0"
-                                                                            onClick={() => toggleCategory(category.id)}
-                                                                            title={openCategoryId === category.id ? "Collapse" : "Expand"}
-                                                                        >
-                                                                            {openCategoryId === category.id ? (
-                                                                                // Minus icon (collapse)
-                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                                                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                                                    <line x1="8" y1="12" x2="16" y2="12" />
-                                                                                </svg>
-                                                                            ) : (
-                                                                                // Plus icon (expand)
-                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                                                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                                                    <line x1="12" y1="8" x2="12" y2="16" />
-                                                                                    <line x1="8" y1="12" x2="16" y2="12" />
-                                                                                </svg>
-                                                                            )}
-                                                                        </button>
-                                                                        {/* Add Sub Category button, only when expanded */}
-                                                                        {openCategoryId === category.id && (
-                                                                            <button
-                                                                                className="btn btn-link p-0 ms-2"
-                                                                                onClick={() => handleAddSubCategory(catIdx)}
-                                                                                title="Add Sub Category"
-                                                                            >
-                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                    <line x1="12" y1="8" x2="12" y2="16" />
-                                                                                    <line x1="8" y1="12" x2="16" y2="12" />
-                                                                                </svg>
-                                                                            </button>
+
+                                                                    <button
+                                                                        className="btn btn-link p-0"
+                                                                        onClick={() => toggleCategory(category.id)}
+                                                                        title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                    >
+                                                                        {openCategoryId === category.id ? (
+                                                                            // Minus icon (collapse)
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                                            </svg>
+                                                                        ) : (
+                                                                            // Plus icon (expand)
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                                            </svg>
                                                                         )}
-
-
-
-
+                                                                    </button>
+                                                                    {/* Add Sub Category button, only when expanded */}
+                                                                    {openCategoryId === category.id && (
                                                                         <button
-                                                                            className="btn btn-link p-0"
-                                                                            onClick={() => handleRemoveMainCategory(catIdx)}
-                                                                            aria-label="Remove main category"
+                                                                            className="btn btn-link p-0 ms-2"
+                                                                            onClick={() => handleAddSubCategory(catIdx)}
+                                                                            title="Add Sub Category level 2"
                                                                         >
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                <line x1="5" y1="8" x2="11" y2="8" />
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                <line x1="8" y1="12" x2="16" y2="12" />
                                                                             </svg>
                                                                         </button>
-                                                                    </>
+                                                                    )}
 
+
+
+
+                                                                    <button
+                                                                        className="btn btn-link p-0"
+                                                                        onClick={() => handleRemoveMainCategory(catIdx)}
+                                                                        aria-label="Remove main category"
+                                                                        title="Remove main category"
+                                                                    >
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                            <line x1="5" y1="8" x2="11" y2="8" />
+                                                                        </svg>
+                                                                    </button>
+
+                                                                    Main Category
                                                                 </td>
-                                                                <td>{catIdx + 1}</td>
-                                                                <td> Main Category</td>
                                                                 <td>
                                                                     {/* {category.name} */}
 
@@ -3098,6 +3275,7 @@ const EstimationCreationTest = () => {
                                                                             handleEditMainCategoryField(catIdx, "location", e.target.value)
                                                                         }
                                                                         className="form-control"
+                                                                        disabled={isOtherLevelFrozen(category, "main", { catIdx })}
                                                                     />
                                                                 </td>
                                                                 <td></td>
@@ -3109,6 +3287,7 @@ const EstimationCreationTest = () => {
                                                                             handleEditMainCategoryField(catIdx, "items", e.target.value)
                                                                         }
                                                                         className="form-control"
+                                                                        disabled={isOtherLevelFrozen(category, "main", { catIdx })}
                                                                     />
                                                                 </td>
                                                                 <td></td>
@@ -3122,6 +3301,7 @@ const EstimationCreationTest = () => {
                                                                         onChange={selectedOption =>
                                                                             handleEditMainCategoryField(catIdx, "uom", selectedOption?.value || "")
                                                                         }
+                                                                        isDisabled={isOtherLevelFrozen(category, "main", { catIdx })}
                                                                     />
                                                                 </td>
                                                                 {/* <td></td> */}
@@ -3133,6 +3313,7 @@ const EstimationCreationTest = () => {
                                                                             handleEditMainCategoryField(catIdx, "qty", e.target.value)
                                                                         }
                                                                         className="form-control"
+                                                                        disabled={isOtherLevelFrozen(category, "main", { catIdx })}
                                                                     />
                                                                 </td>
                                                                 <td></td>
@@ -3255,7 +3436,7 @@ const EstimationCreationTest = () => {
                                                                 category.material_type_details &&
                                                                 category.material_type_details.map((item, itemIdx) => (
                                                                     <tr key={item.id} className="labour">
-                                                                        <td></td>
+                                                                        {/* <td></td> */}
                                                                         <td>
                                                                             {/* {catIdx + 1}.{itemIdx + 1} */}
                                                                         </td>
@@ -3329,7 +3510,8 @@ const EstimationCreationTest = () => {
                                                                         <td>
                                                                             <input
                                                                                 type="number"
-                                                                                value={item.rate || 0}
+                                                                                // value={item.rate || ""}
+                                                                                value={item.rate === 0 ? 0 : item.rate || ""}
                                                                                 onChange={(e) =>
                                                                                     handleEditMaterial(catIdx, itemIdx, "rate", e.target.value)
                                                                                 }
@@ -3337,10 +3519,11 @@ const EstimationCreationTest = () => {
                                                                                 disabled={item.type === "material"} // ✅ Disable if Material
                                                                             />
                                                                         </td>
+                                                                        {console.log("rate:", item.rate)}
                                                                         <td>
                                                                             <input
                                                                                 type="number"
-                                                                                value={item.amount || ""}
+                                                                                value={item.amount || "0"}
                                                                                 readOnly
                                                                                 disabled
                                                                                 className="form-control"
@@ -3349,7 +3532,7 @@ const EstimationCreationTest = () => {
                                                                         <td>
                                                                             <input
                                                                                 type="number"
-                                                                                value={item.costPerUnit || ""}
+                                                                                value={item.costPerUnit || "0"}
                                                                                 readOnly
                                                                                 disabled
                                                                                 className="form-control"
@@ -3389,11 +3572,16 @@ const EstimationCreationTest = () => {
                                                                 category.sub_categories_2.map((subCategory, subCatIdx) => (
                                                                     <React.Fragment key={subCategory.id}>
                                                                         <tr className="category-lvl2">
+                                                                            {/* <td>
+                                                                               
+                                                                            </td> */}
+
+                                                                            <td></td>
                                                                             <td>
                                                                                 <button
                                                                                     className="btn btn-link p-0"
                                                                                     onClick={() => toggleSubCategory2(subCategory.id)}
-                                                                                    title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                                    title={openSubCategory2Id === subCategory.id ? "Collapse" : "Expand"}
                                                                                 >
                                                                                     {openSubCategory2Id ===
                                                                                         subCategory.id ? (
@@ -3417,7 +3605,7 @@ const EstimationCreationTest = () => {
                                                                                         <button
                                                                                             className="btn btn-link p-0 ms-2"
                                                                                             onClick={() => handleAddSubCategory3(catIdx, subCatIdx)}
-                                                                                            title="Add Sub Category"
+                                                                                            title="Add Sub Category level 3"
                                                                                         >
                                                                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                                                 <line x1="12" y1="8" x2="12" y2="16" />
@@ -3433,15 +3621,13 @@ const EstimationCreationTest = () => {
                                                                                     className="btn btn-link p-0"
                                                                                     onClick={() => handleRemoveSubCategory2(catIdx, subCatIdx)}
                                                                                     aria-label="Remove sub-category 2"
+                                                                                    title="Remove Sub Category level 2"
                                                                                 >
                                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                                         <line x1="5" y1="8" x2="11" y2="8" />
                                                                                     </svg>
                                                                                 </button>
-                                                                            </td>
-
-                                                                            <td></td>
-                                                                            <td>Sub-Category Level 2</td>
+                                                                                Sub-Category Level 2</td>
                                                                             <td>
                                                                                 {/* <SingleSelector
                                                                                 options={subCategoryOptions}
@@ -3495,6 +3681,7 @@ const EstimationCreationTest = () => {
                                                                                     value={subCategory.location || ""}
                                                                                     onChange={(e) => handleEditSubCategory2Field(catIdx, subCatIdx, "location", e.target.value)}
                                                                                     className="form-control"
+                                                                                    disabled={isOtherLevelFrozen(category, "sub2", { catIdx, subCatIdx })}
                                                                                 />
 
                                                                             </td>
@@ -3508,6 +3695,7 @@ const EstimationCreationTest = () => {
                                                                                     value={subCategory.items || ""}
                                                                                     onChange={(e) => handleEditSubCategory2Field(catIdx, subCatIdx, "items", e.target.value)}
                                                                                     className="form-control"
+                                                                                    disabled={isOtherLevelFrozen(category, "sub2", { catIdx, subCatIdx })}
                                                                                 />
                                                                             </td>
                                                                             <td></td>
@@ -3521,6 +3709,7 @@ const EstimationCreationTest = () => {
                                                                                     onChange={selectedOption =>
                                                                                         handleEditSubCategory2Field(catIdx, subCatIdx, "uom", selectedOption?.value || "")
                                                                                     }
+                                                                                    isDisabled={isOtherLevelFrozen(category, "sub2", { catIdx, subCatIdx })}
                                                                                 />
                                                                             </td>
                                                                             <td>
@@ -3531,6 +3720,7 @@ const EstimationCreationTest = () => {
                                                                                         handleEditSubCategory2Field(catIdx, subCatIdx, "qty", e.target.value)
                                                                                     }
                                                                                     className="form-control"
+                                                                                    disabled={isOtherLevelFrozen(category, "sub2", { catIdx, subCatIdx })}
                                                                                 />
                                                                             </td>
                                                                             <td>
@@ -3621,7 +3811,7 @@ const EstimationCreationTest = () => {
                                                                             subCategory.material_type_details &&
                                                                             subCategory.material_type_details.map((item, itemIdx) => (
                                                                                 <tr key={item.id} className="labour">
-                                                                                    <td></td>
+                                                                                    {/* <td></td> */}
                                                                                     <td>
                                                                                         {/* {catIdx + 1}.{subCatIdx + 1}.{itemIdx + 1} */}
                                                                                     </td>
@@ -3685,7 +3875,8 @@ const EstimationCreationTest = () => {
                                                                                     <td>
                                                                                         <input
                                                                                             type="number"
-                                                                                            value={item.rate || 0}
+                                                                                            value={item.rate === 0 ? 0 : item.rate || ""}
+                                                                                            // value={item.rate || 0}
                                                                                             onChange={(e) =>
                                                                                                 handleEditSubCategory2Material(catIdx, subCatIdx, itemIdx, "rate", e.target.value)
                                                                                             }
@@ -3696,7 +3887,7 @@ const EstimationCreationTest = () => {
                                                                                     <td>
                                                                                         <input
                                                                                             type="number"
-                                                                                            value={item.amount || ""}
+                                                                                            value={item.amount || "0"}
                                                                                             readOnly
                                                                                             disabled
                                                                                             className="form-control"
@@ -3705,7 +3896,7 @@ const EstimationCreationTest = () => {
                                                                                     <td>
                                                                                         <input
                                                                                             type="number"
-                                                                                            value={item.costPerUnit || ""}
+                                                                                            value={item.costPerUnit || "0"}
                                                                                             readOnly
                                                                                             disabled
                                                                                             className="form-control"
@@ -3736,24 +3927,14 @@ const EstimationCreationTest = () => {
                                                                                 (subCategory3, subCategory3Idx) => (
                                                                                     <React.Fragment key={subCategory3.id}>
                                                                                         <tr className="sub-category-lvl3">
-                                                                                            {/* {console.log("sub3", subCategory3)}
-                                            {console.log(
-                                              "sub4",
-                                              subCategory3.sub_categories_4
-                                            )}
-                                            {console.log(
-                                              "sub3id:",
-                                              openSubCategory3Id
-                                            )} */}
+                                                                                            {/* <td>
+                                                                                            </td> */}
+                                                                                            <td></td>
                                                                                             <td>
-
-
-
-
                                                                                                 <button
                                                                                                     className="btn btn-link p-0"
                                                                                                     onClick={() => toggleSubCategory3(subCategory3.id)}
-                                                                                                    title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                                                    title={openSubCategory3Id === subCategory3.id ? "Collapse" : "Expand"}
                                                                                                 >
                                                                                                     {openSubCategory3Id ===
                                                                                                         subCategory3.id ? (
@@ -3777,7 +3958,7 @@ const EstimationCreationTest = () => {
                                                                                                         <button
                                                                                                             className="btn btn-link p-0 ms-2"
                                                                                                             onClick={() => handleAddSubCategory4(catIdx, subCatIdx, subCategory3Idx)}
-                                                                                                            title="Add Sub Category"
+                                                                                                            title="Add Sub Category level 4"
                                                                                                         >
                                                                                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                                                                 <line x1="12" y1="8" x2="12" y2="16" />
@@ -3790,14 +3971,13 @@ const EstimationCreationTest = () => {
                                                                                                     className="btn btn-link p-0"
                                                                                                     onClick={() => handleRemoveSubCategory3(catIdx, subCatIdx, subCategory3Idx)}
                                                                                                     aria-label="Remove sub-category 3"
+                                                                                                    title=" Remove Sub Category level 3"
                                                                                                 >
                                                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                                                         <line x1="5" y1="8" x2="11" y2="8" />
                                                                                                     </svg>
                                                                                                 </button>
-                                                                                            </td>
-                                                                                            <td></td>
-                                                                                            <td>Sub-Category Level 3</td>
+                                                                                                Sub-Category Level 3</td>
                                                                                             <td>
                                                                                                 {/* <SingleSelector
                                                                                                                       options={subCategoryLevel3Options}
@@ -3830,6 +4010,7 @@ const EstimationCreationTest = () => {
                                                                                                     value={subCategory3.location || ""}
                                                                                                     onChange={(e) => handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "location", e.target.value)}
                                                                                                     className="form-control"
+                                                                                                    disabled={isOtherLevelFrozen(category, "sub3", { catIdx, subCatIdx, subCategory3Idx })}
                                                                                                 />
                                                                                             </td>
                                                                                             <td>
@@ -3841,6 +4022,7 @@ const EstimationCreationTest = () => {
                                                                                                     value={subCategory3.items || ""}
                                                                                                     onChange={(e) => handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "items", e.target.value)}
                                                                                                     className="form-control"
+                                                                                                    disabled={isOtherLevelFrozen(category, "sub3", { catIdx, subCatIdx, subCategory3Idx })}
                                                                                                 />
                                                                                             </td>
                                                                                             <td>
@@ -3856,6 +4038,7 @@ const EstimationCreationTest = () => {
                                                                                                     onChange={selectedOption =>
                                                                                                         handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "uom", selectedOption?.value || "")
                                                                                                     }
+                                                                                                    isDisabled={isOtherLevelFrozen(category, "sub3", { catIdx, subCatIdx, subCategory3Idx })}
                                                                                                 />
                                                                                             </td>
                                                                                             <td>
@@ -3866,6 +4049,7 @@ const EstimationCreationTest = () => {
                                                                                                         handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "qty", e.target.value)
                                                                                                     }
                                                                                                     className="form-control"
+                                                                                                    disabled={isOtherLevelFrozen(category, "sub3", { catIdx, subCatIdx, subCategory3Idx })}
                                                                                                 />
                                                                                             </td>
                                                                                             <td></td>
@@ -3941,7 +4125,7 @@ const EstimationCreationTest = () => {
                                                                                             subCategory3.material_type_details &&
                                                                                             subCategory3.material_type_details.map((item, itemIdx) => (
                                                                                                 <tr key={item.id} className="labour">
-                                                                                                    <td></td>
+                                                                                                    {/* <td></td> */}
                                                                                                     <td></td>
                                                                                                     <td></td>
                                                                                                     <td></td>
@@ -4007,7 +4191,8 @@ const EstimationCreationTest = () => {
                                                                                                     <td>
                                                                                                         <input
                                                                                                             type="number"
-                                                                                                            value={item.rate || 0}
+                                                                                                            value={item.rate === 0 ? 0 : item.rate || ""}
+                                                                                                            // value={item.rate || 0}
                                                                                                             onChange={(e) =>
                                                                                                                 handleEditSubCategory3Material(catIdx, subCatIdx, subCategory3Idx, itemIdx, "rate", e.target.value)
                                                                                                             }
@@ -4019,7 +4204,7 @@ const EstimationCreationTest = () => {
                                                                                                     <td>
                                                                                                         <input
                                                                                                             type="number"
-                                                                                                            value={item.amount || ""}
+                                                                                                            value={item.amount || "0"}
                                                                                                             readOnly
                                                                                                             disabled
                                                                                                             className="form-control"
@@ -4028,7 +4213,7 @@ const EstimationCreationTest = () => {
                                                                                                     <td>
                                                                                                         <input
                                                                                                             type="number"
-                                                                                                            value={item.costPerUnit || ""}
+                                                                                                            value={item.costPerUnit || "0"}
                                                                                                             readOnly
                                                                                                             disabled
                                                                                                             className="form-control"
@@ -4063,17 +4248,15 @@ const EstimationCreationTest = () => {
                                                                                                         key={subCategory4.id}
                                                                                                     >
                                                                                                         <tr className="sub-category-lvl4">
-                                                                                                            {/* {console.log("sub3",subCategory3)}
-                                                                            {console.log("sub4",subCategory3.sub_categories_4)}
-                                                                            {console.log("sub3id:", openSubCategory3Id)} */}
+
+                                                                                                            {/* <td>
+                                                                                                            </td> */}
+                                                                                                            <td></td>
                                                                                                             <td>
-
-
-
                                                                                                                 <button
                                                                                                                     className="btn btn-link p-0"
                                                                                                                     onClick={() => toggleSubCategory4(subCategory4.id)}
-                                                                                                                    title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                                                                    title={openSubCategory4Id === subCategory4.id ? "Collapse" : "Expand"}
                                                                                                                 >
                                                                                                                     {openSubCategory4Id ===
                                                                                                                         subCategory4.id ? (
@@ -4097,7 +4280,7 @@ const EstimationCreationTest = () => {
                                                                                                                         <button
                                                                                                                             className="btn btn-link p-0 ms-2"
                                                                                                                             onClick={() => handleAddSubCategory5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx)}
-                                                                                                                            title="Add Sub Category"
+                                                                                                                            title="Add Sub Category level 5"
                                                                                                                         >
                                                                                                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                                                                                 <line x1="12" y1="8" x2="12" y2="16" />
@@ -4110,14 +4293,12 @@ const EstimationCreationTest = () => {
                                                                                                                     className="btn btn-link p-0"
                                                                                                                     onClick={() => handleRemoveSubCategory4(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx)}
                                                                                                                     aria-label="Remove sub-category 4"
+                                                                                                                    title="Remove Sub Category level 4"
                                                                                                                 >
                                                                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                                                                         <line x1="5" y1="8" x2="11" y2="8" />
                                                                                                                     </svg>
                                                                                                                 </button>
-                                                                                                            </td>
-                                                                                                            <td></td>
-                                                                                                            <td>
                                                                                                                 Sub-Category Level 4
                                                                                                             </td>
                                                                                                             <td>
@@ -4151,6 +4332,7 @@ const EstimationCreationTest = () => {
                                                                                                                     value={subCategory4.location || ""}
                                                                                                                     onChange={(e) => handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "location", e.target.value)}
                                                                                                                     className="form-control"
+                                                                                                                    disabled={isOtherLevelFrozen(category, "sub4", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx })}
                                                                                                                 />
                                                                                                             </td>
                                                                                                             <td>
@@ -4162,6 +4344,7 @@ const EstimationCreationTest = () => {
                                                                                                                     value={subCategory4.items || ""}
                                                                                                                     onChange={(e) => handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "items", e.target.value)}
                                                                                                                     className="form-control"
+                                                                                                                    disabled={isOtherLevelFrozen(category, "sub4", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx })}
                                                                                                                 />
                                                                                                             </td>
                                                                                                             <td>
@@ -4177,6 +4360,7 @@ const EstimationCreationTest = () => {
                                                                                                                     onChange={selectedOption =>
                                                                                                                         handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "uom", selectedOption?.value || "")
                                                                                                                     }
+                                                                                                                    isDisabled={isOtherLevelFrozen(category, "sub4", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx })}
                                                                                                                 />
                                                                                                             </td>
                                                                                                             <td>
@@ -4187,6 +4371,7 @@ const EstimationCreationTest = () => {
                                                                                                                         handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "qty", e.target.value)
                                                                                                                     }
                                                                                                                     className="form-control"
+                                                                                                                    disabled={isOtherLevelFrozen(category, "sub4", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx })}
                                                                                                                 />
                                                                                                             </td>
                                                                                                             <td></td>
@@ -4243,7 +4428,7 @@ const EstimationCreationTest = () => {
                                                                                                             subCategory4.material_type_details &&
                                                                                                             subCategory4.material_type_details.map((item, itemIdx) => (
                                                                                                                 <tr key={item.id} className="labour">
-                                                                                                                    <td></td>
+                                                                                                                    {/* <td></td> */}
                                                                                                                     <td></td>
                                                                                                                     <td></td>
                                                                                                                     <td></td>
@@ -4307,7 +4492,7 @@ const EstimationCreationTest = () => {
                                                                                                                     <td>
                                                                                                                         <input
                                                                                                                             type="number"
-                                                                                                                            value={item.rate || 0}
+                                                                                                                            value={item.rate === 0 ? 0 : item.rate || "0"}
                                                                                                                             onChange={(e) =>
                                                                                                                                 handleEditSubCategory4Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "rate", e.target.value)
                                                                                                                             }
@@ -4319,7 +4504,7 @@ const EstimationCreationTest = () => {
                                                                                                                     <td>
                                                                                                                         <input
                                                                                                                             type="number"
-                                                                                                                            value={item.amount || ""}
+                                                                                                                            value={item.amount || "0"}
                                                                                                                             readOnly
                                                                                                                             disabled
                                                                                                                             className="form-control"
@@ -4328,7 +4513,7 @@ const EstimationCreationTest = () => {
                                                                                                                     <td>
                                                                                                                         <input
                                                                                                                             type="number"
-                                                                                                                            value={item.costPerUnit || ""}
+                                                                                                                            value={item.costPerUnit || "0"}
                                                                                                                             readOnly
                                                                                                                             disabled
                                                                                                                             className="form-control"
@@ -4364,12 +4549,11 @@ const EstimationCreationTest = () => {
                                                                                                                         key={subCategory5.id}
                                                                                                                     >
                                                                                                                         <tr className="sub-category-lvl5">
-                                                                                                                            {console.log(
-                                                                                                                                "sub5",
-                                                                                                                                subCategory5
-                                                                                                                            )}
-                                                                                                                            {/* {console.log("sub4",subCategory3.sub_categories_4)}
-                                                                            {console.log("sub3id:", openSubCategory3Id)} */}
+
+                                                                                                                            {/* <td>
+                                                                                                                               
+                                                                                                                            </td> */}
+                                                                                                                            <td></td>
                                                                                                                             <td>
                                                                                                                                 <button
                                                                                                                                     className="btn btn-link p-0"
@@ -4379,6 +4563,7 @@ const EstimationCreationTest = () => {
                                                                                                                                         )
                                                                                                                                     }
                                                                                                                                     aria-label="Toggle sub-category 3 visibility"
+                                                                                                                                    title={openSubCategory5Id === subCategory5.id ? "Collapse" : "Expand"}
                                                                                                                                 >
                                                                                                                                     {openSubCategory5Id ===
                                                                                                                                         subCategory5.id ? (
@@ -4450,15 +4635,13 @@ const EstimationCreationTest = () => {
                                                                                                                                 <button
                                                                                                                                     className="btn btn-link p-0"
                                                                                                                                     onClick={() => handleRemoveSubCategory5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx)}
-                                                                                                                                    aria-label="Remove sub-category 5"
+                                                                                                                                    aria-label="Remove Sub Category level 5"
+                                                                                                                                    title="Remove Sub Category level 5"
                                                                                                                                 >
                                                                                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                                                                                         <line x1="5" y1="8" x2="11" y2="8" />
                                                                                                                                     </svg>
                                                                                                                                 </button>
-                                                                                                                            </td>
-                                                                                                                            <td></td>
-                                                                                                                            <td>
                                                                                                                                 Sub-Category Level 5
                                                                                                                             </td>
                                                                                                                             <td>
@@ -4493,6 +4676,7 @@ const EstimationCreationTest = () => {
                                                                                                                                     value={subCategory5.location || ""}
                                                                                                                                     onChange={(e) => handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "location", e.target.value)}
                                                                                                                                     className="form-control"
+                                                                                                                                    disabled={isOtherLevelFrozen(category, "sub5", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx })}
                                                                                                                                 />
                                                                                                                             </td>
                                                                                                                             <td>
@@ -4504,6 +4688,7 @@ const EstimationCreationTest = () => {
                                                                                                                                     value={subCategory5.items || ""}
                                                                                                                                     onChange={(e) => handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "items", e.target.value)}
                                                                                                                                     className="form-control"
+                                                                                                                                    disabled={isOtherLevelFrozen(category, "sub5", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx })}
                                                                                                                                 />
                                                                                                                             </td>
                                                                                                                             <td>
@@ -4519,6 +4704,7 @@ const EstimationCreationTest = () => {
                                                                                                                                     onChange={selectedOption =>
                                                                                                                                         handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "uom", selectedOption?.value || "")
                                                                                                                                     }
+                                                                                                                                    isDisabled={isOtherLevelFrozen(category, "sub5", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx })}
                                                                                                                                 />
                                                                                                                             </td>
                                                                                                                             <td>
@@ -4529,6 +4715,7 @@ const EstimationCreationTest = () => {
                                                                                                                                         handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "qty", e.target.value)
                                                                                                                                     }
                                                                                                                                     className="form-control"
+                                                                                                                                    disabled={isOtherLevelFrozen(category, "sub5", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx })}
                                                                                                                                 />
                                                                                                                             </td>
                                                                                                                             <td></td>
@@ -4567,7 +4754,7 @@ const EstimationCreationTest = () => {
                                                                                                                             subCategory5.material_type_details &&
                                                                                                                             subCategory5.material_type_details.map((item, itemIdx) => (
                                                                                                                                 <tr key={item.id} className="labour">
-                                                                                                                                    <td></td>
+                                                                                                                                    {/* <td></td> */}
                                                                                                                                     <td></td>
                                                                                                                                     <td></td>
                                                                                                                                     <td></td>
@@ -4632,7 +4819,8 @@ const EstimationCreationTest = () => {
                                                                                                                                     <td>
                                                                                                                                         <input
                                                                                                                                             type="number"
-                                                                                                                                            value={item.rate || 0}
+                                                                                                                                            // value={item.rate || 0}
+                                                                                                                                            value={item.rate === 0 ? 0 : item.rate || ""}
                                                                                                                                             onChange={(e) =>
                                                                                                                                                 handleEditSubCategory5Material(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx, "rate", e.target.value)
                                                                                                                                             }
@@ -4644,7 +4832,7 @@ const EstimationCreationTest = () => {
                                                                                                                                     <td>
                                                                                                                                         <input
                                                                                                                                             type="number"
-                                                                                                                                            value={item.amount || ""}
+                                                                                                                                            value={item.amount || "0"}
                                                                                                                                             readOnly
                                                                                                                                             disabled
                                                                                                                                             className="form-control"
@@ -4653,7 +4841,7 @@ const EstimationCreationTest = () => {
                                                                                                                                     <td>
                                                                                                                                         <input
                                                                                                                                             type="number"
-                                                                                                                                            value={item.costPerUnit || ""}
+                                                                                                                                            value={item.costPerUnit || "0"}
                                                                                                                                             readOnly
                                                                                                                                             disabled
                                                                                                                                             className="form-control"
@@ -4692,10 +4880,16 @@ const EstimationCreationTest = () => {
                                                                 ))}
                                                             {/* sub level 2 end*/}
                                                         </React.Fragment>
-                                                    ))}
-                                                {/* Conditional rendering for categories under sub-project  end*/}
+                                                        // ))}
 
-                                                {/* subProject end */}
+                                                    ))
+                                                ) : (
+                                                    <tr>
+                                                        <td colSpan={16} className="text-center ">
+                                                            No data available
+                                                        </td>
+                                                    </tr>
+                                                )}
                                             </tbody>
                                         </table>
                                     </div>
@@ -4724,15 +4918,18 @@ const EstimationCreationTest = () => {
                                 </div>
 
                                 <div className="mx-3 ">
-                                    <div className="tbl-container mt-1" style={{
-                                        maxHeight: "750px",
-                                    }}>
+                                    <div className="tbl-container mt-1"
+                                        style={{
+                                            maxHeight: "400px",
+                                        }}
+                                    >
                                         <table
-                                            className=""
+                                            // className="w-100"
+                                            className={subProjectDetails && subProjectDetails.categories && subProjectDetails.categories.length > 0 ? "" : "w-100"}
                                         >
                                             <thead style={{ zIndex: "111 " }}>
                                                 <tr>
-                                                    <th className="text-start">Expand</th>
+                                                    {/* <th className="text-start">Expand</th> */}
                                                     <th className="text-start">Sr No.</th>
                                                     <th className="text-start">Level</th>
                                                     <th className="text-start">Category</th>
@@ -4740,12 +4937,12 @@ const EstimationCreationTest = () => {
                                                     <th className="text-start">Type</th>
                                                     <th className="text-start">Items</th>
                                                     {/* <th className="text-start">Factor</th> */}
-                                                    <th className="text-start" style={{ width: "200px" }}>UOM</th>
+                                                    <th className="text-start">UOM</th>
                                                     {/* <th className="text-start">Area</th> */}
-                                                    <th className="text-start">QTY Excl Wastage</th>
+                                                    <th className="text-start" style={{ width: "120px" }}>QTY Excl Wastage</th>
                                                     {/* <th className="text-start">Wastage</th> */}
                                                     {/* <th className="text-start">QTY incl Waste</th> */}
-                                                    <th className="text-start">Rate</th>
+                                                    <th className="text-start" style={{ width: "120px" }}>Rate</th>
                                                     <th className="text-start">Amount</th>
                                                     {/* <th className="text-start">Cost Per Unit</th> */}
                                                     <th className="text-start" style={{ width: "12px" }}>
@@ -4753,7 +4950,7 @@ const EstimationCreationTest = () => {
                                                     </th>
                                                 </tr>
                                                 <tr>
-                                                    <th className="text-start"></th>
+                                                    {/* <th className="text-start"></th> */}
                                                     <th className="text-start"></th>
                                                     <th className="text-start"></th>
                                                     <th className="text-start"></th>
@@ -4775,64 +4972,66 @@ const EstimationCreationTest = () => {
                                             </thead>
                                             <tbody>
                                                 {/* Conditional rendering for categories under sub-project start */}
-                                                {subProjectDetails &&
-                                                    subProjectDetails.categories &&
+                                                {subProjectDetails && subProjectDetails.categories && subProjectDetails.categories.length > 0 ? (
                                                     subProjectDetails.categories.map((category, catIdx) => (
+                                                        // {subProjectDetails &&
+                                                        //     subProjectDetails.categories &&
+                                                        // subProjectDetails.categories.map((category, catIdx) => (
                                                         <React.Fragment key={category.id}>
                                                             <tr className="main-category">
+                                                                {/* <td>
+                                                                
+                                                                </td> */}
+                                                                <td>{catIdx + 1}</td>
                                                                 <td>
-                                                                    <>
-                                                                        <button
-                                                                            className="btn btn-link p-0"
-                                                                            onClick={() => toggleCategory(category.id)}
-                                                                            title={openCategoryId === category.id ? "Collapse" : "Expand"}
-                                                                        >
-                                                                            {openCategoryId === category.id ? (
-                                                                                // Minus icon (collapse)
-                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                                                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                                                    <line x1="8" y1="12" x2="16" y2="12" />
-                                                                                </svg>
-                                                                            ) : (
-                                                                                // Plus icon (expand)
-                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                                                                    <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
-                                                                                    <line x1="12" y1="8" x2="12" y2="16" />
-                                                                                    <line x1="8" y1="12" x2="16" y2="12" />
-                                                                                </svg>
-                                                                            )}
-                                                                        </button>
-                                                                        {/* Add Sub Category button, only when expanded */}
-                                                                        {openCategoryId === category.id && (
-                                                                            <button
-                                                                                className="btn btn-link p-0 ms-2"
-                                                                                onClick={() => handleAddSubCategory(catIdx)}
-                                                                                title="Add Sub Category"
-                                                                            >
-                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                    <line x1="12" y1="8" x2="12" y2="16" />
-                                                                                    <line x1="8" y1="12" x2="16" y2="12" />
-                                                                                </svg>
-                                                                            </button>
+                                                                    <button
+                                                                        className="btn btn-link p-0"
+                                                                        onClick={() => toggleCategory(category.id)}
+                                                                        title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                    >
+                                                                        {openCategoryId === category.id ? (
+                                                                            // Minus icon (collapse)
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                                            </svg>
+                                                                        ) : (
+                                                                            // Plus icon (expand)
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0e0e0" stroke="black" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                                                                <rect x="3" y="3" width="18" height="20" rx="1" ry="1" />
+                                                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                                            </svg>
                                                                         )}
-
-
-
-
+                                                                    </button>
+                                                                    {/* Add Sub Category button, only when expanded */}
+                                                                    {openCategoryId === category.id && (
                                                                         <button
-                                                                            className="btn btn-link p-0"
-                                                                            onClick={() => handleRemoveMainCategory(catIdx)}
-                                                                            aria-label="Remove main category"
+                                                                            className="btn btn-link p-0 ms-2"
+                                                                            onClick={() => handleAddSubCategory(catIdx)}
+                                                                            title="Add Sub Category Level 2"
                                                                         >
-                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                                <line x1="5" y1="8" x2="11" y2="8" />
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                                                <line x1="8" y1="12" x2="16" y2="12" />
                                                                             </svg>
                                                                         </button>
-                                                                    </>
+                                                                    )}
 
-                                                                </td>
-                                                                <td>{catIdx + 1}</td>
-                                                                <td> Main Category</td>
+
+
+
+                                                                    <button
+                                                                        className="btn btn-link p-0"
+                                                                        onClick={() => handleRemoveMainCategory(catIdx)}
+                                                                        aria-label="Remove main category"
+                                                                        title="Remove main category"
+                                                                    >
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                            <line x1="5" y1="8" x2="11" y2="8" />
+                                                                        </svg>
+                                                                    </button>
+                                                                    Main Category</td>
                                                                 <td>
                                                                     {/* {category.name} */}
 
@@ -4871,7 +5070,7 @@ const EstimationCreationTest = () => {
                                                                             handleEditMainCategoryField(catIdx, "location", e.target.value)
                                                                         }
                                                                         className="form-control"
-                                                                    // disabled={isOtherLevelFrozen(category, "main", { catIdx })}
+                                                                        disabled={isOtherLevelFrozen(category, "main", { catIdx })}
                                                                     />
                                                                 </td>
                                                                 <td></td>
@@ -4883,7 +5082,7 @@ const EstimationCreationTest = () => {
                                                                             handleEditMainCategoryField(catIdx, "items", e.target.value)
                                                                         }
                                                                         className="form-control"
-                                                                    // disabled={isOtherLevelFrozen(category, "main", { catIdx })}
+                                                                        disabled={isOtherLevelFrozen(category, "main", { catIdx })}
                                                                     />
                                                                 </td>
                                                                 {/* <td></td> */}
@@ -4897,7 +5096,7 @@ const EstimationCreationTest = () => {
                                                                         onChange={selectedOption =>
                                                                             handleEditMainCategoryField(catIdx, "uom", selectedOption?.value || "")
                                                                         }
-                                                                    // disabled={isOtherLevelFrozen(category, "main", { catIdx })}
+                                                                        isDisabled={isOtherLevelFrozen(category, "main", { catIdx })}
                                                                     />
                                                                 </td>
                                                                 {/* <td></td> */}
@@ -5031,7 +5230,7 @@ const EstimationCreationTest = () => {
                                                                 category.material_type_details &&
                                                                 category.material_type_details.map((item, itemIdx) => (
                                                                     <tr key={item.id} className="labour">
-                                                                        <td></td>
+                                                                        {/* <td></td> */}
                                                                         <td>
                                                                             {/* {catIdx + 1}.{itemIdx + 1} */}
                                                                         </td>
@@ -5080,12 +5279,12 @@ const EstimationCreationTest = () => {
                                                                         <td>
                                                                             <input
                                                                                 type="number"
-                                                                                value={item.rate || 0}
+                                                                                value={item.rate}
                                                                                 onChange={(e) =>
                                                                                     handleEditMaterial2(catIdx, itemIdx, "rate", e.target.value)
                                                                                 }
                                                                                 className="form-control"
-                                                                                disabled={item.type === "material"} // ✅ Disable if Material
+                                                                            // disabled={item.type === "material"} // ✅ Disable if Material
                                                                             />
                                                                         </td>
                                                                         <td>
@@ -5132,11 +5331,16 @@ const EstimationCreationTest = () => {
                                                                 category.sub_categories_2.map((subCategory, subCatIdx) => (
                                                                     <React.Fragment key={subCategory.id}>
                                                                         <tr className="category-lvl2">
+                                                                            {/* <td>
+                                                                               
+                                                                            </td> */}
+
+                                                                            <td></td>
                                                                             <td>
                                                                                 <button
                                                                                     className="btn btn-link p-0"
                                                                                     onClick={() => toggleSubCategory2(subCategory.id)}
-                                                                                    title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                                    title={openSubCategory2Id === subCategory.id ? "Collapse" : "Expand"}
                                                                                 >
                                                                                     {openSubCategory2Id ===
                                                                                         subCategory.id ? (
@@ -5160,7 +5364,7 @@ const EstimationCreationTest = () => {
                                                                                         <button
                                                                                             className="btn btn-link p-0 ms-2"
                                                                                             onClick={() => handleAddSubCategory3(catIdx, subCatIdx)}
-                                                                                            title="Add Sub Category"
+                                                                                            title="Add Sub Category level 3"
                                                                                         >
                                                                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                                                 <line x1="12" y1="8" x2="12" y2="16" />
@@ -5175,16 +5379,14 @@ const EstimationCreationTest = () => {
                                                                                 <button
                                                                                     className="btn btn-link p-0"
                                                                                     onClick={() => handleRemoveSubCategory2(catIdx, subCatIdx)}
-                                                                                    aria-label="Remove sub-category 2"
+                                                                                    aria-label="Remove sub-category level 2"
+                                                                                    title="Remove Sub Category level 2"
                                                                                 >
                                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                                         <line x1="5" y1="8" x2="11" y2="8" />
                                                                                     </svg>
                                                                                 </button>
-                                                                            </td>
-
-                                                                            <td></td>
-                                                                            <td>Sub-Category Level 2</td>
+                                                                                Sub-Category Level 2</td>
                                                                             <td>
                                                                                 {/* <SingleSelector
                                                                                 options={subCategoryOptions}
@@ -5238,6 +5440,7 @@ const EstimationCreationTest = () => {
                                                                                     value={subCategory.location || ""}
                                                                                     onChange={(e) => handleEditSubCategory2Field(catIdx, subCatIdx, "location", e.target.value)}
                                                                                     className="form-control"
+                                                                                    disabled={isOtherLevelFrozen(category, "sub2", { catIdx, subCatIdx })}
                                                                                 />
 
                                                                             </td>
@@ -5251,6 +5454,7 @@ const EstimationCreationTest = () => {
                                                                                     value={subCategory.items || ""}
                                                                                     onChange={(e) => handleEditSubCategory2Field(catIdx, subCatIdx, "items", e.target.value)}
                                                                                     className="form-control"
+                                                                                    disabled={isOtherLevelFrozen(category, "sub2", { catIdx, subCatIdx })}
                                                                                 />
                                                                             </td>
 
@@ -5264,6 +5468,7 @@ const EstimationCreationTest = () => {
                                                                                     onChange={selectedOption =>
                                                                                         handleEditSubCategory2Field(catIdx, subCatIdx, "uom", selectedOption?.value || "")
                                                                                     }
+                                                                                    isDisabled={isOtherLevelFrozen(category, "sub2", { catIdx, subCatIdx })}
                                                                                 />
                                                                             </td>
                                                                             <td>
@@ -5363,7 +5568,7 @@ const EstimationCreationTest = () => {
                                                                             subCategory.material_type_details &&
                                                                             subCategory.material_type_details.map((item, itemIdx) => (
                                                                                 <tr key={item.id} className="labour">
-                                                                                    <td></td>
+                                                                                    {/* <td></td> */}
                                                                                     <td>
                                                                                         {/* {catIdx + 1}.{subCatIdx + 1}.{itemIdx + 1} */}
                                                                                     </td>
@@ -5408,12 +5613,12 @@ const EstimationCreationTest = () => {
                                                                                     <td>
                                                                                         <input
                                                                                             type="number"
-                                                                                            value={item.rate || 0}
+                                                                                            value={item.rate}
                                                                                             onChange={(e) =>
                                                                                                 handleEditMaterial2SubCat2(catIdx, subCatIdx, itemIdx, "rate", e.target.value)
                                                                                             }
                                                                                             className="form-control"
-                                                                                            disabled={item.type === "material"}
+                                                                                        // disabled={item.type === "material"}
                                                                                         />
                                                                                     </td>
                                                                                     <td>
@@ -5451,24 +5656,14 @@ const EstimationCreationTest = () => {
                                                                                 (subCategory3, subCategory3Idx) => (
                                                                                     <React.Fragment key={subCategory3.id}>
                                                                                         <tr className="sub-category-lvl3">
-                                                                                            {/* {console.log("sub3", subCategory3)}
-                                            {console.log(
-                                              "sub4",
-                                              subCategory3.sub_categories_4
-                                            )}
-                                            {console.log(
-                                              "sub3id:",
-                                              openSubCategory3Id
-                                            )} */}
+                                                                                            {/* <td>
+                                                                                            </td> */}
+                                                                                            <td></td>
                                                                                             <td>
-
-
-
-
                                                                                                 <button
                                                                                                     className="btn btn-link p-0"
                                                                                                     onClick={() => toggleSubCategory3(subCategory3.id)}
-                                                                                                    title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                                                    title={openSubCategory3Id === subCategory3.id ? "Collapse" : "Expand"}
                                                                                                 >
                                                                                                     {openSubCategory3Id ===
                                                                                                         subCategory3.id ? (
@@ -5492,7 +5687,7 @@ const EstimationCreationTest = () => {
                                                                                                         <button
                                                                                                             className="btn btn-link p-0 ms-2"
                                                                                                             onClick={() => handleAddSubCategory4(catIdx, subCatIdx, subCategory3Idx)}
-                                                                                                            title="Add Sub Category"
+                                                                                                            title="Add Sub Category level 4"
                                                                                                         >
                                                                                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                                                                 <line x1="12" y1="8" x2="12" y2="16" />
@@ -5505,14 +5700,13 @@ const EstimationCreationTest = () => {
                                                                                                     className="btn btn-link p-0"
                                                                                                     onClick={() => handleRemoveSubCategory3(catIdx, subCatIdx, subCategory3Idx)}
                                                                                                     aria-label="Remove sub-category 3"
+                                                                                                    title="Remove Sub Category level 3"
                                                                                                 >
                                                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                                                         <line x1="5" y1="8" x2="11" y2="8" />
                                                                                                     </svg>
                                                                                                 </button>
-                                                                                            </td>
-                                                                                            <td></td>
-                                                                                            <td>Sub-Category Level 3</td>
+                                                                                                Sub-Category Level 3</td>
                                                                                             <td>
                                                                                                 {/* <SingleSelector
                                                                                                                       options={subCategoryLevel3Options}
@@ -5545,6 +5739,7 @@ const EstimationCreationTest = () => {
                                                                                                     value={subCategory3.location || ""}
                                                                                                     onChange={(e) => handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "location", e.target.value)}
                                                                                                     className="form-control"
+                                                                                                    disabled={isOtherLevelFrozen(category, "sub3", { catIdx, subCatIdx, subCategory3Idx })}
                                                                                                 />
                                                                                             </td>
                                                                                             <td>
@@ -5556,6 +5751,7 @@ const EstimationCreationTest = () => {
                                                                                                     value={subCategory3.items || ""}
                                                                                                     onChange={(e) => handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "items", e.target.value)}
                                                                                                     className="form-control"
+                                                                                                    disabled={isOtherLevelFrozen(category, "sub3", { catIdx, subCatIdx, subCategory3Idx })}
                                                                                                 />
                                                                                             </td>
 
@@ -5569,6 +5765,7 @@ const EstimationCreationTest = () => {
                                                                                                     onChange={selectedOption =>
                                                                                                         handleEditSubCategory3Field(catIdx, subCatIdx, subCategory3Idx, "uom", selectedOption?.value || "")
                                                                                                     }
+                                                                                                    isDisabled={isOtherLevelFrozen(category, "sub3", { catIdx, subCatIdx, subCategory3Idx })}
                                                                                                 />
                                                                                             </td>
                                                                                             <td>
@@ -5653,7 +5850,7 @@ const EstimationCreationTest = () => {
                                                                                             subCategory3.material_type_details &&
                                                                                             subCategory3.material_type_details.map((item, itemIdx) => (
                                                                                                 <tr key={item.id} className="labour">
-                                                                                                    <td></td>
+                                                                                                    {/* <td></td> */}
                                                                                                     <td></td>
                                                                                                     <td></td>
                                                                                                     <td></td>
@@ -5700,12 +5897,12 @@ const EstimationCreationTest = () => {
                                                                                                     <td>
                                                                                                         <input
                                                                                                             type="number"
-                                                                                                            value={item.rate || 0}
+                                                                                                            value={item.rate}
                                                                                                             onChange={(e) =>
                                                                                                                 handleEditMaterial2SubCat3(catIdx, subCatIdx, subCategory3Idx, itemIdx, "rate", e.target.value)
                                                                                                             }
                                                                                                             className="form-control"
-                                                                                                            disabled={item.type === "material"}
+                                                                                                        // disabled={item.type === "material"}
                                                                                                         />
                                                                                                     </td>
 
@@ -5748,17 +5945,16 @@ const EstimationCreationTest = () => {
                                                                                                         key={subCategory4.id}
                                                                                                     >
                                                                                                         <tr className="sub-category-lvl4">
-                                                                                                            {/* {console.log("sub3",subCategory3)}
-                                                                            {console.log("sub4",subCategory3.sub_categories_4)}
-                                                                            {console.log("sub3id:", openSubCategory3Id)} */}
+
+                                                                                                            {/* <td>
+                                                       
+                                                                                                            </td> */}
+                                                                                                            <td></td>
                                                                                                             <td>
-
-
-
                                                                                                                 <button
                                                                                                                     className="btn btn-link p-0"
                                                                                                                     onClick={() => toggleSubCategory4(subCategory4.id)}
-                                                                                                                    title={openCategoryId === category.id ? "Collapse" : "Expand"}
+                                                                                                                    title={openSubCategory4Id === subCategory4.id ? "Collapse" : "Expand"}
                                                                                                                 >
                                                                                                                     {openSubCategory4Id ===
                                                                                                                         subCategory4.id ? (
@@ -5782,7 +5978,7 @@ const EstimationCreationTest = () => {
                                                                                                                         <button
                                                                                                                             className="btn btn-link p-0 ms-2"
                                                                                                                             onClick={() => handleAddSubCategory5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx)}
-                                                                                                                            title="Add Sub Category"
+                                                                                                                            title="Add Sub Category level 5"
                                                                                                                         >
                                                                                                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="purple" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                                                                                 <line x1="12" y1="8" x2="12" y2="16" />
@@ -5795,14 +5991,12 @@ const EstimationCreationTest = () => {
                                                                                                                     className="btn btn-link p-0"
                                                                                                                     onClick={() => handleRemoveSubCategory4(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx)}
                                                                                                                     aria-label="Remove sub-category 4"
+                                                                                                                    title="Remove Sub Category level 4"
                                                                                                                 >
                                                                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                                                                         <line x1="5" y1="8" x2="11" y2="8" />
                                                                                                                     </svg>
                                                                                                                 </button>
-                                                                                                            </td>
-                                                                                                            <td></td>
-                                                                                                            <td>
                                                                                                                 Sub-Category Level 4
                                                                                                             </td>
                                                                                                             <td>
@@ -5836,6 +6030,7 @@ const EstimationCreationTest = () => {
                                                                                                                     value={subCategory4.location || ""}
                                                                                                                     onChange={(e) => handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "location", e.target.value)}
                                                                                                                     className="form-control"
+                                                                                                                    disabled={isOtherLevelFrozen(category, "sub4", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx })}
                                                                                                                 />
                                                                                                             </td>
                                                                                                             <td>
@@ -5847,6 +6042,7 @@ const EstimationCreationTest = () => {
                                                                                                                     value={subCategory4.items || ""}
                                                                                                                     onChange={(e) => handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "items", e.target.value)}
                                                                                                                     className="form-control"
+                                                                                                                    disabled={isOtherLevelFrozen(category, "sub4", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx })}
                                                                                                                 />
                                                                                                             </td>
 
@@ -5860,6 +6056,7 @@ const EstimationCreationTest = () => {
                                                                                                                     onChange={selectedOption =>
                                                                                                                         handleEditSubCategory4Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, "uom", selectedOption?.value || "")
                                                                                                                     }
+                                                                                                                    isDisabled={isOtherLevelFrozen(category, "sub4", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx })}
                                                                                                                 />
                                                                                                             </td>
                                                                                                             <td>
@@ -5925,7 +6122,7 @@ const EstimationCreationTest = () => {
                                                                                                             subCategory4.material_type_details &&
                                                                                                             subCategory4.material_type_details.map((item, itemIdx) => (
                                                                                                                 <tr key={item.id} className="labour">
-                                                                                                                    <td></td>
+                                                                                                                    {/* <td></td> */}
                                                                                                                     <td></td>
                                                                                                                     <td></td>
                                                                                                                     <td></td>
@@ -5970,12 +6167,12 @@ const EstimationCreationTest = () => {
                                                                                                                     <td>
                                                                                                                         <input
                                                                                                                             type="number"
-                                                                                                                            value={item.rate || "0"}
+                                                                                                                            value={item.rate}
                                                                                                                             onChange={(e) =>
                                                                                                                                 handleEditMaterial2SubCat4(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, itemIdx, "rate", e.target.value)
                                                                                                                             }
                                                                                                                             className="form-control"
-                                                                                                                            disabled={item.type === "material"}
+                                                                                                                        // disabled={item.type === "material"}
                                                                                                                         />
                                                                                                                     </td>
 
@@ -6025,6 +6222,10 @@ const EstimationCreationTest = () => {
                                                                                                                             )}
                                                                                                                             {/* {console.log("sub4",subCategory3.sub_categories_4)}
                                                                             {console.log("sub3id:", openSubCategory3Id)} */}
+                                                                                                                            {/* <td>
+                                                                                                                               
+                                                                                                                            </td> */}
+                                                                                                                            <td></td>
                                                                                                                             <td>
                                                                                                                                 <button
                                                                                                                                     className="btn btn-link p-0"
@@ -6106,14 +6307,12 @@ const EstimationCreationTest = () => {
                                                                                                                                     className="btn btn-link p-0"
                                                                                                                                     onClick={() => handleRemoveSubCategory5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx)}
                                                                                                                                     aria-label="Remove sub-category 5"
+                                                                                                                                    title="Remove Sub Category level 5"
                                                                                                                                 >
                                                                                                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                                                                                         <line x1="5" y1="8" x2="11" y2="8" />
                                                                                                                                     </svg>
                                                                                                                                 </button>
-                                                                                                                            </td>
-                                                                                                                            <td></td>
-                                                                                                                            <td>
                                                                                                                                 Sub-Category Level 5
                                                                                                                             </td>
                                                                                                                             <td>
@@ -6148,6 +6347,7 @@ const EstimationCreationTest = () => {
                                                                                                                                     value={subCategory5.location || ""}
                                                                                                                                     onChange={(e) => handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "location", e.target.value)}
                                                                                                                                     className="form-control"
+                                                                                                                                    disabled={isOtherLevelFrozen(category, "sub5", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx })}
                                                                                                                                 />
                                                                                                                             </td>
                                                                                                                             <td>
@@ -6159,6 +6359,7 @@ const EstimationCreationTest = () => {
                                                                                                                                     value={subCategory5.items || ""}
                                                                                                                                     onChange={(e) => handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "items", e.target.value)}
                                                                                                                                     className="form-control"
+                                                                                                                                    disabled={isOtherLevelFrozen(category, "sub5", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx })}
                                                                                                                                 />
                                                                                                                             </td>
 
@@ -6172,6 +6373,7 @@ const EstimationCreationTest = () => {
                                                                                                                                     onChange={selectedOption =>
                                                                                                                                         handleEditSubCategory5Field(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, "uom", selectedOption?.value || "")
                                                                                                                                     }
+                                                                                                                                    isDisabled={isOtherLevelFrozen(category, "sub5", { catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx })}
                                                                                                                                 />
                                                                                                                             </td>
                                                                                                                             <td>
@@ -6219,7 +6421,7 @@ const EstimationCreationTest = () => {
                                                                                                                             subCategory5.material_type_details &&
                                                                                                                             subCategory5.material_type_details.map((item, itemIdx) => (
                                                                                                                                 <tr key={item.id} className="labour">
-                                                                                                                                    <td></td>
+                                                                                                                                    {/* <td></td> */}
                                                                                                                                     <td></td>
                                                                                                                                     <td></td>
                                                                                                                                     <td></td>
@@ -6265,12 +6467,12 @@ const EstimationCreationTest = () => {
                                                                                                                                     <td>
                                                                                                                                         <input
                                                                                                                                             type="number"
-                                                                                                                                            value={item.rate || 0}
+                                                                                                                                            value={item.rate}
                                                                                                                                             onChange={(e) =>
                                                                                                                                                 handleEditMaterial2SubCat5(catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx, itemIdx, "rate", e.target.value)
                                                                                                                                             }
                                                                                                                                             className="form-control"
-                                                                                                                                            disabled={item.type === "material"}
+                                                                                                                                        // disabled={item.type === "material"}
                                                                                                                                         />
                                                                                                                                     </td>
 
@@ -6317,10 +6519,19 @@ const EstimationCreationTest = () => {
                                                                 ))}
                                                             {/* sub level 2 end*/}
                                                         </React.Fragment>
-                                                    ))}
-                                                {/* Conditional rendering for categories under sub-project  end*/}
+                                                        // ))}
 
-                                                {/* subProject end */}
+
+                                                    ))
+
+
+                                                ) : (
+                                                    <tr>
+                                                        <td colSpan={12} className="text-center">
+                                                            No data available
+                                                        </td>
+                                                    </tr>
+                                                )}
                                             </tbody>
                                         </table>
                                     </div>
@@ -6348,163 +6559,178 @@ const EstimationCreationTest = () => {
                 </div>
             </div>
 
-            <Modal show={showAddModal} size="xl" onHide={() => setShowAddModal(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Add Material/Labour</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
 
-                    {/* Row 1: Radio Buttons */}
-                    <div className="row p-3">
+
+
+
+
+          
+
+
+        
+
+
+
+
+
+<Modal show={showAddModal} size="xl" onHide={() => setShowAddModal(false)}>
+    <Modal.Header closeButton>
+        <Modal.Title>Add Material/Labour</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+        <div className="row p-3">
+            <div className="d-flex justify-content-end mb-3">
+                <button
+                    className="purple-btn2"
+                    onClick={handleAddModalRow}
+                >
+                    + Add Row
+                </button>
+            </div>
+            {modalRows.map((row, idx) => (
+                <div key={idx} className="border rounded p-2 mb-2 position-relative">
+                    {/* Remove Row Cross Icon in Square */}
+                    {modalRows.length > 1 && (
+                        <button
+                            className="btn btn-link p-0 position-absolute"
+                            style={{
+                                top: 8,
+                                right: 8,
+                                zIndex: 2,
+                                width: 28,
+                                height: 28,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                background: "transparent",
+                            }}
+                            onClick={() => handleRemoveModalRow(idx)}
+                            aria-label="Remove Row"
+                            title="Remove Row"
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24">
+                                <rect x="2" y="2" width="20" height="20" rx="4" fill="#fff" stroke="#8b0203" strokeWidth="2"/>
+                                <line x1="7" y1="7" x2="17" y2="17" stroke="#8b0203" strokeWidth="2" />
+                                <line x1="17" y1="7" x2="7" y2="17" stroke="#8b0203" strokeWidth="2" />
+                            </svg>
+                        </button>
+                    )}
+                    {/* Radio Buttons */}
+                    <div className="d-flex align-items-center mb-2">
+                        <div className="form-check form-check-inline me-2 col-md-2">
+                            <input
+                                className="form-check-input"
+                                type="radio"
+                                name={`type-${idx}`}
+                                value="material"
+                                checked={row.type === "material"}
+                                onChange={() => handleModalRowChange(idx, "type", "material")}
+                            />
+                            <label className="form-check-label">Material</label>
+                        </div>
+                        <div className="form-check form-check-inline me-2 col-md-2">
+                            <input
+                                className="form-check-input"
+                                type="radio"
+                                name={`type-${idx}`}
+                                value="labour"
+                                checked={row.type === "labour"}
+                                onChange={() => handleModalRowChange(idx, "type", "labour")}
+                            />
+                            <label className="form-check-label">Labour</label>
+                        </div>
+                        <div className="form-check form-check-inline me-2 col-md-2">
+                            <input
+                                className="form-check-input"
+                                type="radio"
+                                name={`type-${idx}`}
+                                value="composite"
+                                checked={row.type === "composite"}
+                                onChange={() => handleModalRowChange(idx, "type", "composite")}
+                            />
+                            <label className="form-check-label">Composite</label>
+                        </div>
+                    </div>
+                    {/* Material Type & Specification */}
+                    {row.type === "material" && (
                         <div className="d-flex align-items-center mb-2">
-                            <div className="form-check form-check-inline me-2 col-md-2">
-                                <input
-                                    className="form-check-input"
-                                    type="radio"
-                                    name="type-0"
-                                    value="material"
-                                    checked={modalRows[0].type === "material"}
-                                    onChange={() => handleModalRowChange(0, "type", "material")}
-                                />
-                                <label className="form-check-label">Material</label>
+                            <div className="col-md-4 mt-3">
+                                <div className="form-group">
+                                    <label>Material Type</label>
+                                    <SingleSelector
+                                        options={inventoryTypes2}
+                                        value={inventoryTypes2.find(option => option.value === row.materialType)}
+                                        placeholder="Select Material Type"
+                                        onChange={selectedOption =>
+                                            handleModalRowChange(idx, "materialType", selectedOption || "")
+                                        }
+                                    />
+                                </div>
                             </div>
-
-                            <div className="form-check form-check-inline me-2 col-md-2">
-                                <input
-                                    className="form-check-input"
-                                    type="radio"
-                                    name="type-0"
-                                    value="labour"
-                                    checked={modalRows[0].type === "labour"}
-                                    onChange={() => handleModalRowChange(0, "type", "labour")}
-                                />
-                                <label className="form-check-label">Labour</label>
-                            </div>
-
-                            <div className="form-check form-check-inline me-2 col-md-2">
-                                <input
-                                    className="form-check-input"
-                                    type="radio"
-                                    name="type-0"
-                                    value="composite"
-                                    checked={modalRows[0].type === "composite"}
-                                    onChange={() => handleModalRowChange(0, "type", "composite")}
-                                />
-                                <label className="form-check-label">Composite</label>
+                            <div className="col-md-4 mt-3 ms-3 ">
+                                <div className="form-group">
+                                    <label>Generic Specification</label>
+                                    <SingleSelector
+                                        options={Array.isArray(genericSpecificationsByRow[idx]) ? genericSpecificationsByRow[idx] : []}
+                                        value={genericSpecificationsByRow[idx]?.find(option => option.value === row.specification)}
+                                        placeholder="Select Specification"
+                                        onChange={selectedOption =>
+                                            handleModalRowChange(idx, "specification", selectedOption || "")
+                                        }
+                                    />
+                                </div>
                             </div>
                         </div>
-
-                        {/* Row 2: Material Type & Specification (only for Material) */}
-
-                        {modalRows[0].type === "material" && (
-                            <div className="d-flex align-items-center mb-2">
-                                <div className="col-md-4 mt-3">
-                                    <div className="form-group">
-                                        <label>Material Type</label>
-
-
-                                        <SingleSelector
-                                            options={inventoryTypes2} // same data you had in select
-                                            value={inventoryTypes2.find(
-                                                option => option.value === modalRows[0].materialType
-                                            )}
-                                            placeholder="Select Material Type"
-                                            onChange={selectedOption =>
-                                                handleModalRowChange(0, "materialType", selectedOption || "")
-                                            }
-                                        />
-
-                                    </div>
-                                </div>
-                                <div className="col-md-4 mt-3 ms-3 ">
-                                    <div className="form-group">
-                                        <label>Generic Specification</label>
-                                        <SingleSelector
-                                            options={Array.isArray(genericSpecifications) ? genericSpecifications : []}
-                                            value={genericSpecifications.find((option) => option.value === modalRows[0].specification)} // Bind value to state
-                                            placeholder={`Select Specification`} // Dynamic placeholder
-                                            // onChange={(selectedOption) => handleSelectorChange("genericSpecification", selectedOption)}
-                                            onChange={selectedOption => handleModalRowChange(0, "specification", selectedOption || "")}
-                                        />
-                                    </div>
-
-                                </div>
+                    )}
+                    {/* Labour Activity */}
+                    {row.type === "labour" && (
+                        <div className="col-md-4 mt-3">
+                            <div className="form-group">
+                                <label>Labour Activity</label>
+                                <SingleSelector
+                                    options={labourActivities}
+                                    value={labourActivities.find(option => option.value === row.labourType)}
+                                    placeholder="Select Labour Activity"
+                                    onChange={selectedOption =>
+                                        handleModalRowChange(idx, "labourType", selectedOption || "")
+                                    }
+                                />
                             </div>
-
-                        )}
-
-
-
-                        {/* Conditional Labour Type Select */}
-                        {modalRows[0].type === "labour" && (
-
-                            <div className="col-md-4 mt-3">
-                                <div className="form-group">
-                                    <label>Labour Activity</label>
-                                    <SingleSelector
-                                        options={labourActivities}
-                                        value={labourActivities.find(
-                                            option => option.value === modalRows[0].labourType
-                                        )}
-                                        placeholder="Select Labour Activity"
-                                        onChange={selectedOption =>
-                                            handleModalRowChange(0, "labourType", selectedOption || "")
-                                        }
-                                    />
-                                    {console.log("cat:", labourActivities)}
-                                </div>
+                        </div>
+                    )}
+                    {/* Composite Value */}
+                    {row.type === "composite" && (
+                        <div className="col-md-4 mt-3">
+                            <div className="form-group">
+                                <label>Composite Value</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Enter composite value"
+                                    value={row.compositeValue || ""}
+                                    onChange={e =>
+                                        handleModalRowChange(idx, "compositeValue", e.target.value)
+                                    }
+                                />
                             </div>
-
-                        )}
-
-                        {/* Conditional Composite Input */}
-                        {modalRows[0].type === "composite" && (
-                            <div className="col-md-4 mt-3">
-                                <div className="form-group">
-                                    <label>Composite Value</label>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        placeholder="Enter composite value"
-                                        value={modalRows[0].compositeValue || ""}
-                                        onChange={e =>
-                                            handleModalRowChange(0, "compositeValue", e.target.value)
-                                        }
-                                    />
-                                </div>
-                            </div>
-                        )}
-
-                    </div>
-                </Modal.Body>
-                <Modal.Footer className="d-flex justify-content-center">
-                    <button
-                        className="purple-btn2 me-4"
-                        // onClick={() => {
-                        //     console.log("Selected Date Range:", dateRange);
-                        //     setShowDateModal(false); // Close modal
-                        // }}
-                        onClick={() => handleCreateRows()}
-                    >
-                        Create
-                    </button>
-                    <button className="purple-btn1" onClick={() => setShowAddModal(false)}>
-                        Cancel
-                    </button>
-
-
-                </Modal.Footer>
-            </Modal>
-
-
-
-
-
-
-
-
-
-
+                        </div>
+                    )}
+                </div>
+            ))}
+        </div>
+    </Modal.Body>
+    <Modal.Footer className="d-flex justify-content-center">
+        <button
+            className="purple-btn2 me-4"
+            onClick={() => handleCreateRows()}
+        >
+            Create
+        </button>
+        <button className="purple-btn1" onClick={() => setShowAddModal(false)}>
+            Cancel
+        </button>
+    </Modal.Footer>
+</Modal>
 
         </>
     );
