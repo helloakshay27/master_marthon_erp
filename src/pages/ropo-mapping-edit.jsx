@@ -1318,13 +1318,10 @@ const [remainingQuantities, setRemainingQuantities] = useState({});
     setAggregatedPendingByMaterial(pendingMap);
   }, [poData]);
 
-  // Helper: get base pending for a material (prefers aggregated pending from PO rows)
+  // Helper: get base pending for a material (stable base: aggregated from API/rows or initial MOR)
   const getBasePendingForMaterial = (materialId) => {
     if (aggregatedPendingByMaterial[materialId] !== undefined) {
       return parseFloat(aggregatedPendingByMaterial[materialId]) || 0;
-    }
-    if (remainingQuantities[materialId] !== undefined) {
-      return parseFloat(remainingQuantities[materialId]) || 0;
     }
     const material = morData
       .find((mor) => mor.mor_inventories.some((inv) => inv.id === materialId))
@@ -1350,21 +1347,28 @@ const [remainingQuantities, setRemainingQuantities] = useState({});
 
   // Replace or add the handleOrderedQuantityChange function
   const handleOrderedQuantityChange = (poId, materialId, value) => {
-    const numValue = parseFloat(value) || 0;
+    const parsed = parseFloat(value);
+    const safeValue = Number.isFinite(parsed) ? parsed : 0;
 
     const availableQty = computeAvailableQty(poId, materialId);
-    if (numValue > availableQty) {
+    if (safeValue > availableQty) {
       alert(`Order quantity cannot exceed pending quantity (${availableQty.toFixed(2)})`);
       return;
     }
 
-    // Update ordered quantities
-    setOrderedQuantities(prev => ({
-      ...prev,
-      [`${poId}-${materialId}`]: value
-    }));
+    // Update ordered quantities: keep empty string when cleared so UI doesn't fall back to original
+    setOrderedQuantities((prev) => {
+      const next = { ...prev };
+      const key = `${poId}-${materialId}`;
+      if (!value || safeValue <= 0) {
+        next[key] = "";
+      } else {
+        next[key] = safeValue;
+      }
+      return next;
+    });
 
-    // Update remaining quantities display (material row)
+    // Compute new remaining using stable base and others (excluding current po)
     const othersOrderedQty = Object.entries(orderedQuantities)
       .filter(([key]) => {
         const [orderPoId, orderMaterialId] = key.split('-');
@@ -1372,10 +1376,10 @@ const [remainingQuantities, setRemainingQuantities] = useState({});
       })
       .reduce((sum, [_, qty]) => sum + (parseFloat(qty) || 0), 0);
     const basePendingQty = getBasePendingForMaterial(materialId);
-    const newRemainingQty = basePendingQty - (othersOrderedQty + numValue);
-    setRemainingQuantities(prev => ({
+    const newRemainingQty = basePendingQty - (othersOrderedQty + (safeValue > 0 ? safeValue : 0));
+    setRemainingQuantities((prev) => ({
       ...prev,
-      [materialId]: (newRemainingQty > 0 ? newRemainingQty : 0).toFixed(2)
+      [materialId]: (newRemainingQty > 0 ? newRemainingQty : 0).toFixed(2),
     }));
   };
 
@@ -1392,7 +1396,7 @@ const [remainingQuantities, setRemainingQuantities] = useState({});
         poData.forEach((item) => {
           const orderQty =
             orderedQuantities[
-              `${item.purchase_order_id}-${item.mor_inventory_id}`
+              `${item.purchase_order_id || item.po_mor_inventory_id}-${item.mor_inventory_id}`
             ];
           if (orderQty && parseFloat(orderQty) > 0) {
             ropoMorInventoriesAttributes.push({
@@ -1414,7 +1418,7 @@ const [remainingQuantities, setRemainingQuantities] = useState({});
         passedMaterialData.forEach((item) => {
           const orderQty =
             orderedQuantities[
-              `${item.purchase_order_id}-${item.mor_inventory_id}`
+              `${item.purchase_order_id || item.po_mor_inventory_id}-${item.mor_inventory_id}`
             ];
           if (orderQty && parseFloat(orderQty) > 0) {
             ropoMorInventoriesAttributes.push({
@@ -2244,12 +2248,15 @@ setPoModalApiData(
                                             <td>
                                               {(() => {
                                                 const total = (mor.mor_inventories || []).reduce((sum, inv) => {
+                                                  if (remainingQuantities[inv.id] !== undefined) {
+                                                    return sum + (parseFloat(remainingQuantities[inv.id]) || 0);
+                                                  }
                                                   const byPo = aggregatedPendingByMaterial[inv.id];
-                                                  if (byPo !== undefined) return sum + parseFloat(byPo || 0);
+                                                  if (byPo !== undefined) return sum + (parseFloat(byPo || 0) || 0);
                                                   const fallback = inv.pending_qty !== null && inv.pending_qty !== undefined
                                                     ? parseFloat(inv.pending_qty)
                                                     : (parseFloat(inv.required_quantity || 0) - parseFloat(inv.prev_order_qty || 0));
-                                                  return sum + fallback;
+                                                  return sum + (fallback || 0);
                                                 }, 0);
                                                 return total.toFixed(2);
                                               })()}
@@ -2401,14 +2408,14 @@ setPoModalApiData(
                                                   
 <td>
   {(() => {
+    if (remainingQuantities[inventory.id] !== undefined) {
+      return parseFloat(remainingQuantities[inventory.id]).toFixed(2);
+    }
     const byPo = aggregatedPendingByMaterial[inventory.id];
     if (byPo !== undefined) return parseFloat(byPo || 0).toFixed(2);
-    const base = remainingQuantities[inventory.id] !== undefined
-      ? parseFloat(remainingQuantities[inventory.id])
-      : (inventory.pending_qty !== null && inventory.pending_qty !== undefined
-          ? parseFloat(inventory.pending_qty)
-          : (parseFloat(inventory.required_quantity || 0) - parseFloat(inventory.prev_order_qty || 0))
-        );
+    const base = inventory.pending_qty !== null && inventory.pending_qty !== undefined
+      ? parseFloat(inventory.pending_qty)
+      : (parseFloat(inventory.required_quantity || 0) - parseFloat(inventory.prev_order_qty || 0));
     return base.toFixed(2);
   })()}
 </td>

@@ -848,7 +848,8 @@ const MaterialReconciliationCreate = () => {
     const theft = parseFloat(theftQty) || 0;
     const damage = parseFloat(damageQty) || 0;
     const adjustment = parseFloat(adjustmentQty) || 0;
-    return stock - deadstock - theft - damage + adjustment;
+    // Adjustment increases back the net quantity
+    return stock - (deadstock + theft + damage) + adjustment;
   };
 
   // Modify handleItemInputChange function
@@ -856,6 +857,29 @@ const MaterialReconciliationCreate = () => {
     setAcceptedInventories((prev) =>
       prev.map((inventory) => {
         if (inventory.id === inventoryId) {
+          // Prevent totals of deadstock + theft + damage exceeding stock_as_on
+          if (
+            field === "deadstock_qty" ||
+            field === "theft_or_missing_qty" ||
+            field === "damage_qty"
+          ) {
+            const stockAsOn = parseFloat(inventory.stock_as_on) || 0;
+            const nextDead = parseFloat(
+              field === "deadstock_qty" ? value : inventory.deadstock_qty
+            ) || 0;
+            const nextTheft = parseFloat(
+              field === "theft_or_missing_qty" ? value : inventory.theft_or_missing_qty
+            ) || 0;
+            const nextDamage = parseFloat(
+              field === "damage_qty" ? value : inventory.damage_qty
+            ) || 0;
+            const sum = nextDead + nextTheft + nextDamage;
+            if (sum > stockAsOn) {
+              toast.error("Sum of Deadstock, Theft/Missing and Damage cannot exceed Stock As On.");
+              return inventory;
+            }
+          }
+
           const updatedInventory = {
             ...inventory,
             [field]: value,

@@ -934,11 +934,30 @@ const MaterialReconciliationEdit = () => {
     const theft = parseFloat(theftQty) || 0;
     const wastage = parseFloat(wastageQty) || 0;
     const adjustment = parseFloat(adjustmentQty) || 0;
-    return stock - deadstock - theft - wastage + adjustment;
+    // Adjustment increases back the net quantity
+    return stock - (deadstock + theft + wastage) + adjustment;
   };
 
   const handleInputChange = (index, field, value) => {
     setFormData((prev) => {
+      // Guard: prevent sum(deadstock+theft+damage) > stock_as_on
+      if (
+        field === "deadstock_qty" ||
+        field === "theft_or_missing_qty" ||
+        field === "damage_qty"
+      ) {
+        const current = prev.material_reconciliation_items_attributes[index] || {};
+        const stockAsOn = parseFloat(current.stock_as_on) || 0;
+        const nextDead = parseFloat(field === "deadstock_qty" ? value : current.deadstock_qty) || 0;
+        const nextTheft = parseFloat(field === "theft_or_missing_qty" ? value : current.theft_or_missing_qty) || 0;
+        const nextDamage = parseFloat(field === "damage_qty" ? value : current.damage_qty) || 0;
+        const sum = nextDead + nextTheft + nextDamage;
+        if (sum > stockAsOn) {
+          toast.error("Sum of Deadstock, Theft/Missing and Damage cannot exceed Stock As On.");
+          return prev;
+        }
+      }
+
       const updatedItems = [...prev.material_reconciliation_items_attributes];
       updatedItems[index] = {
         ...updatedItems[index],

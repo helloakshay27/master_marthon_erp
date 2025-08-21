@@ -920,17 +920,20 @@ const handleTaxChargeChange = useCallback(
           // Only auto-calculate for percentage-based taxes
           if (value && value.includes("%") && currentTax.taxType !== "TaxCharge") {
             const percentage = parseFloat(value.replace("%", ""));
+            const baseAmount = parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
+            const calculatedAmount = calculateTaxAmount(
+              percentage,
+              baseAmount,
+              Boolean(currentTax.inclusive)
+            );
+            // Find the percentage ID from materialTaxPercentages
             const percentages = materialTaxPercentages[currentTax.id] || [];
             const percentageData = percentages.find(
               (p) => p.percentage === percentage
             );
-            
             if (percentageData) {
               currentTax.percentageId = percentageData.id;
             }
-
-            const baseAmount = parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
-            const calculatedAmount = (baseAmount * percentage) / 100;
             currentTax.amount = calculatedAmount.toString();
           }
         } else if (field === "amount") {
@@ -938,6 +941,27 @@ const handleTaxChargeChange = useCallback(
           if (currentTax.taxType === "TaxCharge") {
             currentTax.amount = value;
           }
+        } else if (field === "inclusive") {
+          // Toggle inclusive and recalculate when percentage-based
+          currentTax.inclusive = value;
+          const percentString = currentTax.taxChargePerUom || "";
+          if (
+            percentString &&
+            percentString.includes("%") &&
+            currentTax.taxType !== "TaxCharge"
+          ) {
+            const percentage = parseFloat(percentString.replace("%", "")) || 0;
+            const baseAmount = parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
+            const recalculated = calculateTaxAmount(
+              percentage,
+              baseAmount,
+              Boolean(value)
+            );
+            currentTax.amount = recalculated.toString();
+          }
+        } else {
+          // Generic setter for any other simple fields
+          currentTax[field] = value;
         }
 
         taxDetails[taxIndex] = currentTax;
@@ -1030,13 +1054,21 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
           mor_inventory_tax_details_attributes: (
             currentData.addition_bid_material_tax_details || []
           ).map((tax) => {
+            // Resolve resource_id prioritizing percentageId; if missing, derive from selected percentage value
+            let resolvedResourceId = tax.percentageId;
+            if (!resolvedResourceId && tax.taxChargePerUom && tax.taxChargePerUom.includes("%")) {
+              const percentage = parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
+              const percList = materialTaxPercentages[tax.id] || [];
+              const found = percList.find((p) => p.percentage === percentage);
+              if (found) resolvedResourceId = found.id;
+            }
+            if (!resolvedResourceId) {
+              resolvedResourceId = taxOptions.find((option) => option.value === tax.taxChargeType)?.id || tax.resource_id;
+            }
+
             const payload = {
               resource_type: tax.taxType || "TaxCharge",
-              resource_id:
-                tax.percentageId ||
-                taxOptions.find((option) => option.value === tax.taxChargeType)
-                  ?.id ||
-                tax.resource_id,
+              resource_id: resolvedResourceId,
               amount: parseFloat(tax.amount) || 0,
               inclusive: tax.inclusive || false,
               addition: true,
@@ -1065,14 +1097,21 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
               amount: tax.amount,
             });
 
+            // Resolve resource_id prioritizing percentageId; if missing, derive from selected percentage value
+            let resolvedResourceId = tax.percentageId;
+            if (!resolvedResourceId && tax.taxChargePerUom && tax.taxChargePerUom.includes("%")) {
+              const percentage = parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
+              const percList = materialTaxPercentages[tax.id] || [];
+              const found = percList.find((p) => p.percentage === percentage);
+              if (found) resolvedResourceId = found.id;
+            }
+            if (!resolvedResourceId) {
+              resolvedResourceId = deductionTaxOptions.find((option) => option.value === tax.taxChargeType)?.id || tax.resource_id;
+            }
+
             const payload = {
               resource_type: tax.taxType || "TaxCharge",
-              resource_id:
-                tax.percentageId ||
-                deductionTaxOptions.find(
-                  (option) => option.value === tax.taxChargeType
-                )?.id ||
-                tax.resource_id,
+              resource_id: resolvedResourceId,
               amount: parseFloat(tax.amount) || 0,
               inclusive: tax.inclusive || false,
               addition: false,
@@ -1131,6 +1170,8 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
                 responseData.addition_tax_details?.map((tax) => ({
                   id: tax.id,
                   resource_id: tax.resource_id,
+                  tax_category_id: tax.tax_category_id,
+                  percentageId: tax.percentage_id,
                   taxChargeType:
                     taxOptions.find((option) => option.id === tax.tax_category_id)
                       ?.value || "",
@@ -1143,6 +1184,8 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
                 responseData.deduction_tax_details?.map((tax) => ({
                   id: tax.id,
                   resource_id: tax.resource_id,
+                  tax_category_id: tax.tax_category_id,
+                  percentageId: tax.percentage_id,
                   taxChargeType:
                     deductionTaxOptions.find(
                       (option) => option.id === tax.tax_category_id
@@ -4829,15 +4872,7 @@ Document */}
                             <td>
                               <select
                                 className="form-control"
-                                value={
-                                  item?.taxChargePerUom ||
-                                  (() => {
-                                    const found = (materialTaxPercentages[item.id] || []).find(
-                                      (p) => p.id === item.tax_category_id
-                                    );
-                                    return found ? `${found.percentage}%` : "";
-                                  })() || ""
-                                }
+                                value={item?.taxChargePerUom || ""}
                                 onChange={(e) =>
                                   handleTaxChargeChange(
                                     tableId,
@@ -4969,18 +5004,8 @@ Document */}
                             <td>
                               <SelectBox
                                 options={deductionTaxOptions || []}
-                                value={item.taxChargeType || ""} // Add this line
-                                defaultValue={
-                                  item.taxChargeType ||
-                                  deductionTaxOptions.find(
-                                    (option) => option.id == item.resource_id
-                                  )?.value ||
-                                  deductionTaxOptions.find(
-                                    (option) =>
-                                      option.value === item.taxChargeType
-                                  )?.value ||
-                                  ""
-                                }
+                                value={item.taxChargeType || ""}
+                                defaultValue={item.taxChargeType || ""}
                                 onChange={(value) => {
                                   handleTaxChargeChange(
                                     tableId,
@@ -5023,7 +5048,7 @@ Document */}
                                   }
                                   return [];
                                 })()}
-                                value={{ value: item?.taxChargePerUom || "", label: item?.taxChargePerUom || "" }}
+                                value={item?.taxChargePerUom ? { value: item.taxChargePerUom, label: item.taxChargePerUom } : null}
                                 onChange={(selected) => {
                                   handleTaxChargeChange(
                                     tableId,

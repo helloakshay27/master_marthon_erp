@@ -45,14 +45,9 @@ const PoDetails = () => {
   });
 
   // States to store data company, project ,subproject ,wing
-  const [companies, setCompanies] = useState([]);
-  const [projects, setProjects] = useState([]);
+
   const [selectedCompany, setSelectedCompany] = useState(null);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [selectedSite, setSelectedSite] = useState(null);
-  const [selectedWing, setSelectedWing] = useState(null);
-  const [siteOptions, setSiteOptions] = useState([]);
-  const [wingsOptions, setWingsOptions] = useState([]);
+
 
   // PO form state
   const [poDate, setPoDate] = useState(new Date().toISOString().split("T")[0]);
@@ -468,28 +463,7 @@ const PoDetails = () => {
   }, []);
 
   // Handle company selection
-  const handleCompanyChange = (selectedOption) => {
-    setSelectedCompany(selectedOption); // Set selected company
-    // setSelectedProject(null); // Reset project selection
-    // setSelectedSite(null); // Reset site selection
-    // setSelectedWing(null); // Reset wing selection
-    // setProjects([]); // Reset projects
-    // setSiteOptions([]); // Reset site options
-    // setWingsOptions([]); // Reset wings options
-
-    if (selectedOption) {
-      // Find the selected company from the list
-      const selectedCompanyData = companies.find(
-        (company) => company.id === selectedOption.value
-      );
-      setProjects(
-        selectedCompanyData?.projects.map((prj) => ({
-          value: prj.id,
-          label: prj.name,
-        }))
-      );
-    }
-  };
+ 
 
   // Handle supplier selection
 
@@ -635,200 +609,9 @@ const PoDetails = () => {
     );
   };
 
-  const handleEditRow = (index, material) => {
-    const row = tableData[index];
-    setFormData({
-      materialType: row.materialType,
-      materialSubType: row.materialSubType,
-      material: row.material,
-      genericSpecification: row.genericSpecification,
-      colour: row.colour,
-      brand: row.brand,
-      effectiveDate: row.effectiveDate,
-      uom: row.uom,
-    });
-    setEditRowIndex(index);
-    setShowModal(true);
-  };
 
-  // const handleDeleteRow = (index) => {
-  //   setTableData((prev) =>
-  //     prev.map((row, i) =>
-  //       i === index
-  //         ? { ...row, _destroy: true } // Mark for deletion
-  //         : row
-  //     )
-  //   );
-  // };
-  //   const handleDeleteRow = (index) => {
-  //     // setTableData(
-  //     //   (prev) => prev.filter((_, i) => i !== index) // Remove the row entirely, do not mark with _destroy
-  //     // );
-  //     setTableData(prev =>
-  //   prev.map((row, i) =>
-  //     i === index ? { ...row, _destroy: true } : row
-  //   )
-  // );
-  //   };
-  const handleDeleteRow = (index) => {
-    const deletedMaterial = tableData[index];
 
-    setTableData((prev) => prev.filter((_, i) => i !== index));
 
-    // Remove from submittedMaterials
-    setSubmittedMaterials((prev) =>
-      prev.filter(
-        (m) => m.material_inventory_id !== deletedMaterial.material_inventory_id
-      )
-    );
-
-    // Remove from rateAndTaxes
-    setRateAndTaxes((prev) =>
-      prev.filter(
-        (m) => m.material_inventory_id !== deletedMaterial.material_inventory_id
-      )
-    );
-  };
-
-  // Handle submit button click
-  const handleSubmitMaterials = async () => {
-    console.log("Submit button clicked");
-    console.log("tableData:", tableData);
-    console.log("selectedCompany:", selectedCompany);
-    console.log("URL param id:", id);
-    console.log("purchaseOrderId state:", purchaseOrderId);
-
-    // Simple test alert
-
-    if (!selectedCompany) {
-      console.log("No company selected");
-      alert("Please select a company.");
-      return;
-    }
-
-    // Filter out deleted rows for validation
-    const activeRows = tableData.filter((row) => !row._destroy);
-
-    if (activeRows.length === 0) {
-      console.log("No materials in table");
-      alert("Please add at least one material before submitting.");
-      return;
-    }
-
-    // Check if any row is missing a material
-    const missingMaterial = activeRows.some((row) => !row.material);
-    console.log("missingMaterial:", missingMaterial);
-    if (missingMaterial) {
-      console.log("Some rows missing material");
-      alert("Please select a material for all rows before submitting.");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    // Prepare materials array for API
-    const materials =
-      //  tableData.map((row) => {
-      tableData
-        .filter((row) => row) // Only include rows that exist (not deleted)
-        .map((row) => {
-          // Check if this is an existing material (has material object with id)
-          if (
-            row.material &&
-            typeof row.material === "object" &&
-            row.material.id
-          ) {
-            // Existing material - extract values from the material object
-            return {
-              id: row.material.id, // Use the actual ID from the material object
-              pms_inventory_id: row.material.pms_inventory_id,
-              unit_of_measure_id: row.material.uom_id,
-              pms_inventory_sub_type_id: row.material.pms_inventory_sub_type_id,
-              pms_generic_info_id: row.material.pms_generic_info_id,
-              pms_colour_id: row.material.pms_colour_id,
-              pms_brand_id: row.material.pms_brand_id,
-              _destroy: row._destroy || false,
-            };
-          } else {
-            // New material - use the direct values
-            return {
-              id: row.id, // Include ID for existing records
-              pms_inventory_id: row.material,
-              unit_of_measure_id: row.uom,
-              pms_inventory_sub_type_id: row.materialSubType,
-              pms_generic_info_id: row.genericSpecification || null,
-              pms_colour_id: row.colour || null,
-              pms_brand_id: row.brand || null,
-              _destroy: row._destroy || false, // Include destroy flag
-            };
-          }
-        });
-
-    console.log("Processed materials for API:", materials);
-
-    const payload = {
-      company_id: selectedCompany.value,
-      materials: materials,
-    };
-
-    // Add po_id if we have a purchase order ID (either from URL params for existing PO or from previous submission)
-    const poIdToUse = id || purchaseOrderId; // Use URL param id first, then fallback to purchaseOrderId
-    if (poIdToUse) {
-      payload.po_id = poIdToUse;
-      console.log("Including po_id in payload:", poIdToUse);
-    } else {
-      console.log("No po_id included in payload (first submission)");
-    }
-
-    try {
-      const response = await axios.post(
-        `${baseURL}purchase_orders/ropo_material_details.json?token=${token}`,
-        payload
-      );
-
-      if (response.status === 200 || response.status === 201) {
-        console.log("API Response:", response.data);
-
-        // Store the materials data from API response
-        if (response.data.success && response.data.materials) {
-          setSubmittedMaterials(response.data.materials);
-          setTableData(response.data.materials);
-        }
-
-        if (response.data.success && response.data.material_inventory_ids) {
-          setApiMaterialInventoryIds(response.data.material_inventory_ids);
-          console.log(
-            "Material Inventory IDs after submit:",
-            response.data.material_inventory_ids
-          );
-        }
-
-        // Store the purchase order ID for future submissions
-        if (response.data.success && response.data.purchase_order_id) {
-          setPurchaseOrderId(response.data.purchase_order_id);
-          console.log(
-            "Purchase Order ID stored:",
-            response.data.purchase_order_id
-          );
-        }
-
-        alert("Materials submitted successfully!");
-
-        // Change tab to Rate & Taxes
-        const rateTaxesTab = document.querySelector(
-          '[data-bs-target="#Domestic2"]'
-        );
-        if (rateTaxesTab) {
-          rateTaxesTab.click();
-        }
-      }
-    } catch (error) {
-      console.error("Error submitting materials:", error);
-      alert("Error submitting materials. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   // Tax modal functions
   const handleOpenTaxModal = async (rowIndex) => {
@@ -874,34 +657,46 @@ const PoDetails = () => {
             netCost: rateData.total_material_cost?.toString(),
             pms_inventory_id: rateData.pms_inventory_id || null, // Store pms_inventory_id
             addition_bid_material_tax_details:
-              rateData.addition_tax_details?.map((tax) => ({
+              rateData.addition_tax_details?.map((tax) => {
+                const baseOptionId =
+                  tax.resource_type === "TaxCategory"
+                    ? tax.tax_category_id
+                    : tax.resource_id;
+                return {
                 id: tax.id,
                 resource_id: tax.resource_id,
                 tax_category_id: tax.tax_category_id,
                 taxChargeType:
-                  taxOptions.find((option) => option.id === tax.resource_id)
-                    ?.value || tax.resource_type,
-                taxType: tax.resource_type, // Set taxType based on API response
+                    taxOptions.find((option) => option.id === baseOptionId)
+                      ?.value || "",
+                  taxType: tax.resource_type,
                 taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
-                percentageId: tax.percentage_id || null, // Add percentageId from API response
+                  percentageId: tax.percentage_id || null,
                 inclusive: tax.inclusive,
                 amount: tax.amount?.toString() || "0",
-              })) || [],
+                };
+              }) || [],
             deduction_bid_material_tax_details:
-              rateData.deduction_tax_details?.map((tax) => ({
+              rateData.deduction_tax_details?.map((tax) => {
+                const baseOptionId =
+                  tax.resource_type === "TaxCategory"
+                    ? tax.tax_category_id
+                    : tax.resource_id;
+                return {
                 id: tax.id,
                 resource_id: tax.resource_id,
                 tax_category_id: tax.tax_category_id,
                 taxChargeType:
                   deductionTaxOptions.find(
-                    (option) => option.id === tax.resource_id
-                  )?.value || tax.resource_type,
-                taxType: tax.resource_type, // Set taxType based on API response
+                      (option) => option.id === baseOptionId
+                    )?.value || "",
+                  taxType: tax.resource_type,
                 taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
-                percentageId: tax.percentage_id || null, // Add percentageId from API response
+                  percentageId: tax.percentage_id || null,
                 inclusive: tax.inclusive,
                 amount: tax.amount?.toString() || "0",
-              })) || [],
+                };
+              }) || [],
           },
         }));
 
@@ -1037,372 +832,13 @@ const PoDetails = () => {
     });
   };
 
-  const addDeductionTaxCharge = (rowIndex) => {
-    const newTaxCharge = {
-      id: Date.now(),
-      taxChargeType: "",
-      taxChargePerUom: "",
-      inclusive: false,
-      amount: "0",
-      taxType: "TaxCharge", // Default to TaxCharge
-    };
+  
 
-    setTaxRateData((prev) => {
-      const updatedData = { ...prev };
-      updatedData[rowIndex] = {
-        ...updatedData[rowIndex],
-        deduction_bid_material_tax_details: [
-          ...(updatedData[rowIndex]?.deduction_bid_material_tax_details || []),
-          newTaxCharge,
-        ],
-      };
+ 
 
-      // Recalculate net cost after adding new tax charge
-      const newNetCost = calculateNetCostWithTaxes(
-        updatedData[rowIndex]?.afterDiscountValue || 0,
-        updatedData[rowIndex]?.addition_bid_material_tax_details || [],
-        updatedData[rowIndex]?.deduction_bid_material_tax_details || []
-      );
 
-      updatedData[rowIndex].netCost = newNetCost.toString();
-      return updatedData;
-    });
-  };
+  
 
-  const removeTaxChargeItem = (rowIndex, id, type) => {
-    setTaxRateData((prev) => ({
-      ...prev,
-      [rowIndex]: {
-        ...prev[rowIndex],
-        [type === "addition"
-          ? "addition_bid_material_tax_details"
-          : "deduction_bid_material_tax_details"]: prev[rowIndex][
-          type === "addition"
-            ? "addition_bid_material_tax_details"
-            : "deduction_bid_material_tax_details"
-        ].map((item) =>
-          item.id === id
-            ? { ...item, _destroy: true } // Mark for deletion
-            : item
-        ),
-      },
-    }));
-  };
-
-  const handleTaxChargeChange = useCallback(
-    (rowIndex, id, field, value, type) => {
-      setTaxRateData((prev) => {
-        const updatedData = { ...prev };
-        const taxDetails =
-          type === "addition"
-            ? updatedData[rowIndex]?.addition_bid_material_tax_details || []
-            : updatedData[rowIndex]?.deduction_bid_material_tax_details || [];
-
-        const taxIndex = taxDetails.findIndex((tax) => tax.id === id);
-        if (taxIndex !== -1) {
-          const currentTax = { ...taxDetails[taxIndex] };
-
-          // Handle different tax types
-          if (field === "taxChargeType") {
-            // Find the selected tax option to determine type
-            const selectedTaxOption =
-              type === "addition"
-                ? taxOptions.find((option) => option.value === value)
-                : deductionTaxOptions.find((option) => option.value === value);
-
-            // Set the tax type for later reference
-            currentTax.taxType = selectedTaxOption?.type || "TaxCharge";
-            currentTax[field] = value;
-
-            // Clear amount when tax type changes
-            currentTax.amount = "0";
-            currentTax.taxChargePerUom = "";
-            currentTax.percentageId = null; // Clear percentage ID
-          } else if (field === "taxChargePerUom") {
-            // Auto-calculate amount based on tax type
-            currentTax[field] = value;
-
-            // Find the percentage ID from materialTaxPercentages
-            if (value && value.includes("%")) {
-              const percentage = parseFloat(value.replace("%", "")) || 0;
-              const percentages = materialTaxPercentages[currentTax.id] || [];
-              const percentageData = percentages.find(
-                (p) => p.percentage === percentage
-              );
-              currentTax.percentageId = percentageData?.id || null;
-
-              console.log("Setting percentageId for tax:", {
-                taxId: currentTax.id,
-                taxType: type,
-                percentage: percentage,
-                percentageData: percentageData,
-                percentageId: currentTax.percentageId,
-              });
-            }
-
-            if (currentTax.taxChargeType) {
-              const baseAmount =
-                parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
-              let calculatedAmount = 0;
-
-              // Check if it's a percentage-based tax (TaxCategory)
-              if (value && value.includes("%")) {
-                const percentage = parseFloat(value.replace("%", "")) || 0;
-                calculatedAmount = (baseAmount * percentage) / 100;
-              } else if (value && !isNaN(parseFloat(value))) {
-                // Fixed amount (TaxCharge)
-                calculatedAmount = parseFloat(value) || 0;
-              }
-
-              currentTax.amount = calculatedAmount.toString();
-            }
-          } else if (field === "amount") {
-            // Handle direct amount input for TaxCharge type
-            currentTax[field] = value;
-
-            // For TaxCategory, amount is auto-calculated from percentage
-            if (
-              currentTax.taxType === "TaxCategory" &&
-              currentTax.taxChargePerUom
-            ) {
-              const baseAmount =
-                parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
-              const percentage =
-                parseFloat(currentTax.taxChargePerUom.replace("%", "")) || 0;
-              const calculatedAmount = (baseAmount * percentage) / 100;
-              currentTax.amount = calculatedAmount.toString();
-            }
-          } else {
-            // Handle other fields (inclusive, etc.)
-            currentTax[field] = value;
-          }
-
-          taxDetails[taxIndex] = currentTax;
-
-          if (type === "addition") {
-            updatedData[rowIndex].addition_bid_material_tax_details =
-              taxDetails;
-          } else {
-            updatedData[rowIndex].deduction_bid_material_tax_details =
-              taxDetails;
-          }
-
-          // Recalculate net cost only if there are changes
-          if (taxIndex !== -1) {
-            const newNetCost = calculateNetCostWithTaxes(
-              updatedData[rowIndex]?.afterDiscountValue || 0,
-              updatedData[rowIndex]?.addition_bid_material_tax_details || [],
-              updatedData[rowIndex]?.deduction_bid_material_tax_details || []
-            );
-
-            updatedData[rowIndex].netCost = newNetCost.toString();
-          }
-        }
-
-        return updatedData;
-      });
-    },
-    [taxOptions]
-  );
-
-  const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
-    const percent = parseFloat(percentage) || 0;
-    const amount = parseFloat(baseAmount) || 0;
-
-    if (inclusive) {
-      return (amount * percent) / (100 + percent);
-    } else {
-      return (amount * percent) / 100;
-    }
-  };
-
-  const calculateNetCost = (rowIndex, updatedData = taxRateData) => {
-    const data = updatedData[rowIndex];
-    if (!data) return 0;
-
-    const baseAmount = parseFloat(data.afterDiscountValue) || 0;
-
-    // Calculate addition amounts
-    const additionAmount = (
-      data.addition_bid_material_tax_details || []
-    ).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-
-    // Calculate deduction amounts
-    const deductionAmount = (
-      data.deduction_bid_material_tax_details || []
-    ).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
-
-    return baseAmount + additionAmount - deductionAmount;
-  };
-
-  const handleSaveTaxChanges = async () => {
-    if (tableId !== null) {
-      const currentData = taxRateData[tableId];
-      if (!currentData) {
-        console.error("No data available for saving");
-        return;
-      }
-
-      // Get the material ID from submitted materials
-      const material = submittedMaterials[tableId];
-      if (!material || !material.id) {
-        console.error("No material ID available for API call");
-        return;
-      }
-
-      // Prepare the payload based on the API response structure
-      const payload = {
-        po_mor_inventory: {
-          active: true,
-          additional_info: currentData.remark || "",
-          remarks: currentData.remark || "",
-          rate_per_nos: parseFloat(currentData.ratePerNos) || 0,
-          discount_per: parseFloat(currentData.discount) || 0,
-          discount_rate: parseFloat(currentData.discountRate) || 0,
-          material_cost: parseFloat(currentData.materialCost) || 0,
-          total_material_cost: parseFloat(currentData.netCost) || 0,
-          after_discount_value: parseFloat(currentData.afterDiscountValue) || 0,
-          tax_applicable_cost: parseFloat(currentData.afterDiscountValue) || 0,
-          // material_inventory_id: currentData.pms_inventory_id || material.id,
-
-          // Map addition tax details
-          mor_inventory_tax_details_attributes: (
-            currentData.addition_bid_material_tax_details || []
-          ).map((tax) => {
-            const payload = {
-              resource_type: tax.taxType || "TaxCharge",
-              resource_id:
-                tax.percentageId ||
-                taxOptions.find((option) => option.value === tax.taxChargeType)
-                  ?.id ||
-                tax.resource_id,
-              amount: parseFloat(tax.amount) || 0,
-              inclusive: tax.inclusive || false,
-              addition: true,
-              remarks: `${tax.taxChargeType} - ${tax.amount}`,
-              _destroy: tax._destroy, // Include destroy flag
-            };
-
-            // Only include id for existing records (not temporary UI IDs)
-            if (tax.id && tax.id.toString().length < 10) {
-              payload.id = tax.id;
-            }
-
-            return payload;
-          }),
-
-          // Map deduction tax details
-          deduction_mor_inventory_tax_details_attributes: (
-            currentData.deduction_bid_material_tax_details || []
-          ).map((tax) => {
-            console.log("Processing deduction tax for payload:", {
-              taxId: tax.id,
-              taxChargeType: tax.taxChargeType,
-              taxType: tax.taxType,
-              percentageId: tax.percentageId,
-              resource_id: tax.resource_id,
-              amount: tax.amount,
-            });
-
-            const payload = {
-              resource_type: tax.taxType || "TaxCharge",
-              resource_id:
-                tax.percentageId ||
-                deductionTaxOptions.find(
-                  (option) => option.value === tax.taxChargeType
-                )?.id ||
-                tax.resource_id,
-              amount: parseFloat(tax.amount) || 0,
-              inclusive: tax.inclusive || false,
-              addition: false,
-              remarks: `${tax.taxChargeType} - ${tax.amount}`,
-              _destroy: tax._destroy, // Include destroy flag
-            };
-
-            console.log("Deduction tax payload:", payload);
-
-            // Only include id for existing records (not temporary UI IDs)
-            if (tax.id && tax.id.toString().length < 10) {
-              payload.id = tax.id;
-            }
-
-            return payload;
-          }),
-        },
-      };
-
-      console.log("Saving tax changes with payload:", payload);
-      console.log("Material ID:", material.id);
-
-      try {
-        const response = await axios.patch(
-          `${baseURL}po_mor_inventories/${material.id}.json?token=${token}`,
-          payload
-        );
-
-        console.log("API Response:", response.data);
-
-        if (response.status === 200 || response.status === 201) {
-          // Update local state with the response data
-          const responseData = response.data;
-          setTaxRateData((prev) => ({
-            ...prev,
-            [tableId]: {
-              ...prev[tableId],
-              ratePerNos:
-                responseData.rate_per_nos?.toString() || currentData.ratePerNos,
-              discount:
-                responseData.discount_per?.toString() || currentData.discount,
-              materialCost:
-                responseData.material_cost?.toString() ||
-                currentData.materialCost,
-              discountRate:
-                responseData.discount_rate?.toString() ||
-                currentData.discountRate,
-              afterDiscountValue:
-                responseData.after_discount_value?.toString() ||
-                currentData.afterDiscountValue,
-              netCost:
-                responseData.total_material_cost?.toString() ||
-                currentData.netCost,
-              remark: responseData.remarks || currentData.remark,
-              addition_bid_material_tax_details:
-                responseData.addition_tax_details?.map((tax) => ({
-                  id: tax.id,
-                  resource_id: tax.resource_id,
-                  taxChargeType:
-                    taxOptions.find((option) => option.id === tax.resource_id)
-                      ?.value || "",
-                  taxType: tax.resource_type,
-                  taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
-                  inclusive: tax.inclusive,
-                  amount: tax.amount?.toString() || "0",
-                })) || currentData.addition_bid_material_tax_details,
-              deduction_bid_material_tax_details:
-                responseData.deduction_tax_details?.map((tax) => ({
-                  id: tax.id,
-                  resource_id: tax.resource_id,
-                  taxChargeType:
-                    deductionTaxOptions.find(
-                      (option) => option.id === tax.resource_id
-                    )?.value || "",
-                  taxType: tax.resource_type,
-                  taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
-                  inclusive: tax.inclusive,
-                  amount: tax.amount?.toString() || "0",
-                })) || currentData.deduction_bid_material_tax_details,
-            },
-          }));
-
-          alert("Tax changes saved successfully!");
-        }
-      } catch (error) {
-        console.error("Error saving tax changes:", error);
-        alert("Error saving tax changes. Please try again.");
-      }
-    }
-    handleCloseTaxModal();
-  };
 
   // Fetch tax options on component mount
   useEffect(() => {
@@ -1802,86 +1238,12 @@ const PoDetails = () => {
     return localDate.toISOString().slice(0, 19); // "YYYY-MM-DDTHH:MM"
   };
 
-  const handleAddRow = () => {
-    setAttachments((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        fileType: "",
-        fileName: "",
-        uploadDate: getLocalDateTime(),
-        fileUrl: "",
-        file: null,
-        isExisting: false,
-        doc_path: "",
-      },
-    ]);
-  };
+  
 
-  const handleRemove = (id) => {
-    setAttachments((prev) => prev.filter((att) => att.id !== id));
-  };
+  
 
-  const handleFileChange = (e, id) => {
-    const file = e.target.files[0];
-    if (!file) return;
 
-    const contentType = file.type;
-
-    const reader = new FileReader();
-
-    reader.onloadend = () => {
-      const base64Content = reader.result.split(",")[1]; // Remove data:<type>;base64, prefix
-
-      setAttachments((prev) =>
-        prev.map((att) =>
-          att.id === id
-            ? {
-                ...att,
-                file,
-                fileType: contentType,
-                fileName: file.name,
-                isExisting: false,
-                document_file_name: att.document_file_name || file.name,
-                uploadDate: getLocalDateTime(),
-                doc_path: "",
-                attachments: [
-                  {
-                    filename: file.name,
-                    content: base64Content,
-                    content_type: contentType,
-                    document_file_name: att.document_file_name || file.name,
-                  },
-                ],
-              }
-            : att
-        )
-      );
-    };
-
-    reader.readAsDataURL(file);
-  };
-
-  const handleFileNameChange = (id, newFileName) => {
-    setAttachments((prev) =>
-      prev.map((att) =>
-        att.id === id
-          ? {
-              ...att,
-              fileName: newFileName,
-              attachments: att.attachments?.length
-                ? [
-                    {
-                      ...att.attachments[0],
-                      filename: newFileName,
-                    },
-                  ]
-                : [],
-            }
-          : att
-      )
-    );
-  };
+ 
 
   const attachmentsPayload = attachments.flatMap(
     (att) => att.attachments || []
@@ -2161,21 +1523,9 @@ const PoDetails = () => {
       })
     );
   };
-  // ...existing code...
-  const addCost = () => {
-    const newCost = {
-      // No ID for new records - let the API generate it
-      cost_name: "",
-      amount: "",
-      scope: "",
-      realised_amount: "",
-    };
-    setOtherCosts((prev) => [...prev, newCost]);
-  };
 
-  const removeCost = (id) => {
-    setOtherCosts((prev) => prev.filter((cost) => cost.id !== id));
-  };
+
+ 
 
   const handleCostChange = (id, field, value) => {
     setOtherCosts((prev) =>
@@ -2481,391 +1831,10 @@ const PoDetails = () => {
   };
 
   // Handle purchase order update
-  const handleUpdatePurchaseOrder = async () => {
-    try {
-      setIsUpdatingOrder(true);
+ 
 
-      // Validate required fields
-      if (!selectedCompany?.value) {
-        alert("Please select a company.");
-        setIsUpdatingOrder(false);
-        return;
-      }
-
-      if (!selectedSupplier?.value) {
-        alert("Please select a supplier.");
-        setIsUpdatingOrder(false);
-        return;
-      }
-
-      // Get material inventory IDs from submitted materials
-      const materialInventoryIds = submittedMaterials.map(
-        (material) => material.id
-      );
-
-      // Debug logging
-      console.log("materialTermConditions:", materialTermConditions);
-      console.log(
-        "typeof materialTermConditions:",
-        typeof materialTermConditions
-      );
-      console.log(
-        "Array.isArray(materialTermConditions):",
-        Array.isArray(materialTermConditions)
-      );
-
-      // Prepare the payload based on the structure you provided
-      const payload = {
-        purchase_order: {
-          status: "draft",
-          credit_period: parseInt(termsFormData.creditPeriod) || 0,
-          po_validity_period: parseInt(termsFormData.poValidityPeriod) || 0,
-          advance_reminder_duration:
-            parseInt(termsFormData.advanceReminderDuration) || 0,
-          payment_terms: termsFormData.paymentTerms || "",
-          payment_remarks: termsFormData.paymentRemarks || "",
-          supplier_advance: parseFloat(termsFormData.supplierAdvance) || 0,
-          supplier_advance_amount:
-            parseFloat(termsFormData.supplierAdvanceAmount) || 0,
-          survice_certificate_advance:
-            parseFloat(termsFormData.surviceCertificateAdvance) || 0,
-          total_value: 0,
-          total_discount: 0,
-          po_date: getLocalDateTime().split("T")[0], // Current date
-          company_id: selectedCompany?.value,
-          po_type: "ropo",
-          supplier_id: selectedSupplier?.value,
-          remark: termsFormData.remark || "",
-          comments: termsFormData.comments || "",
-          material_inventory_ids: apiMaterialInventoryIds,
-
-          // Include purchase order ID if available (for updates)
-          ...(purchaseOrderId && { po_id: purchaseOrderId }),
-
-          // Format other cost details with taxes
-          other_cost_details_attributes: otherCosts.map((cost) => {
-            const costPayload = {
-              cost_type: cost.cost_name || "",
-              cost: parseFloat(cost.amount) || 0,
-              scope: cost.scope || "",
-              taxes_and_charges_attributes: [
-                ...(cost.taxes?.additionTaxes || []).map((tax) => {
-                  const taxPayload = {
-                    resource_id: parseInt(tax.taxType) || 0,
-                    resource_type: "TaxCategory",
-                    percentage:
-                      parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
-                    inclusive: tax.inclusive || false,
-                    amount: parseFloat(tax.amount) || 0,
-                    addition: true,
-                  };
-                  // Only include ID if it exists and is not undefined/null
-                  if (tax.id) {
-                    taxPayload.id = tax.id;
-                  }
-                  return taxPayload;
-                }),
-                ...(cost.taxes?.deductionTaxes || []).map((tax) => {
-                  const taxPayload = {
-                    resource_id: parseInt(tax.taxType) || 0,
-                    resource_type: "TaxCategory",
-                    percentage:
-                      parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
-                    inclusive: tax.inclusive || false,
-                    amount: parseFloat(tax.amount) || 0,
-                    addition: false,
-                  };
-                  // Only include ID if it exists and is not undefined/null
-                  if (tax.id) {
-                    taxPayload.id = tax.id;
-                  }
-                  return taxPayload;
-                }),
-              ],
-            };
-            // Only include ID if it exists and is not undefined/null
-            if (cost.id) {
-              costPayload.id = cost.id;
-            }
-            return costPayload;
-          }),
-
-          // Format charges with taxes
-          charges_with_taxes_attributes: charges.map((charge) => {
-            const chargePayload = {
-              charge_id: charge.charge_id || 0,
-              amount: parseFloat(charge.amount) || 0,
-              realised_amount: parseFloat(charge.realised_amount) || 0,
-              taxes_and_charges_attributes: [
-                ...(charge.taxes?.additionTaxes || []).map((tax) => {
-                  const taxPayload = {
-                    resource_id: parseInt(tax.taxType) || 0,
-                    resource_type: "TaxCategory",
-                    percentage:
-                      parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
-                    inclusive: tax.inclusive || false,
-                    amount: parseFloat(tax.amount) || 0,
-                    addition: true,
-                  };
-                  // Only include ID if it exists and is not undefined/null
-                  if (tax.id) {
-                    taxPayload.id = tax.id;
-                  }
-                  return taxPayload;
-                }),
-                ...(charge.taxes?.deductionTaxes || []).map((tax) => {
-                  const taxPayload = {
-                    resource_id: parseInt(tax.taxType) || 0,
-                    resource_type: "TaxCategory",
-                    percentage:
-                      parseFloat(tax.taxPercentage?.replace("%", "")) || 0,
-                    inclusive: tax.inclusive || false,
-                    amount: parseFloat(tax.amount) || 0,
-                    addition: false,
-                  };
-                  // Only include ID if it exists and is not undefined/null
-                  if (tax.id) {
-                    taxPayload.id = tax.id;
-                  }
-                  return taxPayload;
-                }),
-              ],
-            };
-            // Only include ID if it exists and is not undefined/null
-            if (charge.id) {
-              chargePayload.id = charge.id;
-            }
-            return chargePayload;
-          }),
-
-          // Resource term conditions
-          // resource_term_conditions_attributes: Array.isArray(termsConditions)
-          //   ? termsConditions.map((term) => ({
-          //       term_condition_id: term.term_condition_id,
-          //       condition_category: term.condition_category,
-          //       condition: term.condition,
-          //     }))
-          //   : [],
-          // resource_term_conditions_attributes: Array.isArray(generalTerms)
-          //   ? generalTerms
-          //       .filter((row) => row.category && row.condition) // Only include filled rows
-          //       .map((row) => {
-          //         // Find the term in termsConditions that matches the selected category
-          //         const term = termsConditions.find(
-          //           (t) => t.condition_category_name === row.category
-          //         );
-          //         if (term) {
-          //           const termPayload = {
-          //             term_condition_id: term.id,
-          //             condition_type: "general",
-          //             // Optionally, you can also send the condition text if your API expects it:
-          //             // condition: row.condition,
-          //           };
-          //           // Only include ID if it exists and is not undefined/null
-          //           if (row.id) {
-          //             termPayload.id = row.id;
-          //           }
-          //           return termPayload;
-          //         }
-          //         return null;
-          //       })
-          //       .filter(Boolean) // Remove any nulls if no match found
-          //   : [],
-
-          // resource_term_conditions_attributes: Array.isArray(generalTerms)
-          //   ? // ? generalTerms
-          //     //     .filter((row) => row.category && row.condition)
-          //     generalTerms
-          //       .filter((row) => {
-          //         // Keep rows that are either valid for creation/update OR are marked for deletion
-          //         return (row.category && row.condition) || row._destroy;
-          //       })
-          //       .map((row) => {
-          //         // Find the term in termsConditions that matches the selected category
-          //         const term = termsConditions.find(
-          //           (t) => t.condition_category_name === row.category
-          //         );
-          //         if (term) {
-          //           const termPayload = {
-          //             term_condition_id: term.id,
-          //             condition_type: "general",
-          //             // Only include ID if it exists, is not undefined/null, and is not a random (new) ID
-          //             // Only pass id if it is from API (assume API IDs are less than 10 digits)
-          //           };
-          //           if (row.id && row.id.toString().length < 10) {
-          //             termPayload.id = row.id;
-          //           }
-          //           if (row._destroy) {
-          //             termPayload.destroy = true;
-          //             return termPayload;
-          //           }
-
-          //           // For normal create/update, set term_condition_id
-          //           if (term) {
-          //             termPayload.term_condition_id = term.id;
-          //           }
-          //           return termPayload;
-          //         }
-          //         return null;
-          //       })
-          //       .filter(Boolean)
-          //   : [],
-          resource_term_conditions_attributes: Array.isArray(generalTerms)
-            ? generalTerms
-                .filter((row) => {
-                  // Keep rows that are valid for create/update OR are marked for deletion
-                  return (row.category && row.condition) || row._destroy;
-                })
-                .map((row) => {
-                  // Find matching term from API data
-                  const term = termsConditions.find(
-                    (t) => t.condition_category_name === row.category
-                  );
-
-                  const termPayload = {
-                    condition_type: "general",
-                  };
-
-                  // Pass existing DB id only if it’s a real API id (shorter than 10 digits)
-                  if (row.id && row.id.toString().length < 10) {
-                    termPayload.id = row.id;
-                  }
-
-                  // If marked for deletion
-                  if (row._destroy) {
-                    termPayload._destroy = true;
-                    return termPayload; // Only send id + _destroy (and condition_type)
-                  }
-
-                  // For create/update, set the term_condition_id
-                  if (term) {
-                    termPayload.term_condition_id = term.id;
-                  }
-
-                  return termPayload;
-                })
-                .filter(Boolean)
-            : [],
-
-          // Resource material term conditions
-          // ...existing code...
-          // resource_material_term_conditions_attributes: Array.isArray(
-          //   materialTermConditions
-          // )
-          //   ? materialTermConditions.map((term) => {
-          //       const termPayload = {
-          //         // Always send the correct term_condition_id (not id)
-          //         term_condition_id: term.term_condition_id,
-          //         material_sub_type: term.material_sub_type,
-          //         condition_category: term.condition_category,
-          //         condition: term.condition,
-          //       };
-
-          //       // Only include the record id if it is a real API id (not a term_condition_id)
-          //       // Usually, API ids are short (e.g. < 10 digits), and term_condition_id is always required
-          //       if (
-          //         term.id &&
-          //         term.id !== term.term_condition_id && // Don't send if id is same as term_condition_id
-          //         term.id.toString().length < 10 // Only include if it's a real DB id
-          //       ) {
-          //         termPayload.id = term.id;
-          //       }
-
-          //       return termPayload;
-          //     })
-          //   : [],
           // ...existing code...
 
-          resource_material_term_conditions_attributes: Array.isArray(
-            materialTermConditions
-          )
-            ? materialTermConditions
-                .filter((term) => {
-                  // Keep normal rows OR ones marked for deletion
-                  return (
-                    (term.term_condition_id &&
-                      term.material_sub_type &&
-                      term.condition_category &&
-                      term.condition) ||
-                    term._destroy
-                  );
-                })
-                .map((term) => {
-                  const termPayload = {
-                    term_condition_id: term.term_condition_id,
-                    material_sub_type: term.material_sub_type,
-                    condition_category: term.condition_category,
-                    condition: term.condition,
-                  };
-
-                  // If this is from DB, pass its real id
-                  if (
-                    term.id &&
-                    term.id !== term.term_condition_id &&
-                    term.id.toString().length < 10
-                  ) {
-                    termPayload.id = term.id;
-                  }
-
-                  // If deleted, mark with _destroy
-                  if (term._destroy) {
-                    termPayload._destroy = true;
-                  }
-
-                  return termPayload;
-                })
-            : [],
-
-          attachments: attachmentsPayload || [],
-
-          // Attachments
-          // attachments: Array.isArray(attachments)
-          //   ? attachments.map((attachment) => ({
-          //       filename: attachment.filename,
-          //       document_name: attachment.document_name,
-          //       content: attachment.content,
-          //       content_type: attachment.content_type,
-          //     }))
-          //   : [],
-        },
-      };
-
-      console.log("Updating purchase order with payload:", payload);
-      console.log("Purchase Order ID:", id);
-      console.log(
-        "API URL:",
-        `${baseURL}purchase_orders/${id}.json?token=${token}`
-      );
-
-      const response = await axios.patch(
-        `${baseURL}purchase_orders/${id}.json?token=${token}`,
-        payload
-      );
-
-      console.log("Purchase order updated successfully:", response.data);
-      alert("Purchase order updated successfully!");
-
-      // Optionally redirect to PO list after successful update
-      // window.location.href = '/po-list'; // Uncomment to redirect
-    } catch (error) {
-      console.error("Error updating purchase order:", error);
-      alert("Error updating purchase order. Please try again.");
-    } finally {
-      setIsUpdatingOrder(false);
-    }
-  };
-
-  // ...existing code...
-
-  const handleAddMaterial = (newMaterial) => {
-    setMaterialDetails((prev) => [...prev, newMaterial]);
-  };
-
-  const handleUpdateMaterial = (index, updatedMaterial) => {
-    setMaterialDetails((prev) =>
-      prev.map((mat, idx) => (idx === index ? updatedMaterial : mat))
-    );
-  };
 
   // Function to get combined materials (prepopulated + submitted)
   const getCombinedMaterials = () => {
@@ -2990,7 +1959,7 @@ const PoDetails = () => {
         <div className="website-content ">
           <div className="module-data-section ">
             <a href="">Home &gt; Purchase &gt; MTO &gt; MTO Pending Approval</a>
-            <h5 className="mt-3">Edit Purchase Order</h5>
+            <h5 className="mt-3">Detail Purchase Order</h5>
             <div className="row my-4 container-fluid align-items-center">
               <div className="col-md-12 ">
                 <div className="mor-tabs mt-4">
@@ -5077,172 +4046,50 @@ Document */}
                         .map((item, rowIndex) => (
                           <tr key={`${rowIndex}-${item.id}`}>
                             <td>
-                              {taxOptions && taxOptions.length > 0 ? (
-                                <SelectBox
-                                  options={taxOptions}
+                              <select
+                                className="form-control"
                                   disabled
-                                  defaultValue={
+                                value={
                                     item.taxChargeType ||
-                                    taxOptions.find(
-                                      (option) => option.id === item.resource_id
-                                    )?.value ||
-                                    taxOptions.find(
-                                      (option) =>
-                                        option.value === item.taxChargeType
-                                    )?.value ||
-                                    ""
-                                  }
-                                  onChange={(value) => {
-                                    const selectedOption = taxOptions.find(
-                                      (option) => option.value === value
-                                    );
-                                    const selectedTaxType =
-                                      selectedOption?.value || value;
-
-                                    // Update tax charge type
-                                    handleTaxChargeChange(
-                                      tableId,
-                                      item.id,
-                                      "taxChargeType",
-                                      selectedTaxType,
-                                      "addition"
-                                    );
-
-                                    // Fetch tax percentages for the selected category
-                                    if (selectedOption?.id) {
-                                      handleTaxCategoryChange(
-                                        tableId,
-                                        selectedOption.id,
-                                        item.id
-                                      );
-                                    }
-                                  }}
-                                  className="custom-select"
-                                  disabledOptions={(
-                                    taxRateData[
-                                      tableId
-                                    ]?.addition_bid_material_tax_details?.reduce(
-                                      (acc, item) => {
-                                        const matchedOption = taxOptions.find(
-                                          (option) =>
-                                            option.id === item.resource_id
-                                        );
-                                        const taxType = item.taxChargeType;
-                                        if (taxType === "CGST") {
-                                          acc.push("CGST", "IGST");
-                                        }
-                                        if (taxType === "SGST") {
-                                          acc.push("SGST", "IGST");
-                                        }
-                                        if (taxType === "IGST") {
-                                          acc.push("CGST", "SGST");
-                                        }
-                                        if (taxType) {
-                                          acc.push(taxType);
-                                        } else if (matchedOption?.value) {
-                                          acc.push(matchedOption.value);
-                                        }
-                                        return acc;
-                                      },
-                                      []
-                                    ) || []
-                                  ).filter(
-                                    (value, index, self) =>
-                                      self.indexOf(value) === index
-                                  )}
-                                />
-                              ) : (
-                                <select
-                                  className="form-control"
-                                  value={item.taxChargeType || ""}
-                                  // onChange={(e) => {
-                                  //   const selectedValue = e.target.value;
-                                  //   handleTaxChargeChange(
-                                  //     tableId,
-                                  //     item.id,
-                                  //     "taxChargeType",
-                                  //     selectedValue,
-                                  //     "addition"
-                                  //   );
-
-                                  //   // Find the tax category ID for the selected value
-                                  //   const selectedOption = taxOptions.find(
-                                  //     (option) => option.value === selectedValue
-                                  //   );
-                                  //   if (selectedOption?.id) {
-                                  //     handleTaxCategoryChange(
-                                  //       tableId,
-                                  //       selectedOption.id
-                                  //     );
-                                  //   }
-                                  // }}
-                                >
-                                  {/* <option value="">Select Tax</option>
-                                  <option value="CGST">CGST</option>
-                                  <option value="SGST">SGST</option>
-                                  <option value="IGST">IGST</option>
-                                  <option value="Handling Charges">
-                                    Handling Charges
+                                  taxOptions.find((opt) => opt.id === item.tax_category_id)?.value ||
+                                  taxOptions.find((opt) => opt.id === item.resource_id)?.value ||
+                                  ""
+                                }
+                              >
+                                <option value="">Select Tax</option>
+                                {taxOptions.map((opt) => (
+                                  <option key={opt.id} value={opt.value}>
+                                    {opt.label}
                                   </option>
-                                  <option value="Other charges">
-                                    Other charges
-                                  </option>
-                                  <option value="Freight">Freight</option> */}
+                                ))}
                                 </select>
-                              )}
                             </td>
 
                             <td>
-                              <SelectBox
-                                options={(() => {
-                                  // Use material-specific tax percentages from API for this specific tax item
-                                  const percentages =
-                                    materialTaxPercentages[item.id] || [];
-                                  if (percentages.length > 0) {
-                                    return percentages.map((percent) => ({
-                                      label: `${percent.percentage}%`,
-                                      value: `${percent.percentage}%`,
-                                    }));
-                                  }
-
-                                  // If no percentages from API, return empty array (no options)
-                                  return [];
-                                })()}
-                                defaultValue={
+                              <select
+                                className="form-control"
+                                disabled
+                                value={
                                   item?.taxChargePerUom ||
                                   (() => {
-                                    const foundPercentage = (
-                                      materialTaxPercentages[item.id] || []
-                                    ).find(
-                                      (option) =>
-                                        option.id === item.tax_category_id
+                                    const found = (materialTaxPercentages[item.id] || []).find(
+                                      (p) => p.id === item.tax_category_id
                                     );
-                                    return foundPercentage
-                                      ? `${foundPercentage.percentage}%`
-                                      : "";
-                                  })() ||
-                                  ""
+                                    return found ? `${found.percentage}%` : "";
+                                  })() || ""
                                 }
-                                onChange={(e) =>
-                                  handleTaxChargeChange(
-                                    tableId,
-                                    item.id,
-                                    "taxChargePerUom",
-                                    e,
-                                    "addition"
-                                  )
-                                }
-                                disabled={
-                                  (materialTaxPercentages[item.id] || [])
-                                    .length === 0
-                                }
-                                placeholder={
-                                  (materialTaxPercentages[item.id] || [])
-                                    .length === 0
+                              >
+                                <option value="">
+                                  {(materialTaxPercentages[item.id] || []).length === 0
                                     ? "No percentages available"
-                                    : "Select percentage"
-                                }
-                              />
+                                    : "Select percentage"}
+                                </option>
+                                {(materialTaxPercentages[item.id] || []).map((percent) => (
+                                  <option key={percent.id} value={`${percent.percentage}%`}>
+                                    {percent.percentage}%
+                                  </option>
+                                ))}
+                              </select>
                             </td>
 
                             <td className="text-center">
@@ -5351,101 +4198,51 @@ Document */}
                         .map((item) => (
                           <tr key={item.id}>
                             <td>
-                              <SelectBox
-                                options={deductionTaxOptions || []}
-                                defaultValue={
+                              <select
+                                className="form-control"
+                                disabled
+                                value={
                                   item.taxChargeType ||
-                                  deductionTaxOptions.find(
-                                    (option) => option.id == item.resource_id
-                                  )?.value ||
-                                  deductionTaxOptions.find(
-                                    (option) =>
-                                      option.value === item.taxChargeType
-                                  )?.value ||
+                                  deductionTaxOptions.find((opt) => opt.id == item.tax_category_id)?.value ||
+                                  deductionTaxOptions.find((opt) => opt.id == item.resource_id)?.value ||
                                   ""
                                 }
-                                disabled
-                                onChange={(value) => {
-                                  handleTaxChargeChange(
-                                    tableId,
-                                    item.id,
-                                    "taxChargeType",
-                                    value,
-                                    "deduction"
-                                  );
-
-                                  // Fetch tax percentages for the selected category
-                                  const selectedOption =
-                                    deductionTaxOptions.find(
-                                      (option) => option.value === value
-                                    );
-                                  if (selectedOption?.id) {
-                                    handleTaxCategoryChange(
-                                      tableId,
-                                      selectedOption.id,
-                                      item.id
-                                    );
-                                  }
-                                }}
-                                disabledOptions={taxRateData[
-                                  tableId
-                                ]?.deduction_bid_material_tax_details?.map(
-                                  (item) => item.taxChargeType
-                                )}
-                              />
+                              >
+                                <option value="">Select Tax & Charges</option>
+                                {deductionTaxOptions
+                                  .filter((opt) => opt.value)
+                                  .map((opt) => (
+                                    <option key={opt.id} value={opt.value}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
+                              </select>
                             </td>
                             <td>
-                              <SelectBox
-                                options={(() => {
-                                  // Use material-specific tax percentages from API for this specific tax item
-                                  const percentages =
-                                    materialTaxPercentages[item.id] || [];
-                                  if (percentages.length > 0) {
-                                    return percentages.map((percent) => ({
-                                      label: `${percent.percentage}%`,
-                                      value: `${percent.percentage}%`,
-                                    }));
-                                  }
-
-                                  // If no percentages from API, return empty array (no options)
-                                  return [];
-                                })()}
-                                defaultValue={
+                              <select
+                                className="form-control"
+                                disabled
+                                value={
                                   item?.taxChargePerUom ||
                                   (() => {
-                                    const foundPercentage = (
-                                      materialTaxPercentages[item.id] || []
-                                    ).find(
-                                      (option) =>
-                                        option.id === item.tax_category_id
+                                    const found = (materialTaxPercentages[item.id] || []).find(
+                                      (p) => p.id === item.tax_category_id
                                     );
-                                    return foundPercentage
-                                      ? `${foundPercentage.percentage}%`
-                                      : "";
-                                  })() ||
-                                  ""
+                                    return found ? `${found.percentage}%` : "";
+                                  })() || ""
                                 }
-                                // onChange={(e) =>
-                                //   handleTaxChargeChange(
-                                //     tableId,
-                                //     item.id,
-                                //     "taxChargePerUom",
-                                //     e,
-                                //     "deduction"
-                                //   )
-                                // }
-                                // disabled={
-                                //   (materialTaxPercentages[item.id] || [])
-                                //     .length === 0
-                                // }
-                                // placeholder={
-                                //   (materialTaxPercentages[item.id] || [])
-                                //     .length === 0
-                                //     ? "No percentages available"
-                                //     : "Select percentage"
-                                // }
-                                disabled
-                              />
+                              >
+                                <option value="">
+                                  {(materialTaxPercentages[item.id] || []).length === 0
+                                    ? "No percentages available"
+                                    : "Select percentage"}
+                                </option>
+                                {(materialTaxPercentages[item.id] || []).map((percent) => (
+                                  <option key={percent.id} value={`${percent.percentage}%`}>
+                                    {percent.percentage}%
+                                  </option>
+                                ))}
+                              </select>
                             </td>
                             <td className="text-center">
                               <input
