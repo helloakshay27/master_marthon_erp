@@ -370,7 +370,7 @@ const EstimationApprovolList = () => {
             {/* <QuickFilter /> */}
             {/* <EstimationQuickFilter/> */}
 
-            <CollapsibleCard title="Quick Filter">
+            <CollapsibleCard title="Quick Filter" isInitiallyCollapsed={true}>
               <div className="card-body">
                 <div className="row my-2 align-items-end">
                   {/* Company Dropdown */}

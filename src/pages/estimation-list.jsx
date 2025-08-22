@@ -365,7 +365,7 @@ const EstimationList = () => {
                                     <div className="col-md-6">
                                         <div className="d-flex justify-content-end align-items-center gap-3">
 
-                                            <button className="purple-btn2 me-2" onClick={() => setShowModal(true)}>Bulk Upload</button>
+                                            {/* <button className="purple-btn2 me-2" onClick={() => setShowModal(true)}>Bulk Upload</button> */}
 
 
                                             {/* Create BOQ Button */}

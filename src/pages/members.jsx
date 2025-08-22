@@ -433,6 +433,11 @@ function Members() {
  <li>
                   <Link to="/estimation-creation-test">Estimation creation test new</Link>
                 </li>
+                <li>
+                  <Link to="/estimation-creation-edit">
+                    Estimation edit
+                  </Link>
+                </li>
                 ____________________________
               </ul>
             </div>

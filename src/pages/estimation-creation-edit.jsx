@@ -17,7 +17,7 @@ import { baseURL } from "../confi/apiDomain";
 
 
 
-const EstimationCreationTest = () => {
+const EstimationCreationEdit = () => {
     // States to store data
     const navigate = useNavigate(); // ✅ define navigate here
     const [companies, setCompanies] = useState([]);
@@ -131,31 +131,6 @@ const EstimationCreationTest = () => {
     const [type, setType] = useState("project"); // Track the type
     const [budgetType, setBudgetType] = useState(""); // ✅ new state
 
-    // 🔹 Fetch sub-project details when project or site changes
-    // useEffect(() => {
-    //     if (!selectedProject && !selectedSite) return;
-
-    //     const fetchDetails = async () => {
-    //         try {
-    //             const newType = selectedSite ? "sub_project" : "project";
-    //             setType(newType);
-    //             const type = selectedSite ? "sub_project" : "project";
-    //             const id = selectedSite ? selectedSite.value : selectedProject.value;
-
-    //             const res = await axios.get(
-    //                 `${baseURL}estimation_details/${id}/budget_details.json?type=${type}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-    //             );
-
-    //             setDetails(res.data);
-    //             setBudgetType(res.data?.data?.budget_type || ""); // ✅ save budget_type
-    //         } catch (err) {
-    //             console.error("Error fetching sub-project details", err);
-    //         }
-    //     };
-
-    //     fetchDetails();
-    // }, [selectedProject, selectedSite]);
-
     useEffect(() => {
         if (!selectedProject && !selectedSite) return;
 
@@ -192,10 +167,6 @@ const EstimationCreationTest = () => {
     }, [selectedProject, selectedSite, selectedWing]);
 
 
-    // console.log("budget type:", budgetType)
-    // 🔹 Dynamic title
-    // const cardTitle = type === "sub_project" ? "Sub-Project Details" : "Project Details";
-
     const cardTitle =
         type === "wing"
             ? "Wing Details"
@@ -205,9 +176,9 @@ const EstimationCreationTest = () => {
 
     // console.log("details selected:", details)
     const [subProjectDetails, setSubProjectDetails] = useState(
-        {
-            categories: [],
-        }
+        // {
+        //     categories: [],
+        // }
 
 
         // {
@@ -282,23 +253,6 @@ const EstimationCreationTest = () => {
         //   ]
         // }
     );
-
-
-    useEffect(() => {
-        axios
-            .get(
-                `${baseURL}work_categories/work_sub_categories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
-
-            )
-            .then((res) => {
-                // console.log("responce cat:", res.data)
-                // setSubProjectDetails(res.data); // store response
-            })
-            .catch((err) => {
-                console.error("Error fetching sub project details:", err);
-            });
-    }, []); // runs once on mount
-
 
     const [openCategoryId, setOpenCategoryId] = useState(null); // Track which category is open
     const [openSubCategory2Id, setOpenSubCategory2Id] = useState(null); // Track sub-category 2 visibility
@@ -462,14 +416,6 @@ const EstimationCreationTest = () => {
         subCategory5Idx = null
     ) => {
 
-        // console.log("Params:", {
-        //   catIdx,
-        //   subCatIdx,
-        //   categoryOrSubCatId,
-        //   subCategory3Idx,
-        //   subCategory4Idx,
-        //   subCategory5Idx
-        // });
         setModalCategoryIdx(catIdx);
         setModalSubCategoryIdx(subCatIdx);
         setModalSubCategory3Idx(subCategory3Idx);
@@ -519,143 +465,6 @@ const EstimationCreationTest = () => {
     });
 
     const [lastMaterialDetails, setLastMaterialDetails] = useState([]);
-
-
-    // const handleCreateRows = (
-    //     subCategory3Idx = modalSubCategory3Idx,
-    //     subCategory4Idx = modalSubCategory4Idx,
-    //     subCategory5Idx = modalSubCategory5Idx
-    // ) => {
-    //     setSubProjectDetails(prev => {
-    //         const updated = { ...prev };
-    //         let targetArr;
-    //         let levelIds = {
-    //             level_one_id: null,
-    //             level_two_id: null,
-    //             level_three_id: null,
-    //             level_four_id: null,
-    //             level_five_id: null,
-    //         };
-
-    //         // 🛠 Level ID mapping
-    //         if (
-    //             modalSubCategoryIdx === null &&
-    //             subCategory3Idx === null &&
-    //             subCategory4Idx === null &&
-    //             subCategory5Idx === null
-    //         ) {
-    //             const category = updated.categories[modalCategoryIdx];
-    //             targetArr = category.material_type_details;
-    //             levelIds.level_one_id = category.id;
-    //         } else if (
-    //             modalSubCategoryIdx !== null &&
-    //             subCategory3Idx === null &&
-    //             subCategory4Idx === null &&
-    //             subCategory5Idx === null
-    //         ) {
-    //             const subCat2 = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx];
-    //             targetArr = subCat2.material_type_details;
-    //             levelIds.level_one_id = updated.categories[modalCategoryIdx].id;
-    //             levelIds.level_two_id = subCat2.id;
-    //         } else if (
-    //             modalSubCategoryIdx !== null &&
-    //             subCategory3Idx !== null &&
-    //             subCategory4Idx === null &&
-    //             subCategory5Idx === null
-    //         ) {
-    //             const subCat3 = updated.categories[modalCategoryIdx]
-    //                 .sub_categories_2[modalSubCategoryIdx]
-    //                 .sub_categories_3[subCategory3Idx];
-    //             targetArr = subCat3.material_type_details;
-    //             levelIds.level_one_id = updated.categories[modalCategoryIdx].id;
-    //             levelIds.level_two_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].id;
-    //             levelIds.level_three_id = subCat3.id;
-    //         } else if (
-    //             modalSubCategoryIdx !== null &&
-    //             subCategory3Idx !== null &&
-    //             subCategory4Idx !== null &&
-    //             subCategory5Idx === null
-    //         ) {
-    //             const subCat4 = updated.categories[modalCategoryIdx]
-    //                 .sub_categories_2[modalSubCategoryIdx]
-    //                 .sub_categories_3[subCategory3Idx]
-    //                 .sub_categories_4[subCategory4Idx];
-    //             targetArr = subCat4.material_type_details;
-    //             levelIds.level_one_id = updated.categories[modalCategoryIdx].id;
-    //             levelIds.level_two_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].id;
-    //             levelIds.level_three_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx].id;
-    //             levelIds.level_four_id = subCat4.id;
-    //         } else if (
-    //             modalSubCategoryIdx !== null &&
-    //             subCategory3Idx !== null &&
-    //             subCategory4Idx !== null &&
-    //             subCategory5Idx !== null
-    //         ) {
-    //             const subCat5 = updated.categories[modalCategoryIdx]
-    //                 .sub_categories_2[modalSubCategoryIdx]
-    //                 .sub_categories_3[subCategory3Idx]
-    //                 .sub_categories_4[subCategory4Idx]
-    //                 .sub_categories_5[subCategory5Idx];
-    //             targetArr = subCat5.material_type_details;
-    //             levelIds.level_one_id = updated.categories[modalCategoryIdx].id;
-    //             levelIds.level_two_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].id;
-    //             levelIds.level_three_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx].id;
-    //             levelIds.level_four_id = updated.categories[modalCategoryIdx].sub_categories_2[modalSubCategoryIdx].sub_categories_3[subCategory3Idx].sub_categories_4[subCategory4Idx].id;
-    //             levelIds.level_five_id = subCat5.id;
-    //         }
-
-    //         if (!targetArr) return prev;
-
-    //         const row = modalRows[0];
-
-    //         // Duplicate check
-    //         let isDuplicate = false;
-    //         if (row.type === "material") {
-    //             isDuplicate = targetArr.some(item =>
-    //                 item.type === "material" &&
-    //                 item.name === row.materialTypeLabel &&
-    //                 item.specification === row.specificationLabel
-    //             );
-    //         } else if (row.type === "labour") {
-    //             isDuplicate = targetArr.some(item =>
-    //                 item.type === "labour" &&
-    //                 item.labourActLabel === row.labourTypeLabel
-    //             );
-    //         } else if (row.type === "composite") {
-    //             isDuplicate = targetArr.some(item =>
-    //                 item.type === "composite" &&
-    //                 item.compositeValue === row.compositeValue
-    //             );
-    //         }
-
-    //         if (!isDuplicate) {
-    //             targetArr.push({
-    //                 id: Date.now() + Math.random(),
-    //                 materilTypeId: row.materialType,
-    //                 name: row.materialTypeLabel,
-    //                 specificationId: row.specification,
-    //                 specification: row.specificationLabel,
-    //                 labourAct: row.labourType,
-    //                 labourActLabel: row.labourTypeLabel,
-    //                 compositeValue: row.compositeValue,
-    //                 type: row.type,
-    //                 location: "",
-    //                 qty: "",
-    //                 rate: row.rate,
-    //                 wastage: "",
-    //             });
-    //         }
-
-    //         // ✅ Store both level IDs and targetArr in state
-    //         setLastCreatedLevelIds(levelIds);
-    //         setLastMaterialDetails([...targetArr]);
-
-    //         return updated;
-    //     });
-
-    //     setShowAddModal(false);
-    // };
-
 
     const handleCreateRows = (
         subCategory3Idx = modalSubCategory3Idx,
@@ -1487,30 +1296,6 @@ const EstimationCreationTest = () => {
     const [selectedGenericSpecifications, setSelectedGenericSpecifications] = useState(null); // Holds the selected generic specifications for each material
     const [genericSpecificationsByRow, setGenericSpecificationsByRow] = useState([]); // Array of arrays
 
-    // Fetch generic specifications for materials
-    // console.log("inventory type 2:", selectedInventory2)
-    // useEffect(() => {
-
-    //     if (selectedInventory2 || modalRows[0].materialType) {
-    //         axios
-    //             .get(
-    //                 `${baseURL}pms/generic_infos.json?q[inventory_type_id_eq]=${modalRows[0].materialType}&token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-    //             )
-    //             .then((response) => {
-    //                 const options = response.data.map((specification) => ({
-    //                     value: specification.id,
-    //                     label: specification.generic_info,
-    //                 }));
-
-    //                 setGenericSpecifications(options);
-    //             })
-    //             .catch((error) => {
-    //                 console.error("Error fetching generic specifications:", error);
-    //             });
-    //     }
-
-    // }, [selectedInventory2, baseURL, modalRows]); // Runs when materials or baseURL changes
-
     useEffect(() => {
         // For each modal row, fetch generic specifications if materialType is set
         const fetchAllSpecs = async () => {
@@ -1752,7 +1537,7 @@ const EstimationCreationTest = () => {
 
 
 
-    console.log("data paylod on**********************", mappedData);
+    // console.log("data paylod on**********************", mappedData);
 
 
 
@@ -1860,35 +1645,6 @@ const EstimationCreationTest = () => {
     };
 
     const handleMainCategorySelect = (catIdx, selectedOption) => {
-        //   setSubProjectDetails(prev => {
-        //     const updated = { ...prev };
-        //     const updatedCategories = [...updated.categories];
-        //     updatedCategories[catIdx] = {
-        //       ...updatedCategories[catIdx],
-        //       id: selectedOption.value,
-        //       name: selectedOption.label
-        //       // You can also reset sub_categories_2 or other fields here if needed
-        //     };
-        //     updated.categories = updatedCategories;
-        //     return updated;
-        //   });
-
-
-        // Find sub-categories for the selected main category
-        //   const subCategoryOptions =
-        //     selectedOption?.sub_categories_2?.map(subCat => ({
-        //       value: subCat.id,
-        //       label: subCat.name,
-        //       work_sub_categories: subCat.sub_categories_2 // for deeper levels
-        //     })) || [];
-
-        // console.log("selectedOption.sub_categories_2:", selectedOption);
-        //     const subCategoryOptions =
-        //   selectedOption?.sub_categories_2?.map(subCat => ({
-        //     value: subCat.id,
-        //     label: subCat.name,
-        //     work_sub_categories: subCat.sub_categories_3 || [] // for deeper levels
-        //   })) || [];
 
         const subCategoryOptions =
             selectedOption?.sub_categories_2?.map(subCat => ({
@@ -1896,6 +1652,7 @@ const EstimationCreationTest = () => {
                 label: subCat.name,
                 sub_categories_3: subCat.sub_categories_3 // pass for next level
             })) || [];
+        console.log("sub options in main:", subCategoryOptions)
 
         setSubProjectDetails(prev => {
             const updated = { ...prev };
@@ -1938,32 +1695,6 @@ const EstimationCreationTest = () => {
         }));
     };
 
-    //     const handleSubCategorySelect = (catIdx, selectedOption) => {
-    //   // Find sub-subcategories for the selected sub-category
-    //   const subCategoryLevel3Options =
-    //     selectedOption?.work_sub_categories?.map(subCat => ({
-    //       value: subCat.id,
-    //       label: subCat.name,
-    //       work_sub_categories: subCat.work_sub_categories // for deeper levels
-    //     })) || [];
-
-    //   setSubProjectDetails(prev => {
-    //     const updated = { ...prev };
-    //     const updatedCategories = [...updated.categories];
-    //     updatedCategories[catIdx] = {
-    //       ...updatedCategories[catIdx],
-    //       selectedSubCategory: selectedOption,
-    //       subCategoryLevel3Options,
-    //       selectedSubCategoryLevel3: null,
-    //       subCategoryLevel4Options: [],
-    //       selectedSubCategoryLevel4: null,
-    //       subCategoryLevel5Options: [],
-    //       selectedSubCategoryLevel5: null
-    //     };
-    //     updated.categories = updatedCategories;
-    //     return updated;
-    //   });
-    // };
 
     const handleSubCategorySelect = (catIdx, subCatIdx, selectedOption) => {
         // console.log("selected option sub 2:",selectedOption)
@@ -2122,60 +1853,6 @@ const EstimationCreationTest = () => {
             });
     };
 
-    // Handler for selecting a level 3 subcategory
-    //   const handleLevel3Change = (selectedOption) => {
-    //     setSelectedSubCategoryLevel3(selectedOption);
-    //     setSubCategoryLevel4Options([]); // Clear subcategory level 4 options
-    //     setSubCategoryLevel5Options([]); // Clear subcategory level 5 options
-
-    //     // Fetch level 4 subcategories using the selected level 3 subcategory ID
-    //     if (selectedOption && selectedOption.value) {
-    //       axios
-    //         .get(
-    //           `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-    //         )
-    //         .then((response) => {
-    //           const subSubCategories = response.data.work_sub_categories || [];
-    //           setSubCategoryLevel4Options(
-    //             subSubCategories.map((subSubCategory) => ({
-    //               value: subSubCategory.id,
-    //               label: subSubCategory.name,
-    //             }))
-    //           );
-    //         })
-    //         .catch((error) => {
-    //           console.error("Error fetching level 4 subcategories:", error);
-    //         });
-    //     }
-    //   };
-
-    // Handler for selecting a level 4 subcategory
-    //   const handleLevel4Change = (selectedOption) => {
-    //     setSelectedSubCategoryLevel4(selectedOption);
-    //     setSubCategoryLevel5Options([]); // Clear level 5 options
-
-    //     // Fetch level 5 subcategories using the selected level 4 subcategory ID
-    //     if (selectedOption && selectedOption.value) {
-    //       axios
-    //         .get(
-    //           `${baseURL}work_sub_categories/${selectedOption.value}.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
-    //         )
-    //         .then((response) => {
-    //           const subSubCategories = response.data.work_sub_categories || [];
-    //           setSubCategoryLevel5Options(
-    //             subSubCategories.map((subSubCategory) => ({
-    //               value: subSubCategory.id,
-    //               label: subSubCategory.name,
-    //             }))
-    //           );
-    //         })
-    //         .catch((error) => {
-    //           console.error("Error fetching level 5 subcategories:", error);
-    //         });
-    //     }
-    //   };
-    //     const handleLevel5Change = (selectedOption) =>
-    // setSelectedSubCategoryLevel5(selectedOption);
 
 
     const handleEditMainCategoryField2 = (catIdx, field, value) => {
@@ -2390,403 +2067,6 @@ const EstimationCreationTest = () => {
         });
     };
 
-    // function isOtherLevelFrozen(category, currentLevel, currentIdxs) {
-    //   // Check if any other level (except current) has material_type_details.length > 0
-    //   // currentLevel: "main", "sub2", "sub3", "sub4", "sub5"
-    //   // currentIdxs: {catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx}
-    //   if (currentLevel === "main") {
-    //     // If any sub2, sub3, sub4, sub5 has material_type_details, freeze main
-    //     return (
-    //       category.sub_categories_2?.some(sub2 =>
-    //         sub2.material_type_details?.length > 0 ||
-    //         sub2.sub_categories_3?.some(sub3 =>
-    //           sub3.material_type_details?.length > 0 ||
-    //           sub3.sub_categories_4?.some(sub4 =>
-    //             sub4.material_type_details?.length > 0 ||
-    //             sub4.sub_categories_5?.some(sub5 =>
-    //               sub5.material_type_details?.length > 0
-    //             )
-    //           )
-    //         )
-    //       )
-    //     );
-    //   }
-    //   if (currentLevel === "sub2") {
-    //     return (
-    //       category.material_type_details?.length > 0 ||
-    //       category.sub_categories_2?.some((sub2, idx) =>
-    //         idx !== currentIdxs.subCatIdx &&
-    //         (
-    //           sub2.material_type_details?.length > 0 ||
-    //           sub2.sub_categories_3?.some(sub3 =>
-    //             sub3.material_type_details?.length > 0 ||
-    //             sub3.sub_categories_4?.some(sub4 =>
-    //               sub4.material_type_details?.length > 0 ||
-    //               sub4.sub_categories_5?.some(sub5 =>
-    //                 sub5.material_type_details?.length > 0
-    //               )
-    //             )
-    //           )
-    //         )
-    //       )
-    //     );
-    //   }
-
-    //   // Level 3 (sub3)
-    //   if (currentLevel === "sub3") {
-    //     const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
-    //     if (!sub2) return false;
-    //     return (
-    //       sub2.material_type_details?.length > 0 ||
-    //       sub2.sub_categories_3?.some((sub3, idx) =>
-    //         idx !== currentIdxs.subCategory3Idx &&
-    //         (
-    //           sub3.material_type_details?.length > 0 ||
-    //           sub3.sub_categories_4?.some(sub4 =>
-    //             sub4.material_type_details?.length > 0 ||
-    //             sub4.sub_categories_5?.some(sub5 =>
-    //               sub5.material_type_details?.length > 0
-    //             )
-    //           )
-    //         )
-    //       )
-    //     );
-    //   }
-
-    //   // Level 4 (sub4)
-    //   if (currentLevel === "sub4") {
-    //     const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
-    //     const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
-    //     if (!sub3) return false;
-    //     return (
-    //       sub3.material_type_details?.length > 0 ||
-    //       sub3.sub_categories_4?.some((sub4, idx) =>
-    //         idx !== currentIdxs.subCategory4Idx &&
-    //         (
-    //           sub4.material_type_details?.length > 0 ||
-    //           sub4.sub_categories_5?.some(sub5 =>
-    //             sub5.material_type_details?.length > 0
-    //           )
-    //         )
-    //       )
-    //     );
-    //   }
-
-    //   // Level 5 (sub5)
-    //   if (currentLevel === "sub5") {
-    //     const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
-    //     const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
-    //     const sub4 = sub3?.sub_categories_4?.[currentIdxs.subCategory4Idx];
-    //     if (!sub4) return false;
-    //     return (
-    //       sub4.material_type_details?.length > 0 ||
-    //       sub4.sub_categories_5?.some((sub5, idx) =>
-    //         idx !== currentIdxs.subCategory5Idx &&
-    //         sub5.material_type_details?.length > 0
-    //       )
-    //     );
-    //   }
-
-    //   return false;
-
-    // }
-
-
-    // function isOtherLevelFrozen(category, currentLevel, currentIdxs) {
-    //     // currentLevel: "main", "sub2", "sub3", "sub4", "sub5"
-    //     // currentIdxs: {catIdx, subCatIdx, subCategory3Idx, subCategory4Idx, subCategory5Idx}
-
-    //     // Level 1 (main)
-    //     if (currentLevel === "main") {
-    //         return (
-    //             category.sub_categories_2?.some(sub2 =>
-    //                 sub2.material_type_details?.length > 0 ||
-    //                 sub2.sub_categories_3?.some(sub3 =>
-    //                     sub3.material_type_details?.length > 0 ||
-    //                     sub3.sub_categories_4?.some(sub4 =>
-    //                         sub4.material_type_details?.length > 0 ||
-    //                         sub4.sub_categories_5?.some(sub5 =>
-    //                             sub5.material_type_details?.length > 0
-    //                         )
-    //                     )
-    //                 )
-    //             )
-    //         );
-    //     }
-
-    //     // Level 2 (sub2)
-    //     // if (currentLevel === "sub2") {
-    //     //     // Check siblings and parent
-    //     //     const siblingsHaveMaterial = category.sub_categories_2?.some((sub2, idx) =>
-    //     //         idx !== currentIdxs.subCatIdx &&
-    //     //         (
-    //     //             sub2.material_type_details?.length > 0 ||
-    //     //             sub2.sub_categories_3?.some(sub3 =>
-    //     //                 sub3.material_type_details?.length > 0 ||
-    //     //                 sub3.sub_categories_4?.some(sub4 =>
-    //     //                     sub4.material_type_details?.length > 0 ||
-    //     //                     sub4.sub_categories_5?.some(sub5 =>
-    //     //                         sub5.material_type_details?.length > 0
-    //     //                     )
-    //     //                 )
-    //     //             )
-    //     //         )
-    //     //     );
-    //     //     // Check parent
-    //     //     const parentHasMaterial = category.material_type_details?.length > 0;
-    //     //     // Check children
-    //     //     const childrenHaveMaterial = category.sub_categories_2?.[currentIdxs.subCatIdx]?.sub_categories_3?.some(sub3 =>
-    //     //         sub3.material_type_details?.length > 0 ||
-    //     //         sub3.sub_categories_4?.some(sub4 =>
-    //     //             sub4.material_type_details?.length > 0 ||
-    //     //             sub4.sub_categories_5?.some(sub5 =>
-    //     //                 sub5.material_type_details?.length > 0
-    //     //             )
-    //     //         )
-    //     //     );
-    //     //     return siblingsHaveMaterial || parentHasMaterial || childrenHaveMaterial;
-    //     // }
-
-
-    //      // Level 2 (sub2)
-    // if (currentLevel === "sub2") {
-    //     // Only freeze if current sub-category 2 or its children have material details
-    //     const currentSubCat2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
-    //     if (!currentSubCat2) return false;
-
-    //     const hasMaterial =
-    //         currentSubCat2.material_type_details?.length > 0 ||
-    //         currentSubCat2.sub_categories_3?.some(sub3 =>
-    //             sub3.material_type_details?.length > 0 ||
-    //             sub3.sub_categories_4?.some(sub4 =>
-    //                 sub4.material_type_details?.length > 0 ||
-    //                 sub4.sub_categories_5?.some(sub5 =>
-    //                     sub5.material_type_details?.length > 0
-    //                 )
-    //             )
-    //         );
-
-    //     // Optionally, also freeze if parent (main category) has material details
-    //     const parentHasMaterial = category.material_type_details?.length > 0;
-
-    //     return hasMaterial || parentHasMaterial;
-    // }
-
-    //       // Level 3 (sub3)
-    // if (currentLevel === "sub3") {
-    //     const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
-    //     if (!sub2) return false;
-    //     const currentSubCat3 = sub2.sub_categories_3?.[currentIdxs.subCategory3Idx];
-    //     if (!currentSubCat3) return false;
-
-    //     const hasMaterial =
-    //         currentSubCat3.material_type_details?.length > 0 ||
-    //         currentSubCat3.sub_categories_4?.some(sub4 =>
-    //             sub4.material_type_details?.length > 0 ||
-    //             sub4.sub_categories_5?.some(sub5 =>
-    //                 sub5.material_type_details?.length > 0
-    //             )
-    //         );
-
-    //     // Optionally, also freeze if parent (sub2) has material details
-    //     const parentHasMaterial = sub2.material_type_details?.length > 0;
-
-    //     return hasMaterial || parentHasMaterial;
-    // }
-
-    // // Level 4 (sub4)
-    // if (currentLevel === "sub4") {
-    //     const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
-    //     const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
-    //     if (!sub3) return false;
-    //     const currentSubCat4 = sub3.sub_categories_4?.[currentIdxs.subCategory4Idx];
-    //     if (!currentSubCat4) return false;
-
-    //     const hasMaterial =
-    //         currentSubCat4.material_type_details?.length > 0 ||
-    //         currentSubCat4.sub_categories_5?.some(sub5 =>
-    //             sub5.material_type_details?.length > 0
-    //         );
-
-    //     // Optionally, also freeze if parent (sub3) has material details
-    //     const parentHasMaterial = sub3.material_type_details?.length > 0;
-
-    //     return hasMaterial || parentHasMaterial;
-    // }
-
-    // // Level 5 (sub5)
-    // if (currentLevel === "sub5") {
-    //     const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
-    //     const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
-    //     const sub4 = sub3?.sub_categories_4?.[currentIdxs.subCategory4Idx];
-    //     if (!sub4) return false;
-    //     const currentSubCat5 = sub4.sub_categories_5?.[currentIdxs.subCategory5Idx];
-    //     if (!currentSubCat5) return false;
-
-    //     const hasMaterial = currentSubCat5.material_type_details?.length > 0;
-
-    //     // Optionally, also freeze if parent (sub4) has material details
-    //     const parentHasMaterial = sub4.material_type_details?.length > 0;
-
-    //     return hasMaterial || parentHasMaterial;
-    // }
-
-    // return false;
-    // }
-
-    // function isOtherLevelFrozen(category, currentLevel, currentIdxs) {
-    //     // Level 1 (main)
-    //     if (currentLevel === "main") {
-    //         // Freeze if any sub2, sub3, sub4, sub5 has material_type_details
-    //         return (
-    //             category.sub_categories_2?.some(sub2 =>
-    //                 sub2.material_type_details?.length > 0 ||
-    //                 sub2.sub_categories_3?.some(sub3 =>
-    //                     sub3.material_type_details?.length > 0 ||
-    //                     sub3.sub_categories_4?.some(sub4 =>
-    //                         sub4.material_type_details?.length > 0 ||
-    //                         sub4.sub_categories_5?.some(sub5 =>
-    //                             sub5.material_type_details?.length > 0
-    //                         )
-    //                     )
-    //                 )
-    //             )
-    //         );
-    //     }
-
-    //     // Level 2 (sub2)
-    //     if (currentLevel === "sub2") {
-    //         // Freeze if any other sub2 (not current) or parent has material details
-    //         const siblingsHaveMaterial = category.sub_categories_2?.some((sub2, idx) =>
-    //             idx !== currentIdxs.subCatIdx &&
-    //             (
-    //                 sub2.material_type_details?.length > 0 ||
-    //                 sub2.sub_categories_3?.some(sub3 =>
-    //                     sub3.material_type_details?.length > 0 ||
-    //                     sub3.sub_categories_4?.some(sub4 =>
-    //                         sub4.material_type_details?.length > 0 ||
-    //                         sub4.sub_categories_5?.some(sub5 =>
-    //                             sub5.material_type_details?.length > 0
-    //                         )
-    //                     )
-    //                 )
-    //             )
-    //         );
-    //         const parentHasMaterial = category.material_type_details?.length > 0;
-    //         return siblingsHaveMaterial || parentHasMaterial;
-    //     }
-
-    //     // Level 3 (sub3)
-    //     if (currentLevel === "sub3") {
-    //         const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
-    //         if (!sub2) return false;
-    //         const siblingsHaveMaterial = sub2.sub_categories_3?.some((sub3, idx) =>
-    //             idx !== currentIdxs.subCategory3Idx &&
-    //             (
-    //                 sub3.material_type_details?.length > 0 ||
-    //                 sub3.sub_categories_4?.some(sub4 =>
-    //                     sub4.material_type_details?.length > 0 ||
-    //                     sub4.sub_categories_5?.some(sub5 =>
-    //                         sub5.material_type_details?.length > 0
-    //                     )
-    //                 )
-    //             )
-    //         );
-    //         const parentHasMaterial = sub2.material_type_details?.length > 0;
-    //         return siblingsHaveMaterial || parentHasMaterial;
-    //     }
-
-    //     // Level 4 (sub4)
-    //     if (currentLevel === "sub4") {
-    //         const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
-    //         const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
-    //         if (!sub3) return false;
-    //         const siblingsHaveMaterial = sub3.sub_categories_4?.some((sub4, idx) =>
-    //             idx !== currentIdxs.subCategory4Idx &&
-    //             (
-    //                 sub4.material_type_details?.length > 0 ||
-    //                 sub4.sub_categories_5?.some(sub5 =>
-    //                     sub5.material_type_details?.length > 0
-    //                 )
-    //             )
-    //         );
-    //         const parentHasMaterial = sub3.material_type_details?.length > 0;
-    //         return siblingsHaveMaterial || parentHasMaterial;
-    //     }
-
-    //     // Level 5 (sub5)
-    //     if (currentLevel === "sub5") {
-    //         const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
-    //         const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
-    //         const sub4 = sub3?.sub_categories_4?.[currentIdxs.subCategory4Idx];
-    //         if (!sub4) return false;
-    //         const siblingsHaveMaterial = sub4.sub_categories_5?.some((sub5, idx) =>
-    //             idx !== currentIdxs.subCategory5Idx &&
-    //             sub5.material_type_details?.length > 0
-    //         );
-    //         const parentHasMaterial = sub4.material_type_details?.length > 0;
-    //         return siblingsHaveMaterial || parentHasMaterial;
-    //     }
-
-    //     return false;
-    // }
-
-    // function isOtherLevelFrozen(category, currentLevel, currentIdxs) {
-    //     // Level 1 (main)
-    //     if (currentLevel === "main") {
-    //         // Freeze if any sub2, sub3, sub4, sub5 has material_type_details
-    //         return (
-    //             category.sub_categories_2?.some(sub2 =>
-    //                 sub2.material_type_details?.length > 0 ||
-    //                 sub2.sub_categories_3?.some(sub3 =>
-    //                     sub3.material_type_details?.length > 0 ||
-    //                     sub3.sub_categories_4?.some(sub4 =>
-    //                         sub4.material_type_details?.length > 0 ||
-    //                         sub4.sub_categories_5?.some(sub5 =>
-    //                             sub5.material_type_details?.length > 0
-    //                         )
-    //                     )
-    //                 )
-    //             )
-    //         );
-    //     }
-
-    //     // Level 2 (sub2)
-    //     if (currentLevel === "sub2") {
-    //         // Only freeze if parent has material details
-    //         return category.material_type_details?.length > 0;
-    //     }
-
-    //     // Level 3 (sub3)
-    //     if (currentLevel === "sub3") {
-    //         const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
-    //         if (!sub2) return false;
-    //         // Only freeze if parent (sub2) has material details
-    //         return sub2.material_type_details?.length > 0;
-    //     }
-
-    //     // Level 4 (sub4)
-    //     if (currentLevel === "sub4") {
-    //         const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
-    //         const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
-    //         if (!sub3) return false;
-    //         // Only freeze if parent (sub3) has material details
-    //         return sub3.material_type_details?.length > 0;
-    //     }
-
-    //     // Level 5 (sub5)
-    //     if (currentLevel === "sub5") {
-    //         const sub2 = category.sub_categories_2?.[currentIdxs.subCatIdx];
-    //         const sub3 = sub2?.sub_categories_3?.[currentIdxs.subCategory3Idx];
-    //         const sub4 = sub3?.sub_categories_4?.[currentIdxs.subCategory4Idx];
-    //         if (!sub4) return false;
-    //         // Only freeze if parent (sub4) has material details
-    //         return sub4.material_type_details?.length > 0;
-    //     }
-
-    //     return false;
-    // }
-
 
     function isOtherLevelFrozen(category, currentLevel, currentIdxs) {
         // Level 1 (main)
@@ -2879,6 +2159,249 @@ const EstimationCreationTest = () => {
 
         return false;
     }
+
+
+    function mapApiToForm(apiData) {
+        return {
+            ...apiData,
+            categories: apiData.categories.map(cat => ({
+                ...cat,
+                items: cat.estimation_item?.name || "",
+                location: cat.estimation_item?.location || "",
+                qty: cat.estimation_item?.qty || "",
+                uom: cat.estimation_item?.unit_of_measure_id || "",
+                unit_of_measure_id: cat.estimation_item?.unit_of_measure_id || "",
+                material_type_details: cat.item_details?.map(item => ({
+                    ...item,
+                    materialType: item.material_type_id || item.materilTypeId || "",
+                    materialTypeLabel: item.material_type || "",
+                    specification: item.generic_info_id || "",
+                    specificationLabel: item.generic_info || "",
+                    labourType: item.labour_activity || "",
+                    labourTypeLabel: item.labour_activity || "",
+                    compositeValue: item.composite_name || "",
+                    rate: item.rate || "",
+                    type: item.type || "material",
+                    qty: item.excl_wastage_qty || "",
+                    wastage: item.wastage || "",
+                    uom: item.unit_of_measure_id || "",
+                    amount: item.amount || "",
+                    factor: item.factor || "",
+                    qtyInclWastage: item.incl_wastage_qty || "",
+                    costPerUnit: item.cost_per_unit || ""
+                })) || [],
+                selectedSubCategory: cat.sub_categories_2?.find(
+                    sub => sub.id === cat.selectedSubCategory?.value
+                ) || null,
+                subCategoryOptions: cat.sub_categories_options.sub_categories_2?.map(sub => ({
+                    value: sub.id,
+                    label: sub.name,
+                    subCategoryLevel3Options: sub.sub_categories_3?.map(sub3 => ({
+                        value: sub3.id,
+                        label: sub3.name,
+                        sub_categories_4: sub3.sub_categories_4 || [],
+                    })) || [],
+
+                    // sub_categories_3: sub.sub_categories_3 || [],
+                })) || [],
+
+                sub_categories_2: cat.sub_categories_2?.map(sub => ({
+                    ...sub,
+                    items: sub.estimation_item?.name || "",
+                    location: sub.estimation_item?.location || "",
+                    qty: sub.estimation_item?.qty || "",
+                    uom: sub.estimation_item?.unit_of_measure_id || "",
+                    unit_of_measure_id: sub.estimation_item?.unit_of_measure_id || "",
+                    material_type_details: sub.item_details?.map(item => ({
+                        ...item,
+                        materialType: item.materialTypeId || item.materilTypeId || "",
+                        materialTypeLabel: item.name || "",
+                        specification: item.specificationId || "",
+                        specificationLabel: item.specification || "",
+                        labourType: item.labourAct || "",
+                        labourTypeLabel: item.labourActLabel || "",
+                        compositeValue: item.compositeValue || "",
+                        rate: item.rate || "",
+                        type: item.type || "material",
+                        qty: item.excl_wastage_qty || "",
+                        wastage: item.wastage || "",
+                        uom: item.unit_of_measure_id || "",
+                        amount: item.amount || "",
+                        factor: item.factor || "",
+                        qtyInclWastage: item.incl_wastage_qty || "",
+                        costPerUnit: item.cost_per_unit || ""
+                    })) || [],
+                    selectedSubCategoryLevel3: sub.sub_categories_3?.find(
+                        sub3 => sub3.id === sub.selectedSubCategoryLevel3?.value
+                    ) || null,
+                    // subCategoryLevel3Options: sub.sub_categories_3?.map(sub3 => ({
+                    //     value: sub3.id,
+                    //     label: sub3.name,
+                    //     sub_categories_4: sub3.sub_categories_4 || [],
+                    // })) || [],
+                    sub_categories_3: sub.sub_categories_3?.map(sub3 => ({
+                        ...sub3,
+                        items: sub3.estimation_item?.name || "",
+                        location: sub3.estimation_item?.location || "",
+                        qty: sub3.estimation_item?.qty || "",
+                        uom: sub3.estimation_item?.unit_of_measure_id || "",
+                        unit_of_measure_id: sub3.estimation_item?.unit_of_measure_id || "",
+                        material_type_details: sub3.item_details?.map(item => ({
+                            ...item,
+                            materialType: item.materialTypeId || item.materilTypeId || "",
+                            materialTypeLabel: item.name || "",
+                            specification: item.specificationId || "",
+                            specificationLabel: item.specification || "",
+                            labourType: item.labourAct || "",
+                            labourTypeLabel: item.labourActLabel || "",
+                            compositeValue: item.compositeValue || "",
+                            rate: item.rate || "",
+                            type: item.type || "material",
+                            qty: item.excl_wastage_qty || "",
+                            wastage: item.wastage || "",
+                            uom: item.unit_of_measure_id || "",
+                            amount: item.amount || "",
+                            factor: item.factor || "",
+                            qtyInclWastage: item.incl_wastage_qty || "",
+                            costPerUnit: item.cost_per_unit || ""
+                        })) || [],
+                        selectedSubCategoryLevel4: sub3.sub_categories_4?.find(
+                            sub4 => sub4.id === sub3.selectedSubCategoryLevel4?.value
+                        ) || null,
+                        subCategoryLevel4Options: sub3.sub_categories_4?.map(sub4 => ({
+                            value: sub4.id,
+                            label: sub4.name,
+                            sub_categories_5: sub4.sub_categories_5 || [],
+                        })) || [],
+                        sub_categories_4: sub3.sub_categories_4?.map(sub4 => ({
+                            ...sub4,
+                            items: sub4.estimation_item?.name || "",
+                            location: sub4.estimation_item?.location || "",
+                            qty: sub4.estimation_item?.qty || "",
+                            uom: sub4.estimation_item?.unit_of_measure_id || "",
+                            unit_of_measure_id: sub4.estimation_item?.unit_of_measure_id || "",
+                            material_type_details: sub4.item_details?.map(item => ({
+                                ...item,
+                                materialType: item.materialTypeId || item.materilTypeId || "",
+                                materialTypeLabel: item.name || "",
+                                specification: item.specificationId || "",
+                                specificationLabel: item.specification || "",
+                                labourType: item.labourAct || "",
+                                labourTypeLabel: item.labourActLabel || "",
+                                compositeValue: item.compositeValue || "",
+                                rate: item.rate || "",
+                                type: item.type || "material",
+                                qty: item.excl_wastage_qty || "",
+                                wastage: item.wastage || "",
+                                uom: item.unit_of_measure_id || "",
+                                amount: item.amount || "",
+                                factor: item.factor || "",
+                                qtyInclWastage: item.incl_wastage_qty || "",
+                                costPerUnit: item.cost_per_unit || ""
+                            })) || [],
+                            selectedSubCategoryLevel5: sub4.sub_categories_5?.find(
+                                sub5 => sub5.id === sub4.selectedSubCategoryLevel5?.value
+                            ) || null,
+                            subCategoryLevel5Options: sub4.sub_categories_5?.map(sub5 => ({
+                                value: sub5.id,
+                                label: sub5.name,
+                            })) || [],
+                            sub_categories_5: sub4.sub_categories_5?.map(sub5 => ({
+                                ...sub5,
+                                items: sub5.estimation_item?.name || "",
+                                location: sub5.estimation_item?.location || "",
+                                qty: sub5.estimation_item?.qty || "",
+                                uom: sub5.estimation_item?.unit_of_measure_id || "",
+                                unit_of_measure_id: sub5.estimation_item?.unit_of_measure_id || "",
+                                material_type_details: sub5.item_details?.map(item => ({
+                                    ...item,
+                                    materialType: item.materialTypeId || item.materilTypeId || "",
+                                    materialTypeLabel: item.name || "",
+                                    specification: item.specificationId || "",
+                                    specificationLabel: item.specification || "",
+                                    labourType: item.labourAct || "",
+                                    labourTypeLabel: item.labourActLabel || "",
+                                    compositeValue: item.compositeValue || "",
+                                    rate: item.rate || "",
+                                    type: item.type || "material",
+                                    qty: item.excl_wastage_qty || "",
+                                    wastage: item.wastage || "",
+                                    uom: item.unit_of_measure_id || "",
+                                    amount: item.amount || "",
+                                    factor: item.factor || "",
+                                    qtyInclWastage: item.incl_wastage_qty || "",
+                                    costPerUnit: item.cost_per_unit || ""
+                                })) || [],
+                            })) || [],
+                        })) || [],
+                    })) || [],
+                })) || [],
+            })),
+        };
+    }
+
+    const fetchSubProjectDetails = async () => {
+        try {
+            const res = await axios.get(
+                `${baseURL}estimation_details/11/budget_info.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`
+            );
+            console.log("response cat:", res.data);
+            // setSubProjectDetails(res.data);
+            setSubProjectDetails(mapApiToForm(res.data));
+            setBudgetType(res.data?.budget_type || "");
+            // setStatus(res.data?.selected_status || "");
+        } catch (err) {
+            console.error("Error fetching sub project details:", err);
+        }
+    };
+    useEffect(() => {
+        fetchSubProjectDetails();
+    }, []);
+    // console.log(" subProjectDetails", subProjectDetails);
+
+    useEffect(() => {
+        axios
+            .get(
+                `${baseURL}work_categories/work_sub_categories.json?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`,
+
+            )
+            .then((res) => {
+                // console.log("responce cat:", res.data)
+                // setSubProjectDetails(res.data); // store response
+            })
+            .catch((err) => {
+                console.error("Error fetching sub project details:", err);
+            });
+    }, []); // runs once on mount
+
+
+
+
+
+
+
+    // useEffect(() => {
+    //     if (!subProjectDetails || !subProjectDetails.categories) return;
+
+    //     // Only run if subCategoryOptions is not set yet
+    //     const hasOptions = subProjectDetails.categories.every(cat => Array.isArray(cat.subCategoryOptions));
+    //     if (hasOptions) return;
+
+    //     setSubProjectDetails(prev => {
+    //         if (!prev || !prev.categories) return prev;
+    //         const updated = { ...prev };
+    //         updated.categories = updated.categories.map(cat => ({
+    //             ...cat,
+    //             subCategoryOptions: (cat.sub_categories_2 || []).map(subCat => ({
+    //                 value: subCat.id,
+    //                 label: subCat.name,
+    //                 sub_categories_3: subCat.sub_categories_3 || [],
+    //             })),
+    //         }));
+    //         return updated;
+    //     });
+    // }, [subProjectDetails]);
+
     return (
         <>
             <div className="website-content overflow-auto">
@@ -3444,7 +2967,7 @@ const EstimationCreationTest = () => {
                                                                         <td></td>
                                                                         <td></td>
                                                                         <td>{item.type}</td>
-                                                                        <td>{item.name} {item.specification || item.labourActLabel || item.compositeValue}</td>
+                                                                        <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
                                                                         {/* Add other columns as needed */}
                                                                         <td>
                                                                             <input
@@ -3673,6 +3196,8 @@ const EstimationCreationTest = () => {
                                                                                     onChange={selectedOption => handleSubCategorySelect(catIdx, subCatIdx, selectedOption)}
                                                                                     placeholder="Select Sub-category lvl 2"
                                                                                 />
+                                                                                {/* {console.log("sub options:", category.subCategoryOptions)} */}
+
                                                                             </td>
                                                                             <td>
 
@@ -3819,7 +3344,7 @@ const EstimationCreationTest = () => {
                                                                                     <td></td>
                                                                                     <td></td>
                                                                                     <td>{item.type}</td>
-                                                                                    <td>{item.name} {item.specification || item.labourActLabel || item.compositeValue}</td>
+                                                                                    <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
                                                                                     {/* ...other cells... */}
 
                                                                                     <td>
@@ -4133,7 +3658,8 @@ const EstimationCreationTest = () => {
                                                                                                     <td>{item.type}</td>
                                                                                                     <td>
                                                                                                         {/* {item.specification} */}
-                                                                                                        {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                                                                        {item.material_type} {item.generic_info || item.labour_activity || item.composite_name}
+
                                                                                                     </td>
                                                                                                     {/* ...other cells... */}
 
@@ -4436,7 +3962,7 @@ const EstimationCreationTest = () => {
                                                                                                                     <td>{item.type}</td>
                                                                                                                     <td>
                                                                                                                         {/* {item.specification} */}
-                                                                                                                        {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                                                                                        {item.material_type} {item.generic_info || item.labour_activity || item.composite_name}
                                                                                                                     </td>
                                                                                                                     {/* ...other cells... */}
                                                                                                                     <td>
@@ -4762,7 +4288,7 @@ const EstimationCreationTest = () => {
                                                                                                                                     <td>{item.type}</td>
                                                                                                                                     <td>
                                                                                                                                         {/* {item.specification || item.labourActLabel} */}
-                                                                                                                                        {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                                                                                                        {item.material_type} {item.generic_info || item.labour_activity || item.composite_name}
                                                                                                                                     </td>
                                                                                                                                     {/* ...other cells... */}
                                                                                                                                     <td>
@@ -5238,7 +4764,7 @@ const EstimationCreationTest = () => {
                                                                         <td></td>
                                                                         <td></td>
                                                                         <td>{item.type}</td>
-                                                                        <td>{item.name} {item.specification || item.labourActLabel || item.compositeValue}</td>
+                                                                        <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
                                                                         {/* Add other columns as needed */}
 
                                                                         <td>
@@ -5576,7 +5102,7 @@ const EstimationCreationTest = () => {
                                                                                     <td></td>
                                                                                     <td></td>
                                                                                     <td>{item.type}</td>
-                                                                                    <td>{item.name} {item.specification || item.labourActLabel || item.compositeValue}</td>
+                                                                                    <td>{item.material_type} {item.generic_info || item.labour_activity || item.composite_name}</td>
                                                                                     {/* ...other cells... */}
 
 
@@ -5858,7 +5384,7 @@ const EstimationCreationTest = () => {
                                                                                                     <td>{item.type}</td>
                                                                                                     <td>
                                                                                                         {/* {item.specification} */}
-                                                                                                        {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                                                                        {item.material_type} {item.generic_info || item.labour_activity || item.composite_name}
                                                                                                     </td>
                                                                                                     {/* ...other cells... */}
 
@@ -6130,7 +5656,7 @@ const EstimationCreationTest = () => {
                                                                                                                     <td>{item.type}</td>
                                                                                                                     <td>
                                                                                                                         {/* {item.specification} */}
-                                                                                                                        {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                                                                                        {item.material_type} {item.generic_info || item.labour_activity || item.composite_name}
                                                                                                                     </td>
                                                                                                                     {/* ...other cells... */}
 
@@ -6429,7 +5955,7 @@ const EstimationCreationTest = () => {
                                                                                                                                     <td>{item.type}</td>
                                                                                                                                     <td>
                                                                                                                                         {/* {item.specification || item.labourActLabel} */}
-                                                                                                                                        {item.name} {item.specification || item.labourActLabel || item.compositeValue}
+                                                                                                                                        {item.material_type} {item.generic_info || item.labour_activity || item.composite_name}
                                                                                                                                     </td>
                                                                                                                                     {/* ...other cells... */}
 
@@ -6564,176 +6090,176 @@ const EstimationCreationTest = () => {
 
 
 
-          
-
-
-        
 
 
 
 
 
-<Modal show={showAddModal} size="xl" onHide={() => setShowAddModal(false)}>
-    <Modal.Header closeButton>
-        <Modal.Title>Add Material/Labour</Modal.Title>
-    </Modal.Header>
-    <Modal.Body>
-        <div className="row p-3">
-            <div className="d-flex justify-content-end mb-3">
-                <button
-                    className="purple-btn2"
-                    onClick={handleAddModalRow}
-                >
-                    + Add Row
-                </button>
-            </div>
-            {modalRows.map((row, idx) => (
-                <div key={idx} className="border rounded p-2 mb-2 position-relative">
-                    {/* Remove Row Cross Icon in Square */}
-                    {modalRows.length > 1 && (
-                        <button
-                            className="btn btn-link p-0 position-absolute"
-                            style={{
-                                top: 8,
-                                right: 8,
-                                zIndex: 2,
-                                width: 28,
-                                height: 28,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                background: "transparent",
-                            }}
-                            onClick={() => handleRemoveModalRow(idx)}
-                            aria-label="Remove Row"
-                            title="Remove Row"
-                        >
-                            <svg width="24" height="24" viewBox="0 0 24 24">
-                                <rect x="2" y="2" width="20" height="20" rx="4" fill="#fff" stroke="#8b0203" strokeWidth="2"/>
-                                <line x1="7" y1="7" x2="17" y2="17" stroke="#8b0203" strokeWidth="2" />
-                                <line x1="17" y1="7" x2="7" y2="17" stroke="#8b0203" strokeWidth="2" />
-                            </svg>
-                        </button>
-                    )}
-                    {/* Radio Buttons */}
-                    <div className="d-flex align-items-center mb-2">
-                        <div className="form-check form-check-inline me-2 col-md-2">
-                            <input
-                                className="form-check-input"
-                                type="radio"
-                                name={`type-${idx}`}
-                                value="material"
-                                checked={row.type === "material"}
-                                onChange={() => handleModalRowChange(idx, "type", "material")}
-                            />
-                            <label className="form-check-label">Material</label>
+
+
+
+
+            <Modal show={showAddModal} size="xl" onHide={() => setShowAddModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Add Material/Labour</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="row p-3">
+                        <div className="d-flex justify-content-end mb-3">
+                            <button
+                                className="purple-btn2"
+                                onClick={handleAddModalRow}
+                            >
+                                + Add Row
+                            </button>
                         </div>
-                        <div className="form-check form-check-inline me-2 col-md-2">
-                            <input
-                                className="form-check-input"
-                                type="radio"
-                                name={`type-${idx}`}
-                                value="labour"
-                                checked={row.type === "labour"}
-                                onChange={() => handleModalRowChange(idx, "type", "labour")}
-                            />
-                            <label className="form-check-label">Labour</label>
-                        </div>
-                        <div className="form-check form-check-inline me-2 col-md-2">
-                            <input
-                                className="form-check-input"
-                                type="radio"
-                                name={`type-${idx}`}
-                                value="composite"
-                                checked={row.type === "composite"}
-                                onChange={() => handleModalRowChange(idx, "type", "composite")}
-                            />
-                            <label className="form-check-label">Composite</label>
-                        </div>
+                        {modalRows.map((row, idx) => (
+                            <div key={idx} className="border rounded p-2 mb-2 position-relative">
+                                {/* Remove Row Cross Icon in Square */}
+                                {modalRows.length > 1 && (
+                                    <button
+                                        className="btn btn-link p-0 position-absolute"
+                                        style={{
+                                            top: 8,
+                                            right: 8,
+                                            zIndex: 2,
+                                            width: 28,
+                                            height: 28,
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            background: "transparent",
+                                        }}
+                                        onClick={() => handleRemoveModalRow(idx)}
+                                        aria-label="Remove Row"
+                                        title="Remove Row"
+                                    >
+                                        <svg width="24" height="24" viewBox="0 0 24 24">
+                                            <rect x="2" y="2" width="20" height="20" rx="4" fill="#fff" stroke="#8b0203" strokeWidth="2" />
+                                            <line x1="7" y1="7" x2="17" y2="17" stroke="#8b0203" strokeWidth="2" />
+                                            <line x1="17" y1="7" x2="7" y2="17" stroke="#8b0203" strokeWidth="2" />
+                                        </svg>
+                                    </button>
+                                )}
+                                {/* Radio Buttons */}
+                                <div className="d-flex align-items-center mb-2">
+                                    <div className="form-check form-check-inline me-2 col-md-2">
+                                        <input
+                                            className="form-check-input"
+                                            type="radio"
+                                            name={`type-${idx}`}
+                                            value="material"
+                                            checked={row.type === "material"}
+                                            onChange={() => handleModalRowChange(idx, "type", "material")}
+                                        />
+                                        <label className="form-check-label">Material</label>
+                                    </div>
+                                    <div className="form-check form-check-inline me-2 col-md-2">
+                                        <input
+                                            className="form-check-input"
+                                            type="radio"
+                                            name={`type-${idx}`}
+                                            value="labour"
+                                            checked={row.type === "labour"}
+                                            onChange={() => handleModalRowChange(idx, "type", "labour")}
+                                        />
+                                        <label className="form-check-label">Labour</label>
+                                    </div>
+                                    <div className="form-check form-check-inline me-2 col-md-2">
+                                        <input
+                                            className="form-check-input"
+                                            type="radio"
+                                            name={`type-${idx}`}
+                                            value="composite"
+                                            checked={row.type === "composite"}
+                                            onChange={() => handleModalRowChange(idx, "type", "composite")}
+                                        />
+                                        <label className="form-check-label">Composite</label>
+                                    </div>
+                                </div>
+                                {/* Material Type & Specification */}
+                                {row.type === "material" && (
+                                    <div className="d-flex align-items-center mb-2">
+                                        <div className="col-md-4 mt-3">
+                                            <div className="form-group">
+                                                <label>Material Type</label>
+                                                <SingleSelector
+                                                    options={inventoryTypes2}
+                                                    value={inventoryTypes2.find(option => option.value === row.materialType)}
+                                                    placeholder="Select Material Type"
+                                                    onChange={selectedOption =>
+                                                        handleModalRowChange(idx, "materialType", selectedOption || "")
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="col-md-4 mt-3 ms-3 ">
+                                            <div className="form-group">
+                                                <label>Generic Specification</label>
+                                                <SingleSelector
+                                                    options={Array.isArray(genericSpecificationsByRow[idx]) ? genericSpecificationsByRow[idx] : []}
+                                                    value={genericSpecificationsByRow[idx]?.find(option => option.value === row.specification)}
+                                                    placeholder="Select Specification"
+                                                    onChange={selectedOption =>
+                                                        handleModalRowChange(idx, "specification", selectedOption || "")
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                {/* Labour Activity */}
+                                {row.type === "labour" && (
+                                    <div className="col-md-4 mt-3">
+                                        <div className="form-group">
+                                            <label>Labour Activity</label>
+                                            <SingleSelector
+                                                options={labourActivities}
+                                                value={labourActivities.find(option => option.value === row.labourType)}
+                                                placeholder="Select Labour Activity"
+                                                onChange={selectedOption =>
+                                                    handleModalRowChange(idx, "labourType", selectedOption || "")
+                                                }
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                                {/* Composite Value */}
+                                {row.type === "composite" && (
+                                    <div className="col-md-4 mt-3">
+                                        <div className="form-group">
+                                            <label>Composite Value</label>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                placeholder="Enter composite value"
+                                                value={row.compositeValue || ""}
+                                                onChange={e =>
+                                                    handleModalRowChange(idx, "compositeValue", e.target.value)
+                                                }
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
                     </div>
-                    {/* Material Type & Specification */}
-                    {row.type === "material" && (
-                        <div className="d-flex align-items-center mb-2">
-                            <div className="col-md-4 mt-3">
-                                <div className="form-group">
-                                    <label>Material Type</label>
-                                    <SingleSelector
-                                        options={inventoryTypes2}
-                                        value={inventoryTypes2.find(option => option.value === row.materialType)}
-                                        placeholder="Select Material Type"
-                                        onChange={selectedOption =>
-                                            handleModalRowChange(idx, "materialType", selectedOption || "")
-                                        }
-                                    />
-                                </div>
-                            </div>
-                            <div className="col-md-4 mt-3 ms-3 ">
-                                <div className="form-group">
-                                    <label>Generic Specification</label>
-                                    <SingleSelector
-                                        options={Array.isArray(genericSpecificationsByRow[idx]) ? genericSpecificationsByRow[idx] : []}
-                                        value={genericSpecificationsByRow[idx]?.find(option => option.value === row.specification)}
-                                        placeholder="Select Specification"
-                                        onChange={selectedOption =>
-                                            handleModalRowChange(idx, "specification", selectedOption || "")
-                                        }
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                    {/* Labour Activity */}
-                    {row.type === "labour" && (
-                        <div className="col-md-4 mt-3">
-                            <div className="form-group">
-                                <label>Labour Activity</label>
-                                <SingleSelector
-                                    options={labourActivities}
-                                    value={labourActivities.find(option => option.value === row.labourType)}
-                                    placeholder="Select Labour Activity"
-                                    onChange={selectedOption =>
-                                        handleModalRowChange(idx, "labourType", selectedOption || "")
-                                    }
-                                />
-                            </div>
-                        </div>
-                    )}
-                    {/* Composite Value */}
-                    {row.type === "composite" && (
-                        <div className="col-md-4 mt-3">
-                            <div className="form-group">
-                                <label>Composite Value</label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    placeholder="Enter composite value"
-                                    value={row.compositeValue || ""}
-                                    onChange={e =>
-                                        handleModalRowChange(idx, "compositeValue", e.target.value)
-                                    }
-                                />
-                            </div>
-                        </div>
-                    )}
-                </div>
-            ))}
-        </div>
-    </Modal.Body>
-    <Modal.Footer className="d-flex justify-content-center">
-        <button
-            className="purple-btn2 me-4"
-            onClick={() => handleCreateRows()}
-        >
-            Create
-        </button>
-        <button className="purple-btn1" onClick={() => setShowAddModal(false)}>
-            Cancel
-        </button>
-    </Modal.Footer>
-</Modal>
+                </Modal.Body>
+                <Modal.Footer className="d-flex justify-content-center">
+                    <button
+                        className="purple-btn2 me-4"
+                        onClick={() => handleCreateRows()}
+                    >
+                        Create
+                    </button>
+                    <button className="purple-btn1" onClick={() => setShowAddModal(false)}>
+                        Cancel
+                    </button>
+                </Modal.Footer>
+            </Modal>
 
         </>
     );
 };
 
-export default EstimationCreationTest;
+export default EstimationCreationEdit;

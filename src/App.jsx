@@ -132,6 +132,7 @@ import EstimationCreationList from "./pages/estimation-creation-list";
 import EstimationCreationTest from "./pages/estimation-creation-test";
 import EstimationCreationDetails from "./pages/estimation-creation-details";
 import RopoMappingEdit from "./pages/ropo-mapping-edit";
+import EstimationCreationEdit from "./pages/estimation-creation-edit";
 
 function App() {
   return (
@@ -262,6 +263,7 @@ function App() {
           <Route path="/estimation-list" element={<EstimationList />} />
           <Route path="/estimation-creation-list" element={<EstimationCreationList />} />
            <Route path="/estimation-creation-test" element={<EstimationCreationTest />} />
+           <Route path="/estimation-creation-edit" element={<EstimationCreationEdit />} />
             <Route path="/estimation-creation-details/:id" element={<EstimationCreationDetails />} />
               <Route
               path="/estimation-approvol-list"
