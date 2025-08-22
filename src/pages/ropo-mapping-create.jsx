@@ -1322,7 +1322,7 @@ useEffect(() => {
 
           company_id: selectedCompany?.value,
           mapping_date: mappingDate,
-          remarks: remarks || "Some notes",
+          remarks: remarks ,
           status: status,
           ropo_mor_inventories_attributes: ropoMorInventoriesAttributes,
         },
