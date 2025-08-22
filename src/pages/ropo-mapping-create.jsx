@@ -7,6 +7,7 @@ import { baseURL } from "../confi/apiDomain"; // adjust path if needed
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { Link } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom";
+import MultiSelector from "../components/base/Select/MultiSelector";
 
 const RopoMappingCreate = () => {
   const [companyOptions, setCompanyOptions] = useState([]);
@@ -175,6 +176,8 @@ const RopoMappingCreate = () => {
     morNumber: "",
     morStartDate: "",
     morEndDate: "",
+    projectIds: [],
+    siteIds: [],
   });
 
   const [morOptions, setMorOptions] = useState([]);
@@ -242,24 +245,42 @@ const RopoMappingCreate = () => {
       .catch((error) => console.error("Error fetching projects:", error));
   }, []);
 
-  const handleProjectChange = (selectedOption) => {
-    setSelectedProject(selectedOption);
-    setSelectedSite(null);
+  const handleProjectChange = (selectedOptions) => {
+    const optionsArray = Array.isArray(selectedOptions) ? selectedOptions : (selectedOptions ? [selectedOptions] : []);
+    setSelectedProject(optionsArray);
+    setSelectedSite([]);
+    // Persist in morFormData
+    setMorFormData((prev) => ({
+      ...prev,
+      projectIds: optionsArray.map((o) => o.value),
+      siteIds: [],
+    }));
+    // Do not auto fetch; Search button will trigger fetch
 
-    if (selectedOption) {
-      setSiteOptions(
-        selectedOption.pms_sites?.map((site) => ({
-          value: site.id,
-          label: site.name,
-        })) || []
-      );
+    if (optionsArray.length > 0) {
+      const combinedSites = optionsArray.flatMap((opt) => opt.pms_sites || []);
+      const uniqueSites = [];
+      const seen = new Set();
+      combinedSites.forEach((site) => {
+        if (!seen.has(site.id)) {
+          seen.add(site.id);
+          uniqueSites.push({ value: site.id, label: site.name });
+        }
+      });
+      setSiteOptions(uniqueSites);
     } else {
       setSiteOptions([]);
     }
   };
 
-  const handleSiteChange = (selectedOption) => {
-    setSelectedSite(selectedOption);
+  const handleSiteChange = (selectedOptions) => {
+    const optionsArray = Array.isArray(selectedOptions) ? selectedOptions : (selectedOptions ? [selectedOptions] : []);
+    setSelectedSite(optionsArray);
+    setMorFormData((prev) => ({
+      ...prev,
+      siteIds: optionsArray.map((o) => o.value),
+    }));
+    // Do not auto fetch; Search button will trigger fetch
   };
 
   const handleCompanyChange = (selectedOption) => {
@@ -352,20 +373,24 @@ const RopoMappingCreate = () => {
   };
   
 
-  const fetchMaterialDetails = async (useFilters = true) => {
+  const fetchMaterialDetails = async (useFilters = true, overrides = {}) => {
     setLoadingMaterialDetails(true);
     try {
       const queryParams = new URLSearchParams();
       queryParams.append("token", token);
 
       if (useFilters) {
-        // Always include project and site filters from main form if selected
-        if (selectedProject) {
-          queryParams.append("q[project_id_in][]", selectedProject.value);
+        if (selectedCompany) {
+          queryParams.append("q[company_id_in][]", selectedCompany.value);
         }
-
-        if (selectedSite) {
-          queryParams.append("q[pms_site_id_in][]", selectedSite.value);
+        // Use overrides if provided; otherwise morFormData
+        const projIds = Array.isArray(overrides.projectIds) ? overrides.projectIds : morFormData.projectIds;
+        const siteIds = Array.isArray(overrides.siteIds) ? overrides.siteIds : morFormData.siteIds;
+        if (Array.isArray(projIds) && projIds.length > 0) {
+          projIds.forEach((id) => queryParams.append("q[project_id_in][]", id));
+        }
+        if (Array.isArray(siteIds) && siteIds.length > 0) {
+          siteIds.forEach((id) => queryParams.append("q[pms_site_id_in][]", id));
         }
 
         if (morFormData.materialType) {
@@ -404,8 +429,8 @@ const RopoMappingCreate = () => {
 
       const apiUrl = `https://marathon.lockated.com//material_order_requests/material_details.json?${queryParams.toString()}&q[mor_type_eq]=ropo`;
       console.log("API URL with filters:", apiUrl);
-      console.log("Selected Project:", selectedProject);
-      console.log("Selected Site:", selectedSite);
+      console.log("Selected Project IDs:", overrides.projectIds ?? morFormData.projectIds);
+      console.log("Selected Site IDs:", overrides.siteIds ?? morFormData.siteIds);
       console.log("Query Params:", queryParams.toString());
 
       const response = await axios.get(apiUrl);
@@ -686,14 +711,24 @@ const RopoMappingCreate = () => {
       morNumber: "",
       morStartDate: "",
       morEndDate: "",
+      projectIds: [],
+      siteIds: [],
     });
     setSelectedInventory2(null);
     setSelectedSubType2(null);
     setSelectedInventoryMaterialTypes2(null);
+    const clearedProjects = [];
+    const clearedSites = [];
+    setSelectedProject(clearedProjects);
+    setSelectedSite(clearedSites);
+    setSiteOptions([]);
     setMaterialDetailsData([]);
     setSelectedMaterialItems([]);
-    // Reset but still include project/site filters from main form
-    fetchMaterialDetails(true);
+    // After reset, fetch with company-only filter
+    if (selectedCompany?.value) {
+      // Force fetch with cleared project/site ids immediately
+      fetchMaterialDetails(true, { projectIds: clearedProjects, siteIds: clearedSites });
+    }
   };
 
   // Get showing entries text
@@ -1284,8 +1319,8 @@ useEffect(() => {
 
       const payload = {
         ropo_mapping: {
-          project_id: selectedProject?.value, // Default or from selected project
-          pms_site_id: selectedSite?.value, // Default or from selected site
+
+          company_id: selectedCompany?.value,
           mapping_date: mappingDate,
           remarks: remarks || "Some notes",
           status: status,
@@ -1315,7 +1350,7 @@ useEffect(() => {
       alert("ROPO mapping submitted successfully!");
 
       // Clear all data after successful submission
-      clearAllData();
+      // clearAllData();
 
       // Reset form fields
       setRopoNumber("");
@@ -1571,20 +1606,15 @@ setPoModalApiData(
   useEffect(() => {
     if (addMORModal) {
       setSelectedMaterialItems([]);
-      // Always fetch with filters to include project/site from main form
-      fetchMaterialDetails(true);
-    }
-  }, [addMORModal]);
-
-  // Auto-refresh MOR data when main form project/site changes
-  useEffect(() => {
-    if (addMORModal) {
-      // Only auto-refresh if modal is open and we have project/site selected
-      if (selectedProject || selectedSite) {
+      // On modal open, prefetch using company filter only (no auto-fetch on project/site change)
+      if (selectedCompany?.value) {
         fetchMaterialDetails(true);
       }
     }
-  }, [selectedProject, selectedSite]);
+  }, [addMORModal, selectedCompany]);
+
+  // Auto-refresh MOR data when main form project/site changes
+  // Remove auto-refresh on project/sub-project change; fetching occurs on Search only
 
   // After addPOModal state
   useEffect(() => {
@@ -1789,7 +1819,7 @@ setPoModalApiData(
                               <div className="row">
                                 <div className="col-md-4">
                                   <div className="form-group">
-                                    <label>Project</label>
+                                    {/* <label>Project</label> */}
                                     {/* <SingleSelector
                                       options={projects.map((p) => ({
                                         value: p.id,
@@ -1807,15 +1837,24 @@ setPoModalApiData(
                                       }
                                       placeholder="Select Project"
                                     /> */}
-                                    <SingleSelector
+                                    {/* <SingleSelector
                                       options={projects}
                                       value={selectedProject}
                                       onChange={handleProjectChange}
                                       placeholder="Select Project"
-                                    />
+                                    /> */}
+                                      <label>
+                      Company <span></span>
+                    </label>
+                    <SingleSelector
+                      options={companyOptions} // company options as {value,label}
+                      value={selectedCompany} // the selected option object
+                      onChange={handleCompanyChange}
+                      placeholder="Select Company"
+                    />
                                   </div>
                                 </div>
-                                <div className="col-md-4">
+                                {/* <div className="col-md-4">
                                   <div className="form-group">
                                     <label>Sub-Project</label>
                                     <SingleSelector
@@ -1826,7 +1865,7 @@ setPoModalApiData(
                                       // isDisabled={!selectedProject}
                                     />
                                   </div>
-                                </div>
+                                </div> */}
                                 {/* <div className="col-md-4">
                                   <div className="form-group">
                                     <label>ROPO No.</label>
@@ -2540,25 +2579,13 @@ setPoModalApiData(
           <Modal.Body>
             <div className="p-3">
               <div className="row">
-                <div className="col-md-4 mt-2">
-                  <div className="form-group">
-                    <label>
-                      Company <span></span>
-                    </label>
-                    <SingleSelector
-                      options={companyOptions} // company options as {value,label}
-                      value={selectedCompany} // the selected option object
-                      onChange={handleCompanyChange}
-                      placeholder="Select Company"
-                    />
-                  </div>
-                </div>
+                
                 <div className="col-md-4 mt-2">
                   <div className="form-group">
                     <label>
                       Project <span></span>
                     </label>
-                    <SingleSelector
+                    <MultiSelector
                       options={projects} // filtered projects as {value,label}
                       value={selectedProject}
                       onChange={handleProjectChange}
@@ -2570,7 +2597,7 @@ setPoModalApiData(
                 <div className="col-md-4">
                   <div className="form-group">
                     <label>Sub-project</label>
-                    <SingleSelector
+                    <MultiSelector
                       options={siteOptions}
                       value={selectedSite}
                       onChange={handleSiteChange}
@@ -2650,7 +2677,7 @@ setPoModalApiData(
                 <div className="col-md-4 mt-3">
                   <div className="form-group">
                     <label className="po-fontBold">
-                      Material Sub Type <span>*</span>
+                      Material Sub Type <span></span>
                     </label>
                     <SingleSelector
                       options={inventorySubTypes2}
@@ -2670,7 +2697,7 @@ setPoModalApiData(
                 <div className="col-md-4 mt-3">
                   <div className="form-group">
                     <label className="po-fontBold">
-                      Material <span>*</span>
+                      Material <span></span>
                     </label>
                     <SingleSelector
                       options={inventoryMaterialTypes2}
@@ -2696,7 +2723,7 @@ setPoModalApiData(
               </div>
               
               {/* Show current filters from main form */}
-              {(selectedProject || selectedSite) && (
+              {/* {(selectedProject || selectedSite) && (
                 <div className="alert alert-info mt-2">
                   <strong>Active Filters from Main Form:</strong>
                   {selectedProject && (
@@ -2706,7 +2733,7 @@ setPoModalApiData(
                     <span className="ms-2">Sub-Project: {selectedSite.label}</span>
                   )}
                 </div>
-              )}
+              )} */}
 
               <div className="tbl-container me-2 mt-3">
                 {loadingMaterialDetails ? (

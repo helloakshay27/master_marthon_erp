@@ -175,19 +175,19 @@ const handleStatusUpdate = async () => {
                      <div className="row">
   <div className="col-lg-6 col-md-6 col-sm-12 row px-3">
     <div className="col-6">
-      <label style={{ fontWeight: 'bold' }}>Project</label>
+      <label style={{ fontWeight: 'bold' }}>Company</label>
     </div>
     <div className="col-6">
       <label className="text">
         <span className="me-3 text-dark">:</span>
         <span style={{ color: '#8B0203' }}>
-          {purchaseOrderData.project?.name}
+          {purchaseOrderData.company?.name}
         </span>
       </label>
     </div>
   </div>
 
-  <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
+  {/* <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
     <div className="col-6">
       <label style={{ fontWeight: 'bold' }}>Sub-Project</label>
     </div>
@@ -199,7 +199,7 @@ const handleStatusUpdate = async () => {
         </span>
       </label>
     </div>
-  </div>
+  </div> */}
 
   <div className="col-lg-6 col-md-6 col-sm-12 row px-3 mt-1">
     <div className="col-6">

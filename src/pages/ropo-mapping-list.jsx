@@ -133,6 +133,7 @@ const fetchRopoData = async () => {
       ropoNo: item.ropo_number,
       ropoDate: formatDate(item.mapping_date),
       status: item.status,
+      company: item.company_name,
       project: item.project_name,
       subProject: item.pms_site_name,
       createdBy: item.created_by_name,
@@ -195,8 +196,8 @@ const handleReset = () => {
   const [columnVisibility, setColumnVisibility] = useState({
     srNo: true,
     company: true,
-    project: true,
-    subProject: true,
+    // project: true,
+    // subProject: true,
     ropoNo: true,
     ropoDate: true,
       materialDescription: true, // Add this line
@@ -214,8 +215,8 @@ const handleReset = () => {
 const allColumns = [
   { field: "srNo", headerName: "SR No.", width: 100, sortable: true },
   { field: "company", headerName: "Company", width: 150, sortable: true },
-  { field: "project", headerName: "Project", width: 150, sortable: true },
-  { field: "subProject", headerName: "Sub Project", width: 150, sortable: true },
+  // { field: "project", headerName: "Project", width: 150, sortable: true },
+  // { field: "subProject", headerName: "Sub Project", width: 150, sortable: true },
   { field: "ropoNo", headerName: "ROPO No.", width: 120, sortable: true ,
      renderCell: (params) => (
         <div
