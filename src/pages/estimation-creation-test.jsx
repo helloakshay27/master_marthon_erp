@@ -3096,7 +3096,7 @@ const EstimationCreationTest = () => {
                         </div>
 
 
-                        <pre>{JSON.stringify(subProjectDetails, null, 2)}</pre>
+                        {/* <pre>{JSON.stringify(subProjectDetails, null, 2)}</pre> */}
 
                         {/* ______________________________________________________________________________________________________ */}
                         {budgetType === "wbs" && (
@@ -4939,7 +4939,7 @@ const EstimationCreationTest = () => {
                                                     {/* <th className="text-start">Factor</th> */}
                                                     <th className="text-start">UOM</th>
                                                     {/* <th className="text-start">Area</th> */}
-                                                    <th className="text-start" style={{ width: "120px" }}>QTY Excl Wastage</th>
+                                                    <th className="text-start" style={{ width: "120px" }}>QTY</th>
                                                     {/* <th className="text-start">Wastage</th> */}
                                                     {/* <th className="text-start">QTY incl Waste</th> */}
                                                     <th className="text-start" style={{ width: "120px" }}>Rate</th>
