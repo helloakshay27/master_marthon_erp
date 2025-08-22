@@ -133,6 +133,7 @@ import EstimationCreationTest from "./pages/estimation-creation-test";
 import EstimationCreationDetails from "./pages/estimation-creation-details";
 import RopoMappingEdit from "./pages/ropo-mapping-edit";
 import EstimationCreationEdit from "./pages/estimation-creation-edit";
+import PoAmmendEdit from "./pages/po-edit-ammend";
 
 function App() {
   return (
@@ -151,6 +152,7 @@ function App() {
           <Route path="/po-details/:id" element={<PoDetails />} />
           <Route path="/po-create" element={<PoCreate />} />
           <Route path="/po-edit/:id" element={<PoEdit />} />
+           <Route path="/po-edit-ammend/:id" element={<PoAmmendEdit />} />
           <Route
             path="/stock_register_detail/:id"
             element={<ErpStockRegisterCreationDetail13C />}

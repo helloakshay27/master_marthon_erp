@@ -6,7 +6,7 @@ import MultiSelector from "../components/base/Select/MultiSelector";
 import SelectBox from "../components/base/Select/SelectBox";
 import DownloadIcon from "../components/common/Icon/DownloadIcon";
 import { baseURL } from "../confi/apiDomain";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 const PoDetails = () => {
@@ -20,6 +20,7 @@ const PoDetails = () => {
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const openApprovalModal = () => setShowApprovalModal(true);
   const closeApprovalModal = () => setShowApprovalModal(false);
+  const navigate = useNavigate(); // Add this line near the top of your component
 
   // Tax modal state variables
   const [showTaxModal, setShowTaxModal] = useState(false);
@@ -47,7 +48,6 @@ const PoDetails = () => {
   // States to store data company, project ,subproject ,wing
 
   const [selectedCompany, setSelectedCompany] = useState(null);
-
 
   // PO form state
   const [poDate, setPoDate] = useState(new Date().toISOString().split("T")[0]);
@@ -376,24 +376,23 @@ const PoDetails = () => {
 
     // Populate attachments
     if (poData.attachments && Array.isArray(poData.attachments)) {
-    const formattedAttachments = poData.attachments.map((att) => ({
-      id: att.id || Math.random(),
-      fileType: att.file_type || "",  
-      fileName: att.file_name || "",
-      uploadDate: att.uploaded_at || "",
-      fileUrl: att.url || "",
-      isExisting: true,
-      blob_id: att.blob_id,
-      byteSize: att.byte_size,
-      doc_path: att.url // Use url as doc_path for downloads
-    }));
+      const formattedAttachments = poData.attachments.map((att) => ({
+        id: att.id || Math.random(),
+        fileType: att.file_type || "",
+        fileName: att.file_name || "",
+        uploadDate: att.uploaded_at || "",
+        fileUrl: att.url || "",
+        isExisting: true,
+        blob_id: att.blob_id,
+        byteSize: att.byte_size,
+        doc_path: att.url, // Use url as doc_path for downloads
+      }));
 
-    console.log("Formatted attachments:", formattedAttachments);
-    setAttachments(formattedAttachments);
-  } else {
-    setAttachments([]); // Reset attachments if none in API response
-  }
-
+      console.log("Formatted attachments:", formattedAttachments);
+      setAttachments(formattedAttachments);
+    } else {
+      setAttachments([]); // Reset attachments if none in API response
+    }
 
     if (poData.material_details) {
       const formatted = poData.material_details.map((mat) => ({
@@ -463,7 +462,6 @@ const PoDetails = () => {
   }, []);
 
   // Handle company selection
- 
 
   // Handle supplier selection
 
@@ -609,10 +607,6 @@ const PoDetails = () => {
     );
   };
 
-
-
-
-
   // Tax modal functions
   const handleOpenTaxModal = async (rowIndex) => {
     console.log("Opening tax modal for row:", rowIndex);
@@ -663,17 +657,17 @@ const PoDetails = () => {
                     ? tax.tax_category_id
                     : tax.resource_id;
                 return {
-                id: tax.id,
-                resource_id: tax.resource_id,
-                tax_category_id: tax.tax_category_id,
-                taxChargeType:
+                  id: tax.id,
+                  resource_id: tax.resource_id,
+                  tax_category_id: tax.tax_category_id,
+                  taxChargeType:
                     taxOptions.find((option) => option.id === baseOptionId)
                       ?.value || "",
                   taxType: tax.resource_type,
-                taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
+                  taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
                   percentageId: tax.percentage_id || null,
-                inclusive: tax.inclusive,
-                amount: tax.amount?.toString() || "0",
+                  inclusive: tax.inclusive,
+                  amount: tax.amount?.toString() || "0",
                 };
               }) || [],
             deduction_bid_material_tax_details:
@@ -683,18 +677,18 @@ const PoDetails = () => {
                     ? tax.tax_category_id
                     : tax.resource_id;
                 return {
-                id: tax.id,
-                resource_id: tax.resource_id,
-                tax_category_id: tax.tax_category_id,
-                taxChargeType:
-                  deductionTaxOptions.find(
+                  id: tax.id,
+                  resource_id: tax.resource_id,
+                  tax_category_id: tax.tax_category_id,
+                  taxChargeType:
+                    deductionTaxOptions.find(
                       (option) => option.id === baseOptionId
                     )?.value || "",
                   taxType: tax.resource_type,
-                taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
+                  taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
                   percentageId: tax.percentage_id || null,
-                inclusive: tax.inclusive,
-                amount: tax.amount?.toString() || "0",
+                  inclusive: tax.inclusive,
+                  amount: tax.amount?.toString() || "0",
                 };
               }) || [],
           },
@@ -831,14 +825,6 @@ const PoDetails = () => {
       return updatedData;
     });
   };
-
-  
-
- 
-
-
-  
-
 
   // Fetch tax options on component mount
   useEffect(() => {
@@ -1238,13 +1224,6 @@ const PoDetails = () => {
     return localDate.toISOString().slice(0, 19); // "YYYY-MM-DDTHH:MM"
   };
 
-  
-
-  
-
-
- 
-
   const attachmentsPayload = attachments.flatMap(
     (att) => att.attachments || []
   );
@@ -1524,9 +1503,6 @@ const PoDetails = () => {
     );
   };
 
-
- 
-
   const handleCostChange = (id, field, value) => {
     setOtherCosts((prev) =>
       prev.map((cost) => (cost.id === id ? { ...cost, [field]: value } : cost))
@@ -1535,7 +1511,11 @@ const PoDetails = () => {
   // ...existing code...
 
   // Helper function to calculate net cost for charges and other costs
-  const calculateNetCostForTaxes = (baseCost, additionTaxes, deductionTaxes) => {
+  const calculateNetCostForTaxes = (
+    baseCost,
+    additionTaxes,
+    deductionTaxes
+  ) => {
     const additionTotal = (additionTaxes || []).reduce((sum, tax) => {
       return sum + (parseFloat(tax.amount) || 0);
     }, 0);
@@ -1831,10 +1811,8 @@ const PoDetails = () => {
   };
 
   // Handle purchase order update
- 
 
-          // ...existing code...
-
+  // ...existing code...
 
   // Function to get combined materials (prepopulated + submitted)
   const getCombinedMaterials = () => {
@@ -2154,6 +2132,18 @@ const PoDetails = () => {
                             >
                               Term &amp; Conditions
                             </button>
+                            <button
+                              className="nav-link"
+                              id="nav-amendments-tab"
+                              data-bs-toggle="tab"
+                              data-bs-target="#Domestic4"
+                              type="button"
+                              role="tab"
+                              aria-controls="nav-amendments"
+                              aria-selected="false"
+                            >
+                              Amendment Details
+                            </button>
                           </div>
                         </nav>
                         <div className="d-flex justify-content-end ms-4 mt-2">
@@ -2183,6 +2173,22 @@ const PoDetails = () => {
                               </button>
                             </Link>
                           )}
+                          {purchaseOrderData?.selected_status !== "Draft" && 
+                           purchaseOrderData?.selected_status !== "accepted_by_vendor" &&
+                           purchaseOrderData?.selected_status !== "rejected_by_vendor" &&
+                           purchaseOrderData?.selected_status !== "cancelled" &&
+                           purchaseOrderData?.selected_status !== "terminated" &&
+                           purchaseOrderData?.selected_status !== "rejected" && (
+                            <Link
+                              to={`/po-edit-ammend/${purchaseOrderData?.parent_po_id}?token=${token}`}
+                              className="d-flex align-items-center"
+                              style={{ borderColor: "#8b0203" }}
+                            >
+                              <button type="button" className="purple-btn2 mb-3">
+                                <span>Amend</span>
+                              </button>
+                            </Link>
+                          )}
                           {purchaseOrderData?.approval_logs &&
                             purchaseOrderData.approval_logs.length > 0 && (
                               <button
@@ -2191,7 +2197,8 @@ const PoDetails = () => {
                                 onClick={openApprovalModal}
                                 style={{
                                   backgroundColor:
-                                    purchaseOrderData?.selected_status === "Approved"
+                                    purchaseOrderData?.selected_status ===
+                                    "Approved"
                                       ? "green"
                                       : "",
                                   border: "none",
@@ -2300,7 +2307,8 @@ const PoDetails = () => {
                                         <span className="me-3 text-dark">
                                           :
                                         </span>
-                                        {purchaseOrderData.total_discount ?? "-"}
+                                        {purchaseOrderData.total_discount ??
+                                          "-"}
                                       </label>
                                     </div>
                                   </div>
@@ -2927,7 +2935,8 @@ const PoDetails = () => {
                                     <div className="col-6">
                                       <label className="text">
                                         <span className="me-3">:-</span>
-                                        {purchaseOrderData.total_discount  ?? "-"}
+                                        {purchaseOrderData.total_discount ??
+                                          "-"}
                                       </label>
                                     </div>
                                   </div>
@@ -3061,7 +3070,65 @@ const PoDetails = () => {
                             aria-labelledby="nav-home-tab"
                             tabIndex={0}
                           >
-                            Amendment Details
+                            <div className="tbl-container px-0">
+                              <table
+                                className="w-100"
+                                style={{ width: "100%" }}
+                              >
+                                <thead>
+                                  <tr>
+                                    <th
+                                      style={{
+                                        width: "66px",
+                                        width: "66px !important",
+                                      }}
+                                    >
+                                      Sr.No.
+                                    </th>
+                                    <th>Version Number</th>
+                                    <th>Status</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {purchaseOrderData?.amendment_details &&
+                                  purchaseOrderData.amendment_details.length >
+                                    0 ? (
+                                    purchaseOrderData.amendment_details.map(
+                                      (amend, idx) => (
+                                        <tr key={amend.id || idx}>
+                                          <td>{idx + 1}</td>
+                                          <td>
+                                            <Link
+                                              to={`/po-details/${amend.id}?token=${token}
+
+          `}
+                                              style={{
+                                                color: "#8b0203",
+                                                textDecoration: "none",
+                                              }}
+                                               onClick={(e) => {
+              e.preventDefault(); // Prevent default navigation
+              navigate(`/po-details/${amend.id}?token=${token}`);
+              window.location.reload(); // Force page reload after navigation
+            }}
+                                            >
+                                              {amend.version_number}
+                                            </Link>
+                                          </td>
+                                          <td>{amend.status}</td>
+                                        </tr>
+                                      )
+                                    )
+                                  ) : (
+                                    <tr>
+                                      <td colSpan={3}>
+                                        No amendments available
+                                      </td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         </div>
                         {/* /.container-fluid */}
@@ -3084,72 +3151,77 @@ Document */}
                 ></div>
               </div>
 
-              <div className="tbl-container mb-4" style={{ maxHeight: "500px" }}>
-  <table className="w-100">
-    <thead>
-      <tr>
-        <th className="main2-th">File Type</th>
-        <th className="main2-th">File Name</th>
-        <th className="main2-th">Upload At</th>
-        <th className="main2-th">Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {attachments.map((att, index) => (
-        <tr key={att.id}>
-          <td>
-            <input
-              className="form-control document_content_type"
-              readOnly
-              disabled
-              value={att.fileType}
-              placeholder="File Type"
-            />
-          </td>
-          <td>
-            <input
-              className="form-control file_name"
-              readOnly
-              disabled
-              value={att.fileName || att.file_name || ""}
-            />
-          </td>
-          <td>
-            <input
-              className="form-control created_at"
-              readOnly
-              disabled
-              value={att.uploadDate || att.uploaded_at || ""}
-            />
-          </td>
-          <td className="document">
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <div className="attachment-placeholder">
-                {att.isExisting && (
-                  <div className="file-box">
-                    <div className="">
-                      <a
-                        href={att.doc_path}
-                        download
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <DownloadIcon />
-                      </a>
-                    </div>
-                    <div className="file-name">
-                      <span>{att.fileName || att.file_name}</span>
-                    </div>
-                  </div>
-                )}
+              <div
+                className="tbl-container mb-4"
+                style={{ maxHeight: "500px" }}
+              >
+                <table className="w-100">
+                  <thead>
+                    <tr>
+                      <th className="main2-th">File Type</th>
+                      <th className="main2-th">File Name</th>
+                      <th className="main2-th">Upload At</th>
+                      <th className="main2-th">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {attachments.map((att, index) => (
+                      <tr key={att.id}>
+                        <td>
+                          <input
+                            className="form-control document_content_type"
+                            readOnly
+                            disabled
+                            value={att.fileType}
+                            placeholder="File Type"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="form-control file_name"
+                            readOnly
+                            disabled
+                            value={att.fileName || att.file_name || ""}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="form-control created_at"
+                            readOnly
+                            disabled
+                            value={att.uploadDate || att.uploaded_at || ""}
+                          />
+                        </td>
+                        <td className="document">
+                          <div
+                            style={{ display: "flex", alignItems: "center" }}
+                          >
+                            <div className="attachment-placeholder">
+                              {att.isExisting && (
+                                <div className="file-box">
+                                  <div className="">
+                                    <a
+                                      href={att.doc_path}
+                                      download
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <DownloadIcon />
+                                    </a>
+                                  </div>
+                                  <div className="file-name">
+                                    <span>{att.fileName || att.file_name}</span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </div>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
 
               <div className="row w-100">
                 <div className="col-md-12">
@@ -4048,11 +4120,15 @@ Document */}
                             <td>
                               <select
                                 className="form-control"
-                                  disabled
+                                disabled
                                 value={
-                                    item.taxChargeType ||
-                                  taxOptions.find((opt) => opt.id === item.tax_category_id)?.value ||
-                                  taxOptions.find((opt) => opt.id === item.resource_id)?.value ||
+                                  item.taxChargeType ||
+                                  taxOptions.find(
+                                    (opt) => opt.id === item.tax_category_id
+                                  )?.value ||
+                                  taxOptions.find(
+                                    (opt) => opt.id === item.resource_id
+                                  )?.value ||
                                   ""
                                 }
                               >
@@ -4062,7 +4138,7 @@ Document */}
                                     {opt.label}
                                   </option>
                                 ))}
-                                </select>
+                              </select>
                             </td>
 
                             <td>
@@ -4072,23 +4148,32 @@ Document */}
                                 value={
                                   item?.taxChargePerUom ||
                                   (() => {
-                                    const found = (materialTaxPercentages[item.id] || []).find(
+                                    const found = (
+                                      materialTaxPercentages[item.id] || []
+                                    ).find(
                                       (p) => p.id === item.tax_category_id
                                     );
                                     return found ? `${found.percentage}%` : "";
-                                  })() || ""
+                                  })() ||
+                                  ""
                                 }
                               >
                                 <option value="">
-                                  {(materialTaxPercentages[item.id] || []).length === 0
+                                  {(materialTaxPercentages[item.id] || [])
+                                    .length === 0
                                     ? "No percentages available"
                                     : "Select percentage"}
                                 </option>
-                                {(materialTaxPercentages[item.id] || []).map((percent) => (
-                                  <option key={percent.id} value={`${percent.percentage}%`}>
-                                    {percent.percentage}%
-                                  </option>
-                                ))}
+                                {(materialTaxPercentages[item.id] || []).map(
+                                  (percent) => (
+                                    <option
+                                      key={percent.id}
+                                      value={`${percent.percentage}%`}
+                                    >
+                                      {percent.percentage}%
+                                    </option>
+                                  )
+                                )}
                               </select>
                             </td>
 
@@ -4203,8 +4288,12 @@ Document */}
                                 disabled
                                 value={
                                   item.taxChargeType ||
-                                  deductionTaxOptions.find((opt) => opt.id == item.tax_category_id)?.value ||
-                                  deductionTaxOptions.find((opt) => opt.id == item.resource_id)?.value ||
+                                  deductionTaxOptions.find(
+                                    (opt) => opt.id == item.tax_category_id
+                                  )?.value ||
+                                  deductionTaxOptions.find(
+                                    (opt) => opt.id == item.resource_id
+                                  )?.value ||
                                   ""
                                 }
                               >
@@ -4225,23 +4314,32 @@ Document */}
                                 value={
                                   item?.taxChargePerUom ||
                                   (() => {
-                                    const found = (materialTaxPercentages[item.id] || []).find(
+                                    const found = (
+                                      materialTaxPercentages[item.id] || []
+                                    ).find(
                                       (p) => p.id === item.tax_category_id
                                     );
                                     return found ? `${found.percentage}%` : "";
-                                  })() || ""
+                                  })() ||
+                                  ""
                                 }
                               >
                                 <option value="">
-                                  {(materialTaxPercentages[item.id] || []).length === 0
+                                  {(materialTaxPercentages[item.id] || [])
+                                    .length === 0
                                     ? "No percentages available"
                                     : "Select percentage"}
                                 </option>
-                                {(materialTaxPercentages[item.id] || []).map((percent) => (
-                                  <option key={percent.id} value={`${percent.percentage}%`}>
-                                    {percent.percentage}%
-                                  </option>
-                                ))}
+                                {(materialTaxPercentages[item.id] || []).map(
+                                  (percent) => (
+                                    <option
+                                      key={percent.id}
+                                      value={`${percent.percentage}%`}
+                                    >
+                                      {percent.percentage}%
+                                    </option>
+                                  )
+                                )}
                               </select>
                             </td>
                             <td className="text-center">
@@ -4332,7 +4430,6 @@ Document */}
                             readOnly
                             disabled={true}
                           />
-                  
                         </td>
                         <td></td>
                       </tr>
