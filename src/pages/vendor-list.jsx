@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/mor.css";
 import Select from "react-select";
@@ -128,7 +128,8 @@ export default function VendorListPage() {
     fetchEvents(1);
   };
 
-  const preprocessOptions = (array, isKeyValuePair = false) => {
+  // Memoize preprocessOptions to avoid recomputation
+  const preprocessOptions = useCallback((array, isKeyValuePair = false) => {
     if (!array) return [];
     const uniqueMap = new Map();
     array
@@ -140,7 +141,7 @@ export default function VendorListPage() {
         });
       });
     return Array.from(uniqueMap.values());
-  };
+  }, []);
 
   const fetchFilterOptions = async () => {
     setFilterLoading(true);
@@ -372,8 +373,8 @@ export default function VendorListPage() {
 
   const { events: eventsToDisplay, pagination } = getFilteredData(); // Destructure to get events and pagination
 
-  // Get the range of pages to display
-  const getPageRange = () => {
+  // Memoize getPageRange to avoid recomputation
+  const getPageRange = useMemo(() => {
     const totalPages = pagination.total_pages || 1; // Default to 1 if total_pages is undefined
     let startPage = Math.max(
       pagination.current_page - Math.floor(pageRange / 2),
@@ -391,9 +392,9 @@ export default function VendorListPage() {
       pages.push(i);
     }
     return pages;
-  };
+  }, [pagination, pageRange]);
 
-  const pageNumbers = getPageRange(); // Get the current page range for display
+  const pageNumbers = getPageRange; // Get the current page range for display
 
   const handleFilterChange = (key, value) => {
     setFilters((prevFilters) => ({
@@ -411,6 +412,15 @@ export default function VendorListPage() {
     fetchEvents();
     handleClose();
     // handleReset();
+  };
+
+  // Debounce function to limit API calls
+  const debounce = (func, delay) => {
+    let timeoutId;
+    return (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func.apply(null, args), delay);
+    };
   };
 
   const fetchSuggestions = async (query) => {
@@ -1319,6 +1329,165 @@ export default function VendorListPage() {
                         }}
                       />
                     </div>
+                    
+                    {/* Custom Pagination UI */}
+                    <div className="d-flex justify-content-between align-items-center px-3 mt-2">
+                      <ul className="pagination justify-content-center d-flex">
+                        {/* First Button */}
+                        <li
+                          className={`page-item ${
+                            Number.isInteger(pagination?.current_page) &&
+                            pagination.current_page === 1
+                              ? "disabled"
+                              : ""
+                          }`}
+                        >
+                          <button
+                            className="page-link"
+                            onClick={() => handlePageChange(1)}
+                          >
+                            First
+                          </button>
+                        </li>
+
+                        {/* Previous Button */}
+                        <li
+                          className={`page-item ${
+                            Number.isInteger(pagination?.current_page) &&
+                            pagination.current_page === 1
+                              ? "disabled"
+                              : ""
+                          }`}
+                        >
+                          <button
+                            className="page-link"
+                            onClick={() =>
+                              handlePageChange(
+                                (Number.isInteger(pagination?.current_page)
+                                  ? pagination.current_page
+                                  : 1) - 1
+                              )
+                            }
+                            disabled={
+                              Number.isInteger(pagination?.current_page) &&
+                              pagination.current_page === 1
+                            }
+                          >
+                            Prev
+                          </button>
+                        </li>
+
+                        {/* Dynamic Page Numbers */}
+                        {pageNumbers.map((pageNumber) => (
+                          <li
+                            key={pageNumber}
+                            className={`page-item ${
+                              Number.isInteger(pagination?.current_page) &&
+                              pagination.current_page === pageNumber
+                                ? "active"
+                                : ""
+                            }`}
+                          >
+                            <button
+                              className="page-link"
+                              onClick={() => handlePageChange(pageNumber)}
+                            >
+                              {pageNumber}
+                            </button>
+                          </li>
+                        ))}
+
+                        {/* Next Button */}
+                        <li
+                          className={`page-item ${
+                            Number.isInteger(pagination?.current_page) &&
+                            Number.isInteger(pagination?.total_pages) &&
+                            pagination.current_page === pagination.total_pages
+                              ? "disabled"
+                              : ""
+                          }`}
+                        >
+                          <button
+                            className="page-link"
+                            onClick={() =>
+                              handlePageChange(
+                                (Number.isInteger(pagination?.current_page)
+                                  ? pagination.current_page
+                                  : 1) + 1
+                              )
+                            }
+                            disabled={
+                              Number.isInteger(pagination?.current_page) &&
+                              Number.isInteger(pagination?.total_pages) &&
+                              pagination.current_page === pagination.total_pages
+                            }
+                          >
+                            Next
+                          </button>
+                        </li>
+
+                        {/* Last Button */}
+                        <li
+                          className={`page-item ${
+                            Number.isInteger(pagination?.current_page) &&
+                            Number.isInteger(pagination?.total_pages) &&
+                            pagination.current_page === pagination.total_pages
+                              ? "disabled"
+                              : ""
+                          }`}
+                        >
+                          <button
+                            className="page-link"
+                            onClick={() =>
+                              handlePageChange(
+                                Number.isInteger(pagination?.total_pages)
+                                  ? pagination.total_pages
+                                  : 1
+                              )
+                            }
+                            disabled={
+                              Number.isInteger(pagination?.current_page) &&
+                              Number.isInteger(pagination?.total_pages) &&
+                              pagination.current_page === pagination.total_pages
+                            }
+                          >
+                            Last
+                          </button>
+                        </li>
+                      </ul>
+
+                      {/* Showing entries count */}
+                      <div>
+                        <p>
+                          Showing{" "}
+                          {Math.min(
+                            ((Number.isInteger(pagination?.current_page)
+                              ? pagination.current_page
+                              : 1) -
+                              1) *
+                              pageSize +
+                              1 || 1,
+                            Number.isInteger(pagination?.total_count)
+                              ? pagination.total_count
+                              : 0
+                          )}{" "}
+                          to{" "}
+                          {Math.min(
+                            (Number.isInteger(pagination?.current_page)
+                              ? pagination.current_page
+                              : 1) * pageSize,
+                            Number.isInteger(pagination?.total_count)
+                              ? pagination.total_count
+                              : 0
+                          )}{" "}
+                          of{" "}
+                          {Number.isInteger(pagination?.total_count)
+                            ? pagination.total_count
+                            : 0}{" "}
+                          entries
+                        </p>
+                      </div>
+                    </div>
                     {/* Settings Modal for column visibility */}
                     <Modal
                       show={settingShow}
@@ -1466,7 +1635,7 @@ export default function VendorListPage() {
                         className="modal-body"
                         style={{ overflowY: "scroll" }}
                       >
-                        <div className="form-group mb-4">
+                        {/* <div className="form-group mb-4">
                           <div className="form-group">
                             <label htmlFor="mor-date-from">Enter Title </label>
                             <Select
@@ -1484,7 +1653,7 @@ export default function VendorListPage() {
                               }
                             />
                           </div>
-                        </div>
+                        </div> */}
                         <div className="form-group mb-4">
                           <div className="form-group">
                             <label htmlFor="mor-date-from">Product</label>

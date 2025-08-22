@@ -834,6 +834,13 @@ export default function OverviewTab({
                                                     textAlign: "center",
                                                   }}
                                                 >
+                                                  Sr No
+                                                </th>
+                                                <th
+                                                  style={{
+                                                    textAlign: "center",
+                                                  }}
+                                                >
                                                   Field
                                                 </th>
                                                 <th
@@ -850,7 +857,7 @@ export default function OverviewTab({
                                               0 ? (
                                                 <tr>
                                                   <td
-                                                    colSpan={2}
+                                                    colSpan={3}
                                                     style={{
                                                       textAlign: "center",
                                                     }}
@@ -863,6 +870,7 @@ export default function OverviewTab({
                                                 morInventorySpecifications.map(
                                                   (spec, idx) => (
                                                     <tr key={idx}>
+                                                      <td style={{ textAlign: "center" }}>{idx + 1}</td>
                                                       <td>{spec.field}</td>
                                                       <td>
                                                         {spec.specification ||
@@ -941,6 +949,13 @@ export default function OverviewTab({
                                                     textAlign: "center",
                                                   }}
                                                 >
+                                                  Sr No
+                                                </th>
+                                                <th
+                                                  style={{
+                                                    textAlign: "center",
+                                                  }}
+                                                >
                                                   Filename
                                                 </th>
                                                 <th
@@ -956,7 +971,7 @@ export default function OverviewTab({
                                               {attachmentsData.length === 0 ? (
                                                 <tr>
                                                   <td
-                                                    colSpan={2}
+                                                    colSpan={3}
                                                     style={{
                                                       textAlign: "center",
                                                     }}
@@ -968,6 +983,7 @@ export default function OverviewTab({
                                                 attachmentsData.map(
                                                   (attachment, idx) => (
                                                     <tr key={idx}>
+                                                      <td style={{ textAlign: "center" }}>{idx + 1}</td>
                                                       <td>
                                                         {attachment.filename}
                                                       </td>

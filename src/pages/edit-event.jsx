@@ -709,10 +709,24 @@ export default function EditEvent() {
   };
 
   const handleRemoveTextarea = (index) => {
-    const updatedTextareas = textareas.filter(
-      (textarea) => textarea.id !== index
-    );
-    setTextareas([...updatedTextareas]);
+    const updatedTextareas = textareas.map((textarea) => {
+      if (textarea.id === index) {
+        // If it's an existing item (has a valid database ID), mark it for destruction
+        const isValidId =
+          (typeof textarea.id === "string" && textarea.id.length < 10) ||
+          (typeof textarea.id === "number" && String(textarea.id).length < 10);
+        
+        if (isValidId) {
+          return { ...textarea, _destroy: true };
+        } else {
+          // If it's a new item (Date.now() id), return null to filter it out
+          return null;
+        }
+      }
+      return textarea;
+    }).filter(Boolean); // Remove null items (new items that were deleted)
+    
+    setTextareas(updatedTextareas);
   };
 
   const handleConditionChange = (id, selectedOption) => {
@@ -1059,7 +1073,7 @@ const toUTCStartTimeString = (dateTime) => {
             }
             return acc;
           }, {});
-          console.log("material",material);
+          console.log("material",material.unit);
           
 
           return {
@@ -1104,17 +1118,28 @@ const toUTCStartTimeString = (dateTime) => {
     (typeof textarea.id === "string" && textarea.id.length < 10) ||
     (typeof textarea.id === "number" && String(textarea.id).length < 10);
 
+  const baseAttributes = {
+    term_condition_id: textarea.textareaId,
+    condition_type: "general",
+    condition: textarea.value,
+  };
+
+  // If marked for destruction, add the _destroy flag
+  if (textarea._destroy) {
+    return {
+      id: textarea.id,
+      _destroy: true,
+      ...baseAttributes,
+    };
+  }
+
   return isValidId
     ? {
         id: textarea.id,
-        term_condition_id: textarea.textareaId,
-        condition_type: "general",
-        condition: textarea.value,
+        ...baseAttributes,
       }
     : {
-        term_condition_id: textarea.textareaId,
-        condition_type: "general",
-        condition: textarea.value,
+        ...baseAttributes,
       };
 }),
         attachments,
@@ -1713,7 +1738,7 @@ const toUTCStartTimeString = (dateTime) => {
                   <input
                     className="form-control"
                     onClick={handleEventScheduleModalShow}
-                    placeholder="From [dd-mm-yy hh:mm] To [dd-mm-yy hh:mm] ([DD] Days [HH] Hrs [MM] Mins)"
+                    placeholder="Select Event Schedule"
                     value={eventScheduleText}
                     readOnly
                   />
@@ -2037,13 +2062,13 @@ const toUTCStartTimeString = (dateTime) => {
     </tr>
   </thead>
   <tbody>
-    {(!textareas || textareas.filter(t => t.id !== null).length === 0) ? (
+    {(!textareas || textareas.filter(t => t.id !== null && !t._destroy).length === 0) ? (
       <tr>
         <td colSpan={3} className="text-center">No Terms & Conditions available</td>
       </tr>
     ) : (
       textareas.map((textarea, idx) => {
-        if (textarea.id === null) {
+        if (textarea.id === null || textarea._destroy) {
           return null;
         }
         return (

@@ -523,7 +523,6 @@ export default function CreateEvent() {
   };
 
   const handleSubmit = async (event) => {
-    setLoading(true);
     event.preventDefault();
 
     if (
@@ -538,9 +537,6 @@ export default function CreateEvent() {
       toast.error("Please fill all the required fields.", {
         autoClose: 1000,
       });
-      setTimeout(() => {
-        setLoading(false);
-      }, 500);
       return;
     }
     
@@ -705,7 +701,6 @@ export default function CreateEvent() {
       });
     } finally {
       setSubmitted(false);
-      setLoading(false);
     }
   };
 
@@ -1455,7 +1450,6 @@ export default function CreateEvent() {
                   <button className="purple-btn2 w-100">Preview</button>
                 </div>
                 <div className="col-md-2">
-                  {/* Loader removed from here to prevent duplicate loader */}
                   <button
                     className={
                       submitted ? "disabled-btn w-100" : "purple-btn2 w-100"
@@ -1463,7 +1457,14 @@ export default function CreateEvent() {
                     onClick={handleSubmit}
                     disabled={submitted}
                   >
-                    Submit
+                    {submitted ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Creating...
+                      </>
+                    ) : (
+                      "Submit"
+                    )}
                   </button>
                 </div>
                 <div className="col-md-2">

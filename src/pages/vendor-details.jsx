@@ -215,37 +215,65 @@ const pageSize = 10; // Change as needed
   });
 
   const handleDownloadPDF = () => {
-
+    // Open all main accordions
     setPublishedStages(true);
-  setTermss(true);
-  setContact(true);
-  setLineItems(true);
-  setDocumentAttachment(true);
-  setOrderConfigOpen(true);
-  setOrderDetails(true);
-  setAuditLog(true);
+    setTermss(true);
+    setContact(true);
+    setLineItems(true);
+    setDocumentAttachment(true);
+    setOrderConfigOpen(true);
+    setOrderDetails(true);
+    setAuditLog(true);
 
-    const element = document.querySelector(".print-wrapper");
-    const options = {
-      margin: 0,
-      filename: "vendor-details.pdf",
-      image: { type: "jpeg", quality: 1.0 },
-      html2canvas: {
-        scale: 3,
-        useCORS: true,
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight,
-      },
-      jsPDF: {
-        unit: "px",
-        format: [element.scrollWidth, element.scrollHeight],
-        orientation: "portrait",
-      },
-    };
+    // Open all material sheet accordions
+    if (data1?.grouped_event_materials) {
+      const allDeliveryRows = {};
+      const allDynamicRows = {};
+      const allAttachmentsRows = {};
 
-    html2pdf().set(options).from(element).save();
+      Object.entries(data1.grouped_event_materials).forEach(
+        ([materialType, groups], typeIdx) => {
+          // Flatten all materials for this materialType
+          const materialsArr = Object.values(groups).flat();
+          
+          materialsArr.forEach((material, rowIndex) => {
+            const rowKey = material.id || `${materialType}_${rowIndex}`;
+            allDeliveryRows[rowKey] = true;
+            allDynamicRows[rowKey] = true;
+            allAttachmentsRows[rowKey] = true;
+          });
+        }
+      );
+
+      setOpenDeliveryRows(allDeliveryRows);
+      setOpenDynamicRows(allDynamicRows);
+      setOpenAttachmentsRows(allAttachmentsRows);
+    }
+
+    // Wait a brief moment for the state updates to render
+    setTimeout(() => {
+      const element = document.querySelector(".print-wrapper");
+      const options = {
+        margin: 0,
+        filename: "vendor-details.pdf",
+        image: { type: "jpeg", quality: 1.0 },
+        html2canvas: {
+          scale: 3,
+          useCORS: true,
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: element.scrollWidth,
+          windowHeight: element.scrollHeight,
+        },
+        jsPDF: {
+          unit: "px",
+          format: [element.scrollWidth, element.scrollHeight],
+          orientation: "portrait",
+        },
+      };
+
+      html2pdf().set(options).from(element).save();
+    }, 100);
   };
   // console.log(" vednor idddddddddddddddddd", vendorId);
 
@@ -4446,63 +4474,66 @@ const urlParams = new URLSearchParams(location.search);
                                 {/* Document Details Table */}
                                 {data1.attachments?.length > 0 ? (
                                   <div className="tbl-container mt-3">
-                                    <thead>
-                                      <tr>
-                                        <th className="text-start">Sr No</th>
-                                        <th className="text-start">
-                                          File Name
-                                        </th>
-                                        <th className="text-start">
-                                          Uploaded At
-                                        </th>
-                                        <th className="text-start">Download</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {data1?.attachments?.map(
-                                        (attachment, index) => (
-                                          <tr key={attachment.id}>
-                                            <td className="text-start">
-                                              {index + 1}
-                                            </td>
-                                            <td className="text-start">
-                                              {attachment.filename}
-                                            </td>
-                                            <td className="text-start">
-                                              {formattedDate}
-                                            </td>
-                                            <td className="text-start">
-                                              <a
-                                                href={`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
-                                                download={attachment.filename}
-                                              >
-                                                <svg
-                                                  xmlns="http://www.w3.org/2000/svg"
-                                                  width="16"
-                                                  height="16"
-                                                  viewBox="0 0 16 16"
-                                                  style={{ fill: "black" }}
+                                    <table className="w-100 table">
+                                      <thead>
+                                        <tr>
+                                          <th className="text-start">Sr No</th>
+                                          <th className="text-start">
+                                            File Name
+                                          </th>
+                                          <th className="text-start">
+                                            Uploaded At
+                                          </th>
+                                          <th className="text-start">Download</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {data1?.attachments?.map(
+                                          (attachment, index) => (
+                                            <tr key={attachment.id}>
+                                              {console.log("attachment",attachment)}
+                                              <td className="text-start">
+                                                {index + 1}
+                                              </td>
+                                              <td className="text-start">
+                                                {attachment.document_name || attachment.filename}
+                                              </td>
+                                              <td className="text-start">
+                                                {formattedDate}
+                                              </td>
+                                              <td className="text-start">
+                                                <a
+                                                  href={`${baseURL}rfq/events/${eventId}/download?token=${token}&blob_id=${attachment.blob_id}`}
+                                                  download={attachment.filename}
                                                 >
-                                                  <g fill="currentColor">
-                                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
-                                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
-                                                  </g>
-                                                </svg>
-                                              </a>
+                                                  <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="16"
+                                                    height="16"
+                                                    viewBox="0 0 16 16"
+                                                    style={{ fill: "black" }}
+                                                  >
+                                                    <g fill="currentColor">
+                                                      <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                                                      <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                                                    </g>
+                                                  </svg>
+                                                </a>
+                                              </td>
+                                            </tr>
+                                          )
+                                        ) || (
+                                          <tr>
+                                            <td
+                                              colSpan="4"
+                                              className="text-center"
+                                            >
+                                              No attachments available.
                                             </td>
                                           </tr>
-                                        )
-                                      ) || (
-                                        <tr>
-                                          <td
-                                            colSpan="5"
-                                            className="text-center"
-                                          >
-                                            No attachments available.
-                                          </td>
-                                        </tr>
-                                      )}
-                                    </tbody>
+                                        )}
+                                      </tbody>
+                                    </table>
                                   </div>
                                 ) : (
                                   <p className="text-center mt-4">
