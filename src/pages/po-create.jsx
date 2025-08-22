@@ -77,6 +77,9 @@ const PoCreate = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
 
+  // Active tab state
+  const [activeTab, setActiveTab] = useState("po-details"); // "po-details", "rate-taxes", "terms-conditions"
+
   // Terms and conditions form state
   const [termsFormData, setTermsFormData] = useState({
     creditPeriod: "",
@@ -112,6 +115,11 @@ const PoCreate = () => {
     []
   );
   const [chargesTaxPercentages, setChargesTaxPercentages] = useState([]);
+
+  // Handle tab change
+  const handleTabChange = (tabName) => {
+    setActiveTab(tabName);
+  };
 
   // Fetch company data on component mount
   useEffect(() => {
@@ -510,6 +518,7 @@ const PoCreate = () => {
 
         alert("Materials submitted successfully!");
         // Change tab to Rate & Taxes
+        setActiveTab("rate-taxes");
         const rateTaxesTab = document.querySelector(
           '[data-bs-target="#Domestic2"]'
         );
@@ -2586,38 +2595,41 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                             role="tablist"
                           >
                             <button
-                              className="nav-link active"
+                              className={`nav-link ${activeTab === "po-details" ? "active" : ""}`}
                               id="nav-home-tab"
                               data-bs-toggle="tab"
                               data-bs-target="#Domestic1"
                               type="button"
                               role="tab"
                               aria-controls="nav-home"
-                              aria-selected="true"
+                              aria-selected={activeTab === "po-details"}
+                              onClick={() => handleTabChange("po-details")}
                             >
                               PO Details
                             </button>
                             <button
-                              className="nav-link"
+                              className={`nav-link ${activeTab === "rate-taxes" ? "active" : ""}`}
                               id="nav-profile-tab"
                               data-bs-toggle="tab"
                               data-bs-target="#Domestic2"
                               type="button"
                               role="tab"
                               aria-controls="nav-profile"
-                              aria-selected="false"
+                              aria-selected={activeTab === "rate-taxes"}
+                              onClick={() => handleTabChange("rate-taxes")}
                             >
                               Rate &amp; Taxes
                             </button>
                             <button
-                              className="nav-link"
+                              className={`nav-link ${activeTab === "terms-conditions" ? "active" : ""}`}
                               id="nav-contact-tab"
                               data-bs-toggle="tab"
                               data-bs-target="#Domestic3"
                               type="button"
                               role="tab"
                               aria-controls="nav-contact"
-                              aria-selected="false"
+                              aria-selected={activeTab === "terms-conditions"}
+                              onClick={() => handleTabChange("terms-conditions")}
                             >
                               Term &amp; Conditions
                             </button>
@@ -2625,7 +2637,7 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                         </nav>
                         <div className="tab-content" id="nav-tabContent">
                           <div
-                            className="tab-pane fade show active"
+                            className={`tab-pane fade ${activeTab === "po-details" ? "show active" : ""}`}
                             id="Domestic1"
                             role="tabpanel"
                             aria-labelledby="nav-home-tab"
@@ -2938,7 +2950,7 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                             </div>
                           </div>
                           <div
-                            className="tab-pane fade"
+                            className={`tab-pane fade ${activeTab === "rate-taxes" ? "show active" : ""}`}
                             id="Domestic2"
                             role="tabpanel"
                             aria-labelledby="nav-profile-tab"
@@ -3341,10 +3353,21 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                 </table>
                               </div>
                               {/* )} */}
+                              
+                              {/* Update Button */}
+                              <div className="d-flex justify-content-center mt-3">
+                                <button
+                                  type="button"
+                                  className="purple-btn2"
+                                  onClick={() => setActiveTab("terms-conditions")}
+                                >
+                                  Update
+                                </button>
+                              </div>
                             </div>
                           </div>
                           <div
-                            className="tab-pane fade"
+                            className={`tab-pane fade ${activeTab === "terms-conditions" ? "show active" : ""}`}
                             id="Domestic3"
                             role="tabpanel"
                             aria-labelledby="nav-contact-tab"
@@ -3883,6 +3906,209 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                 </tbody>
                               </table>
                             </div>
+                            
+                            {/* Document Attachment Section - Only visible on Terms & Conditions tab */}
+                            {activeTab === "terms-conditions" && (
+                              <>
+                                <div className="d-flex justify-content-between mt-5 ">
+                                  <h5>Document Attachment</h5>
+                                  <div
+                                    className=""
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#attachModal"
+                                    // onClick={openattachModal}
+                                    onClick={handleAddRow}
+                                  >
+                                    <button
+                                      className="purple-btn2 mb-2 "
+                                      data-bs-toggle="modal"
+                                      data-bs-target="#attachModal"
+                                    >
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width={20}
+                                        height={20}
+                                        fill="currentColor"
+                                        className="bi bi-plus"
+                                        viewBox="0 0 16 16"
+                                      >
+                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
+                                      </svg>
+                                      <span>Add Attachments</span>
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Document Attachment Table */}
+                                <div
+                                  className="tbl-container mb-4"
+                                  style={{ maxHeight: "500px" }}
+                                >
+                                  <table className="w-100">
+                                    <thead>
+                                      <tr>
+                                        <th className="main2-th">File Type</th>
+                                        <th className="main2-th">File Name </th>
+                                        <th className="main2-th">Upload At</th>
+                                        <th className="main2-th">Upload File</th>
+                                        <th className="main2-th" style={{ width: 100 }}>
+                                          Action
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {attachments.map((att, index) => (
+                                        <tr key={att.id}>
+                                          <td>
+                                            <input
+                                              className="form-control document_content_type"
+                                              readOnly
+                                              disabled
+                                              value={att.fileType}
+                                              placeholder="File Type"
+                                            />
+                                          </td>
+                                          <td>
+                                            <input
+                                              className="form-control file_name"
+                                              required
+                                              value={att.fileName}
+                                              onChange={(e) =>
+                                                handleFileNameChange(att.id, e.target.value)
+                                              }
+                                            />
+                                          </td>
+                                          <td>
+                                            <input
+                                              className="form-control created_at"
+                                              readOnly
+                                              disabled
+                                              type="datetime-local"
+                                              step="1"
+                                              value={att.uploadDate || ""}
+                                            />
+                                          </td>
+                                          <td>
+                                            {!att.isExisting && (
+                                              <input
+                                                type="file"
+                                                className="form-control"
+                                                required
+                                                onChange={(e) => handleFileChange(e, att.id)}
+                                              />
+                                            )}
+                                          </td>
+                                          <td className="document">
+                                            <div
+                                              style={{ display: "flex", alignItems: "center" }}
+                                            >
+                                              <div className="attachment-placeholder">
+                                                {att.isExisting && (
+                                                  <div className="file-box">
+                                                    <div className="image">
+                                                      <a
+                                                        href={att.fileUrl}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                      >
+                                                        <img
+                                                          alt="preview"
+                                                          className="img-responsive"
+                                                          height={50}
+                                                          width={50}
+                                                          src={att.fileUrl}
+                                                        />
+                                                      </a>
+                                                    </div>
+                                                    <div className="file-name">
+                                                      <a href={att.fileUrl} download>
+                                                        <span className="material-symbols-outlined">
+                                                          file_download
+                                                        </span>
+                                                      </a>
+                                                      <span>{att.fileName}</span>
+                                                    </div>
+                                                  </div>
+                                                )}
+                                              </div>
+                                              <button
+                                                type="button"
+                                                className="btn btn-sm btn-link text-danger"
+                                                onClick={() => handleRemove(att.id)}
+                                              >
+                                                <span className="material-symbols-outlined">
+                                                  cancel
+                                                </span>
+                                              </button>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+
+                                {/* Remark, Comments, Status, and Submit/Cancel buttons */}
+                                <div className="row w-100">
+                                  <div className="col-md-12">
+                                    <div className="form-group">
+                                      <label>Remark</label>
+                                      <textarea
+                                        className="form-control"
+                                        rows={3}
+                                        placeholder="Enter ..."
+                                        defaultValue={""}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="row w-100">
+                                  <div className="col-md-12">
+                                    <div className="form-group">
+                                      <label>Comments</label>
+                                      <textarea
+                                        className="form-control"
+                                        rows={3}
+                                        placeholder="Enter ..."
+                                        defaultValue={""}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="row mt-4 justify-content-end align-items-center mx-2">
+                                  <div className="col-md-3">
+                                    <div className="form-group d-flex gap-3 align-items-center mx-3">
+                                      <label style={{ fontSize: "0.95rem", color: "black" }}>
+                                        Status
+                                      </label>
+                                      <SingleSelector
+                                        options={[{ value: "draft", label: "Draft" }]}
+                                        value={{ value: "draft", label: "Draft" }}
+                                        placeholder="Select Status"
+                                        isClearable={false}
+                                        isDisabled={true}
+                                        classNamePrefix="react-select"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="row mt-2 justify-content-end">
+                                  <div className="col-md-2">
+                                    <button
+                                      className="purple-btn2 w-100  mt-2"
+                                      onClick={handleCreatePurchaseOrder}
+                                      disabled={isCreatingOrder}
+                                    >
+                                      {isCreatingOrder ? "Creating..." : "Submit"}
+                                    </button>
+                                  </div>
+                                  <div className="col-md-2">
+                                    <button className="purple-btn1 w-100">Cancel</button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
                           </div>
                           <div
                             className="tab-pane fade"
@@ -3901,204 +4127,8 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                 </div>
               </div>
 
-              {/* 
-Document */}
+              {/* Document Attachment Section - Only visible on Terms & Conditions tab */}
 
-              <div className="d-flex justify-content-between mt-5 ">
-                <h5>Document Attachment</h5>
-                <div
-                  className=""
-                  data-bs-toggle="modal"
-                  data-bs-target="#attachModal"
-                  // onClick={openattachModal}
-                  onClick={handleAddRow}
-                >
-                  <button
-                    className="purple-btn2 mb-2 "
-                    data-bs-toggle="modal"
-                    data-bs-target="#attachModal"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width={20}
-                      height={20}
-                      fill="currentColor"
-                      className="bi bi-plus"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"></path>
-                    </svg>
-                    <span>Add Attachments</span>
-                  </button>
-                </div>
-              </div>
-
-              <div
-                className="tbl-container mb-4"
-                style={{ maxHeight: "500px" }}
-              >
-                <table className="w-100">
-                  <thead>
-                    <tr>
-                      <th className="main2-th">File Type</th>
-                      <th className="main2-th">File Name </th>
-                      <th className="main2-th">Upload At</th>
-                      <th className="main2-th">Upload File</th>
-                      <th className="main2-th" style={{ width: 100 }}>
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {attachments.map((att, index) => (
-                      <tr key={att.id}>
-                        <td>
-                          <input
-                            className="form-control document_content_type"
-                            readOnly
-                            disabled
-                            value={att.fileType}
-                            placeholder="File Type"
-                          />
-                        </td>
-                        <td>
-                          <input
-                            className="form-control file_name"
-                            required
-                            value={att.fileName}
-                            onChange={(e) =>
-                              handleFileNameChange(att.id, e.target.value)
-                            }
-                          />
-                        </td>
-                        <td>
-                          <input
-                            className="form-control created_at"
-                            readOnly
-                            disabled
-                            type="datetime-local"
-                            step="1"
-                            value={att.uploadDate || ""}
-                          />
-                        </td>
-                        <td>
-                          {!att.isExisting && (
-                            <input
-                              type="file"
-                              className="form-control"
-                              required
-                              onChange={(e) => handleFileChange(e, att.id)}
-                            />
-                          )}
-                        </td>
-                        <td className="document">
-                          <div
-                            style={{ display: "flex", alignItems: "center" }}
-                          >
-                            <div className="attachment-placeholder">
-                              {att.isExisting && (
-                                <div className="file-box">
-                                  <div className="image">
-                                    <a
-                                      href={att.fileUrl}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                    >
-                                      <img
-                                        alt="preview"
-                                        className="img-responsive"
-                                        height={50}
-                                        width={50}
-                                        src={att.fileUrl}
-                                      />
-                                    </a>
-                                  </div>
-                                  <div className="file-name">
-                                    <a href={att.fileUrl} download>
-                                      <span className="material-symbols-outlined">
-                                        file_download
-                                      </span>
-                                    </a>
-                                    <span>{att.fileName}</span>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-link text-danger"
-                              onClick={() => handleRemove(att.id)}
-                            >
-                              <span className="material-symbols-outlined">
-                                cancel
-                              </span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="row w-100">
-                <div className="col-md-12">
-                  <div className="form-group">
-                    <label>Remark</label>
-                    <textarea
-                      className="form-control"
-                      rows={3}
-                      placeholder="Enter ..."
-                      defaultValue={""}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="row w-100">
-                <div className="col-md-12">
-                  <div className="form-group">
-                    <label>Comments</label>
-                    <textarea
-                      className="form-control"
-                      rows={3}
-                      placeholder="Enter ..."
-                      defaultValue={""}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="row mt-4 justify-content-end align-items-center mx-2">
-                <div className="col-md-3">
-                  <div className="form-group d-flex gap-3 align-items-center mx-3">
-                    <label style={{ fontSize: "0.95rem", color: "black" }}>
-                      Status
-                    </label>
-                    <SingleSelector
-                      options={[{ value: "draft", label: "Draft" }]}
-                      value={{ value: "draft", label: "Draft" }}
-                      placeholder="Select Status"
-                      isClearable={false}
-                      isDisabled={true}
-                      classNamePrefix="react-select"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="row mt-2 justify-content-end">
-                <div className="col-md-2">
-                  <button
-                    className="purple-btn2 w-100  mt-2"
-                    onClick={handleCreatePurchaseOrder}
-                    disabled={isCreatingOrder}
-                  >
-                    {isCreatingOrder ? "Creating..." : "Submit"}
-                  </button>
-                </div>
-                <div className="col-md-2">
-                  <button className="purple-btn1 w-100">Cancel</button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
