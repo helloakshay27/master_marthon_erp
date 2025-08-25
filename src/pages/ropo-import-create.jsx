@@ -1842,23 +1842,36 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
   };
 
   // Fetch tax percentages for specific material and tax category
-  const fetchTaxPercentagesByMaterial = async (
-    pmsInventoryId,
-    taxCategoryId
-  ) => {
-    try {
-      const response = await axios.get(
-        `${baseURL}tax_percentage_by_material.json?pms_inventory_id=${pmsInventoryId}&tax_category_id=${taxCategoryId}&token=${token}`
-      );
-      console.log("Tax percentages by material response:", response.data);
-      console.log("Percentages array:", response.data.percentages);
-      return response.data.percentages || [];
-    } catch (error) {
-      console.error("Error fetching tax percentages by material:", error);
-      return [];
-    }
-  };
+// In the tax percentage fetching section, add type checking and fallback
+const fetchTaxPercentagesByMaterial = async (pmsInventoryId, taxCategoryId) => {
+  try {
+    const response = await axios.get(
+      `${baseURL}tax_percentage_by_material.json?pms_inventory_id=${pmsInventoryId}&tax_category_id=${taxCategoryId}&token=${token}`
+    );
+    console.log("Tax percentages by material response:", response.data);
 
+    // Check if response.data is an array
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    // If response.data has a percentages property that's an array
+    else if (Array.isArray(response.data?.percentages)) {
+      return response.data.percentages;
+    }
+    // If response.data is an object with nested data
+    else if (response.data && typeof response.data === 'object') {
+      // Look for any array property that might contain the percentages
+      const percentagesArray = Object.values(response.data).find(val => Array.isArray(val));
+      return percentagesArray || [];
+    }
+    // Fallback to empty array if no valid data structure is found
+    return [];
+
+  } catch (error) {
+    console.error("Error fetching tax percentages by material:", error);
+    return [];
+  }
+};
   // Handle terms form input changes
   const handleTermsFormChange = (field, value) => {
     setTermsFormData((prev) => ({

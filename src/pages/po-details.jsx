@@ -2072,6 +2072,8 @@ const PoDetails = () => {
                               type="radio"
                               name="contentSelector"
                               defaultValue="content3"
+                              checked
+
                             />
                             <label className="form-check-label">ROPO</label>
                           </div>

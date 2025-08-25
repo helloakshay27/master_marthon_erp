@@ -915,15 +915,18 @@ const formatDateTime = (dateString) => {
             typeof row.material === "object" &&
             row.material.id
           ) {
-            // Existing material - extract values from the material object
+            // Existing material - extract values from the material object with safe fallbacks
             return {
-              id: row.material.id, // Use the actual ID from the material object
-              pms_inventory_id: row.material.pms_inventory_id,
-              unit_of_measure_id: row.material.uom_id,
-              pms_inventory_sub_type_id: row.material.pms_inventory_sub_type_id,
-              pms_generic_info_id: row.material.pms_generic_info_id,
-              pms_colour_id: row.material.pms_colour_id,
-              pms_brand_id: row.material.pms_brand_id,
+              id: row.material.id || row.id,
+              pms_inventory_id:
+                row.material.pms_inventory_id || row.material || row.materialId,
+              unit_of_measure_id: row.material.uom_id || row.uom,
+              pms_inventory_sub_type_id:
+                row.material.pms_inventory_sub_type_id || row.materialSubType || null,
+              pms_generic_info_id:
+                row.material.pms_generic_info_id || row.genericSpecification || null,
+              pms_colour_id: row.material.pms_colour_id || row.colour || null,
+              pms_brand_id: row.material.pms_brand_id || row.brand || null,
               _destroy: row._destroy || false,
             };
           } else {
@@ -932,7 +935,7 @@ const formatDateTime = (dateString) => {
               id: row.id, // Include ID for existing records
               pms_inventory_id: row.material,
               unit_of_measure_id: row.uom,
-              pms_inventory_sub_type_id: row.materialSubType,
+              pms_inventory_sub_type_id: row.materialSubType || null,
               pms_generic_info_id: row.genericSpecification || null,
               pms_colour_id: row.colour || null,
               pms_brand_id: row.brand || null,
@@ -968,8 +971,9 @@ const formatDateTime = (dateString) => {
 
         // Store the materials data from API response
         if (response.data.success && response.data.materials) {
+          // Keep displaying the user's current tableData (labels preserved)
+          // and only store API-returned materials separately for calculations/rates
           setSubmittedMaterials(response.data.materials);
-          setTableData(response.data.materials);
         }
 
         if (response.data.success && response.data.material_inventory_ids) {
@@ -3162,16 +3166,22 @@ const formatDateTime = (dateString) => {
     // Add submitted materials (if not already in rateAndTaxes)
     if (submittedMaterials && submittedMaterials.length > 0) {
       submittedMaterials.forEach((submitted) => {
-        const exists = combined.some(
-          (item) =>
+        const submittedMaterialName = submitted.material || submitted.material_name || "";
+        const submittedUomName = submitted.uom || submitted.uom_name || "";
+
+        const exists = combined.some((item) => {
+          const itemMaterialName = item.material || item.material_name || "";
+          return (
             item.material_inventory_id === submitted.material_inventory_id ||
-            item.material === submitted.material_name
-        );
+            itemMaterialName === submittedMaterialName
+          );
+        });
+
         if (!exists) {
           combined.push({
             id: submitted.id,
-            material: submitted.material_name,
-            uom: submitted.uom_name,
+            material: submittedMaterialName,
+            uom: submittedUomName,
             po_qty: submitted.po_qty || "",
             material_rate: submitted.material_rate || "",
             material_cost: submitted.material_cost || "",
@@ -3186,7 +3196,7 @@ const formatDateTime = (dateString) => {
             material_inventory_id: submitted.material_inventory_id,
             isSubmitted: true, // Flag to identify submitted materials
           });
-          console.log("Added submitted material:", submitted.material_name);
+          console.log("Added submitted material:", submittedMaterialName);
         }
       });
     }

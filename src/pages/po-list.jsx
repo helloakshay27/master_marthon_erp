@@ -6,7 +6,7 @@ import axios from "axios";
 import { baseURL } from "../confi/apiDomain"; // adjust path if needed
 import SingleSelector from "../components/base/Select/SingleSelector";
 import { Link } from "react-router-dom";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 import {
   DownloadIcon,
@@ -18,7 +18,7 @@ import {
 const PoList = () => {
   const urlParams = new URLSearchParams(location.search);
   const token = urlParams.get("token");
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   // Quick Filter states
   const [companies, setCompanies] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -146,18 +146,20 @@ const PoList = () => {
       headerName: "PO No.",
       width: 140,
       sortable: true,
-       renderCell: (params) => (
+      renderCell: (params) => (
         <div
-          style={{ 
-            cursor: 'pointer',
-            color: '#8B0203',
-            textDecoration: 'underline'
+          style={{
+            cursor: "pointer",
+            color: "#8B0203",
+            textDecoration: "underline",
           }}
-          onClick={() => navigate(`/po-details/${params.row.id}?token=${token}`)}
+          onClick={() =>
+            navigate(`/po-details/${params.row.id}?token=${token}`)
+          }
         >
           {params.value}
         </div>
-      )
+      ),
     },
     // ...existing code...
     { field: "poDate", headerName: "PO Date", width: 140, sortable: true },
@@ -210,11 +212,26 @@ const PoList = () => {
   const columns = allColumns.filter((col) => columnVisibility[col.field]);
 
   // Fetch companies on mount
+  // useEffect(() => {
+  //   axios
+  //     .get(`${baseURL}pms/company_setups.json`)
+  //     .then((response) => setCompanies(response.data.companies))
+  //     .catch((error) => console.error("Error fetching companies:", error));
+  // }, []);
   useEffect(() => {
     axios
-      .get(`${baseURL}pms/company_setups.json`)
-      .then((response) => setCompanies(response.data.companies))
-      .catch((error) => console.error("Error fetching companies:", error));
+      .get(`${baseURL}pms/company_setups.json?token=${token}`)
+      .then((response) => {
+        if (response.data && response.data.companies) {
+          setCompanies(response.data.companies);
+        } else {
+          setCompanies([]);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching companies:", error);
+        setCompanies([]);
+      });
   }, []);
 
   // Main data fetching useEffect
@@ -874,28 +891,28 @@ const PoList = () => {
   };
 
   // Date formatting function
-const formatDate = (dateString) => {
-  if (!dateString) return "-";
-  
-  // Check if date is already in DD/MM/YYYY format
-  if (dateString.includes('/')) {
-    const [day, month, year] = dateString.split('/');
-    return `${day}-${month}-${year.substring(0, 4)}`;
-  }
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
 
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "-";
+    // Check if date is already in DD/MM/YYYY format
+    if (dateString.includes("/")) {
+      const [day, month, year] = dateString.split("/");
+      return `${day}-${month}-${year.substring(0, 4)}`;
+    }
 
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "-";
 
-    return `${day}-${month}-${year}`;
-  } catch (e) {
-    return "-";
-  }
-};
+      const day = date.getDate().toString().padStart(2, "0");
+      const month = (date.getMonth() + 1).toString().padStart(2, "0");
+      const year = date.getFullYear();
+
+      return `${day}-${month}-${year}`;
+    } catch (e) {
+      return "-";
+    }
+  };
 
   return (
     <>
@@ -943,7 +960,7 @@ display:none !important;
                         <p className="content-box-sub">{summaryCards.total}</p>
                       </div>
                     </div>
-                  
+
                     <div className="col-md-2 text-center">
                       <div
                         className={`content-box tab-button ${
@@ -1063,13 +1080,25 @@ display:none !important;
                     <div className="col-md-3">
                       <div className="form-group">
                         <label>Company</label>
-                        <SingleSelector
+                        {/* <SingleSelector
                           options={companies.map((c) => ({
                             value: c.id,
                             label: c.company_name,
                           }))}
                           onChange={handleCompanyChange}
                           value={selectedCompany}
+                          placeholder="Select Company"
+                        /> */}
+
+                        <SingleSelector
+                          options={
+                            companies?.map((c) => ({
+                              value: c.id,
+                              label: c.company_name,
+                            })) || []
+                          }
+                          value={selectedCompany}
+                          onChange={handleCompanyChange}
                           placeholder="Select Company"
                         />
                       </div>
@@ -1267,7 +1296,7 @@ display:none !important;
                 </button>
                 <button
                   className="purple-btn2"
-                   onClick={() => navigate(`/po-create?token=${token}`)}
+                  onClick={() => navigate(`/po-create?token=${token}`)}
                 >
                   <span> + Add</span>
                 </button>

@@ -5,8 +5,7 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import MultiSelector from "../components/base/Select/MultiSelector";
 import SelectBox from "../components/base/Select/SelectBox";
 import { baseURL } from "../confi/apiDomain";
-import { useNavigate } from 'react-router-dom';
-
+import { useNavigate } from "react-router-dom";
 
 const PoCreate = () => {
   // State variables for the modal
@@ -14,10 +13,9 @@ const PoCreate = () => {
   const [editRowIndex, setEditRowIndex] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const [apiMaterialInventoryIds, setApiMaterialInventoryIds] = useState();
-   const navigate = useNavigate();
-   const urlParams = new URLSearchParams(location.search);
-   const token = urlParams.get("token");
-   
+  const navigate = useNavigate();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
 
   // Tax modal state variables
   const [showTaxModal, setShowTaxModal] = useState(false);
@@ -228,7 +226,6 @@ const PoCreate = () => {
 
   // Get token from URL
 
-
   // Table data state
   const [tableData, setTableData] = useState([]);
 
@@ -296,7 +293,8 @@ const PoCreate = () => {
           toStr(row.uom) === toStr(formData.uom) &&
           toStr(row.brand) === toStr(formData.brand) &&
           toStr(row.colour) === toStr(formData.colour) &&
-          toStr(row.genericSpecification) === toStr(formData.genericSpecification)
+          toStr(row.genericSpecification) ===
+            toStr(formData.genericSpecification)
         );
       });
 
@@ -810,7 +808,7 @@ const PoCreate = () => {
   //           currentTax.amount = "0";
   //           currentTax.taxChargePerUom = "";
   //           currentTax.percentageId = null; // Clear percentage ID
-            
+
   //         } else if (field === "taxChargePerUom") {
   //           // Auto-calculate amount based on tax type
   //           currentTax[field] = value;
@@ -898,108 +896,117 @@ const PoCreate = () => {
   //   [taxOptions]
   // );
 
-// In handleTaxChargeChange function, update the input validation logic
-const handleTaxChargeChange = useCallback(
-  (rowIndex, id, field, value, type) => {
-    setTaxRateData((prev) => {
-      const updatedData = { ...prev };
-      const taxDetails = type === "addition"
-        ? updatedData[rowIndex]?.addition_bid_material_tax_details || []
-        : updatedData[rowIndex]?.deduction_bid_material_tax_details || [];
+  // In handleTaxChargeChange function, update the input validation logic
+  const handleTaxChargeChange = useCallback(
+    (rowIndex, id, field, value, type) => {
+      setTaxRateData((prev) => {
+        const updatedData = { ...prev };
+        const taxDetails =
+          type === "addition"
+            ? updatedData[rowIndex]?.addition_bid_material_tax_details || []
+            : updatedData[rowIndex]?.deduction_bid_material_tax_details || [];
 
-      const taxIndex = taxDetails.findIndex((tax) => tax.id === id);
-      if (taxIndex !== -1) {
-        const currentTax = { ...taxDetails[taxIndex] };
+        const taxIndex = taxDetails.findIndex((tax) => tax.id === id);
+        if (taxIndex !== -1) {
+          const currentTax = { ...taxDetails[taxIndex] };
 
-        if (field === "taxChargeType") {
-          const selectedTaxOption = type === "addition"
-            ? taxOptions.find((option) => option.value === value)
-            : deductionTaxOptions.find((option) => option.value === value);
+          if (field === "taxChargeType") {
+            const selectedTaxOption =
+              type === "addition"
+                ? taxOptions.find((option) => option.value === value)
+                : deductionTaxOptions.find((option) => option.value === value);
 
-          currentTax.taxType = selectedTaxOption?.type || "TaxCharge";
-          currentTax[field] = value;
-          currentTax.amount = "0";
-          currentTax.taxChargePerUom = "";
-          currentTax.percentageId = null;
-          currentTax.tax_category_id = selectedTaxOption?.id;
+            currentTax.taxType = selectedTaxOption?.type || "TaxCharge";
+            currentTax[field] = value;
+            currentTax.amount = "0";
+            currentTax.taxChargePerUom = "";
+            currentTax.percentageId = null;
+            currentTax.tax_category_id = selectedTaxOption?.id;
+          } else if (field === "taxChargePerUom") {
+            currentTax[field] = value;
 
-        } else if (field === "taxChargePerUom") {
-          currentTax[field] = value;
-
-          // Only auto-calculate for percentage-based taxes
-          if (value && value.includes("%") && currentTax.taxType !== "TaxCharge") {
-            const percentage = parseFloat(value.replace("%", ""));
-            const baseAmount = parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
-            const calculatedAmount = calculateTaxAmount(
-              percentage,
-              baseAmount,
-              Boolean(currentTax.inclusive)
-            );
-            // Find the percentage ID from materialTaxPercentages
-            const percentages = materialTaxPercentages[currentTax.id] || [];
-            const percentageData = percentages.find(
-              (p) => p.percentage === percentage
-            );
-            if (percentageData) {
-              currentTax.percentageId = percentageData.id;
+            // Only auto-calculate for percentage-based taxes
+            if (
+              value &&
+              value.includes("%") &&
+              currentTax.taxType !== "TaxCharge"
+            ) {
+              const percentage = parseFloat(value.replace("%", ""));
+              const baseAmount =
+                parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
+              const calculatedAmount = calculateTaxAmount(
+                percentage,
+                baseAmount,
+                Boolean(currentTax.inclusive)
+              );
+              // Find the percentage ID from materialTaxPercentages
+              const percentages = materialTaxPercentages[currentTax.id] || [];
+              const percentageData = percentages.find(
+                (p) => p.percentage === percentage
+              );
+              if (percentageData) {
+                currentTax.percentageId = percentageData.id;
+              }
+              currentTax.amount = calculatedAmount.toString();
             }
-            currentTax.amount = calculatedAmount.toString();
+          } else if (field === "amount") {
+            // Allow manual amount input for TaxCharge type taxes
+            if (currentTax.taxType === "TaxCharge") {
+              currentTax.amount = value;
+            }
+          } else if (field === "inclusive") {
+            // Toggle inclusive and recalculate when percentage-based
+            currentTax.inclusive = value;
+            const percentString = currentTax.taxChargePerUom || "";
+            if (
+              percentString &&
+              percentString.includes("%") &&
+              currentTax.taxType !== "TaxCharge"
+            ) {
+              const percentage =
+                parseFloat(percentString.replace("%", "")) || 0;
+              const baseAmount =
+                parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
+              const recalculated = calculateTaxAmount(
+                percentage,
+                baseAmount,
+                Boolean(value)
+              );
+              currentTax.amount = recalculated.toString();
+            }
+          } else {
+            // Generic setter for any other simple fields
+            currentTax[field] = value;
           }
-        } else if (field === "amount") {
-          // Allow manual amount input for TaxCharge type taxes
-          if (currentTax.taxType === "TaxCharge") {
-            currentTax.amount = value;
+
+          taxDetails[taxIndex] = currentTax;
+          if (type === "addition") {
+            updatedData[rowIndex].addition_bid_material_tax_details =
+              taxDetails;
+          } else {
+            updatedData[rowIndex].deduction_bid_material_tax_details =
+              taxDetails;
           }
-        } else if (field === "inclusive") {
-          // Toggle inclusive and recalculate when percentage-based
-          currentTax.inclusive = value;
-          const percentString = currentTax.taxChargePerUom || "";
-          if (
-            percentString &&
-            percentString.includes("%") &&
-            currentTax.taxType !== "TaxCharge"
-          ) {
-            const percentage = parseFloat(percentString.replace("%", "")) || 0;
-            const baseAmount = parseFloat(updatedData[rowIndex]?.afterDiscountValue) || 0;
-            const recalculated = calculateTaxAmount(
-              percentage,
-              baseAmount,
-              Boolean(value)
-            );
-            currentTax.amount = recalculated.toString();
-          }
-        } else {
-          // Generic setter for any other simple fields
-          currentTax[field] = value;
+
+          // Recalculate net cost
+          const newNetCost = calculateNetCostWithTaxes(
+            updatedData[rowIndex]?.afterDiscountValue || 0,
+            updatedData[rowIndex]?.addition_bid_material_tax_details || [],
+            updatedData[rowIndex]?.deduction_bid_material_tax_details || []
+          );
+
+          updatedData[rowIndex].netCost = newNetCost.toString();
         }
 
-        taxDetails[taxIndex] = currentTax;
-        if (type === "addition") {
-          updatedData[rowIndex].addition_bid_material_tax_details = taxDetails;
-        } else {
-          updatedData[rowIndex].deduction_bid_material_tax_details = taxDetails;
-        }
+        return updatedData;
+      });
+    },
+    [taxOptions, deductionTaxOptions, materialTaxPercentages]
+  );
 
-        // Recalculate net cost
-        const newNetCost = calculateNetCostWithTaxes(
-          updatedData[rowIndex]?.afterDiscountValue || 0,
-          updatedData[rowIndex]?.addition_bid_material_tax_details || [],
-          updatedData[rowIndex]?.deduction_bid_material_tax_details || []
-        );
+  // Update the input field's disabled condition in the modal
 
-        updatedData[rowIndex].netCost = newNetCost.toString();
-      }
-
-      return updatedData;
-    });
-  },
-  [taxOptions, deductionTaxOptions, materialTaxPercentages]
-);
-
-// Update the input field's disabled condition in the modal
-
-
-const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
+  const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
     const percent = parseFloat(percentage) || 0;
     const amount = parseFloat(baseAmount) || 0;
 
@@ -1065,14 +1072,21 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
           ).map((tax) => {
             // Resolve resource_id prioritizing percentageId; if missing, derive from selected percentage value
             let resolvedResourceId = tax.percentageId;
-            if (!resolvedResourceId && tax.taxChargePerUom && tax.taxChargePerUom.includes("%")) {
-              const percentage = parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
+            if (
+              !resolvedResourceId &&
+              tax.taxChargePerUom &&
+              tax.taxChargePerUom.includes("%")
+            ) {
+              const percentage =
+                parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
               const percList = materialTaxPercentages[tax.id] || [];
               const found = percList.find((p) => p.percentage === percentage);
               if (found) resolvedResourceId = found.id;
             }
             if (!resolvedResourceId) {
-              resolvedResourceId = taxOptions.find((option) => option.value === tax.taxChargeType)?.id || tax.resource_id;
+              resolvedResourceId =
+                taxOptions.find((option) => option.value === tax.taxChargeType)
+                  ?.id || tax.resource_id;
             }
 
             const payload = {
@@ -1108,14 +1122,22 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
 
             // Resolve resource_id prioritizing percentageId; if missing, derive from selected percentage value
             let resolvedResourceId = tax.percentageId;
-            if (!resolvedResourceId && tax.taxChargePerUom && tax.taxChargePerUom.includes("%")) {
-              const percentage = parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
+            if (
+              !resolvedResourceId &&
+              tax.taxChargePerUom &&
+              tax.taxChargePerUom.includes("%")
+            ) {
+              const percentage =
+                parseFloat(tax.taxChargePerUom.replace("%", "")) || 0;
               const percList = materialTaxPercentages[tax.id] || [];
               const found = percList.find((p) => p.percentage === percentage);
               if (found) resolvedResourceId = found.id;
             }
             if (!resolvedResourceId) {
-              resolvedResourceId = deductionTaxOptions.find((option) => option.value === tax.taxChargeType)?.id || tax.resource_id;
+              resolvedResourceId =
+                deductionTaxOptions.find(
+                  (option) => option.value === tax.taxChargeType
+                )?.id || tax.resource_id;
             }
 
             const payload = {
@@ -1182,8 +1204,9 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
                   tax_category_id: tax.tax_category_id,
                   percentageId: tax.percentage_id,
                   taxChargeType:
-                    taxOptions.find((option) => option.id === tax.tax_category_id)
-                      ?.value || "",
+                    taxOptions.find(
+                      (option) => option.id === tax.tax_category_id
+                    )?.value || "",
                   taxType: tax.resource_type,
                   taxChargePerUom: tax.percentage ? `${tax.percentage}%` : "",
                   inclusive: tax.inclusive,
@@ -2280,16 +2303,22 @@ const calculateTaxAmount = (percentage, baseAmount, inclusive = false) => {
           // total_value: 0,
           // total_discount: 0,
           // po_date: getLocalDateTime().split("T")[0], // Current date
-          credit_period: termsFormData.creditPeriod ? parseInt(termsFormData.creditPeriod) : null,
-po_validity_period: termsFormData.poValidityPeriod ? parseInt(termsFormData.poValidityPeriod) : null,
-advance_reminder_duration: termsFormData.advanceReminderDuration ? parseInt(termsFormData.advanceReminderDuration) : null,
-payment_terms: termsFormData.paymentTerms || null,
-payment_remarks: termsFormData.paymentRemarks || null,
-supplier_advance: null,
-survice_certificate_advance: null, 
-total_value: null,
-total_discount: null,
-po_date: getLocalDateTime().split("T")[0], // Current date
+          credit_period: termsFormData.creditPeriod
+            ? parseInt(termsFormData.creditPeriod)
+            : null,
+          po_validity_period: termsFormData.poValidityPeriod
+            ? parseInt(termsFormData.poValidityPeriod)
+            : null,
+          advance_reminder_duration: termsFormData.advanceReminderDuration
+            ? parseInt(termsFormData.advanceReminderDuration)
+            : null,
+          payment_terms: termsFormData.paymentTerms || null,
+          payment_remarks: termsFormData.paymentRemarks || null,
+          supplier_advance: null,
+          survice_certificate_advance: null,
+          total_value: null,
+          total_discount: null,
+          po_date: getLocalDateTime().split("T")[0], // Current date
           company_id: selectedCompany?.value,
           po_type: "ropo",
           supplier_id: selectedSupplier?.value,
@@ -2570,6 +2599,7 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                               type="radio"
                               name="contentSelector"
                               defaultValue="content3"
+                              checked
                             />
                             <label className="form-check-label">ROPO</label>
                           </div>
@@ -2595,7 +2625,9 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                             role="tablist"
                           >
                             <button
-                              className={`nav-link ${activeTab === "po-details" ? "active" : ""}`}
+                              className={`nav-link ${
+                                activeTab === "po-details" ? "active" : ""
+                              }`}
                               id="nav-home-tab"
                               data-bs-toggle="tab"
                               data-bs-target="#Domestic1"
@@ -2608,7 +2640,9 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                               PO Details
                             </button>
                             <button
-                              className={`nav-link ${activeTab === "rate-taxes" ? "active" : ""}`}
+                              className={`nav-link ${
+                                activeTab === "rate-taxes" ? "active" : ""
+                              }`}
                               id="nav-profile-tab"
                               data-bs-toggle="tab"
                               data-bs-target="#Domestic2"
@@ -2621,7 +2655,9 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                               Rate &amp; Taxes
                             </button>
                             <button
-                              className={`nav-link ${activeTab === "terms-conditions" ? "active" : ""}`}
+                              className={`nav-link ${
+                                activeTab === "terms-conditions" ? "active" : ""
+                              }`}
                               id="nav-contact-tab"
                               data-bs-toggle="tab"
                               data-bs-target="#Domestic3"
@@ -2629,7 +2665,9 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                               role="tab"
                               aria-controls="nav-contact"
                               aria-selected={activeTab === "terms-conditions"}
-                              onClick={() => handleTabChange("terms-conditions")}
+                              onClick={() =>
+                                handleTabChange("terms-conditions")
+                              }
                             >
                               Term &amp; Conditions
                             </button>
@@ -2637,7 +2675,9 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                         </nav>
                         <div className="tab-content" id="nav-tabContent">
                           <div
-                            className={`tab-pane fade ${activeTab === "po-details" ? "show active" : ""}`}
+                            className={`tab-pane fade ${
+                              activeTab === "po-details" ? "show active" : ""
+                            }`}
                             id="Domestic1"
                             role="tabpanel"
                             aria-labelledby="nav-home-tab"
@@ -2950,7 +2990,9 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                             </div>
                           </div>
                           <div
-                            className={`tab-pane fade ${activeTab === "rate-taxes" ? "show active" : ""}`}
+                            className={`tab-pane fade ${
+                              activeTab === "rate-taxes" ? "show active" : ""
+                            }`}
                             id="Domestic2"
                             role="tabpanel"
                             aria-labelledby="nav-profile-tab"
@@ -3353,13 +3395,15 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                 </table>
                               </div>
                               {/* )} */}
-                              
+
                               {/* Update Button */}
                               <div className="d-flex justify-content-center mt-3">
                                 <button
                                   type="button"
                                   className="purple-btn2"
-                                  onClick={() => setActiveTab("terms-conditions")}
+                                  onClick={() =>
+                                    setActiveTab("terms-conditions")
+                                  }
                                 >
                                   Update
                                 </button>
@@ -3367,7 +3411,11 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                             </div>
                           </div>
                           <div
-                            className={`tab-pane fade ${activeTab === "terms-conditions" ? "show active" : ""}`}
+                            className={`tab-pane fade ${
+                              activeTab === "terms-conditions"
+                                ? "show active"
+                                : ""
+                            }`}
                             id="Domestic3"
                             role="tabpanel"
                             aria-labelledby="nav-contact-tab"
@@ -3906,7 +3954,7 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                 </tbody>
                               </table>
                             </div>
-                            
+
                             {/* Document Attachment Section - Only visible on Terms & Conditions tab */}
                             {activeTab === "terms-conditions" && (
                               <>
@@ -3950,8 +3998,13 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                         <th className="main2-th">File Type</th>
                                         <th className="main2-th">File Name </th>
                                         <th className="main2-th">Upload At</th>
-                                        <th className="main2-th">Upload File</th>
-                                        <th className="main2-th" style={{ width: 100 }}>
+                                        <th className="main2-th">
+                                          Upload File
+                                        </th>
+                                        <th
+                                          className="main2-th"
+                                          style={{ width: 100 }}
+                                        >
                                           Action
                                         </th>
                                       </tr>
@@ -3974,7 +4027,10 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                               required
                                               value={att.fileName}
                                               onChange={(e) =>
-                                                handleFileNameChange(att.id, e.target.value)
+                                                handleFileNameChange(
+                                                  att.id,
+                                                  e.target.value
+                                                )
                                               }
                                             />
                                           </td>
@@ -3994,13 +4050,18 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                                 type="file"
                                                 className="form-control"
                                                 required
-                                                onChange={(e) => handleFileChange(e, att.id)}
+                                                onChange={(e) =>
+                                                  handleFileChange(e, att.id)
+                                                }
                                               />
                                             )}
                                           </td>
                                           <td className="document">
                                             <div
-                                              style={{ display: "flex", alignItems: "center" }}
+                                              style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                              }}
                                             >
                                               <div className="attachment-placeholder">
                                                 {att.isExisting && (
@@ -4021,12 +4082,17 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                                       </a>
                                                     </div>
                                                     <div className="file-name">
-                                                      <a href={att.fileUrl} download>
+                                                      <a
+                                                        href={att.fileUrl}
+                                                        download
+                                                      >
                                                         <span className="material-symbols-outlined">
                                                           file_download
                                                         </span>
                                                       </a>
-                                                      <span>{att.fileName}</span>
+                                                      <span>
+                                                        {att.fileName}
+                                                      </span>
                                                     </div>
                                                   </div>
                                                 )}
@@ -4034,7 +4100,9 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                               <button
                                                 type="button"
                                                 className="btn btn-sm btn-link text-danger"
-                                                onClick={() => handleRemove(att.id)}
+                                                onClick={() =>
+                                                  handleRemove(att.id)
+                                                }
                                               >
                                                 <span className="material-symbols-outlined">
                                                   cancel
@@ -4079,12 +4147,22 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                 <div className="row mt-4 justify-content-end align-items-center mx-2">
                                   <div className="col-md-3">
                                     <div className="form-group d-flex gap-3 align-items-center mx-3">
-                                      <label style={{ fontSize: "0.95rem", color: "black" }}>
+                                      <label
+                                        style={{
+                                          fontSize: "0.95rem",
+                                          color: "black",
+                                        }}
+                                      >
                                         Status
                                       </label>
                                       <SingleSelector
-                                        options={[{ value: "draft", label: "Draft" }]}
-                                        value={{ value: "draft", label: "Draft" }}
+                                        options={[
+                                          { value: "draft", label: "Draft" },
+                                        ]}
+                                        value={{
+                                          value: "draft",
+                                          label: "Draft",
+                                        }}
                                         placeholder="Select Status"
                                         isClearable={false}
                                         isDisabled={true}
@@ -4100,11 +4178,15 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                       onClick={handleCreatePurchaseOrder}
                                       disabled={isCreatingOrder}
                                     >
-                                      {isCreatingOrder ? "Creating..." : "Submit"}
+                                      {isCreatingOrder
+                                        ? "Creating..."
+                                        : "Submit"}
                                     </button>
                                   </div>
                                   <div className="col-md-2">
-                                    <button className="purple-btn1 w-100">Cancel</button>
+                                    <button className="purple-btn1 w-100">
+                                      Cancel
+                                    </button>
                                   </div>
                                 </div>
                               </>
@@ -4128,7 +4210,6 @@ po_date: getLocalDateTime().split("T")[0], // Current date
               </div>
 
               {/* Document Attachment Section - Only visible on Terms & Conditions tab */}
-
             </div>
           </div>
         </div>
@@ -4844,7 +4925,11 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                 className="form-control"
                                 value={
                                   item.taxChargeType ||
-                                  (taxOptions.find((option) => option.id === item.tax_category_id)?.value || "")
+                                  taxOptions.find(
+                                    (option) =>
+                                      option.id === item.tax_category_id
+                                  )?.value ||
+                                  ""
                                 }
                                 onChange={(e) => {
                                   const selectedValue = e.target.value;
@@ -4875,22 +4960,39 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                     disabled={(() => {
                                       const current =
                                         item.taxChargeType ||
-                                        taxOptions.find((o) => o.id === item.tax_category_id)?.value || "";
+                                        taxOptions.find(
+                                          (o) => o.id === item.tax_category_id
+                                        )?.value ||
+                                        "";
                                       const disabledSet = (
-                                        taxRateData[tableId]?.addition_bid_material_tax_details?.reduce(
+                                        taxRateData[
+                                          tableId
+                                        ]?.addition_bid_material_tax_details?.reduce(
                                           (acc, detail) => {
-                                            if (detail._destroy || detail.id === item.id) return acc;
+                                            if (
+                                              detail._destroy ||
+                                              detail.id === item.id
+                                            )
+                                              return acc;
                                             const t = detail.taxChargeType;
-                                            if (t === "CGST") acc.push("CGST", "IGST");
-                                            if (t === "SGST") acc.push("SGST", "IGST");
-                                            if (t === "IGST") acc.push("CGST", "SGST");
+                                            if (t === "CGST")
+                                              acc.push("CGST", "IGST");
+                                            if (t === "SGST")
+                                              acc.push("SGST", "IGST");
+                                            if (t === "IGST")
+                                              acc.push("CGST", "SGST");
                                             if (t) acc.push(t);
                                             return acc;
                                           },
                                           []
                                         ) || []
-                                      ).filter((v, i, self) => self.indexOf(v) === i);
-                                      return disabledSet.includes(opt.value) && opt.value !== current;
+                                      ).filter(
+                                        (v, i, self) => self.indexOf(v) === i
+                                      );
+                                      return (
+                                        disabledSet.includes(opt.value) &&
+                                        opt.value !== current
+                                      );
                                     })()}
                                   >
                                     {opt.label}
@@ -4912,18 +5014,27 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                     "addition"
                                   )
                                 }
-                                disabled={(materialTaxPercentages[item.id] || []).length === 0}
+                                disabled={
+                                  (materialTaxPercentages[item.id] || [])
+                                    .length === 0
+                                }
                               >
-                                <option value="">{
-                                  (materialTaxPercentages[item.id] || []).length === 0
+                                <option value="">
+                                  {(materialTaxPercentages[item.id] || [])
+                                    .length === 0
                                     ? "No percentages available"
-                                    : "Select percentage"
-                                }</option>
-                                {(materialTaxPercentages[item.id] || []).map((percent) => (
-                                  <option key={percent.id} value={`${percent.percentage}%`}>
-                                    {percent.percentage}%
-                                  </option>
-                                ))}
+                                    : "Select percentage"}
+                                </option>
+                                {(materialTaxPercentages[item.id] || []).map(
+                                  (percent) => (
+                                    <option
+                                      key={percent.id}
+                                      value={`${percent.percentage}%`}
+                                    >
+                                      {percent.percentage}%
+                                    </option>
+                                  )
+                                )}
                               </select>
                             </td>
 
@@ -5068,7 +5179,8 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                             <td>
                               <SingleSelector
                                 options={(() => {
-                                  const percentages = materialTaxPercentages[item.id] || [];
+                                  const percentages =
+                                    materialTaxPercentages[item.id] || [];
                                   if (percentages.length > 0) {
                                     return percentages.map((percent) => ({
                                       label: `${percent.percentage}%`,
@@ -5078,7 +5190,14 @@ po_date: getLocalDateTime().split("T")[0], // Current date
                                   }
                                   return [];
                                 })()}
-                                value={item?.taxChargePerUom ? { value: item.taxChargePerUom, label: item.taxChargePerUom } : null}
+                                value={
+                                  item?.taxChargePerUom
+                                    ? {
+                                        value: item.taxChargePerUom,
+                                        label: item.taxChargePerUom,
+                                      }
+                                    : null
+                                }
                                 onChange={(selected) => {
                                   handleTaxChargeChange(
                                     tableId,

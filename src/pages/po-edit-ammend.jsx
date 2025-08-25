@@ -3248,16 +3248,19 @@ const formatDateTime = (dateString) => {
     // Add submitted materials (if not already in rateAndTaxes)
     if (submittedMaterials && submittedMaterials.length > 0) {
       submittedMaterials.forEach((submitted) => {
-        const exists = combined.some(
-          (item) =>
-            item.material_inventory_id === submitted.material_inventory_id ||
-            item.material === submitted.material_name
-        );
+        const submittedMatInvId = submitted.material_inventory_id || submitted.pms_inventory_id;
+        const exists = combined.some((item) => {
+          const itemMatInvId = item.material_inventory_id || item.pms_inventory_id;
+          return itemMatInvId && submittedMatInvId
+            ? itemMatInvId === submittedMatInvId
+            : (item.material && submitted.material_name && item.material === submitted.material_name);
+        });
+
         if (!exists) {
           combined.push({
             id: submitted.id,
-            material: submitted.material_name,
-            uom: submitted.uom_name,
+            material: submitted.material_name || submitted.material || "",
+            uom: submitted.uom_name || submitted.uom || "",
             po_qty: submitted.po_qty || "",
             material_rate: submitted.material_rate || "",
             material_cost: submitted.material_cost || "",
@@ -3269,10 +3272,10 @@ const formatDateTime = (dateString) => {
             total_charges: submitted.total_charges || "",
             total_base_cost: submitted.total_base_cost || "",
             all_inclusive_cost: submitted.all_inclusive_cost || "",
-            material_inventory_id: submitted.material_inventory_id,
-            isSubmitted: true, // Flag to identify submitted materials
+            material_inventory_id: submittedMatInvId,
+            isSubmitted: true,
           });
-          console.log("Added submitted material:", submitted.material_name);
+          console.log("Added submitted material:", submitted.material_name || submitted.material);
         }
       });
     }
@@ -3440,6 +3443,8 @@ const formatDateTime = (dateString) => {
                               type="radio"
                               name="contentSelector"
                               defaultValue="content3"
+                              checked
+
                             />
                             <label className="form-check-label">ROPO</label>
                           </div>
@@ -3721,28 +3726,29 @@ const formatDateTime = (dateString) => {
                                               {index + 1}
                                             </td>
                                             <td className="text-start">
-                                              {row.materialTypeLabel}
+                                              {row.materialTypeLabel || row.originalMaterial?.material_type_name || ""}
                                             </td>
                                             <td className="text-start">
-                                              {row.materialSubTypeLabel}
+                                              {row.materialSubTypeLabel || row.originalMaterial?.material_sub_type_name || ""}
                                             </td>
                                             <td className="text-start">
-                                              {row.materialLabel}
+                                              {row.materialLabel || row.originalMaterial?.material_name || ""}
                                             </td>
                                             <td className="text-start">
-                                              {row.genericSpecificationLabel}
+                                              {row.genericSpecificationLabel || row.originalMaterial?.generic_info || ""}
                                             </td>
                                             <td className="text-start">
-                                              {row.colourLabel}
+                                              {row.colourLabel || row.originalMaterial?.colour || ""}
                                             </td>
                                             <td className="text-start">
-                                              {row.brandLabel}
+                                              {row.brandLabel || row.originalMaterial?.brand_name || ""}
                                             </td>
                                             <td className="text-start">
-                                              {row.uomLabel}
+                                              {row.uomLabel || row.originalMaterial?.uom || ""}
                                             </td>
 
                                             <td className="text-start">
+                                              {(!row.id || row.id.toString().length >= 10) && (
                                               <span
                                                 onClick={() =>
                                                   handleEditRow(
@@ -3767,6 +3773,7 @@ const formatDateTime = (dateString) => {
                                                   ></path>
                                                 </svg>
                                               </span>
+                                               )}
                                             </td>
                                             <td className="text-start">
                                                {!row.id && (
@@ -3888,8 +3895,8 @@ const formatDateTime = (dateString) => {
                                       combinedMaterials.map((item, index) => (
                                         <tr key={item.id || index}>
                                           <td>{index + 1}</td>
-                                          <td>{item.material}</td>
-                                          <td>{item.uom}</td>
+                                          <td>{item.material || item.material_name || ""}</td>
+                                          <td>{item.uom || item.uom_name || ""}</td>
                                           <td>{item.po_qty || "-"}</td>
                                           <td>{item.material_rate || "-"}</td>
                                           <td>{item.material_cost || "-"}</td>
