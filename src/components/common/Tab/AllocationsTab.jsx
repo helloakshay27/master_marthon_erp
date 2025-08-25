@@ -263,19 +263,18 @@ export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrder
     try {
       const payload = isBulk
         ? {
-            bid_id: data[0].bid_id,
-            select_all: "true",
-            delete_material: `${!isDeletedAllocation}`,
-          }
+          bid_id: data[0].bid_id,
+          select_all: "true",
+          delete_material: `${!isDeletedAllocation}`,
+        }
         : {
-            bid_id: data.bid_id,
-            bid_material_id: data.id,
-            delete_material: `${!isDeletedAllocation}`,
-          };
+          bid_id: data.bid_id,
+          bid_material_id: data.id,
+          delete_material: `${!isDeletedAllocation}`,
+        };
 
       const response = await axios.post(
-        `${baseURL}rfq/events/${eventId}/event_vendors/${
-          isBulk ? data[0].vendor_id : data.vendor_id
+        `${baseURL}rfq/events/${eventId}/event_vendors/${isBulk ? data[0].vendor_id : data.vendor_id
         }/update_allocation?token=${token}`,
         payload
       );
@@ -304,14 +303,14 @@ export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrder
         );
 
         toast.success("Allocation removed successfully");
-        
+
         // Switch to Purchased Orders tab after successful allocation removal
         if (onSwitchToPurchasedOrders) {
           setTimeout(() => {
             onSwitchToPurchasedOrders();
           }, 500); // Reduced wait time to 0.5 seconds
         }
-        
+
         isUpdatingAllocation.current = false;
         return;
       }
@@ -412,9 +411,8 @@ export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrder
           },
           {
             label: "Realised Freight Amount",
-            value: `₹${
-              responseData.bids[0]?.realised_freight_charge_amount || 0
-            }`,
+            value: `₹${responseData.bids[0]?.realised_freight_charge_amount || 0
+              }`,
           },
           {
             label: "Warranty Clause",
@@ -449,13 +447,6 @@ export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrder
       setDummyData(updatedDummyData);
 
       toast.success("Allocation updated successfully");
-      
-      // Switch to Purchased Orders tab after successful allocation update
-      if (onSwitchToPurchasedOrders) {
-        setTimeout(() => {
-          onSwitchToPurchasedOrders();
-        }, 500); // Reduced wait time to 0.5 seconds
-      }
     } catch (err) {
       console.error("Error updating allocation:", err);
       toast.error("Error updating allocation");
@@ -498,7 +489,7 @@ export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrder
       );
       toast.success("PO created successfully");
 
-      // Switch to Purchased Orders tab after successful PO creation
+      // Switch to Purchased Orders tab after successful allocation update
       if (onSwitchToPurchasedOrders) {
         setTimeout(() => {
           onSwitchToPurchasedOrders();
@@ -824,7 +815,7 @@ export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrder
                           (material, bidIndex) => {
                             const extraData = material.extra_data || {};
                             console.log();
-                            
+
                             return {
                               bestTotalAmount: material.total_amount || "_",
                               quantityAvailable: material.quantity_available || "_",
@@ -852,17 +843,15 @@ export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrder
                                     const value = extraData[column].value;
                                     acc[column] = Array.isArray(value)
                                       ? value
-                                          .map(
-                                            (item) =>
-                                              `${item.taxChargeType || ""}: ${
-                                                item.amount || 0
-                                              }${
-                                                item.taxChargePerUom
-                                                  ? ` (${item.taxChargePerUom})`
-                                                  : ""
-                                              }`
-                                          )
-                                          .join(", ")
+                                        .map(
+                                          (item) =>
+                                            `${item.taxChargeType || ""}: ${item.amount || 0
+                                            }${item.taxChargePerUom
+                                              ? ` (${item.taxChargePerUom})`
+                                              : ""
+                                            }`
+                                        )
+                                        .join(", ")
                                       : value || "_";
                                   } else {
                                     acc[column] = "_";
@@ -1298,7 +1287,7 @@ export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrder
                         type="text"
                         className="form-control"
                         value={item.amount}
-                        onChange={(e) => {}}
+                        onChange={(e) => { }}
                         readOnly
                         disabled={true}
                       />
@@ -1596,10 +1585,10 @@ export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrder
                                   ? item.tax_percentage
                                   : `${item.tax_percentage}%`
                                 : item?.taxChargePerUom
-                                ? item.taxChargePerUom.includes("%")
-                                  ? item.taxChargePerUom
-                                  : `${item.taxChargePerUom}%`
-                                : ""}
+                                  ? item.taxChargePerUom.includes("%")
+                                    ? item.taxChargePerUom
+                                    : `${item.taxChargePerUom}%`
+                                  : ""}
                               onChange={(e) =>
                                 handleTaxChargeChange(
                                   selectedMaterialIndex,
@@ -1644,7 +1633,7 @@ export default function AllocationTab({ isCounterOffer, onSwitchToPurchasedOrder
                               type="text"
                               className="form-control"
                               value={item.amount}
-                              onChange={(e) => {}}
+                              onChange={(e) => { }}
                               readOnly
                               disabled={true}
                             />
