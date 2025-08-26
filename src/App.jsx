@@ -134,6 +134,7 @@ import EstimationCreationDetails from "./pages/estimation-creation-details";
 import RopoMappingEdit from "./pages/ropo-mapping-edit";
 import EstimationCreationEdit from "./pages/estimation-creation-edit";
 import PoAmmendEdit from "./pages/po-edit-ammend";
+import EstimationCreationApproval from "./pages/estimation-creation-approval";
 import RopoImportDetails from "./pages/ropo-import-details";
 import RopoImportCreate from "./pages/ropo-import-create";
 import RopoImportEdit from "./pages/ropo-import-edit";
@@ -286,9 +287,10 @@ function App() {
             element={<EstimationCreationTest />}
           />
           <Route
-            path="/estimation-creation-edit"
+            path="/estimation-creation-edit/:id"
             element={<EstimationCreationEdit />}
           />
+           <Route path="/estimation-creation-approval/:id" element={<EstimationCreationApproval />} />
           <Route
             path="/estimation-creation-details/:id"
             element={<EstimationCreationDetails />}

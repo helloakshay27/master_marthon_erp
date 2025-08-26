@@ -396,11 +396,9 @@ const RateDetails = () => {
                                 <div className="tab-content" id="nav-tabContent">
                                     {activeTab === "details" && (
                                         <div className="tab-pane fade show active" id="details" role="tabpanel">
-                                            {/* Rate Details and Materials Table */}
+                                            
                                             <div className="details_page">
-                                                {/* ...company/project/site/wing info... */}
-                                                {/* ...search/filter... */}
-                                                {/* ...materials table (your existing tableData table)... */}
+                                            
 
                                                 <div className="details_page">
                                                     <div className="row px-3">

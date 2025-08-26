@@ -11,6 +11,7 @@ import SingleSelector from "../components/base/Select/SingleSelector";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
     LayoutModal,
     FilterModal,
@@ -42,7 +43,7 @@ const EstimationCreationDetails = () => {
     const [subProjectDetails, setSubProjectDetails] = useState(null);
     const [budgetType, setBudgetType] = useState("");
     const [status, setStatus] = useState('');
-
+const [activeTab, setActiveTab] = useState("details");
 
     const fetchSubProjectDetails = async () => {
         try {
@@ -59,6 +60,7 @@ const EstimationCreationDetails = () => {
     };
     useEffect(() => {
         fetchSubProjectDetails();
+         setActiveTab("details");
     }, [id]);
 
 
@@ -230,6 +232,42 @@ const EstimationCreationDetails = () => {
                     <a href="">
                         <a href="">Home &gt; Engineering &gt; Estimation &gt; Budget</a>
                     </a>
+
+                    {status && status.toLowerCase() === "draft" && (
+                                            <div className="d-flex justify-content-end m-2">
+                    
+                                                <Link
+                                                    to={`/estimation-creation-edit/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`}
+                                                    className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+                    
+                                                    <button class="purple-btn1" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="#8b0203" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25Z" fill="#8b0203" />
+                                                            <path d="M20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.13 5.12L18.88 8.87L20.71 7.04Z" fill="#8b0203" />
+                                                        </svg>
+                                                    </button>
+                    
+                                                </Link>
+                    
+                                            </div>
+                                        )} 
+
+                                        {subProjectDetails?.show_revision === true && (
+                                                                <div className="d-flex justify-content-end m-2 mb-4">
+                                        
+                                                                    <Link
+                                                                        to={`/estimation-creation-approval/${id}?token=bfa5004e7b0175622be8f7e69b37d01290b737f82e078414`}
+                                                                        className="d-flex align-items-center" style={{ borderColor: '#8b0203' }}>
+                                        
+                                        
+                                                                        <button className="purple-btn2">
+                                                                             Revision
+                                                                        </button>
+                                        
+                                                                    </Link>
+                                        
+                                                                </div>
+                                                             )} 
                     <div className="card mt-3 pb-3 ">
                         {subProjectDetails?.approval_logs?.length > 0 && (
                             <div className="row mt-4 justify-content-end">
@@ -248,6 +286,64 @@ const EstimationCreationDetails = () => {
                                 </div>
                             </div>
                         )}
+
+                        {subProjectDetails?.display_name && (
+                                    <div
+                                        className="d-flex justify-content-between align-items-center mx-4 p-3 mb-3 rounded-3 mt-4"
+                                        style={{
+                                            background: "linear-gradient(90deg, #fff3cd 0%, #ffeeba 100%)",
+                                            border: "2px solid #ffc107",
+                                            boxShadow: "0 2px 8px rgba(255,193,7,0.15)",
+                                            color: "#856404",
+                                        }}
+                                    >
+                                        <div>
+                                            <p style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: 4 }}>
+                                                <i className="bi bi-exclamation-triangle-fill me-2" style={{ color: "#856404" }} />
+                                                Revision
+                                            </p>
+                                            <p style={{ marginBottom: 0 }}>
+                                                {subProjectDetails?.display_name}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                         {/* Tabs */}
+                                <nav className="mb-5 ms-4">
+                                    <div className="nav nav-tabs" id="nav-tab" role="tablist">
+                                        <button
+                                            className={`nav-link ${activeTab === "details" ? "active" : ""}`}
+                                            id="nav-details-tab"
+                                            type="button"
+                                            onClick={() => setActiveTab("details")}
+                                            role="tab"
+                                            aria-selected={activeTab === "details"}
+                                        >
+                                            Details
+                                        </button>
+                                        {subProjectDetails?.revised_versions?.length > 0 && (
+                                            <button
+                                                className={`nav-link ${activeTab === "revisions" ? "active" : ""}`}
+                                                id="nav-revisions-tab"
+                                                type="button"
+                                                onClick={() => setActiveTab("revisions")}
+                                                role="tab"
+                                                aria-selected={activeTab === "revisions"}
+                                            >
+                                                Revised Versions
+                                            </button>
+                                        )}
+                                    </div>
+                                </nav>
+                                 <div className="tab-content" id="nav-tabContent">
+   {activeTab === "details" && (
+      <div className="tab-pane fade show active" id="details" role="tabpanel">
+                                            
+                                            <div className="details_page">
+                                            
+
+                                                <div className="details_page">
 
                         <div className="details_page mt-5 mb-5 mx-3">
                             <div className="row px-3">
@@ -2657,8 +2753,12 @@ const EstimationCreationDetails = () => {
                                 </div>
                             </div>
                         )}
+                     </div>
+                      </div>
+                       </div>
 
-
+                )}
+                </div>
 
                         {/* <div className="d-flex justify-content-end mx-3">
                             <button className="purple-btn2">Bulk Upload</button>
@@ -2667,6 +2767,53 @@ const EstimationCreationDetails = () => {
                             <button className="purple-btn2">Import</button>
                             <button className="purple-btn2">Export</button>
                         </div> */}
+
+                          {activeTab === "revisions" && (
+                                                                <div className="ms-4 mb-5" id="revisions" role="tabpanel">
+                                                                    {/* Rate Revised Versions Table */}
+                                                                    {subProjectDetails?.revised_versions?.length > 0 ? (
+                                                                        <div className="row mt-4 w-100">
+                                                                            <div className="col-12">
+                                                                                <h5>Revised Versions</h5>
+                                                                                <div className="mx-0">
+                                                                                    <div className="tbl-container mt-1" style={{ maxHeight: "450px" }}>
+                                                                                        <table className="w-100">
+                                                                                            <thead>
+                                                                                                <tr>
+                                                                                                    <th>Sr.No.</th>
+                                                                                                    {/* <th>ID</th> */}
+                                                                                                    <th>Version Number</th>
+                                                                                                    <th>Status</th>
+                                                                                                </tr>
+                                                                                            </thead>
+                                                                                            <tbody>
+                                                                                                {subProjectDetails?.revised_versions?.map((log, index) => (
+                                                                                                    <tr key={log.id}>
+                                                                                                        <td className="text-start">{index + 1}</td>
+                                                                                                        {/* <td className="text-start">
+                                                                                                            <Link to={`/details-rate/${log.id}?token=${token}`} className="boq-id-link">
+                                                                                                                {log.id}
+                                                                                                            </Link>
+                                                                                                        </td> */}
+                                                                                                        <td className="text-start">
+                                                                                                            <Link to={`/estimation-creation-details/${log.id}`} className="boq-id-link">
+                                                                                                                <span>{log.display_name}</span>
+                                                                                                            </Link>
+                                                                                                        </td>
+                                                                                                        <td className="text-start">{log.list_status || ""}</td>
+                                                                                                    </tr>
+                                                                                                ))}
+                                                                                            </tbody>
+                                                                                        </table>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="text-center py-4">No revised versions found.</div>
+                                                                    )}
+                                                                </div>
+                                                            )}
 
 
                         <div className="row  mx-3 ">
